@@ -288,7 +288,7 @@ cleanup:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset in parallel
 
   Collective; No Fortran Support

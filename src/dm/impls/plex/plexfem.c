@@ -890,7 +890,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexInsertBoundaryValuesEssential - Insert boundary values into a local vector using a function of the coordinates
 
   Input Parameters:
@@ -928,7 +928,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexInsertBoundaryValuesEssentialField - Insert boundary values into a local vector using a function of the coordinates and field data
 
   Input Parameters:
@@ -967,7 +967,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexInsertBoundaryValuesEssentialBdField - Insert boundary values into a local vector using a function of the coordinates and boundary field data
 
   Collective
@@ -1008,7 +1008,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexInsertBoundaryValuesRiemann - Insert boundary values into a local vector
 
   Input Parameters:
@@ -1455,7 +1455,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeL2DiffLocal - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
   Collective
@@ -1868,7 +1868,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeL2DiffVec - This function computes the cellwise L_2 difference between a function u and an FEM interpolant solution u_h, and stores it in a Vec.
 
   Collective
@@ -2854,7 +2854,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeBdIntegral - Form the integral over the specified boundary from the global input X using pointwise functions specified by the user
 
   Input Parameters:
@@ -3784,7 +3784,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, PetscCtx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCellFields - Retrieve the field values values for a chunk of cells
 
   Input Parameters:
@@ -3869,7 +3869,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, PeOp Vec locX_t, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreCellFields - Restore the field values values for a chunk of cells
 
   Input Parameters:
@@ -4120,7 +4120,7 @@ static PetscErrorCode DMPlexRestoreHybridFields(DM dm, DM dmX[], PetscDS dsX[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetFaceFields - Retrieve the field values values for a chunk of faces
 
   Input Parameters:
@@ -4284,7 +4284,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreFaceFields - Restore the field values values for a chunk of faces
 
   Input Parameters:
@@ -4314,7 +4314,7 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetFaceGeometry - Retrieve the geometric values for a chunk of faces
 
   Input Parameters:
@@ -4384,7 +4384,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreFaceGeometry - Restore the field values values for a chunk of faces
 
   Input Parameters:

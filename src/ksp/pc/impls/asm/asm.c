@@ -1208,7 +1208,7 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMGetSubKSP - Gets the local `KSP` contexts for all blocks on
   this processor.
 
@@ -1331,7 +1331,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMCreateSubdomains - Creates the index sets for the overlapping Schwarz
   preconditioner, `PCASM`,  for any problem on a general grid.
 
@@ -1499,7 +1499,7 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMDestroySubdomains - Destroys the index sets created with
   `PCASMCreateSubdomains()`. Should be called after setting subdomains with `PCASMSetLocalSubdomains()`.
 
@@ -1536,7 +1536,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS *is[], IS *is_local[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
   preconditioner, `PCASM`, for a two-dimensional problem on a regular grid.
 
@@ -1621,7 +1621,7 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
   only) for the additive Schwarz preconditioner, `PCASM`.
 
@@ -1661,7 +1661,7 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCASMGetLocalSubmatrices - Gets the local submatrices (for this processor
   only) for the additive Schwarz preconditioner, `PCASM`.
 

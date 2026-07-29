@@ -168,7 +168,7 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetProcessorSubset - Returns a communicator consisting only of the
   processors in a `DMDA` that own a particular global x, y, or z grid point
   (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
@@ -243,7 +243,7 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetProcessorSubsets - Returns communicators consisting only of the
   processors in a `DMDA` adjacent in a particular dimension,
   corresponding to a logical plane in a 3D grid or a line in a 2D grid.

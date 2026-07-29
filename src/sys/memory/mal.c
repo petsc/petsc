@@ -192,7 +192,7 @@ PetscErrorCode (*PetscTrRealloc)(size_t, int, const char[], const char[], void *
 PETSC_INTERN PetscBool petscsetmallocvisited;
 PetscBool              petscsetmallocvisited = PETSC_FALSE;
 
-/*@C
+/*@
   PetscMallocSet - Sets the underlying allocation routines used by `PetscMalloc()` and `PetscFree()`
 
   Not Collective, No Fortran Support
@@ -247,7 +247,7 @@ PetscErrorCode PetscMallocClear(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMemoryTrace - Print the current and high-water memory usage and the delta since the last call, tagged with a user-supplied label
 
   Collective on `PETSC_COMM_WORLD`; No Fortran Support
@@ -374,7 +374,7 @@ PetscErrorCode PetscMallocSetCoalesce(PetscBool coalesce)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocA - Allocate and optionally clear one or more memory locations, possibly using coalesced malloc
 
   Not Collective, No Fortran Support
@@ -434,7 +434,7 @@ PetscErrorCode PetscMallocA(int n, PetscBool clear, int lineno, const char *func
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFreeA - Free one or more memory locations, possibly allocated using coalesced `PetscMallocN()`
 
   Not Collective, No Fortran Support

@@ -11,7 +11,7 @@ PETSC_INTERN PetscErrorCode PFCreate_String(PF, void *);
 PETSC_INTERN PetscErrorCode PFCreate_Matlab(PF, void *);
 #endif
 
-/*@C
+/*@
   PFRegisterAll - Registers all of the preconditioners in the PF package.
 
   Not Collective

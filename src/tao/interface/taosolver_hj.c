@@ -1,6 +1,6 @@
 #include <petsc/private/taoimpl.h> /*I "petsctao.h" I*/
 
-/*@C
+/*@
   TaoSetHessian - Sets the function to compute the Hessian as well as the location to store the matrix.
 
   Logically Collective
@@ -50,7 +50,7 @@ PetscErrorCode TaoSetHessian(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Ta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetHessian - Gets the function to compute the Hessian as well as the location to store the matrix.
 
   Not Collective
@@ -466,7 +466,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
   Logically Collective
@@ -517,7 +517,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the
   location to store the matrix.
 
@@ -569,7 +569,7 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian
   (and its inverse) of the constraint function with respect to the state variables.
   Used only for PDE-constrained optimization.
@@ -633,7 +633,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of
   the constraint function with respect to the design variables.  Used only for
   PDE-constrained optimization.
@@ -777,7 +777,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianEqualityRoutine - Sets the function to compute the Jacobian
   (and its inverse) of the constraint function with respect to the equality variables.
   Used only for PDE-constrained optimization.
@@ -830,7 +830,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetJacobianEqualityRoutine - Gets the function used to compute equality constraint Jacobian.
 
   Not Collective
@@ -866,7 +866,7 @@ PetscErrorCode TaoGetJacobianEqualityRoutine(Tao tao, Mat *J, Mat *Jpre, PetscEr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian
   (and its inverse) of the constraint function with respect to the inequality variables.
   Used only for PDE-constrained optimization.
@@ -919,7 +919,7 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscEr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetJacobianInequalityRoutine - Gets the function used to compute inequality constraint Jacobian.
 
   Not Collective

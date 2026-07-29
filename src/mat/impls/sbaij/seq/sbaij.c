@@ -1728,7 +1728,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A, MatFactorType fty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSBAIJGetArray - gives access to the array where the numerical data for a `MATSEQSBAIJ` matrix is stored
 
   Not Collective
@@ -1750,7 +1750,7 @@ PetscErrorCode MatSeqSBAIJGetArray(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSBAIJRestoreArray - returns access to the array where the numerical data for a `MATSEQSBAIJ` matrix is stored obtained by `MatSeqSBAIJGetArray()`
 
   Not Collective
@@ -1921,7 +1921,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqSBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATSEQSBAIJ` format using the given nonzero structure and (optional) numerical values
 
   Input Parameters:

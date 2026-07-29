@@ -265,7 +265,7 @@ typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
 #define MPIU_COLORING_VALUE PETSC_MPIU_IS_COLORING_VALUE_TYPE
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValue *, PetscInt *, ISColoringValue *[]);
 
-/*@C
+/*@
    ISColoringValueCast - casts an integer a `ISColoringValue` (which may be 1-bits in size), generates an
    error if the value is too large
 

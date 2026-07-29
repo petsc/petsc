@@ -6,7 +6,7 @@ static PetscBool VecTaggerPackageInitialized = PETSC_FALSE;
 
 PetscBool VecTaggerRegisterAllCalled;
 
-/*@C
+/*@
   VecTaggerInitializePackage - Initialize VecTagger package
 
   Logically Collective
@@ -27,7 +27,7 @@ PetscErrorCode VecTaggerInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerFinalizePackage - Finalize VecTagger package, it is called from PetscFinalize()
 
   Logically Collective

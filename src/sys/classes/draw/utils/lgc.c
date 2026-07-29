@@ -203,7 +203,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawLGSetLegend - sets the names of each curve plotted
 
   Logically Collective
@@ -296,7 +296,7 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawLGGetData - Get the data being plotted.
 
   Not Collective

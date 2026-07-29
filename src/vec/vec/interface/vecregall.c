@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Kokkos(Vec);
 
 PetscBool VecRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   VecRegisterAll - Registers all of the vector types in the `Vec` package.
 
   Not Collective

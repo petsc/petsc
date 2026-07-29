@@ -4198,7 +4198,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatInodeGetInodeSizes - Returns the inode information of a matrix with inodes
 
   Not Collective

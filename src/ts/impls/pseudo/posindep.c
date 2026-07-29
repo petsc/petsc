@@ -48,7 +48,7 @@ static PetscErrorCode TSPseudoResidualDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSPseudoComputeFunction - Compute nonlinear residual for pseudo-timestepping
 
   This computes the residual for $\dot U = 0$, i.e. $F(U, 0)$ for the IFunction.
@@ -374,7 +374,7 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.  Use with `TSPseudoSetTimeStep()`.
 
   Collective, No Fortran Support
@@ -458,7 +458,7 @@ static PetscErrorCode TSAdaptCreate_TSPseudo(TSAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the
   last timestep.
 
@@ -568,7 +568,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSPseudoSetTimeStep - Sets the user-defined routine to be
   called at each pseudo-timestep to update the timestep.
 

@@ -2337,7 +2337,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexConstructCohesiveCells - Construct cohesive cells which split the face along an internal interface
 
   Collective

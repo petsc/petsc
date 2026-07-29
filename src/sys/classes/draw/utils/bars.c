@@ -55,7 +55,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawBarSetData - Set the data for a bar graph
 
   Logically Collective

@@ -9,7 +9,7 @@ PetscLogEvent MATMFFD_Mult;
 
 static PetscBool MatMFFDPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   MatMFFDFinalizePackage - This function destroys everything in the MATMFFD` package. It is
   called from `PetscFinalize()`.
 
@@ -26,7 +26,7 @@ PetscErrorCode MatMFFDFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDInitializePackage - This function initializes everything in the MATMFFD` package. It is called
   from `MatInitializePackage()`.
 
@@ -168,7 +168,7 @@ static PetscErrorCode MatMFFDResetHHistory_MFFD(Mat J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDRegister - Adds a method to the `MATMFFD` registry.
 
   Not Collective, No Fortran Support
@@ -736,7 +736,7 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetFunction - Sets the function used in applying the matrix-free `MATMFFD` matrix.
 
   Logically Collective
@@ -765,7 +765,7 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, MatMFFDFn *func, void *funcctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetFunctioni - Sets the function for computing a single component for a `MATMFFD` matrix
 
   Logically Collective
@@ -794,7 +794,7 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, MatMFFDiFn *funci)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetFunctioniBase - Sets the function to compute the base vector for a single component function evaluation for a `MATMFFD` matrix
 
   Logically Collective
@@ -969,7 +969,7 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMFFDSetCheckh - Sets a function that checks the computed `h` and adjusts
   it to satisfy some criteria for the `MATMFFD` matrix
 

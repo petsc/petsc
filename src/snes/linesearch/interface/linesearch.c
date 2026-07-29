@@ -67,7 +67,7 @@ PetscErrorCode SNESLineSearchMonitor(SNESLineSearch ls)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchMonitorSet - Sets an ADDITIONAL function that is to be used at every
   iteration of the nonlinear solver to display the iteration's
   progress.
@@ -113,7 +113,7 @@ PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(S
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchMonitorSolutionUpdate - Monitors each update of the function value the line search tries
 
   Collective
@@ -270,7 +270,7 @@ PetscErrorCode SNESLineSearchReset(SNESLineSearch linesearch)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetFunction - Sets the function evaluation used by the `SNES` line search
   `
 
@@ -298,7 +298,7 @@ PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetPreCheck - Sets a function that is called after the initial search direction has been computed but
   before the line search routine has been applied. Allows adjusting the result of (usually a linear solve) that
   determined the search direction.
@@ -336,7 +336,7 @@ PetscErrorCode SNESLineSearchSetPreCheck(SNESLineSearch linesearch, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetPreCheck - Gets the pre-check function for the line search routine.
 
   Input Parameter:
@@ -359,7 +359,7 @@ PetscErrorCode SNESLineSearchGetPreCheck(SNESLineSearch linesearch, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetPostCheck - Sets a user function that is called after the line search has been applied to determine the step
   direction and length. Allows the user a chance to change or override the decision of the line search routine
 
@@ -399,7 +399,7 @@ PetscErrorCode SNESLineSearchSetPostCheck(SNESLineSearch linesearch, PetscErrorC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetPostCheck - Gets the post-check function for the line search routine.
 
   Input Parameter:
@@ -495,7 +495,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration {cite}`hindmarsh1996time`
 
   Logically Collective
@@ -736,7 +736,7 @@ PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscV
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated in the options database
 
   Collective
@@ -1607,7 +1607,7 @@ PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch, const c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchSetWorkVecs - Sets work vectors for the line search.
 
   Input Parameters:
@@ -1683,7 +1683,7 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
 }
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
-/*@C
+/*@
   SNESLineSearchSetVIFunctions - Sets VI-specific functions for line search computation.
 
   Logically Collective
@@ -1719,7 +1719,7 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchGetVIFunctions - Sets VI-specific functions for line search computation.
 
   Not Collective
@@ -1746,7 +1746,7 @@ PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchRegister - register a line search type `SNESLineSearchType`
 
   Logically Collective, No Fortran Support

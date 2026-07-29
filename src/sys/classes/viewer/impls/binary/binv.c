@@ -164,7 +164,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer, MPI
 }
 
 #if PetscDefined(HAVE_MPIIO)
-/*@C
+/*@
   PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
   Not Collective; No Fortran Support
@@ -194,7 +194,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer, MPI_Offset *o
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryAddMPIIOOffset - Adds to the current global offset
 
   Logically Collective; No Fortran Support
@@ -222,7 +222,7 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer, MPI_Offset of
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryGetMPIIODescriptor - Extracts the MPI IO file descriptor from a `PetscViewer`.
 
   Not Collective; No Fortran Support
@@ -394,7 +394,7 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a `PetscViewer` of `PetscViewerType` `PETSCVIEWERBINARY`.
 
   Collective because it may trigger a `PetscViewerSetUp()` call; No Fortran Support
@@ -695,7 +695,7 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
   `.info` file associated with a binary file.
 
@@ -915,7 +915,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadMPIIO(PetscViewer viewer, void *
 }
 #endif
 
-/*@C
+/*@
   PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
 
   Collective; No Fortran Support
@@ -956,7 +956,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer, void *data, PetscInt nu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryWrite - writes to a binary file, only from the first MPI rank
 
   Collective; No Fortran Support
@@ -1096,7 +1096,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryReadAll - reads from a binary file from all MPI processes, each rank receives its own portion of the data
 
   Collective; No Fortran Support
@@ -1122,7 +1122,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscCou
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryWriteAll - writes to a binary file from all MPI processes, each rank writes its own portion of the data
 
   Collective; No Fortran Support
@@ -1146,7 +1146,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI rank, an array of strings
 
   Collective; No Fortran Support
@@ -1186,7 +1186,7 @@ PetscErrorCode PetscViewerBinaryWriteStringArray(PetscViewer viewer, const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerBinaryReadStringArray - reads a binary file an array of strings to all MPI processes
 
   Collective; No Fortran Support
@@ -1581,7 +1581,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 */
 PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_VIEWER_BINARY_ - Creates a `PETSCVIEWERBINARY` `PetscViewer` shared by all processes in a communicator.
 
    Collective

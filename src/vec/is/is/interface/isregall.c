@@ -3,7 +3,7 @@ PETSC_INTERN PetscErrorCode ISCreate_General(IS);
 PETSC_INTERN PetscErrorCode ISCreate_Stride(IS);
 PETSC_INTERN PetscErrorCode ISCreate_Block(IS);
 
-/*@C
+/*@
   ISRegisterAll - Registers all of the index set components in the `IS` package.
 
   Not Collective

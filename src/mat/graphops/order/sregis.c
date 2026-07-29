@@ -15,7 +15,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat, MatOrderingType, IS *, IS *)
 PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat, MatOrderingType, IS *, IS *);
 #endif
 
-/*@C
+/*@
   MatOrderingRegisterAll - Registers all of the matrix
   reordering routines in PETSc.
 

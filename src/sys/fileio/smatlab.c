@@ -1,6 +1,6 @@
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscStartMatlab - starts up MATLAB with a MATLAB script
 
   Logically Collective, but only MPI rank 0 in the communicator does anything

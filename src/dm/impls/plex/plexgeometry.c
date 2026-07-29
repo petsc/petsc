@@ -772,7 +772,7 @@ static PetscErrorCode DMPlexCreateGridHash(DM dm, PetscGridHash *box)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGridHashSetGrid - Divide the grid into boxes
 
   Not Collective
@@ -807,7 +807,7 @@ PetscErrorCode PetscGridHashSetGrid(PetscGridHash box, const PetscInt n[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGridHashGetEnclosingBox - Find the grid boxes containing each input point
 
   Not Collective
@@ -1737,7 +1737,7 @@ static PetscErrorCode DMPlexComputePointGeometry_Internal(DM dm, PetscInt e, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCellCoordinates - Get coordinates for a cell, taking into account periodicity
 
   Not Collective
@@ -1799,7 +1799,7 @@ cg:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreCellCoordinates - Get coordinates for a cell, taking into account periodicity
 
   Not Collective
@@ -2497,7 +2497,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_Implicit(DM dm, PetscInt cell
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeCellGeometryAffineFEM - Assuming an affine map, compute the Jacobian, inverse Jacobian, and Jacobian determinant for a given cell
 
   Collective
@@ -2619,7 +2619,7 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeCellGeometryFEM - Compute the Jacobian, inverse Jacobian, and Jacobian determinant at each quadrature point in the given cell
 
   Collective
@@ -2950,7 +2950,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexComputeCellGeometryFVM - Compute the volume for a given cell
 
   Collective
@@ -3192,7 +3192,7 @@ PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCoordinateMap - Returns the function used to map coordinates of newly generated mesh points
 
   Not Collective
@@ -3219,7 +3219,7 @@ PetscErrorCode DMPlexGetCoordinateMap(DM dm, PetscPointFn **coordFunc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetCoordinateMap - Sets the function used to map coordinates of newly generated mesh points
 
   Logically Collective
@@ -4179,7 +4179,7 @@ void coordMap_torus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
   xp[2] = x[0];
 }
 
-/*@C
+/*@
   DMPlexRemapGeometry - This function maps the original `DM` coordinates to new coordinates.
 
   Not Collective

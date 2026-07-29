@@ -8,7 +8,7 @@ typedef struct {
   PetscReal  *eigr;
 } KSPMonitor_SAWs;
 
-/*@C
+/*@
   KSPMonitorSAWsCreate - create an SAWs monitor context for `KSP`
 
   Collective
@@ -35,7 +35,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSAWsDestroy - destroy a monitor context created with `KSPMonitorSAWsCreate()`
 
   Collective
@@ -57,7 +57,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSAWs - monitor `KSP` solution using SAWs
 
   Logically Collective

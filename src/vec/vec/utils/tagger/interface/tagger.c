@@ -168,7 +168,7 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerSetFromOptions - set `VecTagger` options using the options database
 
   Logically Collective
@@ -342,7 +342,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerComputeBoxes - If the tagged index set can be summarized as a list of boxes of values, returns that list, otherwise returns
   in listed `PETSC_FALSE`
 
@@ -383,7 +383,7 @@ PetscErrorCode VecTaggerComputeBoxes(VecTagger tagger, Vec vec, PetscInt *numBox
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerComputeIS - Use a `VecTagger` context to tag a set of indices based on a vector's values
 
   Collective

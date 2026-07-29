@@ -48,7 +48,6 @@ class DocStringTypeModifier(enum.Flag):
   NONE     = 0
   MACRO    = enum.auto()
   FLOATING = enum.auto()
-  C_FUNC   = enum.auto()
 
 @enum.unique
 class MatchReason(enum.IntEnum):
@@ -861,7 +860,6 @@ class PetscDocString(DocBase):
     else:
       assert isinstance(begin_sowing, str), f'begin_sowing is not a string: {begin_sowing}'
       if begin_sowing[0] not in self.sowing_types:
-        diagnosed = False
         if line[line.find(begin_sowing) - 1].isspace():
           # There is a space between the "sowing char" and the character before
           # it. Therefore it is likely just regular text. Sometimes people make internal
@@ -874,54 +872,13 @@ class PetscDocString(DocBase):
           # we should ignore it, and stop processing this docstring altogether since it is
           # not an actual docstring.
           raise KnownUnhandleableCursorError
-        if begin_sowing[0] == 'C':
-          # sometimes people mix up the order, or forget to add the right letter for the
-          # type, for example:
-          #
-          #   v--- begin_sowing, should be @C
-          # /*C
-          #   MatElimininateZeroes
-          #
-          if len(begin_sowing) == 1:
-            # they forgot the correct identifier
-            sub_mess  = f'It appears you forgot to prepend \'{sowing_type}\''
-            expected  = f'{sowing_type}{begin_sowing}'
-            diagnosed = True
-            # making a new source range instead of using begin_sowing_range is
-            # deliberate. The line may still contain other garbage, i.e.:
-            #
-            # /*C FooBarBaz - asdasdasdasd
-            #   ^~~~~~~~~~~~~~~~~~~~~~~~~^ begin_sowing_range
-            #
-            # which we do not want to overwrite with 'expected'. In order for the patch to
-            # be maximally stable we also don't want to have the replacement contain the
-            # (possibly) trailing stuff, so we make our new range just encompass 'C'.
-            patch = Patch(
-              self.make_source_range(begin_sowing, line, begin_sowing_range.start.line), expected
-            )
-          elif any(c in self.sowing_types for c in begin_sowing):
-            # wrong order
-            sub_mess  = 'Did you put it in the wrong order'
-            expected  = f'{sowing_type}{begin_sowing.replace(sowing_type, "")}'
-            diagnosed = True
-            patch     = None
-          if diagnosed:
-            self.add_diagnostic_from_source_range(
-              Diagnostic.Kind.ERROR, diag_name,
-              f'Invalid docstring identifier, contains unexpected char sequence \'{begin_sowing}\', expected \'/*{expected}\'. {sub_mess}?',
-              begin_sowing_range,
-              patch=patch
-            )
-        if not diagnosed:
-          raise RuntimeError(f'Unknown sowing char {begin_sowing[0]} not in sowing types {self.sowing_types} found in {line}')
+        raise RuntimeError(f'Unknown sowing char {begin_sowing[0]} not in sowing types {self.sowing_types} found in {line}')
       begin_sowing_range = self.make_source_range(begin_sowing, line, begin_sowing_range.start.line)
 
     self._attr['sowing_char_range'] = begin_sowing_range
 
     if 'M' in begin_sowing:
       self.type_mod |= self.Modifier.MACRO
-    if 'C' in begin_sowing:
-      self.type_mod |= self.Modifier.C_FUNC
 
     # check that nothing else is on the comment begin line
     lsplit = line.strip().split(maxsplit=1)

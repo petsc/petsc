@@ -7,7 +7,7 @@ PetscBool         TSTrajectoryRegisterAllCalled = PETSC_FALSE;
 PetscClassId      TSTRAJECTORY_CLASSID;
 PetscLogEvent     TSTrajectory_Set, TSTrajectory_Get, TSTrajectory_GetVecs, TSTrajectory_SetUp;
 
-/*@C
+/*@
   TSTrajectoryRegister - Adds a way of storing trajectories to the `TS` package
 
   Not Collective, No Fortran Support
@@ -327,7 +327,7 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetVariableNames - Sets the name of each component in the solution vector so that it may be saved with the trajectory
 
   Collective
@@ -353,7 +353,7 @@ PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSTrajectorySetTransform - Solution vector will be transformed by provided function before being saved to disk
 
   Collective
@@ -502,7 +502,7 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory, TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory, TS);
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory, TS);
 
-/*@C
+/*@
   TSTrajectoryRegisterAll - Registers all of the `TSTrajectory` storage schecmes in the `TS` package.
 
   Not Collective

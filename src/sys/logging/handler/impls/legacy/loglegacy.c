@@ -65,7 +65,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler handler
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerCreateLegacy - Create a `PetscLogHandler` from callbacks matching PETSc's legacy log handler callbacks
 
   Collective

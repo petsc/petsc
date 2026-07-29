@@ -54,7 +54,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger, Vec vec, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerRelativeSetBox - Set the relative box defining the values to be tagged by the tagger, where relative boxes are subsets of [0,1] (or [0,1]+[0,1]i for complex scalars), where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
@@ -74,7 +74,7 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger, VecTaggerBox box[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerRelativeGetBox - Get the relative box defining the values to be tagged by the tagger, where relative boxess are subsets of [0,1] (or [0,1]+[0,1]i for complex scalars), where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective

@@ -38,7 +38,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, PetscCount
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferCreate - create a segmented buffer
 
   Not Collective, No Fortran Support
@@ -70,7 +70,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, PetscCount expected, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferGet - get new buffer space from a segmented buffer
 
   Not Collective, No Fortran Support
@@ -100,7 +100,7 @@ PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, PetscCount count, void *buf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferDestroy - destroy segmented buffer
 
   Not Collective, No Fortran Support
@@ -127,7 +127,7 @@ PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *seg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferExtractTo - extract contiguous data to provided buffer and reset segmented buffer
 
   Not Collective, No Fortran Support
@@ -166,7 +166,7 @@ PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer seg, void *contig)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferExtractAlloc - extract contiguous data to new allocation and reset segmented buffer
 
   Not Collective, No Fortran Support
@@ -199,7 +199,7 @@ PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer seg, void *contiguous)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferExtractInPlace - extract in-place contiguous representation of data and reset segmented buffer for reuse
 
   Not Collective, No Fortran Support
@@ -235,7 +235,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferGetSize - get currently used number of entries of a `PetscSegBuffer`
 
   Not Collective, No Fortran Support
@@ -257,7 +257,7 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, PetscCount *usedsize)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSegBufferUnuse - return some unused entries obtained with an overzealous `PetscSegBufferGet()`
 
   Not Collective, No Fortran Support

@@ -211,7 +211,7 @@ static struct {
   {"magma",    PetscDrawCmap_magma,    NULL              }, /* matplotlib 1.5 */
 };
 
-/*@C
+/*@
   PetscDrawUtilitySetCmap - Populate the RGB entries of a colormap from a named palette, honoring options-database
   overrides for the colormap name, reversal, and brightness.
 

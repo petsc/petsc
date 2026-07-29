@@ -8,7 +8,7 @@ PetscFunctionList PetscDAList              = NULL;
 
 static PetscBool PetscDAPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscDAInitializePackage - This function initializes everything in the `PetscDA`
   package. called on the first call to `PetscDACreate()` when using static or shared
   libraries.
@@ -32,7 +32,7 @@ PetscErrorCode PetscDAInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDAFinalizePackage - This function finalizes everything in the `PetscDA` package. It
   is called from `PetscFinalize()`.
 
@@ -52,7 +52,7 @@ PetscErrorCode PetscDAFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDARegister - Registers a constructor for a `PetscDA` implementation with the
   dispatcher.
 

@@ -132,7 +132,7 @@ PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawSetInfo - Record the default display, title, position, and size to use for `PetscDraw` windows
   created by a `PETSCVIEWERDRAW` viewer.
 
@@ -172,7 +172,7 @@ PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawSetTitle - Set the default title used for `PetscDraw` windows created by a `PETSCVIEWERDRAW` viewer.
 
   Logically Collective
@@ -204,7 +204,7 @@ PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetTitle - Get the default title used for `PetscDraw` windows created by a `PETSCVIEWERDRAW` viewer.
 
   Not Collective; No Fortran Support
@@ -608,7 +608,7 @@ PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
 */
 PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_VIEWER_DRAW_ - Creates a window `PETSCVIEWERDRAW` `PetscViewer` shared by all processors
                      in an MPI communicator.
 
@@ -689,7 +689,7 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with `PetscViewerDrawSetBounds()`
 
   Collective
@@ -725,7 +725,7 @@ PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMonitorLGSetUp - sets up a viewer to be used by line graph monitoring routines such as `KSPMonitorResidualDrawLG()`
 
   Collective

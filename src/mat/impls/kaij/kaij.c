@@ -63,7 +63,7 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJGetS - Get the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
   Not Collective; the entire `S` is stored and returned independently on all processes.
@@ -94,7 +94,7 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar *S[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJGetSRead - Get a read-only pointer to the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
   Not Collective; the entire `S` is stored and returned independently on all processes.
@@ -125,7 +125,7 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJRestoreS - Restore array obtained with `MatKAIJGetS()`
 
   Not Collective
@@ -150,7 +150,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar *S[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJRestoreSRead - Restore array obtained with `MatKAIJGetSRead()`
 
   Not Collective
@@ -174,7 +174,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar *S[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJGetT - Get the transformation matrix `T` associated with the `MATKAIJ` matrix
 
   Not Collective; the entire `T` is stored and returned independently on all processes
@@ -205,7 +205,7 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar *T[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJGetTRead - Get a read-only pointer to the transformation matrix `T` associated with the `MATKAIJ` matrix
 
   Not Collective; the entire `T` is stored and returned independently on all processes
@@ -236,7 +236,7 @@ PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJRestoreT - Restore array obtained with `MatKAIJGetT()`
 
   Not Collective
@@ -261,7 +261,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar *T[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatKAIJRestoreTRead - Restore array obtained with `MatKAIJGetTRead()`
 
   Not Collective
@@ -1358,7 +1358,7 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateKAIJ - Creates a matrix of type `MATKAIJ`.
 
   Collective

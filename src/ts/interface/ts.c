@@ -1039,7 +1039,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetRHSFunction - Sets the routine for evaluating the function,
   where U_t = G(t,u).
 
@@ -1080,7 +1080,7 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, TSRHSFunctionFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetSolutionFunction - Provide a function that computes the solution of the ODE or DAE
 
   Logically Collective
@@ -1117,7 +1117,7 @@ PetscErrorCode TSSetSolutionFunction(TS ts, TSSolutionFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetForcingFunction - Provide a function that computes a forcing term for a ODE or PDE
 
   Logically Collective
@@ -1156,7 +1156,7 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetRHSJacobian - Sets the function to compute the Jacobian of G,
   where U_t = G(U,t), as well as the location to store the matrix.
 
@@ -1211,7 +1211,7 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobianFn *f, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
 
   Logically Collective
@@ -1253,7 +1253,7 @@ PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunctionFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetIFunction - Returns the vector where the implicit residual is stored and the function/context to compute it.
 
   Not Collective
@@ -1284,7 +1284,7 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunctionFn **func, PetscCtxRt ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetRHSFunction - Returns the vector where the right-hand side is stored and the function/context to compute it.
 
   Not Collective
@@ -1315,7 +1315,7 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, PetscCtxR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
   provided with `TSSetIFunction()`.
 
@@ -1400,7 +1400,7 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetI2Function - Set the function to compute F(t,U,U_t,U_tt) where F = 0 is the DAE to be solved.
 
   Logically Collective
@@ -1429,7 +1429,7 @@ PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2FunctionFn *fun, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetI2Function - Returns the vector where the implicit residual is stored and the function/context to compute it.
 
   Not Collective
@@ -1460,7 +1460,7 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2FunctionFn **fun, PetscCtxRt c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetI2Jacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
   where F(t,U,U_t,U_tt) is the function you provided with `TSSetI2Function()`.
 
@@ -1499,7 +1499,7 @@ PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2JacobianFn *jac, PetscCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetI2Jacobian - Returns the implicit Jacobian at the present timestep.
 
   Not Collective, but parallel objects are returned if `TS` is parallel
@@ -1667,7 +1667,7 @@ PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetTransientVariable - sets function to transform from state to transient variables
 
   Logically Collective
@@ -3169,7 +3169,7 @@ PetscErrorCode TSSetSolution(TS ts, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetPreStep - Sets the general-purpose function
   called once at the beginning of each time step.
 
@@ -3232,7 +3232,7 @@ PetscErrorCode TSPreStep(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetPreStage - Sets the general-purpose function
   called once at the beginning of each stage.
 
@@ -3263,7 +3263,7 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal stag
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetPostStage - Sets the general-purpose function
   called once at the end of each stage.
 
@@ -3296,7 +3296,7 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal sta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetPostEvaluate - Sets the general-purpose function
   called at the end of each step evaluation.
 
@@ -3427,7 +3427,7 @@ PetscErrorCode TSPostEvaluate(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetPostStep - Sets the general-purpose function
   called once at the end of each successful time step.
 
@@ -3688,7 +3688,7 @@ PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetComputeInitialCondition - Get the function used to automatically compute an initial condition for the timestepping.
 
   Not collective
@@ -3716,7 +3716,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetComputeInitialCondition - Set the function used to automatically compute an initial condition for the timestepping.
 
   Logically collective
@@ -3764,7 +3764,7 @@ PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetComputeExactError - Get the function used to automatically compute the exact error for the timestepping.
 
   Not collective
@@ -3793,7 +3793,7 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS ts
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetComputeExactError - Set the function used to automatically compute the exact error for the timestepping.
 
   Logically collective
@@ -3844,7 +3844,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetResize - Sets the resize callbacks.
 
   Logically Collective
@@ -3951,7 +3951,7 @@ static PetscErrorCode TSResizeTransferVecs(TS ts, PetscInt cnt, Vec vecsin[], Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSResizeRegisterVec - Register a vector to be transferred with `TSResize()`.
 
   Collective
@@ -3979,7 +3979,7 @@ PetscErrorCode TSResizeRegisterVec(TS ts, const char name[], Vec vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSResizeRetrieveVec - Retrieve a vector registered with `TSResizeRegisterVec()`.
 
   Collective
@@ -4481,7 +4481,7 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetRHSJacobian - Returns the Jacobian J at the present timestep.
 
   Not Collective, but parallel objects are returned if ts is parallel
@@ -4518,7 +4518,7 @@ PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobianFn **f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetIJacobian - Returns the implicit Jacobian at the present timestep.
 
   Not Collective, but parallel objects are returned if ts is parallel
@@ -4697,7 +4697,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSFunctionLinear - Evaluate the right-hand side via the user-provided Jacobian, for linear problems Udot = A U only
 
   Collective
@@ -4732,7 +4732,7 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
 
   Collective
@@ -4760,7 +4760,7 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIFunctionLinear - Evaluate the left hand side via the user-provided Jacobian, for linear problems only
 
   Collective
@@ -4798,7 +4798,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIJacobianConstant - Reuses the matrix previously computed with the provided `TSIJacobianFn` for a semi-implicit DAE or ODE
 
   Collective
@@ -5612,7 +5612,7 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIJacobianDefaultColor - Computes the Jacobian using finite differences and coloring to exploit matrix sparsity.
 
   Collective
@@ -5694,7 +5694,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetFunctionDomainError - Set a function that tests if the current state vector is valid
 
   Logically collective
@@ -6073,7 +6073,7 @@ PetscErrorCode TSSetEvaluationTimes(TS ts, PetscInt n, PetscReal time_points[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetEvaluationTimes - gets the evaluation times set with `TSSetEvaluationTimes()`
 
   Not Collective
@@ -6112,7 +6112,7 @@ PetscErrorCode TSGetEvaluationTimes(TS ts, PetscInt *n, const PetscReal *time_po
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetEvaluationSolutions - Get the number of solutions and the solutions at the evaluation time points specified
 
   Input Parameter:

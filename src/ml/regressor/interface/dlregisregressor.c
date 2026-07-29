@@ -2,7 +2,7 @@
 
 static PetscBool PetscRegressorPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscRegressorInitializePackage - Initialize `PetscRegressor` package
 
   Logically Collective
@@ -36,7 +36,7 @@ PetscErrorCode PetscRegressorInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegressorFinalizePackage - Finalize `PetscRegressor` package; it is called from `PetscFinalize()`
 
   Logically Collective

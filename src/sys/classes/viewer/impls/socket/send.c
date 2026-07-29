@@ -463,7 +463,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
 */
 PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
    Collective

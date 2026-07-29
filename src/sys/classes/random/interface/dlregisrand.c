@@ -2,7 +2,7 @@
 
 static PetscBool PetscRandomPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscRandomFinalizePackage - This function frees everything in the `PetscRandom` package. It is
   called from `PetscFinalize()`.
 
@@ -19,7 +19,7 @@ PetscErrorCode PetscRandomFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomInitializePackage - This function initializes everything in the `PetscRandom` package. It is called
   from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the first call to `PetscRandomCreate()`
   when using shared or static libraries.

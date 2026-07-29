@@ -217,7 +217,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDATSSetRHSFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
   Logically Collective
@@ -248,7 +248,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDATSSetRHSJacobianLocal - set a local residual evaluation function for use with `DMDA`
 
   Logically Collective
@@ -278,7 +278,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocalFn *func, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDATSSetIFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
   Logically Collective
@@ -310,7 +310,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDATSSetIJacobianLocal - set a local residual evaluation function for use with `DMDA`
 
   Logically Collective
@@ -340,7 +340,7 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocalFn *func, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDMDARayDestroy - Destroys the context created for the `-ts_monitor_dmda_ray` and `-ts_monitor_lg_dmda_ray` monitors
 
   Collective
@@ -368,7 +368,7 @@ PetscErrorCode TSMonitorDMDARayDestroy(PetscCtxRt mctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDMDARay - Monitors the solution of a `DMDA`-based `TS` by scattering values along a ray to a viewer
 
   Collective
@@ -400,7 +400,7 @@ PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGDMDARay - Monitors the solution of a `DMDA`-based `TS` by plotting values along a ray in a line graph
 
   Collective

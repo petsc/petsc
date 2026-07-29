@@ -673,7 +673,7 @@ PetscErrorCode VecDestroy(Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
   Collective
@@ -728,7 +728,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecDestroyVecs - Frees a block of vectors obtained with `VecDuplicateVecs()`.
 
   Collective
@@ -918,7 +918,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 }
 #endif
 
-/*@C
+/*@
   VecViewNative - Views a vector object with the original type specific viewer
 
   Collective
@@ -1044,7 +1044,7 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetOwnershipRanges - Returns the range of indices owned by EACH processor,
   The vector is laid out with the
   first `n1` elements on the first processor, next `n2` elements on the
@@ -1266,7 +1266,7 @@ PetscErrorCode VecReciprocal(Vec vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetOperation - Allows the user to override a particular vector operation.
 
   Logically Collective; No Fortran Support
@@ -1790,7 +1790,7 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetState - Gets the state of a `Vec`.
 
   Not Collective
@@ -2112,7 +2112,7 @@ PetscErrorCode VecStashView(Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetVec - Gets a `Vec` from the options database as an array of real values
 
   Collective
@@ -2410,7 +2410,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetPinnedMemoryMin - Set the minimum data size for which pinned memory will be used for host (CPU) allocations.
 
   Logically Collective
@@ -2439,7 +2439,7 @@ PetscErrorCode VecSetPinnedMemoryMin(Vec v, size_t mbytes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetPinnedMemoryMin - Get the minimum data size for which pinned memory will be used for host (CPU) allocations.
 
   Logically Collective

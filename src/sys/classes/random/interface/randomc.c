@@ -43,7 +43,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomGetSeed - Gets the random seed.
 
   Not collective
@@ -69,7 +69,7 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, PetscInt64 *seed)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomSetSeed - Sets the random seed. You MUST call `PetscRandomSeed()` after this call to have the new seed used.
 
   Not collective

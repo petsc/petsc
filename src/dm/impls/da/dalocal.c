@@ -423,7 +423,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetArray - Gets a work array for a `DMDA`
 
   Input Parameters:
@@ -548,7 +548,7 @@ done:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDARestoreArray - Restores an array for a `DMDA` obtained with  `DMDAGetArray()`
 
   Input Parameters:

@@ -69,7 +69,7 @@ public:
 static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextCreate - Creates a `PetscDeviceContext`
 
   Not Collective
@@ -110,7 +110,7 @@ PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *dctx)
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextDestroy - Frees a `PetscDeviceContext`
 
   Not Collective
@@ -158,7 +158,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextSetStreamType - Set the implementation type of the underlying stream for a
   `PetscDeviceContext`
 
@@ -196,7 +196,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextGetStreamType - Get the implementation type of the underlying stream for a
   `PetscDeviceContext`
 
@@ -270,7 +270,7 @@ PetscErrorCode PetscDeviceContextSetDefaultDeviceForType_Internal(PetscDeviceCon
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextSetDevice - Set the underlying `PetscDevice` for a `PetscDeviceContext`
 
   Not Collective
@@ -302,7 +302,7 @@ PetscErrorCode PetscDeviceContextSetDevice(PetscDeviceContext dctx, PetscDevice 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextGetDevice - Get the underlying `PetscDevice` for a `PetscDeviceContext`
 
   Not Collective
@@ -330,7 +330,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextGetDeviceType - Get the `PetscDeviceType` for a `PetscDeviceContext`
 
   Not Collective
@@ -361,7 +361,7 @@ PetscErrorCode PetscDeviceContextGetDeviceType(PetscDeviceContext dctx, PetscDev
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextSetUp - Prepares a `PetscDeviceContext` for use
 
   Not Collective
@@ -409,7 +409,7 @@ static PetscErrorCode PetscDeviceContextDuplicate_Private(PetscDeviceContext dct
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextDuplicate - Duplicates a `PetscDeviceContext` object
 
   Not Collective
@@ -452,7 +452,7 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextQueryIdle - Returns whether or not a `PetscDeviceContext` is idle
 
   Not Collective
@@ -485,7 +485,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextWaitForContext - Make one context wait for another context to finish
 
   Not Collective
@@ -537,7 +537,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextForkWithStreamType - Create a set of dependent child contexts from a parent
   context with a prescribed `PetscStreamType`
 
@@ -645,7 +645,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextFork - Create a set of dependent child contexts from a parent context
 
   Not Collective, Asynchronous
@@ -687,7 +687,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextJoin - Converge a set of child contexts
 
   Not Collective, Asynchronous
@@ -813,7 +813,7 @@ PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext dctx, PetscInt n, Petsc
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceContextSynchronize - Block the host until all work queued on a
   `PetscDeviceContext` has finished
 
@@ -927,7 +927,7 @@ PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *dct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextSetFromOptions - Configure a `PetscDeviceContext` from the options database
 
   Collective on `comm` or `dctx`
@@ -1062,7 +1062,7 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextGetStreamHandle - Return a handle to the underlying stream of the current device context
 
   Input Parameter:

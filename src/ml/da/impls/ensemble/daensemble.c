@@ -820,7 +820,7 @@ PetscErrorCode PetscDAEnsembleAnalysis(PetscDA da, Vec observation, Mat H)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDAEnsembleForecast - Advances the entire ensemble through the user-supplied forecast model.
 
   Collective

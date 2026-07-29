@@ -5,7 +5,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen);
 PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen);
 
-/*@C
+/*@
   MatCoarsenRegisterAll - Registers all of the matrix Coarsen routines in PETSc.
 
   Not Collective

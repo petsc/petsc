@@ -1184,7 +1184,7 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetIndices - Returns a pointer to the indices.  The user should call
   `ISRestoreIndices()` after having looked at the indices.  The user should
   NOT change the indices.
@@ -1289,7 +1289,7 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISRestoreIndices - Restores an index set to a usable state after a call to `ISGetIndices()`.
 
   Not Collective
@@ -1347,7 +1347,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetTotalIndices - Retrieve an array containing all indices across the communicator.
 
   Collective
@@ -1387,7 +1387,7 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISRestoreTotalIndices - Restore the index array obtained with `ISGetTotalIndices()`.
 
   Not Collective.
@@ -1416,7 +1416,7 @@ PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISGetNonlocalIndices - Retrieve an array of indices from remote processors
   in this communicator.
 
@@ -1462,7 +1462,7 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISRestoreNonlocalIndices - Restore the index array obtained with `ISGetNonlocalIndices()`.
 
   Not Collective.

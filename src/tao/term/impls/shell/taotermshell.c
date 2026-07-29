@@ -7,7 +7,7 @@ struct _n_TaoTerm_Shell {
   PetscBool3     iscomputehessianfdpossible;
 };
 
-/*@C
+/*@
   TaoTermShellSetContextDestroy - Set a method to destroy the context resources when a `TAOTERMSHELL` is destroyed
 
   Logically collective
@@ -182,7 +182,7 @@ static PetscErrorCode TaoTermDestroy_Shell(TaoTerm term)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetObjective - Set the objective function of a `TAOTERMSHELL`
 
   Logically collective
@@ -215,7 +215,7 @@ static PetscErrorCode TaoTermShellSetObjective_Shell(TaoTerm term, TaoTermObject
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetGradient - Set the gradient function of a `TAOTERMSHELL`
 
   Logically collective
@@ -248,7 +248,7 @@ static PetscErrorCode TaoTermShellSetGradient_Shell(TaoTerm term, TaoTermGradien
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetObjectiveAndGradient - Set the objective and gradient function of a `TAOTERMSHELL`
 
   Logically collective
@@ -281,7 +281,7 @@ static PetscErrorCode TaoTermShellSetObjectiveAndGradient_Shell(TaoTerm term, Ta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetHessian - Set the Hessian function of a `TAOTERMSHELL`
 
   Logically collective
@@ -323,7 +323,7 @@ static PetscErrorCode TaoTermIsComputeHessianFDPossible_Shell(TaoTerm term, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetIsComputeHessianFDPossible - Set whether this term can compute Hessian with finite differences for a `TAOTERMSHELL`
 
   Logically collective
@@ -359,7 +359,7 @@ static PetscErrorCode TaoTermShellSetIsComputeHessianFDPossible_Shell(TaoTerm te
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetView - Set the view function of a `TAOTERMSHELL`
 
   Logically collective
@@ -395,7 +395,7 @@ static PetscErrorCode TaoTermShellSetView_Shell(TaoTerm term, PetscErrorCode (*v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetCreateSolutionVec - Set the routine that creates solution vector for a `TaoTerm` of type `TAOTERMSHELL`
 
   Logically collective
@@ -421,7 +421,7 @@ PetscErrorCode TaoTermShellSetCreateSolutionVec(TaoTerm term, PetscErrorCode (*c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetCreateParametersVec - Set the routine that creates parameters vector for a `TaoTerm` of type `TAOTERMSHELL`
 
   Logically collective
@@ -461,7 +461,7 @@ static PetscErrorCode TaoTermShellSetCreateParametersVec_Shell(TaoTerm term, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermShellSetCreateHessianMatrices - Set the routine that creates Hessian matrices for a `TaoTerm` of type `TAOTERMSHELL`
 
   Logically collective
@@ -534,7 +534,7 @@ PETSC_INTERN PetscErrorCode TaoTermCreate_Shell(TaoTerm term)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoTermCreateShell - Create a `TaoTerm` of type `TAOTERMSHELL` that is ready to accept user-provided callback operations.
 
   Collective

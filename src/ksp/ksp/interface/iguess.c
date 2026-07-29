@@ -3,7 +3,7 @@
 PetscFunctionList KSPGuessList = NULL;
 static PetscBool  KSPGuessRegisterAllCalled;
 
-/*@C
+/*@
   KSPGuessRegister -  Registers a method for initial guess computation in Krylov subspace solver package.
 
   Not Collective, No Fortran Support
@@ -39,7 +39,7 @@ PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(K
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGuessRegisterAll - Registers all `KSPGuess` implementations in the `KSP` package.
 
   Not Collective

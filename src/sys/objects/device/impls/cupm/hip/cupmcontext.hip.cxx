@@ -22,7 +22,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
  cuda manually.
  */
 
-/*@C
+/*@
   PetscHIPBLASGetHandle - Get the hipBLAS handle associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support
@@ -49,7 +49,7 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscHIPSOLVERGetHandle - Get the hipSOLVER handle associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support
@@ -76,7 +76,7 @@ PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetCurrentHIPStream - Get the HIP stream associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support

@@ -2,7 +2,7 @@
 
 #include <petscdmplex.h>
 
-/*@C
+/*@
   DMGetPeriodicity - Get the description of mesh periodicity
 
   Not collective

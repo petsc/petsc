@@ -318,7 +318,7 @@ M*/
 .seealso: [](ch_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
-/*@C
+/*@
   TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in `TSROSW`
 
   Not Collective, but should be called by all MPI processes which will need the schemes to be registered
@@ -742,7 +742,7 @@ PetscErrorCode TSRosWRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
 
   Not Collective
@@ -770,7 +770,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWInitializePackage - This function initializes everything in the `TSROSW` package. It is called
   from `TSInitializePackage()`.
 
@@ -788,7 +788,7 @@ PetscErrorCode TSRosWInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWFinalizePackage - This function destroys everything in the `TSROSW` package. It is
   called from `PetscFinalize()`.
 
@@ -804,7 +804,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used
@@ -936,7 +936,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRosWRegisterRos4 - register a fourth order Rosenbrock scheme by providing parameter choices
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used

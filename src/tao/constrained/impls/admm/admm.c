@@ -964,7 +964,7 @@ PetscErrorCode TaoADMMGetRegularizerCoefficient(Tao tao, PetscReal *lambda)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetMisfitConstraintJacobian - Set the constraint matrix B for the `TAOADMM` algorithm. Matrix B constrains the z variable.
 
   Collective
@@ -1017,7 +1017,7 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetRegularizerConstraintJacobian - Set the constraint matrix B for `TAOADMM` algorithm. Matrix B constraints z variable.
 
   Collective
@@ -1070,7 +1070,7 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetMisfitObjectiveAndGradientRoutine - Sets the user-defined misfit call-back function
 
   Collective
@@ -1102,7 +1102,7 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetMisfitHessianRoutine - Sets the user-defined misfit Hessian call-back
   function into the algorithm, to be used for subsolverX.
 
@@ -1155,7 +1155,7 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back function
 
   Collective
@@ -1187,7 +1187,7 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoADMMSetRegularizerHessianRoutine - Sets the user-defined regularizer Hessian call-back
   function, to be used for subsolverZ.
 

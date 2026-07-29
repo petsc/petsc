@@ -315,7 +315,7 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJacobiGetSubKSP - Gets the local `KSP` contexts for all blocks on
   this processor.
 
@@ -383,7 +383,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt le
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
   Jacobi, `PCBJACOBI`, preconditioner.
 
@@ -439,7 +439,7 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
   Jacobi, `PCBJACOBI`, preconditioner.
 

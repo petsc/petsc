@@ -1732,7 +1732,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHYPRESetPreallocation - Preallocates memory for a sparse parallel matrix in HYPRE IJ format
 
   Collective
@@ -1771,7 +1771,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateFromParCSR - Creates a `Mat` from a `hypre_ParCSRMatrix`
 
   Collective
@@ -1912,7 +1912,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHYPREGetParCSR - Gets the pointer to the ParCSR matrix
 
   Not Collective, No Fortran Support

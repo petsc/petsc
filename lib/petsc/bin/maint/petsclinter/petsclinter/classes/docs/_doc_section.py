@@ -19,8 +19,6 @@ from .._path    import Path
 
 from ._doc_section_base import SectionBase, Synopsis, ParameterList, Prose, VerbatimBlock, InlineList
 
-from ...util._clang import clx_char_type_kinds, clx_function_type_kinds
-
 """
 ==========================================================================================
 Derived Classes
@@ -402,7 +400,6 @@ class EnumSynopsis(Synopsis):
 
 @DiagnosticManager.register(
   ('parameter-documentation','Verify that if a, b, c are documented then the function exactly has parameters a, b, and c and vice versa'),
-  ('fortran-interface','Verify that functions needing a custom Fortran interface have the correct sowing indentifiers'),
 )
 class FunctionParameterList(ParameterList):
   diags: DiagnosticMap # satisfy type checkers
@@ -446,44 +443,6 @@ class FunctionParameterList(ParameterList):
       canon_type = canon_type.get_pointee()
       it        += 1
     return canon_type
-
-  def _check_fortran_interface(self, docstring: PetscDocStringImpl, fnargs: tuple[Cursor, ...]) -> None:
-    r"""Ensure that functions which require a custom Fortran interface are correctly tagged with 'C'
-    sowing designator
-
-    Parameters
-    ----------
-    docstring :
-      the docstring this section belongs to
-    fnargs :
-      the set of cursors of the function arguments
-    """
-    requires_c: list[tuple[Cursor, str]] = []
-    for arg in fnargs:
-      kind = self._get_deref_pointer_cursor_type(arg).kind
-
-      #if kind in clx_char_type_kinds:
-      #  requires_c.append((arg, 'char pointer'))
-      if kind in clx_function_type_kinds:
-        requires_c.append((arg, 'function pointer'))
-
-    if len(requires_c):
-      begin_sowing_range = docstring._attr['sowing_char_range']
-      sowing_chars       = begin_sowing_range.raw(tight=True)
-      if docstring.Modifier.C_FUNC not in docstring.type_mod:
-        assert 'C' not in sowing_chars
-        diag = docstring.make_diagnostic(
-          Diagnostic.Kind.ERROR, self.diags.fortran_interface,
-          f"Function requires custom Fortran interface but missing 'C' from docstring header {Diagnostic.FLAG_SUBST}",
-          begin_sowing_range, patch=Patch(begin_sowing_range, sowing_chars + 'C')
-        )
-        for reason_cursor, reason_type in requires_c:
-          diag.add_note(
-            f'due to {reason_type} {reason_cursor.get_formatted_blurb(num_context=1).rstrip()}',
-            location=reason_cursor.extent.start
-          )
-        docstring.add_diagnostic(diag)
-    return
 
   def _check_no_args_documented(self, docstring: PetscDocStringImpl, arg_cursors: tuple[Cursor, ...]) -> bool:
     r"""Check if no arguments were documented
@@ -736,7 +695,7 @@ class FunctionParameterList(ParameterList):
           '\n'.join((
             'If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section \'Calling Sequence of `<name of function pointer arg>\'. For example:',
             '',
-            '/*@C',
+            '/*@',
             '  ...',
             '  Input Parameter:',
             '. func_ptr - A function pointer',
@@ -846,7 +805,6 @@ class FunctionParameterList(ParameterList):
     super().check(linter, cursor, docstring)
     fnargs = linter.get_argument_cursors(cursor)
 
-    self._check_fortran_interface(docstring, fnargs)
     self._check_valid_param_list_from_cursor(docstring, fnargs)
     return
 

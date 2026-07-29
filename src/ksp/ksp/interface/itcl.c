@@ -219,7 +219,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user in the options database
 
   Collective

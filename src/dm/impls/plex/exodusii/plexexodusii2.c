@@ -5,7 +5,7 @@
 
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerexodusiiimpl.h>
-/*@C
+/*@
   PETSC_VIEWER_EXODUSII_ - Creates an `PETSCVIEWEREXODUSII` `PetscViewer` shared by all processors in a communicator.
 
   Collective; No Fortran Support
@@ -458,7 +458,7 @@ PetscErrorCode PetscViewerExodusIIGetNodalVariableName(PetscViewer viewer, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerExodusIISetZonalVariableNames - Sets the names of all nodal variables
 
   Collective; No Fortran Support
@@ -494,7 +494,7 @@ PetscErrorCode PetscViewerExodusIISetZonalVariableNames(PetscViewer viewer, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerExodusIISetNodalVariableNames - Sets the names of all nodal variables.
 
   Collective; No Fortran Support
@@ -530,7 +530,7 @@ PetscErrorCode PetscViewerExodusIISetNodalVariableNames(PetscViewer viewer, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerExodusIIGetZonalVariableNames - Gets the names of all zonal variables.
 
   Collective; No Fortran Support
@@ -572,7 +572,7 @@ PetscErrorCode PetscViewerExodusIIGetZonalVariableNames(PetscViewer viewer, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerExodusIIGetNodalVariableNames - Gets the names of all nodal variables.
 
   Collective; No Fortran Support

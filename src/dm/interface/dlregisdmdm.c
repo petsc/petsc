@@ -10,7 +10,7 @@
 #include <petsc/private/dmnetworkimpl.h>
 
 static PetscBool DMPackageInitialized = PETSC_FALSE;
-/*@C
+/*@
   DMFinalizePackage - This function finalizes everything in the `DM` package. It is called
   from `PetscFinalize()`.
 
@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 #endif
 
-/*@C
+/*@
   DMInitializePackage - This function initializes everything in the `DM` package. It is called
   from `PetscDLLibraryRegister_petscdm()` when using dynamic libraries, and on the first call to `DMCreate()`
   or similar routines when using shared or static libraries.
@@ -205,7 +205,7 @@ PetscErrorCode DMInitializePackage(void)
 
 static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscFEFinalizePackage - This function finalizes everything in the `PetscFE` package. It is called
   from `PetscFinalize()`.
 
@@ -226,7 +226,7 @@ PetscErrorCode PetscFEFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEInitializePackage - This function initializes everything in the `PetscFE` package. It is called
   from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscSpaceCreate()`
   when using static libraries.
@@ -280,7 +280,7 @@ PetscErrorCode PetscFEInitializePackage(void)
 
 static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscFVFinalizePackage - This function finalizes everything in the `PetscFV` package. It is called
   from `PetscFinalize()`.
 
@@ -299,7 +299,7 @@ PetscErrorCode PetscFVFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVInitializePackage - This function initializes everything in the `PetscFV` package. It is called
   from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscFVCreate()`
   when using static libraries.
@@ -348,7 +348,7 @@ PetscErrorCode PetscFVInitializePackage(void)
 
 static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscDSFinalizePackage - This function finalizes everything in the `PetscDS` package. It is called
   from `PetscFinalize()`.
 
@@ -365,7 +365,7 @@ PetscErrorCode PetscDSFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSInitializePackage - This function initializes everything in the `PetscDS` package. It is called
   from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `PetscDSCreate()`
   when using static libraries.

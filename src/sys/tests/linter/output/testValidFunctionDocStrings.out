@@ -6,11 +6,11 @@
       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   30: {
   31:   return 0;
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:34:6: error:[0m Invalid comment begin line, must only contain '/*' and sowing identifier [-fdoc-sowing-chars]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:34:5: error:[0m Invalid comment begin line, must only contain '/*' and sowing identifier [-fdoc-sowing-chars]:
   32: }
   33: 
-> 34: /*@C [33m[1mLorem ipsum dolor sit amet[0m
-           [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 34: /*@ [33m[1mLorem ipsum dolor sit amet[0m
+          [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   35:   someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   36:   eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:76:1: error:[0m Invalid line-spacing between docstring and the symbol it describes. The docstring must appear immediately above its target [-fdoc-symbol-spacing]:
@@ -219,7 +219,7 @@
   116: .zeeakso:
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:101:3: error:[0m Docstring name 'testTerbleSpelingDocstring' does not match symbol. Assuming you meant 'testTerribleSpellingDocString' [-fdoc-synopsis-matching-symbol-name]:
   99 : 
-  100: /*@C
+  100: /*@
 > 101:   [33m[1mtestTerbleSpelingDocstring[0m - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
          [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   102:   eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -301,19 +301,6 @@
            [33m[1m^^^^^^^^^^^^^[0m
   124:   testCustomFortranInterfaceDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit
   125: 
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:123:3: error:[0m Function requires custom Fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
-  121: }
-  122: 
-> 123: /*[33m[1m@[0m asdadsadasdas
-         [33m[1m^[0m
-  124:   testCustomFortranInterfaceDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  125: 
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:134:72 Note: due to function pointer 'function_ptr' of type 'PetscErrorCode (*)(PetscInt)' (a.k.a. 'int (*)(int)')
-  133: @*/
-> 134: PetscErrorCode testCustomFortranInterfaceDocString(char *******string, [33m[1mPetscErrorCode (*function_ptr)(PetscInt)[0m)
-                                                                              [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  135: {
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:127:10: error:[0m Description 'a char pointer' must be aligned to 1 space from longest (valid) argument 'function_ptr' [-fdoc-param-list-alignment]:
   125: 
   126:   Input Parameters:
@@ -524,32 +511,25 @@
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   297: {
   298:   return 0;
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:301:1: error:[0m Invalid docstring identifier, contains unexpected char sequence 'C', expected '/*@C'. It appears you forgot to prepend '@'? [-fdoc-sowing-chars]:
-  299: }
-  300: 
-> 301: [33m[1m/*C testBadDocStringMissingChar - asdadsasd[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  302: 
-  303:   Input Parameter:
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:301:5: error:[0m Invalid comment begin line, must only contain '/*' and sowing identifier [-fdoc-sowing-chars]:
   299: }
   300: 
-> 301: /*C [33m[1mtestBadDocStringMissingChar - asdadsasd[0m
-           [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 301: /*@ [33m[1mtestBadDocStringOnTopLine - asdadsasd[0m
+           [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   302: 
   303:   Input Parameter:
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:310:1: error:[0m Function 'testBadDocStringMissingChar()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:310:1: error:[0m Function 'testBadDocStringOnTopLine()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   308: .seealso: `testBadDocString()`
   309: */
-> 310: [33m[1mPetscErrorCode testBadDocStringMissingChar(PetscInt n)[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 310: [33m[1mPetscErrorCode testBadDocStringOnTopLine(PetscInt n)[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   311: {
   312:   return 0;
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:325:1: error:[0m Function 'testBadDocStringCharOutOfOrder()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
+[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:325:1: error:[0m Function 'testNothing()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   323: .seealso: `testBadDocString()`
   324: */
-> 325: [33m[1mPetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)[0m
-       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+> 325: [33m[1mPetscErrorCode testNothing(PetscInt n)[0m
+       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   326: {
   327:   return 0;
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:352:3: error:[0m Unknown section header 'Input parm', assuming you meant 'Input Parameter' [-fdoc-section-header-spelling]:
@@ -650,31 +630,6 @@
                                                                    [33m[1m^^^^^[0m
   379: */
   380: 
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:386:3: error:[0m Function requires custom Fortran interface but missing 'C' from docstring header [-fdoc-param-list-func-fortran-interface]:
-  384: }
-  385: 
-> 386: /*[33m[1m@[0m
-         [33m[1m^[0m
-  387:   testFunctionPointerArguments - the first set of arguments are unnamed and should be errored
-  388: 
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:419:45 Note: due to function pointer 'foo' of type 'int (*)(int, double, float)'
-  418: */
-> 419: PetscErrorCode testFunctionPointerArguments([33m[1mint (*foo)(int, double, float)[0m, int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
-                                                   [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  420: {
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:419:77 Note: due to function pointer 'bar' of type 'int (*)(int, double, float)'
-  418: */
-> 419: PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), [33m[1mint (*bar)(int bar_parm1, double bar_parm2, float bar_parm3)[0m, void (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3))
-                                                                                   [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  420: {
-
-./src/sys/tests/linter/testValidFunctionDocStrings.c:419:139 Note: due to function pointer 'baz' of type 'void (*)(int (*)(), void (*)(void (*)()), int, double, float)'
-  418: */
-> 419: PetscErrorCode testFunctionPointerArguments(int (*foo)(int, double, float), int (*bar)(int bar_parm1, double bar_parm2, float bar_parm3), [33m[1mvoid (*baz)(int (*bop)(void), void (*blitz)(void (*)(void)), int baz_parm1, double baz_parm2, float baz_parm3)[0m)
-                                                                                                                                                 [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  420: {
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:419:1: error:[0m Function 'testFunctionPointerArguments()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   417: .seealso: `testPredeclarationCursorIgnored()`
   418: */
@@ -885,14 +840,14 @@
   71: References: Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:35:3: error:[0m Docstring name 'someOtherFunctionName' does not match symbol name 'testIllFormedFunctionDocString' [-fdoc-synopsis-matching-symbol-name]:
   33: 
-  34: /*@C Lorem ipsum dolor sit amet
+  34: /*@ Lorem ipsum dolor sit amet
 > 35:   [33m[1msomeOtherFunctionName[0m - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
         [33m[1m^^^^^^^^^^^^^^^^^^^^^[0m
   36:   eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
   37:   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:35:1: error:[0m Synopsis for 'testIllFormedFunctionDocString' is too long (must be at most 250 characters or 40 words), consider moving it to Notes. If you can't explain it simply, then you don't understand it well enough! [-fdoc-synopsis-verbose-description]:
   33: 
-  34: /*@C Lorem ipsum dolor sit amet
+  34: /*@ Lorem ipsum dolor sit amet
 > 35:   someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
 > 36:   eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
 > 37:   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut
@@ -1163,19 +1118,12 @@
   247: Level: beginner
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:302:1: error:[0m Docstring missing synopsis [-fdoc-synopsis-missing-description]:
   300: 
-  301: /*C testBadDocStringMissingChar - asdadsasd
+  301: /*@ testBadDocStringOnTopLine - asdadsasd
 > 302: 
   303:   Input Parameter:
   304: . n - the n
 
-./src/sys/tests/linter/testValidFunctionDocStrings.c:302:1 Note: Expected 'testBadDocStringMissingChar - a very useful description'
-[31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:315:1: error:[0m Invalid docstring identifier, contains unexpected char sequence 'C@', expected '/*@C'. Did you put it in the wrong order? [-fdoc-sowing-chars]:
-  313: }
-  314: 
-> 315: [33m[1m/*C@[0m
-       [33m[1m^^^^[0m
-  316:   testBadDocStringCharOutOfOrder - asdadsasd
-  317: 
+./src/sys/tests/linter/testValidFunctionDocStrings.c:302:1 Note: Expected 'testBadDocStringOnTopLine - a very useful description'
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:367:1: error:[0m Invalid comment begin line, does not contain sowing identifier. Expected '/*@' for functions [-fdoc-sowing-chars]:
   365: extern PetscErrorCode testPredeclarationCursorIgnored(int, int *);
   366: 
@@ -1255,7 +1203,7 @@
 
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:395:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
 
-/*@C
+/*@
   ...
   Input Parameter:
 . func_ptr - A function pointer
@@ -1284,7 +1232,7 @@ PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
 
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:396:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
 
-/*@C
+/*@
   ...
   Input Parameter:
 . func_ptr - A function pointer
@@ -1313,7 +1261,7 @@ PetscErrorCode MyFunction(PetscErrorCode (*func_ptr)(int foo, double bar))
 
 ./src/sys/tests/linter/testValidFunctionDocStrings.c:397:3 Note: If you are trying to document a function-pointer parameter, then you must name the function pointer arguments in source and introduce a new section 'Calling Sequence of `<name of function pointer arg>'. For example:
 
-/*@C
+/*@
   ...
   Input Parameter:
 . func_ptr - A function pointer

@@ -60,7 +60,7 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetGraphLayout - Get the global indices and `PetscLayout` that describe a `PetscSF`
 
   Collective
@@ -209,7 +209,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFDistributeSection - Create a new `PetscSection` reorganized, moving from the root to the leaves of the `PetscSF`
 
   Collective
@@ -366,7 +366,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFCreateRemoteOffsets - Create offsets for point data on remote processes
 
   Collective
@@ -501,7 +501,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFCreateFromLayouts - Creates a parallel star forest mapping between two `PetscLayout` objects
 
   Collective

@@ -88,7 +88,7 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCommGetComm - get a new MPI communicator from a PETSc communicator that can be passed off to another package
 
   Collective
@@ -134,7 +134,7 @@ PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCommRestoreComm - restores an MPI communicator that was obtained with `PetscCommGetComm()`
 
   Collective
@@ -173,7 +173,7 @@ PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
   Collective
@@ -264,7 +264,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCommDestroy - Frees communicator obtained with `PetscCommDuplicate()`.
 
   Collective
@@ -338,7 +338,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectsListGetGlobalNumbering - computes a global numbering
   of `PetscObject`s living on subcommunicators of a given communicator.
 

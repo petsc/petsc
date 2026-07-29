@@ -660,7 +660,7 @@ static PetscErrorCode GetNumCellFaces(int nd, PetscInt *numCellFaces, DMPolytope
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateFluent - Create a `DMPLEX` mesh from a Fluent mesh file <http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm>.
 
   Collective

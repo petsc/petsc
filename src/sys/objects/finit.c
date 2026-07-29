@@ -21,7 +21,7 @@ PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal *, PetscReal *, PetscRea
 PETSC_EXTERN void petscsetcomm_(MPI_Fint *, MPI_Fint *);
 #endif
 
-/*@C
+/*@
   PetscInitializeFortran - Routine that should be called soon AFTER
   the call to `PetscInitialize()` if one is using a C main program
   that calls Fortran routines that in turn call PETSc routines.

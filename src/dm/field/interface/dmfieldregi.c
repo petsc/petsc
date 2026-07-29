@@ -6,7 +6,7 @@ PETSC_EXTERN PetscErrorCode DMFieldCreate_Shell(DMField);
 
 PetscFunctionList DMFieldList;
 
-/*@C
+/*@
   DMFieldRegisterAll - Registers all the `DMField` implementations
 
   Not Collective
@@ -26,7 +26,7 @@ PetscErrorCode DMFieldRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldRegister  - Adds an implementation of the `DMField` object.
 
   Not collective, No Fortran Support

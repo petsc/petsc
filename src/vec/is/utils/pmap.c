@@ -537,7 +537,7 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLayoutGetRanges - gets the ranges of values owned by all processes
 
   Not Collective

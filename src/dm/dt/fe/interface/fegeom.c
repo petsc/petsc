@@ -1,6 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-/*@C
+/*@
   PetscFEGeomCreate - Create a `PetscFEGeom` object to manage geometry for a group of cells
 
   Input Parameters:
@@ -42,7 +42,7 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomDestroy - Destroy a `PetscFEGeom` object
 
   Input Parameter:
@@ -64,7 +64,7 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomGetChunk - Get a chunk of cells in the group as a `PetscFEGeom`
 
   Input Parameters:
@@ -115,7 +115,7 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomRestoreChunk - Restore the chunk obtained with `PetscFEGeomCreateChunk()`
 
   Input Parameters:
@@ -135,7 +135,7 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomGetPoint - Get the geometry for cell `c` at point `p` as a `PetscFEGeom`
 
   Input Parameters:
@@ -187,7 +187,7 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomGetCellPoint - Get the cell geometry for cell `c` at point `p` as a `PetscFEGeom`
 
   Input Parameters:
@@ -247,7 +247,7 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGeomComplete - Calculate derived quantities from a base geometry specification
 
   Input Parameter:

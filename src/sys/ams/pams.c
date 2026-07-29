@@ -124,7 +124,7 @@ PetscErrorCode PetscObjectSAWsSetBlock(PetscObject obj, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSAWsViewOff - Remove a `PetscObject`'s SAWs (Scientific Application Web server) directory so the object is no longer published
 
   Logically Collective

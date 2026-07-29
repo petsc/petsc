@@ -251,7 +251,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqAIJSELL - Creates a sparse matrix of type `MATSEQAIJSELL`.
 
   Collective

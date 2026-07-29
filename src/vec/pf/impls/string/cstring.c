@@ -35,7 +35,7 @@ static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFStringSetFunction - Creates a function from a string
 
   Collective

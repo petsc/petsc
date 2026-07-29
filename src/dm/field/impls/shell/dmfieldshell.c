@@ -43,7 +43,7 @@ static PetscErrorCode DMFieldDestroy_Shell(DMField field)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellEvaluateFEDefault - Default finite-element evaluation for a `DMFIELDSHELL` that maps the quadrature points to real space using the coordinate `DMField` and then calls `DMFieldEvaluate()`.
 
   Not Collective
@@ -171,7 +171,7 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellEvaluateFVDefault - Default finite-volume evaluation for a `DMFIELDSHELL` that samples at cell centroids using the coordinate `DMField`'s default quadrature and calls `DMFieldEvaluate()`.
 
   Not Collective
@@ -226,7 +226,7 @@ PetscErrorCode DMFieldShellEvaluateFVDefault(DMField field, IS pointIS, PetscDat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetDestroy - Register a destroy callback that will be invoked when a `DMFIELDSHELL` is destroyed.
 
   Logically Collective
@@ -252,7 +252,7 @@ PetscErrorCode DMFieldShellSetDestroy(DMField field, PetscErrorCode (*destroy)(D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetEvaluate - Register the routine that evaluates a `DMFIELDSHELL` at an arbitrary set of real-space points supplied as a `Vec` of coordinates.
 
   Logically Collective
@@ -281,7 +281,7 @@ PetscErrorCode DMFieldShellSetEvaluate(DMField field, PetscErrorCode (*evaluate)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetEvaluateFE - Register the routine that evaluates a `DMFIELDSHELL` at finite-element quadrature points over a set of mesh points.
 
   Logically Collective
@@ -314,7 +314,7 @@ PetscErrorCode DMFieldShellSetEvaluateFE(DMField field, PetscErrorCode (*evaluat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetEvaluateFV - Register the routine that evaluates a `DMFIELDSHELL` as cell averages over a set of mesh cells.
 
   Logically Collective
@@ -346,7 +346,7 @@ PetscErrorCode DMFieldShellSetEvaluateFV(DMField field, PetscErrorCode (*evaluat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetGetDegree - Register the routine that reports the polynomial degree bounds of a `DMFIELDSHELL` over a set of mesh points.
 
   Logically Collective
@@ -373,7 +373,7 @@ PetscErrorCode DMFieldShellSetGetDegree(DMField field, PetscErrorCode (*getDegre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldShellSetCreateDefaultQuadrature - Register the routine that supplies a default `PetscQuadrature` sufficient to integrate a `DMFIELDSHELL` exactly over a set of mesh points.
 
   Logically Collective

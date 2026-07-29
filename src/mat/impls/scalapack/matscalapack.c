@@ -1831,7 +1831,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateScaLAPACK - Creates a dense parallel matrix in ScaLAPACK format
   (2D block cyclic distribution) for a `MATSCALAPACK` matrix
 

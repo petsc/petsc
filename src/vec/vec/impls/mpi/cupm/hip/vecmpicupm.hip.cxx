@@ -100,7 +100,7 @@ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateMPIHIPWithArrays - Creates a parallel, array-style vector using HIP, where the
   user provides the complete array space to store the vector values.
 
@@ -135,7 +135,7 @@ PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateMPIHIPWithArray - Creates a parallel, array-style vector using HIP, where the
   user provides the device array space to store the vector values.
 

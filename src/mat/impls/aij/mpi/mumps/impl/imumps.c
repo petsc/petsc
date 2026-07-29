@@ -3420,7 +3420,7 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMumpsSetOocTmpDir - Set MUMPS out-of-core `OOC_TMPDIR` <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
@@ -3448,7 +3448,7 @@ PetscErrorCode MatMumpsSetOocTmpDir(Mat F, const char *tmpdir)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMumpsGetOocTmpDir - Get MUMPS out-of-core `OOC_TMPDIR` <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective

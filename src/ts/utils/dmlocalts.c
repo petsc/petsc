@@ -190,7 +190,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetBoundaryLocal - set the function for essential boundary data for a local implicit function evaluation.
 
   Logically Collective
@@ -238,7 +238,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIFunctionPre - set a pre-evaluation callback for each local implicit function evaluation. The callback function provided is called at the beginning of `TSComputeIFunction()` before the function provided with `TSSetIFunctionLocal()` and `DMTSSetBoundaryLocal()` is called.
 
   Logically Collective
@@ -277,7 +277,7 @@ PetscErrorCode DMTSSetIFunctionPre(DM dm, PetscErrorCode (*func)(DM dm, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetIFunctionLocal - get the local implicit function evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DM` will automatically accumulate the overlapping values.
@@ -323,7 +323,7 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM dm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIFunctionLocal - set a local implicit function evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DM` will automatically accumulate the overlapping values.
@@ -367,7 +367,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetIJacobianLocal - get a local Jacobian evaluation function
 
   Logically Collective
@@ -413,7 +413,7 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM dm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIJacobianLocal - set a local Jacobian evaluation function
 
   Logically Collective
@@ -454,7 +454,7 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetRHSFunctionLocal - get a local rhs function evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DM` will automatically accumulate the overlapping values.
@@ -499,7 +499,7 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM dm, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetRHSFunctionLocal - set a local rhs function evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DM` will automatically accumulate the overlapping values.

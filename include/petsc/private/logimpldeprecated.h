@@ -8,7 +8,7 @@
 /* MANSEC = Sys */
 /* SUBMANSEC = Log */
 
-/*@C
+/*@
   PetscClassPerfInfoClear - Deprecated.
 
   Level: deprecated
@@ -24,7 +24,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscMemzero()", ) static inline PetscError
   return PetscMemzero(a, sizeof(*a));
 }
 
-/*@C
+/*@
   PetscClassPerfLogCreate - Deprecated.
 
   Level: deprecated
@@ -41,7 +41,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassPerfLogCreate - Deprecated.
 
   Level: deprecated
@@ -58,7 +58,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassPerfLogEnsureSize - Deprecated.
 
   Level: deprecated
@@ -76,7 +76,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassRegInfoDestroy - Deprecated.
 
   Level: deprecated
@@ -92,7 +92,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassRegInfo is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassRegLogCreate - Deprecated.
 
   Level: deprecated
@@ -108,7 +108,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassRegLogDestroy - Deprecated.
 
   Level: deprecated
@@ -124,7 +124,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassRegLogGetClass - Deprecated.
 
   Level: deprecated
@@ -142,7 +142,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscClassRegLogRegister - Deprecated.
 
   Level: deprecated
@@ -172,7 +172,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscClassRegLog is no longer us
 .seealso: [](ch_profiling), `PetscEventPerfInfo`
 M*/
 
-/*@C
+/*@
   PetscEventPerfInfoClear - Deprecated.
 
   Level: deprecated
@@ -188,7 +188,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscMemzero()", ) static inline PetscError
   return PetscMemzero(a, sizeof(*a));
 }
 
-/*@C
+/*@
   PetscEventPerfInfoCopy - Deprecated.
 
   Level: deprecated
@@ -204,7 +204,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscMemcpy()", ) static inline PetscErrorC
   return PetscMemcpy(a, b, sizeof(*a));
 }
 
-/*@C
+/*@
   PetscEventPerfLogActivate - Deprecated.
 
   Level: deprecated
@@ -222,7 +222,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogActivateClass - Deprecated.
 
   Level: deprecated
@@ -241,7 +241,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogCreate - Deprecated
 
   Level: deprecated
@@ -258,7 +258,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogDeactivate - Deprecated
 
   Level: deprecated
@@ -276,7 +276,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogDeactivateClass - Deprecated
 
   Level: deprecated
@@ -295,7 +295,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogDeactivatePop - Deprecated
 
   Level: deprecated
@@ -313,7 +313,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogDeactivatePush - Deprecated
 
   Level: deprecated
@@ -331,7 +331,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogDestroy - Deprecated
 
   Level: deprecated
@@ -348,7 +348,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogEnsureSize - Deprecated
 
   Level: deprecated
@@ -366,7 +366,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogGetVisible - Deprecated
 
   Level: deprecated
@@ -385,7 +385,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventPerfLogSetVisible - Deprecated
 
   Level: deprecated
@@ -404,7 +404,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventPerfLog is no longer u
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventRegLogCreate - Deprecated
 
   Level: deprecated
@@ -420,7 +420,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventRegLogDestroy - Deprecated
 
   Level: deprecated
@@ -436,7 +436,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventRegLogGetEvent - Deprecated
 
   Level: deprecated
@@ -454,7 +454,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscEventRegLog is no longer us
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscEventRegLogRegister - Deprecated
 
   Level: deprecated
@@ -504,7 +504,7 @@ M*/
 .seealso: [](ch_profiling), `PetscLogEventGetPerfInfo()`
 M*/
 
-/*@C
+/*@
   PetscStageLogCreate - Deprecated
 
   Level: deprecated
@@ -521,7 +521,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogDestroy - Deprecated
 
   Level: deprecated
@@ -538,7 +538,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetActive - Deprecated
 
   Level: deprecated
@@ -557,7 +557,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetClassPerfLog - Deprecated
 
   Level: deprecated
@@ -576,7 +576,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetClassRegLog - Deprecated
 
   Level: deprecated
@@ -594,7 +594,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetEventRegLog - Deprecated
 
   Level: deprecated
@@ -612,7 +612,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetStage - Deprecated
 
   Level: deprecated
@@ -631,7 +631,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetVisible - Deprecated
 
   Level: deprecated
@@ -650,7 +650,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogPop - Deprecated
 
   Level: deprecated
@@ -667,7 +667,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogPush - Deprecated
 
   Level: deprecated
@@ -681,7 +681,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogRegister - Deprecated
 
   Level: deprecated
@@ -696,7 +696,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogSetActive - Deprecated
 
   Level: deprecated
@@ -711,7 +711,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PetscStageLog is no longer used.
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogSetVisible - Deprecated
 
   Level: deprecated

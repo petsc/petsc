@@ -82,7 +82,7 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextGetCurrentContext - Get the current active `PetscDeviceContext`
 
   Not Collective
@@ -116,7 +116,7 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceContextSetCurrentContext - Set the current active `PetscDeviceContext`
 
   Not Collective

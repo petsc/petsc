@@ -1,6 +1,6 @@
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
   processors in communicator from MPI rank zero
 
@@ -96,7 +96,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSetDisplay - Determine and set PETSc's X11 display string from the `-display` option, the `DISPLAY` environment variable, or the hostname of MPI rank 0 when running across multiple nodes
 
   Collective; No Fortran Support
@@ -151,7 +151,7 @@ PetscErrorCode PetscSetDisplay(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetDisplay - Gets the X windows display variable for all processors.
 
   Input Parameter:

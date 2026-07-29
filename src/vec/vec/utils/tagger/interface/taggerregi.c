@@ -8,7 +8,7 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_And(VecTagger);
 
 PetscFunctionList VecTaggerList;
 
-/*@C
+/*@
   VecTaggerRegisterAll - Registers all the `VecTagger` communication implementations
 
   Not Collective
@@ -30,7 +30,7 @@ PetscErrorCode VecTaggerRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerRegister  - Adds an implementation of the `VecTagger` communication protocol.
 
   Not Collective, No Fortran Support

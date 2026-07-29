@@ -16,7 +16,7 @@ static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoDefaultComputeGradient - computes the gradient using finite differences.
 
   Collective
@@ -81,7 +81,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoDefaultComputeHessian - Computes the Hessian using finite differences.
 
   Collective
@@ -142,7 +142,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dumm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoDefaultComputeHessianColor - Computes the Hessian using colored finite differences.
 
   Collective

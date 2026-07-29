@@ -432,7 +432,7 @@ PETSC_EXTERN PetscErrorCode TSGetEvaluationTimes(TS, PetscInt *, const PetscReal
 PETSC_EXTERN PetscErrorCode TSGetEvaluationSolutions(TS, PetscInt *, const PetscReal *[], Vec *[]);
 PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal[]);
 
-/*@C
+/*@
   TSGetTimeSpan - gets the time span set with `TSSetTimeSpan()`
 
   Not Collective
@@ -460,7 +460,7 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "TSGetEvaluationTimes()", ) static inline Pe
   return TSGetEvaluationTimes(ts, n, span_times);
 }
 
-/*@C
+/*@
   TSGetTimeSpanSolutions - Get the number of solutions and the solutions at the time points specified by the time span.
 
   Input Parameter:

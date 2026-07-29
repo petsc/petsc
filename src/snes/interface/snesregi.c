@@ -31,7 +31,7 @@ const char *const *const SNESNormSchedules           = SNESNormSchedules_Shifted
 const char              *SNESFunctionTypes_Shifted[] = {"DEFAULT", "UNPRECONDITIONED", "PRECONDITIONED", "SNESFunctionType", "SNES_FUNCTION_", NULL};
 const char *const *const SNESFunctionTypes           = SNESFunctionTypes_Shifted + 1;
 
-/*@C
+/*@
   SNESRegisterAll - Registers all of the nonlinear solver methods in the `SNES` package.
 
   Not Collective

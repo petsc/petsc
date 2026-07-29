@@ -605,26 +605,25 @@ Even with the use of `clang-format` there are still many decisions about code fo
 
 ## Formatted Comments
 
-PETSc uses formatted comments to generate documentation (manual pages) and the Fortran interfaces.
+PETSc uses formatted comments to generate documentation (manual pages).
 The documentation is created using the Sowing package{cite}`gropp1993sowing2`, documentation
 for Sowing and the formatting may be found at <http://wgropp.cs.illinois.edu/projects/software/sowing/>;
 in particular, see the documentation for `doctext`. Currently, doctext produces Markdown files ending in `.md`,
 which Sphinx later processes.
 
 - `/*@`
-  a formatted comment of a function that will be used for documentation and a Fortran interface.
-- `/*@C`
-  a formatted comment of a function that will be used only for documentation, not to generate a Fortran interface. Certain constructs and usages do not yet support automatically generating a Fortran interface. In general, such labeled C functions should have a custom Fortran interface provided.
+  a formatted comment of a function.
+  .
 - `/*E`
-  a formatted comment of an enum used for documentation only.
+  a formatted comment of an enum.
   .
 - `/*S`
   a formatted comment for a data type such as 
-  `KSP`
+  `KSP`.
   .
 - `/*J`
   a formatted comment for a string type such as 
-  `KSPType`
+  `KSPType`.
   .
 - `/*MC`
   a formatted comment of a CPP macro or enum value for documentation.

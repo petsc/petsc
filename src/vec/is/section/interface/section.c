@@ -740,7 +740,7 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetBlockStarts - Returns a table indicating which points start new blocks
 
   Not Collective, No Fortran Support
@@ -771,7 +771,7 @@ PetscErrorCode PetscSectionGetBlockStarts(PetscSection s, PetscBT *blockStarts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSetBlockStarts - Sets a table indicating which points start new blocks
 
   Not Collective, No Fortran Support
@@ -2943,7 +2943,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained for a given point
 
   Not Collective
@@ -3000,7 +3000,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetFieldConstraintIndices - Get the field dof numbers, in [0, fdof), which are constrained
 
   Not Collective
@@ -3484,7 +3484,7 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymRegister - Registers a new section symmetry implementation
 
   Not Collective, No Fortran Support
@@ -3668,7 +3668,7 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetPointSyms - Get the symmetries for a set of points in a `PetscSection` under specific orientations.
 
   Not Collective
@@ -3776,7 +3776,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionRestorePointSyms - Restore the symmetries returned by `PetscSectionGetPointSyms()`
 
   Not Collective
@@ -3819,7 +3819,7 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionGetFieldPointSyms - Get the symmetries for a set of points in a field of a `PetscSection` under specific orientations.
 
   Not Collective
@@ -3855,7 +3855,7 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionRestoreFieldPointSyms - Restore the symmetries returned by `PetscSectionGetFieldPointSyms()`
 
   Not Collective

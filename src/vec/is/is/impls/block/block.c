@@ -550,7 +550,7 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISBlockGetIndices - Gets the indices associated with each block in an `ISBLOCK`
 
   Not Collective
@@ -580,7 +580,7 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISBlockRestoreIndices - Restores the indices associated with each block  in an `ISBLOCK` obtained with `ISBlockGetIndices()`
 
   Not Collective

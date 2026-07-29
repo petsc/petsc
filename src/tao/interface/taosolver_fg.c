@@ -232,7 +232,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetObjective - Sets the function evaluation routine for minimization
 
   Logically Collective
@@ -261,7 +261,7 @@ PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao tao, Vec x, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetObjective - Gets the function evaluation routine for the function to be minimized
 
   Not Collective
@@ -300,7 +300,7 @@ PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao tao, Vec x, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetResidualRoutine - Sets the residual evaluation routine for least-square applications
 
   Logically Collective
@@ -424,7 +424,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetGradient - Sets the gradient evaluation routine for the function to be optimized
 
   Logically Collective
@@ -461,7 +461,7 @@ PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao tao, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetGradient - Gets the gradient evaluation routine for the function being optimized
 
   Not Collective
@@ -502,7 +502,7 @@ PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao tao, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetObjectiveAndGradient - Sets a combined objective function and gradient evaluation routine for the function to be optimized
 
   Logically Collective
@@ -543,7 +543,7 @@ PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetObjectiveAndGradient - Gets the combined objective function and gradient evaluation routine for the function to be optimized
 
   Not Collective

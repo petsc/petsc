@@ -218,7 +218,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRegister -  Adds a new vector component implementation
 
   Not Collective, No Fortran Support

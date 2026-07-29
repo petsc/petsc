@@ -635,7 +635,7 @@ static PetscErrorCode TaoBRGNSetDictionaryMatrix_BRGN(Tao tao, Mat dict)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoBRGNSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back
   function into the algorithm.
 
@@ -673,7 +673,7 @@ static PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine_BRGN(Tao 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoBRGNSetRegularizerHessianRoutine - Sets the user-defined regularizer call-back
   function into the algorithm.
 

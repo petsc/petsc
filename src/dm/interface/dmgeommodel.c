@@ -46,7 +46,7 @@ static PetscErrorCode DMSnapToGeomModelCylinder(DM dm, PetscInt p, PetscInt dE, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGeomModelRegisterAll - Registers all of the geometry model methods in the `DM` package.
 
   Not Collective
@@ -69,7 +69,7 @@ PetscErrorCode DMGeomModelRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGeomModelRegister -  Adds a geometry model to `DM`
 
   Not Collective, No Fortran Support

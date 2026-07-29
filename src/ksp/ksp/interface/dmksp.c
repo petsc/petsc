@@ -85,7 +85,7 @@ static PetscErrorCode DMKSPCopy(DMKSP kdm, DMKSP nkdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMKSP - get the read-only private `DMKSP` context from a `DM`
 
   Logically Collective
@@ -119,7 +119,7 @@ PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMKSPWrite - get write access to private `DMKSP` context from a `DM`
 
   Logically Collective
@@ -184,7 +184,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc, DM dmdest)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPSetCreateOperators - set the `KSP` matrix creation function used in `KSPSetUp()`
 
   Logically Collective
@@ -221,7 +221,7 @@ PetscErrorCode DMKSPSetCreateOperators(DM dm, KSPCreateOperatorsFn *func, PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPGetCreateOperators - get `KSP` matrix creation function
 
   Not Collective
@@ -249,7 +249,7 @@ PetscErrorCode DMKSPGetCreateOperators(DM dm, KSPCreateOperatorsFn **func, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPSetComputeOperators - set `KSP` matrix evaluation function
 
   Logically Collective
@@ -289,7 +289,7 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm, KSPComputeOperatorsFn *func, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPGetComputeOperators - get `KSP` matrix evaluation function
 
   Not Collective
@@ -317,7 +317,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPSetComputeRHS - set `KSP` right-hand side evaluation function
 
   Not Collective
@@ -351,7 +351,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPSetComputeInitialGuess - set `KSP` initial guess evaluation function
 
   Not Collective
@@ -381,7 +381,7 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPGetComputeRHS - get `KSP` right-hand side evaluation function
 
   Not Collective
@@ -409,7 +409,7 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm, KSPComputeRHSFn **func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMKSPGetComputeInitialGuess - get `KSP` initial guess evaluation function
 
   Not Collective

@@ -16,7 +16,7 @@ const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PCFinalizePackage - This function destroys everything in the `PC` package. It is
   called from `PetscFinalize()`.
 
@@ -34,7 +34,7 @@ PetscErrorCode PCFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCInitializePackage - This function initializes everything in the `PC` package. It is called
   from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `PCCreate()`
   when using shared static libraries.
@@ -117,7 +117,7 @@ const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTrunca
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   KSPFinalizePackage - This function destroys everything in the `KSP` package. It is
   called from `PetscFinalize()`.
 
@@ -139,7 +139,7 @@ PetscErrorCode KSPFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPInitializePackage - This function initializes everything in the `KSP` package. It is called
   from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `KSPCreate()`
   when using shared or static libraries.

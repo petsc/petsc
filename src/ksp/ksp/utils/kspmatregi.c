@@ -8,7 +8,7 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_NestHtool(void);
 
 static PetscBool KSPMatRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   KSPMatRegisterAll - Registers all matrix implementations in the `KSP` package.
 
   Not Collective

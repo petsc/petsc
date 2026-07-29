@@ -219,7 +219,7 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLs - produce a listing of the files in a directory
 
   Collective

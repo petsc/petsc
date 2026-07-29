@@ -349,7 +349,7 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetElements - Gets an array containing the indices (in local indexing)
   of all the local elements
 
@@ -461,7 +461,7 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDARestoreElements - Restores the array obtained with `DMDAGetElements()`
 
   Not Collective

@@ -149,7 +149,7 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawSetDrawType - Set the underlying `PetscDrawType` used by a `PETSCVIEWERDRAW` viewer.
 
   Logically Collective
@@ -181,7 +181,7 @@ PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerDrawGetDrawType - Get the underlying `PetscDrawType` used by a `PETSCVIEWERDRAW` viewer.
 
   Not Collective

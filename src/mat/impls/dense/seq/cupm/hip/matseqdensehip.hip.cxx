@@ -52,7 +52,7 @@ PetscErrorCode MatSeqDenseHIPInvertFactors_Internal(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqDenseHIP - Creates a sequential matrix in dense format using HIP.
 
   Collective

@@ -5,7 +5,7 @@ PetscClassId PETSCDS_CLASSID = 0;
 PetscFunctionList PetscDSList              = NULL;
 PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscDSRegister - Adds a new `PetscDS` implementation
 
   Not Collective; No Fortran Support
@@ -1264,7 +1264,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetObjective - Get the pointwise objective function for a given test field that was provided with `PetscDSSetObjective()`
 
   Not Collective
@@ -1297,7 +1297,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, PetscPointFn **obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetObjective - Set the pointwise objective function for a given test field
 
   Not Collective
@@ -1324,7 +1324,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, PetscPointFn *obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetResidual - Get the pointwise residual function for a given test field
 
   Not Collective
@@ -1358,7 +1358,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, PetscPointFn **f0, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetResidual - Set the pointwise residual function for a given test field
 
   Not Collective
@@ -1387,7 +1387,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, PetscPointFn *f0, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetRHSResidual - Get the pointwise RHS residual function for explicit timestepping for a given test field
 
   Not Collective
@@ -1421,7 +1421,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, PetscPointFn **f0, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetRHSResidual - Set the pointwise residual function for explicit timestepping for a given test field
 
   Not Collective
@@ -1473,7 +1473,7 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetJacobian - Get the pointwise Jacobian function for given test and basis field
 
   Not Collective
@@ -1518,7 +1518,7 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, PetscPoint
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetJacobian - Set the pointwise Jacobian function for given test and basis fields
 
   Not Collective
@@ -1607,7 +1607,7 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetJacobianPreconditioner - Get the pointwise Jacobian function for given test and basis field that constructs the matrix used
   to compute the preconditioner. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1656,7 +1656,7 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetJacobianPreconditioner - Set the pointwise Jacobian function for given test and basis fields that constructs the matrix used
   to compute the preconditioner. If this is missing, the system matrix is used to build the preconditioner.
 
@@ -1723,7 +1723,7 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetDynamicJacobian - Get the pointwise dynamic Jacobian, $dF/du_t$, function for given test and basis field
 
   Not Collective
@@ -1768,7 +1768,7 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetDynamicJacobian - Set the pointwise dynamic Jacobian, $dF/du_t$, function for given test and basis fields
 
   Not Collective
@@ -1808,7 +1808,7 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetRiemannSolver - Returns the Riemann solver for the given field
 
   Not Collective
@@ -1838,7 +1838,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, PetscRiemannFn **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetRiemannSolver - Sets the Riemann solver for the given field
 
   Not Collective
@@ -1862,7 +1862,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, PetscRiemannFn *r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetUpdate - Get the pointwise update function for a given field
 
   Not Collective
@@ -1890,7 +1890,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, PetscPointFn **update)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetUpdate - Set the pointwise update function for a given field
 
   Not Collective
@@ -1915,7 +1915,7 @@ PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, PetscPointFn *update)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetContext - Returns the context that was passed by `PetscDSSetContext()`
 
   Not Collective
@@ -1945,7 +1945,7 @@ PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetContext - Sets the context that is passed back to some of the pointwise function callbacks used by this `PetscDS`
 
   Not Collective
@@ -1969,7 +1969,7 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetBdResidual - Get the pointwise boundary residual function for a given test field
 
   Not Collective
@@ -2007,7 +2007,7 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, PetscBdPointFn **f0,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetBdResidual - Get the pointwise boundary residual function for a given test field
 
   Not Collective
@@ -2062,7 +2062,7 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetBdJacobian - Get the pointwise boundary Jacobian function for given test and basis field
 
   Not Collective
@@ -2107,7 +2107,7 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, PetscBdP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetBdJacobian - Set the pointwise boundary Jacobian function for given test and basis field
 
   Not Collective
@@ -2174,7 +2174,7 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetBdJacobianPreconditioner - Get the pointwise boundary Jacobian function for given test and basis field that constructs the
   matrix used to construct the preconditioner
 
@@ -2223,7 +2223,7 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetBdJacobianPreconditioner - Set the pointwise boundary Jacobian preconditioner function for given test and basis field that constructs the
   matrix used to construct the preconditioner
 
@@ -2267,7 +2267,7 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetExactSolution - Get the pointwise exact solution function for a given test field
 
   Not Collective
@@ -2300,7 +2300,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscPointExact
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetExactSolution - Set the pointwise exact solution function for a given test field
 
   Not Collective
@@ -2332,7 +2332,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscPointExact
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetExactSolutionTimeDerivative - Get the pointwise time derivative of the exact solution function for a given test field
 
   Not Collective
@@ -2365,7 +2365,7 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetExactSolutionTimeDerivative - Set the pointwise time derivative of the exact solution function for a given test field
 
   Not Collective
@@ -2397,7 +2397,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetLowerBound - Get the pointwise lower bound function for a given field
 
   Not Collective
@@ -2430,7 +2430,7 @@ PetscErrorCode PetscDSGetLowerBound(PetscDS ds, PetscInt f, PetscPointBoundFn **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetLowerBound - Set the pointwise lower bound function for a given field
 
   Not Collective
@@ -2462,7 +2462,7 @@ PetscErrorCode PetscDSSetLowerBound(PetscDS ds, PetscInt f, PetscPointBoundFn *l
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetUpperBound - Get the pointwise upper bound function for a given field
 
   Not Collective
@@ -2495,7 +2495,7 @@ PetscErrorCode PetscDSGetUpperBound(PetscDS ds, PetscInt f, PetscPointBoundFn **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetUpperBound - Set the pointwise upper bound function for a given field
 
   Not Collective
@@ -2527,7 +2527,7 @@ PetscErrorCode PetscDSSetUpperBound(PetscDS ds, PetscInt f, PetscPointBoundFn *u
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetConstants - Returns the array of constants passed to point functions from a `PetscDS` object
 
   Not Collective
@@ -2558,7 +2558,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS ds, PeOp PetscInt *numConstants, PeOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetConstants - Set the array of constants passed to point functions from a `PetscDS`
 
   Not Collective
@@ -2588,7 +2588,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS ds, PetscInt numConstants, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetIntegrationParameters - Set the parameters for a particular integration
 
   Not Collective
@@ -2611,7 +2611,7 @@ PetscErrorCode PetscDSSetIntegrationParameters(PetscDS ds, PetscInt fieldI, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSSetCellParameters - Set the parameters for a particular cell
 
   Not Collective
@@ -2941,7 +2941,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetTabulation - Return the basis tabulation at quadrature points for the volume discretization
 
   Not Collective
@@ -2986,7 +2986,7 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetFaceTabulation - Return the basis tabulation at quadrature points on the faces
 
   Not Collective
@@ -3014,7 +3014,7 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetEvaluationArrays - Get scratch arrays used to evaluate fields, time derivatives, and field gradients at quadrature points.
 
   Not Collective
@@ -3086,7 +3086,7 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar *f0[], PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetWorkspace - Get scratch storage used during discretization computations.
 
   Not Collective
@@ -3136,7 +3136,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSAddBoundary - Add a boundary condition to the model.
 
   Collective
@@ -3264,7 +3264,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 }
 
 // PetscClangLinter pragma ignore: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDSAddBoundaryByName - Add a boundary condition to the model.
 
   Collective
@@ -3380,7 +3380,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSUpdateBoundary - Change a boundary condition for the model.
 
   Input Parameters:
@@ -3484,7 +3484,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDSGetBoundary - Gets a boundary condition from the model
 
   Input Parameters:

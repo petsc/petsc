@@ -33,7 +33,7 @@ PETSC_EXTERN PetscErrorCode PetscStrcpy(char[], const char[]);
 
 #define PetscAssertPointer_Private(ptr, arg) PetscAssert((ptr), PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null Pointer: Parameter '" PetscStringize(ptr) "' # " PetscStringize(arg))
 
-/*@C
+/*@
   PetscStrtolower - Converts a string to lower case
 
   Not Collective, No Fortran Support
@@ -56,7 +56,7 @@ static inline PetscErrorCode PetscStrtolower(char a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrtoupper - Converts a string to upper case
 
   Not Collective, No Fortran Support
@@ -79,7 +79,7 @@ static inline PetscErrorCode PetscStrtoupper(char a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrlen - Gets the length of a string
 
   Not Collective, No Fortran Support
@@ -113,7 +113,7 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrallocpy - Allocates space to hold a copy of a string then copies the string into the new space
 
   Not Collective, No Fortran Support
@@ -174,7 +174,7 @@ static inline void PetscStrcmpNoError(const char a[], const char b[], PetscBool 
   }
 }
 
-/*@C
+/*@
   PetscStrcmp - Compares two strings
 
   Not Collective, No Fortran Support
@@ -214,7 +214,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
   #define PETSC_SILENCE_WSTRINGOP_TRUNCATION_END   (void)0
 #endif
 
-/*@C
+/*@
   PetscStrncpy - Copies a string up to a certain length
 
   Not Collective
@@ -261,7 +261,7 @@ static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n) Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrlcat - Concatenates a string onto a given string, up to a given length
 
   Not Collective, No Fortran Support
@@ -302,7 +302,7 @@ static inline PetscErrorCode PetscStrlcat(char s[], const char t[], size_t n)
 #undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_BEGIN
 #undef PETSC_SILENCE_WSTRINGOP_TRUNCATION_END
 
-/*@C
+/*@
   PetscStrncmp - Compares two strings, up to a certain length
 
   Not Collective, No Fortran Support
@@ -339,7 +339,7 @@ static inline PetscErrorCode PetscStrncmp(const char a[], const char b[], size_t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrrstr - Locates last occurrence of string in another string
 
   Not Collective, No Fortran Support
@@ -377,7 +377,7 @@ static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrstr - Locates first occurrence of string in another string
 
   Not Collective, No Fortran Support
@@ -409,7 +409,7 @@ static inline PetscErrorCode PetscStrstr(const char haystack[], const char needl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrgrt - If first string is greater than the second
 
   Not Collective, No Fortran Support
@@ -449,7 +449,7 @@ static inline PetscErrorCode PetscStrgrt(const char a[], const char b[], PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrchr - Locates first occurrence of a character in a string
 
   Not Collective, No Fortran Support
@@ -478,7 +478,7 @@ static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrrchr - Locates one location past the last occurrence of a character in a string, if
   the character is not found then returns entire string
 
@@ -510,7 +510,7 @@ static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[]) PeN
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrendswith - Determines if a string ends with a certain string
 
   Not Collective, No Fortran Support
@@ -551,7 +551,7 @@ static inline PetscErrorCode PetscStrendswith(const char a[], const char b[], Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrbeginswith - Determines if a string begins with a certain string
 
   Not Collective, No Fortran Support
@@ -590,7 +590,7 @@ static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], 
 
 #undef PetscAssertPointer_Private
 
-/*@C
+/*@
    PetscMemmove - Copies `n` bytes, beginning at location `b`, to the space
    beginning at location `a`. Copying  between regions that overlap will
    take place correctly. Use `PetscMemcpy()` if the locations do not overlap
@@ -644,7 +644,7 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscMemcpy - Copies `n` bytes, beginning at location `b`, to the space
    beginning at location `a`. The two memory regions CANNOT overlap, use
    `PetscMemmove()` in that case.
@@ -708,7 +708,7 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscMemzero - Zeros the specified memory.
 
    Not Collective, No Fortran Support

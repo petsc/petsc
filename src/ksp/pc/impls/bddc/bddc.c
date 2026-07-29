@@ -2676,7 +2676,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBDDCCreateFETIDPOperators - Create FETI-DP operators
 
   Collective
@@ -2859,7 +2859,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBDDCInitializePackage - This function initializes everything in the `PCBDDC` package. It is called
   from `PCInitializePackage()`.
 
@@ -2926,7 +2926,7 @@ PetscErrorCode PCBDDCInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCBDDCFinalizePackage - This function frees everything from the `PCBDDC` package. It is
   called from `PetscFinalize()` automatically.
 

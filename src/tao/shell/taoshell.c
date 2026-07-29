@@ -7,7 +7,7 @@ struct _n_TaoShell {
   PetscCtx ctx;
 };
 
-/*@C
+/*@
   TaoShellSetSolve - Sets routine to apply as solver
 
   Logically Collective

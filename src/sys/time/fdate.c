@@ -4,7 +4,7 @@
 #endif
 #include <time.h>
 
-/*@C
+/*@
   PetscGetDate - Gets the current date.
 
   Not Collective

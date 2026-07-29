@@ -622,7 +622,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLESetAcceptType - sets the acceptance test for `TSGLLE`
 
   Logically Collective
@@ -1167,7 +1167,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLERegister -  adds a `TSGLLE` implementation
 
   Not Collective, No Fortran Support
@@ -1205,7 +1205,7 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEAcceptRegister -  adds a `TSGLLE` acceptance scheme
 
   Not Collective
@@ -1239,7 +1239,7 @@ PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFn *function
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLERegisterAll - Registers all of the general linear methods in `TSGLLE`
 
   Not Collective
@@ -1259,7 +1259,7 @@ PetscErrorCode TSGLLERegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEInitializePackage - This function initializes everything in the `TSGLLE` package. It is called
   from `TSInitializePackage()`.
 
@@ -1277,7 +1277,7 @@ PetscErrorCode TSGLLEInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
   called from `PetscFinalize()`.
 

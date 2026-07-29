@@ -2,7 +2,7 @@
 #include <petscts.h>
 #include <petscdraw.h>
 
-/*@C
+/*@
   TSMonitorLGCtxNetworkDestroy - Destroys  line graph contexts that where created with `TSMonitorLGCtxNetworkCreate()`.
 
   Collective
@@ -25,7 +25,7 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxNetworkCreate - Creates a `TSMonitorLGCtxNetwork` context with one line-graph window for each edge and each vertex of a `DMNETWORK`
 
   Collective
@@ -109,7 +109,7 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
   Collective

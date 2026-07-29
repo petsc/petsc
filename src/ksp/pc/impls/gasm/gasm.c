@@ -1193,7 +1193,7 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGASMGetSubKSP - Gets the local `KSP` contexts for all subdomains on this MPI process.
 
   Collective iff first_local is requested
@@ -1459,7 +1459,7 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGASMCreateSubdomains - Creates `n` index sets defining `n` nonoverlapping subdomains on this MPI process for the `PCGASM` additive
   Schwarz preconditioner for a any problem based on its matrix.
 
@@ -1505,7 +1505,7 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGASMDestroySubdomains - Destroys the index sets created with
   `PCGASMCreateSubdomains()` or `PCGASMCreateSubdomains2D()`. Should be
   called after setting subdomains with `PCGASMSetSubdomains()`.
@@ -1577,7 +1577,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
     } \
   } while (0)
 
-/*@C
+/*@
   PCGASMCreateSubdomains2D - Creates the index sets for the `PCGASM` overlapping Schwarz
   preconditioner for a two-dimensional problem on a regular grid.
 
@@ -1756,7 +1756,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGASMGetSubdomains - Gets the subdomains supported on this MPI process
   for the `PCGASM` additive Schwarz preconditioner.
 
@@ -1803,7 +1803,7 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGASMGetSubmatrices - Gets the local submatrices (for this MPI process
   only) for the `PCGASM` additive Schwarz preconditioner.
 

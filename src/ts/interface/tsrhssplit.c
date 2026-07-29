@@ -90,7 +90,7 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitSetRHSFunction - Set the split right-hand-side functions.
 
   Logically Collective
@@ -143,7 +143,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitSetIFunction - Set the split implicit function for `TSARKIMEX`
 
   Logically Collective
@@ -196,7 +196,7 @@ PetscErrorCode TSRHSSplitSetIFunction(TS ts, const char splitname[], Vec r, TSIF
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitSetIJacobian - Set the Jacobian for the split implicit function with `TSARKIMEX`
 
   Logically Collective
@@ -244,7 +244,7 @@ PetscErrorCode TSRHSSplitSetIJacobian(TS ts, const char splitname[], Mat Amat, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitGetSubTS - Get the sub-`TS` by split name.
 
   Logically Collective
@@ -274,7 +274,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRHSSplitGetSubTSs - Get an array of all sub-`TS` contexts.
 
   Logically Collective

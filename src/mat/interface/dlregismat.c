@@ -16,7 +16,7 @@ const char *const  MPChacoEigenTypes[]         = {"LANCZOS", "RQI", "MPChacoEige
 extern PetscErrorCode MatSolverTypeDestroy(void);
 static PetscBool      MatPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   MatFinalizePackage - This function destroys everything in the PETSc interface to the `Mat`
   package. It is called from `PetscFinalize()`.
 
@@ -130,7 +130,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
 #include <petscbm.h>
 PETSC_INTERN PetscErrorCode PetscBenchCreate_HPL(PetscBench);
 
-/*@C
+/*@
   MatInitializePackage - This function initializes everything in the `Mat` package. It is called
   from `PetscDLLibraryRegister_petscmat()` when using dynamic libraries, and on the first call to `MatCreate()`
   when using shared or static libraries.

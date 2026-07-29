@@ -911,7 +911,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateSeqViennaCL - Creates a standard, sequential array-style vector.
 
   Collective
@@ -940,7 +940,7 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm, PetscInt n, Vec *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateSeqViennaCLWithArray - Creates a viennacl sequential array-style vector,
   where the user provides the array space to store the vector values.
 
@@ -985,7 +985,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCLWithArray(MPI_Comm comm, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateSeqViennaCLWithArrays - Creates a ViennaCL sequential vector, where
   the user provides the array space to store the vector values.
 
@@ -1042,7 +1042,7 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViennaCLPlaceArray - Replace the viennacl vector in a Vec with
   the one provided by the user. This is useful to avoid a copy.
 
@@ -1076,7 +1076,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin, const ViennaCLVector 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViennaCLResetArray - Resets a vector to use its default memory. Call this
   after the use of VecViennaCLPlaceArray().
 
@@ -1258,7 +1258,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecViennaCLGetCLContext - Get the OpenCL context in which the Vec resides.
 
   Caller should cast (*ctx) to (const cl_context). Caller is responsible for
@@ -1296,7 +1296,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLGetCLQueue - Get the OpenCL command queue to which all
   operations of the Vec are enqueued.
 
@@ -1335,7 +1335,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLGetCLMemRead - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
@@ -1371,7 +1371,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLGetCLMemWrite - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
@@ -1412,7 +1412,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLRestoreCLMemWrite - Restores a CL buffer pointer previously
   acquired with VecViennaCLGetCLMemWrite().
 
@@ -1439,7 +1439,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLGetCLMem - Provides access to the CL buffer inside a Vec.
 
   Caller should cast (*mem) to (const cl_mem). Caller is responsible for
@@ -1480,7 +1480,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
 #endif
 }
 
-/*@C
+/*@
   VecViennaCLRestoreCLMem - Restores a CL buffer pointer previously
   acquired with VecViennaCLGetCLMem().
 

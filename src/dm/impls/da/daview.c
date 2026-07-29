@@ -136,7 +136,7 @@ PetscErrorCode DMDAGetInfo(DM da, PeOp PetscInt *dim, PeOp PetscInt *M, PeOp Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetLocalInfo - Gets information about a given `DMDA` and this MPI process's location in it
 
   Not Collective

@@ -95,7 +95,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRMTree - Recursively delete a directory tree on the current MPI process
 
   Not Collective

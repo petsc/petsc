@@ -596,7 +596,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESVISetRedundancyCheck - Provide a function to check for any redundancy in the VI active set
 
   Logically Collective

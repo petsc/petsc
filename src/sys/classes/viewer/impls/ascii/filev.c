@@ -95,7 +95,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIGetPointer - Extracts the file pointer from an ASCII `PetscViewer`.
 
   Not Collective, depending on the viewer the value may be meaningless except for process 0 of the viewer; No Fortran Support
@@ -674,7 +674,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIPrintf - Prints to a file, only from the first
   processor in the `PetscViewer` of type `PETSCVIEWERASCII`
 
@@ -770,7 +770,7 @@ PetscErrorCode PetscViewerFileSetName(PetscViewer viewer, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerFileGetName - Gets the name of the file the `PetscViewer` is using
 
   Not Collective
@@ -1058,7 +1058,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIISynchronizedPrintf - Prints synchronized output to the specified `PETSCVIEWERASCII` file from
   several processors.  Output of the first processor is followed by that of the
   second, etc.
@@ -1191,7 +1191,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIRead - Reads from a `PETSCVIEWERASCII` file
 
   Only MPI rank 0 in the `PetscViewer` may call this

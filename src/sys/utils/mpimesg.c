@@ -3,7 +3,7 @@
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm, const PetscMPIInt[], const PetscInt[], PetscMPIInt *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
 
-/*@C
+/*@
   PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication
 
   Collective, No Fortran Support
@@ -58,7 +58,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGatherMessageLengths - Computes information about messages that an MPI rank will receive,
   including (from-id,length) pairs for each message.
 
@@ -205,7 +205,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGatherMessageLengths2 - Computes info about messages that a MPI rank will receive,
   including (from-id,length) pairs for each message. Same functionality as `PetscGatherMessageLengths()`
   except it takes TWO ilenths and output TWO olengths.
@@ -286,7 +286,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPostIrecvInt - Allocate the receive buffers for an irregular all-to-all of `PetscInt` messages and post non-blocking `MPI_Irecv()`s on them
 
   Collective; No Fortran Support
@@ -332,7 +332,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPostIrecvScalar - Allocate the receive buffers for an irregular all-to-all of `PetscScalar` messages and post non-blocking `MPI_Irecv()`s on them
 
   Collective; No Fortran Support

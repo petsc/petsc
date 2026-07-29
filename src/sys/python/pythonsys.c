@@ -277,7 +277,7 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPythonPrintError - Print any current Python errors.
 
   Level: developer

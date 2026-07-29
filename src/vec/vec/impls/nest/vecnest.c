@@ -881,7 +881,7 @@ static PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecNestGetSubVecs - Returns the entire array of vectors defining a nest vector.
 
   Not Collective
@@ -1233,7 +1233,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecCreateNest()`, `MatCreateNest()`
 M*/
 
-/*@C
+/*@
   VecCreateNest - Creates a new vector containing several nested subvectors, each stored separately
 
   Collective

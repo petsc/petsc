@@ -4,7 +4,7 @@
 */
 #include <petscsys.h> /*I "petscsys.h" I*/
 
-/*@C
+/*@
   PetscAbortErrorHandler - Error handler that calls abort on error.
   This routine is very useful when running in the debugger, because the
   user can look directly at the stack frames and the variables where the error occurred

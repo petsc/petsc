@@ -508,7 +508,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal unu
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscProbCreateFromOptions - Return the probability distribution specified by the arguments and options
 
   Not Collective
@@ -733,7 +733,7 @@ static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscI
 #endif
 }
 
-/*@C
+/*@
   PetscProbComputeKSStatistic - Compute the Kolmogorov-Smirnov statistic for the empirical distribution for an input vector, compared to an analytic CDF.
 
   Collective
@@ -800,7 +800,7 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFn *cdf, PetscReal *a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscProbComputeKSStatisticWeighted - Compute the Kolmogorov-Smirnov statistic for the weighted empirical distribution for an input vector, compared to an analytic CDF.
 
   Collective
@@ -870,7 +870,7 @@ PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec v, Vec w, PetscProbFn *cd
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscProbComputeKSStatisticMagnitude - Compute the Kolmogorov-Smirnov statistic for the empirical distribution for the magnitude over each block of an input vector, compared to an analytic CDF.
 
   Collective

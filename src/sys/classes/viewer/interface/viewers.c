@@ -7,7 +7,7 @@ struct _n_PetscViewers {
   int          n;
 };
 
-/*@C
+/*@
   PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
 
   Collective
@@ -31,7 +31,7 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewersCreate - Creates a container to hold a set of `PetscViewer`'s. The container is essentially a sparse, growable in length array of `PetscViewer`s
 
   Collective
@@ -58,7 +58,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewersGetViewer - Gets a `PetscViewer` from a `PetscViewers` collection
 
   Collective if the viewer has not previously be obtained.
@@ -94,7 +94,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMonitorCompare - Checks if two monitors are identical; if they are then it destroys the new one
 
   Not Collective

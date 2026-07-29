@@ -87,7 +87,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkMonitorAdd - Adds a new viewer to a `DMNetworkMonitor`
 
   Collective
@@ -166,7 +166,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkMonitorView - A `DMNETWORK` specific monitor function for `TSMonitorSet()`
 
   Collective, No Fortran support

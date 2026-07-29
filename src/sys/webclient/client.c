@@ -16,7 +16,7 @@ static int password_cb(char *buf, int num, int rwflag, void *userdata)
 
 static void sigpipe_handle(int x) { }
 
-/*@C
+/*@
   PetscSSLInitializeContext - Set up an SSL context suitable for initiating HTTPS requests.
 
   Output Parameter:
@@ -84,7 +84,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSSLDestroyContext - frees a `SSL_CTX` obtained with `PetscSSLInitializeContext()`
 
   Input Parameter:
@@ -154,7 +154,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscHTTPSRequest - Send a request to an HTTPS server
 
   Input Parameters:
@@ -242,7 +242,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscHTTPRequest - Send a request to an HTTP server
 
   Input Parameters:
@@ -278,7 +278,7 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscHTTPSConnect - connect to a HTTPS server
 
   Input Parameters:
@@ -310,7 +310,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPullJSONValue - Given a JSON response containing the substring with "key" : "value"  where there may or not be spaces around the : returns the value.
 
   Input Parameters:
@@ -367,7 +367,7 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
 
 #include <ctype.h>
 
-/*@C
+/*@
   PetscPushJSONValue -  Puts a "key" : "value" pair onto a string
 
   Input Parameters:

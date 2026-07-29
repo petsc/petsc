@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
-/*@C
+/*@
   TSRegisterAll - Registers all of the timesteppers in the `TS` package.
 
   Not Collective

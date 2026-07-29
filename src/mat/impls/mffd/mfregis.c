@@ -3,7 +3,7 @@
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_DS(MatMFFD);
 PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 
-/*@C
+/*@
   MatMFFDRegisterAll - Registers all of the compute-h in the `MATMFFD` package.
 
   Not Collective

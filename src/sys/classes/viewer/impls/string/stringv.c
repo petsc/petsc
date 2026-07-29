@@ -17,7 +17,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerStringSPrintf - Prints information to a `PETSCVIEWERSTRING` `PetscViewer` object
 
   Logically Collective; No Fortran Support
@@ -62,7 +62,7 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerStringOpen - Opens a string as a `PETSCVIEWERSTRING` `PetscViewer`. This is a very
   simple `PetscViewer`; information on the object is simply stored into
   the string in a fairly nice way.
@@ -138,7 +138,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerStringGetStringRead - Returns the string that a `PETSCVIEWERSTRING` uses
 
   Logically Collective
@@ -175,7 +175,7 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerStringSetString - sets the string that a string viewer will print to
 
   Logically Collective

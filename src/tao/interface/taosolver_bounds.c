@@ -30,7 +30,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetVariableBoundsRoutine - Sets a function to be used to compute lower and upper variable bounds for the optimization
 
   Logically Collective
@@ -206,7 +206,7 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see [](ch_tao) for details
 
   Logically Collective
@@ -304,7 +304,7 @@ PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetEqualityConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see [](ch_tao) for details
 
   Logically Collective
@@ -339,7 +339,7 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetEqualityConstraintsRoutine - Gets the function used to compute equality constraints.
 
   Not Collective
@@ -372,7 +372,7 @@ PetscErrorCode TaoGetEqualityConstraintsRoutine(Tao tao, Vec *ci, PetscErrorCode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see [](ch_tao) for details
 
   Logically Collective
@@ -407,7 +407,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetInequalityConstraintsRoutine - Gets the function used to compute inequality constraints.
 
   Not Collective

@@ -208,7 +208,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
   Logically Collective
@@ -244,7 +244,7 @@ PetscErrorCode DMDASNESSetFunctionLocal(DM dm, InsertMode imode, DMDASNESFunctio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetFunctionLocalVec - set a local residual evaluation function that operates on a local vector for `DMDA`
 
   Logically Collective
@@ -280,7 +280,7 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, DMDASNESFunc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetJacobianLocal - set a local Jacobian evaluation function for use with `DMDA`
 
   Logically Collective
@@ -314,7 +314,7 @@ PetscErrorCode DMDASNESSetJacobianLocal(DM dm, DMDASNESJacobianFn *func, PetscCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetJacobianLocalVec - set a local Jacobian evaluation function that operates on a local vector with `DMDA`
 
   Logically Collective
@@ -345,7 +345,7 @@ PetscErrorCode DMDASNESSetJacobianLocalVec(DM dm, DMDASNESJacobianVecFn *func, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetObjectiveLocal - set a local residual evaluation function to used with a `DMDA`
 
   Logically Collective
@@ -376,7 +376,7 @@ PetscErrorCode DMDASNESSetObjectiveLocal(DM dm, DMDASNESObjectiveFn *func, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetObjectiveLocalVec - set a local residual evaluation function that operates on a local vector with `DMDA`
 
   Logically Collective
@@ -479,7 +479,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASNESSetPicardLocal - set a local right-hand side and matrix evaluation function for Picard iteration with `DMDA`
 
   Logically Collective

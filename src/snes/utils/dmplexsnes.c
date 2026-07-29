@@ -71,7 +71,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedCorrectPressure - The regular `SNES` convergence test that, up on convergence, adds a vector in the nullspace
   to make the continuum integral of the pressure field equal to zero.
 
@@ -252,7 +252,7 @@ static PetscErrorCode SNESMonitorFields_Draw(SNES snes, PetscInt its, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorFields - Monitors the residual norm or draws the residual, for each field separately
 
   Collective

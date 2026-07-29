@@ -233,7 +233,7 @@ static PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetDestroyContext - set a function that destroys the context provided with `DMShellSetContext()`
 
   Collective
@@ -357,7 +357,7 @@ PetscErrorCode DMShellSetMatrix(DM dm, Mat J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateMatrix - sets the routine to create a matrix associated with the `DMSHELL`
 
   Logically Collective
@@ -453,7 +453,7 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateGlobalVector - sets the routine to create a global vector associated with the `DMSHELL`
 
   Logically Collective
@@ -522,7 +522,7 @@ PetscErrorCode DMShellSetLocalVector(DM dm, Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateLocalVector - sets the routine to create a local vector associated with the `DMSHELL`
 
   Logically Collective
@@ -547,7 +547,7 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM dm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetGlobalToLocal - Sets the routines used to perform a global to local scatter
 
   Logically Collective
@@ -586,7 +586,7 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM dm, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetLocalToGlobal - Sets the routines used to perform a local to global scatter
 
   Logically Collective
@@ -625,7 +625,7 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM dm, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetLocalToLocal - Sets the routines used to perform a local to local scatter
 
   Logically Collective
@@ -742,7 +742,7 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCoarsen - Set the routine used to coarsen the `DMSHELL`
 
   Logically Collective
@@ -772,7 +772,7 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM fine, MPI_C
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetCoarsen - Get the routine used to coarsen the `DMSHELL`
 
   Logically Collective
@@ -804,7 +804,7 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM fine, MPI_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetRefine - Set the routine used to refine the `DMSHELL`
 
   Logically Collective
@@ -834,7 +834,7 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM coarse, MPI_C
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetRefine - Get the routine used to refine the `DMSHELL`
 
   Logically Collective
@@ -866,7 +866,7 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM coarse, MPI_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateInterpolation - Set the routine used to create the interpolation operator
 
   Logically Collective
@@ -897,7 +897,7 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetCreateInterpolation - Get the routine used to create the interpolation operator
 
   Logically Collective
@@ -930,7 +930,7 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateRestriction - Set the routine used to create the restriction operator
 
   Logically Collective
@@ -960,7 +960,7 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetCreateRestriction - Get the routine used to create the restriction operator
 
   Logically Collective
@@ -992,7 +992,7 @@ PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateInjection - Set the routine used to create the injection operator
 
   Logically Collective
@@ -1022,7 +1022,7 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM fine
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetCreateInjection - Get the routine used to create the injection operator
 
   Logically Collective
@@ -1054,7 +1054,7 @@ PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM fin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateFieldDecomposition - Set the routine used to create a decomposition of fields for the `DMSHELL`
 
   Logically Collective
@@ -1086,7 +1086,7 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateDomainDecomposition - Set the routine used to create a domain decomposition for the `DMSHELL`
 
   Logically Collective
@@ -1119,7 +1119,7 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateDomainDecompositionScatters - Set the routine used to create the scatter contexts for domain decomposition with a `DMSHELL`
 
   Logically Collective
@@ -1152,7 +1152,7 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellSetCreateSubDM - Set the routine used to create a sub `DM` from the `DMSHELL`
 
   Logically Collective
@@ -1184,7 +1184,7 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM dm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMShellGetCreateSubDM - Get the routine used to create a sub `DM` from the `DMSHELL`
 
   Logically Collective

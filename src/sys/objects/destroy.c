@@ -327,7 +327,7 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectTypeCompareAny - Determines whether a PETSc object is of any of a list of types.
 
   Not Collective
@@ -366,7 +366,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectBaseTypeCompareAny - Determines whether a PETSc object has the base type of any of a list of types.
 
   Not Collective
@@ -522,7 +522,7 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
   with `PetscObjectRegisterDestroy()`. Called by `PetscFinalize()`
 
@@ -539,7 +539,7 @@ PetscErrorCode PetscObjectRegisterDestroyAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegisterFinalize - Registers a function that is to be called in `PetscFinalize()`
 
   Not Collective
@@ -568,7 +568,7 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegisterFinalizeAll - Runs all the finalize functions set with `PetscRegisterFinalize()`
 
   Not Collective except for registered functions that are collective

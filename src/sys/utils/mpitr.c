@@ -7,7 +7,7 @@
 
 #if PetscDefined(USE_LOG) && !PetscDefined(HAVE_MPIUNI)
 
-/*@C
+/*@
   PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
   have never been received, etc.
 

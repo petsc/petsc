@@ -241,7 +241,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateMPIViennaCLWithArray - Creates a parallel, array-style vector,
   where the user provides the viennacl vector to store the vector values.
 
@@ -284,7 +284,7 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateMPIViennaCLWithArrays - Creates a parallel, array-style vector,
   where the user provides the ViennaCL vector to store the vector values.
 

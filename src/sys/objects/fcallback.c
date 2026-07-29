@@ -33,7 +33,7 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFortranCallbackRegister - register a type+subtype callback. This is used by the PETSc Fortran stubs to allow the use of user Fortran functions
   as arguments to PETSc functions that take function pointers
 
@@ -97,7 +97,7 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid, const char *su
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFortranCallbackGetSizes - get sizes of class and subtype pointer arrays
 
   Collective, No Fortran Support

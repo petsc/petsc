@@ -1,6 +1,6 @@
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscEqualReal - Returns whether the two `PetscReal` variables are equal
 
   Input Parameters:
@@ -21,7 +21,7 @@ PetscBool PetscEqualReal(PetscReal a, PetscReal b)
   return (a == b) ? PETSC_TRUE : PETSC_FALSE;
 }
 
-/*@C
+/*@
   PetscEqualScalar - Returns whether the two `PetscScalar` values are equal.
 
   Input Parameters:

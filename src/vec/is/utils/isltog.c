@@ -15,7 +15,7 @@ typedef struct {
   PetscHMapI globalht;
 } ISLocalToGlobalMapping_Hash;
 
-/*@C
+/*@
   ISGetPointRange - Returns a description of the points in an `IS` suitable for traversal
 
   Not Collective
@@ -61,7 +61,7 @@ PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISRestorePointRange - Destroys the traversal description created with `ISGetPointRange()`
 
   Not Collective
@@ -1079,7 +1079,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information
 
   Collective the first time it is called
@@ -1110,7 +1110,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetBlockNodeInfo - Gets the neighbor information for each local block index
 
   Collective the first time it is called
@@ -1145,7 +1145,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockNodeInfo(ISLocalToGlobalMapping map
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreBlockNodeInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetBlockNodeInfo()`
 
   Not Collective
@@ -1171,7 +1171,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockNodeInfo(ISLocalToGlobalMapping
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetBlockMultiLeavesSF - Get the star-forest to communicate multi-leaf block data
 
   Collective the first time it is called
@@ -1382,7 +1382,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetBlockInfo()`
 
   Not Collective
@@ -1410,7 +1410,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each process
 
   Collective the first time it is called
@@ -1468,7 +1468,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetInfo()`
 
   Not Collective
@@ -1500,7 +1500,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetNodeInfo - Gets the neighbor information of local nodes
 
   Collective the first time it is called
@@ -1563,7 +1563,7 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreNodeInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetNodeInfo()`
 
   Not Collective
@@ -1594,7 +1594,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
 
   Not Collective
@@ -1634,7 +1634,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreIndices - Restore indices obtained with `ISLocalToGlobalMappingGetIndices()`
 
   Not Collective
@@ -1657,7 +1657,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block in a `ISLocalToGlobalMapping`
 
   Not Collective
@@ -1682,7 +1682,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRestoreBlockIndices - Restore indices obtained with `ISLocalToGlobalMappingGetBlockIndices()`
 
   Not Collective
@@ -1802,7 +1802,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISLocalToGlobalMappingRegister -  Registers a method for applying a global to local mapping with an `ISLocalToGlobalMapping`
 
   Not Collective, No Fortran Support
@@ -1924,7 +1924,7 @@ PetscErrorCode ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLoca
 
 PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   ISLocalToGlobalMappingRegisterAll - Registers all of the local to global mapping components in the `IS` package.
 
   Not Collective

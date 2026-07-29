@@ -1,6 +1,6 @@
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscIsCloseAtTol - Returns whether the two `PetscReal` numbers
   are close at a given relative and absolute tolerances <https://www.python.org/dev/peps/pep-0485/>.
 

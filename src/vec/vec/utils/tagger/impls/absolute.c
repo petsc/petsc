@@ -20,7 +20,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Absolute(VecTagger tagger, Vec vec, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerAbsoluteSetBox - Set the box defining the values to be tagged by the tagger.
 
   Logically Collective
@@ -40,7 +40,7 @@ PetscErrorCode VecTaggerAbsoluteSetBox(VecTagger tagger, VecTaggerBox box[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerAbsoluteGetBox - Get the box defining the values to be tagged by the tagger.
 
   Logically Collective

@@ -616,7 +616,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetPreSolve - Sets a function that is called at the beginning of each `KSPSolve()`. Used in conjunction with `KSPSetPostSolve()`.
 
   Logically Collective
@@ -646,7 +646,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetPostSolve - Sets a function that is called at the end of each `KSPSolve()` (whether it converges or not). Used in conjunction with `KSPSetPreSolve()`.
 
   Logically Collective
@@ -944,7 +944,7 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPRegister -  Adds a method, `KSPType`, to the Krylov subspace solver package.
 
   Not Collective, No Fortran Support
@@ -990,7 +990,7 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorRegister -  Registers a Krylov subspace solver monitor routine that may be accessed with `KSPMonitorSetFromOptions()`
 
   Not Collective

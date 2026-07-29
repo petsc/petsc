@@ -14,7 +14,7 @@ struct _n_PetscDLLibrary {
   char           libname[PETSC_MAX_PATH_LEN];
 };
 
-/*@C
+/*@
   PetscDLLibraryPrintPath - Prints the names of all dynamic libraries in a `PetscDLLibrary` list to the PETSc error output stream
 
   Not Collective
@@ -39,7 +39,7 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
   (if it is remote), then indicates if it exits and its local name.
 
@@ -111,7 +111,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibraryOpen - Opens a PETSc dynamic link library
 
   Collective, No Fortran Support
@@ -202,7 +202,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibrarySym - Load a symbol from a list of dynamic link libraries.
 
   Collective, No Fortran Support
@@ -304,7 +304,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibraryAppend - Appends another dynamic link library to the end  of the search list
 
   Collective, No Fortran Support
@@ -390,7 +390,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of the search list
 
   Collective, No Fortran Support
@@ -481,7 +481,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
   Collective, No Fortran Support

@@ -1230,7 +1230,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformExtrudeSetNormalFunction - Set a function to determine the extrusion normal
 
   Not Collective

@@ -505,7 +505,7 @@ PetscErrorCode PetscLogDefaultBegin(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogTraceBegin - Begins trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
 
@@ -573,7 +573,7 @@ PetscErrorCode PetscLogNestedBegin(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogLegacyCallbacksBegin - Create and start a log handler from callbacks
   matching the now deprecated function pointers `PetscLogPLB`, `PetscLogPLE`,
   `PetscLogPHC`, `PetscLogPHD`.
@@ -635,7 +635,7 @@ PetscErrorCode PetscLogLegacyCallbacksBegin(PetscErrorCode (*PetscLogPLB)(PetscL
 static PetscBool PetscBeganMPE = PETSC_FALSE;
   #endif
 
-/*@C
+/*@
   PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files and slows the
   program down.
 
@@ -678,7 +678,7 @@ PetscErrorCode PetscLogMPEBegin(void)
     #include <../src/sys/perfstubs/timer.h>
   #endif
 
-/*@C
+/*@
   PetscLogPerfstubsBegin - Turns on logging of events using the perfstubs interface.
 
   Collective on `PETSC_COMM_WORLD`, No Fortran Support
@@ -1564,7 +1564,7 @@ M*/
 .seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogFlops()`
 M*/
 
-/*@C
+/*@
   PetscLogStageGetPerfInfo - Return the performance information about the given stage
 
   No Fortran Support
@@ -1604,7 +1604,7 @@ PetscErrorCode PetscLogStageGetPerfInfo(PetscLogStage stage, PetscEventPerfInfo 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogEventGetPerfInfo - Return the performance information about the given event in the given stage
 
   No Fortran Support
@@ -1901,7 +1901,7 @@ PetscErrorCode PetscLogClassGetClassId(const char name[], PetscClassId *classid)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogClassIdGetName - Returns a `PetscClassId`'s name.
 
   Not Collective
@@ -2094,7 +2094,7 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogViewFromOptions - Processes command line options to determine if/how a `PetscLog` is to be viewed.
 
   Collective on `PETSC_COMM_WORLD`
@@ -2206,7 +2206,7 @@ PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogObjectState - Record information about an object with the default log handler
 
   Not Collective

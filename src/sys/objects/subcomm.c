@@ -303,7 +303,7 @@ PetscErrorCode PetscSubcommCreate(MPI_Comm comm, PetscSubcomm *psubcomm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSubcommGetParent - Gets the communicator that was used to create the `PetscSubcomm`
 
   Collective
@@ -325,7 +325,7 @@ PetscErrorCode PetscSubcommGetParent(PetscSubcomm scomm, MPI_Comm *pcomm)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscSubcommGetContiguousParent - Gets a communicator that is a duplicate of the parent but has the ranks
   reordered by the order they are in the children
 
@@ -348,7 +348,7 @@ PetscErrorCode PetscSubcommGetContiguousParent(PetscSubcomm scomm, MPI_Comm *pco
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscSubcommGetChild - Gets the communicator created by the `PetscSubcomm`. This is part of one of the subcommunicators created by the `PetscSubcomm`
 
   Collective

@@ -4276,7 +4276,7 @@ PETSC_EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat, MatType, MatReuse, Ma
 PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
-/*@C
+/*@
   MatSeqAIJGetArray - gives read/write access to the array where the data for a `MATSEQAIJ` matrix is stored
 
   Not Collective
@@ -4304,7 +4304,7 @@ PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJRestoreArray - returns access to the array where the data for a `MATSEQAIJ` matrix is stored obtained by `MatSeqAIJGetArray()`
 
   Not Collective
@@ -4331,7 +4331,7 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
   Not Collective
@@ -4359,7 +4359,7 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
 
   Not Collective
@@ -4387,7 +4387,7 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
   Not Collective
@@ -4416,7 +4416,7 @@ PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJRestoreArrayWrite - restore the write-only access array obtained from `MatSeqAIJGetArrayWrite()`
 
   Not Collective
@@ -4444,7 +4444,7 @@ PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the `MATSEQAIJ` matrix
 
   Not Collective; No Fortran Support
@@ -5358,7 +5358,7 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJRegister -  - Adds a new sub-matrix type for sequential `MATSEQAIJ` matrices
 
   Not Collective, No Fortran Support
@@ -5389,7 +5389,7 @@ PetscErrorCode MatSeqAIJRegister(const char sname[], PetscErrorCode (*function)(
 
 PetscBool MatSeqAIJRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   MatSeqAIJRegisterAll - Registers all of the matrix subtypes of `MATSSEQAIJ`
 
   Not Collective

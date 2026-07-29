@@ -164,7 +164,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVUGetPointer - Extracts the file pointer from a `PETSCVIEWERVU` `PetscViewer`.
 
   Not Collective
@@ -190,7 +190,7 @@ PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVUSetVecSeen - Sets the flag which indicates whether we have viewed
   a vector. This is usually called internally rather than by a user.
 
@@ -213,7 +213,7 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVUGetVecSeen - Gets the flag which indicates whether we have viewed
   a vector. This is usually called internally rather than by a user.
 
@@ -240,7 +240,7 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVUPrintDeferred - Prints to the deferred write cache instead of the file.
 
   Not Collective
@@ -278,7 +278,7 @@ PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVUFlushDeferred - Flushes the deferred write cache to the file.
 
   Not Collective

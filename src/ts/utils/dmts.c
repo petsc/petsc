@@ -198,7 +198,7 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSCopy - copies the information in a `DMTS` to another `DMTS`
 
   Not Collective
@@ -253,7 +253,7 @@ PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMTS - get read-only private `DMTS` context from a `DM`
 
   Not Collective
@@ -287,7 +287,7 @@ PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMTSWrite - get write access to private `DMTS` context from a `DM`
 
   Not Collective
@@ -323,7 +323,7 @@ PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCopyDMTS - copies a `DMTS` context to a new `DM`
 
   Logically Collective
@@ -352,7 +352,7 @@ PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIFunction - set `TS` implicit function evaluation function into a `DMTS`
 
   Not Collective
@@ -390,7 +390,7 @@ PetscErrorCode DMTSSetIFunction(DM dm, TSIFunctionFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIFunctionContextDestroy - set `TS` implicit evaluation context destroy function into a `DMTS`
 
   Not Collective
@@ -425,7 +425,7 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetIFunction - get `TS` implicit residual evaluation function from a `DMTS`
 
   Not Collective
@@ -460,7 +460,7 @@ PetscErrorCode DMTSGetIFunction(DM dm, TSIFunctionFn **func, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetI2Function - set `TS` implicit function evaluation function for 2nd order systems into a `TSDM`
 
   Not Collective
@@ -497,7 +497,7 @@ PetscErrorCode DMTSSetI2Function(DM dm, TSI2FunctionFn *fun, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetI2FunctionContextDestroy - set `TS` implicit evaluation for 2nd order systems context destroy into a `DMTS`
 
   Not Collective
@@ -536,7 +536,7 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetI2Function - get `TS` implicit residual evaluation function for 2nd order systems from a `DMTS`
 
   Not Collective
@@ -571,7 +571,7 @@ PetscErrorCode DMTSGetI2Function(DM dm, TSI2FunctionFn **fun, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetI2Jacobian - set `TS` implicit Jacobian evaluation function for 2nd order systems from a `DMTS`
 
   Not Collective
@@ -608,7 +608,7 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2JacobianFn *jac, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetI2JacobianContextDestroy - set `TS` implicit Jacobian evaluation for 2nd order systems context destroy function into a `DMTS`
 
   Not Collective
@@ -646,7 +646,7 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetI2Jacobian - get `TS` implicit Jacobian evaluation function for 2nd order systems from a `DMTS`
 
   Not Collective
@@ -681,7 +681,7 @@ PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2JacobianFn **jac, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetRHSFunction - set `TS` explicit residual evaluation function into a `DMTS`
 
   Not Collective
@@ -719,7 +719,7 @@ PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunctionFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetRHSFunctionContextDestroy - set `TS` explicit residual evaluation context destroy function into a `DMTS`
 
   Not Collective
@@ -763,7 +763,7 @@ PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetTransientVariable - sets function to transform from state to transient variables into a `DMTS`
 
   Logically Collective
@@ -802,7 +802,7 @@ PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariableFn *tvar, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetTransientVariable - gets function to transform from state to transient variables set with `DMTSSetTransientVariable()` from a `TSDM`
 
   Logically Collective
@@ -833,7 +833,7 @@ PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariableFn **tvar, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetSolutionFunction - gets the `TS` solution evaluation function from a `DMTS`
 
   Not Collective
@@ -861,7 +861,7 @@ PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFn **func, PetscCtxRt ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetSolutionFunction - set `TS` solution evaluation function into a `DMTS`
 
   Not Collective
@@ -892,7 +892,7 @@ PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetForcingFunction - set `TS` forcing function evaluation function into a `DMTS`
 
   Not Collective
@@ -923,7 +923,7 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetForcingFunction - get `TS` forcing function evaluation function from a `DMTS`
 
   Not Collective
@@ -956,7 +956,7 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFn **f, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetRHSFunction - get `TS` explicit residual evaluation function from a `DMTS`
 
   Not Collective
@@ -991,7 +991,7 @@ PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunctionFn **func, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIJacobian - set `TS` Jacobian evaluation function into a `DMTS`
 
   Not Collective
@@ -1029,7 +1029,7 @@ PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobianFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function into a `DMTS`
 
   Not Collective
@@ -1072,7 +1072,7 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetIJacobian - get `TS` Jacobian evaluation function from a `DMTS`
 
   Not Collective
@@ -1108,7 +1108,7 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobianFn **func, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetRHSJacobian - set `TS` Jacobian evaluation function into a `DMTS`
 
   Not Collective
@@ -1149,7 +1149,7 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobianFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetRHSJacobianContextDestroy - set `TS` Jacobian evaluation context destroy function from a `DMTS`
 
   Not Collective
@@ -1187,7 +1187,7 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSGetRHSJacobian - get `TS` Jacobian evaluation function from a `DMTS`
 
   Not Collective
@@ -1223,7 +1223,7 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobianFn **func, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIFunctionSerialize - sets functions used to view and load a `TSIFunctionFn` context
 
   Not Collective
@@ -1249,7 +1249,7 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSSetIJacobianSerialize - sets functions used to view and load a `TSIJacobianFn` context
 
   Not Collective

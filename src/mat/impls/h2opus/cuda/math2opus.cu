@@ -1578,7 +1578,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateH2OpusFromKernel - Creates a `MATH2OPUS` from a user-supplied kernel.
 
   Input Parameters:

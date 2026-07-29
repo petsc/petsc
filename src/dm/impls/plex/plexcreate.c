@@ -311,7 +311,7 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateCoordinateSpace - Creates a finite element space for the coordinates
 
   Collective
@@ -936,7 +936,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateBoxSurfaceMesh - Creates a mesh on the surface of the tensor product of unit intervals (box) using tensor cells (hexahedra).
 
   Collective
@@ -2461,7 +2461,7 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateHypercubicMesh - Creates a periodic mesh on the tensor product of unit intervals using only vertices and edges.
 
   Collective
@@ -6086,7 +6086,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexBuildFromCellListParallel - Build a distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) where all cells have the same celltype
 
   Collective; No Fortran Support
@@ -6237,7 +6237,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexBuildFromCellSectionParallel - Build distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) allowing multiple celltypes
 
   Collective; No Fortran Support

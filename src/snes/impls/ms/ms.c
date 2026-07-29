@@ -27,7 +27,7 @@ typedef struct {
   PetscReal     damping; /* Damping parameter, like length of (pseudo) time step */
 } SNES_MS;
 
-/*@C
+/*@
   SNESMSRegisterAll - Registers all of the multi-stage methods in `SNESMS`
 
   Logically Collective
@@ -90,7 +90,7 @@ PetscErrorCode SNESMSRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSRegisterDestroy - Frees the list of schemes that were registered by `SNESMSRegister()`.
 
   Logically Collective
@@ -118,7 +118,7 @@ PetscErrorCode SNESMSRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSInitializePackage - This function initializes everything in the `SNESMS` package. It is called
   from `SNESInitializePackage()`.
 
@@ -137,7 +137,7 @@ PetscErrorCode SNESMSInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSFinalizePackage - This function destroys everything in the `SNESMS` package. It is
   called from `PetscFinalize()`.
 
@@ -154,7 +154,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMSRegister - register a multistage scheme for `SNESMS`
 
   Logically Collective, No Fortran Support

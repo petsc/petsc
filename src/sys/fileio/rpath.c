@@ -14,7 +14,7 @@
   #include <sys/systeminfo.h>
 #endif
 
-/*@C
+/*@
   PetscGetRelativePath - Given a filename, returns the relative path (removes
   all directory specifiers).
 

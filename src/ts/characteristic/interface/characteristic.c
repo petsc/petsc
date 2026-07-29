@@ -209,7 +209,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicRegister -  Adds an approarch to the method of characteristics package.
 
   Not Collective, No Fortran Support
@@ -248,7 +248,7 @@ PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicSetVelocityInterpolation - Sets the routine used to interpolate the velocity field at points along a characteristic
 
   Not Collective
@@ -288,7 +288,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicSetVelocityInterpolationLocal - Sets the routine used to interpolate the velocity field along a characteristic using a locally-accessible array
 
   Not Collective
@@ -328,7 +328,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicSetFieldInterpolation - Sets the routine used to interpolate the field being advected at the foot of a characteristic
 
   Not Collective
@@ -369,7 +369,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicSetFieldInterpolationLocal - Sets the routine used to interpolate the field being advected at the foot of a characteristic using a locally-accessible array
 
   Not Collective

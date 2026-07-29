@@ -1264,7 +1264,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecKokkosPlaceArray - Allows one to replace the device array in a VecKokkos vector with a
   device array provided by the user. This is useful to avoid copying an array into a vector.
 
@@ -1303,7 +1303,7 @@ PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecKokkosResetArray - Resets a vector to use its default memory. Call this
   after the use of `VecKokkosPlaceArray()`.
 
@@ -1761,7 +1761,7 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateSeqKokkosWithArray - Creates a Kokkos sequential array-style vector,
   where the user provides the array space to store the vector values. The array
   provided must be a device array.
@@ -1904,7 +1904,7 @@ static PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscI
 }
 
 /* TODO: ftn-auto generates veckok.kokkosf.c */
-/*@C
+/*@
   VecCreateSeqKokkos - Creates a standard, sequential array-style vector.
 
   Collective

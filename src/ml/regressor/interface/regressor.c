@@ -8,7 +8,7 @@ PetscClassId PETSCREGRESSOR_CLASSID;
 /* Logging support */
 PetscLogEvent PetscRegressor_SetUp, PetscRegressor_Fit, PetscRegressor_Predict;
 
-/*@C
+/*@
   PetscRegressorRegister - Adds a method to the `PetscRegressor` package.
 
   Not collective
@@ -334,7 +334,7 @@ PetscErrorCode PetscRegressorReset(PetscRegressor regressor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegressorDestroy - Destroys the regressor context that was created with `PetscRegressorCreate()`.
 
   Collective
@@ -363,7 +363,7 @@ PetscErrorCode PetscRegressorDestroy(PetscRegressor *regressor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegressorSetType - Sets the type for the regressor.
 
   Collective

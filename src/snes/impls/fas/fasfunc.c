@@ -53,7 +53,7 @@ PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESFASSetLevels - Sets the number of levels to use with `SNESFAS`.
   Must be called before any other `SNESFAS` routine.
 
@@ -318,7 +318,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESFASSetMonitor - Sets the method-specific cycle monitoring
 
   Logically Collective

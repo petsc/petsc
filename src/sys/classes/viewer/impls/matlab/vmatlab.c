@@ -49,7 +49,7 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMatlabPutVariable - Write a raw MATLAB `mxArray` variable into a `PETSCVIEWERMATLAB` file under a chosen name.
 
   Not Collective; only processor zero writes the variable
@@ -254,7 +254,7 @@ PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFile
 
 static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_VIEWER_MATLAB_ - Creates a `PETSCVIEWERMATLAB` `PetscViewer` shared by all processors
    in a communicator.
 

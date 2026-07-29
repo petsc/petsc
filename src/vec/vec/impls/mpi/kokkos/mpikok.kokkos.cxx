@@ -407,7 +407,7 @@ PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecCreateMPIKokkosWithArray - Creates a parallel, array-style vector,
   where the user provides the GPU array space to store the vector values.
 

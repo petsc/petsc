@@ -5,7 +5,7 @@ PetscClassId PETSCPARTITIONER_CLASSID = 0;
 PetscFunctionList PetscPartitionerList              = NULL;
 PetscBool         PetscPartitionerRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscPartitionerRegister - Adds a new PetscPartitioner implementation
 
   Not Collective, No Fortran Support
@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner);
 
-/*@C
+/*@
   PetscPartitionerRegisterAll - Registers all of the PetscPartitioner components in the DM package.
 
   Not Collective
@@ -80,7 +80,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
 
 static PetscBool PetscPartitionerPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscPartitionerFinalizePackage - This function finalizes everything in the PetscPartitioner package.
   It is called from PetscFinalize().
 
@@ -97,7 +97,7 @@ PetscErrorCode PetscPartitionerFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPartitionerInitializePackage - This function initializes everything in the PetscPartitioner package.
 
   Level: developer

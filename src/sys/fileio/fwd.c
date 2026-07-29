@@ -21,7 +21,7 @@
 #endif
 #include <errno.h>
 
-/*@C
+/*@
   PetscGetWorkingDirectory - Gets the current working directory.
 
   Not Collective

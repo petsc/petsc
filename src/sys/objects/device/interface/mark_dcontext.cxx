@@ -614,7 +614,7 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 
 #undef DEBUG_INFO
 
-/*@C
+/*@
   PetscDeviceContextMarkIntentFromID - Indicate a `PetscDeviceContext`s access intent to the
   auto-dependency system
 

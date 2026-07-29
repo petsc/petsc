@@ -9,7 +9,7 @@
   #include <cxxabi.h>
 #endif
 
-/*@C
+/*@
   PetscDemangleSymbol - Convert a C++-mangled symbol name to its human-readable form using `abi::__cxa_demangle()` when available
 
   Not Collective

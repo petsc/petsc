@@ -59,7 +59,7 @@ const char  *TaoConvergedReasons_Shifted[] = {"DIVERGED_USER",
                                               "CONVERGED_USER"};
 const char **TaoConvergedReasons           = TaoConvergedReasons_Shifted - TAO_DIVERGED_USER;
 
-/*@C
+/*@
   TaoRegisterAll - Registers all of the optimization methods in the Tao
   package.
 

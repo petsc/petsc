@@ -55,7 +55,7 @@ PetscLogEvent PETSCFE_SetUp;
 PetscFunctionList PetscFEList              = NULL;
 PetscBool         PetscFERegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscFERegister - Adds a new `PetscFEType`
 
   Not Collective, No Fortran Support
@@ -735,7 +735,7 @@ PetscErrorCode PetscFECopyQuadrature(PetscFE sfe, PetscFE tfe)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGetNumDof - Returns the number of dofs (dual basis vectors) associated to mesh points on the reference cell of a given dimension
 
   Not Collective
@@ -759,7 +759,7 @@ PetscErrorCode PetscFEGetNumDof(PetscFE fem, const PetscInt *numDof[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGetCellTabulation - Returns the tabulation of the basis functions at the quadrature points on the reference cell
 
   Not Collective
@@ -853,7 +853,7 @@ PetscErrorCode PetscFEExpandFaceQuadrature(PetscFE fe, PetscQuadrature fq, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGetFaceTabulation - Returns the tabulation of the basis functions at the face quadrature points for each face of the reference cell
 
   Not Collective
@@ -913,7 +913,7 @@ PetscErrorCode PetscFEGetFaceTabulation(PetscFE fem, PetscInt k, PetscTabulation
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEGetFaceCentroidTabulation - Returns the tabulation of the basis functions at the face centroid points
 
   Not Collective
@@ -959,7 +959,7 @@ PetscErrorCode PetscFEGetFaceCentroidTabulation(PetscFE fem, PetscTabulation *Tc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFECreateTabulation - Creates a `PetscTabulation` object to hold the basis functions, and perhaps derivatives, at the points provided.
 
   Not Collective
@@ -1020,7 +1020,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEComputeTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
   Not Collective
@@ -1428,7 +1428,7 @@ PetscErrorCode PetscFEIntegrate(PetscDS prob, PetscInt field, PetscInt Ne, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFEIntegrateBd - Produce the integral for the given field for a chunk of elements by quadrature integration
 
   Not Collective

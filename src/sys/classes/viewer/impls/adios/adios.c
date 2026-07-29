@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerADIOSOpen - Opens a file for ADIOS input/output.
 
   Collective

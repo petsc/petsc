@@ -6,7 +6,7 @@
 #include <petsc/private/logimpl.h> /*I   "petscsys.h"    I*/
 #include <errno.h>
 
-/*@C
+/*@
   PetscFOpen - Has the first process in the MPI communicator open a file;
   all others do nothing.
 
@@ -57,7 +57,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFClose - Has MPI rank 0 in the communicator close a
   file (usually obtained with `PetscFOpen()`; all others do nothing.
 
@@ -87,7 +87,7 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
 
 static char PetscPOpenMachine[128] = "";
 
-/*@C
+/*@
   PetscPClose - Closes (ends) a program on MPI rank 0 run with `PetscPOpen()`
 
   Collective, but only MPI rank 0 does anything
@@ -123,7 +123,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPOpen - Runs a program on MPI rank 0 and sends either its input or output to
   a file.
 

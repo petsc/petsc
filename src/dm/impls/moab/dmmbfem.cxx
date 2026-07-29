@@ -530,7 +530,7 @@ static PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabFEMComputeBasis - Evaluate bases and derivatives at quadrature points for a linear EDGE/QUAD/TRI/HEX/TET element.
 
   The routine takes the coordinates of the vertices of an element and computes basis functions associated with
@@ -586,7 +586,7 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabFEMCreateQuadratureDefault - Create default quadrature rules for integration over an element with a given
   dimension and polynomial order (deciphered from number of element vertices).
 
@@ -694,7 +694,7 @@ static PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabPToRMapping - Compute the mapping from the physical coordinate system for a given element to the
   canonical reference element.
 

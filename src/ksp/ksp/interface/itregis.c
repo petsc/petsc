@@ -52,7 +52,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 #endif
 PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP);
 
-/*@C
+/*@
   KSPRegisterAll - Registers all of the Krylov subspace methods in the `KSP` package.
 
   Not Collective
@@ -122,7 +122,7 @@ PetscErrorCode KSPRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorRegisterAll - Registers all of the Krylov subspace monitors in the `KSP` package.
 
   Not Collective

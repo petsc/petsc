@@ -795,7 +795,7 @@ PetscErrorCode SNESMultiblockSetBlockSize(SNES snes, PetscInt bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMultiblockGetSubSNES - Gets the `SNES` contexts for all blocks in a `SNESMULTIBLOCK` solver.
 
   Not Collective but each `SNES` obtained is parallel

@@ -7,7 +7,7 @@
 */
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
-/*@C
+/*@
   KSPGMRESClassicalGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
   using classical Gram-Schmidt with possible iterative refinement to improve the stability
 

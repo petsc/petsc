@@ -392,7 +392,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateSection - Create a `PetscSection` based upon the dof layout specification provided.
 
   Not Collective

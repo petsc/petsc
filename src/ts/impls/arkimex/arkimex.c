@@ -421,7 +421,7 @@ PetscErrorCode TSHasRHSFunction(TS ts, PetscBool *has)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in `TSARKIMEX`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -1012,7 +1012,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by `TSARKIMEXRegister()`.
 
   Not Collective
@@ -1039,7 +1039,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSARKIMEXInitializePackage - This function initializes everything in the `TSARKIMEX` package. It is called
   from `TSInitializePackage()`.
 
@@ -1057,7 +1057,7 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSARKIMEXFinalizePackage - This function destroys everything in the `TSARKIMEX` package. It is
   called from `PetscFinalize()`.
 
@@ -1073,7 +1073,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSARKIMEXRegister - register a `TSARKIMEX` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
   Logically Collective
@@ -1177,7 +1177,7 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSDIRKRegister - register a `TSDIRK` scheme by providing the entries in its Butcher tableau and, optionally, embedded approximations and interpolation
 
   Logically Collective.

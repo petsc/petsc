@@ -43,7 +43,7 @@ typedef struct {
   void                *predictor_ctx;
 } TS_Alpha;
 
-/*@C
+/*@
   TSAlpha2SetPredictor - sets the callback for computing a predictor (i.e., initial guess
   for the nonlinear solver).
 

@@ -3305,7 +3305,7 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCone - Return the points on the in-edges for this point in the DAG
 
   Not Collective
@@ -3593,7 +3593,7 @@ PetscErrorCode DMPlexSetCone(DM dm, PetscInt p, const PetscInt cone[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetConeOrientation - Return the orientations on the in-edges for this point in the DAG
 
   Not Collective
@@ -3757,7 +3757,7 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetOrientedCone - Return the points and orientations on the in-edges for this point in the DAG
 
   Not collective
@@ -3815,7 +3815,7 @@ PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, PeOp const PetscInt *con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreOrientedCone - Restore the points and orientations on the in-edges for this point in the DAG obtained with `DMPlexGetOrientedCone()`
 
   Not Collective
@@ -3895,7 +3895,7 @@ PetscErrorCode DMPlexSetSupportSize(DM dm, PetscInt p, PetscInt size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetSupport - Return the points on the out-edges for this point in the DAG
 
   Not Collective
@@ -4332,7 +4332,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetTransitiveClosure - Return the points on the transitive closure of the in-edges or out-edges for this point in the DAG
 
   Not Collective
@@ -4381,7 +4381,7 @@ PetscErrorCode DMPlexGetTransitiveClosure(DM dm, PetscInt p, PetscBool useCone, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreTransitiveClosure - Restore the array of points on the transitive closure of the in-edges or out-edges for this point in the DAG
 
   Not Collective
@@ -4968,7 +4968,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetJoin - Get an array for the join of the set of points
 
   Not Collective
@@ -5040,7 +5040,7 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreJoin - Restore an array for the join of the set of points obtained with `DMPlexGetJoin()`
 
   Not Collective
@@ -5078,7 +5078,7 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetFullJoin - Get an array for the join of the set of points
 
   Not Collective
@@ -5177,7 +5177,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetMeet - Get an array for the meet of the set of points
 
   Not Collective
@@ -5249,7 +5249,7 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreMeet - Restore an array for the meet of the set of points obtained with `DMPlexGetMeet()`
 
   Not Collective
@@ -5279,7 +5279,7 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetFullMeet - Get an array for the meet of the set of points
 
   Not Collective
@@ -5991,7 +5991,7 @@ PetscErrorCode DMPlexGetSupportSection(DM dm, PetscSection *section)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCones - Return cone data
 
   Not Collective
@@ -6016,7 +6016,7 @@ PetscErrorCode DMPlexGetCones(DM dm, PetscInt *cones[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetConeOrientations - Return cone orientation data
 
   Not Collective
@@ -6917,7 +6917,7 @@ static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscI
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   DMPlexGetCompressedClosure - Return the transitive closure of a point, restricted to points with dof in the given section
 
   Not Collective
@@ -6968,7 +6968,7 @@ PetscErrorCode DMPlexGetCompressedClosure(DM dm, PetscSection section, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreCompressedClosure - Release the arrays returned by `DMPlexGetCompressedClosure()`
 
   Not Collective
@@ -7097,7 +7097,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVecGetOrientedClosure - Get an array of the values on the closure of `point` with a given orientation, optionally applying the closure permutation.
 
   Not collective
@@ -7184,7 +7184,7 @@ PetscErrorCode DMPlexVecGetOrientedClosure(DM dm, PetscSection section, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVecGetClosure - Get an array of the values on the closure of `point`
 
   Not collective
@@ -7251,7 +7251,7 @@ PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVecGetClosureAtDepth - Get an array of the values on the closure of `point` that are at a specific depth
 
   Not collective
@@ -7388,7 +7388,7 @@ PetscErrorCode DMPlexVecGetClosureAtDepth(DM dm, PetscSection section, Vec v, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVecRestoreClosure - Restore the array of the values on the closure of `point` obtained with `DMPlexVecGetClosure()`
 
   Not collective
@@ -7797,7 +7797,7 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexVecSetClosure - Set an array of the values on the closure of `point`
 
   Not collective
@@ -8847,7 +8847,7 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetClosureIndices - Gets the global dof indices associated with the closure of the given point within the provided sections.
 
   Not collective
@@ -8890,7 +8890,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreClosureIndices - Restores the global dof indices associated with the closure of the given point within the provided sections.
 
   Not collective
@@ -8972,7 +8972,7 @@ PetscErrorCode DMPlexMatSetClosure_Internal(DM dm, PetscSection section, PetscSe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMatSetClosure - Set an array of the values on the closure of `point`
 
   Not collective
@@ -8997,7 +8997,7 @@ PetscErrorCode DMPlexMatSetClosure(DM dm, PetscSection section, PetscSection glo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMatSetClosureGeneral - Set an array of the values on the closure of `point` using a different row and column section
 
   Not collective
@@ -9071,7 +9071,7 @@ PetscErrorCode DMPlexMatSetClosureGeneral(DM dmRow, PetscSection sectionRow, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMatSetClosureRefined - Insert values into `A` for the closure of a coarse-cell point, using indices from the associated refined subcells
 
   Not Collective
@@ -9263,7 +9263,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexMatGetClosureIndicesRefined - Compute the fine-row and coarse-column global indices associated with the refined closure of a coarse point
 
   Not Collective

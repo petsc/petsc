@@ -124,7 +124,7 @@ PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGSetResidual - Sets the function to be used to calculate the residual on the lth level.
 
   Logically Collective
@@ -157,7 +157,7 @@ PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGSetResidualTranspose - Sets the function to be used to calculate the residual of the transposed linear system
   on the lth level.
 

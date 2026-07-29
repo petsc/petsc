@@ -1,6 +1,6 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-/*@C
+/*@
   DMDACreatePF - Creates an appropriately dimensioned `PF` mathematical function object
   from a `DMDA`.
 

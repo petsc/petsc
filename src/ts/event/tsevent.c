@@ -250,7 +250,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetEventHandler - Sets functions and parameters used for indicating events and handling them
 
   Logically Collective

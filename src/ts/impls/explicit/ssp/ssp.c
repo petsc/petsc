@@ -477,7 +477,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSSPInitializePackage - This function initializes everything in the `TSSSP` package. It is called
   from `TSInitializePackage()`.
 
@@ -497,7 +497,7 @@ PetscErrorCode TSSSPInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSSPFinalizePackage - This function destroys everything in the `TSSSP` package. It is
   called from `PetscFinalize()`.
 

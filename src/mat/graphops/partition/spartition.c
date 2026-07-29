@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Parmetis(Mat, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Metis(Mat, PetscInt, Mat *);
 #endif
 
-/*@C
+/*@
   MatPartitioningRegisterAll - Registers all of the matrix partitioning routines in PETSc.
 
   Not Collective
@@ -57,7 +57,7 @@ PetscErrorCode MatPartitioningRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMeshToCellGraphRegisterAll - Registers all of the mesh-to-cell-graph conversion routines in PETSc.
 
   Not Collective

@@ -428,7 +428,7 @@ PetscErrorCode DMCreateSectionSubDM(DM dm, PetscInt numFields, const PetscInt fi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSectionSuperDM - Returns an arrays of `IS` and a `DM` containing a `PetscSection` that encapsulates a superproblem defined by the array of `DM` and their `PetscSection`
 
   Not Collective

@@ -67,7 +67,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
     #include <unistd.h>
   #endif
 
-/*@C
+/*@
   PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
 
   Not Collective, only the first rank in `MPI_Comm` does anything
@@ -151,7 +151,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 }
 #endif
 
-/*@C
+/*@
   PetscBoxRefresh - Get a new authorization token for accessing Box drive from PETSc from a refresh token
 
   Not Collective, only the first process in the `MPI_Comm` does anything
@@ -226,7 +226,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
 #include <sys/stat.h>
 
-/*@C
+/*@
   PetscBoxUpload - Loads a file to the Box Drive
 
   This routine has not yet been written; it is just copied from Google Drive

@@ -51,7 +51,7 @@ void PetscStackSAWsTakeAccess(void)
   }
 }
 
-/*@C
+/*@
   PetscStackViewSAWs - Publish PETSc's current debug call stack through the SAWs (Scientific Application Web server) so it can be inspected from a remote browser
 
   Logically Collective on `PETSC_COMM_WORLD`; No Fortran Support
@@ -77,7 +77,7 @@ PetscErrorCode PetscStackViewSAWs(void)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStackSAWsViewOff - Stop publishing the PETSc debug call stack through SAWs (Scientific Application Web server)
 
   Logically Collective

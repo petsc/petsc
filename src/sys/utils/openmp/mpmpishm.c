@@ -113,7 +113,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlCreate - create a PETSc OpenMP controller, which manages PETSc's interaction with third party libraries that use OpenMP
 
   Input Parameters:
@@ -249,7 +249,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlDestroy - destroy the PETSc OpenMP controller
 
   Input Parameter:
@@ -276,7 +276,7 @@ PetscErrorCode PetscOmpCtrlDestroy(PetscOmpCtrl *pctrl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlGetOmpComms - Get MPI communicators from a PETSc OMP controller
 
   Input Parameter:
@@ -304,7 +304,7 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl, MPI_Comm *omp_comm, MP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlBarrier - Do barrier on MPI ranks in omp_comm contained by the PETSc OMP controller (to let slave ranks free their CPU)
 
   Input Parameter:
@@ -339,7 +339,7 @@ PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl ctrl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlOmpRegionOnMasterBegin - Mark the beginning of an OpenMP library call on master ranks
 
   Input Parameter:
@@ -361,7 +361,7 @@ PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl ctrl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOmpCtrlOmpRegionOnMasterEnd - Mark the end of an OpenMP library call on master ranks
 
   Input Parameter:

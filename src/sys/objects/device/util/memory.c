@@ -3,7 +3,7 @@
 
 // REVIEW ME: this should probably return PETSC_MEMTYPE_CUDA and PETSC_MEMTYPE_HIP
 
-/*@C
+/*@
   PetscGetMemType - Query the `PetscMemType` of a pointer
 
   Not Collective, No Fortran Support

@@ -7,7 +7,7 @@
 */
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
-/*@C
+/*@
   KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
   using modified Gram-Schmidt.
 

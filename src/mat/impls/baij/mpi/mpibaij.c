@@ -2606,7 +2606,7 @@ static PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B, PetscInt bs, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIBAIJSetPreallocationCSR - Creates a sparse parallel matrix in `MATBAIJ` format using the given nonzero structure and (optional) numerical values
 
   Collective
@@ -3535,7 +3535,7 @@ PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat mat, PetscReal fact)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIBAIJGetSeqBAIJ - Get the on-process (diagonal block) and off-process (off-diagonal block) `MATSEQBAIJ`
   matrices that make up an `MATMPIBAIJ` matrix, together with the local-to-global column map for the off-diagonal block.
 
@@ -3577,7 +3577,7 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 #endif
 
 // PetscClangLinter pragma disable: -fdoc-synopsis-matching-symbol-name
-/*@C
+/*@
   MatMPIBAIJSetValuesBlocked - Direct Fortran call to replace call to `MatSetValuesBlocked()`
 
   Collective

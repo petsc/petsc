@@ -95,7 +95,7 @@ struct reduction_identity<landau_inner_red::TensorValueType> {
 } // namespace Kokkos
 
 extern "C" {
-/*@C
+/*@
   LandauKokkosCreateMatMaps - Build the Kokkos device-side `P4estVertexMaps` used by the `DMPLEX` Landau collision operator from its host-side reduced quadrature-point map
 
   Not Collective; No Fortran Support
@@ -144,7 +144,7 @@ PetscErrorCode LandauKokkosCreateMatMaps(P4estVertexMaps maps[], pointInterpolat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   LandauKokkosDestroyMatMaps - Free the Kokkos-backed vertex maps created with `LandauKokkosCreateMatMaps()`
 
   Not Collective; No Fortran Support
@@ -171,7 +171,7 @@ PetscErrorCode LandauKokkosDestroyMatMaps(P4estVertexMaps maps[], PetscInt num_g
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   LandauKokkosStaticDataSet - Copy precomputed Landau quadrature and species data to device-resident Kokkos views for use by `LandauKokkosJacobian()`
 
   Collective; No Fortran Support
@@ -343,7 +343,7 @@ PetscErrorCode LandauKokkosStaticDataSet(DM plex, const PetscInt Nq, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   LandauKokkosStaticDataClear - Clears precomputed Landau quadrature and species data from device-resident Kokkos views
 
   Collective; No Fortran Support
@@ -465,7 +465,7 @@ PetscErrorCode landau_mat_assemble(PetscScalar *coo_vals, const PetscScalar Aij,
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   LandauKokkosJacobian - Kokkos backend for assembling the Landau collision-operator Jacobian for the `DMPlex` Landau time integrator
 
   Collective; No Fortran Support

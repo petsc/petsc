@@ -2167,7 +2167,7 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArray - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
 
   Logically Collective
@@ -2191,7 +2191,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArray - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArray()`
 
   Logically Collective
@@ -2217,7 +2217,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
 
   Not Collective
@@ -2241,7 +2241,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
 
   Not Collective
@@ -2263,7 +2263,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
   Not Collective
@@ -2287,7 +2287,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
 
   Not Collective
@@ -2313,7 +2313,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar *array[]) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArrayAndMemType - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
 
   Logically Collective
@@ -2360,7 +2360,7 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar *array[], PetscMemT
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArrayAndMemType - returns access to the array that is obtained by `MatDenseGetArrayAndMemType()`
 
   Logically Collective
@@ -2398,7 +2398,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArrayReadAndMemType - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
 
   Logically Collective
@@ -2444,7 +2444,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar *array[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArrayReadAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
 
   Logically Collective
@@ -2481,7 +2481,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar *arra
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetArrayWriteAndMemType - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
   Logically Collective
@@ -2527,7 +2527,7 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar *array[], Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreArrayWriteAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
 
   Logically Collective
@@ -3644,7 +3644,7 @@ PetscErrorCode MatCreate_SeqDense(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseGetColumn - gives access to a column of a dense matrix. This is only the local part of the column. You MUST call `MatDenseRestoreColumn()` to avoid memory bleeding.
 
   Not Collective
@@ -3673,7 +3673,7 @@ PetscErrorCode MatDenseGetColumn(Mat A, PetscInt col, PetscScalar *vals[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseRestoreColumn - returns access to a column of a `MATDENSE` matrix which is returned by `MatDenseGetColumn()`.
 
   Not Collective

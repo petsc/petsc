@@ -4,7 +4,7 @@ PetscFunctionList MatColoringList              = NULL;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;
 const char *const MatColoringWeightTypes[]     = {"RANDOM", "LEXICAL", "LF", "SL", "MatColoringWeightType", "MAT_COLORING_WEIGHT_", NULL};
 
-/*@C
+/*@
   MatColoringRegister - Adds a new sparse matrix coloring to the  matrix package.
 
   Not Collective, No Fortran Support

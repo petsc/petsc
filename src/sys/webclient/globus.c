@@ -74,7 +74,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
   #include <unistd.h>
 #endif
 
-/*@C
+/*@
   PetscGlobusAuthorize - Get an access token allowing PETSc applications to make Globus file transfer requests
 
   Not Collective, only the first process in `MPI_Comm` does anything
@@ -140,7 +140,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGlobusGetTransfers - Get a record of current transfers requested from Globus
 
   Not Collective, only the first process in `MPI_Comm` does anything
@@ -190,7 +190,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGlobusUpload - Loads a file to Globus
 
   Not Collective, only the first process in the `MPI_Comm` uploads the file

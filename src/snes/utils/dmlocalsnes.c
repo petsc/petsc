@@ -187,7 +187,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetObjectiveLocal - set a local objective evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DMSNES` will automatically accumulate the overlapping values.
@@ -226,7 +226,7 @@ PetscErrorCode DMSNESSetObjectiveLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetFunctionLocal - set a local residual evaluation function. This function is called with local vector
   containing the local vector information PLUS ghost point information. It should compute a result for all local
   elements and `DMSNES` will automatically accumulate the overlapping values.
@@ -268,7 +268,7 @@ PetscErrorCode DMSNESSetFunctionLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec x
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetBoundaryLocal - set a function to insert, for example, essential boundary conditions into a ghosted solution vector
 
   Logically Collective
@@ -302,7 +302,7 @@ PetscErrorCode DMSNESSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetJacobianLocal - set a local Jacobian evaluation function
 
   Logically Collective
@@ -340,7 +340,7 @@ PetscErrorCode DMSNESSetJacobianLocal(DM dm, PetscErrorCode (*func)(DM dm, Vec X
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetObjectiveLocal - get the local objective evaluation function information set with `DMSNESSetObjectiveLocal()`.
 
   Not Collective
@@ -376,7 +376,7 @@ PetscErrorCode DMSNESGetObjectiveLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetFunctionLocal - get the local residual evaluation function information set with `DMSNESSetFunctionLocal()`.
 
   Not Collective
@@ -412,7 +412,7 @@ PetscErrorCode DMSNESGetFunctionLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetBoundaryLocal - get the local boundary value function set with `DMSNESSetBoundaryLocal()`.
 
   Not Collective
@@ -447,7 +447,7 @@ PetscErrorCode DMSNESGetBoundaryLocal(DM dm, PetscErrorCode (**func)(DM dm, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetJacobianLocal - the local Jacobian evaluation function set with `DMSNESSetJacobianLocal()`.
 
   Logically Collective

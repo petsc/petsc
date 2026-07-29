@@ -371,7 +371,7 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
   Collective
@@ -1577,7 +1577,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the optimization algorithm. Called after the new solution and the gradient
   is determined, but before the Hessian is computed (if applicable).
@@ -1611,7 +1611,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao tao, PetscInt it
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoSetConvergenceTest - Sets the function that is to be used to test
   for convergence of the iterative minimization solution.  The new convergence
   testing routine will replace Tao's default convergence test.
@@ -1643,7 +1643,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao tao, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorSet - Sets an additional function that is to be used at every
   iteration of the solver to display the iteration's
   progress.
@@ -1933,7 +1933,7 @@ PetscErrorCode TaoMonitorConstraintNorm(Tao tao, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorSolution - Views the solution at each iteration of `TaoSolve()`
 
   Collective
@@ -1961,7 +1961,7 @@ PetscErrorCode TaoMonitorSolution(Tao tao, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorGradient - Views the gradient at each iteration of `TaoSolve()`
 
   Collective
@@ -1989,7 +1989,7 @@ PetscErrorCode TaoMonitorGradient(Tao tao, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorStep - Views the step-direction at each iteration of `TaoSolve()`
 
   Collective
@@ -2017,7 +2017,7 @@ PetscErrorCode TaoMonitorStep(Tao tao, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorSolutionDraw - Plots the solution at each iteration of `TaoSolve()`
 
   Collective
@@ -2050,7 +2050,7 @@ PetscErrorCode TaoMonitorSolutionDraw(Tao tao, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorGradientDraw - Plots the gradient at each iteration of `TaoSolve()`
 
   Collective
@@ -2078,7 +2078,7 @@ PetscErrorCode TaoMonitorGradientDraw(Tao tao, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorStepDraw - Plots the step direction at each iteration of `TaoSolve()`
 
   Collective
@@ -2106,7 +2106,7 @@ PetscErrorCode TaoMonitorStepDraw(Tao tao, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorResidual - Views the least-squares residual at each iteration of `TaoSolve()`
 
   Collective
@@ -2367,7 +2367,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoRegister - Adds a method to the Tao package for minimization.
 
   Not Collective, No Fortran Support
@@ -2408,7 +2408,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao tao))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoRegisterDestroy - Frees the list of minimization solvers that were
   registered by `TaoRegister()`.
 
@@ -2673,7 +2673,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitor - Monitor the solver and the current solution.  This
   routine will record the iteration number and residual statistics,
   and call any monitors specified by the user.
@@ -2769,7 +2769,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoGetConvergenceHistory - Gets the arrays used that hold the convergence history.
 
   Collective
@@ -2968,7 +2968,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorDrawCtxCreate - Creates the monitor context for `TaoMonitorSolutionDraw()`
 
   Collective
@@ -3008,7 +3008,7 @@ PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoMonitorDrawCtxDestroy - Destroys the monitor context for `TaoMonitorSolutionDraw()`
 
   Collective

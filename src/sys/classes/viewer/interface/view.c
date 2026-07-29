@@ -5,7 +5,7 @@ PetscClassId PETSC_VIEWER_CLASSID;
 
 static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PetscViewerFinalizePackage - This function destroys any global objects created in PETSc viewers. It is
   called from `PetscFinalize()`.
 
@@ -33,7 +33,7 @@ PetscErrorCode PetscViewerFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerInitializePackage - This function initializes everything in the `PetscViewer` package.
 
   Level: developer
@@ -103,7 +103,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerAndFormatCreate - Creates a `PetscViewerAndFormat` struct.
 
   Collective
@@ -141,7 +141,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerAndFormatDestroy - Destroys a `PetscViewerAndFormat` struct created with `PetscViewerAndFormatCreate()`
 
   Collective
@@ -371,7 +371,7 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerRead - Reads data from a `PetscViewer`
 
   Collective

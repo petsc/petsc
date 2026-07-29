@@ -46,7 +46,7 @@ static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 }
 #endif
 
-/*@C
+/*@
   PetscShmCommGet - Returns a sub-communicator of all ranks that share a common memory
 
   Collective.
@@ -125,7 +125,7 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 #endif
 }
 
-/*@C
+/*@
   PetscShmCommGlobalToLocal - Given a global rank returns the local rank in the shared memory communicator
 
   Input Parameters:
@@ -174,7 +174,7 @@ PetscErrorCode PetscShmCommGlobalToLocal(PetscShmComm pshmcomm, PetscMPIInt gran
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscShmCommLocalToGlobal - Given a local rank in the shared memory communicator returns the global rank
 
   Input Parameters:
@@ -198,7 +198,7 @@ PetscErrorCode PetscShmCommLocalToGlobal(PetscShmComm pshmcomm, PetscMPIInt lran
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscShmCommGetMpiShmComm - Returns the MPI communicator that represents all processes with common shared memory
 
   Input Parameter:

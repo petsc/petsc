@@ -6,7 +6,7 @@
 
 PetscClassId MAT_NULLSPACE_CLASSID;
 
-/*@C
+/*@
   MatNullSpaceSetFunction - set a function that removes a null space from a vector
   out of null spaces.
 
@@ -30,7 +30,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, MatNullSpaceRemoveFn *re
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNullSpaceGetVecs - get the vectors defining the null space
 
   Not Collective

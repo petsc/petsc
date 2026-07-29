@@ -285,7 +285,7 @@ PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListDestroy - Destroys a list of registered routines.
 
   Input Parameter:
@@ -326,7 +326,7 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
     } /* end while */ \
   } while (0)
 
-/*@C
+/*@
   PetscFunctionListClear - Clear a `PetscFunctionList`
 
   Not Collective
@@ -377,7 +377,7 @@ PetscErrorCode PetscFunctionListPrintAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListPrintNonEmpty - Print composed names for non `NULL` function pointers
 
   Logically Collective, No Fortran Support
@@ -414,7 +414,7 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListView - prints out contents of a `PetscFunctionList`
 
   Collective
@@ -458,7 +458,7 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListGet - Gets an array the contains the entries in `PetscFunctionList`, this is used
   by help etc.
 
@@ -497,7 +497,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListPrintTypes - Prints the methods available in a list of functions
 
   Collective, No Fortran Support
@@ -532,7 +532,7 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFunctionListDuplicate - Creates a new list from a given function list `PetscFunctionList`.
 
   Input Parameter:

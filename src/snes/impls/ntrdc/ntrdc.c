@@ -103,7 +103,7 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRDCSetPreCheck - Sets a user function that is called before the search step has been determined.
   Allows the user a chance to change or override the trust region decision.
 
@@ -140,7 +140,7 @@ PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRDCGetPreCheck - Gets the pre-check function optionally set with `SNESNewtonTRDCSetPreCheck()`
 
   Not Collective
@@ -174,7 +174,7 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRDCSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
   function evaluation. Allows the user a chance to change or override the decision of the line search routine
 
@@ -213,7 +213,7 @@ PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRDCGetPostCheck - Gets the post-check function optionally set with `SNESNewtonTRDCSetPostCheck()`
 
   Not Collective
@@ -250,7 +250,7 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
    SNESNewtonTRDCPreCheck - Called before the step has been determined in `SNESNEWTONTRDC`
 
    Logically Collective
@@ -281,7 +281,7 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
    SNESNewtonTRDCPostCheck - Called after the step has been determined in `SNESNEWTONTRDC` but before the function evaluation at that step
 
    Logically Collective

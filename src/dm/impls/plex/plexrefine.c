@@ -125,7 +125,7 @@ PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetTransformType - Retrieve the transform type for uniform refinement
 
   Input Parameter:
@@ -353,7 +353,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetRefinementFunction - Set the function giving the maximum cell volume for refinement
 
   Input Parameters:
@@ -378,7 +378,7 @@ PetscErrorCode DMPlexSetRefinementFunction(DM dm, PetscErrorCode (*refinementFun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetRefinementFunction - Get the function giving the maximum cell volume for refinement
 
   Input Parameter:

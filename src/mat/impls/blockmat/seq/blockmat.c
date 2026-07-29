@@ -803,7 +803,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
                                        NULL,
                                        NULL};
 
-/*@C
+/*@
   MatBlockMatSetPreallocation - For good matrix assembly performance
   the user should preallocate the matrix storage by setting the parameter nz
   (or the array nnz).  By setting these parameters accurately, performance
@@ -916,7 +916,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateBlockMat - Creates a new matrix in which each block contains a uniform-size sequential `Mat` object
 
   Collective

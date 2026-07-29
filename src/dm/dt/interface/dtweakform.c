@@ -76,7 +76,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFormKeySort - Sorts an array of `PetscFormKey` in place in increasing order.
 
   Not Collective
@@ -449,7 +449,7 @@ PetscErrorCode PetscWeakFormClearIndex(PetscWeakForm wf, DMLabel label, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetObjective - Retrieve the list of objective pointwise functions for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -476,7 +476,7 @@ PetscErrorCode PetscWeakFormGetObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetObjective - Set the list of objective pointwise functions for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -501,7 +501,7 @@ PetscErrorCode PetscWeakFormSetObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddObjective - Append an objective pointwise function to the list for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -525,7 +525,7 @@ PetscErrorCode PetscWeakFormAddObjective(PetscWeakForm wf, DMLabel label, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetIndexObjective - Retrieve a single objective pointwise function at the given index for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -552,7 +552,7 @@ PetscErrorCode PetscWeakFormGetIndexObjective(PetscWeakForm wf, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexObjective - Set a single objective pointwise function at the given index for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -577,7 +577,7 @@ PetscErrorCode PetscWeakFormSetIndexObjective(PetscWeakForm wf, DMLabel label, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetResidual - Retrieve the lists of residual pointwise functions `f0` and `f1` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -607,7 +607,7 @@ PetscErrorCode PetscWeakFormGetResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddResidual - Append residual pointwise functions `f0` and `f1` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -633,7 +633,7 @@ PetscErrorCode PetscWeakFormAddResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetResidual - Set the lists of residual pointwise functions `f0` and `f1` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -661,7 +661,7 @@ PetscErrorCode PetscWeakFormSetResidual(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexResidual - Set the residual pointwise functions `f0` and `f1` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -689,7 +689,7 @@ PetscErrorCode PetscWeakFormSetIndexResidual(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetBdResidual - Retrieve the lists of boundary residual pointwise functions `f0` and `f1` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -719,7 +719,7 @@ PetscErrorCode PetscWeakFormGetBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddBdResidual - Append boundary residual pointwise functions `f0` and `f1` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -745,7 +745,7 @@ PetscErrorCode PetscWeakFormAddBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetBdResidual - Set the lists of boundary residual pointwise functions `f0` and `f1` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -773,7 +773,7 @@ PetscErrorCode PetscWeakFormSetBdResidual(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexBdResidual - Set the boundary residual pointwise functions `f0` and `f1` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -831,7 +831,7 @@ PetscErrorCode PetscWeakFormHasJacobian(PetscWeakForm wf, PetscBool *hasJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetJacobian - Retrieve the lists of Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -870,7 +870,7 @@ PetscErrorCode PetscWeakFormGetJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddJacobian - Append Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -903,7 +903,7 @@ PetscErrorCode PetscWeakFormAddJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetJacobian - Set the lists of Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -940,7 +940,7 @@ PetscErrorCode PetscWeakFormSetJacobian(PetscWeakForm wf, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexJacobian - Set the Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1007,7 +1007,7 @@ PetscErrorCode PetscWeakFormHasJacobianPreconditioner(PetscWeakForm wf, PetscBoo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetJacobianPreconditioner - Retrieve the lists of Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -1046,7 +1046,7 @@ PetscErrorCode PetscWeakFormGetJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddJacobianPreconditioner - Append Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1079,7 +1079,7 @@ PetscErrorCode PetscWeakFormAddJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetJacobianPreconditioner - Set the lists of Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1116,7 +1116,7 @@ PetscErrorCode PetscWeakFormSetJacobianPreconditioner(PetscWeakForm wf, DMLabel 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexJacobianPreconditioner - Set the Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1183,7 +1183,7 @@ PetscErrorCode PetscWeakFormHasBdJacobian(PetscWeakForm wf, PetscBool *hasJac)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetBdJacobian - Retrieve the lists of boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -1222,7 +1222,7 @@ PetscErrorCode PetscWeakFormGetBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddBdJacobian - Append boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1255,7 +1255,7 @@ PetscErrorCode PetscWeakFormAddBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetBdJacobian - Set the lists of boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1292,7 +1292,7 @@ PetscErrorCode PetscWeakFormSetBdJacobian(PetscWeakForm wf, DMLabel label, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexBdJacobian - Set the boundary Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1359,7 +1359,7 @@ PetscErrorCode PetscWeakFormHasBdJacobianPreconditioner(PetscWeakForm wf, PetscB
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetBdJacobianPreconditioner - Retrieve the lists of boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -1398,7 +1398,7 @@ PetscErrorCode PetscWeakFormGetBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddBdJacobianPreconditioner - Append boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1431,7 +1431,7 @@ PetscErrorCode PetscWeakFormAddBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetBdJacobianPreconditioner - Set the lists of boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1468,7 +1468,7 @@ PetscErrorCode PetscWeakFormSetBdJacobianPreconditioner(PetscWeakForm wf, DMLabe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexBdJacobianPreconditioner - Set the boundary Jacobian preconditioner pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1538,7 +1538,7 @@ PetscErrorCode PetscWeakFormHasDynamicJacobian(PetscWeakForm wf, PetscBool *hasD
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetDynamicJacobian - Retrieve the lists of dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -1577,7 +1577,7 @@ PetscErrorCode PetscWeakFormGetDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormAddDynamicJacobian - Append dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` to the lists for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1610,7 +1610,7 @@ PetscErrorCode PetscWeakFormAddDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetDynamicJacobian - Set the lists of dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1647,7 +1647,7 @@ PetscErrorCode PetscWeakFormSetDynamicJacobian(PetscWeakForm wf, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexDynamicJacobian - Set the dynamic Jacobian pointwise functions `g0`, `g1`, `g2`, and `g3` at the given indices for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1684,7 +1684,7 @@ PetscErrorCode PetscWeakFormSetIndexDynamicJacobian(PetscWeakForm wf, DMLabel la
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormGetRiemannSolver - Retrieve the list of Riemann solver pointwise functions for a given key from a `PetscWeakForm`
 
   Not Collective
@@ -1711,7 +1711,7 @@ PetscErrorCode PetscWeakFormGetRiemannSolver(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetRiemannSolver - Set the list of Riemann solver pointwise functions for a given key in a `PetscWeakForm`
 
   Not Collective
@@ -1736,7 +1736,7 @@ PetscErrorCode PetscWeakFormSetRiemannSolver(PetscWeakForm wf, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscWeakFormSetIndexRiemannSolver - Set a single Riemann solver pointwise function at the given index for a given key in a `PetscWeakForm`
 
   Not Collective

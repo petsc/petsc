@@ -152,7 +152,7 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoEstimateActiveBounds - Generates index sets for variables at the lower and upper
   bounds, as well as fixed variables where lower and upper bounds equal each other.
 

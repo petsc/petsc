@@ -9,7 +9,7 @@
   #include <Kokkos_Core.hpp>
   #include <petscmat.h>
 
-/*@C
+/*@
    MatCreateSeqAIJKokkosWithKokkosViews - Creates a MATSEQAIJKOKKOS matrix with Kokkos views of the aij data
 
    Synopsis:
@@ -41,7 +41,7 @@
 @*/
 PetscErrorCode MatCreateSeqAIJKokkosWithKokkosViews(MPI_Comm, PetscInt, PetscInt, Kokkos::View<PetscInt *> &, Kokkos::View<PetscInt *> &, Kokkos::View<PetscScalar *> &, Mat *);
 
-/*@C
+/*@
    MatSeqAIJGetKokkosView - Returns a Kokkos View of the matrix nonzero values on the device, with up-to-date data.
 
    Not Collective, No Fortran Support
@@ -68,7 +68,7 @@ PetscErrorCode MatCreateSeqAIJKokkosWithKokkosViews(MPI_Comm, PetscInt, PetscInt
 PetscErrorCode MatSeqAIJGetKokkosView(Mat, Kokkos::View<const PetscScalar *> *);
 PetscErrorCode MatSeqAIJGetKokkosView(Mat, Kokkos::View<PetscScalar *> *);
 
-/*@C
+/*@
    MatSeqAIJRestoreKokkosView - Returns a Kokkos View obtained with `MatSeqAIJGetKokkosView()`.
 
    Not Collective, No Fortran Support
@@ -90,7 +90,7 @@ PetscErrorCode MatSeqAIJGetKokkosView(Mat, Kokkos::View<PetscScalar *> *);
 PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, Kokkos::View<const PetscScalar *> *);
 PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, Kokkos::View<PetscScalar *> *);
 
-/*@C
+/*@
    MatSeqAIJGetKokkosViewWrite - Returns a Kokkos View of the matrix nonzero values on the device for write-only access.
 
    Not Collective, No Fortran Support
@@ -115,7 +115,7 @@ PetscErrorCode MatSeqAIJRestoreKokkosView(Mat, Kokkos::View<PetscScalar *> *);
 @*/
 PetscErrorCode MatSeqAIJGetKokkosViewWrite(Mat, Kokkos::View<PetscScalar *> *);
 
-/*@C
+/*@
    MatSeqAIJRestoreKokkosViewWrite - Returns a Kokkos View obtained with `MatSeqAIJGetKokkosViewWrite()`.
 
    Not Collective, No Fortran Support

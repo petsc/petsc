@@ -17,7 +17,7 @@
 #if PetscDefined(HAVE_KOKKOS)
   #include <Kokkos_Core.hpp>
 
-/*@C
+/*@
      VecGetKokkosView - Returns a constant Kokkos View that contains up-to-date data of a vector in the specified memory space.
 
    Synopsis:
@@ -54,7 +54,7 @@ PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<const PetscScalar *, MemorySpa
 template <class MemorySpace>
 PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
-/*@C
+/*@
    VecRestoreKokkosView - Returns a Kokkos View gotten by `VecGetKokkosView()`.
 
    Synopsis:
@@ -85,7 +85,7 @@ PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<const PetscScalar *, Memor
 template <class MemorySpace>
 PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
-/*@C
+/*@
    VecGetKokkosViewWrite - Returns a Kokkos View that contains the array of a vector in the specified memory space.
 
    Synopsis:
@@ -117,7 +117,7 @@ PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace
 template <class MemorySpace>
 PetscErrorCode VecGetKokkosViewWrite(Vec, Kokkos::View<PetscScalar *, MemorySpace> *);
 
-/*@C
+/*@
    VecRestoreKokkosViewWrite - Returns a Kokkos View gotten with `VecGetKokkosViewWrite()`.
 
    Synopsis:

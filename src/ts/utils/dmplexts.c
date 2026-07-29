@@ -468,7 +468,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMTSCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information based on
   values in the options database
 

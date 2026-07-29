@@ -677,7 +677,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
   processes neighbors.
 
@@ -713,7 +713,7 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetOwnershipRanges - Gets the number of indices in the x, y and z direction that are owned by each process in that direction
 
   Not Collective
@@ -829,7 +829,7 @@ PetscErrorCode DMDAGetRefinementFactor(DM da, PeOp PetscInt *refine_x, PeOp Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASetGetMatrix - Sets the routine used by the `DMDA` to allocate a matrix.
 
   Logically Collective; No Fortran Support

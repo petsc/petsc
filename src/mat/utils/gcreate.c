@@ -406,7 +406,7 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHeaderMerge - Merges some information from the header of `C` to `A`; the `C` object is then destroyed
 
   Collective, No Fortran Support
@@ -673,7 +673,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, PetscInt coo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries with global indices
 
   Collective
@@ -725,7 +725,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetPreallocationCOOLocal - set preallocation for matrices using a coordinate format of the entries with local indices
 
   Collective
