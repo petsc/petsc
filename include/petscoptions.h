@@ -301,11 +301,11 @@ M*/
 
   /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
-     displayed on the same window of a GUI that allows the user to set the options interactively.
+    displayed on the same window of a GUI that allows the user to set the options interactively.
 
     Synopsis:
-     #include <petscoptions.h>
-     PetscErrorCode PetscOptionsEnd(void)
+    #include <petscoptions.h>
+    PetscErrorCode PetscOptionsEnd(void)
 
     Collective on the comm used in `PetscOptionsBegin()` or obj used in `PetscObjectOptionsBegin()`
 
@@ -389,22 +389,27 @@ template <typename... T>
 PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #else
   /*MC
-   PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
-   in `KSPSetFromOptions_GMRES()`.
+  PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
+  in `KSPSetFromOptions_GMRES()`.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsHeadBegin(PetscOptionsObject optionsobject, const char head[]) PeNS
 
-   Input Parameter:
-.  head - the heading text
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
 
-   Level: developer
+  Input Parameters:
++ optionsobject - argument from calling function, see `KSPSetFromOptions_GMRES()`
+- head          - the heading text
 
-   Notes:
-   Handles errors directly, hence does not return an error code
+  Level: developer
 
-   Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and `PetscOptionsObject` created in `PetscOptionsBegin()` should be the first argument
+  Notes:
+  Handles errors directly, hence does not return an error code
 
-   Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`, and `PetscOptionsObject` created in `PetscOptionsBegin()` should be the first argument
+
+  Must be followed by a call to `PetscOptionsHeadEnd()` in the same function.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -470,7 +475,7 @@ M*/
 + opt          - option name
 . text         - short string that describes the option
 . man          - manual page with additional information on option
-. list         - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by a null
+. list         - array containing the list of choices, followed by the enum name, followed by the enum prefix, followed by `NULL`
 - currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
 .vb
                  PetscOptionsEnum(..., obj->value,&object->value,...) or
@@ -1476,18 +1481,21 @@ M*/
 M*/
   #define PetscOptionsEnumArray(opt, text, man, list, value, n, set)                PetscOptionsEnumArray_Private(PetscOptionsObject, opt, text, man, list, value, n, set)
 
-/*MC
-  PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with `newname`
+  /*MC
+  PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with `newname`.
+  By default this will trigger a deprecation warning at runtime if `oldname` is in the options database.
 
-  Prints a deprecation warning, unless an option is supplied to suppress.
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsDeprecated(const char oldname[], const char newname[], const char version[], const char info[])
 
   Logically Collective
 
   Input Parameters:
 + oldname - the old, deprecated option
-. newname - the new option, or `NULL` if option is purely removed
-. version - a string describing the version of first deprecation, e.g. "3.9"
-- info    - additional information string, or `NULL`.
+. newname - the new option, or `NULL` if the option is removed and not simply renamed
+. version - a string describing the version of first deprecation, e.g., `"3.9"`
+- info    - additional information string, or `NULL`. Must be provided if `newname` is `NULL`
 
   Options Database Key:
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
@@ -1495,34 +1503,37 @@ M*/
   Level: developer
 
   Notes:
-  If `newname` is provided then the options database will automatically check the database for `oldname`.
-
   The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
   new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
   See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
 
-  Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
-  Only the process of MPI rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
-  If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
-  If an option is not replaced, the info argument should be used to advise the user on how to proceed.
-  There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.
+  Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`. Use `PetscOptionsDeprecatedNoObject()` otherwise.
 
-.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
+  Only the process of MPI rank zero that owns the `PetscOptionsItems` argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()`) prints the deprecation warning.
+
+  If `newname` is provided, any use of `oldname` in the options database is replaced with `newname`. Otherwise, `oldname` remains in the options database.
+
+  There is a limit on the length of the warning printed, so long strings provided as `info` may be truncated.
+
+.seealso: `PetscOptionsDeprecatedNoObject()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 M*/
-  #define PetscOptionsDeprecated(opt, text, man, info)                              PetscOptionsDeprecated_Private(PetscOptionsObject, opt, text, man, info)
+  #define PetscOptionsDeprecated(oldname, newname, version, info)                   PetscOptionsDeprecated_Private(PetscOptionsObject, oldname, newname, version, info)
 
-/*MC
-  PetscOptionsDeprecatedNoObject - mark an option as deprecated in the global PetscOptionsObject, optionally replacing it with `newname`
+  /*MC
+  PetscOptionsDeprecatedNoObject - mark an option as deprecated in the global `PetscOptionsObject`, optionally replacing it with `newname`.
+  By default this will trigger a deprecation warning at runtime if `oldname` is in the options database.
 
-  Prints a deprecation warning, unless an option is supplied to suppress.
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsDeprecatedNoObject(const char oldname[], const char newname[], const char version[], const char info[])
 
   Logically Collective
 
   Input Parameters:
 + oldname - the old, deprecated option
-. newname - the new option, or `NULL` if option is purely removed
-. version - a string describing the version of first deprecation, e.g. "3.9"
-- info    - additional information string, or `NULL`.
+. newname - the new option, or `NULL` if the option is removed and not simply renamed
+. version - a string describing the version of first deprecation, e.g. `"3.9"`
+- info    - additional information string, or `NULL`. Must be provided if `newname` is `NULL`
 
   Options Database Key:
 . -options_suppress_deprecated_warnings - do not print deprecation warnings
@@ -1530,20 +1541,21 @@ M*/
   Level: developer
 
   Notes:
-  If `newname` is provided then the options database will automatically check the database for `oldname`.
-
-  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecated()` occurs before the
+  The old call `PetscOptionsXXX`(`oldname`) should be removed from the source code when both (1) the call to `PetscOptionsDeprecatedNoObject()` occurs before the
   new call to `PetscOptionsXXX`(`newname`) and (2) the argument handling of the new call to `PetscOptionsXXX`(`newname`) is identical to the previous call.
   See `PTScotch_PartGraph_Seq()` for an example of when (1) fails and `SNESTestJacobian()` where an example of (2) fails.
 
-  Only the process of MPI rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or `PetscObjectOptionsBegin()` prints the information
-  If newname is provided, the old option is replaced. Otherwise, it remains in the options database.
-  If an option is not replaced, the info argument should be used to advise the user on how to proceed.
-  There is a limit on the length of the warning printed, so very long strings provided as info may be truncated.
+  Not to be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`. Use `PetscOptionsDeprecated()` in that case.
 
-.seealso: `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
+  Only the process of MPI rank zero prints the deprecation warning.
+
+  If `newname` is provided, any use of `oldname` in the options database is replaced with `newname`. Otherwise, `oldname` remains in the options database.
+
+  There is a limit on the length of the warning printed, so long strings provided as `info` may be truncated.
+
+.seealso: `PetscOptionsDeprecated()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 M*/
-  #define PetscOptionsDeprecatedNoObject(opt, text, man, info)                      PetscOptionsDeprecated_Private(NULL, opt, text, man, info)
+  #define PetscOptionsDeprecatedNoObject(oldname, newname, version, info)           PetscOptionsDeprecated_Private(NULL, oldname, newname, version, info)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems, const char[], const char[], const char[], const char *const *, PetscEnum, PetscEnum *, PetscBool *);
