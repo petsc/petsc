@@ -73,6 +73,7 @@
 - Change `MatSeqAIJCUSPARSEGetIJ()`, `MatSeqAIJCUSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetIJ()` and `MatSeqAIJHIPSPARSERestoreIJ()` to return `PetscInt` indices instead of `int`
 - Add `MatNormApproximate()` to compute matrix norms approximately
 - Add `MatGetMultPetscSF()` to access the `PetscSF` used to communicate off-process vector entries in `MatMult()` for `MATMPIAIJ`, `MATMPIBAIJ`, `MATMPISBAIJ`, `MATMPIDENSE`, and `MATMPISELL`
+- Change `MATSEQSBAIJ` behavior in `MatPermute()` and `MatDiagonalScale()` to use `MATSEQBAIJ` when the result is not necessarily symmetric
 - Change `MatGetValues()` to respect the row or column orientation set with `MatSetOption(mat, MAT_ROW_ORIENTED, ...)`. This will break current code that calls
   `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` and uses `MatGetValues()`
 - Add new `MatType` `MATSEQBAIJLIBXSMM` and `MATMPIBAIJLIBXSMM`
