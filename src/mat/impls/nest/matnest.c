@@ -183,15 +183,11 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   bA   = (Mat_Nest *)A->data;
   nr   = bA->nr;
   nc   = bA->nc;
-  PetscCall(MatGetLocalSize(C, &m, &n));
-  PetscCall(MatGetSize(C, &M, &N));
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {
-    PetscCall(MatGetLocalSize(B, NULL, &n));
-    PetscCall(MatGetSize(B, NULL, &N));
-    PetscCall(MatGetLocalSize(A, &m, NULL));
-    PetscCall(MatGetSize(A, &M, NULL));
-    PetscCall(MatSetSizes(C, m, n, M, N));
-  }
+  PetscCall(MatGetLocalSize(B, NULL, &n));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatGetSize(A, &M, NULL));
+  PetscCall(MatSetSizes(C, m, n, M, N));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
   if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
