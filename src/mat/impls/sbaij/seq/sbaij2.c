@@ -226,10 +226,10 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
 
 PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
-  Mat       C[2];
-  IS        is1, is2, intersect = NULL;
+  Mat       C[2], D;
+  IS        is1, is2, intersect = NULL, sorted = NULL, perm = NULL, iperm = NULL, expanded = NULL;
   PetscInt  n1, n2, ni;
-  PetscBool implicit, sym;
+  PetscBool implicit, sym, sameorder = PETSC_FALSE, issorted = PETSC_FALSE;
 
   PetscFunctionBegin;
   implicit = sym = (PetscBool)(A->rmap->N == A->cmap->N && (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE));
@@ -239,7 +239,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
     PetscCall(PetscObjectReference((PetscObject)is2));
   } else {
     PetscCall(ISCompressIndicesGeneral(A->cmap->N, A->cmap->n, A->cmap->bs, 1, &iscol, &is2));
-    if (implicit) {
+    if (implicit == PETSC_TRUE) {
       PetscCall(ISIntersect(is1, is2, &intersect));
       PetscCall(ISGetLocalSize(intersect, &ni));
       PetscCall(ISDestroy(&intersect));
@@ -252,7 +252,32 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
     }
   }
   // rectangular and nonsymmetric SeqSBAIJ matrices store their entries explicitly
-  if (sym || !implicit) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, !implicit ? PETSC_FALSE : sym));
+  if (sym == PETSC_TRUE) {
+    if (isrow == iscol) sameorder = PETSC_TRUE;
+    else PetscCall(ISEqual(isrow, iscol, &sameorder));
+    if (sameorder == PETSC_TRUE) PetscCall(ISSorted(is1, &issorted));
+  }
+  // keep the extracted matrix in upper-triangular storage before restoring the requested block order
+  if (sym == PETSC_TRUE && sameorder == PETSC_TRUE && issorted == PETSC_FALSE) {
+    PetscCheck(scall != MAT_INPLACE_MATRIX, PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_INPLACE_MATRIX not supported");
+    PetscCall(ISDuplicate(is1, &sorted));
+    PetscCall(ISSort(sorted));
+    PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, sorted, sorted, MAT_INITIAL_MATRIX, C, PETSC_TRUE));
+    PetscCall(MatPropagateSymmetryOptions(A, C[0]));
+    PetscCall(ISSortPermutation(is1, PETSC_TRUE, &perm));
+    PetscCall(ISInvertPermutation(perm, PETSC_DECIDE, &iperm));
+    PetscCall(ISExpandIndicesGeneral(A->rmap->N, A->rmap->n, A->rmap->bs, 1, &iperm, &expanded));
+    PetscCall(MatPermute(C[0], expanded, expanded, &D));
+    if (scall == MAT_REUSE_MATRIX) {
+      PetscCall(MatCopy(D, *B, DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatDestroy(&D));
+    } else *B = D;
+    PetscCall(MatDestroy(C));
+    PetscCall(ISDestroy(&expanded));
+    PetscCall(ISDestroy(&iperm));
+    PetscCall(ISDestroy(&perm));
+    PetscCall(ISDestroy(&sorted));
+  } else if (sym == PETSC_TRUE || implicit == PETSC_FALSE) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, !implicit ? PETSC_FALSE : sym));
   else {
     PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, MAT_INITIAL_MATRIX, C, sym));
     PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is2, is1, MAT_INITIAL_MATRIX, C + 1, sym));
@@ -261,17 +286,20 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
     PetscCheck(scall != MAT_INPLACE_MATRIX, PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_INPLACE_MATRIX not supported");
     if (scall == MAT_REUSE_MATRIX) PetscCall(MatCopy(C[0], *B, SAME_NONZERO_PATTERN));
     else if (A->rmap->bs == 1) PetscCall(MatConvert(C[0], MATAIJ, MAT_INITIAL_MATRIX, B));
-    else PetscCall(MatCopy(C[0], *B, SAME_NONZERO_PATTERN));
+    else {
+      *B   = C[0];
+      C[0] = NULL;
+    }
     PetscCall(MatDestroy(C));
     PetscCall(MatDestroy(C + 1));
   }
   PetscCall(ISDestroy(&is1));
   PetscCall(ISDestroy(&is2));
 
-  if (implicit && sym && isrow != iscol) {
+  if (implicit == PETSC_TRUE && sym == PETSC_TRUE && isrow != iscol) {
     PetscBool isequal;
     PetscCall(ISEqual(isrow, iscol, &isequal));
-    if (!isequal) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
+    if (isequal == PETSC_FALSE) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
