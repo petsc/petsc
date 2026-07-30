@@ -1,6 +1,6 @@
 #include <petsc/private/snesimpl.h> /*I    "petscsnes.h"   I*/
 
-/*@C
+/*@
   SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods, used instead of the 2-norm of the residual in the line search
 
   Logically Collective
@@ -33,7 +33,7 @@ PetscErrorCode SNESSetObjective(SNES snes, SNESObjectiveFn *obj, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetObjective - Returns the objective function set with `SNESSetObjective()`
 
   Not Collective
@@ -106,7 +106,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective function
 
   Collective

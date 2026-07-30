@@ -107,7 +107,7 @@ PetscErrorCode DMSwarmCellDMGetDM(DMSwarmCellDM celldm, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCellDMGetFields - Returns the `DM` fields for the `DMSwarm`
 
   Not Collective
@@ -138,7 +138,7 @@ PetscErrorCode DMSwarmCellDMGetFields(DMSwarmCellDM celldm, PetscInt *Nf, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCellDMGetCoordinateFields - Returns the `DM` coordinate fields for the `DMSwarm`
 
   Not Collective
@@ -169,7 +169,7 @@ PetscErrorCode DMSwarmCellDMGetCoordinateFields(DMSwarmCellDM celldm, PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCellDMGetCellID - Returns the cell id field name for the `DMSwarm`
 
   Not Collective
@@ -193,7 +193,7 @@ PetscErrorCode DMSwarmCellDMGetCellID(DMSwarmCellDM celldm, const char *cellid[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCellDMGetSort - Returns the sort context over the active `DMSwarmCellDM` for the `DMSwarm`
 
   Not Collective
@@ -217,7 +217,7 @@ PetscErrorCode DMSwarmCellDMGetSort(DMSwarmCellDM celldm, DMSwarmSort *sort)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmCellDMSetSort - Sets the sort context over the active `DMSwarmCellDM` for the `DMSwarm`
 
   Not Collective
@@ -692,7 +692,7 @@ PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout
 
 extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, PetscInt, PetscReal *);
 
-/*@C
+/*@
   DMSwarmSetPointCoordinatesCellwise - Insert point coordinates (defined over the reference cell) within each cell
 
   Not Collective
@@ -865,7 +865,7 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetCoordinateFunction - Get the function setting initial particle positions, if it exists
 
   Not Collective
@@ -891,7 +891,7 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFn **coordFun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSetCoordinateFunction - Set the function setting initial particle positions
 
   Not Collective
@@ -915,7 +915,7 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFn *coordFunc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetVelocityFunction - Get the function setting initial particle velocities, if it exists
 
   Not Collective
@@ -941,7 +941,7 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFn **velFunc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSetVelocityFunction - Set the function setting initial particle velocities
 
   Not Collective
@@ -965,7 +965,7 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFn *velFunc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmComputeLocalSize - Compute the local number and distribution of particles based upon a density function
 
   Not Collective
@@ -1196,7 +1196,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmInitializeVelocities - Set the initial velocities of particles using a distribution.
 
   Collective

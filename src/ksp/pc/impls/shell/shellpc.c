@@ -25,7 +25,7 @@ typedef struct {
   char *name;
 } PC_Shell;
 
-/*@C
+/*@
   PCShellGetContext - Returns the user-provided context associated with a shell `PC` that was provided with `PCShellSetContext()`
 
   Not Collective
@@ -446,7 +446,7 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetDestroy - Sets routine to use to destroy the user-provided application context that was provided with `PCShellSetContext()`
 
   Logically Collective
@@ -470,7 +470,7 @@ PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC pc))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the
   matrix operator is changed.
 
@@ -498,7 +498,7 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC pc))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetView - Sets routine to use as viewer of a `PCSHELL` shell preconditioner
 
   Logically Collective
@@ -526,7 +526,7 @@ PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC pc, PetscViewer v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApply - Sets routine to use as preconditioner.
 
   Logically Collective
@@ -555,7 +555,7 @@ PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC pc, Vec xin, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetMatApply - Sets routine to use as preconditioner on a block of vectors.
 
   Logically Collective
@@ -584,7 +584,7 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC pc, Mat X
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApplySymmetricLeft - Sets routine to use as left preconditioner (when the `PC_SYMMETRIC` is used).
 
   Logically Collective
@@ -613,7 +613,7 @@ PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC pc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApplySymmetricRight - Sets routine to use as right preconditioner (when the `PC_SYMMETRIC` is used).
 
   Logically Collective
@@ -642,7 +642,7 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApplyBA - Sets routine to use as the preconditioner times the operator.
 
   Logically Collective
@@ -673,7 +673,7 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC pc, PCSide 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
 
   Logically Collective
@@ -702,7 +702,7 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetMatApplyTranspose - Sets routine to use as preconditioner transpose.
 
   Logically Collective
@@ -731,7 +731,7 @@ PetscErrorCode PCShellSetMatApplyTranspose(PC pc, PetscErrorCode (*matapplytrans
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetPreSolve - Sets routine to apply to the operators/vectors before a `KSPSolve()` is
   applied. This usually does something like scale the linear system in some application
   specific way.
@@ -757,7 +757,7 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PCShellPSolveFn *presolve)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetPostSolve - Sets routine to apply to the operators/vectors after a `KSPSolve()` is
   applied. This usually does something like scale the linear system in some application
   specific way.
@@ -833,7 +833,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCShellSetApplyRichardson - Sets routine to use as preconditioner
   in Richardson iteration.
 

@@ -127,7 +127,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
 
   Collective
@@ -211,7 +211,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewPortsCreateRect - Splits a window into smaller
   view ports. Each processor shares all the viewports. The number
   of views in the x- and y-directions is specified.
@@ -298,7 +298,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewPortsDestroy - frees a `PetscDrawViewPorts` object
 
   Collective on the `PetscDraw` inside `ports`
@@ -326,7 +326,7 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawViewPortsSet - sets a draw object to use a particular subport
 
   Logically Collective on the `PetscDraw` inside `ports`

@@ -285,7 +285,7 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf, PetscSFWindowS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowSetInfo - Set the `MPI_Info` handle that will be used for subsequent windows allocation
 
   Logically Collective
@@ -319,7 +319,7 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFWindowGetInfo - Get the `MPI_Info` handle used for windows allocation
 
   Logically Collective

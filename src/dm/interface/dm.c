@@ -1690,7 +1690,7 @@ PetscErrorCode DMGetBlockingType(DM dm, DMBlockingType *btype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetWorkArray - Gets a work array guaranteed to be at least the input size, restore with `DMRestoreWorkArray()`
 
   Not Collective
@@ -1749,7 +1749,7 @@ PetscErrorCode DMGetWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, void *m
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRestoreWorkArray - Restores a work array obtained with `DMCreateWorkArray()`
 
   Not Collective
@@ -1790,7 +1790,7 @@ PetscErrorCode DMRestoreWorkArray(DM dm, PetscInt count, MPI_Datatype dtype, voi
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Array was not checked out");
 }
 
-/*@C
+/*@
   DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field, defined with `DMAddField()`, when function spaces
   are joined or split, such as in `DMCreateSubDM()`
 
@@ -1821,7 +1821,7 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetNullSpaceConstructor - Return the callback function which constructs the nullspace for a given field, defined with `DMAddField()`
 
   Not Collective; No Fortran Support
@@ -1854,7 +1854,7 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetNearNullSpaceConstructor - Provide a callback function which constructs the near-nullspace for a given field, defined with `DMAddField()`
 
   Logically Collective; No Fortran Support
@@ -1885,7 +1885,7 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetNearNullSpaceConstructor - Return the callback function which constructs the near-nullspace for a given field, defined with `DMAddField()`
 
   Not Collective; No Fortran Support
@@ -1919,7 +1919,7 @@ PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateFieldIS - Creates a set of `IS` objects with the global indices of dofs for each field defined with `DMAddField()`
 
   Not Collective; No Fortran Support
@@ -2043,7 +2043,7 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateFieldDecomposition - Returns a list of `IS` objects defining a decomposition of a problem into subproblems
   corresponding to different fields.
 
@@ -2178,7 +2178,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSuperDM - Returns an arrays of `IS` and a single `DM` encapsulating a superproblem defined by multiple `DM`s passed in.
 
   Not collective
@@ -2214,7 +2214,7 @@ PetscErrorCode DMCreateSuperDM(DM dms[], PetscInt n, IS *is[], DM *superdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateDomainDecomposition - Returns lists of `IS` objects defining a decomposition of a
   problem into subproblems corresponding to restrictions to pairs of nested subdomains.
 
@@ -2300,7 +2300,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *n, char **namelist[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateDomainDecompositionScatters - Returns scatters to the subdomain vectors from the global vector for subdomains created with
   `DMCreateDomainDecomposition()`
 
@@ -2388,7 +2388,7 @@ PetscErrorCode DMRefine(DM dm, MPI_Comm comm, DM *dmf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRefineHookAdd - adds a callback to be run when interpolating a nonlinear problem to a finer grid
 
   Logically Collective; No Fortran Support
@@ -2440,7 +2440,7 @@ PetscErrorCode DMRefineHookAdd(DM coarse, PetscErrorCode (*refinehook)(DM coarse
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRefineHookRemove - remove a callback from the list of hooks, that have been set with `DMRefineHookAdd()`, to be run when interpolating
   a nonlinear problem to a finer grid
 
@@ -2771,7 +2771,7 @@ PetscErrorCode DMCopyTransform(DM dm, DM newdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGlobalToLocalHookAdd - adds a callback to be run when `DMGlobalToLocal()` is called
 
   Logically Collective
@@ -2987,7 +2987,7 @@ PetscErrorCode DMGlobalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLocalToGlobalHookAdd - adds a callback to be run when a local to global is called
 
   Logically Collective
@@ -3414,7 +3414,7 @@ PetscErrorCode DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCoarsenHookAdd - adds a callback to be run when restricting a nonlinear problem to the coarse grid
 
   Logically Collective; No Fortran Support
@@ -3470,7 +3470,7 @@ PetscErrorCode DMCoarsenHookAdd(DM fine, PetscErrorCode (*coarsenhook)(DM fine, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCoarsenHookRemove - remove a callback set with `DMCoarsenHookAdd()`
 
   Logically Collective; No Fortran Support
@@ -3550,7 +3550,7 @@ PetscErrorCode DMRestrict(DM fine, Mat restrct, Vec rscale, Mat inject, DM coars
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSubDomainHookAdd - adds a callback to be run when restricting a problem to subdomain `DM`s with `DMCreateDomainDecomposition()`
 
   Logically Collective; No Fortran Support
@@ -3606,7 +3606,7 @@ PetscErrorCode DMSubDomainHookAdd(DM global, PetscErrorCode (*ddhook)(DM global,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSubDomainHookRemove - remove a callback from the list to be run when restricting a problem to subdomain `DM`s with `DMCreateDomainDecomposition()`
 
   Logically Collective; No Fortran Support
@@ -3785,7 +3785,7 @@ PetscErrorCode DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetApplicationContextDestroy - Sets a user function that will be called to destroy the application context when the `DM` is destroyed
 
   Logically Collective if the function is collective
@@ -3885,7 +3885,7 @@ PetscErrorCode DMGetApplicationContext(DM dm, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSetVariableBounds - sets a function to compute the lower and upper bound vectors for `SNESVI`.
 
   Logically Collective
@@ -4219,7 +4219,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMRegister -  Adds a new `DM` type implementation
 
   Not Collective, No Fortran Support
@@ -4591,7 +4591,7 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCreateSectionPermutation - Create a permutation of the `PetscSection` chart and optionally a block structure.
 
   Input Parameter:
@@ -7782,7 +7782,7 @@ PetscErrorCode DMCopyLabels(DM dmA, DM dmB, PetscCopyMode mode, PetscBool all, D
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompareLabels - Compare labels between two `DM` objects
 
   Collective; No Fortran Support
@@ -8157,7 +8157,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAddBoundary - Add a boundary condition, for a single field, to a model represented by a `DM`
 
   Collective
@@ -8383,7 +8383,7 @@ PetscErrorCode DMHasBound(DM dm, PetscBool *hasBound)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFunction - This projects the given function into the function space provided by a `DM`, putting the coefficients in a global vector.
 
   Collective
@@ -8432,7 +8432,7 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFunctionLocal - This projects the given function into the function space provided by a `DM`, putting the coefficients in a local vector.
 
   Not Collective
@@ -8473,7 +8473,7 @@ PetscErrorCode DMProjectFunctionLocal(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFunctionLabel - This projects the given function into the function space provided by the `DM`, putting the coefficients in a global vector, setting values only for points in the given label.
 
   Collective
@@ -8525,7 +8525,7 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFunctionLabelLocal - This projects the given function into the function space provided by the `DM`, putting the coefficients in a local vector, setting values only for points in the given label.
 
   Not Collective
@@ -8571,7 +8571,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFieldLocal - This projects the given function of the input fields into the function space provided by the `DM`, putting the coefficients in a local vector.
 
   Not Collective
@@ -8632,7 +8632,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFieldLabelLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector, calculating only over the portion of the domain specified by the label.
 
   Not Collective
@@ -8697,7 +8697,7 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectFieldLabel - This projects the given function of the input fields into the function space provided, putting the coefficients in a global vector, calculating only over the portion of the domain specified by the label.
 
   Not Collective
@@ -8773,7 +8773,7 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectBdFieldLabelLocal - This projects the given function of the input fields into the function space provided, putting the coefficients in a local vector, calculating only over the portion of the domain boundary specified by the label.
 
   Not Collective
@@ -8839,7 +8839,7 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMComputeL2Diff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h.
 
   Collective
@@ -8872,7 +8872,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMComputeL2GradientDiff - This function computes the L_2 difference between the gradient of a function u and an FEM interpolant solution grad u_h.
 
   Collective
@@ -8906,7 +8906,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMComputeL2FieldDiff - This function computes the L_2 difference between a function u and an FEM interpolant solution u_h, separated into field components.
 
   Collective
@@ -8939,7 +8939,7 @@ PetscErrorCode DMComputeL2FieldDiff(DM dm, PetscReal time, PetscErrorCode (**fun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetNeighbors - Gets an array containing the MPI ranks of all the processes neighbors
 
   Not Collective
@@ -9140,7 +9140,7 @@ PetscErrorCode DMGetCompatibility(DM dm1, DM dm2, PetscBool *compatible, PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMonitorSet - Sets an additional monitor function that is to be used after a solve to monitor discretization performance.
 
   Logically Collective
@@ -9218,7 +9218,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
   Collective

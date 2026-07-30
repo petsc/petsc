@@ -1053,7 +1053,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
   The matrix need not have numerical values associated with it, it is
   intended for ordering (to reduce bandwidth etc) and partitioning.

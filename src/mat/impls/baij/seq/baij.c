@@ -3419,7 +3419,7 @@ static PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B, PetscInt bs, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqBAIJGetArray - gives read/write access to the array where the data for a `MATSEQBAIJ` matrix is stored
 
   Not Collective
@@ -3441,7 +3441,7 @@ PetscErrorCode MatSeqBAIJGetArray(Mat A, PetscScalar *array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqBAIJRestoreArray - returns access to the array where the data for a `MATSEQBAIJ` matrix is stored obtained by `MatSeqBAIJGetArray()`
 
   Not Collective
@@ -3840,7 +3840,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt nz, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqBAIJSetPreallocationCSR - Creates a sparse sequential matrix in `MATSEQBAIJ` format using the given nonzero structure and (optional) numerical values
 
   Collective

@@ -48,7 +48,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat A, MatType type, MatReuse reu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateDenseHIP - Creates a matrix in `MATDENSEHIP` format using HIP.
 
   Collective
@@ -76,7 +76,7 @@ PetscErrorCode MatCreateDenseHIP(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPPlaceArray - Allows one to replace the GPU array in a `MATDENSEHIP` matrix with an
   array provided by the user. This is useful to avoid copying an array into a matrix.
 
@@ -105,7 +105,7 @@ PetscErrorCode MatDenseHIPPlaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPResetArray - Resets the matrix array to that it previously had before the call to
   `MatDenseHIPPlaceArray()`
 
@@ -128,7 +128,7 @@ PetscErrorCode MatDenseHIPResetArray(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPReplaceArray - Allows one to replace the GPU array in a `MATDENSEHIP` matrix
   with an array provided by the user. This is useful to avoid copying an array into a matrix.
 
@@ -156,7 +156,7 @@ PetscErrorCode MatDenseHIPReplaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPGetArrayWrite - Provides write access to the HIP buffer inside a `MATDENSEHIP`
   matrix.
 
@@ -187,7 +187,7 @@ PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPRestoreArrayWrite - Restore write access to the HIP buffer inside a
   `MATDENSEHIP` matrix previously obtained with `MatDenseHIPGetArrayWrite()`.
 
@@ -209,7 +209,7 @@ PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPGetArrayRead - Provides read-only access to the HIP buffer inside a
   `MATDENSEHIP` matrix. The array must be restored with `MatDenseHIPRestoreArrayRead()` when
   no longer needed.
@@ -239,7 +239,7 @@ PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPRestoreArrayRead - Restore read-only access to the HIP buffer inside a
   `MATDENSEHIP` matrix previously obtained with a call to `MatDenseHIPGetArrayRead()`.
 
@@ -265,7 +265,7 @@ PetscErrorCode MatDenseHIPRestoreArrayRead(Mat A, const PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPGetArray - Provides access to the HIP buffer inside a `MATDENSEHIP` matrix. The
   array must be restored with `MatDenseHIPRestoreArray()` when no longer needed.
 
@@ -295,7 +295,7 @@ PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPRestoreArray - Restore access to the HIP buffer inside a `MATDENSEHIP` matrix
   previously obtained with `MatDenseHIPGetArray()`.
 
@@ -317,7 +317,7 @@ PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseHIPSetPreallocation - Set the device array used for storing the matrix elements of a
   `MATDENSEHIP` matrix
 

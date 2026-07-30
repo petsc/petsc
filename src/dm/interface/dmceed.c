@@ -6,7 +6,7 @@
   #include <petscdmplexceed.h>
   #include <petscfeceed.h>
 
-/*@C
+/*@
   DMGetCeed - Get the LibCEED context associated with this `DM`
 
   Not Collective

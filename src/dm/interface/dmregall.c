@@ -25,7 +25,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_p8est(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
 PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM);
 
-/*@C
+/*@
   DMRegisterAll - Registers all of the DM components in the DM package.
 
   Not Collective
@@ -72,7 +72,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace);
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace);
 
-/*@C
+/*@
   PetscSpaceRegisterAll - Registers all of the PetscSpace components in the PetscFE package.
 
   Not Collective
@@ -102,7 +102,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Simple(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Sum(PetscDualSpace);
 
-/*@C
+/*@
   PetscDualSpaceRegisterAll - Registers all of the PetscDualSpace components in the PetscFE package.
 
   Not Collective
@@ -132,7 +132,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE);
 #endif
 PETSC_EXTERN PetscErrorCode PetscFECreate_Vector(PetscFE);
 
-/*@C
+/*@
   PetscFERegisterAll - Registers all of the PetscFE components in the `PetscFE` package.
 
   Not Collective
@@ -166,7 +166,7 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter);
 PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter);
 
-/*@C
+/*@
   PetscLimiterRegisterAll - Registers all of the `PetscLimiter` components in the `PetscFV` package.
 
   Not Collective
@@ -195,7 +195,7 @@ PetscErrorCode PetscLimiterRegisterAll(void)
 PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV);
 PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV);
 
-/*@C
+/*@
   PetscFVRegisterAll - Registers all of the `PetscFV` components in the `PetscFV` package.
 
   Not Collective
@@ -218,7 +218,7 @@ PetscErrorCode PetscFVRegisterAll(void)
 
 PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS);
 
-/*@C
+/*@
   PetscDSRegisterAll - Registers all of the `PetscDS` components in the `PetscDS` package.
 
   Not Collective

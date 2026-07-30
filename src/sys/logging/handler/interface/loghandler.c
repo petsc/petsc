@@ -343,7 +343,7 @@ PetscErrorCode PetscLogHandlerView(PetscLogHandler h, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerGetEventPerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage and event
 
   Not collective, No Fortran Support
@@ -372,7 +372,7 @@ PetscErrorCode PetscLogHandlerGetEventPerfInfo(PetscLogHandler handler, PetscLog
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerGetStagePerfInfo - Get a direct reference to the `PetscEventPerfInfo` of a stage
 
   Not collective, No Fortran Support
@@ -464,7 +464,7 @@ PetscErrorCode PetscLogHandlerLogObjectState_Internal(PetscLogHandler handler, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerLogObjectState - Record information about an object with the default log handler
 
   Not Collective, No Fortran Support

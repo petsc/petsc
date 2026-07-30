@@ -51,7 +51,7 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetValuesSection - Gets all the values associated with a given point, according to the section, in the given `Vec`
 
   Not Collective

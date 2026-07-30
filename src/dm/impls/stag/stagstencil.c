@@ -7,7 +7,7 @@ const char *const DMStagStencilTypes[] = {"NONE", "STAR", "BOX", "DMStagStencilT
 /* Strings corresponding the positions in $PETSC_DIR/include/petscdmstag.h */
 const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DOWN", "BACK_DOWN_RIGHT", "BACK_LEFT", "BACK", "BACK_RIGHT", "BACK_UP_LEFT", "BACK_UP", "BACK_UP_RIGHT", "DOWN_LEFT", "DOWN", "DOWN_RIGHT", "LEFT", "ELEMENT", "RIGHT", "UP_LEFT", "UP", "UP_RIGHT", "FRONT_DOWN_LEFT", "FRONT_DOWN", "FRONT_DOWN_RIGHT", "FRONT_LEFT", "FRONT", "FRONT_RIGHT", "FRONT_UP_LEFT", "FRONT_UP", "FRONT_UP_RIGHT", "DMStagStencilLocation", "", NULL};
 
-/*@C
+/*@
   DMStagCreateISFromStencils - Create an `IS`, using global numberings, for a subset of DOF in a `DMSTAG` object
 
   Collective
@@ -119,7 +119,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetLocationDOF - Get number of DOF associated with a given point in a `DMSTAG` grid
 
   Not Collective
@@ -282,7 +282,7 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagMatGetValuesStencil - retrieve local matrix entries using grid indexing
 
   Not Collective
@@ -319,7 +319,7 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagMatSetValuesStencil - insert or add matrix entries using grid indexing
 
   Not Collective
@@ -356,7 +356,7 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagStencilToIndexLocal - Convert an array of `DMStagStenci`l objects to an array of indices into a local vector.
 
   Not Collective
@@ -420,7 +420,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecGetValuesStencil - get vector values using grid indexing
 
   Not Collective
@@ -466,7 +466,7 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecSetValuesStencil - Set `Vec` values using global grid indexing
 
   Not Collective

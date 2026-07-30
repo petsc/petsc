@@ -7,7 +7,7 @@ typedef struct {
 } SNESLineSearch_Shell;
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
-/*@C
+/*@
   SNESLineSearchShellSetApply - Sets the apply function for the `SNESLINESEARCHSHELL` implementation.
 
   Not Collective
@@ -60,7 +60,7 @@ PetscErrorCode SNESLineSearchShellSetApply(SNESLineSearch linesearch, SNESLineSe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESLineSearchShellGetApply - Gets the apply function and context for the `SNESLINESEARCHSHELL`
 
   Not Collective

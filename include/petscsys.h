@@ -2068,7 +2068,7 @@ typedef MPI_Count MPIU_Count;
 typedef PetscInt64 MPIU_Count;
 #endif
 
-/*@C
+/*@
    PetscIntCast - casts a `MPI_Count`, `PetscInt64`, `PetscCount`, or `size_t` to a `PetscInt` (which may be 32-bits in size), generates an
    error if the `PetscInt` is not large enough to hold the number.
 
@@ -2096,7 +2096,7 @@ static inline PetscErrorCode PetscIntCast(MPIU_Count a, PetscInt *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscBLASIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount` or `PetscInt64` to a `PetscBLASInt` (which may be 32-bits in size), generates an
    error if the `PetscBLASInt` is not large enough to hold the number.
 
@@ -2125,7 +2125,7 @@ static inline PetscErrorCode PetscBLASIntCast(MPIU_Count a, PetscBLASInt *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
 
    Not Collective; No Fortran Support
@@ -2153,7 +2153,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(MPIU_Count a, PetscCuBLASInt *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
 
    Not Collective; No Fortran Support
@@ -2181,7 +2181,7 @@ static inline PetscErrorCode PetscHipBLASIntCast(MPIU_Count a, PetscHipBLASInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscMPIIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `PetscMPIInt` (which is always 32-bits in size), generates an
    error if the `PetscMPIInt` is not large enough to hold the number.
 
@@ -2206,7 +2206,7 @@ static inline PetscErrorCode PetscMPIIntCast(MPIU_Count a, PetscMPIInt *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscCIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `int`, generates an error if the `int` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -2249,7 +2249,7 @@ M*/
   #define PetscInt64Mult(a, b) (((PetscInt64)(a)) * ((PetscInt64)(b)))
 #endif
 
-/*@C
+/*@
   PetscRealIntMultTruncate - Computes the product of a positive `PetscReal` and a positive
   `PetscInt` and truncates the value to slightly less than the maximal possible value.
 
@@ -2292,7 +2292,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 #endif
 }
 
-/*@C
+/*@
    PetscIntMultTruncate - Computes the product of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
    Not Collective; No Fortran Support
@@ -2332,7 +2332,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 #endif
 }
 
-/*@C
+/*@
    PetscIntSumTruncate - Computes the sum of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
    Not Collective; No Fortran Support
@@ -2371,7 +2371,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 #endif
 }
 
-/*@C
+/*@
    PetscIntMultError - Computes the product of two positive `PetscInt` and generates an error with overflow.
 
    Not Collective; No Fortran Support
@@ -2412,7 +2412,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PetscIntSumError - Computes the sum of two positive `PetscInt` and generates an error with overflow.
 
    Not Collective; No Fortran Support

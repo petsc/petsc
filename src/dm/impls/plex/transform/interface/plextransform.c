@@ -49,7 +49,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DM dm, PetscInt dim, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformRegister - Adds a new transform component implementation
 
   Not Collective
@@ -99,7 +99,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Cohesive(DMPlexTransform);
 
-/*@C
+/*@
   DMPlexTransformRegisterAll - Registers all of the transform components in the `DM` package.
 
   Not Collective
@@ -127,7 +127,7 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformRegisterDestroy - This function destroys the registered `DMPlexTransformType`. It is called from `PetscFinalize()`.
 
   Not collective
@@ -1990,7 +1990,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformGetCellVertices - Get the set of transformed vertices lying in the closure of a reference cell of given type
 
   Input Parameters:
@@ -2014,7 +2014,7 @@ PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexTransformGetSubcellVertices - Get the set of transformed vertices defining a subcell in the reference cell of given type
 
   Input Parameters:

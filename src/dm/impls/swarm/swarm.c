@@ -97,7 +97,7 @@ static PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmVectorGetField - Gets the fields from which to define a `Vec` object
   when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
 
@@ -152,7 +152,7 @@ PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmVectorDefineFields - Sets the fields from which to define a `Vec` object
   when `DMCreateLocalVector()`, or `DMCreateGlobalVector()` is called
 
@@ -1546,7 +1546,7 @@ PetscErrorCode DMSwarmGetCellDM(DM sw, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetCellDMNames - Get the list of cell `DM` names
 
   Not collective
@@ -1647,7 +1647,7 @@ PetscErrorCode DMSwarmGetCellDMActive(DM sw, DMSwarmCellDM *celldm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetCellDMByName - Get a `DMSwarmCellDM` from its name
 
   Not collective
@@ -1787,7 +1787,7 @@ PetscErrorCode DMSwarmGetSize(DM dm, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRegisterPetscDatatypeField - Register a field to a `DMSWARM` with a native PETSc data type
 
   Collective
@@ -1833,7 +1833,7 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm, const char fieldname[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRegisterUserStructField - Register a user defined struct to a `DMSWARM`
 
   Collective
@@ -1860,7 +1860,7 @@ PetscErrorCode DMSwarmRegisterUserStructField(DM dm, const char fieldname[], siz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRegisterUserDatatypeField - Register a user defined data type to a `DMSWARM`
 
   Collective
@@ -1894,7 +1894,7 @@ PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm, const char fieldname[], s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetField - Get access to the underlying array storing all entries associated with a registered field
 
   Not Collective, No Fortran Support
@@ -1934,7 +1934,7 @@ PetscErrorCode DMSwarmGetField(DM dm, const char fieldname[], PetscInt *blocksiz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmRestoreField - Restore access to the underlying array storing all entries associated with a registered field
 
   Not Collective
@@ -1971,7 +1971,7 @@ PetscErrorCode DMSwarmRestoreField(DM dm, const char fieldname[], PetscInt *bloc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmGetFieldInfo - Return the block size and data type of a registered `DMSWARM` field without accessing its data.
 
   Not Collective

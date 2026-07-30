@@ -49,7 +49,7 @@ PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetFieldNames - Gets the name of all the components in the vector associated with the `DMDA`
 
   Not Collective; names will contain a common value; No Fortran Support
@@ -76,7 +76,7 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDASetFieldNames - Sets the name of each component in the vector associated with the `DMDA`
 
   Logically Collective; names must contain a common value; No Fortran Support
@@ -352,7 +352,7 @@ PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAGetCoordinateArray - Gets an array containing the coordinates of the `DMDA`
 
   Not Collective; No Fortran Support
@@ -383,7 +383,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDARestoreCoordinateArray - Returns an array containing the coordinates of the `DMDA` obtained with `DMDAGetCoordinateArray()`
 
   Not Collective; No Fortran Support

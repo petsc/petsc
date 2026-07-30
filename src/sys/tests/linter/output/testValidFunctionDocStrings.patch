@@ -8,8 +8,8 @@
 @@ -35,5 +35,6 @@
  }
  
--/*@C Lorem ipsum dolor sit amet
-+/*@C 
+-/*@ Lorem ipsum dolor sit amet
++/*@ 
 +  Lorem ipsum dolor sit amet
    someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
    eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
@@ -109,7 +109,7 @@
    return 0;
 @@ -102,5 +102,5 @@
  
- /*@C
+ /*@
 -  testTerbleSpelingDocstring - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
 +  testTerribleSpellingDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
    eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -175,7 +175,7 @@
  }
  
 -/*@ asdadsadasdas
-+/*@C 
++/*@ 
 +  asdadsadasdas
    testCustomFortranInterfaceDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit
  
@@ -350,23 +350,23 @@
 @@ -302,5 +302,6 @@
  }
  
--/*C testBadDocStringMissingChar - asdadsasd
-+/*@C 
-+  testBadDocStringMissingChar - asdadsasd
+-/*@ testBadDocStringOnTopLine - asdadsasd
++/*@ 
++  testBadDocStringOnTopLine - asdadsasd
  
    Input Parameter:
 @@ -311,5 +311,5 @@
  .seealso: `testBadDocString()`
  */
--PetscErrorCode testBadDocStringMissingChar(PetscInt n)
-+static PetscErrorCode testBadDocStringMissingChar(PetscInt n)
+-PetscErrorCode testBadDocStringOnTopLine(PetscInt n)
++static PetscErrorCode testBadDocStringOnTopLine(PetscInt n)
  {
    return 0;
 @@ -326,5 +326,5 @@
  .seealso: `testBadDocString()`
  */
--PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
-+static PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
+-PetscErrorCode testNothing(PetscInt n)
++static PetscErrorCode testNothing(PetscInt n)
  {
    return 0;
 @@ -353,5 +353,5 @@
@@ -431,13 +431,6 @@
 -
  PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
  {
-@@ -387,5 +387,5 @@
- }
- 
--/*@
-+/*@C
-   testFunctionPointerArguments - the first set of arguments are unnamed and should be errored
- 
 @@ -420,5 +420,5 @@
  .seealso: `testPredeclarationCursorIgnored()`
  */

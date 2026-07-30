@@ -1,7 +1,7 @@
 #include <petsc/private/kspimpl.h> /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
-/*@C
+/*@
   KSPMonitorLGRange - Prints line graphs summarizing the residual norm, the fraction of elements that dominate the residual, and the convergence factor at each iteration of the `KSP` solver
 
   Collective

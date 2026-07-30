@@ -2,7 +2,7 @@
 #include <petsc/private/dmlabelimpl.h> /*I      "petscdmlabel.h"  I*/
 #include <petsc/private/partitionerimpl.h>
 
-/*@C
+/*@
   DMPlexSetAdjacencyUser - Define adjacency in the mesh using a user-provided callback
 
   Input Parameters:
@@ -30,7 +30,7 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm, PetscErrorCode (*user)(DM, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetAdjacencyUser - get the user-defined adjacency callback
 
   Input Parameter:
@@ -629,7 +629,7 @@ static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection sectio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateOverlapLabelFromLabels - Compute a label indicating what overlap points should be sent to new processes
 
   Collective

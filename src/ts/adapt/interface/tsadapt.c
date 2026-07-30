@@ -13,7 +13,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt);
 
-/*@C
+/*@
   TSAdaptRegister -  adds a TSAdapt implementation
 
   Not Collective, No Fortran Support
@@ -51,7 +51,7 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptRegisterAll - Registers all of the adaptivity schemes in `TSAdapt`
 
   Not Collective
@@ -74,7 +74,7 @@ PetscErrorCode TSAdaptRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptFinalizePackage - This function destroys everything in the `TS` package. It is
   called from `PetscFinalize()`.
 
@@ -91,7 +91,7 @@ PetscErrorCode TSAdaptFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptInitializePackage - This function initializes everything in the `TSAdapt` package. It is
   called from `TSInitializePackage()`.
 
@@ -169,7 +169,7 @@ PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptSetOptionsPrefix - Sets the prefix used for searching for `TSAdapt` options in the options database
 
   Logically Collective
@@ -380,7 +380,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
   Logically Collective
@@ -733,7 +733,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptSetFromOptions - Sets various `TSAdapt` parameters from user options.
 
   Collective
@@ -838,7 +838,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
   Logically Collective; No Fortran Support
@@ -879,7 +879,7 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt or
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptCandidatesGet - Get the list of candidate orders of accuracy and cost
 
   Not Collective
@@ -913,7 +913,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdaptChoose - choose which method and step size to use for the next step
 
   Collective

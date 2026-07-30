@@ -2036,7 +2036,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray - Returns a pointer to a contiguous array that contains this
   MPI processes's portion of the vector data
 
@@ -2080,7 +2080,7 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray - Restores a vector after `VecGetArray()` has been called and the array is no longer needed
 
   Logically Collective
@@ -2106,7 +2106,7 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/*@C
+/*@
   VecGetArrayRead - Get read-only pointer to contiguous array containing this processor's portion of the vector data.
 
   Not Collective
@@ -2157,7 +2157,7 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrayRead - Restore array obtained with `VecGetArrayRead()`
 
   Not Collective
@@ -2192,7 +2192,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
   MPI processes's portion of the vector data.
 
@@ -2232,7 +2232,7 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrayWrite - Restores a vector after `VecGetArrayWrite()` has been called.
 
   Logically Collective
@@ -2261,7 +2261,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArrays - Returns a pointer to the arrays in a set of vectors
   that were created by a call to `VecDuplicateVecs()`.
 
@@ -2297,7 +2297,7 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrays - Restores a group of vectors after `VecGetArrays()`
   has been called.
 
@@ -2332,7 +2332,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g.,
   `VECCUDA`), the returned pointer will be a device pointer to the device memory that contains
   this MPI processes's portion of the vector data.
@@ -2381,7 +2381,7 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar *a[], PetscMemType *mtyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
 
   Logically Collective; No Fortran Support
@@ -2413,7 +2413,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer.
   The returned pointer is guaranteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
 
@@ -2458,7 +2458,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar *a[], PetscMem
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()`
 
   Not Collective; No Fortran Support
@@ -2488,7 +2488,7 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar *a[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will always return
   a device pointer to the device memory that contains this processor's portion of the vector data.
 
@@ -2529,7 +2529,7 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar *a[], PetscMemType 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
 
   Logically Collective; No Fortran Support
@@ -2601,7 +2601,7 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecReplaceArray - Allows one to replace the array in a vector with an
   array provided by the user. This is useful to avoid copying an array
   into a vector.
@@ -2636,7 +2636,7 @@ PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray2d - Returns a pointer to a 2d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray2d()`
   when you no longer need access to the array.
@@ -2686,7 +2686,7 @@ PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray2dWrite - Returns a pointer to a 2d contiguous array that will contain this
   processor's portion of the vector data.  You MUST call `VecRestoreArray2dWrite()`
   when you no longer need access to the array.
@@ -2736,7 +2736,7 @@ PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray2d - Restores a vector after `VecGetArray2d()` has been called.
 
   Logically Collective
@@ -2778,7 +2778,7 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray2dWrite - Restores a vector after `VecGetArray2dWrite()` has been called.
 
   Logically Collective
@@ -2819,7 +2819,7 @@ PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt ms
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray1d - Returns a pointer to a 1d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray1d()`
   when you no longer need access to the array.
@@ -2862,7 +2862,7 @@ PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray1dWrite - Returns a pointer to a 1d contiguous array that will contain this
   processor's portion of the vector data.  You MUST call `VecRestoreArray1dWrite()`
   when you no longer need access to the array.
@@ -2905,7 +2905,7 @@ PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray1d - Restores a vector after `VecGetArray1d()` has been called.
 
   Logically Collective
@@ -2940,7 +2940,7 @@ PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray1dWrite - Restores a vector after `VecGetArray1dWrite()` has been called.
 
   Logically Collective
@@ -2975,7 +2975,7 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray3d - Returns a pointer to a 3d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray3d()`
   when you no longer need access to the array.
@@ -3030,7 +3030,7 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray3dWrite - Returns a pointer to a 3d contiguous array that will contain this
   processor's portion of the vector data.  You MUST call `VecRestoreArray3dWrite()`
   when you no longer need access to the array.
@@ -3086,7 +3086,7 @@ PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray3d - Restores a vector after `VecGetArray3d()` has been called.
 
   Logically Collective
@@ -3130,7 +3130,7 @@ PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray3dWrite - Restores a vector after `VecGetArray3dWrite()` has been called.
 
   Logically Collective
@@ -3174,7 +3174,7 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray4d - Returns a pointer to a 4d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray4d()`
   when you no longer need access to the array.
@@ -3235,7 +3235,7 @@ PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray4dWrite - Returns a pointer to a 4d contiguous array that will contain this
   processor's portion of the vector data.  You MUST call `VecRestoreArray4dWrite()`
   when you no longer need access to the array.
@@ -3296,7 +3296,7 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray4d - Restores a vector after `VecGetArray4d()` has been called.
 
   Logically Collective
@@ -3342,7 +3342,7 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray4dWrite - Restores a vector after `VecGetArray4dWrite()` has been called.
 
   Logically Collective
@@ -3388,7 +3388,7 @@ PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray2dRead - Returns a pointer to a 2d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray2dRead()`
   when you no longer need access to the array.
@@ -3438,7 +3438,7 @@ PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray2dRead - Restores a vector after `VecGetArray2dRead()` has been called.
 
   Logically Collective
@@ -3480,7 +3480,7 @@ PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mst
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray1dRead - Returns a pointer to a 1d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray1dRead()`
   when you no longer need access to the array.
@@ -3523,7 +3523,7 @@ PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray1dRead - Restores a vector after `VecGetArray1dRead()` has been called.
 
   Logically Collective
@@ -3558,7 +3558,7 @@ PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray3dRead - Returns a pointer to a 3d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray3dRead()`
   when you no longer need access to the array.
@@ -3614,7 +3614,7 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray3dRead - Restores a vector after `VecGetArray3dRead()` has been called.
 
   Logically Collective
@@ -3658,7 +3658,7 @@ PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecGetArray4dRead - Returns a pointer to a 4d contiguous array that contains this
   processor's portion of the vector data.  You MUST call `VecRestoreArray4dRead()`
   when you no longer need access to the array.
@@ -3720,7 +3720,7 @@ PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecRestoreArray4dRead - Restores a vector after `VecGetArray4d()` has been called.
 
   Logically Collective
@@ -3791,7 +3791,7 @@ PetscErrorCode VecLockGet(Vec x, PetscInt *state)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecLockGetLocation - Return the source code location where a `Vec` was most recently read-locked
 
   Not Collective

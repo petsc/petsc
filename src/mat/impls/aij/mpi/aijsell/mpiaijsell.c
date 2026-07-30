@@ -1,5 +1,5 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-/*@C
+/*@
   MatCreateMPIAIJSELL - Creates a sparse parallel matrix whose local
   portions are stored as `MATSEQAIJSELL` matrices (a matrix class that inherits
   from SEQAIJ but performs some operations in SELL format).

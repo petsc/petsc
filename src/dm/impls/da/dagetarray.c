@@ -1,6 +1,6 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-/*@C
+/*@
   DMDAVecGetArray - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
@@ -122,7 +122,7 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
@@ -253,7 +253,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVecGetArrayDOF - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 
@@ -363,7 +363,7 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
 
@@ -486,7 +486,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVecGetArrayDOFRead - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 
@@ -596,7 +596,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMDAVecGetArrayDOFWrite - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`
 

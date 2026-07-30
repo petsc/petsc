@@ -224,7 +224,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceRegisterMemory - Register a pointer for use with device-aware memory system
 
   Not Collective
@@ -422,7 +422,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceMemcpy - Copy memory in a device-aware manner
 
   Not Collective, Asynchronous, Auto-dependency aware
@@ -491,7 +491,7 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscDeviceMemset - Memset device-aware memory
 
   Not Collective, Asynchronous, Auto-dependency aware

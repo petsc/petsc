@@ -192,7 +192,7 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSortStrWithPermutation - Computes the permutation of strings that gives
   a sorted sequence.
 

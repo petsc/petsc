@@ -27,7 +27,7 @@ PetscErrorCode DMGetPoints_Internal(DM dm, DMLabel domainLabel, PetscInt labelVa
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetLocalOffsets - Allocate and populate array of local offsets for each cell closure.
 
   Not collective
@@ -166,7 +166,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetLocalOffsetsSupport - Allocate and populate arrays of local offsets for each face support.
 
   Not collective
@@ -294,7 +294,7 @@ static PetscErrorCode PetscIntArrayIntoCeedInt_Private(PetscInt length, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetCeedRestriction - Define the libCEED map from the local vector (Lvector) to the cells (Evector)
 
   Input Parameters:

@@ -1475,7 +1475,7 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetIsoperiodicFaceSF - Obtain periodicity for a mesh
 
   Logically Collective
@@ -1509,7 +1509,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscInt *num_face_sfs, const P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetIsoperiodicFaceTransform - set geometric transform from donor to periodic points
 
   Logically Collective

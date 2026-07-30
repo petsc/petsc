@@ -1,6 +1,6 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
-/*@C
+/*@
   PetscGetArchType - Returns the $PETSC_ARCH that was used for this configuration of PETSc
 
   Not Collective

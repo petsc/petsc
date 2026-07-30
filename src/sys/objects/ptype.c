@@ -6,7 +6,7 @@
 const char *const PetscDataTypes[] = {"UNKNOWN",  "DOUBLE", "COMPLEX", "LONG",   "SHORT", "FLOAT", "CHAR",  "BIT_LOGICAL", "ENUM",          "BOOL",   "__FLOAT128", "OBJECT",
                                       "FUNCTION", "STRING", "__FP16",  "STRUCT", "INT",   "INT64", "COUNT", "INT32",       "PetscDataType", "PETSC_", NULL};
 
-/*@C
+/*@
   PetscDataTypeToMPIDataType - Converts the `PetscDataType` name of a datatype to its `MPI_Datatype`
 
   Not Collective
@@ -54,7 +54,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMPIDataTypeToPetscDataType - Finds the `PetscDataType` name of a datatype from its `MPI_Datatype`
 
   Not Collective
@@ -127,7 +127,7 @@ typedef enum {
 #endif
 } PetscDataTypeSize;
 
-/*@C
+/*@
   PetscDataTypeGetSize - Gets the size (in bytes) of a PETSc datatype
 
   Not Collective

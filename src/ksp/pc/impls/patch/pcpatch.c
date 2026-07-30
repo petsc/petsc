@@ -588,7 +588,7 @@ PetscErrorCode PCPatchGetCellNumbering(PC pc, PetscSection *cellNumbering)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetConstructType - Set the way patches are constructed for a `PCPATCH` preconditioner
 
   Logically Collective
@@ -644,7 +644,7 @@ PetscErrorCode PCPatchSetConstructType(PC pc, PCPatchConstructType ctype, PetscE
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchGetConstructType - Get the strategy currently used to construct patches for a `PCPATCH` preconditioner
 
   Not Collective
@@ -690,7 +690,7 @@ PetscErrorCode PCPatchGetConstructType(PC pc, PCPatchConstructType *ctype, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetDiscretisationInfo - Provide the per-subspace discretisation information required by a `PCPATCH` preconditioner to build patch problems
 
   Logically Collective
@@ -787,7 +787,7 @@ static PetscErrorCode PCPatchSetDiscretisationInfoCombined(PC pc, DM dm, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeFunction - Set the callback function used to compute patch residuals
 
   Logically Collective
@@ -825,7 +825,7 @@ PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC pc, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeFunctionInteriorFacets - Set the callback function used to compute facet integrals for patch residuals
 
   Logically Collective
@@ -863,7 +863,7 @@ PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeOperator - Set the callback function used to compute patch matrices
 
   Logically Collective
@@ -901,7 +901,7 @@ PetscErrorCode PCPatchSetComputeOperator(PC pc, PetscErrorCode (*func)(PC pc, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeOperatorInteriorFacets - Set the callback function used to compute facet integrals for patch matrices
 
   Logically Collective
@@ -939,7 +939,7 @@ PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC pc, PetscErrorCode (*f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeOperatorExteriorFacets - Set the callback function used to compute exterior facet integrals for patch matrices
 
   Logically Collective
@@ -977,7 +977,7 @@ PetscErrorCode PCPatchSetComputeOperatorExteriorFacets(PC pc, PetscErrorCode (*f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCPatchSetComputeFunctionExteriorFacets - Set the callback function used to compute exterior facet integrals for patch residuals
 
   Logically Collective

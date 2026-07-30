@@ -44,7 +44,7 @@ typedef struct {
   PetscReal    ccfl;
 } TS_IRK;
 
-/*@C
+/*@
   TSIRKTableauCreate - create the tableau for `TSIRK` and provide the entries
 
   Not Collective
@@ -156,7 +156,7 @@ static PetscErrorCode TSIRKCreate_Gauss(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKRegister -  adds a `TSIRK` implementation
 
   Not Collective, No Fortran Support
@@ -194,7 +194,7 @@ PetscErrorCode TSIRKRegister(const char sname[], PetscErrorCode (*function)(TS))
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKRegisterAll - Registers all of the implicit Runge-Kutta methods in `TSIRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -213,7 +213,7 @@ PetscErrorCode TSIRKRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKRegisterDestroy - Frees the list of schemes that were registered by `TSIRKRegister()`.
 
   Not Collective
@@ -229,7 +229,7 @@ PetscErrorCode TSIRKRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKInitializePackage - This function initializes everything in the `TSIRK` package. It is called
   from `TSInitializePackage()`.
 
@@ -247,7 +247,7 @@ PetscErrorCode TSIRKInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSIRKFinalizePackage - This function destroys everything in the `TSIRK` package. It is
   called from `PetscFinalize()`.
 

@@ -2092,7 +2092,7 @@ PETSC_EXTERN PetscBool PetscIsCloseAtTol(PetscReal, PetscReal, PetscReal, PetscR
 PETSC_EXTERN PetscBool PetscEqualReal(PetscReal, PetscReal);
 PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar, PetscScalar);
 
-/*@C
+/*@
   PetscIsCloseAtTolScalar - Like `PetscIsCloseAtTol()` but for `PetscScalar`
 
   Input Parameters:
@@ -2317,7 +2317,7 @@ M*/
 M*/
 #define PetscApproximateGTE(x, b) ((x) >= (PetscRealConstant(b) - PETSC_SMALL))
 
-/*@C
+/*@
    PetscCeilInt - Returns the ceiling of the quotation of two positive integers
 
    Not Collective
@@ -2340,7 +2340,7 @@ static inline PetscInt PetscCeilInt(PetscInt x, PetscInt y)
   return x / y + (x % y ? 1 : 0);
 }
 
-/*@C
+/*@
    PetscCeilInt64 - Returns the ceiling of the quotation of two positive integers
 
    Not Collective
@@ -2363,7 +2363,7 @@ static inline PetscInt64 PetscCeilInt64(PetscInt64 x, PetscInt64 y)
   return x / y + (x % y ? 1 : 0);
 }
 
-/*@C
+/*@
    PetscGCD - Returns the greatest common divisor of two integers
 
    Not Collective
@@ -2389,7 +2389,7 @@ static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
   return a;
 }
 
-/*@C
+/*@
    PetscLCM - Returns the least common multiple of two integers
 
    Not Collective

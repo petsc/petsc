@@ -84,7 +84,7 @@ struct _n_PetscStageLog {
 
 PETSC_DEPRECATED_OBJECT(3, 20, 0, "PetscLogGetState()", "PetscStageLog is no longer used.") PETSC_UNUSED static PetscStageLog petsc_stageLog = PETSC_NULLPTR;
 
-/*@C
+/*@
   PetscLogGetStageLog - Deprecated.
 
   Level: deprecated
@@ -101,7 +101,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscLogGetState()", "PetscStageLog is no l
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetCurrent - Deprecated
 
   Level: deprecated
@@ -115,7 +115,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscLogStateGetCurrentStage()", "PetscStag
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStageLogGetEventPerfLog - Deprecated
 
   Level: deprecated
@@ -150,7 +150,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "nothing", "PETSc does not guarantee a stack
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscLogAllBegin - Equivalent to `PetscLogDefaultBegin()`.
 
   Logically Collective on `PETSC_COMM_WORLD`
@@ -168,7 +168,7 @@ PETSC_DEPRECATED_FUNCTION(3, 20, 0, "PetscLogDefaultBegin()", ) static inline Pe
   return PetscLogDefaultBegin();
 }
 
-/*@C
+/*@
   PetscLogSet - Deprecated.
 
   Level: deprecated

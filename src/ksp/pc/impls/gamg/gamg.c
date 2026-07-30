@@ -1991,7 +1991,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGInitializePackage - This function initializes everything in the `PCGAMG` package. It is called
   from `PCInitializePackage()`.
 
@@ -2046,7 +2046,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGFinalizePackage - This function frees everything from the `PCGAMG` package. It is
   called from `PetscFinalize()` automatically.
 
@@ -2062,7 +2062,7 @@ PetscErrorCode PCGAMGFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGAMGRegister - Register a `PCGAMG` implementation.
 
   Input Parameters:

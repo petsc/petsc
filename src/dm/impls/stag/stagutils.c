@@ -4,7 +4,7 @@
 
 PetscErrorCode DMRestrictHook_Coordinates(DM, DM, void *);
 
-/*@C
+/*@
   DMStagGetBoundaryTypes - get boundary types
 
   Not Collective
@@ -94,7 +94,7 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm, void *arrX
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetProductCoordinateArrays - extract local product coordinate arrays, one per dimension
 
   Logically Collective
@@ -131,7 +131,7 @@ PetscErrorCode DMStagGetProductCoordinateArrays(DM dm, void *arrX, void *arrY, v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetProductCoordinateArraysRead - extract product coordinate arrays, read-only
 
   Logically Collective
@@ -158,7 +158,7 @@ PetscErrorCode DMStagGetProductCoordinateArraysRead(DM dm, void *arrX, void *arr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetProductCoordinateLocationSlot - get slot for use with local product coordinate arrays
 
   Not Collective
@@ -377,7 +377,7 @@ PetscErrorCode DMStagGetGlobalSizes(DM dm, PetscInt *M, PetscInt *N, PetscInt *P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetIsFirstRank - get boolean value for whether this rank is first in each direction in the rank grid
 
   Not Collective
@@ -409,7 +409,7 @@ PetscErrorCode DMStagGetIsFirstRank(DM dm, PetscBool *isFirstRank0, PetscBool *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetIsLastRank - get boolean value for whether this rank is last in each direction in the rank grid
 
   Not Collective
@@ -643,7 +643,7 @@ PetscErrorCode DMStagGetStencilWidth(DM dm, PetscInt *stencilWidth)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagGetOwnershipRanges - get elements per rank in each direction
 
   Not Collective
@@ -989,7 +989,7 @@ static PetscErrorCode DMStagRestoreProductCoordinateArrays_Private(DM dm, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagRestoreProductCoordinateArrays - restore local array access
 
   Logically Collective
@@ -1031,7 +1031,7 @@ PetscErrorCode DMStagRestoreProductCoordinateArrays(DM dm, void *arrX, void *arr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagRestoreProductCoordinateArraysRead - restore local product array access, read-only
 
   Logically Collective
@@ -1089,7 +1089,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm, DMBoundaryType boundaryType0, DMBou
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagSetCoordinateDMType - set DM type to store coordinates
 
   Logically Collective; `dmtype` must contain common value
@@ -1563,7 +1563,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm, PetscReal xmin, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecGetArray - get access to local array
 
   Logically Collective
@@ -1628,7 +1628,7 @@ PetscErrorCode DMStagVecGetArray(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecGetArrayRead - get read-only access to a local array
 
   Logically Collective
@@ -1677,7 +1677,7 @@ PetscErrorCode DMStagVecGetArrayRead(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecRestoreArray - restore access to a raw array
 
   Logically Collective
@@ -1721,7 +1721,7 @@ PetscErrorCode DMStagVecRestoreArray(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMStagVecRestoreArrayRead - restore read-only access to a raw array
 
   Logically Collective

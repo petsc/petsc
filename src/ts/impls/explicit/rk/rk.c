@@ -167,7 +167,7 @@ M*/
 .seealso: [](ch_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 
-/*@C
+/*@
   TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in `TSRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -345,7 +345,7 @@ PetscErrorCode TSRKRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKRegisterDestroy - Frees the list of schemes that were registered by `TSRKRegister()`.
 
   Not Collective
@@ -372,7 +372,7 @@ PetscErrorCode TSRKRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKInitializePackage - This function initializes everything in the `TSRK` package. It is called
   from `TSInitializePackage()`.
 
@@ -390,7 +390,7 @@ PetscErrorCode TSRKInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKFinalizePackage - This function destroys everything in the `TSRK` package. It is
   called from `PetscFinalize()`.
 
@@ -406,7 +406,7 @@ PetscErrorCode TSRKFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRKRegister - Register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support

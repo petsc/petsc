@@ -4,7 +4,7 @@
 PetscClassId PETSC_DRAW_CLASSID;
 
 static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
-/*@C
+/*@
   PetscDrawFinalizePackage - This function destroys everything in the PETSc interface to the `PetscDraw` package. It is
   called from `PetscFinalize()`.
 
@@ -21,7 +21,7 @@ PetscErrorCode PetscDrawFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawInitializePackage - This function initializes everything in the `PetscDraw` package. It is called
   from PetscDLLibraryRegister_petsc() when using dynamic libraries, and on the call to `PetscInitialize()`
   when using shared or static libraries.

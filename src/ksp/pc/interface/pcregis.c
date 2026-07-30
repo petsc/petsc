@@ -71,7 +71,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC);
 #endif
 PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
-/*@C
+/*@
   PCRegisterAll - Registers all of the preconditioners in the PC package.
 
   Not Collective

@@ -1,7 +1,7 @@
 #include <petsc/private/tsimpl.h>
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
-/*@C
+/*@
   TSFinalizePackage - This function destroys everything in the PETSc interface to `TS`. It is
   called from `PetscFinalize()`.
 
@@ -19,7 +19,7 @@ PetscErrorCode TSFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSInitializePackage - This function initializes everything in the `TS` package. It is called
   from `PetscDLLibraryRegister_petscts()` when using dynamic libraries, and on the first call to `TSCreate()`
   when using shared or static libraries.

@@ -224,7 +224,7 @@ static PetscErrorCode PetscByteSwapFloat(float *buff, PetscCount n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscByteSwap - Reverse the byte order of an array of values of a given `PetscDataType`, in place
 
   Not Collective; No Fortran Support
@@ -262,7 +262,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscCount count)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinaryRead - Reads from a binary file.
 
   Not Collective
@@ -375,7 +375,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinaryWrite - Writes to a binary file.
 
   Not Collective
@@ -559,7 +559,7 @@ PetscErrorCode PetscBinaryClose(int fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinarySeek - Moves the file pointer on a PETSc binary file.
 
   Not Collective, No Fortran Support
@@ -597,7 +597,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinarySynchronizedRead - Reads from a binary file, all MPI processes get the same values
 
   Collective, No Fortran Support
@@ -675,7 +675,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinarySynchronizedWrite - writes to a binary file.
 
   Collective, No Fortran Support
@@ -716,7 +716,7 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
 
   No Fortran Support

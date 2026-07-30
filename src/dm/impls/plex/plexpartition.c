@@ -474,7 +474,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreatePartitionerGraph - Create a CSR graph of point connections for the partitioner
 
   Collective
@@ -520,7 +520,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexCreateNeighborCSR - Create a mesh graph (cell-cell adjacency) in parallel CSR format.
 
   Collective

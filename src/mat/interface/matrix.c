@@ -494,7 +494,7 @@ PetscErrorCode MatRealPart(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetGhosts - Get the global indices of all ghost nodes defined by the sparse matrix
 
   Collective
@@ -553,7 +553,7 @@ PetscErrorCode MatImaginaryPart(Mat mat)
 }
 
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   MatGetRow - Gets a row of a matrix.  You MUST call `MatRestoreRow()`
   for each row that you get to ensure that your application does
   not bleed memory.
@@ -647,7 +647,7 @@ PetscErrorCode MatConjugate(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatRestoreRow - Frees any temporary space allocated by `MatGetRow()`.
 
   Not Collective
@@ -4701,7 +4701,7 @@ struct _MatSolverTypeHolder {
 
 static MatSolverTypeHolder MatSolverTypeHolders = NULL;
 
-/*@C
+/*@
   MatSolverTypeRegister - Registers a `MatSolverType` that works for a particular matrix type
 
   Logically Collective, No Fortran Support
@@ -4763,7 +4763,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFa
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSolverTypeGet - Gets the function that creates the factor matrix if it exist
 
   Input Parameters:
@@ -7387,7 +7387,7 @@ PetscErrorCode MatGetOwnershipRange(Mat mat, PetscInt *m, PetscInt *n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetOwnershipRanges - For matrices that own values by row, excludes `MATELEMENTAL` and
   `MATSCALAPACK`, returns the range of matrix rows owned by each process.
 
@@ -7429,7 +7429,7 @@ PetscErrorCode MatGetOwnershipRanges(Mat mat, const PetscInt *ranges[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetOwnershipRangesColumn - Returns the ranges of matrix columns associated with rows of a
   vector one multiplies this vector by that are owned by each processor.
 
@@ -7620,7 +7620,7 @@ PetscErrorCode MatICCFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFactorI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSubMatrices - Extracts several submatrices from a matrix. If submat
   points to an array of valid matrices, they may be reused to store the new
   submatrices.
@@ -7713,7 +7713,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSubMatricesMPI - Extracts MPI submatrices across a sub communicator of `mat` (by pairs of `IS` that may live on subcomms).
 
   Collective
@@ -7768,7 +7768,7 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDestroyMatrices - Destroys an array of matrices
 
   Collective
@@ -7802,7 +7802,7 @@ PetscErrorCode MatDestroyMatrices(PetscInt n, Mat *mat[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDestroySubMatrices - Destroys a set of matrices obtained with `MatCreateSubMatrices()`.
 
   Collective
@@ -7868,7 +7868,7 @@ PetscErrorCode MatGetSeqNonzeroStructure(Mat mat, Mat *matstruct)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDestroySeqNonzeroStructure - Destroys matrix obtained with `MatGetSeqNonzeroStructure()`.
 
   Collective
@@ -8350,7 +8350,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, const PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetVariableBlockSizes - Gets a diagonal blocks of the matrix that need not be of the same size
 
   Not Collective; No Fortran Support
@@ -8581,7 +8581,7 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetRowIJ - Returns the compressed row storage i and j indices for the local rows of a sparse matrix
 
   Collective
@@ -8638,7 +8638,7 @@ PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetColumnIJ - Returns the compressed column storage i and j indices for sequential matrices.
 
   Collective
@@ -8680,7 +8680,7 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with `MatGetRowIJ()`.
 
   Collective
@@ -8729,7 +8729,7 @@ PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with `MatGetColumnIJ()`.
 
   Collective
@@ -9353,7 +9353,7 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetNullSpaces - gets the null spaces, transpose null spaces, and near null spaces from an array of matrices
 
   Logically Collective
@@ -9393,7 +9393,7 @@ PetscErrorCode MatGetNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatRestoreNullSpaces - sets the null spaces, transpose null spaces, and near null spaces obtained with `MatGetNullSpaces()` for an array of matrices
 
   Logically Collective
@@ -9704,7 +9704,7 @@ PetscErrorCode MatGetInertia(Mat mat, PetscInt *nneg, PetscInt *nzero, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSolves - Solves $A x = b$, given a factored matrix, for a collection of vectors
 
   Neighbor-wise Collective
@@ -10971,7 +10971,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetMultiProcBlock - Create multiple 'parallel submatrices' from
   a given `Mat`. Each submatrix can span multiple procs.
 
@@ -11176,7 +11176,7 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
   Collective; No Fortran Support
@@ -11600,7 +11600,7 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSetOperation - Allows user to set a matrix operation for any matrix type
 
   Logically Collective
@@ -11656,7 +11656,7 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, PetscErrorCodeFn *f)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetOperation - Gets a matrix operation for any matrix type.
 
   Not Collective
@@ -11861,7 +11861,7 @@ PetscErrorCode MatEliminateZeros(Mat A, PetscBool keep)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetCurrentMemType - Get the memory location of the matrix
 
   Not Collective, but the result will be the same on all MPI processes

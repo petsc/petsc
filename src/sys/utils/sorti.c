@@ -958,7 +958,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscCount n, PetscInt X[], PetscScal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSortIntWithDataArray - Sorts an array of `PetscInt` in place in increasing order;
   changes a second array to match the sorted first INTEGER array.  Unlike other sort routines, the user must
   provide workspace (the size of an element in the data array) to use when sorting.
@@ -1174,7 +1174,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscProcessTree - Prepares tree data to be displayed graphically
 
   Not Collective, No Fortran Support

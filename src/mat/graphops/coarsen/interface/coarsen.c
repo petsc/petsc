@@ -6,7 +6,7 @@ PetscClassId MAT_COARSEN_CLASSID;
 PetscFunctionList MatCoarsenList              = NULL;
 PetscBool         MatCoarsenRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   MatCoarsenRegister - Adds a new sparse matrix coarsening algorithm to the matrix package.
 
   Logically Collective, No Fortran Support
@@ -298,7 +298,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCoarsenGetData - Gets the weights for vertices for a coarsener.
 
   Logically Collective, No Fortran Support

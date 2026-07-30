@@ -35,7 +35,7 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
 static jmp_buf   PetscSegvJumpBuf;
 static PetscBool PetscSegvJumpBuf_set;
 
-/*@C
+/*@
   PetscSignalSegvCheckPointerOrMpi - To be called from a signal handler for SIGSEGV.
 
   Not Collective, No Fortran Support
@@ -54,7 +54,7 @@ void PetscSignalSegvCheckPointerOrMpi(void)
   if (PetscSegvJumpBuf_set) longjmp(PetscSegvJumpBuf, 1);
 }
 
-/*@C
+/*@
   PetscCheckPointer - Returns `PETSC_TRUE` if a pointer points to accessible data
 
   Not Collective, No Fortran Support

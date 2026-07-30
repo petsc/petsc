@@ -16,7 +16,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF);
 PetscFunctionList PetscSFList;
 PetscBool         PetscSFRegisterAllCalled;
 
-/*@C
+/*@
   PetscSFRegisterAll - Registers all the `PetscSF` communication implementations
 
   Not Collective
@@ -45,7 +45,7 @@ PetscErrorCode PetscSFRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFRegister  - Adds an implementation of the `PetscSF` communication protocol.
 
   Not Collective, No Fortran Support

@@ -598,7 +598,7 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetFirstLabeledPoint - Find first labeled `point` in `odm` such that the corresponding point in `dm` has the specified `height`. Return `point` and the corresponding `ds`.
 
   Input Parameters:

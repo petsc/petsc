@@ -398,7 +398,7 @@ PETSC_EXTERN PetscErrorCode PetscRegressorLinearGetIntercept(PetscRegressor regr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRegressorLinearSetType - Sets the type of linear regression to be performed
 
   Logically Collective

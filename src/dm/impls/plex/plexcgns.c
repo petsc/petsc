@@ -1,6 +1,6 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
-/*@C
+/*@
   DMPlexCreateCGNSFromFile - Create a `DMPLEX` mesh from a CGNS file.
 
   Collective

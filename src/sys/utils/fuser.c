@@ -6,7 +6,7 @@
   #include <windows.h>
 #endif
 
-/*@C
+/*@
   PetscGetUserName - Get the login name of the user running the program on the current MPI process
 
   Not Collective

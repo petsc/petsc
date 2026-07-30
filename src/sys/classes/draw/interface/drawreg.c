@@ -289,7 +289,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawRegister - Adds a method to the graphics package.
 
   Not Collective, No Fortran Support

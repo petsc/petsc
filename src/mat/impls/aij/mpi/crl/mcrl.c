@@ -132,7 +132,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateMPIAIJCRL - Creates a sparse matrix of type `MATMPIAIJCRL`.
 
   Collective

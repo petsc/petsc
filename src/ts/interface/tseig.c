@@ -11,7 +11,7 @@ struct _n_TSMonitorSPEigCtx {
   PetscReal   xmin, xmax, ymin, ymax;
 };
 
-/*@C
+/*@
   TSMonitorSPEigCtxCreate - Creates a context for use with `TS` to monitor the eigenvalues of the linearized operator
 
   Collective
@@ -89,7 +89,7 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSPEig - Monitors the eigenvalues of the linearized right-hand-side operator on a scatter plot at each time step
 
   Collective
@@ -197,7 +197,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSPEigCtxDestroy - Destroys a scatter plot context that was created with `TSMonitorSPEigCtxCreate()`.
 
   Collective

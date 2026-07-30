@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 
-/*@C
+/*@
   TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
 
   Not Collective, No Fortran Support
@@ -59,7 +59,7 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEAdaptRegisterAll - Registers all of the adaptivity schemes in `TSGLLEAdapt`
 
   Not Collective
@@ -79,7 +79,7 @@ PetscErrorCode TSGLLEAdaptRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEAdaptFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
   called from `PetscFinalize()`.
 
@@ -96,7 +96,7 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEAdaptInitializePackage - This function initializes everything in the `TSGLLEAdapt` package. It is
   called from `TSInitializePackage()`.
 
@@ -115,7 +115,7 @@ PetscErrorCode TSGLLEAdaptInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLLEAdaptSetType - Sets the type of a `TSGLLEAdapt` step-size and order adaptivity object
 
   Logically Collective

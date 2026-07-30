@@ -9,7 +9,7 @@ PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = NULL;
 static void *mathematicaEnv                         = NULL;
 
 static PetscBool PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
-/*@C
+/*@
   PetscViewerMathematicaFinalizePackage - This function destroys everything in the PETSc interface to Mathematica. It is
   called from PetscFinalize().
 
@@ -25,7 +25,7 @@ PetscErrorCode PetscViewerMathematicaFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaInitializePackage - This function initializes everything in the PETSc interface to Mathematica. It is
   called from `PetscViewerInitializePackage()`.
 
@@ -371,7 +371,7 @@ static PetscErrorCode PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *l
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
 
   Input Parameters:
@@ -397,7 +397,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica via `PETSCVIEWERMATHEMATICA`
 
   Input Parameter:
@@ -421,7 +421,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char *nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica via `PETSCVIEWERMATHEMATICA`
 
   Input Parameters:
@@ -463,7 +463,7 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaPutMatrix - Send a dense matrix to a Mathematica kernel as a two-dimensional array
   bound to a symbol in the kernel's namespace.
 
@@ -509,7 +509,7 @@ PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer viewer, int m, int n,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerMathematicaPutCSRMatrix - Send a sparse matrix in CSR format to a Mathematica kernel as a
   LinearAlgebraCSRMatrix bound to a symbol in the kernel's namespace.
 

@@ -2,7 +2,7 @@
 
 static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   CharacteristicFinalizePackage - This function destroys everything in the `Characteristics` package. It is
   called from `PetscFinalize()`.
 
@@ -19,7 +19,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   CharacteristicInitializePackage - This function initializes everything in the Characteristic package. It is called
   from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to CharacteristicCreate()
   when using static libraries.

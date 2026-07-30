@@ -9,7 +9,7 @@ static PetscBool         ISPackageInitialized = PETSC_FALSE;
 extern PetscFunctionList ISLocalToGlobalMappingList;
 const char              *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERVAL", "IDENTITY", "ISInfo", "IS_", NULL};
 
-/*@C
+/*@
   ISFinalizePackage - This function destroys everything in the `IS` package. It is
   called from `PetscFinalize()`.
 
@@ -29,7 +29,7 @@ PetscErrorCode ISFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISInitializePackage - This function initializes everything in the `IS` package. It is called
   from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to ISCreateXXXX()
   when using shared or static libraries.
@@ -152,7 +152,7 @@ PetscInt          NormIds[4]; /* map from NormType to IDs used to cache norm val
 
 static PetscBool VecPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   VecInitializePackage - This function initializes everything in the `Vec` package. It is called
   from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to `VecCreate()`
   when using shared or static libraries.
@@ -273,7 +273,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecFinalizePackage - This function finalizes everything in the Vec package. It is called
   from PetscFinalize().
 

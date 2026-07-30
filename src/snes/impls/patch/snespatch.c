@@ -366,7 +366,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPatchSetDiscretisationInfo - Provide the per-subspace discretisation information required by a `SNESPATCH` to build patch problems
 
   Logically Collective
@@ -404,7 +404,7 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPatchSetComputeOperator - Set the callback used to assemble the per-patch Jacobian for a `SNESPATCH` solver
 
   Logically Collective
@@ -438,7 +438,7 @@ PetscErrorCode SNESPatchSetComputeOperator(SNES snes, PetscErrorCode (*func)(PC 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPatchSetComputeFunction - Set the callback used to compute the per-patch nonlinear residual for a `SNESPATCH` solver
 
   Logically Collective
@@ -472,7 +472,7 @@ PetscErrorCode SNESPatchSetComputeFunction(SNES snes, PetscErrorCode (*func)(PC 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPatchSetConstructType - Set the way patches are constructed for a `SNESPATCH` solver
 
   Logically Collective

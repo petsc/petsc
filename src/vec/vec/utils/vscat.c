@@ -421,7 +421,7 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecScatterRegister -  Adds a new vector scatter component implementation
 
   Not Collective

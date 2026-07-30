@@ -1,7 +1,7 @@
 #include <petscsys.h> /*I "petscsys.h" I*/
 #include "err.h"
 
-/*@C
+/*@
   PetscMPIAbortErrorHandler - Calls `PETSCABORT()` and exits.
 
   Not Collective, No Fortran Support

@@ -220,7 +220,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 }
 #endif
 
-/*@C
+/*@
   PetscCommBuildTwoSided - discovers communicating ranks given one-sided information, moving constant-sized data in the process (often message lengths)
 
   Collective, No Fortran Support
@@ -405,7 +405,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 }
 #endif
 
-/*@C
+/*@
   PetscCommBuildTwoSidedF - discovers communicating ranks given one-sided information, calling user-defined functions during rendezvous
 
   Collective, No Fortran Support
@@ -450,7 +450,7 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCommBuildTwoSidedFReq - discovers communicating ranks given one-sided information, calling user-defined functions during rendezvous, returns requests
 
   Collective, No Fortran Support

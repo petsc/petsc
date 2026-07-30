@@ -51,7 +51,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
   Collective

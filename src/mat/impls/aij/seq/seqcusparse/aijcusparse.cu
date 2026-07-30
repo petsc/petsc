@@ -3053,7 +3053,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSEGetIJ - returns the device row storage `i` and `j` indices for `MATSEQAIJCUSPARSE` matrices.
 
   Not Collective
@@ -3080,7 +3080,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSERestoreIJ - restore the device row storage `i` and `j` indices obtained with `MatSeqAIJCUSPARSEGetIJ()`
 
   Not Collective
@@ -3102,7 +3102,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSEGetArrayRead - gives read-only access to the array where the device data for a `MATSEQAIJCUSPARSE` matrix nonzero entries are stored
 
   Not Collective
@@ -3125,7 +3125,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat A, const PetscScalar **a)
   return MatSeqAIJCUSPARSE_CUPM_t::GetArrayRead(A, a);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSERestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJCUSPARSEGetArrayRead()`
 
   Not Collective
@@ -3143,7 +3143,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat A, const PetscScalar **a)
   return MatSeqAIJCUSPARSE_CUPM_t::RestoreArrayRead(A, a);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSEGetArray - gives read-write access to the array where the device data for a `MATSEQAIJCUSPARSE` matrix is stored
 
   Not Collective
@@ -3165,7 +3165,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat A, PetscScalar **a)
 {
   return MatSeqAIJCUSPARSE_CUPM_t::GetArray(A, a);
 }
-/*@C
+/*@
   MatSeqAIJCUSPARSERestoreArray - restore the read-write access array obtained from `MatSeqAIJCUSPARSEGetArray()`
 
   Not Collective
@@ -3183,7 +3183,7 @@ PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat A, PetscScalar **a)
   return MatSeqAIJCUSPARSE_CUPM_t::RestoreArray(A, a);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSEGetArrayWrite - gives write access to the array where the device data for a `MATSEQAIJCUSPARSE` matrix is stored
 
   Not Collective
@@ -3208,7 +3208,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat A, PetscScalar **a)
   return MatSeqAIJCUSPARSE_CUPM_t::GetArrayWrite(A, a);
 }
 
-/*@C
+/*@
   MatSeqAIJCUSPARSERestoreArrayWrite - restore the write-only access array obtained from `MatSeqAIJCUSPARSEGetArrayWrite()`
 
   Not Collective

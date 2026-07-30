@@ -106,7 +106,7 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawLGAddPoints - Adds several points to each of the line graphs.
   The new points must have an X coordinate larger than the old points.
 

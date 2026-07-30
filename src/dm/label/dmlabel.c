@@ -619,7 +619,7 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelCompare - Compare two `DMLabel` objects
 
   Collective; No Fortran Support
@@ -2278,7 +2278,7 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelPropagatePush - Execute a cycle of label propagation
 
   Collective
@@ -2398,7 +2398,7 @@ PetscErrorCode DMLabelConvertToSection(DMLabel label, PetscSection *section, IS 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelRegister - Adds a new label component implementation
 
   Not Collective
@@ -2440,7 +2440,7 @@ PetscErrorCode DMLabelRegister(const char name[], PetscErrorCode (*create_func)(
 PETSC_EXTERN PetscErrorCode DMLabelCreate_Concrete(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelCreate_Ephemeral(DMLabel);
 
-/*@C
+/*@
   DMLabelRegisterAll - Registers all of the `DMLabel` implementations in the `DM` package.
 
   Not Collective
@@ -2460,7 +2460,7 @@ PetscErrorCode DMLabelRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMLabelRegisterDestroy - This function destroys the `DMLabel` registry. It is called from `PetscFinalize()`.
 
   Level: developer
@@ -2811,7 +2811,7 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymLabelGetStratum - get the symmetries for the orientations of a stratum
 
   Logically Collective
@@ -2871,7 +2871,7 @@ PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stra
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSymLabelSetStratum - set the symmetries for the orientations of a stratum
 
   Logically

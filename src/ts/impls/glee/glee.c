@@ -142,7 +142,7 @@ M*/
 .seealso: [](ch_ts), `TSGLEE`
 M*/
 
-/*@C
+/*@
   TSGLEERegisterAll - Registers all of the General Linear with Error Estimation methods in `TSGLEE`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -290,7 +290,7 @@ PetscErrorCode TSGLEERegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEERegisterDestroy - Frees the list of schemes that were registered by `TSGLEERegister()`.
 
   Not Collective
@@ -320,7 +320,7 @@ PetscErrorCode TSGLEERegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEEInitializePackage - This function initializes everything in the `TSGLEE` package. It is called
   from `TSInitializePackage()`.
 
@@ -339,7 +339,7 @@ PetscErrorCode TSGLEEInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEEFinalizePackage - This function destroys everything in the `TSGLEE` package. It is
   called from `PetscFinalize()`.
 
@@ -355,7 +355,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGLEERegister - register a new `TSGLEE` scheme by providing the entries in the Butcher tableau
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support

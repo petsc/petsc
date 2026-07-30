@@ -10,7 +10,7 @@
   #include <Kokkos_Core.hpp>
   #include <Kokkos_OffsetView.hpp>
 
-/*@C
+/*@
    DMDAVecGetKokkosOffsetView - Gets a Kokkos OffsetView that contains up-to-date data of a vector in the given memory space.
 
    Synopsis:
@@ -138,7 +138,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, Kokkos::Experimental::OffsetV
 template <class MemorySpace>
 PetscErrorCode DMDAVecGetKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *);
 
-/*@C
+/*@
    DMDAVecRestoreKokkosOffsetView - Returns the Kokkos OffsetView that was gotten with `DMDAVecGetKokkosOffsetView()`
 
    Synopsis:
@@ -190,7 +190,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, Kokkos::Experimental::Off
 template <class MemorySpace>
 PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, MemorySpace> *);
 
-/*@C
+/*@
    DMDAVecGetKokkosOffsetViewDOF - Gets a Kokkos OffsetView that contains up-to-date data of a vector in the given memory space, with DOF as the rightest dimension of the OffsetView
 
    Synopsis:
@@ -302,7 +302,7 @@ PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, Kokkos::Experimental::Offs
 template <class MemorySpace>
 PetscErrorCode DMDAVecGetKokkosOffsetViewDOFWrite(DM, Vec, Kokkos::Experimental::OffsetView<PetscScalar ****, Kokkos::LayoutRight, MemorySpace> *);
 
-/*@C
+/*@
    DMDAVecRestoreKokkosOffsetViewDOF - Returns the Kokkos OffsetView that was gotten from `DMDAVecGetKokkosOffsetViewDOF()`
 
    Synopsis:

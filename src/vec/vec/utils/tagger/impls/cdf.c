@@ -465,7 +465,7 @@ PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *metho
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFIterativeSetTolerances - Set the tolerances for iterative computation of absolute boxes from CDF boxes.
 
   Logically Collective
@@ -526,7 +526,7 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFSetBox - Set the cumulative box defining the values to be tagged by the tagger, where cumulative boxes are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 
   Logically Collective
@@ -546,7 +546,7 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger, VecTaggerBox box[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerCDFGetBox - Get the cumulative box (multi-dimensional box) defining the values to be tagged by the tagger, where cumulative boxes
   are subsets of [0,1], where 0 indicates the smallest value present in the vector and 1 indicates the largest.
 

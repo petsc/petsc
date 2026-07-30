@@ -445,7 +445,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGSetLevels - Sets the number of levels to use with `PCMG`.
   Must be called before any other `PCMG` routine.
 
@@ -1910,7 +1910,7 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGRegisterCoarseSpaceConstructor -  Adds a method to the `PCMG` package for coarse space construction.
 
   Not Collective, No Fortran Support
@@ -1939,7 +1939,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PCMGCoarseS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMGGetCoarseSpaceConstructor -  Returns the given coarse space construction method.
 
   Not Collective, No Fortran Support

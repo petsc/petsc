@@ -194,7 +194,7 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM sw, PetscInt cell, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortGetPointsPerCell - Creates an array of point indices for all points in a cell
 
   Not Collective
@@ -232,7 +232,7 @@ PetscErrorCode DMSwarmSortGetPointsPerCell(DM sw, PetscInt cell, PetscInt *npoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmSortRestorePointsPerCell - Restores an array of point indices for all points in a cell
 
   Not Collective

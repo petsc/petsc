@@ -1,6 +1,6 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
-/*@C
+/*@
   PetscDrawIndicatorFunction - Draws an indicator function (where a relationship is true) on a `PetscDraw`
 
   Not Collective

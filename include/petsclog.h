@@ -387,7 +387,7 @@ PETSC_EXTERN PetscErrorCode PetscLogEventsResume(void);
 PETSC_EXTERN PetscErrorCode PetscLogClassGetClassId(const char[], PetscClassId *);
 PETSC_EXTERN PetscErrorCode PetscLogClassIdGetName(PetscClassId, const char *[]);
 
-/*@C
+/*@
   PetscLogEventSync - Synchronize an `MPI_Comm` so that the wall-clock time spent waiting at the implicit barrier is not attributed to a subsequent event
 
   Logically Collective on `comm`; No Fortran Support
@@ -497,7 +497,7 @@ M*/
   #define PetscLogEventEnd(e, o1, o2, o3, o4) PetscLogEventEnd_Internal(e, (PetscObject)(o1), (PetscObject)(o2), (PetscObject)(o3), (PetscObject)(o4))
 
 /* Object functions */
-/*@C
+/*@
   PetscLogObjectCreate - Notify the active `PetscLogHandler`s that a new `PetscObject` has been created
 
   Not Collective; No Fortran Support
@@ -526,7 +526,7 @@ static inline PetscErrorCode PetscLogObjectCreate(PetscObject o)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscLogObjectDestroy - Notify the active `PetscLogHandler`s that a `PetscObject` is being destroyed
 
   Not Collective; No Fortran Support
@@ -974,7 +974,7 @@ static inline PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscLogGpuTimeAdd - Add elapsed GPU computation time to PETSc's GPU time counter
 
   Not Collective; No Fortran Support
@@ -994,7 +994,7 @@ static inline PetscErrorCode PetscLogGpuTimeAdd(PetscLogDouble t)
   return PetscAddLogDouble(&petsc_gtime, &petsc_gtime_th, t);
 }
 
-/*@C
+/*@
   PetscLogCpuToGpu - Log a CPU-to-GPU memory transfer for performance reporting
 
   Not Collective; No Fortran Support
@@ -1014,7 +1014,7 @@ static inline PetscErrorCode PetscLogCpuToGpu(PetscLogDouble size)
   return PetscAddLogDoubleCnt(&petsc_ctog_ct, &petsc_ctog_sz, &petsc_ctog_ct_th, &petsc_ctog_sz_th, size);
 }
 
-/*@C
+/*@
   PetscLogGpuToCpu - Log a GPU-to-CPU memory transfer for performance reporting
 
   Not Collective; No Fortran Support
@@ -1031,7 +1031,7 @@ static inline PetscErrorCode PetscLogGpuToCpu(PetscLogDouble size)
   return PetscAddLogDoubleCnt(&petsc_gtoc_ct, &petsc_gtoc_sz, &petsc_gtoc_ct_th, &petsc_gtoc_sz_th, size);
 }
 
-/*@C
+/*@
   PetscLogCpuToGpuScalar - Log a CPU-to-GPU memory transfer of `PetscScalar` data for performance reporting
 
   Not Collective; No Fortran Support
@@ -1051,7 +1051,7 @@ static inline PetscErrorCode PetscLogCpuToGpuScalar(PetscLogDouble size)
   return PetscAddLogDoubleCnt(&petsc_ctog_ct_scalar, &petsc_ctog_sz_scalar, &petsc_ctog_ct_scalar_th, &petsc_ctog_sz_scalar_th, size);
 }
 
-/*@C
+/*@
   PetscLogGpuToCpuScalar - Log a GPU-to-CPU memory transfer of `PetscScalar` data for performance reporting
 
   Not Collective; No Fortran Support

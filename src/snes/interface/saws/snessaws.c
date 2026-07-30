@@ -5,7 +5,7 @@ typedef struct {
   PetscViewer viewer;
 } SNESMonitor_SAWs;
 
-/*@C
+/*@
   SNESMonitorSAWsCreate - create an SAWs monitor context for `SNES`
 
   Collective
@@ -32,7 +32,7 @@ PetscErrorCode SNESMonitorSAWsCreate(SNES snes, void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorSAWsDestroy - destroy a monitor context created with `SNESMonitorSAWsCreate()`
 
   Collective
@@ -51,7 +51,7 @@ PetscErrorCode SNESMonitorSAWsDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorSAWs - monitor solution process of `SNES` using SAWs
 
   Collective

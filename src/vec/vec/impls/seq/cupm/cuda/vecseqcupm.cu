@@ -66,7 +66,7 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateSeqCUDAWithArrays - Creates a sequential, array-style vector using CUDA, where the
   user provides the complete array space to store the vector values.
 
@@ -109,7 +109,7 @@ PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateSeqCUDAWithArray - Creates a sequential, array-style vector using CUDA, where the
   user provides the device array space to store the vector values.
 
@@ -151,7 +151,7 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAGetArray - Provides access to the device buffer inside a vector
 
   Logically Collective; Asynchronous; No Fortran Support
@@ -191,7 +191,7 @@ PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDARestoreArray - Restore a device buffer previously acquired with `VecCUDAGetArray()`.
 
   NotCollective; Asynchronous; No Fortran Support
@@ -218,7 +218,7 @@ PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
 
   Not Collective; Asynchronous; No Fortran Support
@@ -253,7 +253,7 @@ PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with
   `VecCUDAGetArrayRead()`.
 
@@ -280,7 +280,7 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
 
    Logically Collective; Asynchronous; No Fortran Support
@@ -314,7 +314,7 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with
   `VecCUDAGetArrayWrite()`.
 
@@ -341,7 +341,7 @@ PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
@@ -378,7 +378,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar array[])
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAReplaceArray - Permanently replace the GPU array in a vector with a GPU array provided
   by the user.
 
@@ -410,7 +410,7 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar array[])
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCUDAResetArray - Resets a vector to use its default memory.
 
   Logically Collective; No Fortran Support

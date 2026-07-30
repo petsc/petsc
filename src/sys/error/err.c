@@ -21,7 +21,7 @@ PetscBool petscabortmpifinalize = PETSC_FALSE;
 
 static EH eh = NULL;
 
-/*@C
+/*@
   PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to
   load the file where the error occurred. Then calls the "previous" error handler.
 
@@ -84,7 +84,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
   Not Collective, No Fortran Support
@@ -156,7 +156,7 @@ PetscErrorCode PetscPopErrorHandler(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscReturnErrorHandler - Error handler that causes a return without printing an error message.
 
   Not Collective, No Fortran Support
@@ -251,7 +251,7 @@ static const char *PetscErrorStrings[] = {
   /*101*/ "Unhandled Python Exception",
   NULL};
 
-/*@C
+/*@
   PetscErrorMessage - Returns the text string associated with a PETSc error code.
 
   Not Collective, No Fortran Support
@@ -324,7 +324,7 @@ static void PetscCxxErrorThrow()
 }
 #endif
 
-/*@C
+/*@
   PetscError - Routine that is called when an error has been detected, usually called through the macro `SETERRQ`(`PETSC_COMM_SELF`,)` or by `PetscCall()`.
 
   Collective
@@ -1038,7 +1038,7 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 }
 #endif
 
-/*@C
+/*@
   PetscMPIErrorString - Given an MPI error code returns the `MPI_Error_string()` appropriately
   formatted for displaying with the PETSc error handlers.
 

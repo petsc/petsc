@@ -1,7 +1,7 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/andor.h"
 
-/*@C
+/*@
   VecTaggerAndGetSubs - Get the sub `VecTagger`s whose intersection defines the outer `VecTagger`
 
   Not Collective
@@ -24,7 +24,7 @@ PetscErrorCode VecTaggerAndGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerAndSetSubs - Set the sub `VecTagger`s whose intersection defines the outer `VecTagger`
 
   Logically Collective

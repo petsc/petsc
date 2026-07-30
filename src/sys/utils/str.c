@@ -8,7 +8,7 @@
   #include <strings.h> /* strcasecmp */
 #endif
 
-/*@C
+/*@
   PetscStrToArray - Separates a string by a character (for example ' ' or '\n') and creates an array of strings
 
   Not Collective; No Fortran Support
@@ -107,7 +107,7 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStrToArrayDestroy - Frees array created with `PetscStrToArray()`.
 
   Not Collective; No Fortran Support
@@ -130,7 +130,7 @@ PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscStrArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
 
   Not Collective; No Fortran Support
@@ -160,7 +160,7 @@ PetscErrorCode PetscStrArrayallocpy(const char *const *list, char ***t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrArrayDestroy - Frees array of strings created with `PetscStrArrayallocpy()`.
 
   Not Collective; No Fortran Support
@@ -186,7 +186,7 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrNArrayallocpy - Allocates space to hold a copy of an array of strings then copies the strings
 
   Not Collective; No Fortran Support
@@ -213,7 +213,7 @@ PetscErrorCode PetscStrNArrayallocpy(PetscInt n, const char *const *list, char *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrNArrayDestroy - Frees array of strings created with `PetscStrNArrayallocpy()`.
 
   Not Collective; No Fortran Support
@@ -235,7 +235,7 @@ PetscErrorCode PetscStrNArrayDestroy(PetscInt n, char ***list)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBasename - returns a pointer to the last entry of a / or \ separated directory path
 
   Not Collective; No Fortran Support
@@ -259,7 +259,7 @@ const char *PetscBasename(const char a[])
   return ptr;
 }
 
-/*@C
+/*@
   PetscStrcasecmp - Returns true if the two strings are the same
   except possibly for case.
 
@@ -309,7 +309,7 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrendswithwhich - Determines if a string ends with one of several possible strings
 
   Not Collective; No Fortran Support
@@ -348,7 +348,7 @@ struct _n_PetscToken {
   char *current;
 };
 
-/*@C
+/*@
   PetscTokenFind - Locates next "token" in a `PetscToken`
 
   Not Collective; No Fortran Support
@@ -408,7 +408,7 @@ PetscErrorCode PetscTokenFind(PetscToken a, const char *result[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTokenCreate - Creates a `PetscToken` used to find tokens in a string
 
   Not Collective; No Fortran Support
@@ -441,7 +441,7 @@ PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTokenDestroy - Destroys a `PetscToken`
 
   Not Collective; No Fortran Support
@@ -462,7 +462,7 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrInList - search for a string in character-delimited list
 
   Not Collective; No Fortran Support
@@ -498,7 +498,7 @@ PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetPetscDir - Gets the directory PETSc is installed in
 
   Not Collective; No Fortran Support
@@ -518,7 +518,7 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrreplace - Replaces substrings in string with other substrings
 
   Not Collective; No Fortran Support
@@ -637,7 +637,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrcmpAny - Determines whether a string matches any of a list of strings.
 
   Not Collective, No Fortran Support
@@ -675,7 +675,7 @@ PetscErrorCode PetscStrcmpAny(const char src[], PetscBool *match, const char cmp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscEListFind - searches list of strings for given string, using case insensitive matching
 
   Not Collective; No Fortran Support
@@ -713,7 +713,7 @@ PetscErrorCode PetscEListFind(PetscInt n, const char *const *list, const char *s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscEnumFind - searches enum list of strings for given string, using case insensitive matching
 
   Not Collective; No Fortran Support
@@ -752,7 +752,7 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCIFilename - returns the basename of a file name when the PETSc CI portable error output mode is enabled.
 
   Not Collective; No Fortran Support
@@ -788,7 +788,7 @@ const char *PetscCIFilename(const char *file)
   return PetscBasename(file);
 }
 
-/*@C
+/*@
   PetscCILinenumber - returns a line number except if `PetscCIEnablePortableErrorOutput` is set when it returns 0
 
   Not Collective; No Fortran Support
@@ -809,7 +809,7 @@ int PetscCILinenumber(int linenumber)
   return 0;
 }
 
-/*@C
+/*@
   PetscStrcat - Concatenates a string onto a given string
 
   Not Collective, No Fortran Support
@@ -834,7 +834,7 @@ PetscErrorCode PetscStrcat(char s[], const char t[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscStrcpy - Copies a string
 
   Not Collective, No Fortran Support

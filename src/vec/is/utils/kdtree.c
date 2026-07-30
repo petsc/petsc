@@ -32,7 +32,7 @@ struct _n_PetscKDTree {
   PetscCount      *bucket_indices;
 };
 
-/*@C
+/*@
   PetscKDTreeDestroy - destroy a `PetscKDTree`
 
   Not Collective, No Fortran Support
@@ -207,7 +207,7 @@ static PetscErrorCode PetscKDTreeBuildStemAndLeaves(KDTreeBuild kd_build, PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscKDTreeCreate - create a `PetscKDTree`
 
   Not Collective, No Fortran Support
@@ -400,7 +400,7 @@ static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscKDTreeQueryPointsNearestNeighbor - find the nearest neighbor in a `PetscKDTree`
 
   Not Collective, No Fortran Support
@@ -451,7 +451,7 @@ PetscErrorCode PetscKDTreeQueryPointsNearestNeighbor(PetscKDTree tree, PetscCoun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscKDTreeView - view a `PetscKDTree`
 
   Not Collective, No Fortran Support

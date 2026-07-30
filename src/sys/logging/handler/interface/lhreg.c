@@ -48,7 +48,7 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerRegister - Register a new `PetscLogHandler`
 
   Not Collective, No Fortran Support
@@ -79,7 +79,7 @@ PetscErrorCode PetscLogHandlerRegister(const char sname[], PetscErrorCode (*func
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerSetType - Set the type of a `PetscLogHandler`
 
   Input Parameters:
@@ -112,7 +112,7 @@ PetscErrorCode PetscLogHandlerSetType(PetscLogHandler handler, PetscLogHandlerTy
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerGetType - Gets the `PetscLoagHandlerType` (as a string) from the `PetscLogHandler` object.
 
   Not collective

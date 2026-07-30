@@ -1,6 +1,6 @@
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
 
-/*@C
+/*@
   PetscViewerVTKAddField - Add a field to the viewer
 
   Collective
@@ -250,7 +250,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
   Logically Collective

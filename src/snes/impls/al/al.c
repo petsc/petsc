@@ -106,7 +106,7 @@ static PetscErrorCode SNESNewtonALSetFunction_NEWTONAL(SNES snes, SNESFunctionFn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonALSetFunction - Sets a user function that is called at each function evaluation to
   compute the tangent load vector for the arc-length continuation method.
 
@@ -145,7 +145,7 @@ static PetscErrorCode SNESNewtonALGetFunction_NEWTONAL(SNES snes, SNESFunctionFn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonALGetFunction - Get the user function and context set with `SNESNewtonALSetFunction`
 
   Logically Collective
@@ -167,7 +167,7 @@ PetscErrorCode SNESNewtonALGetFunction(SNES snes, SNESFunctionFn **func, PetscCt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonALSetDiagonalScaling - Set the global vector used to rescale DoFs for computation of arc length.
 
   Logically Collective
@@ -216,7 +216,7 @@ static PetscErrorCode SNESNewtonALGetLoadParameter_NEWTONAL(SNES snes, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonALGetLoadParameter - Get the value of the load parameter `lambda` for the arc-length continuation method.
 
   Logically Collective
@@ -277,7 +277,7 @@ static PetscErrorCode SNESNewtonALComputeFunction_NEWTONAL(SNES snes, Vec X, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonALComputeFunction - Calls the function that has been set with `SNESNewtonALSetFunction()`.
 
   Collective

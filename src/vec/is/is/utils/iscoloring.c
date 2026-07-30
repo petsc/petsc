@@ -192,7 +192,7 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringGetColors - Returns an array with the color for each local node
 
   Not Collective
@@ -225,7 +225,7 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringGetIS - Extracts index sets from the coloring context. Each is contains the nodes of one color
 
   Collective
@@ -294,7 +294,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISColoringRestoreIS - Restores the index sets extracted from the coloring context with `ISColoringGetIS()` using `PETSC_USE_POINTER`
 
   Collective
@@ -726,7 +726,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISAllGatherColors - Given a set of colors on each processor, generates a large
   set (same on each processor) by concatenating together each processors colors
 

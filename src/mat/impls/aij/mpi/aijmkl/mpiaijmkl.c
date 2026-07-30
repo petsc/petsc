@@ -1,5 +1,5 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-/*@C
+/*@
   MatCreateMPIAIJMKL - Creates a sparse parallel matrix whose local
   portions are stored as `MATSEQAIJMKL` matrices (a matrix class that inherits
   from `MATSEQAIJ` but uses some operations provided by Intel MKL).

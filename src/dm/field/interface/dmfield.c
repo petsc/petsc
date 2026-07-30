@@ -412,7 +412,7 @@ PetscErrorCode DMFieldCreateDefaultFaceQuadrature(DMField field, IS pointIS, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMFieldCreateFEGeom - Compute and create the geometric factors of a coordinate field
 
   Not Collective

@@ -97,7 +97,7 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
   Logically Collective
@@ -625,7 +625,7 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PETSC_VIEWER_GLVIS_ - Creates a `PETSCVIEWERGLVIS` `PetscViewer` shared by all processors in a communicator.
 
   Collective; No Fortran Support

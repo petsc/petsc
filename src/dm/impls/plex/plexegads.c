@@ -2313,7 +2313,7 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
 }
 #endif
 
-/*@C
+/*@
   DMPlexInflateToGeomModelUseXYZ - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
 
   Collective
@@ -2534,7 +2534,7 @@ PetscErrorCode ConvertGeomModelToAllBSplines(PetscBool islite, ego *model) PeNS
 }
 #endif
 
-/*@C
+/*@
   DMPlexCreateGeomFromFile - Create a `DMPLEX` mesh from an EGADS, IGES, or STEP file.
 
   Collective
@@ -2595,7 +2595,7 @@ PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM
 }
 
 #if PetscDefined(HAVE_EGADS)
-/*@C
+/*@
   DMPlex_Surface_Grad - Exposes the Geometry's Control Points and Weights and Calculates the Mesh Topology Boundary Nodes Gradient
                         with respect the associated geometry's Control Points and Weights.
 
@@ -3117,7 +3117,7 @@ static PetscErrorCode DestroyHashMap(PetscCtxRt p)
 }
 #endif
 
-/*@C
+/*@
   DMPlexGeomDataAndGrads - Exposes Control Points and Control Point Weights defining the underlying geometry allowing user manipulation of the geometry.
 
   Collective
@@ -4314,7 +4314,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 #endif
 }
 
-/*@C
+/*@
   DMPlexModifyGeomModel - Generates a new EGADS geometry model based in user provided Control Points and Control Points Weights. Optionally, the function will inflate the DM to the new geometry and save the new geometry to a file.
 
   Collective
@@ -4715,7 +4715,7 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
 #endif
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelTUV - Gets the [t] (EDGES) and [u, v] (FACES) geometry parameters of DM points that are associated geometry relationships. Requires a DM with an EGADS model attached.
 
   Collective
@@ -4886,7 +4886,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexInflateToGeomModelUseTUV - Inflates the DM to the associated underlying geometry using the [t] {EDGES) and [u, v] (FACES} associated parameters. Requires a DM with an EGADS model attached and a previous call to DMPlexGetGeomModelTUV().
 
   Collective
@@ -5052,7 +5052,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV) PeNS
 }
 
 #if PetscDefined(HAVE_EGADS)
-/*@C
+/*@
   DMPlexGetGeomModelBodies - Returns an array of `PetscGeom` BODY objects attached to the referenced geometric model entity as well as the number of BODYs.
 
   Collective
@@ -5092,7 +5092,7 @@ PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *num
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelBodyShells - Returns an array of `PetscGeom` SHELL objects attached to the referenced BODY geometric entity as well as the number of SHELLs.
 
   Collective
@@ -5129,7 +5129,7 @@ PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelBodyFaces - Returns an array of `PetscGeom` FACE objects attached to the referenced BODY geometric entity as well as the number of FACEs.
 
   Collective
@@ -5166,7 +5166,7 @@ PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **fa
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelBodyLoops - Returns an array of `PetscGeom` Loop objects attached to the referenced BODY geometric entity as well as the number of LOOPs.
 
   Collective
@@ -5203,7 +5203,7 @@ PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **lo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelShellFaces - Returns an array of `PetscGeom` FACE objects attached to the referenced SHELL geometric entity as well as the number of FACEs.
 
   Collective
@@ -5241,7 +5241,7 @@ PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom she
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelFaceLoops - Returns an array of `PetscGeom` LOOP objects attached to the referenced FACE geometric entity as well as the number of LOOPs.
 
   Collective
@@ -5279,7 +5279,7 @@ PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelFaceEdges - Returns an array of `PetscGeom` EDGE objects attached to the referenced FACE geometric entity as well as the number of EDGEs.
 
   Collective
@@ -5317,7 +5317,7 @@ PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelBodyEdges - Returns an array of `PetscGeom` EDGE objects attached to the referenced BODY geometric entity as well as the number of EDGEs.
 
   Collective
@@ -5354,7 +5354,7 @@ PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **ed
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelBodyNodes - Returns an array of `PetscGeom` NODE objects attached to the referenced BODY geometric entity as well as the number of NODES.
 
   Collective
@@ -5391,7 +5391,7 @@ PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **no
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomModelEdgeNodes - Returns an array of `PetscGeom` NODE objects attached to the referenced EDGE geometric entity as well as the number of NODES.
 
   Collective
@@ -5429,7 +5429,7 @@ PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomID - Returns ID number of the entity in the geometric (CAD) model
 
   Collective
@@ -5470,7 +5470,7 @@ PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomObject - Returns Geometry Object using the objects ID in the geometric (CAD) model
 
   Collective
@@ -5509,7 +5509,7 @@ PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomFaceNumOfControlPoints - Returns the total number of Control Points (and associated Weights) defining a FACE of a Geometry
 
   Not collective
@@ -5558,7 +5558,7 @@ PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomBodyMassProperties - Returns the Volume, Surface Area, Center of Gravity, and Inertia about the Body's Center of Gravity
 
   Not collective
@@ -5621,7 +5621,7 @@ PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreGeomBodyMassProperties - Release the arrays returned by `DMPlexGetGeomBodyMassProperties()`
 
   Not Collective
@@ -5647,7 +5647,7 @@ PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexFreeGeomObject - Frees PetscGeom Objects
 
   Not collective
@@ -5680,7 +5680,7 @@ PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomCntrlPntAndWeightData - Gets Control Point and Associated Weight Data for the Geometry attached to the DMPlex
 
   Not collective
@@ -5746,7 +5746,7 @@ PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreGeomCntrlPntAndWeightData - Release the arrays returned by `DMPlexGetGeomCntrlPntAndWeightData()`
 
   Not Collective
@@ -5778,7 +5778,7 @@ PetscErrorCode DMPlexRestoreGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashT
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomGradData - Gets Point, Surface and Volume Gradients with respect to changes in Control Points and their associated Weights for the Geometry attached to the DMPlex .
 
   Not collective
@@ -5852,7 +5852,7 @@ PetscErrorCode DMPlexGetGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexRestoreGeomGradData - Release the arrays returned by `DMPlexGetGeomGradData()`
 
   Not Collective
@@ -5889,7 +5889,7 @@ PetscErrorCode DMPlexRestoreGeomGradData(DM dm, PetscHMapI *cpSurfGradHashTable,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetGeomCntrlPntMaps - Gets arrays which maps Control Point IDs to their associated Geometry FACE, EDGE, and VERTEX.
 
   Not collective

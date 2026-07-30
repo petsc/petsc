@@ -68,7 +68,7 @@ static int          PetscLogMallocTrace          = -1;
 static size_t       PetscLogMallocTraceThreshold = 0;
 static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 
-/*@C
+/*@
   PetscMallocValidate - Test the memory for corruption.  This can be called at any time between `PetscInitialize()` and `PetscFinalize()`
 
   Input Parameters:
@@ -432,7 +432,7 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMemoryView - Shows the amount of memory currently being used in a communicator.
 
   Collective
@@ -616,7 +616,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
   Not Collective, No Fortran Support
@@ -649,7 +649,7 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 #endif
 }
 
-/*@C
+/*@
   PetscMallocDump - Dumps the currently allocated memory blocks to a file. The information
   printed is: size of space (in bytes), address of space, id of space,
   file in which space was allocated, and line number at which it was
@@ -830,7 +830,7 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMallocView - Saves the log of all calls to `PetscMalloc()`; also calls `PetscMemoryGetMaximumUsage()`
 
   Not Collective

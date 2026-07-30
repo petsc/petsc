@@ -630,7 +630,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCAmgXGetResources - get AMGx's internal resource object
 
   Not Collective, No Fortran Support

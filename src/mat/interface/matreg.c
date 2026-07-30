@@ -262,7 +262,7 @@ PetscErrorCode MatSetVecType(Mat mat, VecType vtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatRegister - Adds a new matrix type implementation that is usable as a `Mat` in PETSc
 
   Not Collective, No Fortran Support

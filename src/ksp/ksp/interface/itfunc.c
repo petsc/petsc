@@ -518,7 +518,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
   end of the linear solver to display the convergence reason of the linear solver.
 
@@ -2224,7 +2224,7 @@ PetscErrorCode KSPSetPC(KSP ksp, PC pc)
 PETSC_INTERN PetscErrorCode PCCreate_MPI(PC);
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   KSPCheckPCMPI - Checks if `-mpi_linear_solver_server` is active and the `PC` should be changed to `PCMPI`
 
   Collective, No Fortran Support
@@ -2325,7 +2325,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor, i.e. display in some way, perhaps by printing in the terminal,
   the residual norm computed in a `KSPSolve()`
 
@@ -2414,7 +2414,7 @@ PetscErrorCode KSPMonitorCancel(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetMonitorContext - Gets the monitoring context, as set by `KSPMonitorSet()` for the FIRST monitor only.
 
   Not Collective
@@ -2489,7 +2489,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscCount na, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetResidualHistory - Gets the array used to hold the residual history and the number of residuals it contains.
 
   Not Collective
@@ -2574,7 +2574,7 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscCount na, PetscBo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetErrorHistory - Gets the array used to hold the error history and the number of residuals it contains.
 
   Not Collective
@@ -2686,7 +2686,7 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetConvergenceTest - Sets the function to be used to determine convergence of `KSPSolve()`
 
   Logically Collective
@@ -2726,7 +2726,7 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, KSPConvergenceTestFn *converge, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetConvergenceTest - Gets the function to be used to determine convergence.
 
   Logically Collective
@@ -2753,7 +2753,7 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetAndClearConvergenceTest - Gets the function to be used to determine convergence. Removes the current test without calling destroy on the test context
 
   Logically Collective
@@ -2789,7 +2789,7 @@ PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, KSPConvergenceTestFn **con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetConvergenceContext - Gets the convergence context set with `KSPSetConvergenceTest()`.
 
   Not Collective
@@ -3026,7 +3026,7 @@ PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetComputeOperators - set routine to compute the linear operators
 
   Logically Collective
@@ -3063,7 +3063,7 @@ PetscErrorCode KSPSetComputeOperators(KSP ksp, KSPComputeOperatorsFn *func, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetComputeRHS - set routine to compute the right-hand side of the linear system
 
   Logically Collective
@@ -3091,7 +3091,7 @@ PetscErrorCode KSPSetComputeRHS(KSP ksp, KSPComputeRHSFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPSetComputeInitialGuess - set routine to compute the initial guess of the linear system
 
   Logically Collective

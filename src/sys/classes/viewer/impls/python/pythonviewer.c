@@ -99,7 +99,7 @@ PetscErrorCode PetscViewerPythonCreate(MPI_Comm comm, const char pyname[], Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
      PETSC_VIEWER_PYTHON_ - Creates a Python `PetscViewer` shared by all MPI processes in a communicator.
 
      Collective

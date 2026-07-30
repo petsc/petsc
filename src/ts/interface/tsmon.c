@@ -4,7 +4,7 @@
 #include <petscdmswarm.h>
 #include <petscdraw.h>
 
-/*@C
+/*@
   TSMonitor - Runs all user-provided monitor routines set using `TSMonitorSet()`
 
   Collective
@@ -43,7 +43,7 @@ PetscErrorCode TSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
   Collective
@@ -101,7 +101,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
   timestep to display the iteration's  progress.
 
@@ -149,7 +149,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt ste
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorCancel - Clears all the monitors that have been set on a time-step object.
 
   Logically Collective
@@ -175,7 +175,7 @@ PetscErrorCode TSMonitorCancel(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDefault - The default monitor, prints the timestep and time for each step
 
   Input Parameters:
@@ -244,7 +244,7 @@ typedef struct {
   PetscInt       ksp_its;
 } *TSMonitorWallClockTimeContext;
 
-/*@C
+/*@
   TSMonitorWallClockTimeSetUp - Setup routine passed to `TSMonitorSetFromOptions()` when using `-ts_monitor_wall_clock_time`
 
   Input Parameters:
@@ -271,7 +271,7 @@ PetscErrorCode TSMonitorWallClockTimeSetUp(TS ts, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorWallClockTime - Monitor wall-clock time, KSP iterations, and SNES iterations per step.
 
   Input Parameters:
@@ -326,7 +326,7 @@ PetscErrorCode TSMonitorWallClockTime(TS ts, PetscInt step, PetscReal ptime, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorExtreme - Prints the extreme values of the solution at each timestep
 
   Input Parameters:
@@ -365,7 +365,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxCreate - Creates a `TSMonitorLGCtx` context for use with
   `TS` to monitor the solution process graphically in various ways
 
@@ -427,7 +427,7 @@ PetscErrorCode TSMonitorLGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGTimeStep - Monitors a `TS` by printing the time-steps
 
   Collective
@@ -471,7 +471,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxDestroy - Destroys a line graph context that was created with `TSMonitorLGCtxCreate()`.
 
   Collective
@@ -499,7 +499,7 @@ PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSPCtxCreate - Creates a `TSMonitorSPCtx` scatter-plot monitor context for use with `DMSWARM` particle visualizations
 
   Collective
@@ -544,7 +544,7 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSPCtxDestroy - Destroys a `TSMonitorSPCtx` that was created with `TSMonitorSPCtxCreate()`
 
   Not Collective
@@ -564,7 +564,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorHGCtxCreate - Creates a `TSMonitorHGCtx` histogram monitor context for use with `DMSWARM` particle visualizations
 
   Collective
@@ -615,7 +615,7 @@ PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorHGCtxDestroy - Destroys a `TSMonitorHGCtx` that was created with `TSMonitorHGCtxCreate()`
 
   Not Collective
@@ -636,7 +636,7 @@ PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawSolution - Monitors progress of the `TS` solvers by calling
   `VecView()` for the solution at each timestep
 
@@ -701,7 +701,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawSolutionPhase - Monitors progress of the `TS` solvers by plotting the solution as a phase diagram
 
   Collective
@@ -767,7 +767,7 @@ PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawCtxDestroy - Destroys the monitor context for `TSMonitorDrawSolution()`
 
   Collective
@@ -788,7 +788,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawCtxCreate - Creates the monitor context for `TSMonitorDrawCtx`
 
   Collective
@@ -833,7 +833,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawSolutionFunction - Monitors progress of the `TS` solvers by calling
   `VecView()` for the solution provided by `TSSetSolutionFunction()` at each timestep
 
@@ -872,7 +872,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorDrawError - Monitors progress of the `TS` solvers by calling
   `VecView()` for the error at each timestep
 
@@ -912,7 +912,7 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSolutionSetup - Setups the context for `TSMonitorSolution()`
 
   Collective
@@ -937,7 +937,7 @@ PetscErrorCode TSMonitorSolutionSetup(TS ts, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSolution - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
 
   Collective
@@ -971,7 +971,7 @@ PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at selected timesteps.
 
   Collective
@@ -1010,7 +1010,7 @@ PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSolutionVTKDestroy - Destroy the monitor context created with `TSMonitorSolutionVTKCtxCreate()`
 
   Not Collective
@@ -1034,7 +1034,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSolutionVTKCtxCreate - Create the monitor context to be used in `TSMonitorSolutionVTK()`
 
   Not collective
@@ -1076,7 +1076,7 @@ PetscErrorCode TSMonitorSolutionVTKCtxCreate(const char *filenametemplate, TSMon
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGSolution - Monitors progress of the `TS` solvers by plotting each component of the solution vector
   in a time based line graph
 
@@ -1188,7 +1188,7 @@ PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
   Collective
@@ -1218,7 +1218,7 @@ PetscErrorCode TSMonitorLGSetVariableNames(TS ts, const char *const *names)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
   Collective
@@ -1239,7 +1239,7 @@ PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx, const char *co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGGetVariableNames - Gets the name of each component in the solution vector so that it may be displayed in the plot
 
   Collective
@@ -1273,7 +1273,7 @@ PetscErrorCode TSMonitorLGGetVariableNames(TS ts, const char *const **names)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxSetDisplayVariables - Sets the variables that are to be display in the monitor
 
   Collective
@@ -1315,7 +1315,7 @@ PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx, const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGSetDisplayVariables - Sets the variables that are to be display in the monitor
 
   Collective
@@ -1345,7 +1345,7 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGSetTransform - Solution vector will be transformed by provided function before being displayed
 
   Collective
@@ -1377,7 +1377,7 @@ PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGCtxSetTransform - Solution vector will be transformed by provided function before being displayed
 
   Collective
@@ -1406,7 +1406,7 @@ PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGError - Monitors progress of the `TS` solvers by plotting each component of the error
   in a time based line graph
 
@@ -1476,7 +1476,7 @@ PetscErrorCode TSMonitorLGError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorSPSwarmSolution - Graphically displays phase plots of `DMSWARM` particles on a scatter plot
 
   Input Parameters:
@@ -1569,7 +1569,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorHGSwarmSolution - Graphically displays histograms of `DMSWARM` particles
 
   Input Parameters:
@@ -1648,7 +1648,7 @@ PetscErrorCode TSMonitorHGSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorError - Monitors progress of the `TS` solvers by printing the 2 norm of the error at each timestep
 
   Collective
@@ -1730,7 +1730,7 @@ PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGSNESIterations - Monitors the number of nonlinear (`SNES`) iterations used per time step in a line-graph plot
 
   Collective
@@ -1775,7 +1775,7 @@ PetscErrorCode TSMonitorLGSNESIterations(TS ts, PetscInt n, PetscReal ptime, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorLGKSPIterations - Monitors the number of linear (`KSP`) iterations used per time step in a line-graph plot
 
   Collective
@@ -1820,7 +1820,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorEnvelopeCtxCreate - Creates a context for use with `TSMonitorEnvelope()`
 
   Collective
@@ -1842,7 +1842,7 @@ PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorEnvelope - Monitors the maximum and minimum value of each component of the solution
 
   Collective
@@ -1884,7 +1884,7 @@ PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorEnvelopeGetBounds - Gets the bounds for the components of the solution
 
   Collective
@@ -1919,7 +1919,7 @@ PetscErrorCode TSMonitorEnvelopeGetBounds(TS ts, Vec *max, Vec *min)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMonitorEnvelopeCtxDestroy - Destroys a context that was created  with `TSMonitorEnvelopeCtxCreate()`.
 
   Collective
@@ -1940,7 +1940,7 @@ PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSDMSwarmMonitorMoments - Monitors the first three moments of a `DMSWARM` being evolved by the `TS`
 
   Not Collective

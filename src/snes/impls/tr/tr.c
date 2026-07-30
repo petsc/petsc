@@ -183,7 +183,7 @@ PetscErrorCode SNESNewtonTRSetFallbackType(SNES snes, SNESNewtonTRFallbackType f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRSetPreCheck - Sets a user function that is called before the search step has been determined.
   Allows the user a chance to change or override the trust region decision.
 
@@ -223,7 +223,7 @@ PetscErrorCode SNESNewtonTRSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES sn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRGetPreCheck - Gets the pre-check function
 
   Not Collective
@@ -260,7 +260,7 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
   function evaluation. Allows the user a chance to change or override the internal decision of the solver
 
@@ -303,7 +303,7 @@ PetscErrorCode SNESNewtonTRSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRGetPostCheck - Gets the post-check function
 
   Not Collective
@@ -342,7 +342,7 @@ PetscErrorCode SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRPreCheck - Runs the precheck routine
 
   Logically Collective
@@ -376,7 +376,7 @@ PetscErrorCode SNESNewtonTRPreCheck(SNES snes, Vec X, Vec Y, PetscBool *changed_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESNewtonTRPostCheck - Runs the postcheck routine
 
   Logically Collective

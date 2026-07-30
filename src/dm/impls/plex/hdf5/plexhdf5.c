@@ -147,7 +147,7 @@ static inline PetscBool DMPlexStorageVersionGE(DMPlexStorageVersion version, int
   return (PetscBool)((version->major == major && version->minor == minor && version->subminor >= subminor) || (version->major == major && version->minor > minor) || version->major > major);
 }
 
-/*@C
+/*@
   PetscViewerHDF5SetDMPlexStorageVersionWriting - Set the storage version for writing
 
   Logically collective
@@ -204,7 +204,7 @@ PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5GetDMPlexStorageVersionWriting - Get the storage version for writing
 
   Logically collective
@@ -264,7 +264,7 @@ PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5SetDMPlexStorageVersionReading - Set the storage version for reading
 
   Logically collective
@@ -318,7 +318,7 @@ PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionReading(PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5GetDMPlexStorageVersionReading - Get the storage version for reading
 
   Logically collective

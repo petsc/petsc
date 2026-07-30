@@ -6,7 +6,7 @@ PetscClassId PETSCSPACE_CLASSID = 0;
 PetscFunctionList PetscSpaceList              = NULL;
 PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscSpaceRegister - Adds a new `PetscSpace` implementation
 
   Not Collective, No Fortran Support

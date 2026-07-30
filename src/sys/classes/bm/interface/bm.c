@@ -7,7 +7,7 @@ static PetscBool         PetscBenchPackageInitialized = PETSC_FALSE;
 static PetscFunctionList PetscBenchList               = NULL;
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   PetscBenchFinalizePackage - This function destroys everything in the `PetscBench` package. It is
   called from `PetscFinalize()`.
 
@@ -23,7 +23,7 @@ static PetscErrorCode PetscBenchFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchInitializePackage - This function initializes everything in the `PetscBench` package.
 
   Level: developer
@@ -40,7 +40,7 @@ PetscErrorCode PetscBenchInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBenchRegister - Adds a benchmark test, `PetscBenchType`, to the `PetscBench` package
 
   Not Collective, No Fortran Support

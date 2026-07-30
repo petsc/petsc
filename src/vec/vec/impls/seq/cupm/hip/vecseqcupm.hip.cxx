@@ -66,7 +66,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateSeqHIPWithArrays - Creates a sequential, array-style vector using HIP, where the
   user provides the complete array space to store the vector values.
 
@@ -109,7 +109,7 @@ PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecCreateSeqHIPWithArray - Creates a sequential, array-style vector using HIP, where the
   user provides the device array space to store the vector values.
 
@@ -151,7 +151,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPGetArray - Provides access to the device buffer inside a vector
 
   Logically Collective; Asynchronous; No Fortran Support
@@ -191,7 +191,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPRestoreArray - Restore a device buffer previously acquired with `VecHIPGetArray()`.
 
   Logically Collective; Asynchronous; No Fortran Support
@@ -218,7 +218,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
 
   Not Collective; Asynchronous; No Fortran Support
@@ -253,7 +253,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayRead()`.
 
@@ -280,7 +280,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
 
    Logically Collective; Asynchronous; No Fortran Support
@@ -314,7 +314,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayWrite()`.
 
@@ -341,7 +341,7 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a GPU array provided
   by the user.
 
@@ -378,7 +378,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar array[])
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPReplaceArray - Permanently replace the GPU array in a vector with a GPU array provided
   by the user.
 
@@ -410,7 +410,7 @@ PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar array[])
 }
 
 // PetscClangLinter pragma disable: -fdoc-internal-linkage
-/*@C
+/*@
   VecHIPResetArray - Resets a vector to use its default memory.
 
   Logically Collective; No Fortran Support

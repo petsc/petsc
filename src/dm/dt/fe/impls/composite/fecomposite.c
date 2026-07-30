@@ -233,7 +233,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFECompositeGetMapping - Returns the mappings from the reference element to each subelement
 
   Not Collective

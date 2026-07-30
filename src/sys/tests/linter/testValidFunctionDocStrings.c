@@ -2,7 +2,7 @@
 
 typedef int testType;
 
-/*@C
+/*@
   testWellFormedFunctionDocString - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
   incididunt ut labore et dolore magna aliqua.
 
@@ -31,7 +31,7 @@ PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, P
   return 0;
 }
 
-/*@C Lorem ipsum dolor sit amet
+/*@ Lorem ipsum dolor sit amet
   someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut
@@ -97,7 +97,7 @@ PetscErrorCode testIllFormedMinimalDocString(void)
   return 0;
 }
 
-/*@C
+/*@
   testTerbleSpelingDocstring - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
@@ -298,7 +298,7 @@ PetscErrorCode testBadDocString(PetscInt n)
   return 0;
 }
 
-/*C testBadDocStringMissingChar - asdadsasd
+/*@ testBadDocStringOnTopLine - asdadsasd
 
   Input Parameter:
 . n - the n
@@ -307,13 +307,13 @@ PetscErrorCode testBadDocString(PetscInt n)
 
 .seealso: `testBadDocString()`
 */
-PetscErrorCode testBadDocStringMissingChar(PetscInt n)
+PetscErrorCode testBadDocStringOnTopLine(PetscInt n)
 {
   return 0;
 }
 
-/*C@
-  testBadDocStringCharOutOfOrder - asdadsasd
+/*@
+  testNothing - asdadsasd
 
   Input Parameter:
 . n - the n
@@ -322,7 +322,7 @@ PetscErrorCode testBadDocStringMissingChar(PetscInt n)
 
 .seealso: `testBadDocString()`
 */
-PetscErrorCode testBadDocStringCharOutOfOrder(PetscInt n)
+PetscErrorCode testNothing(PetscInt n)
 {
   return 0;
 }
@@ -411,8 +411,8 @@ PetscErrorCode testPredeclarationCursorIgnored(int arg, int *another_arg)
   Level: developer
 
   Notes:
-  But bars arguments should correctly match! Additionally, this function requires a 'C'
-  interface marker!
+  But bars arguments should
+  correctly match!
 
 .seealso: `testPredeclarationCursorIgnored()`
 */
@@ -490,7 +490,7 @@ PetscErrorCode testInvalidInOutParams(int *foo)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testFunctionParmsSameName - Sets the residual evaluation routine for least-square applications
 
   Logically Collective
@@ -517,7 +517,7 @@ PetscErrorCode testFunctionParmsSameName(int tao, double res, PetscErrorCode (*f
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testFunctionParmsSameNameInOut - Sets the residual evaluation routine for least-square applications
 
   Logically Collective
@@ -548,7 +548,7 @@ PetscErrorCode testFunctionParmsSameNameInOut(int *tao, double res, PetscErrorCo
 }
 
 // PetscClangLinter pragma disable: -fdoc.*
-/*@C Lorem ipsum dolor sit amet
+/*@ Lorem ipsum dolor sit amet
   someOtherFunctionName - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
   eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat
   non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut
@@ -598,7 +598,7 @@ PetscErrorCode testBadDocStringIgnoreAll()
 
 // A dummy comment
 /* another dummy comment */
-/*@C
+/*@
   testIgnoringSpuriousComments - Insert point coordinates (defined over the reference cell)
   within each cell
 
@@ -617,7 +617,7 @@ PetscErrorCode testIgnoringSpuriousComments()
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testCheckingSectionIndentationAfterSwitch - the second section heading should be properly
   re-indented
 
@@ -637,7 +637,7 @@ PetscErrorCode testCheckingSectionIndentationAfterSwitch(int foo, double *bar)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testReferencesFalsePositive - this should not pick up a references section
 
   Level: beginner
@@ -653,7 +653,7 @@ PetscErrorCode testReferencesFalsePositive()
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testOptionsDatabaseFalsePositive - this should not pick up an
   options database section
 
@@ -670,7 +670,7 @@ PetscErrorCode testOptionsDatabaseFalsePositive()
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testLeftFlushSeeAlsoFalsePositive - this should only indent the seealso once
 
   Level: beginner
@@ -683,7 +683,7 @@ PetscErrorCode testLeftFlushSeeAlsoFalsePositive()
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   testNoteFalsePositive - this is note a notes heading, note
   that there
 

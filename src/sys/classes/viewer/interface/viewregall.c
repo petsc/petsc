@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_PyVista(PetscViewer);
 
 PetscBool PetscViewerRegisterAllCalled;
 
-/*@C
+/*@
   PetscViewerRegisterAll - Registers all of the viewer types (`PetscViewerType`) in the `PetscViewer` package.
 
   Not Collective

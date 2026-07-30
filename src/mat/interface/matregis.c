@@ -117,7 +117,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
 #endif
 
-/*@C
+/*@
   MatRegisterAll - Registers all of the matrix types in PETSc
 
   Not Collective

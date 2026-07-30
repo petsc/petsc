@@ -2,7 +2,7 @@
 
 PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 
-/*@C
+/*@
   CharacteristicRegisterAll - Registers all of the methods in the `Characteristic` package.
 
   Not Collective

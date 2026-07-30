@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petscconfiginfo.h>
 
-/*@C
+/*@
   PetscGetVersion - Gets the PETSc version information in a string.
 
   Not Collective; No Fortran Support
@@ -60,7 +60,7 @@ PetscErrorCode PetscGetVersionNumber(PetscInt *major, PetscInt *minor, PetscInt 
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscGetConfiguration - Gets the PETSc configuration information in a string.
 
   Not Collective

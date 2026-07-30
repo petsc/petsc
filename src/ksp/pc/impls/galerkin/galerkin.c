@@ -195,7 +195,7 @@ PetscErrorCode PCGalerkinSetInterpolation(PC pc, Mat P)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCGalerkinSetComputeSubmatrix - Provide a routine that will be called to compute the Galerkin submatrix
 
   Logically Collective

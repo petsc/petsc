@@ -6,7 +6,7 @@
 */
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator.
 
@@ -89,7 +89,7 @@ PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    PETSC_VIEWER_STDERR_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
                     in a communicator.
 
@@ -241,7 +241,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIIOpenWithFILE - Given an open file creates an `PETSCVIEWERASCII` viewer that prints to it.
 
   Collective
@@ -278,7 +278,7 @@ PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerASCIISetFILE - Given an open file sets the `PETSCVIEWERASCII` viewer to use the file for output
 
   Not Collective

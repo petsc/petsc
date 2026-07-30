@@ -68,7 +68,7 @@ PetscErrorCode PetscObjectStateSet(PetscObject obj, PetscObjectState state)
 
 PetscInt PetscObjectComposedDataMax = 10;
 
-/*@C
+/*@
   PetscObjectComposedDataRegister - Get an available id for composing data with a `PetscObject`
 
   Not Collective

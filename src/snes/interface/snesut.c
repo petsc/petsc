@@ -4,7 +4,7 @@
 #include <petscsection.h>
 #include <petscblaslapack.h>
 
-/*@C
+/*@
   SNESMonitorSolution - Monitors progress of a `SNES` `SNESSolve()` by calling
   `VecView()` for the approximate solution at each iteration.
 
@@ -41,7 +41,7 @@ PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorResidual - Monitors progress of a `SNESSolve()` by calling
   `VecView()` for the residual at each iteration.
 
@@ -77,7 +77,7 @@ PetscErrorCode SNESMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorSolutionUpdate - Monitors progress of a `SNESSolve()` by calling
   `VecView()` for the UPDATE to the solution at each iteration.
 
@@ -116,7 +116,7 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
 
 #include <petscdraw.h>
 
-/*@C
+/*@
   KSPMonitorSNESResidual - Prints the `SNES` residual norm, as well as the `KSP` residual norm, at each iteration of a `KSPSolve()` called within a `SNESSolve()`.
 
   Collective
@@ -171,7 +171,7 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSNESResidualDrawLG - Plots the linear `KSP` residual norm and the `SNES` residual norm of a `KSPSolve()` called within a `SNESSolve()`.
 
   Collective
@@ -235,7 +235,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSNESResidualDrawLGCreate - Creates the `PetscViewer` used by `KSPMonitorSNESResidualDrawLG()`
 
   Collective
@@ -263,7 +263,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorDefaultSetUp - Prepare the `PetscViewerAndFormat` associated with `SNESMonitorDefault()`, in particular by initializing the underlying `PetscDrawLG` when the viewer format is `PETSC_VIEWER_DRAW_LG`
 
   Collective
@@ -283,7 +283,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorDefault - Monitors progress of a `SNESSolve()` (default).
 
   Collective
@@ -365,7 +365,7 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorScaling - Monitors the largest value in each row of the Jacobian of a `SNESSolve()`
 
   Collective
@@ -410,7 +410,7 @@ PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorJacUpdateSpectrum - Monitors the spectrun of the change in the Jacobian from the last Jacobian evaluation of a `SNESSolve()`
 
   Collective
@@ -507,7 +507,7 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorRange - Prints the percentage of residual elements that are more than 10 percent of the maximum entry in the residual in each iteration of a `SNESSolve()`
 
   Collective
@@ -551,7 +551,7 @@ PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscVi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorRatio - Monitors progress of a `SNESSolve()` by printing the ratio of residual norm at each iteration to the previous.
 
   Collective
@@ -596,7 +596,7 @@ PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorRatioSetUp - Insures the `SNES` object is saving its history since this monitor needs access to it
 
   Collective
@@ -648,7 +648,7 @@ PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorDefaultField - Monitors progress of a `SNESSolve()`, separated into fields.
 
   Collective
@@ -710,7 +710,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedDefault - Default convergence test for `SNESSolve()`.
 
   Collective
@@ -784,7 +784,7 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedSkip - Convergence test for `SNES` that NEVER returns as
   converged, UNLESS the maximum number of iteration have been reached.
 

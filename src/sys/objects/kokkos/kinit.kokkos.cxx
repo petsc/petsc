@@ -31,7 +31,7 @@ PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscKokkosInitializeCheck - Initialize Kokkos if it has not already been initialized
 
   Not Collective

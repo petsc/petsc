@@ -3,7 +3,7 @@
 static PetscBool AOPackageInitialized = PETSC_FALSE;
 static PetscBool AORegisterAllCalled  = PETSC_FALSE;
 
-/*@C
+/*@
   AOFinalizePackage - This function finalizes everything in the `AO` package. It is called
   from `PetscFinalize()`.
 
@@ -20,7 +20,7 @@ PetscErrorCode AOFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   AOInitializePackage - This function initializes everything in the `AO` package. It is called
   from `PetscDLLibraryRegister_petscvec()` when using dynamic libraries, and on the first call to `AOCreate()`
   when using static or shared libraries.
@@ -133,7 +133,7 @@ PetscErrorCode AOGetType(AO ao, AOType *type)
 
 PetscFunctionList AOList = NULL;
 
-/*@C
+/*@
   AORegister - Register  an application ordering method
 
   Not Collective, No Fortran Support
@@ -157,7 +157,7 @@ PetscErrorCode AORegister(const char sname[], PetscErrorCode (*function)(AO))
 PETSC_INTERN PetscErrorCode AOCreate_Basic(AO ao);
 PETSC_INTERN PetscErrorCode AOCreate_MemoryScalable(AO ao);
 
-/*@C
+/*@
   AORegisterAll - Registers all of the application ordering components in the `AO` package.
 
   Not Collective

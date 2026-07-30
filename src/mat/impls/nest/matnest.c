@@ -1256,7 +1256,7 @@ static PetscErrorCode MatNestGetSubMats_Nest(Mat A, PetscInt *M, PetscInt *N, Ma
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatNestGetSubMats - Returns the entire two dimensional array of matrices defining a `MATNEST` matrix.
 
   Not Collective
@@ -1823,7 +1823,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateNest - Creates a new `MATNEST` matrix containing several nested submatrices, each stored separately
 
   Collective

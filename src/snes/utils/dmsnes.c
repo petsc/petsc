@@ -176,7 +176,7 @@ static PetscErrorCode DMSNESCopy(DMSNES kdm, DMSNES nkdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMSNES - get read-only private `DMSNES` context from a `DM`
 
   Not Collective
@@ -212,7 +212,7 @@ PetscErrorCode DMGetDMSNES(DM dm, DMSNES *snesdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGetDMSNESWrite - get write access to private `DMSNES` context from a `DM`
 
   Not Collective
@@ -277,7 +277,7 @@ PetscErrorCode DMCopyDMSNES(DM dmsrc, DM dmdest)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetFunction - set `SNES` residual evaluation function
 
   Not Collective
@@ -323,7 +323,7 @@ PetscErrorCode DMSNESSetFunction(DM dm, SNESFunctionFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetFunctionContextDestroy - set `SNES` residual evaluation context destroy function
 
   Not Collective
@@ -358,7 +358,7 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetMFFunction - set `SNES` residual evaluation function used in applying the matrix-free Jacobian with `-snes_mf_operator`
 
   Logically Collective
@@ -392,7 +392,7 @@ PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetFunction - get `SNES` residual evaluation function from a `DMSNES` object
 
   Not Collective
@@ -427,7 +427,7 @@ PetscErrorCode DMSNESGetFunction(DM dm, SNESFunctionFn **f, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods into a `DMSNES` object, used instead of the 2-norm of the residual
 
   Not Collective
@@ -460,7 +460,7 @@ PetscErrorCode DMSNESSetObjective(DM dm, SNESObjectiveFn *obj, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetObjective - Returns the objective function set with `DMSNESSetObjective()`
 
   Not Collective
@@ -492,7 +492,7 @@ PetscErrorCode DMSNESGetObjective(DM dm, SNESObjectiveFn **obj, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetNGS - set `SNES` Gauss-Seidel relaxation function into a `DMSNES` object
 
   Not Collective
@@ -531,7 +531,7 @@ PetscErrorCode DMSNESSetNGS(DM dm, PetscErrorCode (*f)(SNES, Vec, Vec, void *), 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetNGS - get `SNES` Gauss-Seidel relaxation function from a `DMSNES` object
 
   Not Collective
@@ -567,7 +567,7 @@ PetscErrorCode DMSNESGetNGS(DM dm, PetscErrorCode (**f)(SNES, Vec, Vec, void *),
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetJacobian - set `SNES` Jacobian evaluation function into a `DMSNES` object
 
   Not Collective
@@ -613,7 +613,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm, SNESJacobianFn *J, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetJacobianContextDestroy - set `SNES` Jacobian evaluation context destroy function into a `DMSNES` object
 
   Not Collective
@@ -648,7 +648,7 @@ PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetJacobian - get `SNES` Jacobian evaluation function from a `DMSNES` object
 
   Not Collective
@@ -687,7 +687,7 @@ PetscErrorCode DMSNESGetJacobian(DM dm, SNESJacobianFn **J, PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESSetPicard - set SNES Picard iteration matrix and RHS evaluation functions into a `DMSNES` object
 
   Not Collective
@@ -715,7 +715,7 @@ PetscErrorCode DMSNESSetPicard(DM dm, SNESFunctionFn *b, SNESJacobianFn *J, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSNESGetPicard - get `SNES` Picard iteration evaluation functions from a `DMSNES` object
 
   Not Collective

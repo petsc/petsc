@@ -1,6 +1,6 @@
 #include <petsc/private/ftnimpl.h>
 
-/*@C
+/*@
    PetscMPIFortranDatatypeToC - Converts a `MPI_Fint` that contains a Fortran `MPI_Datatype` to its C `MPI_Datatype` equivalent
 
    Not Collective, No Fortran Support
@@ -104,7 +104,7 @@ PETSC_EXTERN void f90array1dcreatefortranaddr_(void *, PetscInt *, PetscInt *, F
 PETSC_EXTERN void f90array1daccessfortranaddr_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-/*@C
+/*@
    F90Array1dCreate - given a `F90Array1d` passed from Fortran associate with it a C array, its starting index and length
 
    Not Collective, No Fortran Support
@@ -155,7 +155,7 @@ PetscErrorCode F90Array1dCreate(void *array, MPI_Datatype type, PetscInt start, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    F90Array1dAccess - given a `F90Array1d` passed from Fortran, accesses from it the associate C array that was provided with `F90Array1dCreate()`
 
    Not Collective, No Fortran Support
@@ -201,7 +201,7 @@ PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    F90Array1dDestroy - given a `F90Array1d` passed from Fortran removes the C array associate with it with `F90Array1dCreate()`
 
    Not Collective, No Fortran Support

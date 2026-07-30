@@ -173,7 +173,7 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
   #define PETSC_SIGNAL_CAST
 #endif
 
-/*@C
+/*@
   PetscPushSignalHandler - Catches the usual fatal errors and
   calls a user-provided routine.
 

@@ -328,7 +328,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
-/*@C
+/*@
   PetscViewerVUSetMode - Sets the mode in which to open the file.
 
   Not Collective

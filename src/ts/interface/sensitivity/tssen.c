@@ -7,7 +7,7 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 
 /* ------------------------ Sensitivity Context ---------------------------*/
 
-/*@C
+/*@
   TSSetRHSJacobianP - Sets the function that computes the Jacobian of $G$ w.r.t. the parameters $p$ where $U_t = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
@@ -41,7 +41,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetRHSJacobianP - Gets the function that computes the Jacobian of $G $ w.r.t. the parameters $p$ where $ U_t = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
@@ -70,7 +70,7 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, TSRHSJacobianPFn **func, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeRHSJacobianP - Runs the user-defined JacobianP function.
 
   Collective
@@ -107,7 +107,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetIJacobianP - Sets the function that computes the Jacobian of $F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
@@ -150,7 +150,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSGetIJacobianP - Gets the function that computes the Jacobian of $ F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t) $, as well as the location to store the matrix.
 
   Logically Collective
@@ -246,7 +246,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
   Logically Collective
@@ -423,7 +423,7 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of `F` (IFunction) w.r.t. the state variable.
 
   Logically Collective
@@ -606,7 +606,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSComputeIHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Fpp.
 
   Collective
@@ -648,7 +648,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector
   product. The Hessian is the second-order derivative of `G` (RHSFunction) w.r.t. the state
   variable.
@@ -1154,7 +1154,7 @@ PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps)
 }
 
 // PetscClangLinter pragma disable: -fdoc-*
-/*@C
+/*@
   TSAdjointSetRHSJacobian - Deprecated, use `TSSetRHSJacobianP()`
 
   Level: deprecated
@@ -1176,7 +1176,7 @@ PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(T
 }
 
 // PetscClangLinter pragma disable: -fdoc-*
-/*@C
+/*@
   TSAdjointComputeRHSJacobian - Deprecated, use `TSComputeRHSJacobianP()`
 
   Level: deprecated
@@ -1225,7 +1225,7 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP
 }
 
 // PetscClangLinter pragma disable: -fdoc-param-list-func-parameter-documentation
-/*@C
+/*@
   TSAdjointMonitorSensi - monitors the first lambda sensitivity
 
   Level: intermediate
@@ -1244,7 +1244,7 @@ static PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptim
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
   Collective
@@ -1300,7 +1300,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
   timestep to display the iteration's  progress.
 
@@ -1351,7 +1351,7 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS ts
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
 
   Logically Collective
@@ -1377,7 +1377,7 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitorDefault - the default monitor of adjoint computations
 
   Input Parameters:
@@ -1413,7 +1413,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal time, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitorDrawSensi - Monitors progress of the adjoint `TS` solvers by calling
   `VecView()` for the sensitivities to initial states at each timestep
 
@@ -1453,7 +1453,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointSetFromOptions - Sets various `TS` adjoint parameters from options database.
 
   Collective
@@ -1617,7 +1617,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using `TSAdjointMonitorSet()`
 
   Collective

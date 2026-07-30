@@ -771,7 +771,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetGraph - Get the graph specifying a parallel star forest
 
   Not Collective
@@ -930,7 +930,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetRootRanks - Get the root MPI ranks and number of vertices referenced by leaves on this process
 
   Not Collective
@@ -967,7 +967,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscMPIInt *nranks, const PetscM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetLeafRanks - Get leaf MPI ranks referencing roots on this process
 
   Not Collective
@@ -1009,7 +1009,7 @@ static PetscBool InList(PetscMPIInt needle, PetscMPIInt n, const PetscMPIInt *li
   return PETSC_FALSE;
 }
 
-/*@C
+/*@
   PetscSFSetUpRanks - Set up data structures associated with MPI ranks; this is for internal use by `PetscSF` implementations.
 
   Collective
@@ -1119,7 +1119,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGetGroups - gets incoming and outgoing process groups
 
   Collective
@@ -1309,7 +1309,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFCreateEmbeddedRootSF - removes edges from all but the selected roots of a `PetscSF`, does not remap indices
 
   Collective
@@ -1398,7 +1398,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFCreateEmbeddedLeafSF - removes edges from all but the selected leaves of a `PetscSF`, does not remap indices
 
   Collective
@@ -1455,7 +1455,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFBcastBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to `PetscSFBcastEnd()`
 
   Collective
@@ -1493,7 +1493,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf, MPI_Datatype unit, const void *root
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFBcastWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call
   to `PetscSFBcastEnd()`
 
@@ -1525,7 +1525,7 @@ PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFBcastEnd - end a broadcast and reduce operation started with `PetscSFBcastBegin()` or `PetscSFBcastWithMemTypeBegin()`
 
   Collective
@@ -1553,7 +1553,7 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf, MPI_Datatype unit, const void *rootda
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFReduceBegin - begin reduction (communication) of `leafdata` into `rootdata`, to be completed with call to `PetscSFReduceEnd()`
 
   Collective
@@ -1591,7 +1591,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFReduceWithMemTypeBegin - begin reduction of `leafdata` into `rootdata` with explicit memory types, to be completed with call to `PetscSFReduceEnd()`
 
   Collective
@@ -1622,7 +1622,7 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFReduceEnd - end a reduction operation started with `PetscSFReduceBegin()` or `PetscSFReduceWithMemTypeBegin()`
 
   Collective
@@ -1650,7 +1650,7 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFFetchAndOpBegin - begin operation that fetches values from `rootdata` and updates it atomically by applying operation using `leafdata`,
   to be completed with `PetscSFFetchAndOpEnd()`
 
@@ -1693,7 +1693,7 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf, MPI_Datatype unit, void *rootd
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFFetchAndOpWithMemTypeBegin - begin operation with explicit memory types that fetches values from root and updates atomically by
   applying operation using `leafdata`, to be completed with `PetscSFFetchAndOpEnd()`
 
@@ -1731,7 +1731,7 @@ PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFFetchAndOpEnd - end operation started in matching call to `PetscSFFetchAndOpBegin()` or `PetscSFFetchAndOpWithMemTypeBegin()`
   to fetch values from roots and update atomically by applying operation using `leafdata`
 
@@ -1761,7 +1761,7 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf, MPI_Datatype unit, void *rootdat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFComputeDegreeBegin - begin computation of the degree of each root vertex, to be completed with `PetscSFComputeDegreeEnd()`
 
   Collective
@@ -1799,7 +1799,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt *degree[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFComputeDegreeEnd - complete computation of degree for each root vertex, started with `PetscSFComputeDegreeBegin()`
 
   Collective
@@ -1833,7 +1833,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt *degree[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFComputeMultiRootOriginalNumbering - Returns original numbering of multi-roots (roots of multi-`PetscSF` returned by `PetscSFGetMultiSF()`).
   Each multi-root is assigned index of the corresponding original root.
 
@@ -1877,7 +1877,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGatherBegin - begin pointwise gather of all leaves into multi-roots, to be completed with `PetscSFGatherEnd()`
 
   Collective
@@ -1906,7 +1906,7 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFGatherEnd - ends pointwise gather operation that was started with `PetscSFGatherBegin()`
 
   Collective
@@ -1934,7 +1934,7 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFScatterBegin - begin pointwise scatter operation from multi-roots to leaves, to be completed with `PetscSFScatterEnd()`
 
   Collective
@@ -1963,7 +1963,7 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf, MPI_Datatype unit, const void *mu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFScatterEnd - ends pointwise scatter operation that was started with `PetscSFScatterBegin()`
 
   Collective

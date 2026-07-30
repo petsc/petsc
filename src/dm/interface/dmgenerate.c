@@ -29,7 +29,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM, Vec, DMLabel, DMLabel,
 PETSC_EXTERN PetscErrorCode DMPlexTransformAdaptLabel(DM, Vec, DMLabel, DMLabel, DM *);
 PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *);
 
-/*@C
+/*@
   DMGenerateRegisterAll - Registers all of the mesh generation methods in the `DM` package.
 
   Not Collective
@@ -66,7 +66,7 @@ PetscErrorCode DMGenerateRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMGenerateRegister -  Adds a grid generator to `DM`
 
   Not Collective, No Fortran Support

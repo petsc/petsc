@@ -661,7 +661,7 @@ PetscErrorCode PetscOptionsInsertFile(MPI_Comm comm, PetscOptions options, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsInsertArgs - Inserts options into the database from a array of strings
 
   Logically Collective
@@ -818,7 +818,7 @@ static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsInsert - Inserts into the options database from the command line,
   the environmental variable and a file.
 
@@ -1493,7 +1493,7 @@ PetscErrorCode PetscOptionsClearValue(PetscOptions options, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsFindPair - Gets an option name-value pair from the options database.
 
   Not Collective
@@ -1798,7 +1798,7 @@ PetscErrorCode PetscOptionsHasName(PetscOptions options, const char pre[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetAll - Lists all the options the program was run with in a single string.
 
   Not Collective
@@ -1976,7 +1976,7 @@ PetscErrorCode PetscOptionsLeft(PetscOptions options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsLeftGet - Returns all options that were set and never used.
 
   Not Collective
@@ -2033,7 +2033,7 @@ PetscErrorCode PetscOptionsLeftGet(PetscOptions options, PetscInt *N, char **nam
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsLeftRestore - Free memory for the unused PETSc options obtained using `PetscOptionsLeftGet()`.
 
   Not Collective
@@ -2064,7 +2064,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsMonitorDefault - Print all options set value events using the supplied `PetscViewer`.
 
   Logically Collective
@@ -2112,7 +2112,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsMonitorSet - Sets an ADDITIONAL function to be called at every method that
   modified the PETSc options database.
 
@@ -2457,7 +2457,7 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetBool - Gets the Logical (true or false) value for a particular
   option in the database.
 
@@ -2510,7 +2510,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetBool3 - Gets the ternary logical (true, false or unknown) value for a particular
   option in the database.
 
@@ -2572,7 +2572,7 @@ PetscErrorCode PetscOptionsGetBool3(PetscOptions options, const char pre[], cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetEList - Puts a list of option values that a single one may be selected from
 
   Not Collective
@@ -2639,7 +2639,7 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetEnum - Gets the enum value for a particular option in the database.
 
   Not Collective
@@ -2687,7 +2687,7 @@ PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetInt - Gets the integer value for a particular option in the database.
 
   Not Collective
@@ -2741,7 +2741,7 @@ PetscErrorCode PetscOptionsGetInt(PetscOptions options, const char pre[], const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetMPIInt - Gets the MPI integer value for a particular option in the database.
 
   Not Collective
@@ -2785,7 +2785,7 @@ PetscErrorCode PetscOptionsGetMPIInt(PetscOptions options, const char pre[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetReal - Gets the double precision value for a particular
   option in the database.
 
@@ -2839,7 +2839,7 @@ PetscErrorCode PetscOptionsGetReal(PetscOptions options, const char pre[], const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetScalar - Gets the scalar value for a particular
   option in the database.
 
@@ -2896,7 +2896,7 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options, const char pre[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetString - Gets the string value for a particular option in
   the database.
 
@@ -2956,7 +2956,7 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options, const char pre[], con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetBoolArray - Gets an array of Logical (true or false) values for a particular
   option in the database.  The values must be separated with commas with no intervening spaces.
 
@@ -3017,7 +3017,7 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options, const char pre[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetEnumArray - Gets an array of enum values for a particular option in the database.
 
   Not Collective
@@ -3082,7 +3082,7 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options, const char pre[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetIntArray - Gets an array of integer values for a particular option in the database.
 
   Not Collective
@@ -3190,7 +3190,7 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options, const char pre[], c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetRealArray - Gets an array of double precision values for a
   particular option in the database.  The values must be separated with commas with no intervening spaces.
 
@@ -3247,7 +3247,7 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options, const char pre[], 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetScalarArray - Gets an array of scalars for a
   particular option in the database.  The values must be separated with commas with no intervening spaces.
 
@@ -3304,7 +3304,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsGetStringArray - Gets an array of string values for a particular
   option in the database. The values must be separated with commas with no intervening spaces.
 

@@ -812,7 +812,7 @@ set:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellSetMatProductOperation - Allows user to set a matrix matrix operation for a `MATSHELL` shell matrix.
 
   Logically Collective; No Fortran Support
@@ -1774,7 +1774,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateShell - Creates a new matrix of `MatType` `MATSHELL` for use with a user-defined
   private matrix data storage format.
 
@@ -1909,7 +1909,7 @@ PetscErrorCode MatShellSetContext(Mat mat, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellSetContextDestroy - sets the destroy function for a `MATSHELL` shell matrix context
 
   Logically Collective
@@ -1937,7 +1937,7 @@ PetscErrorCode MatShellSetContextDestroy(Mat mat, PetscCtxDestroyFn *f)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellSetVecType - Sets the `VecType` of `Vec` returned by `MatCreateVecs()`
 
   Logically Collective
@@ -1978,7 +1978,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellGetScalingShifts - Gets members of a `MATSHELL` used internally for scaling and
   shifting the `Mat` or calling `MatAXPY()`, `MatZeroRows()`, or `MatZeroRowsColumns()` with it
 
@@ -2014,7 +2014,7 @@ PetscErrorCode MatShellGetScalingShifts(Mat A, PetscScalar *vshift, PetscScalar 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellTestMult - Compares the multiply routine provided to the `MATSHELL` with differencing on a given function.
 
   Logically Collective; No Fortran Support
@@ -2076,7 +2076,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellTestMultTranspose - Compares the multiply transpose routine provided to the `MATSHELL` with differencing on a given function.
 
   Logically Collective; No Fortran Support
@@ -2145,7 +2145,7 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellSetOperation - Allows user to set a matrix operation for a `MATSHELL` shell matrix.
 
   Logically Collective
@@ -2203,7 +2203,7 @@ PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, PetscErrorCodeFn *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatShellGetOperation - Gets a matrix function for a `MATSHELL` shell matrix.
 
   Not Collective

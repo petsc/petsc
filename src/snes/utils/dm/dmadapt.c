@@ -22,7 +22,7 @@ PetscBool         DMAdaptorMonitorRegisterAllCalled = PETSC_FALSE;
 
 const char *const DMAdaptationCriteria[] = {"NONE", "REFINE", "LABEL", "METRIC", "DMAdaptationCriterion", "DM_ADAPTATION_", NULL};
 
-/*@C
+/*@
   DMAdaptorRegister - Adds a new adaptor component implementation
 
   Not Collective
@@ -64,7 +64,7 @@ PetscErrorCode DMAdaptorRegister(const char name[], PetscErrorCode (*create_func
 PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Gradient(DMAdaptor);
 PETSC_EXTERN PetscErrorCode DMAdaptorCreate_Flux(DMAdaptor);
 
-/*@C
+/*@
   DMAdaptorRegisterAll - Registers all of the adaptor components in the `DM` package.
 
   Not Collective
@@ -84,7 +84,7 @@ PetscErrorCode DMAdaptorRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorRegisterDestroy - This function destroys the registered `DMAdaptorType`. It is called from `PetscFinalize()`.
 
   Not collective
@@ -112,7 +112,7 @@ static PetscErrorCode DMAdaptorMonitorMakeKey_Internal(const char name[], PetscV
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorRegister -  Registers a mesh adaptation monitor routine that may be accessed with `DMAdaptorMonitorSetFromOptions()`
 
   Not Collective
@@ -156,7 +156,7 @@ PetscErrorCode DMAdaptorMonitorRegister(const char name[], PetscViewerType vtype
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorRegisterDestroy - This function destroys the registered monitors for `DMAdaptor`. It is called from `PetscFinalize()`.
 
   Not collective
@@ -315,7 +315,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
   the error etc.
 
@@ -391,7 +391,7 @@ PetscErrorCode DMAdaptorMonitorCancel(DMAdaptor adaptor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user in the options database
 
   Collective
@@ -676,7 +676,7 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorGetTransferFunction - Get the callback used by a `DMAdaptor` to transfer a solution vector from an old `DM` to the adapted `DM`
 
   Not Collective
@@ -706,7 +706,7 @@ PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorSetTransferFunction - Set the callback used by a `DMAdaptor` to transfer a solution vector from an old `DM` to the adapted `DM`
 
   Logically Collective
@@ -1066,7 +1066,7 @@ PetscErrorCode DMAdaptorMonitor(DMAdaptor adaptor, PetscInt it, DM odm, DM adm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorSize - Prints the mesh sizes at each iteration of an adaptation loop.
 
   Collective
@@ -1117,7 +1117,7 @@ PetscErrorCode DMAdaptorMonitorSize(DMAdaptor adaptor, PetscInt n, DM odm, DM ad
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorError - Prints the error norm at each iteration of an adaptation loop.
 
   Collective
@@ -1173,7 +1173,7 @@ PetscErrorCode DMAdaptorMonitorError(DMAdaptor adaptor, PetscInt n, DM odm, DM a
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorErrorDraw - Plots the error at each iteration of an iterative solver.
 
   Collective
@@ -1215,7 +1215,7 @@ PetscErrorCode DMAdaptorMonitorErrorDraw(DMAdaptor adaptor, PetscInt n, DM odm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorErrorDrawLGCreate - Creates the context for the error plotter `DMAdaptorMonitorErrorDrawLG()`
 
   Collective
@@ -1260,7 +1260,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorErrorDrawLG - Plots the error norm at each iteration of an adaptive loop.
 
   Collective
@@ -1314,7 +1314,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLG(DMAdaptor adaptor, PetscInt n, DM odm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorMonitorRegisterAll - Registers all of the mesh adaptation monitors in the `SNES` package.
 
   Not Collective
@@ -1662,7 +1662,7 @@ PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy str
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorGetMixedSetupFunction - Get the function setting up the mixed problem, if it exists
 
   Not Collective
@@ -1686,7 +1686,7 @@ PetscErrorCode DMAdaptorGetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorSetMixedSetupFunction - Set the function setting up the mixed problem
 
   Not Collective

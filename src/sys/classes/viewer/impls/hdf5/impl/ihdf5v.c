@@ -419,7 +419,7 @@ static PetscErrorCode PetscViewerHDF5GetCompress_HDF5(PetscViewer viewer, PetscB
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5GetFileId - Retrieve the file id, this file ID then can be used in direct HDF5 calls
 
   Not Collective
@@ -495,7 +495,7 @@ static PetscErrorCode PetscViewerHDF5PopGroup_HDF5(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5OpenGroup - Open the HDF5 group with the name (full path) returned by `PetscViewerHDF5GetGroup()`,
   and return this group's ID and file ID.
   If `PetscViewerHDF5GetGroup()` yields NULL, then group ID is file ID.
@@ -620,7 +620,7 @@ static PetscErrorCode PetscViewerHDF5GetTimestep_HDF5(PetscViewer viewer, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDataTypeToHDF5DataType - Converts the PETSc name of a datatype to its HDF5 name.
 
   Not Collective
@@ -652,7 +652,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscHDF5DataTypeToPetscDataType - Finds the PETSc name of a datatype from its HDF5 name
 
   Not Collective

@@ -3,7 +3,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 
-/*@C
+/*@
   PetscObjectComm - Gets the MPI communicator for any `PetscObject` regardless of the type.
 
   Not Collective, No Fortran Support
@@ -27,7 +27,7 @@ MPI_Comm PetscObjectComm(PetscObject obj)
   return obj ? obj->comm : MPI_COMM_NULL;
 }
 
-/*@C
+/*@
   PetscObjectGetComm - Gets the MPI communicator for any `PetscObject` regardless of the type.
 
   Not Collective

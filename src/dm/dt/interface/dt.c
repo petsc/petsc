@@ -279,7 +279,7 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscQuadratureGetData - Returns the data defining the `PetscQuadrature`
 
   Not Collective
@@ -537,7 +537,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscQuadratureSetData - Sets the data defining the quadrature
 
   Not Collective
@@ -634,7 +634,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscQuadratureExpandComposite - Return a quadrature over the composite element, which has the original quadrature in each subelement
 
   Not Collective; No Fortran Support
@@ -2376,7 +2376,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDTTanhSinhIntegrate - Approximate $\int_a^b f(x)\,dx$ to a requested precision using adaptive tanh-sinh (double-exponential) quadrature
 
   Not Collective; No Fortran Support
@@ -2466,7 +2466,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], PetscCtx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDTTanhSinhIntegrateMPFR - High-precision version of `PetscDTTanhSinhIntegrate()` that uses the MPFR arbitrary-precision library to evaluate the quadrature
 
   Not Collective; No Fortran Support
@@ -2967,7 +2967,7 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal nodes[],
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementLaplacianCreate - computes the Laplacian for a single 1d GLL element
 
   Not Collective
@@ -3062,7 +3062,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementLaplacianDestroy - frees the Laplacian for a single 1d GLL element created with `PetscGaussLobattoLegendreElementLaplacianCreate()`
 
   Not Collective
@@ -3086,7 +3086,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementGradientCreate - computes the gradient for a single 1d GLL element
 
   Not Collective
@@ -3146,7 +3146,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementGradientDestroy - frees the gradient for a single 1d GLL element obtained with `PetscGaussLobattoLegendreElementGradientCreate()`
 
   Not Collective
@@ -3176,7 +3176,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementAdvectionCreate - computes the advection operator for a single 1d GLL element
 
   Not Collective
@@ -3216,7 +3216,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementAdvectionDestroy - frees the advection stiffness for a single 1d GLL element created with `PetscGaussLobattoLegendreElementAdvectionCreate()`
 
   Not Collective
@@ -3240,7 +3240,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementMassCreate - Build the elemental mass matrix for a single 1D Gauss-Lobatto-Legendre (GLL) spectral element
 
   Not Collective; No Fortran Support
@@ -3281,7 +3281,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassCreate(PetscInt n, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGaussLobattoLegendreElementMassDestroy - Free a 1D GLL elemental mass matrix created with `PetscGaussLobattoLegendreElementMassCreate()`
 
   Not Collective; No Fortran Support

@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petscmathtool.h>
 
-/*@C
+/*@
   MatHtoolGetHierarchicalMat - Retrieves the opaque pointer to a Htool virtual matrix stored in a `MATHTOOL`.
 
   Not Collective; No Fortran Support
@@ -25,7 +25,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, void *distributed_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatHtoolSetKernel - Sets the kernel and context used for the assembly of a `MATHTOOL`.
 
   Collective; No Fortran Support
@@ -509,7 +509,7 @@ PetscErrorCode MatHtoolSetClusteringType(Mat A, MatHtoolClusteringType clusterin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
 
   Collective; No Fortran Support

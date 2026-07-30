@@ -273,7 +273,7 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHYPREGetCFMarkers - Gets CF marker arrays for all levels (except the finest level)
 
   Logically Collective

@@ -45,7 +45,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetOrdering - Calculate a reordering of the mesh
 
   Collective

@@ -71,7 +71,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat, MatOrderingType ty
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatOrderingRegister - Adds a new sparse matrix ordering to the matrix package.
 
   Not Collective, No Fortran Support

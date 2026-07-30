@@ -95,7 +95,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchCreate - Creates a `TaoLineSearch` object.  Algorithms in `Tao` that use
   line-searches will automatically create one so this all is rarely needed
 
@@ -404,7 +404,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchMonitor - Monitor the line search steps. This routine will output the
   iteration number, step length, and function value before calling the implementation
   specific monitor.
@@ -589,7 +589,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchSetObjectiveRoutine - Sets the function evaluation routine for the line search
 
   Logically Collective
@@ -630,7 +630,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchSetGradientRoutine - Sets the gradient evaluation routine for the line search
 
   Logically Collective
@@ -670,7 +670,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchSetObjectiveAndGradientRoutine - Sets the objective/gradient evaluation routine for the line search
 
   Logically Collective
@@ -710,7 +710,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchSetObjectiveAndGTSRoutine - Sets the objective and
   (gradient'*stepdirection) evaluation routine for the line search.
 
@@ -1144,7 +1144,7 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls, PetscReal *s)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TaoLineSearchRegister - Adds a line-search algorithm to the registry
 
   Not Collective, No Fortran Support

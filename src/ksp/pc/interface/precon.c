@@ -1178,7 +1178,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCSetModifySubMatrices - Sets a user-defined routine for modifying the
   submatrices that arise within certain subdomain-based preconditioners such as `PCASM`
 
@@ -1214,7 +1214,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PCModifySubMatricesFn *func, PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCModifySubMatrices - Calls an optional user-defined routine within
   certain preconditioners if one has been set with `PCSetModifySubMatrices()`.
 
@@ -1656,7 +1656,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCSetPostSetUp - Sets function called at the end of `PCSetUp()` to adjust the computed preconditioner
 
   Logically Collective
@@ -1916,7 +1916,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCRegister -  Adds a method (`PCType`) to the PETSc preconditioner package.
 
   Not collective. No Fortran Support

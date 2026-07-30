@@ -36,7 +36,7 @@ static PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, 
 
 // "Unknown section 'Environmental Variables'"
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscGetTmp - Gets the name of the "tmp" directory, often this is `/tmp`
 
   Collective
@@ -306,7 +306,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFileRetrieve - Obtains a file from a URL or a compressed file
   and copies into local disk space as uncompressed.
 

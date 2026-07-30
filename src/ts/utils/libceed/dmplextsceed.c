@@ -4,7 +4,7 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-/*@C
+/*@
   DMPlexTSComputeRHSFunctionFVMCEED - Assemble the right-hand-side vector of a finite-volume `TS` step using the libCEED operator attached to a `DMPLEX`
 
   Collective

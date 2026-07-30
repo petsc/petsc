@@ -9,7 +9,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring);
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring);
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
-/*@C
+/*@
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 
   Not Collective

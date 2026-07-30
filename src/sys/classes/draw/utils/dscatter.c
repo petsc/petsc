@@ -221,7 +221,7 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp, PetscReal *x, PetscReal *y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDrawSPAddPoints - Adds several points to each of the scatter plot point curves.
 
   Not Collective

@@ -6,7 +6,7 @@
 #include <petscdmceed.h>
 #include <petscdmplexceed.h>
 
-/*@C
+/*@
   DMPlexSNESComputeResidualCEED - Assemble the local residual for a `SNES` on a `DMPLEX` using the libCEED operator attached to the `DM`
 
   Collective

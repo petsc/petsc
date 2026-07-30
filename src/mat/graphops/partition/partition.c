@@ -163,7 +163,7 @@ PetscBool         MatPartitioningRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList MatMeshToCellGraphList              = NULL;
 PetscBool         MatMeshToCellGraphRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   MatPartitioningRegister - Adds a new sparse matrix partitioning to the  matrix package.
 
   Not Collective, No Fortran Support
@@ -192,7 +192,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMeshToCellGraphRegister - Registers a mesh-to-cell-graph conversion routine.
 
   Not Collective, No Fortran Support
@@ -540,7 +540,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
   Logically Collective
@@ -572,7 +572,7 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatPartitioningSetPartitionWeights - Sets the weights for each partition.
 
   Logically Collective

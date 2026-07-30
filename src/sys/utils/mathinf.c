@@ -5,7 +5,7 @@
 #endif
 
 #include <petscsys.h>
-/*@C
+/*@
   PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
 
   Input Parameter:
@@ -45,7 +45,7 @@ PetscBool PetscIsNormalReal(PetscReal a)
   #define PETSC_FORCE_NO_FINITE_MATH_ONLY
 #endif
 
-/*@C
+/*@
   PetscIsInfReal - Returns whether the `PetscReal` input is an infinity value.
 
   Input Parameter:
@@ -88,7 +88,7 @@ PetscBool PetscIsInfReal(PetscReal a)
 }
 #endif
 
-/*@C
+/*@
   PetscIsNanReal - Returns whether the `PetscReal` input is a Not-a-Number (NaN) value.
 
   Input Parameter:

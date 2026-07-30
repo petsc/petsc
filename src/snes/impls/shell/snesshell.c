@@ -5,7 +5,7 @@ typedef struct {
   PetscCtx ctx;
 } SNES_Shell;
 
-/*@C
+/*@
   SNESShellSetSolve - Sets routine to apply as solver to a `SNESSHELL` `SNES` object
 
   Logically Collective

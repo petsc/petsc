@@ -1075,7 +1075,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:

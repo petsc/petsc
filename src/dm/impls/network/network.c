@@ -283,7 +283,7 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkSharedVertexGetInfo - Get info of a shared vertex struct, see petsc/private/dmnetworkimpl.h
 
   Not Collective
@@ -786,7 +786,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkGetSubnetwork - Returns the information about a requested subnetwork
 
   Not Collective
@@ -868,7 +868,7 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm, PetscInt anetnum, PetscInt bnet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkGetSharedVertices - Returns the info for the shared vertices
 
   Not Collective
@@ -898,7 +898,7 @@ PetscErrorCode DMNetworkGetSharedVertices(DM dm, PeOp PetscInt *nsv, PeOp const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkRegisterComponent - Registers the network component
 
   Logically Collective
@@ -2020,7 +2020,7 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mainsf, ISLocalToGlobalMapping map, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkGetSupportingEdges - Return the supporting edges for this vertex point
 
   Not Collective
@@ -2047,7 +2047,7 @@ PetscErrorCode DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *ned
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMNetworkGetConnectedVertices - Return the connected vertices for this edge point
 
   Not Collective

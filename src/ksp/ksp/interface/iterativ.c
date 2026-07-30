@@ -95,7 +95,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorResidual - Print the (possibly preconditioned, possibly approximate) residual norm at each iteration of an iterative solver.
 
   Collective
@@ -144,7 +144,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorResidualView - Plots the (possibly preconditioned) residual at each iteration of an iterative solver.
 
   Collective
@@ -185,7 +185,7 @@ PetscErrorCode KSPMonitorResidualView(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorResidualDrawLG - Plots the (possibly preconditioned) residual norm at each iteration of an iterative solver.
 
   Collective
@@ -235,7 +235,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorResidualDrawLGCreate - Creates the context for the (possibly preconditioned) residual norm monitor `KSPMonitorResidualDrawLG()`
 
   Collective
@@ -313,7 +313,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorResidualRange - Prints the percentage of residual elements that are more than 10 percent of the maximum value.
 
   Collective
@@ -361,7 +361,7 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorTrueResidual - Prints the true residual norm, as well as the (possibly preconditioned, possibly approximate) residual norm,
   at each iteration of a `KSPSolve()` iterative solver.
 
@@ -420,7 +420,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorTrueResidualView - Plots the true residual at each iteration of an iterative solver.
 
   Collective
@@ -462,7 +462,7 @@ PetscErrorCode KSPMonitorTrueResidualView(KSP ksp, PetscInt n, PetscReal rnorm, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorTrueResidualDrawLG - Plots the true residual norm at each iteration of an iterative solver.
 
   Collective
@@ -520,7 +520,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorTrueResidualDrawLGCreate - Creates the context for the true residual monitor `KSPMonitorTrueResidualDrawLG()`
 
   Collective
@@ -548,7 +548,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorTrueResidualMax - Prints the true residual max norm at each iteration of an iterative solver.
 
   Collective
@@ -600,7 +600,7 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorError - Prints the error norm, as well as the (possibly preconditioned) residual norm, at each iteration of an iterative solver.
 
   Collective
@@ -663,7 +663,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorErrorDraw - Plots the error at each iteration of an iterative solver.
 
   Collective
@@ -709,7 +709,7 @@ PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscVi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorErrorDrawLG - Plots the error and residual norm at each iteration of an iterative solver.
 
   Collective
@@ -774,7 +774,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorErrorDrawLGCreate - Creates the context for the error and preconditioned residual plotter `KSPMonitorErrorDrawLG()`
 
   Collective
@@ -822,7 +822,7 @@ PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSolution - Print the solution norm at each iteration of an iterative solver.
 
   Collective
@@ -868,7 +868,7 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSolutionDraw - Plots the solution at each iteration of an iterative solver.
 
   Collective
@@ -908,7 +908,7 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSolutionDrawLG - Plots the solution norm at each iteration of an iterative solver.
 
   Collective
@@ -961,7 +961,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSolutionDrawLGCreate - Creates the context for the `KSP` monitor `KSPMonitorSolutionDrawLG()`
 
   Collective
@@ -991,7 +991,7 @@ PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFor
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSingularValue - Prints the two norm of the true residual and estimation of the extreme singular values of the preconditioned problem at each iteration.
 
   Logically Collective
@@ -1046,7 +1046,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorSingularValueCreate - Creates the singular value monitor context needed by `KSPMonitorSingularValue()`
 
   Collective
@@ -1074,7 +1074,7 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorDynamicToleranceCreate - Creates the context used by `KSPMonitorDynamicTolerance()`
 
   Logically Collective
@@ -1106,7 +1106,7 @@ PetscErrorCode KSPMonitorDynamicToleranceCreate(PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorDynamicToleranceSetCoefficient - Sets the coefficient in the context used by `KSPMonitorDynamicTolerance()`
 
   Logically Collective
@@ -1134,7 +1134,7 @@ PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(PetscCtx ctx, PetscReal 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorDynamicTolerance - A monitor that changes the inner tolerance of nested preconditioners in every outer iteration in an adaptive way.
 
   Collective
@@ -1218,7 +1218,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPMonitorDynamicToleranceDestroy - Destroy the monitor context used in `KSPMonitorDynamicTolerance()`
 
   Input Parameter:
@@ -1238,7 +1238,7 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedSkip - Convergence test that do not return as converged
   until the maximum number of iterations is reached.
 
@@ -1330,7 +1330,7 @@ PetscErrorCode KSPGetConvergedNegativeCurvature(KSP ksp, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedDefaultCreate - Creates and initializes the context used by the `KSPConvergedDefault()` function
 
   Not Collective
@@ -1457,7 +1457,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedDefault - Default code to determine convergence of the linear iterative solvers
 
   Collective
@@ -1609,7 +1609,7 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPConvergedDefaultDestroy - Frees the space used by the `KSPConvergedDefault()` function context
 
   Not Collective
@@ -1731,7 +1731,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPCreateVecs - Gets a number of work vectors suitably sized for the operator in the `KSP`
 
   Collective
@@ -1917,7 +1917,7 @@ PetscErrorCode KSPGetConvergedReason(KSP ksp, KSPConvergedReason *reason)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGetConvergedReasonString - Return a human readable string for a `KSPConvergedReason`
 
   Not Collective

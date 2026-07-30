@@ -12,7 +12,7 @@ PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 #define PETSC_GOOGLE_CLIENT_ST "vOds_A71I3_S_aHMq_kZAI0t"
 #define PETSC_GOOGLE_API_KEY   "AIzaSyDRZsOcySpWVzsUvIBL2UG3J2tcg-MXbyk"
 
-/*@C
+/*@
   PetscGoogleDriveRefresh - Get a new authorization token for accessing Google drive from PETSc from a refresh token
 
   Not Collective, only the first process in the `MPI_Comm` does anything
@@ -79,7 +79,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 
 #include <sys/stat.h>
 
-/*@C
+/*@
   PetscGoogleDriveUpload - Loads a file to the Google Drive
 
   Not Collective, only the first process in the `MPI_Comm` uploads the file
@@ -182,7 +182,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
   #include <unistd.h>
 #endif
 
-/*@C
+/*@
   PetscGoogleDriveAuthorize - Get authorization and refresh token for accessing Google drive from PETSc
 
   Not Collective, only the first process in `MPI_Comm` does anything

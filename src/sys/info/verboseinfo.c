@@ -121,7 +121,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscInfoGetFile - Gets the `filename` and `FILE` pointer of the file where `PetscInfo()` prints to
 
   Not Collective; No Fortran Support
@@ -148,7 +148,7 @@ PetscErrorCode PetscInfoGetFile(char *filename[], FILE **InfoFile)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscInfoSetClasses - Sets the classes which `PetscInfo()` is filtered for/against
 
   Not Collective; No Fortran Support

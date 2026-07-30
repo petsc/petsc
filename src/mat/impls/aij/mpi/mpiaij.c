@@ -3457,7 +3457,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateMPIAIJWithSeqAIJ - creates a `MATMPIAIJ` matrix using `MATSEQAIJ` matrices that contain the "diagonal"
   and "off-diagonal" part of the matrix in CSR format.
 
@@ -4551,7 +4551,7 @@ PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAIJGetSeqAIJ - Returns the local pieces of this distributed matrix
 
   Not Collective
@@ -5399,7 +5399,7 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge(Mat A, MatReuse scall, IS *glob, Mat *A
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPIAIJGetLocalMatCondensed - Creates a `MATSEQAIJ` matrix from an `MATMPIAIJ` matrix by taking all its local rows and NON-ZERO columns
 
   Not Collective
@@ -5721,7 +5721,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatGetBrowsOfAcols - Returns `IS` that contain rows of `B` that equal to nonzero columns of local `A`
 
   Collective

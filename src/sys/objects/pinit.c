@@ -82,7 +82,7 @@ PetscSpinlock PetscCommSpinLock;
 
 extern PetscInt PetscNumBLASThreads;
 
-/*@C
+/*@
   PetscInitializeNoPointers - Calls PetscInitialize() from C/C++ without the pointers to argc and args
 
   Collective, No Fortran Support
@@ -117,7 +117,7 @@ PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *file
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscInitializeNoArguments - Calls `PetscInitialize()` from C/C++ without
   the command line arguments.
 
@@ -490,7 +490,7 @@ PetscErrorCode PetscCitationsInitialize(void)
 
 static char programname[PETSC_MAX_PATH_LEN] = ""; /* HP includes entire path in name */
 
-/*@C
+/*@
   PetscSetProgramName - Set the program name reported by `PetscGetProgramName()`
 
   Not Collective
@@ -513,7 +513,7 @@ PetscErrorCode PetscSetProgramName(const char name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetProgramName - Gets the name of the running program.
 
   Not Collective
@@ -535,7 +535,7 @@ PetscErrorCode PetscGetProgramName(char name[], size_t len)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetArgs - Allows you to access the raw command line arguments anywhere
   after `PetscInitialize()` is called but before `PetscFinalize()`.
 
@@ -566,7 +566,7 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetArguments - Allows you to access the command line arguments anywhere
   after `PetscInitialize()` is called but before `PetscFinalize()`.
 
@@ -603,7 +603,7 @@ PetscErrorCode PetscGetArguments(char ***args)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFreeArguments - Frees the memory obtained with `PetscGetArguments()`
 
   Not Collective, No Fortran Support
@@ -1256,7 +1256,7 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 
 // "Unknown section 'Environmental Variables'"
 // PetscClangLinter pragma disable: -fdoc-section-header-unknown
-/*@C
+/*@
   PetscInitialize - Initializes the PETSc database and MPI.
   `PetscInitialize()` calls MPI_Init() if that has yet to be called,
   so this routine should always be called near the beginning of
@@ -1952,7 +1952,7 @@ PetscErrorCode PetscCheckAllreduceSameLineAndCount_Private(MPI_Comm comm, const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCtxDestroyDefault - An implementation of a `PetscCtxDestroyFn` that uses `PetscFree()` to free the context
 
   Input Parameter:

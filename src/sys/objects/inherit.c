@@ -241,7 +241,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectSetFortranCallback - set Fortran callback function pointer and context
 
   Logically Collective, No Fortran Support
@@ -284,7 +284,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectGetFortranCallback - get Fortran callback function pointer and context
 
   Logically Collective, No Fortran Support
@@ -320,7 +320,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
 }
 
 #if PetscDefined(USE_LOG)
-/*@C
+/*@
   PetscObjectsDump - Prints all the currently existing objects.
 
   Input Parameters:
@@ -508,7 +508,7 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectAddOptionsHandler - Adds an additional function to check for options when `XXXSetFromOptions()` is called.
 
   Not Collective
@@ -548,7 +548,7 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*ha
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectProcessOptionsHandlers - Calls all the options handlers attached to an object
 
   Not Collective
@@ -879,7 +879,7 @@ struct _p_PetscContainer {
   PetscErrorCode (*userdestroy_deprecated)(void *);
 };
 
-/*@C
+/*@
   PetscContainerGetPointer - Gets the pointer value contained in the container that was provided with `PetscContainerSetPointer()`
 
   Not Collective, No Fortran Support
@@ -904,7 +904,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, PetscCtxRt ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscContainerSetPointer - Sets the pointer value contained in the container.
 
   Logically Collective, No Fortran Support
@@ -927,7 +927,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscContainerDestroy - Destroys a PETSc container object.
 
   Collective, No Fortran Support
@@ -958,7 +958,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscContainerSetCtxDestroy - Sets the destroy function for the data provided to the `PetscContainer` with `PetscContainerSetPointer()`
 
   Logically Collective, No Fortran Support
@@ -983,7 +983,7 @@ PetscErrorCode PetscContainerSetCtxDestroy(PetscContainer obj, PetscCtxDestroyFn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscContainerSetUserDestroy - Sets the destroy function for the data provided to the `PetscContainer` with `PetscContainerSetPointer()`
 
   Logically Collective, No Fortran Support
@@ -1010,7 +1010,7 @@ PetscErrorCode PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (
 
 PetscClassId PETSC_CONTAINER_CLASSID;
 
-/*@C
+/*@
   PetscContainerCreate - Creates a PETSc object that has room to hold a single pointer.
 
   Collective, No Fortran Support
@@ -1040,7 +1040,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectContainerCompose - Creates a `PetscContainer`, provides all of its values and composes it with a `PetscObject`
 
   Collective
@@ -1074,7 +1074,7 @@ PetscErrorCode PetscObjectContainerCompose(PetscObject obj, const char *name, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectContainerQuery - Accesses the pointer in a container composed to a `PetscObject` with `PetscObjectContainerCompose()`
 
   Collective

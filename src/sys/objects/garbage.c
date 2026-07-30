@@ -17,7 +17,7 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectDelayedDestroy - Adds an object to a data structure for
   later destruction.
 
@@ -167,7 +167,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGarbageCleanup - Destroys objects placed in the garbage by
   `PetscObjectDelayedDestroy()`.
 

@@ -519,7 +519,7 @@ PetscErrorCode PCCompositeSpecialSetAlphaMat(PC pc, Mat alpha_mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCCompositeAddPCType - Adds another `PC` of the given type to the composite `PC`.
 
   Collective

@@ -3,7 +3,7 @@
 #include <petsc/private/glvisviewerimpl.h>
 #include <petscds.h>
 
-/*@C
+/*@
   DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
   separate components `DM` in a `DMCOMPOSITE` to build the correct matrix nonzero structure.
 
@@ -159,7 +159,7 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
   representation.
 
@@ -348,7 +348,7 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeRestoreAccess - Returns the vectors obtained with `DMCompositeGetAccess()`
   representation.
 
@@ -490,7 +490,7 @@ PetscErrorCode DMCompositeRestoreLocalAccessArray(DM dm, Vec pvec, PetscInt nwan
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeScatter - Scatters from a global packed vector into its individual local vectors
 
   Collective
@@ -601,7 +601,7 @@ PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGather - Gathers into a global packed vector from its individual local vectors
 
   Collective
@@ -851,7 +851,7 @@ static PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetISLocalToGlobalMappings - gets an `ISLocalToGlobalMapping` for each `DM` in the `DMCOMPOSITE`, maps to the composite global space
 
   Collective; No Fortran Support
@@ -934,7 +934,7 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetLocalISs - Gets index sets for each component of a composite local vector
 
   Not Collective; No Fortran Support
@@ -986,7 +986,7 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS *is[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetGlobalISs - Gets the index sets for each composed object in a `DMCOMPOSITE`
 
   Collective
@@ -1124,7 +1124,7 @@ static PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetLocalVectors - Gets local vectors for each part of a `DMCOMPOSITE`
   Use `DMCompositeRestoreLocalVectors()` to return them.
 
@@ -1166,7 +1166,7 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeRestoreLocalVectors - Restores local vectors for each part of a `DMCOMPOSITE`
 
   Not Collective; No Fortran Support
@@ -1207,7 +1207,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors(DM dm, ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMCompositeGetEntries - Gets the `DM` for each entry in a `DMCOMPOSITE`.
 
   Not Collective

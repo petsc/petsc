@@ -574,7 +574,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
 static PetscInt numberofsetfromoptions;
 static PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
-/*@C
+/*@
   SNESAddOptionsChecker - Adds an additional function to check for `SNES` options.
 
   Not Collective
@@ -834,7 +834,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
   Collective
@@ -1218,7 +1218,7 @@ PetscErrorCode SNESResetFromOptions(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for
   the nonlinear solvers.
 
@@ -1949,7 +1949,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetFunction - Sets the function evaluation routine and function
   vector for use by the `SNES` routines in solving systems of nonlinear
   equations.
@@ -1990,7 +1990,7 @@ PetscErrorCode SNESSetFunction(SNES snes, Vec r, SNESFunctionFn *f, PetscCtx ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetInitialFunction - Set an already computed function evaluation at the initial guess to be reused by `SNESSolve()`.
 
   Logically Collective
@@ -2232,7 +2232,7 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetNGS - Sets the user nonlinear Gauss-Seidel routine for
   use with composed nonlinear solvers.
 
@@ -2260,7 +2260,7 @@ PetscErrorCode SNESSetNGS(SNES snes, SNESNGSFn *f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPicardComputeMFFunction - Matrix-free residual $A(x) x - b(x)$ used by `SNESSetPicard()` when the operator is applied through `-snes_mf_operator`
 
   Collective
@@ -2303,7 +2303,7 @@ PetscErrorCode SNESPicardComputeMFFunction(SNES snes, Vec x, Vec f, PetscCtx ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPicardComputeFunction - Compute the residual $A(x) x - b(x)$ using the callbacks registered by `SNESSetPicard()`
 
   Collective
@@ -2341,7 +2341,7 @@ PetscErrorCode SNESPicardComputeFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESPicardComputeJacobian - Trivial Jacobian assembly callback used by `SNESSetPicard()`; the Picard operator is filled in by `SNESPicardComputeFunction()`
 
   Collective
@@ -2370,7 +2370,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetPicard - Use `SNES` to solve the system $A(x) x = bp(x) + b $ via a Picard type iteration (Picard linearization)
 
   Logically Collective
@@ -2431,7 +2431,7 @@ PetscErrorCode SNESSetPicard(SNES snes, Vec r, SNESFunctionFn *bp, Mat Amat, Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetPicard - Returns the context for the Picard iteration
 
   Not Collective, but `Vec` is parallel if `SNES` is parallel. Collective if `Vec` is requested, but has not been created yet.
@@ -2464,7 +2464,7 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, SNESFunctionFn **f, Mat *Amat, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetComputeInitialGuess - Sets a routine used to compute an initial guess for the nonlinear problem
 
   Logically Collective
@@ -2488,7 +2488,7 @@ PetscErrorCode SNESSetComputeInitialGuess(SNES snes, SNESInitialGuessFn *func, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetRhs - Gets the vector for solving F(x) = `rhs`. If `rhs` is not set
   it assumes a zero right-hand side.
 
@@ -3284,7 +3284,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetJacobian - Sets the function to compute Jacobian as well as the
   location to store the matrix.
 
@@ -3347,7 +3347,7 @@ PetscErrorCode SNESSetJacobian(SNES snes, Mat Amat, Mat Pmat, SNESJacobianFn *J,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetJacobian - Returns the Jacobian matrix and optionally the user
   provided context for evaluating the Jacobian.
 
@@ -4163,7 +4163,7 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
 
 PETSC_INTERN PetscErrorCode SNESMonitorRange_Private(SNES, PetscInt, PetscReal *);
 
-/*@C
+/*@
   SNESMonitorLGRange - Line-graph monitor that plots the residual norm together with residual-range statistics for a `SNESSolve()`
 
   Collective
@@ -4335,7 +4335,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
 .seealso: [](ch_snes), `SNESMonitorSet()`, `PetscCtx`
 M*/
 
-/*@C
+/*@
   SNESMonitorSet - Sets an ADDITIONAL function that is to be used at every
   iteration of the `SNES` nonlinear solver to display the iteration's
   progress.
@@ -4420,7 +4420,7 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetConvergenceTest - Sets the function that is to be used
   to test for convergence of the nonlinear iterative solution.
 
@@ -4487,7 +4487,7 @@ PetscErrorCode SNESGetConvergedReason(SNES snes, SNESConvergedReason *reason)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetConvergedReasonString - Return a human readable string for `SNESConvergedReason`
 
   Not Collective
@@ -4599,7 +4599,7 @@ PETSC_EXTERN mxArray *SNESGetConvergenceHistoryMatlab(SNES snes)
 }
 #endif
 
-/*@C
+/*@
   SNESGetConvergenceHistory - Gets the arrays used to hold the convergence history.
 
   Not Collective
@@ -4641,7 +4641,7 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every iteration of the nonlinear solve. Specifically
   it is called just before the Jacobian is "evaluated" and after the function
@@ -4766,7 +4766,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
   end of the nonlinear solver to display the convergence reason of the nonlinear solver.
 
@@ -5229,7 +5229,7 @@ PetscErrorCode SNESGetSolutionUpdate(SNES snes, Vec *x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetFunction - Returns the function that defines the nonlinear system set with `SNESSetFunction()`
 
   Not Collective, but `r` is parallel if `snes` is parallel. Collective if `r` is requested, but has not been created yet.
@@ -5272,7 +5272,7 @@ PetscErrorCode SNESGetFunction(SNES snes, Vec *r, SNESFunctionFn **f, PetscCtxRt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESGetNGS - Returns the function and context set with `SNESSetNGS()`
 
   Input Parameter:
@@ -5385,7 +5385,7 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   SNESRegister - Adds a method to the nonlinear solver package.
 
   Not Collective

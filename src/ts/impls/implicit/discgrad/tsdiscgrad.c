@@ -607,7 +607,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSDiscGradGetFormulation - Get the construction method for S, F, and grad F from the
   formulation $u_t = S \nabla F$ for `TSDISCGRAD`
 
@@ -658,7 +658,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSDiscGradSetFormulation - Set the construction method for S, F, and grad F from the
   formulation $u_t = S(u) \nabla F(u)$ for `TSDISCGRAD`
 
@@ -758,7 +758,7 @@ PetscErrorCode TSDiscGradSetType(TS ts, TSDGType dgtype)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSDiscGradSetImplicitFormulation - Set the construction method for IG and its Jacobian from the
   formulation $IG(t) = u_t - S(u) \nabla F(u)$ for `TSDISCGRAD`
 

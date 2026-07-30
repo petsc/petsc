@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
   /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
   #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
-/*@C
+/*@
   PetscHDF5IntCast - Safely cast a nonnegative `PetscInt` to an HDF5 `hsize_t`, raising an error on overflow or negative input
 
   Not Collective; No Fortran Support

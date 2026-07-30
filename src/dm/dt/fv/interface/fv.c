@@ -16,7 +16,7 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
                                "  volume  = {490},\n"
                                "  year    = {2005}\n}\n";
 
-/*@C
+/*@
   PetscLimiterRegister - Adds a new `PetscLimiter` implementation
 
   Not Collective, No Fortran Support
@@ -892,7 +892,7 @@ PetscClassId PETSCFV_CLASSID = 0;
 PetscFunctionList PetscFVList              = NULL;
 PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PetscFVRegister - Adds a new `PetscFV` implementation
 
   Not Collective, No Fortran Support
@@ -1572,7 +1572,7 @@ PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVGetCellTabulation - Returns the tabulation of the basis functions at the quadrature points
 
   Not Collective
@@ -1608,7 +1608,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVCreateTabulation - Tabulates the basis functions, and perhaps derivatives, at the points provided.
 
   Not Collective
@@ -1704,7 +1704,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVIntegrateRHSFunction - Produce the cell residual vector for a chunk of elements by quadrature integration
 
   Not Collective

@@ -252,7 +252,7 @@ PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatFDColoringGetFunction - Gets the function to use for computing the Jacobian.
 
   Not Collective
@@ -277,7 +277,7 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, MatFDColoringFn **f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
   Logically Collective
@@ -528,7 +528,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatFDColoringGetPerturbedColumns - Returns the indices of the columns that
   that are currently being perturbed.
 

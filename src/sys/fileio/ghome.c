@@ -3,7 +3,7 @@
 */
 #include <petscsys.h>
 
-/*@C
+/*@
   PetscGetHomeDirectory - Returns the name of the user's home directory
 
   Not Collective
@@ -34,7 +34,7 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFixFilename - Fixes a file name so that it is correct for both Unix and
   Microsoft Windows by using the correct / or \ to separate directories.
 

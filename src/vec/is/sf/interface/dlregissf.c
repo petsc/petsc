@@ -19,7 +19,7 @@ PetscLogEvent PETSCSF_RemoteOff;
 PetscLogEvent PETSCSF_Pack;
 PetscLogEvent PETSCSF_Unpack;
 
-/*@C
+/*@
   PetscSFInitializePackage - Initialize `PetscSF` package
 
   Logically Collective
@@ -77,7 +77,7 @@ PetscErrorCode PetscSFInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSFFinalizePackage - Finalize `PetscSF` package, it is called from `PetscFinalize()`
 
   Logically Collective

@@ -462,7 +462,7 @@ PetscErrorCode PetscAttachDebugger(void)
   return PETSC_SUCCESS;
 }
 
-/*@C
+/*@
   PetscAttachDebuggerErrorHandler - Error handler that attaches
   a debugger to a running process when an error is detected.
   This routine is useful for examining variables, etc.

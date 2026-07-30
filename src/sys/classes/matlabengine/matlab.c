@@ -119,7 +119,7 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMatlabEngineEvaluate - Evaluates a string in MATLAB
 
   Not Collective
@@ -162,7 +162,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine, const char s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMatlabEngineGetOutput - Gets a string buffer where the MATLAB output is
   printed
 
@@ -188,7 +188,7 @@ PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, const char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscMatlabEnginePrintOutput - prints the output from MATLAB to an ASCII file
 
   Collective
@@ -289,7 +289,7 @@ PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine mengine, PetscObject obj)
 */
 static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PETSC_MATLAB_ENGINE_ - Creates a MATLAB engine on each process in a communicator.
 
    Not Collective

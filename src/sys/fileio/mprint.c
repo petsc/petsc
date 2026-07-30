@@ -21,7 +21,7 @@ FILE *PETSC_STDOUT = NULL;
 */
 FILE *PETSC_STDERR = NULL;
 
-/*@C
+/*@
   PetscFormatConvertGetSize - Gets the length of a string needed to hold data converted with `PetscFormatConvert()` based on the format
 
   No Fortran Support
@@ -75,7 +75,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char format[], size_t *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFormatConvert - converts %g to [|%g|] so that `PetscVSNPrintf()` can ensure all %g formatted numbers have a decimal point when printed.
 
   No Fortran Support
@@ -148,7 +148,7 @@ PetscErrorCode PetscFormatConvert(const char format[], char newformat[])
 
 #define PETSCDEFAULTBUFFERSIZE 8 * 1024
 
-/*@C
+/*@
   PetscVSNPrintf - The PETSc version of `vsnprintf()`. Ensures that all `%g` formatted arguments' output contains the decimal point (which is used by the test harness)
 
   No Fortran Support
@@ -233,7 +233,7 @@ PetscErrorCode PetscVSNPrintf(char str[], size_t len, const char format[], size_
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFFlush - Flush a file stream
 
   Input Parameter:
@@ -272,7 +272,7 @@ PetscErrorCode PetscFFlush(FILE *fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscVFPrintfDefault -  All PETSc standard out and error messages are sent through this function; so, in theory, this can
   can be replaced with something that does not simply write to a file.
 
@@ -356,7 +356,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char format[], va_list Argp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSNPrintf - Prints to a string of given length
 
   Not Collective, No Fortran Support
@@ -386,7 +386,7 @@ PetscErrorCode PetscSNPrintf(char str[], size_t len, const char format[], ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSNPrintfCount - Prints to a string of given length, returns count of characters printed
 
   Not Collective, No Fortran Support
@@ -484,7 +484,7 @@ static inline PetscErrorCode PetscSynchronizedFPrintf_Private(MPI_Comm comm, FIL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSynchronizedPrintf - Prints synchronized output from multiple MPI processes.
   Output of the first processor is followed by that of the second, etc.
 
@@ -519,7 +519,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
   several MPI processes.  Output of the first process is followed by that of the
   second, etc.
@@ -556,7 +556,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSynchronizedFlush - Flushes to the screen output from all processors
   involved in previous `PetscSynchronizedPrintf()`/`PetscSynchronizedFPrintf()` calls.
 
@@ -623,7 +623,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFPrintf - Prints to a file, only from the first
   MPI process in the communicator.
 
@@ -661,7 +661,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscPrintf - Prints to standard out, only from the first
   MPI process in the communicator. Calls from other processes are ignored.
 
@@ -711,7 +711,7 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSynchronizedFGets - Multiple MPI processes all get the same line from a file.
 
   Collective
@@ -745,7 +745,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFormatRealArray - Format an array of `PetscReal` values as a comma-separated string using a `printf`-style format
 
   Not Collective; No Fortran Support

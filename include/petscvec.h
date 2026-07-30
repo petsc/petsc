@@ -389,7 +389,7 @@ PETSC_EXTERN PetscErrorCode VecSetPreallocationCOO(Vec, PetscCount, const PetscI
 PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec, PetscCount, PetscInt[]);
 PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode);
 
-/*@C
+/*@
    VecSetValue - Set a single entry into a PETSc vector, `Vec`.
 
    Not Collective
@@ -495,7 +495,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
-/*@C
+/*@
    VecSetValueLocal - Set a single entry into a vector using the local numbering of the vector, see `VecSetValuesLocal()`
 
    Not Collective
@@ -624,7 +624,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayReadAndMemType(Vec, const PetscScalar
 PETSC_EXTERN PetscErrorCode VecGetArrayWriteAndMemType(Vec, PetscScalar *[], PetscMemType *);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar *[]);
 
-/*@C
+/*@
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When the vectors are not the same the first pointer is read only
 
    Logically Collective; No Fortran Support
@@ -650,7 +650,7 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar *xv[], Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
    VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common obtained with `VecGetArrayPair()`
 
    Logically Collective; No Fortran Support

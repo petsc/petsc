@@ -201,7 +201,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 #include <petscviewer.h>
 
-/*@C
+/*@
   PetscSetHelpVersionFunctions - Sets functions that print help and version information
   before the PETSc help and version information is printed.
 

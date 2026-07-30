@@ -2,7 +2,7 @@
 
 #include <petscfvceed.h>
 
-/*@C
+/*@
   PetscFVSetCeed - Set the `Ceed` object to a `PetscFV`
 
   Not Collective
@@ -24,7 +24,7 @@ PetscErrorCode PetscFVSetCeed(PetscFV fv, Ceed ceed)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscFVGetCeedBasis - Get the `Ceed` object mirroring this `PetscFV`
 
   Not Collective

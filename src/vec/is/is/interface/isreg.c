@@ -108,7 +108,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   ISRegister - Adds a new index set implementation
 
   Not Collective, No Fortran Support

@@ -212,7 +212,7 @@ static PetscErrorCode PCHPDDMSetAuxiliaryMat_HPDDM(PC pc, IS is, Mat A, PetscErr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHPDDMSetAuxiliaryMat - Sets the auxiliary matrix used by `PCHPDDM` for the concurrent GenEO problems at the finest level.
 
   Input Parameters:
@@ -3306,7 +3306,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHPDDMInitializePackage - This function initializes everything in the `PCHPDDM` package. It is called from `PCInitializePackage()`.
 
   Level: developer
@@ -3348,7 +3348,7 @@ PetscErrorCode PCHPDDMInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCHPDDMFinalizePackage - This function frees everything from the `PCHPDDM` package. It is called from `PetscFinalize()`.
 
   Level: developer

@@ -1,7 +1,7 @@
 #include "petscviewer.h"
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 
-/*@C
+/*@
      PETSC_VIEWER_PYVISTA_ - Creates a PyVista `PetscViewer` shared by all MPI processes in a communicator.
 
      Collective

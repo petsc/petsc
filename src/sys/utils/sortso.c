@@ -888,7 +888,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTimSort - Sorts an array in place in increasing order using Tim Peters <https://bugs.python.org/file4451/timsort.txt> adaptive sorting algorithm.
 
   Not Collective, No Fortran Support
@@ -1009,7 +1009,7 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscTimSortWithArray - Sorts an array in place in increasing order using Tim Peters <https://bugs.python.org/file4451/timsort.txt> adaptive sorting algorithm and
   reorders a second array to match the first. The arrays need not be the same type.
 

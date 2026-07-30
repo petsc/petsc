@@ -2,7 +2,7 @@
 #include <petscbt.h>
 #include <petscviewer.h>
 
-/*@C
+/*@
   PetscBTView - View the contents of a `PetscBT` (bit array) on a `PetscViewer`, one line per bit
 
   Collective on `viewer`; No Fortran Support

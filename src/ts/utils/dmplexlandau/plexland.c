@@ -2091,7 +2091,7 @@ static PetscErrorCode LandauSphereMesh(DM dm, PetscReal inner, PetscReal radius)
 
 PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 
-/*@C
+/*@
   DMPlexLandauCreateVelocitySpace - Create a `DMPLEX` velocity space mesh
 
   Collective
@@ -2261,7 +2261,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexLandauAccess - Access to the distribution function with user callback
 
   Collective

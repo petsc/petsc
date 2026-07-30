@@ -89,7 +89,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSRegister - Adds a creation method to the `TS` package.
 
   Not Collective, No Fortran Support

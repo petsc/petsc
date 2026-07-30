@@ -1,6 +1,6 @@
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
-/*@C
+/*@
   MatCheckCompressedRow - Determines whether the compressed row matrix format should be used.
   Compressed row format provides high performance routines by taking advantage of zero rows.
 

@@ -1,6 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
-/*@C
+/*@
   KSPFlexibleSetModifyPC - Sets the routine used by flexible `KSP` methods to modify the preconditioner. [](sec_flexibleksp)
 
   Logically Collective
@@ -26,7 +26,7 @@ PetscErrorCode KSPFlexibleSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *fcn, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPFlexibleModifyPCNoChange - this is the default used by the flexible Krylov methods - it doesn't change the preconditioner. [](sec_flexibleksp)
 
   Input Parameters:
@@ -49,7 +49,7 @@ PetscErrorCode KSPFlexibleModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPFlexibleModifyPCKSP - modifies the attributes of the `PCKSP` preconditioner, see [](sec_flexibleksp).
 
   Input Parameters:

@@ -7,7 +7,7 @@ PetscClassId      PF_CLASSID          = 0;
 PetscFunctionList PFList              = NULL; /* list of all registered PD functions */
 PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 
-/*@C
+/*@
   PFSet - Sets the C/C++/Fortran functions to be used by the PF function
 
   Collective
@@ -36,7 +36,7 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(PetscCtx, PetscInt, const Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFDestroy - Destroys `PF` context that was created with `PFCreate()`.
 
   Collective
@@ -64,7 +64,7 @@ PetscErrorCode PFDestroy(PF *pf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFCreate - Creates a mathematical function context.
 
   Collective
@@ -271,7 +271,7 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFRegister - Adds a method to the mathematical function package.
 
   Not Collective
@@ -421,7 +421,7 @@ PetscErrorCode PFSetFromOptions(PF pf)
 
 static PetscBool PFPackageInitialized = PETSC_FALSE;
 
-/*@C
+/*@
   PFFinalizePackage - This function destroys everything in the PETSc `PF` package. It is
   called from `PetscFinalize()`.
 
@@ -438,7 +438,7 @@ PetscErrorCode PFFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PFInitializePackage - This function initializes everything in the `PF` package. It is called
   from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to `PFCreate()`
   when using shared or static libraries.

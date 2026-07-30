@@ -45,7 +45,7 @@ Level: intermediate
 .seealso: [](ch_ts), `TSBASICSYMPLECTIC`
 M*/
 
-/*@C
+/*@
   TSBasicSymplecticRegisterAll - Registers all of the basic symplectic integration methods in `TSBASICSYMPLECTIC`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -79,7 +79,7 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
 
   Not Collective
@@ -104,7 +104,7 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticInitializePackage - This function initializes everything in the `TSBASICSYMPLECTIC` package. It is called
   from `TSInitializePackage()`.
 
@@ -122,7 +122,7 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticFinalizePackage - This function destroys everything in the `TSBASICSYMPLECTIC` package. It is
   called from `PetscFinalize()`.
 
@@ -138,7 +138,7 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSBasicSymplecticRegister - register a basic symplectic integration scheme by providing the coefficients.
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used

@@ -1,6 +1,6 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h> /*I  "petscksp.h"  I*/
 
-/*@C
+/*@
   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by `KSPGMRES` and `KSPFGMRES`.
 
   Logically Collective
@@ -37,7 +37,7 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP k
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGMRESGetOrthogonalization - Gets the orthogonalization routine used by `KSPGMRES` and `KSPFGMRES`.
 
   Not Collective

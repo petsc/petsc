@@ -1,6 +1,6 @@
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 
-/*@C
+/*@
   PetscIntStackDestroy - This function destroys a stack.
 
   Not Collective, No Fortran Support
@@ -21,7 +21,7 @@ PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIntStackEmpty - This function determines whether any items have been pushed.
 
   Not Collective, No Fortran Support
@@ -45,7 +45,7 @@ PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool *empty)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIntStackTop - This function returns the top of the stack.
 
   Not Collective, No Fortran Support
@@ -69,7 +69,7 @@ PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIntStackPush - This function pushes an integer on the stack.
 
   Not Collective, No Fortran Support
@@ -94,7 +94,7 @@ PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIntStackPop - This function pops an integer from the stack.
 
   Not Collective, No Fortran Support
@@ -122,7 +122,7 @@ PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIntStackCreate - This function creates a stack.
 
   Not Collective, No Fortran Support

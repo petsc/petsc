@@ -4,7 +4,7 @@
 */
 #include <petsc/private/petscimpl.h>
 
-/*@C
+/*@
   PetscObjectListRemoveReference - Calls `PetscObjectDereference()` on an object in the list immediately but keeps a pointer to the object in the list.
 
   No Fortran Support
@@ -47,7 +47,7 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectListAdd - Adds a new object to an `PetscObjectList`
 
   No Fortran Support
@@ -122,7 +122,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectListDestroy - Destroy a list of objects
 
   No Fortran Support
@@ -152,7 +152,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectListFind - given a name, find the matching object in a list
 
   No Fortran Support
@@ -190,7 +190,7 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectListReverseFind - given a object, find the matching name if it exists
 
   No Fortran Support
@@ -229,7 +229,7 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscObjectListDuplicate - Creates a new list from a given object list.
 
   No Fortran Support

@@ -20,7 +20,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag, PetscBagItem item, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterEnum - add an enum value to a `PetscBag`
 
   Logically Collective
@@ -76,7 +76,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterIntArray - add a `PetscInt` array to a `PetscBag`
 
   Logically Collective
@@ -127,7 +127,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterRealArray - add a `PetscReal` array to a `PetscBag`
 
   Logically Collective
@@ -178,7 +178,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterInt - add a `PetscInt` value to a `PetscBag`
 
   Logically Collective
@@ -225,7 +225,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterInt64 - add a `PetscInt64` value to a `PetscBag`
 
   Logically Collective
@@ -273,7 +273,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterBoolArray - add a n `PetscBool` values to a `PetscBag`
 
   Logically Collective
@@ -324,7 +324,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterString - add a string value to a `PetscBag`
 
   Logically Collective
@@ -376,7 +376,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterReal - add a `PetscReal` value to a `PetscBag`
 
   Logically Collective
@@ -423,7 +423,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterScalar - add a `PetscScalar` value to a `PetscBag`
 
   Logically Collective
@@ -470,7 +470,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagRegisterBool - add a `PetscBool` to a `PetscBag`
 
   Logically Collective
@@ -854,7 +854,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagCreate - Create a bag of values. A `PetscBag` is a representation of a C struct that can be saved to and read from files,
   can have values set from the options database
 
@@ -923,7 +923,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char name[], const char help[
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagGetName - Gets the name of a bag of values
 
   Not Collective
@@ -949,7 +949,7 @@ PetscErrorCode PetscBagGetName(PetscBag bag, const char *name[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagGetData - Gives back the user - access to memory that
   can be used for storing user-data-structure
 
@@ -1008,7 +1008,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscBagGetNames - Get the names of all entries in the bag
 
   Not Collective

@@ -30,7 +30,7 @@
   #define VALGRIND_MAKE_MEM_DEFINED(addr, size)   ((void)(addr), (void)(size))
 #endif
 
-/*@C
+/*@
   PetscPoisonMemoryRegion - Poison a region in memory, making it undereferencable
 
   Not Available From Fortran
@@ -106,7 +106,7 @@ static inline PetscErrorCode PetscPoisonMemoryRegion(const void *ptr, size_t siz
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscUnpoisonMemoryRegion - Unpoison a previously poisoned memory region
 
   Input Parameters:
@@ -139,7 +139,7 @@ static inline PetscErrorCode PetscUnpoisonMemoryRegion(const void *ptr, size_t s
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscIsRegionPoisoned - Query whether a particular memory region is poisoned
 
   Input Parameters:

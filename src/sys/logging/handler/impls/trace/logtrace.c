@@ -88,7 +88,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Trace(PetscLogHandler handler)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscLogHandlerCreateTrace - Create a logger that traces events and stages to a given file descriptor
 
   Collective, No Fortran Support

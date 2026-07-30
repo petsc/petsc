@@ -35,7 +35,7 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsHelpPrintedCreate - Creates an object used to manage tracking which help messages have
   been printed so they will not be printed again.
 
@@ -57,7 +57,7 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsHelpPrintedCheck - Checks if a particular pre, name pair has previous been entered (meaning the help message was printed)
 
   Not Collective
@@ -398,7 +398,7 @@ static PetscErrorCode PetscOptionsCreateViewers_Internal(MPI_Comm comm, PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsCreateViewer - Creates a viewer appropriate for the type indicated by the user
 
   Collective
@@ -467,7 +467,7 @@ PetscErrorCode PetscOptionsCreateViewer(MPI_Comm comm, PetscOptions options, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscOptionsCreateViewers - Create multiple viewers from a comma-separated list in the options database
 
   Collective
@@ -578,7 +578,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerRegister - Adds a viewer to those available for use with `PetscViewerSetType()`
 
   Not Collective, No Fortran Support
@@ -616,7 +616,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerSetFromOptions - Sets various options for a viewer based on values in the options database.
 
   Collective

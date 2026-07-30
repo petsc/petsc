@@ -1,7 +1,7 @@
 #include <petsc/private/snesimpl.h> /*I "petscsnes.h" I*/
 #include <petscdm.h>
 
-/*@C
+/*@
   SNESVISetComputeVariableBounds - Sets a function that is called to compute the bounds on variable for
   (differential) variable inequalities.
 

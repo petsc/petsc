@@ -1,5 +1,5 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-/*@C
+/*@
   MatCreateMPIAIJPERM - Creates a sparse parallel matrix whose local
   portions are stored as `MATSEQAIJPERM` matrices (a matrix class that inherits
   from SEQAIJ but includes some optimizations to allow more effective

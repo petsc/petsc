@@ -2730,7 +2730,7 @@ PetscErrorCode PCFieldSplitSetBlockSize(PC pc, PetscInt bs)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFieldSplitGetSubKSP - Gets the `KSP` contexts for all splits
 
   Collective
@@ -2774,7 +2774,7 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFieldSplitSchurGetSubKSP - Gets the `KSP` contexts used inside the Schur complement based `PCFIELDSPLIT`
 
   Collective
@@ -3094,7 +3094,7 @@ static PetscErrorCode PCFieldSplitSetSchurScale_FieldSplit(PC pc, PetscScalar sc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
 
   Collective

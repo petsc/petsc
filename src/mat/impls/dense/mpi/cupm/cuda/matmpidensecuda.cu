@@ -48,7 +48,7 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat A, MatType type, MatReuse re
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateDenseCUDA - Creates a matrix in `MATDENSECUDA` format using CUDA.
 
   Collective
@@ -75,7 +75,7 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAPlaceArray - Allows one to replace the GPU array in a `MATDENSECUDA` matrix with an
   array provided by the user. This is useful to avoid copying an array into a matrix.
 
@@ -104,7 +104,7 @@ PetscErrorCode MatDenseCUDAPlaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAResetArray - Resets the matrix array to that it previously had before the call to
   `MatDenseCUDAPlaceArray()`
 
@@ -127,7 +127,7 @@ PetscErrorCode MatDenseCUDAResetArray(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAReplaceArray - Allows one to replace the GPU array in a `MATDENSECUDA` matrix
   with an array provided by the user. This is useful to avoid copying an array into a matrix.
 
@@ -155,7 +155,7 @@ PetscErrorCode MatDenseCUDAReplaceArray(Mat mat, const PetscScalar *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a `MATDENSECUDA`
   matrix.
 
@@ -186,7 +186,7 @@ PetscErrorCode MatDenseCUDAGetArrayWrite(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDARestoreArrayWrite - Restore write access to the CUDA buffer inside a
   `MATDENSECUDA` matrix previously obtained with `MatDenseCUDAGetArrayWrite()`.
 
@@ -208,7 +208,7 @@ PetscErrorCode MatDenseCUDARestoreArrayWrite(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAGetArrayRead - Provides read-only access to the CUDA buffer inside a
   `MATDENSECUDA` matrix. The array must be restored with `MatDenseCUDARestoreArrayRead()` when
   no longer needed.
@@ -238,7 +238,7 @@ PetscErrorCode MatDenseCUDAGetArrayRead(Mat A, const PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDARestoreArrayRead - Restore read-only access to the CUDA buffer inside a
   `MATDENSECUDA` matrix previously obtained with a call to `MatDenseCUDAGetArrayRead()`.
 
@@ -264,7 +264,7 @@ PetscErrorCode MatDenseCUDARestoreArrayRead(Mat A, const PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDAGetArray - Provides access to the CUDA buffer inside a `MATDENSECUDA` matrix. The
   array must be restored with `MatDenseCUDARestoreArray()` when no longer needed.
 
@@ -294,7 +294,7 @@ PetscErrorCode MatDenseCUDAGetArray(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDARestoreArray - Restore access to the CUDA buffer inside a `MATDENSECUDA` matrix
   previously obtained with `MatDenseCUDAGetArray()`.
 
@@ -316,7 +316,7 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatDenseCUDASetPreallocation - Set the device array used for storing the matrix elements of a
   `MATDENSECUDA` matrix
 

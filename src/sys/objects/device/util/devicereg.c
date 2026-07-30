@@ -100,7 +100,7 @@ static PetscErrorCode PetscDeviceRegisterEvent_Private(const char name[], PetscC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceFinalizePackage - This function cleans up all components of the `PetscDevice`
   package. It is called from `PetscFinalize()`.
 
@@ -119,7 +119,7 @@ PetscErrorCode PetscDeviceFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscDeviceInitializePackage - This function initializes everything in the `PetscDevice`
   package. It is called on the first call to `PetscDeviceContextCreate()` or
   `PetscDeviceCreate()` when using shared or static libraries.

@@ -10,7 +10,7 @@ PETSC_INTERN PetscErrorCode TaoTermCreate_Halfl2squared(TaoTerm);
 PETSC_INTERN PetscErrorCode TaoTermCreate_L1(TaoTerm);
 PETSC_INTERN PetscErrorCode TaoTermCreate_Quadratic(TaoTerm);
 
-/*@C
+/*@
   TaoTermRegister - Register an implementation of `TaoTerm`
 
   Not Collective, No Fortran Support

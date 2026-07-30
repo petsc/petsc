@@ -51,7 +51,7 @@ PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatCreateSeqDenseCUDA - Creates a sequential matrix in dense format using CUDA.
 
   Collective

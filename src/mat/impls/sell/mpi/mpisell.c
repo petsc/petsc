@@ -1211,7 +1211,7 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                              NULL,
                                              NULL};
 
-/*@C
+/*@
   MatMPISELLSetPreallocation - Preallocates memory for a `MATMPISELL` sparse parallel matrix in sell format.
   For good matrix assembly performance the user should preallocate the matrix storage by
   setting the parameters `d_nz` (or `d_nnz`) and `o_nz` (or `o_nnz`).
@@ -1356,7 +1356,7 @@ PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d
 .seealso: `Mat`, `MatCreateSELL()`, `MATSEQSELL`, `MATSELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
-/*@C
+/*@
   MatCreateSELL - Creates a sparse parallel matrix in `MATSELL` format.
 
   Collective
@@ -1535,7 +1535,7 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPISELLGetSeqSELL - Returns the local pieces of this distributed matrix
 
   Not Collective
@@ -1566,7 +1566,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   MatMPISELLGetLocalMatCondensed - Creates a `MATSEQSELL` matrix from an `MATMPISELL` matrix by
   taking all its local rows and NON-ZERO columns
 

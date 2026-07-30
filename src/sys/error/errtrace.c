@@ -16,7 +16,7 @@ static char      arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_L
 static PetscBool PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char      version[256];
 
-/*@C
+/*@
   PetscErrorPrintfInitialize - Cache the architecture, host name, user name, program name and date so that PETSc's error-traceback printer does not need to make system calls from inside a signal handler
 
   Collective
@@ -102,7 +102,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 
 static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
 
-/*@C
+/*@
   PetscTraceBackErrorHandler - Default error handler routine that generates a traceback on error detection.
 
   Not Collective, No Fortran Support

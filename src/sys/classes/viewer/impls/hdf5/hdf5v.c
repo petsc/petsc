@@ -1,7 +1,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petscviewerhdf5.h>
 
-/*@C
+/*@
   PetscViewerHDF5GetGroup - Get the current HDF5 group name (full path), set with `PetscViewerHDF5PushGroup()`/`PetscViewerHDF5PopGroup()`.
 
   Not Collective
@@ -318,7 +318,7 @@ PetscErrorCode PetscViewerHDF5GetCompress(PetscViewer viewer, PetscBool *flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5Open - Opens a file for HDF5 input/output as a `PETSCVIEWERHDF5` `PetscViewer`
 
   Collective
@@ -365,7 +365,7 @@ PetscErrorCode PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5PushGroup - Set the current HDF5 group for output
 
   Not Collective
@@ -427,7 +427,7 @@ PetscErrorCode PetscViewerHDF5PopGroup(PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5WriteGroup - Ensure the HDF5 group exists in the HDF5 file
 
   Not Collective
@@ -611,7 +611,7 @@ PetscErrorCode PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5WriteAttribute - Write an attribute
 
   Collective
@@ -644,7 +644,7 @@ PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char pare
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5WriteObjectAttribute - Write an attribute to the dataset matching the given `PetscObject` by name
 
   Collective
@@ -678,7 +678,7 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5ReadAttribute - Read an attribute
 
   Collective
@@ -726,7 +726,7 @@ PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char paren
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5ReadObjectAttribute - Read an attribute from the dataset matching the given `PetscObject` by name
 
   Collective
@@ -762,7 +762,7 @@ PetscErrorCode PetscViewerHDF5ReadObjectAttribute(PetscViewer viewer, PetscObjec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5HasGroup - Check whether the current (pushed) group exists in the HDF5 file
 
   Collective
@@ -794,7 +794,7 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5HasDataset - Check whether a given dataset exists in the HDF5 file
 
   Collective
@@ -862,7 +862,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5HasAttribute - Check whether an attribute exists
 
   Collective
@@ -893,7 +893,7 @@ PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscViewerHDF5HasObjectAttribute - Check whether an attribute is attached to the dataset matching the given `PetscObject` by name
 
   Collective
@@ -932,7 +932,7 @@ PetscErrorCode PetscViewerHDF5HasObjectAttribute(PetscViewer viewer, PetscObject
 */
 PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
   PETSC_VIEWER_HDF5_ - Creates an `PETSCVIEWERHDF5` `PetscViewer` shared by all processors in a communicator.
 
   Collective

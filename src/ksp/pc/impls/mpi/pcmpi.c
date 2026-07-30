@@ -503,7 +503,7 @@ static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMPIServerBegin - starts a server that runs on the `rank != 0` MPI processes waiting to process requests for
   parallel `KSP` solves and management of parallel `KSP` objects.
 
@@ -652,7 +652,7 @@ PetscErrorCode PCMPIServerBegin(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
   parallel KSP solves and management of parallel `KSP` objects.
 

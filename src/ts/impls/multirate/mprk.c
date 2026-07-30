@@ -214,7 +214,7 @@ M*/
 .seealso: [](ch_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 
-/*@C
+/*@
   TSMPRKRegisterAll - Registers all of the Partitioned Runge-Kutta explicit methods in `TSMPRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
@@ -367,7 +367,7 @@ PetscErrorCode TSMPRKRegisterAll(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
 
   Not Collective
@@ -396,7 +396,7 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKInitializePackage - This function initializes everything in the `TSMPRK` package. It is called
   from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `TSCreate_MPRK()`
   when using static libraries.
@@ -415,7 +415,7 @@ PetscErrorCode TSMPRKInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKFinalizePackage - This function destroys everything in the `TSMPRK` package. It is
   called from `PetscFinalize()`.
 
@@ -431,7 +431,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
 
   Not Collective, but the same schemes should be registered on all processes on which they will be used, No Fortran Support

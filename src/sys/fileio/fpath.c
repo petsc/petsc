@@ -3,7 +3,7 @@
   #include <pwd.h>
 #endif
 
-/*@C
+/*@
   PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
   Not Collective

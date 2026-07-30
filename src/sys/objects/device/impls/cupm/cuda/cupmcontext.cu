@@ -14,7 +14,7 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
 }
 
 /* Management of CUBLAS and CUSOLVER handles */
-/*@C
+/*@
   PetscCUBLASGetHandle - Get the cuBLAS handle associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support
@@ -41,7 +41,7 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscCUSOLVERDnGetHandle - Get the cuSolverDn handle associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support
@@ -68,7 +68,7 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscGetCurrentCUDAStream - Get the CUDA stream associated with PETSc's current `PetscDeviceContext`
 
   Not Collective; No Fortran Support

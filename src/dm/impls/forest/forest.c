@@ -39,7 +39,7 @@ static PetscErrorCode DMForestPackageInitialize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestRegisterType - Registers a `DMType` as a subtype of `DMFOREST` (so that `DMIsForest()` will be correct)
 
   Not Collective
@@ -346,7 +346,7 @@ PetscErrorCode DMForestGetBaseDM(DM dm, DM *base)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestSetBaseCoordinateMapping - Set a user-supplied mapping that is applied to the base `DM`'s coordinates when the forest computes coordinates for refined cells.
 
   Logically Collective
@@ -379,7 +379,7 @@ PetscErrorCode DMForestSetBaseCoordinateMapping(DM dm, PetscErrorCode (*func)(DM
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMForestGetBaseCoordinateMapping - Get the user-supplied coordinate mapping previously set with `DMForestSetBaseCoordinateMapping()`.
 
   Not Collective

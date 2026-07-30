@@ -16,7 +16,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *, moab::P
 static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *, char **);
 #endif
 
-/*@C
+/*@
   DMMoabCreateVector - Create a Vec from either an existing tag, or a specified tag size, and a range of entities
 
   Collective
@@ -44,7 +44,7 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range *range
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetVecTag - Get the MOAB tag associated with this Vec
 
   Input Parameter:
@@ -73,7 +73,7 @@ PetscErrorCode DMMoabGetVecTag(Vec vec, moab::Tag *tag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetVecRange - Get the MOAB entities associated with this Vec
 
   Input Parameter:
@@ -101,7 +101,7 @@ PetscErrorCode DMMoabGetVecRange(Vec vec, moab::Range *range)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabVecGetArray - Returns the writable direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
   Collective
@@ -180,7 +180,7 @@ PetscErrorCode DMMoabVecGetArray(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabVecRestoreArray - Restores the writable direct access array obtained via DMMoabVecGetArray
 
   Collective
@@ -256,7 +256,7 @@ PetscErrorCode DMMoabVecRestoreArray(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabVecGetArrayRead - Returns the read-only direct access array to the local representation of MOAB tag data for the underlying vector using locally owned+ghosted range of entities
 
   Collective
@@ -333,7 +333,7 @@ PetscErrorCode DMMoabVecGetArrayRead(DM dm, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabVecRestoreArrayRead - Restores the read-only direct access array obtained via DMMoabVecGetArray
 
   Collective

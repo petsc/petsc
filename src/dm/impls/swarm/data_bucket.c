@@ -146,7 +146,7 @@ PetscErrorCode DMSwarmDataBucketRegisterField(DMSwarmDataBucket db, const char r
  }
  */
 
-/*@C
+/*@
   DMSwarmDataBucketGetDMSwarmDataFieldIdByName - Return the index of a `DMSwarmDataField` within a `DMSwarmDataBucket` given its name.
 
   Not Collective
@@ -177,7 +177,7 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket db
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDataBucketGetDMSwarmDataFieldByName - Return the `DMSwarmDataField` handle registered in a `DMSwarmDataBucket` under a given name.
 
   Not Collective
@@ -209,7 +209,7 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDataBucketQueryDMSwarmDataFieldByName - Test whether a `DMSwarmDataBucket` contains a `DMSwarmDataField` with the given name.
 
   Not Collective
@@ -440,7 +440,7 @@ PetscErrorCode DMSwarmDataFieldGetAtomicSize(const DMSwarmDataField gfield, size
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDataFieldGetEntries - Return a pointer to the raw contiguous storage backing a `DMSwarmDataField`.
 
   Not Collective
@@ -465,7 +465,7 @@ PetscErrorCode DMSwarmDataFieldGetEntries(const DMSwarmDataField gfield, void **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmDataFieldRestoreEntries - Release a pointer obtained from `DMSwarmDataFieldGetEntries()`, clearing the caller's handle to `NULL`.
 
   Not Collective

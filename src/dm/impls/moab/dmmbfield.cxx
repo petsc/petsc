@@ -2,7 +2,7 @@
 
 #include <petscdmmoab.h>
 
-/*@C
+/*@
   DMMoabSetFieldVector - Sets the vector reference that represents the solution associated
   with a particular field component.
 
@@ -56,7 +56,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabSetGlobalFieldVector - Sets the vector reference that represents the global solution associated
   with all fields (components) managed by DM.
   A useful utility when updating the DM solution after a solve, to be serialized with the mesh for
@@ -128,7 +128,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabSetFieldNames - Sets the number of fields and their names to be managed by the DM
 
   Not Collective
@@ -167,7 +167,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char *fields
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetFieldName - Gets the names of individual field components in multicomponent
   vectors associated with a DMDA.
 
@@ -198,7 +198,7 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char *fieldName[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabSetFieldName - Sets the name of a field (component) managed by the DM
 
   Not Collective
@@ -231,7 +231,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetFieldDof - Gets the global degree-of-freedom of a field (component) defined on a
   particular MOAB EntityHandle.
 
@@ -261,7 +261,7 @@ PetscErrorCode DMMoabGetFieldDof(DM dm, moab::EntityHandle point, PetscInt field
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetFieldDofs - Gets the global degree-of-freedom of a field (component) defined on an
   array of MOAB EntityHandles.
 
@@ -300,7 +300,7 @@ PetscErrorCode DMMoabGetFieldDofs(DM dm, PetscInt npoints, const moab::EntityHan
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetFieldDofsLocal - Gets the local degrees-of-freedom of a field (component) defined on an
   array of MOAB EntityHandles.
 
@@ -340,7 +340,7 @@ PetscErrorCode DMMoabGetFieldDofsLocal(DM dm, PetscInt npoints, const moab::Enti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetDofs - Gets the global degree-of-freedom for all fields (components) defined on an
   array of MOAB EntityHandles.
 
@@ -381,7 +381,7 @@ PetscErrorCode DMMoabGetDofs(DM dm, PetscInt npoints, const moab::EntityHandle *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetDofsLocal - Gets the local degree-of-freedom for all fields (components) defined on an
   array of MOAB EntityHandles.
 
@@ -422,7 +422,7 @@ PetscErrorCode DMMoabGetDofsLocal(DM dm, PetscInt npoints, const moab::EntityHan
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetDofsBlocked - Gets the global degree-of-freedom for the first field (component) defined on an
   array of MOAB EntityHandles. It is useful when performing Blocked(Get/Set) methods in computation
   of element residuals and assembly of the discrete systems when all fields are co-located.
@@ -457,7 +457,7 @@ PetscErrorCode DMMoabGetDofsBlocked(DM dm, PetscInt npoints, const moab::EntityH
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetDofsBlockedLocal - Gets the local degree-of-freedom for the first field (component) defined on an
   array of MOAB EntityHandles. It is useful when performing local Blocked(Get/Set) methods in computation
   of element residuals and assembly of the discrete systems when all fields are co-located.
@@ -492,7 +492,7 @@ PetscErrorCode DMMoabGetDofsBlockedLocal(DM dm, PetscInt npoints, const moab::En
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetVertexDofsBlocked - Gets the global degree-of-freedom for the first field (component) defined on an
   array of locally owned MOAB mesh vertices.
 
@@ -524,7 +524,7 @@ PetscErrorCode DMMoabGetVertexDofsBlocked(DM dm, PetscInt **dof)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMMoabGetVertexDofsBlockedLocal - Gets the local degree-of-freedom for the first field (component) defined on an
   array of locally owned MOAB mesh vertices.
 

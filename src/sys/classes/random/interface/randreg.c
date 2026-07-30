@@ -69,7 +69,7 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscRandomRegister -  Adds a new `PetscRandom` implementation
 
   Not Collective, No Fortran Support
@@ -127,7 +127,7 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 #endif
 
-/*@C
+/*@
   PetscRandomRegisterAll - Registers all of the implementations in the `PetscRandom` package.
 
   Not Collective

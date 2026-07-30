@@ -43,7 +43,7 @@ PetscErrorCode PetscNvshmemFree_Private(void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscNvshmemFinalize - Tear down NVSHMEM after PETSc is done using it
 
   Collective

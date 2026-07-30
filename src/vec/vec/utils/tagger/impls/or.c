@@ -1,7 +1,7 @@
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
 #include "../src/vec/vec/utils/tagger/impls/andor.h"
 
-/*@C
+/*@
   VecTaggerOrGetSubs - Get the sub `VecTagger`s whose union defines the outer `VecTagger`
 
   Not Collective
@@ -24,7 +24,7 @@ PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecTaggerOrSetSubs - Set the sub `VecTagger`s whose union defines the outer `VecTagger`
 
   Logically Collective

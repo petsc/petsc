@@ -474,7 +474,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   KSPGMRESMonitorKrylov - Calls `VecView()` to monitor each new direction in the `KSPGMRES` accumulated Krylov space.
 
   Collective

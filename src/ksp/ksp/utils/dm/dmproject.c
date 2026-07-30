@@ -157,7 +157,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMProjectField - This projects a given function of the input fields into the function space provided by a `DM`, putting the coefficients in a global vector.
 
   Collective
@@ -681,7 +681,7 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmProjectFields - Project a set of swarm fields onto another `DM`
 
   Collective
@@ -858,7 +858,7 @@ static PetscErrorCode DMSwarmProjectGradientFields_Plex_Internal(DM sw, DM dm, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmProjectGradientFields - Project the gradient of continuum fields on a mesh onto particle fields in a `DMSWARM`, or the reverse
 
   Collective

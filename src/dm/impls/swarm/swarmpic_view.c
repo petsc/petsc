@@ -318,7 +318,7 @@ static PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMSwarmViewFieldsXDMF - Write a selection of DMSwarm fields to an XDMF3 file
 
   Collective

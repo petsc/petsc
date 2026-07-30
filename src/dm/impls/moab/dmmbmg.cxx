@@ -11,7 +11,7 @@ static inline std::vector<PetscScalar> VecReal_to_VecScalar(const std::vector<Pe
   return res;
 }
 
-/*@C
+/*@
   DMMoabGenerateHierarchy - Generate a multi-level uniform refinement hierarchy
   by succesively refining a coarse mesh, already defined in the `DM` object
   provided by the user.
