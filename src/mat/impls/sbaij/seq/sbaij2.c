@@ -878,7 +878,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
 
-  PetscCall(PetscLogFlops(4.0 * (a->nz * 2.0 - nonzerorow)));
+  PetscCall(PetscLogFlops(8.0 * (a->nz * 2.0 - nonzerorow)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1286,7 +1286,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
 
-  PetscCall(PetscLogFlops(2.0 * (a->nz * 2.0 - nonzerorow)));
+  PetscCall(PetscLogFlops(2.0 * bs2 * (a->nz * 2.0 - nonzerorow)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
