@@ -435,11 +435,20 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
 
   Level: intermediate
 
+  Note:
+  `X` and `Y` may be the same matrix, in which case this computes `Y` = (`a` + 1) * `Y`. Passing an `X` that
+  merely shares storage with `Y` (for example a `MATTRANSPOSEVIRTUAL` wrapping `Y`) is not supported and
+  gives an undefined result.
+
 .seealso: [](ch_matrices), `Mat`, `MatAXPY()`
  @*/
 PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   PetscFunctionBegin;
+  if (Y == X) {
+    PetscCall(MatScale(Y, a + 1.0));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(MatScale(Y, a));
   PetscCall(MatAXPY(Y, 1.0, X, str));
   PetscFunctionReturn(PETSC_SUCCESS);
