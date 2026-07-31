@@ -493,7 +493,6 @@ int main(int argc, char **args)
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp true -pc_hpddm_levels_1_pc_type gasm -successive_solves
       test:
-        TODO: broken # PCGASM does not handle MATAIJCUSPARSE, see GitLab issue #1873
         requires: cuda
         suffix: geneo_share_not_asm_cuda
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
