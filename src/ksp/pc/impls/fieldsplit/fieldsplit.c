@@ -1279,13 +1279,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
           PetscCall(MatGetSize(jac->B, &M, NULL));
           PetscCall(MatGetLocalSize(jac->B, &m, NULL));
           PetscCall(MatDenseGetArrayAndMemType(AinvB, &array, &mtype));
-          if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
-#if PetscDefined(HAVE_CUDA)
-          else if (PetscMemTypeCUDA(mtype)) PetscCall(VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
-#endif
-#if PetscDefined(HAVE_HIP)
-          else if (PetscMemTypeHIP(mtype)) PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
-#endif
+          PetscCall(VecCreateMPIWithArrayAndMemType(PetscObjectComm((PetscObject)jac->schur), mtype, 1, m, M, array + m * P, &c));
           PetscCall(MatDenseRestoreArrayAndMemType(AinvB, &array));
           PetscCall(VecCopy(ilinkA->x, c));
           PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));

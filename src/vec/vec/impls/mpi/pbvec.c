@@ -704,7 +704,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   The user should not free `array` until the vector is destroyed.
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
-          `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
+          `VecCreateMPI()`, `VecCreateMPIWithArrayAndMemType()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv)
 {

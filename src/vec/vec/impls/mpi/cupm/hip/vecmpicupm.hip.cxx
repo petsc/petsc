@@ -157,7 +157,7 @@ PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
 
   Level: intermediate
 
-.seealso: `VecCreateMPIHIP()`, `VecCreateSeqHIPWithArray()`, `VecCreateMPIWithArray()`,
+.seealso: `VecCreateMPIHIP()`, `VecCreateSeqHIPWithArray()`, `VecCreateMPIWithArray()`, `VecCreateMPIWithArrayAndMemType()`,
 `VecCreateSeqWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`,
 `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 @*/

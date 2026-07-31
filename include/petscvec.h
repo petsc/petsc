@@ -134,6 +134,8 @@ PETSC_EXTERN PetscErrorCode VecCreateSeq(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPI(MPI_Comm, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar[], Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateSeqWithArrayAndMemType(MPI_Comm, PetscMemType, PetscInt, PetscInt, const PetscScalar[], Vec *);
+PETSC_EXTERN PetscErrorCode VecCreateMPIWithArrayAndMemType(MPI_Comm, PetscMemType, PetscInt, PetscInt, PetscInt, const PetscScalar[], Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateShared(MPI_Comm, PetscInt, PetscInt, Vec *);
 
 PETSC_EXTERN PetscErrorCode VecSetFromOptions(Vec);

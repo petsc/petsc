@@ -56,6 +56,7 @@
 
 ## Vec
 
+- Add `VecCreateSeqWithArrayAndMemType()` and `VecCreateMPIWithArrayAndMemType()` to create array-style standard, CUDA, or HIP vectors from memory of a specified `PetscMemType`
 - Add `VecSetStdBasis()` API to set a vector to the i-th standard basis vector
 - Change the behavior of `VecPointwiseDivide()` implementing w = x / y: if a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one (before it was set to zero).
 
