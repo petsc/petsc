@@ -100,16 +100,16 @@ The following mailing lists, with public archives, are available.
      - Archive
    * - petsc-announce@mcs.anl.gov
      - For announcements regarding PETSc :ref:`releases <doc_download>`
-     - `subscribe/unsubscribe <https://lists.mcs.anl.gov/mailman/listinfo/petsc-announce>`__
-     - `archives <http://lists.mcs.anl.gov/pipermail/petsc-announce/>`__
+     - `subscribe/unsubscribe <https://mailman.cels.anl.gov/mailman3/lists/petsc-announce.lists.mcs.anl.gov/>`__
+     - `archives <https://mailman.cels.anl.gov/archives/list/petsc-announce@lists.mcs.anl.gov/>`__
    * - petsc-users@mcs.anl.gov
      - For PETSc users
-     - `subscribe/unsubscribe <https://lists.mcs.anl.gov/mailman/listinfo/petsc-users>`__
-     - `archives <http://lists.mcs.anl.gov/pipermail/petsc-users/>`__
+     - `subscribe/unsubscribe <https://mailman.cels.anl.gov/mailman3/lists/petsc-users.lists.mcs.anl.gov/>`__
+     - `archives <https://mailman.cels.anl.gov/archives/list/petsc-users@lists.mcs.anl.gov/>`__
    * - petsc-dev@mcs.anl.gov
      - For PETSc developers and others interested in the development process
-     - `subscribe/unsubscribe <https://lists.mcs.anl.gov/mailman/listinfo/petsc-dev>`__
-     - `archives <http://lists.mcs.anl.gov/pipermail/petsc-dev/>`__
+     - `subscribe/unsubscribe <https://mailman.cels.anl.gov/mailman3/lists/petsc-dev.lists.mcs.anl.gov/>`__
+     - `archives <https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/>`__
 ```
 
 :::{important}
