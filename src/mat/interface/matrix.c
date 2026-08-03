@@ -3003,7 +3003,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 PetscErrorCode MatADot_Default(Mat mat, Vec x, Vec y, PetscScalar *val)
 {
   PetscFunctionBegin;
-  if (!mat->dot_vec) PetscCall(MatCreateVecs(mat, &mat->dot_vec, NULL));
+  if (!mat->dot_vec) PetscCall(MatCreateVecs(mat, NULL, &mat->dot_vec));
   PetscCall(MatMult(mat, x, mat->dot_vec));
   PetscCall(VecDot(mat->dot_vec, y, val));
   PetscFunctionReturn(PETSC_SUCCESS);
