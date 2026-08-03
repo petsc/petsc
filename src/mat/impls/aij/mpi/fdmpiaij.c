@@ -301,7 +301,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
         for (l = 0; l < nrows_k; l++) {
           row = Jentry2[nz].row; /* local row index */
                                  /* The 'useless' ifdef is due to a bug in NVIDIA nvc 21.11, which triggers a segfault on this line. We write it in
-             another way, and it seems work. See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html
+             another way, and it seems work. See https://mailman.cels.anl.gov/archives/list/petsc-users@lists.mcs.anl.gov/message/HUAPTOQA23K4HJSN4QVHYAZO32RIAEB3/
            */
 #if PetscDefined(USE_COMPLEX)
           PetscScalar *tmp = Jentry2[nz].valaddr;
@@ -314,7 +314,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       } else { /* htype == 'ds' */
         for (l = 0; l < nrows_k; l++) {
           row = Jentry[nz].row; /* local row index */
-#if PetscDefined(USE_COMPLEX)   /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)   /* See https://mailman.cels.anl.gov/archives/list/petsc-users@lists.mcs.anl.gov/message/HUAPTOQA23K4HJSN4QVHYAZO32RIAEB3/ */
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = dy[row] * vscale_array[Jentry[nz].col];
 #else
@@ -368,7 +368,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       if (coloring->htype[0] == 'w') {
         for (l = 0; l < nrows_k; l++) {
           row = Jentry2[nz].row; /* local row index */
-#if PetscDefined(USE_COMPLEX)    /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)    /* See https://mailman.cels.anl.gov/archives/list/petsc-users@lists.mcs.anl.gov/message/HUAPTOQA23K4HJSN4QVHYAZO32RIAEB3/ */
           PetscScalar *tmp = Jentry2[nz].valaddr;
           *tmp             = y[row] * dx;
 #else
@@ -379,7 +379,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
       } else { /* htype == 'ds' */
         for (l = 0; l < nrows_k; l++) {
           row = Jentry[nz].row; /* local row index */
-#if PetscDefined(USE_COMPLEX)   /* See https://lists.mcs.anl.gov/pipermail/petsc-users/2021-December/045158.html */
+#if PetscDefined(USE_COMPLEX)   /* See https://mailman.cels.anl.gov/archives/list/petsc-users@lists.mcs.anl.gov/message/HUAPTOQA23K4HJSN4QVHYAZO32RIAEB3/ */
           PetscScalar *tmp = Jentry[nz].valaddr;
           *tmp             = y[row] * vscale_array[Jentry[nz].col];
 #else

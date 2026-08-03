@@ -125,7 +125,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
     /* This line is a workaround for a bug in Open MPI 2.1.1 distributed by Ubuntu-18.04.2 LTS.
        It happens in self-to-self MPI_Send/Recv using MPI_ANY_SOURCE for message matching. Open MPI
        does not put correct value in recv buffer. See also
-       https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
+       https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/KQBVIJJIYUPCUDAAI3E5V7RXC4VM76JL/
        https://www.mail-archive.com/users@lists.open-mpi.org//msg33383.html
      */
     if (w_status[i].MPI_SOURCE == rank) (*olengths)[i] = ilengths[rank];

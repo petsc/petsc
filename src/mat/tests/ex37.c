@@ -102,7 +102,7 @@ int main(int argc, char **args)
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "MatCopy(C,A,SUBSET_NONZERO_PATTERN): Matrices are NOT equal");
 
   /* Test MatCopy on a matrix obtained after MatConvert from AIJ
-     see https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-April/024289.html */
+     see https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/DQZP4AQBELUHFBGHNJVXSSZ4POXQFART/ */
   PetscCall(MatHasCongruentLayouts(C, &flg));
   if (flg) {
     Mat     Cs, Cse;

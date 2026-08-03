@@ -1,6 +1,6 @@
 !
 ! Test the workaround for a bug in Open MPI 2.1.1 on Ubuntu 18.04.2
-! See https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
+! See https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/KQBVIJJIYUPCUDAAI3E5V7RXC4VM76JL/
 !
 ! Contributed-by:       Fabian Jakub  <Fabian.Jakub@physik.uni-muenchen.de>
 #include "petsc/finclude/petscdmda.h"
