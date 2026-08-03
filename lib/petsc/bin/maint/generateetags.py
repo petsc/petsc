@@ -118,7 +118,7 @@ def badWebIndex(dirname,file):
 
 def processDir(flist, dirpath, dirnames, filenames):
   newls = []
-  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl']
+  gsfx = ['.py','.c','.cu','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile','.bib','.jl','.md']
   bpfx = ['.#']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html','.gcov.html','.cu.html','.cache.html']
@@ -136,7 +136,7 @@ def processDir(flist, dirpath, dirnames, filenames):
       dirnames.remove(exname)
 
   # One-level unique dirs
-  for exname in ['.git','.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','systems']:
+  for exname in ['.claude', '.git', '.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto', 'lib', 'systems']:
     if exname in dirnames:
       dirnames.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -180,7 +180,9 @@ def main(ctags):
     ctagfile = None
   flist = []
   if os.path.isdir('.git'):
-    output = check_output(r'git ls-files | grep -E -v \(^\(systems/\|share/petsc/datafiles/\)\|/output/\|\.\(png\|pdf\|ps\|ppt\|jpg\|md\)$\)', shell=True)
+    output = check_output(['git', 'ls-files', '--', ':!systems', ':!.claude', ':!.agents',
+                           ':!share/petsc/datafiles', ':!*/output/*', ':!*.png', ':!*.pdf',
+                           ':!*.ps', ':!*.ppt', ':!*.jpg'])
     flist = output.decode(sys.getfilesystemencoding()).splitlines()
   else:
     for dirpath, dirnames, filenames in os.walk(os.getcwd()):
