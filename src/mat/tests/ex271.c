@@ -62,6 +62,7 @@ int main(int argc, char **argv)
   testset:
     nsize: {{1 2}}
     output_file: output/ex271_seq.out
+    diff_args: -j
 
     test:
       suffix: cpu
