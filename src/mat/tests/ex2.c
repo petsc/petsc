@@ -153,6 +153,20 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatAYPX:  B = alpha*B + A\n"));
     PetscCall(MatAYPX(tmat, alpha, mat, DIFFERENT_NONZERO_PATTERN));
     PetscCall(MatView(tmat, PETSC_VIEWER_STDOUT_WORLD));
+
+    {
+      Mat       A, B;
+      PetscBool equal;
+
+      PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &A));
+      PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &B));
+      PetscCall(MatAYPX(A, 2.0, A, SAME_NONZERO_PATTERN));
+      PetscCall(MatScale(B, 3.0));
+      PetscCall(MatEqual(A, B, &equal));
+      PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatAYPX() failed when Y == X");
+      PetscCall(MatDestroy(&A));
+      PetscCall(MatDestroy(&B));
+    }
   }
 
   {
