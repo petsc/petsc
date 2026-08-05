@@ -641,21 +641,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
      provided preconditioner Jacobian with the default matrix-free version. */
     if (snes->npcside == PC_LEFT && snes->npc) {
       if (!snes->jacobian) PetscCall(SNESSetJacobian(snes, J, NULL, NULL, NULL));
-    } else {
-      KSP       ksp;
-      PC        pc;
-      PetscBool match;
-
-      PetscCall(SNESSetJacobian(snes, J, J, MatMFFDComputeJacobian, NULL));
-      /* Force no preconditioner */
-      PetscCall(SNESGetKSP(snes, &ksp));
-      PetscCall(KSPGetPC(ksp, &pc));
-      PetscCall(PetscObjectTypeCompareAny((PetscObject)pc, &match, PCSHELL, PCH2OPUS, ""));
-      if (!match) {
-        PetscCall(PetscInfo(snes, "Setting default matrix-free preconditioner routines\nThat is no preconditioner is being used\n"));
-        PetscCall(PCSetType(pc, PCNONE));
-      }
-    }
+    } else PetscCall(SNESSetJacobian(snes, J, J, MatMFFDComputeJacobian, NULL));
   }
   PetscCall(MatDestroy(&J));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1138,7 +1124,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     snes->mf          = PETSC_TRUE;
   }
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-snes_mf", "Use a Matrix-Free Jacobian with no matrix for computing the preconditioner", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf, &flg));
+  PetscCall(PetscOptionsBool("-snes_mf", "Use a Matrix-Free Jacobian with no preconditioner by default", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf, &flg));
   if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
   PetscCall(PetscOptionsInt("-snes_mf_version", "Matrix-Free routines version 1 or 2", "None", snes->mf_version, &snes->mf_version, NULL));
 
@@ -1184,16 +1170,36 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     PetscCall(SNESLineSearchSetFromOptions(snes->linesearch));
   }
 
-  if (snes->usesksp) {
-    if (!snes->ksp) PetscCall(SNESGetKSP(snes, &snes->ksp));
-    PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
-    PetscCall(KSPSetFromOptions(snes->ksp));
-  }
-
   /* if user has set the SNES NPC type via options database, create it. */
   PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
   PetscCall(PetscOptionsHasName(((PetscObject)snes)->options, optionsprefix, "-npc_snes_type", &pcset));
   if (pcset && !snes->npc) PetscCall(SNESGetNPC(snes, &snes->npc));
+
+  if (snes->usesksp) {
+    PC     pc;
+    PCType pctype;
+
+    if (!snes->ksp) PetscCall(SNESGetKSP(snes, &snes->ksp));
+    PetscCall(KSPSetOperators(snes->ksp, snes->jacobian, snes->jacobian_pre));
+    PetscCall(KSPGetPC(snes->ksp, &pc));
+    PetscCall(PCGetType(pc, &pctype));
+    /* If the first two conditions in the following conditional are true, we know a matrix-free Mat
+       will be used eventually with the PC, but we cannot provide the matrix-free Mat to the PC here
+       since we do not have enough information to construct it here (it is constructed after the
+       start of SNESSetUp()). If we do not set the PCNONE here, then the PCSetFromOptions() called
+       from KSPSetFromOptions() below will use PCGetDefaultType_Private() to set a PCType
+       appropriate for the current pc->pmat that will likely not work for the matrix-free Mat, thus
+       producing a later confusing error message. A significant refactoring of how SNES handles
+       matrix-free Mat would be needed to eliminate the next line of code. Note that if the PC type
+       has already been set (third condition), we do not override it. The fourth condition exempts
+       left-side nonlinear preconditioners, which require a real PC */
+    if (snes->mf && !snes->mf_operator && !pctype && !(snes->npcside == PC_LEFT && snes->npc)) {
+      PetscCall(PetscInfo(snes, "Setting PCNONE since no PC type was set and the Jacobian will be matrix-free\n"));
+      PetscCall(PCSetType(pc, PCNONE));
+    }
+    PetscCall(KSPSetFromOptions(snes->ksp));
+  }
+
   if (snes->npc) PetscCall(SNESSetFromOptions(snes->npc));
   snes->setfromoptionscalled++;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1336,10 +1342,12 @@ PetscErrorCode SNESGetApplicationContext(SNES snes, PetscCtxRt ctx)
 
   Level: intermediate
 
-  Note:
+  Notes:
   `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free using `MatCreateSNESMF()`,
   and computing explicitly with
   finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation and the `MatFDColoring` object.
+
+  When `mf` is used, `SNESSetFromOptions()` sets the `KSP`'s `PC` to `PCNONE` unless a `PC` type has already been selected.
 
 .seealso: [](ch_snes), `SNES`, `SNESGetUseMatrixFree()`, `MatCreateSNESMF()`, `SNESComputeJacobianDefaultColor()`, `MatFDColoring`
 @*/
@@ -1834,7 +1842,7 @@ PetscErrorCode SNESParametersInitialize(SNES snes)
 . outsnes - the new `SNES` context
 
   Options Database Keys:
-+ -snes_mf          - Activates default matrix-free Jacobian-vector products, and no matrix to construct a preconditioner
++ -snes_mf          - Activates default matrix-free Jacobian-vector products, with no preconditioner by default
 . -snes_mf_operator - Activates default matrix-free Jacobian-vector products, and a user-provided matrix as set by `SNESSetJacobian()`
 . -snes_fd_coloring - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
 - -snes_fd          - Uses (slow!) finite differences to compute Jacobian
