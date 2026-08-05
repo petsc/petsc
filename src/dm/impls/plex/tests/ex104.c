@@ -1,20 +1,23 @@
-static char help[] = "Tests DMPlexCreateColoring().\n\n";
+static char help[] = "Tests DMPlexCreateColoring() and DMPlexCreateColoringLabel().\n\n";
 
 #include <petscdmplex.h>
 
 typedef struct {
   PetscInt depth;
   PetscInt distance;
+  PetscInt markCells;
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBegin;
-  options->depth    = 0;
-  options->distance = 1;
+  options->depth     = 0;
+  options->distance  = 1;
+  options->markCells = 0;
   PetscOptionsBegin(comm, "", "DMPlexCreateColoring() Test Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-depth", "Stratum depth defining the nodes in the connectivity graph", "ex104.c", options->depth, &options->depth, NULL));
   PetscCall(PetscOptionsInt("-distance", "Coloring distance", "ex104.c", options->distance, &options->distance, NULL));
+  PetscCall(PetscOptionsInt("-mark_cells", "Color only the points in the closure of this many cells, instead of the whole stratum", "ex104.c", options->markCells, &options->markCells, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -51,9 +54,23 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Select the closure of the first markCells owned cells. */
+static PetscErrorCode CreateActiveLabel(DM dm, AppCtx *user, DMLabel *label)
+{
+  PetscInt cStart, cEnd;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)dm), "active", label));
+  for (PetscInt c = cStart; c < PetscMin(cStart + user->markCells, cEnd); ++c) PetscCall(DMLabelSetValue(*label, c, 1));
+  PetscCall(DMPlexLabelComplete(dm, *label));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   DM         dm;
+  DMLabel    active = NULL;
   AppCtx     user;
   PetscInt   ncolors = 0, maxcolors = 0;
   IS        *iscolors = NULL;
@@ -65,7 +82,9 @@ int main(int argc, char **argv)
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   /* Color the DMPlex */
-  PetscCall(DMPlexCreateColoring(dm, user.depth, user.distance, &coloring));
+  if (user.markCells > 0) PetscCall(CreateActiveLabel(dm, &user, &active));
+  if (active == NULL) PetscCall(DMPlexCreateColoring(dm, user.depth, user.distance, &coloring));
+  else PetscCall(DMPlexCreateColoringLabel(dm, user.depth, user.distance, active, 1, &coloring));
   PetscCall(ISColoringGetIS(coloring, PETSC_USE_POINTER, &ncolors, &iscolors));
   /* Report the largest color count across processes. */
   PetscCallMPI(MPIU_Allreduce(&ncolors, &maxcolors, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
@@ -75,6 +94,7 @@ int main(int argc, char **argv)
   }
   PetscCall(ISColoringRestoreIS(coloring, PETSC_USE_POINTER, &iscolors));
   PetscCall(ISColoringDestroy(&coloring));
+  PetscCall(DMLabelDestroy(&active));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -85,5 +105,11 @@ int main(int argc, char **argv)
   test:
     nsize: {{1 2}separate output}
     args: -depth {{0 1 2}separate output} -distance {{1 2}separate output} -iscoloring_view -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple
+
+  # Color only the closure of a few cells.
+  test:
+    suffix: label
+    nsize: {{1 2}separate output}
+    args: -depth 0 -distance 1 -mark_cells 3 -iscoloring_view -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 8,8 -petscpartitioner_type simple
 
 TEST*/

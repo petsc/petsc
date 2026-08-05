@@ -236,6 +236,7 @@
 - Add `DMPlexDrawCell()`
 - Add `DMPlexLabelCompleteStar()`
 - Add `DMPlexTransformCreateSplitCellLabel()` to mark the cells of a transformed mesh whose source cell was genuinely split
+- Add `DMPlexCreateColoringLabel()` to color a labeled subset of a stratum
 - Add `DMPlexVecGetClosureAtDepth()`
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
 - Add `DMPlexCopyFlags()`
