@@ -840,8 +840,15 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.outputDefine(f, *defineDict[item], condition=cond)
 
   def outputPoisons(self, defineDict, f):
+    # "#pragma GCC poison" only exists in gcc and clang. Every other compiler diagnoses each
+    # directive as an unknown pragma -- MSVC emits ninety-odd warnings per translation unit --
+    # for a file it cannot act on. PETSc is configured by one compiler and its headers are
+    # compiled by the application's, which need not be the same, so the guard has to be in the
+    # generated file rather than at the configure-time choice of compiler.
+    f.write('#if defined(__GNUC__) || defined(__clang__)\n')
     for item in sorted(defineDict):
       self.outputPoison(f, defineDict[item][0])
+    f.write('#endif\n')
 
   def outputPkgVersion(self, f, child):
     '''If the child contains a tuple named "version_tuple", the entries are output in the config package header.'''
