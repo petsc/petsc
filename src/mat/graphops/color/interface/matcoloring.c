@@ -109,8 +109,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   }
   PetscCall(MatDestroy(&(*mc)->mat));
   PetscTryTypeMethod(*mc, destroy);
-  PetscCall(PetscFree((*mc)->user_weights));
-  PetscCall(PetscFree((*mc)->user_lperm));
+  PetscCall(PetscFree2((*mc)->user_weights, (*mc)->user_lperm));
   PetscCall(PetscHeaderDestroy(mc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
