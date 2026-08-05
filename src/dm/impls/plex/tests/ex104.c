@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 {
   DM         dm;
   AppCtx     user;
-  PetscInt   ncolors  = 0;
+  PetscInt   ncolors = 0, maxcolors = 0;
   IS        *iscolors = NULL;
   ISColoring coloring = NULL;
 
@@ -67,6 +67,9 @@ int main(int argc, char **argv)
   /* Color the DMPlex */
   PetscCall(DMPlexCreateColoring(dm, user.depth, user.distance, &coloring));
   PetscCall(ISColoringGetIS(coloring, PETSC_USE_POINTER, &ncolors, &iscolors));
+  /* Report the largest color count across processes. */
+  PetscCallMPI(MPIU_Allreduce(&ncolors, &maxcolors, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of colors: %" PetscInt_FMT "\n", maxcolors));
   for (PetscInt c = 0; c < ncolors; c++) {
     PetscCall(ISViewFromOptions(iscolors[c], NULL, "-iscoloring_view"));
   }
