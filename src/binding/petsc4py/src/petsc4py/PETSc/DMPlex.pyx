@@ -2201,6 +2201,59 @@ cdef class DMPlex(DM):
         cdef PetscBool flag = refinementUniform
         CHKERR(DMPlexSetRefinementUniform(self.dm, flag))
 
+    def setSaveTransform(self, save: bool = True) -> None:
+        """Set whether to save the DMPlex transform.
+
+        Logically collective.
+
+        Notes
+        -----
+        The default is off. When on, the saved transform keeps the parent and child
+        relation. Use `getTransform` to retrieve the transform.
+
+        See Also
+        --------
+        getSaveTransform, getTransform, petsc.DMPlexSetSaveTransform
+
+        """
+        cdef PetscBool flag = asBool(save)
+        CHKERR(DMPlexSetSaveTransform(self.dm, flag))
+
+    def getSaveTransform(self) -> bool:
+        """Return whether the DMPlex transform is saved.
+
+        Not collective.
+
+        See Also
+        --------
+        setSaveTransform, petsc.DMPlexGetSaveTransform
+
+        """
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR(DMPlexGetSaveTransform(self.dm, &flag))
+        return toBool(flag)
+
+    def getTransform(self) -> DMPlexTransform:
+        """Return the transformation that produced this mesh.
+
+        Not collective.
+
+        Notes
+        -----
+        The transform is saved only when `setSaveTransform` is called before
+        refinement. The saved transform does not keep a reference to the source
+        `DMPlex`; the caller must retain that mesh separately.
+
+        See Also
+        --------
+        setSaveTransform, petsc.DMPlexGetTransform
+
+        """
+        cdef DMPlexTransform tr = DMPlexTransform()
+        CHKERR(DMPlexGetTransform(self.dm, &tr.tr))
+        CHKERR(PetscINCREF(tr.obj))
+        return tr
+
     def getRefinementUniform(self) -> bool:
         """Retrieve the flag for uniform refinement.
 
@@ -3785,6 +3838,85 @@ cdef class DMPlexTransform(Object):
         CHKERR(PetscCLEAR(self.obj))
         self.tr = newtr
         return self
+
+    def getSourcePoint(self, pNew: int) -> tuple[int, int]:
+        """Return the source point of a point of the transformed mesh.
+
+        Not collective.
+
+        Parameters
+        ----------
+        pNew
+            The point in the transformed mesh.
+
+        Returns
+        -------
+        p : int
+            The point of the original mesh that produced pNew.
+        r : int
+            The replica number of pNew, that is, it is the rth point of the
+            polytope type of pNew produced by p.
+
+        See Also
+        --------
+        petsc.DMPlexTransformGetTargetPoint, petsc.DMPlexTransformGetSourcePoint
+
+        """
+        cdef PetscInt cpNew = asInt(pNew)
+        cdef PetscInt p = 0, r = 0
+        CHKERR(DMPlexTransformGetSourcePoint(self.tr, cpNew, NULL, NULL, &p, &r))
+        return (toInt(p), toInt(r))
+
+    def createSplitCellLabel(self, DM dm) -> DMLabel:
+        """Return a label for cells whose source cell was split.
+
+        Not collective.
+
+        Parameters
+        ----------
+        dm
+            The transformed mesh this transformation produced.
+
+        Notes
+        -----
+        This can include cells not flagged for refinement because the transform can
+        split cells to restore conformity.
+
+        See Also
+        --------
+        DMPlex.getTransform, petsc.DMPlexTransformCreateSplitCellLabel
+
+        """
+        cdef DMLabel label = DMLabel()
+        CHKERR(DMPlexTransformCreateSplitCellLabel(self.tr, dm.dm, &label.dmlabel))
+        return label
+
+    def getActive(self) -> DMLabel:
+        """Return the label marking the points to transform.
+
+        Not collective.
+
+        See Also
+        --------
+        setActive, petsc.DMPlexTransformGetActive
+
+        """
+        cdef DMLabel label = DMLabel()
+        CHKERR(DMPlexTransformGetActive(self.tr, &label.dmlabel))
+        CHKERR(PetscINCREF(label.obj))
+        return label
+
+    def setActive(self, DMLabel label) -> None:
+        """Set the label marking the points to transform.
+
+        Logically collective.
+
+        See Also
+        --------
+        getActive, petsc.DMPlexTransformSetActive
+
+        """
+        CHKERR(DMPlexTransformSetActive(self.tr, label.dmlabel))
 
     def destroy(self) -> Self:
         """Destroy a mesh transformation.

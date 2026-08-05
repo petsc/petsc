@@ -48,6 +48,12 @@ Development
   - ``Viewer.FileMode``/``DrawSize`` instead of ``Mode``/``Size``, and
     ``Log.logFlops()`` instead of ``addFlops()``.
 
+- Add ``DMPlex.setSaveTransform()``, ``DMPlex.getSaveTransform()``, and
+  ``DMPlex.getTransform()``.
+- Add ``DMPlexTransform.getSourcePoint()``, ``DMPlexTransform.getActive()``,
+  ``DMPlexTransform.setActive()``, and
+  ``DMPlexTransform.createSplitCellLabel()``.
+
 
 Release 3.25.0
 ==============
