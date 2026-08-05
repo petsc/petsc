@@ -303,6 +303,29 @@ pause-for-approval:
   stage: .pre
   tags:
     - feature:ai
+  variables:
+    # Export Claude Code token/cost metrics via OTLP to the Grafana Cloud gateway,
+    # for cross-run dashboards. Required CI/CD variables (Settings > CI/CD > Variables):
+    #   GRAFANA_CLOUD_OTLP_ENDPOINT - OTLP gateway base URL; not a secret
+    #   GRAFANA_CLOUD_OTLP_TOKEN    - base64("<instance-id>:<api-token>"); masked, NOT protected
+    #                                 (protected variables are absent on merge-request refs)
+    # OTEL_METRIC_EXPORT_INTERVAL is short so the final flush arrives before the SDK
+    # shuts down; raise it if flush-on-exit is confirmed reliable for `claude -p`.
+    CLAUDE_CODE_ENABLE_TELEMETRY: "1"
+    OTEL_METRICS_EXPORTER: otlp
+    OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    OTEL_EXPORTER_OTLP_ENDPOINT: "$GRAFANA_CLOUD_OTLP_ENDPOINT"
+    OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic $GRAFANA_CLOUD_OTLP_TOKEN"
+    OTEL_METRIC_EXPORT_INTERVAL: "10000"
+    # ci.job is omitted deliberately: Claude Code already attaches a unique-per-run
+    # session.id, so a per-job label would double the series churn for no query power.
+    OTEL_RESOURCE_ATTRIBUTES: "ci.mr=$CI_MERGE_REQUEST_IID,ci.ref=$CI_COMMIT_REF_SLUG"
+    # Drops user.account_uuid / user.account_id. Note that user.email, user.id and
+    # organization.id have no opt-out and do reach the endpoint.
+    OTEL_METRICS_INCLUDE_ACCOUNT_UUID: "false"
+    # Claude Code defaults to delta; the Grafana Cloud Prometheus backend stores
+    # cumulative, so convert here rather than relying on gateway-side conversion.
+    OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: cumulative
   before_script:
     - date
     - hostname
@@ -311,6 +334,10 @@ pause-for-approval:
     - glab --version || { echo "glab not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
+      if [ -z "$GRAFANA_CLOUD_OTLP_ENDPOINT" ] || [ -z "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
+        echo "Grafana OTLP variables not set; disabling telemetry"
+        unset CLAUDE_CODE_ENABLE_TELEMETRY OTEL_METRICS_EXPORTER OTEL_EXPORTER_OTLP_ENDPOINT OTEL_EXPORTER_OTLP_HEADERS
+      fi
       if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'Post AI review'; then
         test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
         REVIEW_CMD="/review-mr-post"

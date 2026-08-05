@@ -18,4 +18,4 @@ If `origin/main` doesn't resolve (`git rev-parse --verify -q origin/main` exits 
 
 State `DEST`, then run `git diff --stat <DEST>...<SRC> -- ':(exclude)*.out'` to size the change, and `git diff <DEST>...<SRC> -- ':(exclude)*.out'` to capture it (it is included in the tool output; page through it if large) — do **not** re-run `git diff` per file; the captured diff already contains every file. Any options (e.g. `--stat`) must precede the revision args, not follow the pathspec.
 
-Then follow @../review-mr/review-procedure.md (Sections 4–6) to classify, verify, and report findings.
+Then follow @../review-mr/review-procedure.md (Sections 4–6) to classify, verify, and report findings. Report to stdout only — skip Section 7; do not write `ai-review.html`.

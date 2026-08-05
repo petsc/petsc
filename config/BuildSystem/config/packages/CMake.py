@@ -52,7 +52,7 @@ class Configure(config.package.GNUPackage):
   def locateCMake(self):
     if 'with-cmake-exec' in self.argDB:
       self.log.write('Looking for specified CMake executable '+self.argDB['with-cmake-exec']+'\n')
-      self.getExecutable(self.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake', setMakeMacro=0)
+      self.getExecutable(self.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake')
     else:
       self.log.write('Looking for default CMake executable\n')
       self.getExecutable('cmake', getFullPath=1, resultName='cmake')
@@ -73,9 +73,9 @@ class Configure(config.package.GNUPackage):
       self.log.write('Building CMake\n')
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for CMake in '+os.path.join(self.installDir,'bin')+'\n')
-      self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1, setMakeMacro = 0)
-      self.getExecutable('ctest',    path=os.path.join(self.installDir,'bin'), getFullPath = 1, setMakeMacro = 0)
-    elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
+      self.getExecutable('cmake', path=os.path.join(self.installDir,'bin'), getFullPath=1)
+      self.getExecutable('ctest', path=os.path.join(self.installDir,'bin'), getFullPath=1, setMakeMacro=0)
+    elif (not self.argDB['with-cmake'] == 0 and not self.argDB['with-cmake'] == 'no') or 'with-cmake-exec' in self.argDB:
       self.executeTest(self.locateCMake)
     else:
       self.log.write('Not checking for CMake\n')
