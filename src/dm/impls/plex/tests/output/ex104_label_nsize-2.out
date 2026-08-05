@@ -1,8 +1,8 @@
-Number of colors: 6
+Number of colors: 4
 IS Object: 2 MPI processes
   type: general
 [0] Number of indices in set 2
-[0] 0 40
+[0] 0 50
 [0] 1 52
 [1] Number of indices in set 2
 [1] 0 50
@@ -10,32 +10,24 @@ IS Object: 2 MPI processes
 IS Object: 2 MPI processes
   type: general
 [0] Number of indices in set 2
-[0] 0 43
-[0] 1 49
-[1] Number of indices in set 2
-[1] 0 40
-[1] 1 42
-IS Object: 2 MPI processes
-  type: general
-[0] Number of indices in set 1
-[0] 0 51
-[1] Number of indices in set 2
-[1] 0 41
-[1] 1 43
-IS Object: 2 MPI processes
-  type: general
-[0] Number of indices in set 1
-[0] 0 50
+[0] 0 49
+[0] 1 51
 [1] Number of indices in set 2
 [1] 0 49
 [1] 1 51
 IS Object: 2 MPI processes
   type: general
-[0] Number of indices in set 1
+[0] Number of indices in set 2
 [0] 0 41
-[1] Number of indices in set 0
+[0] 1 43
+[1] Number of indices in set 2
+[1] 0 41
+[1] 1 43
 IS Object: 2 MPI processes
   type: general
-[0] Number of indices in set 1
-[0] 0 42
-[1] Number of indices in set 0
+[0] Number of indices in set 2
+[0] 0 40
+[0] 1 42
+[1] Number of indices in set 2
+[1] 0 40
+[1] 1 42

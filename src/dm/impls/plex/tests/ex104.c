@@ -106,6 +106,21 @@ int main(int argc, char **argv)
     nsize: {{1 2}separate output}
     args: -depth {{0 1 2}separate output} -distance {{1 2}separate output} -iscoloring_view -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple
 
+  # Lexical weighting uses the four-color vertex pattern; the other cases exercise fixed and reordered point order.
+  testset:
+    nsize: 1
+    args: -depth 0 -distance 1 -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 16,16
+    test:
+      suffix: grid_lexical
+      output_file: output/ex104_grid.out
+    test:
+      suffix: grid_natural
+      args: -dm_plex_coloring_ordering_type natural
+      output_file: output/ex104_grid.out
+    test:
+      suffix: grid_ordering
+      args: -dm_plex_coloring_ordering_type {{rcm nd}separate output}
+
   # Color only the closure of a few cells.
   test:
     suffix: label

@@ -11876,7 +11876,8 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
   A coloring of the vertices (`depth=0`) with `distance=1` can be use can be used to group non-overlapping vertex-star patches into multi-patch subdomains.
   Similarly, a vertex coloring with `distance=2` can be used to group non-overlapping Vanka patches into multi-patch subdomains.
 
-  This colors the whole stratum. Use `DMPlexCreateColoringLabel()` to color a subset of it.
+  This colors the whole stratum. Use `DMPlexCreateColoringLabel()` to color a subset of it, and see that routine for
+  the options controlling the ordering and hence the number of colors.
 
 .seealso: [](ch_unstructured), `DMPlex`, `ISColoring`, `MatColoring`, `DMCreateColoring()`, `DMPlexCreateColoringLabel()`
 @*/
@@ -11902,6 +11903,11 @@ PetscErrorCode DMPlexCreateColoring(DM dm, PetscInt depth, PetscInt distance, IS
   Output Parameter:
 . coloring - the coloring, in `DMPlex` point numbers
 
+  Options Database Keys:
++ -dm_plex_coloring_ordering_type name                              - order the points with `MatGetOrdering()` before coloring them
+. -dm_plex_coloring_mat_coloring_type name                          - the `MatColoringType` used to color the connectivity graph
+- -dm_plex_coloring_mat_coloring_weight_type (RANDOM|LEXICAL|LF|SL) - the vertex weighting, which sets the order in which points are colored
+
   Level: developer
 
   Notes:
@@ -11914,7 +11920,16 @@ PetscErrorCode DMPlexCreateColoring(DM dm, PetscInt depth, PetscInt distance, IS
   be the finite-element adjacency (`useCone` `PETSC_FALSE`, `useClosure` `PETSC_TRUE`), for which two vertices are
   adjacent exactly when they share a cell; points of one color then have pairwise disjoint stars.
 
-.seealso: [](ch_unstructured), `DMPlex`, `ISColoring`, `MatColoring`, `DMCreateColoring()`, `DMPlexCreateColoring()`, `DMSetBasicAdjacency()`
+  `MATCOLORINGGREEDY` colors the points in order of decreasing weight, so the ordering determines the number of
+  colors. This routine defaults to `MAT_COLORING_WEIGHT_LEXICAL`, which sweeps in the point numbering and yields the
+  optimal four colors on a structured grid, where the `MatColoring` default of random weights uses seven. Use
+  `-dm_plex_coloring_ordering_type` to sweep in a different order when the point numbering has no locality. A
+  bandwidth-reducing ordering is not what serves a coloring: `MATORDERINGRCM` is a wavefront, and sweeping a
+  structured grid diagonally costs it six colors rather than four. `MatGetOrdering()` reaches the graph through
+  `MatGetRowIJ()`, which is not supported for parallel matrices, so requesting an ordering on more than one process
+  raises an error.
+
+.seealso: [](ch_unstructured), `DMPlex`, `ISColoring`, `MatColoring`, `DMCreateColoring()`, `DMPlexCreateColoring()`, `DMSetBasicAdjacency()`, `MatGetOrdering()`
 @*/
 PetscErrorCode DMPlexCreateColoringLabel(DM dm, PetscInt depth, PetscInt distance, DMLabel label, PetscInt value, ISColoring *coloring)
 {
@@ -11925,6 +11940,8 @@ PetscErrorCode DMPlexCreateColoringLabel(DM dm, PetscInt depth, PetscInt distanc
   const PetscInt *pts;
   PetscInt       *idx;
   PetscInt        rowStart = 0, numVertices = 0, ncolors = 0;
+  char            ordering[PETSC_MAX_PATH_LEN];
+  PetscBool       flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -11934,9 +11951,36 @@ PetscErrorCode DMPlexCreateColoringLabel(DM dm, PetscInt depth, PetscInt distanc
   PetscCall(MatGetOwnershipRange(L, &rowStart, NULL));
   PetscCall(ISGetLocalSize(points, &numVertices));
   PetscCall(MatColoringCreate(L, &mc));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mc, "dm_plex_coloring_"));
   PetscCall(MatColoringSetType(mc, MATCOLORINGGREEDY));
   PetscCall(MatColoringSetDistance(mc, distance));
+  PetscCall(MatColoringSetWeightType(mc, MAT_COLORING_WEIGHT_LEXICAL));
   PetscCall(MatColoringSetFromOptions(mc));
+  PetscObjectOptionsBegin((PetscObject)mc);
+  PetscCall(PetscOptionsFList("-ordering_type", "Reorder the points with MatGetOrdering() before coloring them", "MatGetOrdering", MatOrderingList, NULL, ordering, sizeof(ordering), &flg));
+  PetscOptionsEnd();
+  if (flg == PETSC_TRUE) {
+    IS              rperm, cperm;
+    const PetscInt *perm;
+    PetscReal      *wts;
+    PetscInt        n;
+    PetscMPIInt     size;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+    PetscCheck(size == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Reordering the points before coloring them is not supported in parallel, because MatGetOrdering() reaches the graph through MatGetRowIJ()");
+    PetscCall(MatGetOrdering(L, ordering, &rperm, &cperm));
+    PetscCall(ISGetLocalSize(rperm, &n));
+    PetscCheck(n == numVertices, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Ordering %s returned %" PetscInt_FMT " indices, but the graph has %" PetscInt_FMT " local points", ordering, n, numVertices);
+    PetscCall(ISGetIndices(rperm, &perm));
+    PetscCall(PetscMalloc1(n, &wts));
+    /* Greedy coloring visits points in decreasing weight order. */
+    for (PetscInt k = 0; k < n; k++) wts[perm[k]] = (PetscReal)(n - k);
+    PetscCall(ISRestoreIndices(rperm, &perm));
+    PetscCall(MatColoringSetWeights(mc, wts, NULL));
+    PetscCall(PetscFree(wts));
+    PetscCall(ISDestroy(&rperm));
+    PetscCall(ISDestroy(&cperm));
+  }
   PetscCall(MatColoringApply(mc, coloring));
   PetscCall(MatColoringDestroy(&mc));
   PetscCall(MatDestroy(&L));
