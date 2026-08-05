@@ -139,7 +139,7 @@ PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
 
   This function may initialize `PetscDevice`, which may incur a device synchronization.
 
-.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
+.seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`, `VecCreateSeqWithArrayAndMemType()`,
           `VecCreateMPIWithArray()`, `VecCreateSeqCUDA()`, `VecCreateMPICUDAWithArray()`, `VecCUDAPlaceArray()`,
           `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateGhost()`
 @*/

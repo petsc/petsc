@@ -875,7 +875,7 @@ PetscErrorCode VecCreate_Seq_Private(Vec v, const PetscScalar array[])
   PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
   The user should not free the array until the vector is destroyed.
 
-.seealso: `VecCreateMPIWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+.seealso: `VecCreateSeqWithArrayAndMemType()`, `VecCreateMPIWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateSeqWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar array[], Vec *V)

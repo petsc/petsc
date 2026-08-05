@@ -299,20 +299,19 @@ static PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
 static PetscErrorCode PCSetUp_GASM(PC pc)
 {
   PC_GASM        *osm = (PC_GASM *)pc->data;
-  PetscInt        i, nInnerIndices, nTotalInnerIndices;
+  PetscInt        nInnerIndices, nTotalInnerIndices;
   PetscMPIInt     rank, size;
   MatReuse        scall = MAT_REUSE_MATRIX;
   KSP             ksp;
   PC              subpc;
   const char     *prefix, *pprefix;
   Vec             x, y;
-  PetscInt        oni;   /* Number of indices in the i-th local outer subdomain.               */
-  const PetscInt *oidxi; /* Indices from the i-th subdomain local outer subdomain.             */
-  PetscInt        on;    /* Number of indices in the disjoint union of local outer subdomains. */
-  PetscInt       *oidx;  /* Indices in the disjoint union of local outer subdomains. */
-  IS              gois;  /* Disjoint union the global indices of outer subdomains.             */
-  IS              goid;  /* Identity IS of the size of the disjoint union of outer subdomains. */
-  PetscScalar    *gxarray, *gyarray;
+  PetscInt        oni;     /* Number of indices in the i-th local outer subdomain.               */
+  const PetscInt *oidxi;   /* Indices from the i-th subdomain local outer subdomain.             */
+  PetscInt        on;      /* Number of indices in the disjoint union of local outer subdomains. */
+  PetscInt       *oidx;    /* Indices in the disjoint union of local outer subdomains. */
+  IS              gois;    /* Disjoint union the global indices of outer subdomains.             */
+  IS              goid;    /* Identity IS of the size of the disjoint union of outer subdomains. */
   PetscInt        gostart; /* Start of locally-owned indices in the vectors -- osm->gx,osm->gy -- over the disjoint union of outer subdomains. */
   PetscInt        num_subdomains  = 0;
   DM             *subdomain_dm    = NULL;
@@ -362,7 +361,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
             has been requested, copy the inner subdomains over so they can be modified.
       */
       PetscCall(PetscMalloc1(osm->n, &osm->ois));
-      for (i = 0; i < osm->n; ++i) {
+      for (PetscInt i = 0; i < osm->n; ++i) {
         if (osm->overlap > 0 && osm->N > 1) { /* With positive overlap, osm->iis[i] will be modified */
           PetscCall(ISDuplicate(osm->iis[i], (osm->ois) + i));
           PetscCall(ISCopy(osm->iis[i], osm->ois[i]));
@@ -391,7 +390,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     }
 
     if (osm->sort_indices) {
-      for (i = 0; i < osm->n; i++) {
+      for (PetscInt i = 0; i < osm->n; i++) {
         PetscCall(ISSort(osm->ois[i]));
         PetscCall(ISSort(osm->iis[i]));
       }
@@ -404,14 +403,14 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
      */
     /* Merge outer subdomain ISs and construct a restriction onto the disjoint union of local outer subdomains. */
     on = 0;
-    for (i = 0; i < osm->n; i++) {
+    for (PetscInt i = 0; i < osm->n; i++) {
       PetscCall(ISGetLocalSize(osm->ois[i], &oni));
       on += oni;
     }
     PetscCall(PetscMalloc1(on, &oidx));
     on = 0;
     /* Merge local indices together */
-    for (i = 0; i < osm->n; i++) {
+    for (PetscInt i = 0; i < osm->n; i++) {
       PetscCall(ISGetLocalSize(osm->ois[i], &oni));
       PetscCall(ISGetIndices(osm->ois[i], &oidxi));
       PetscCall(PetscArraycpy(oidx + on, oidxi, oni));
@@ -420,13 +419,14 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     }
     PetscCall(ISCreateGeneral(((PetscObject)pc)->comm, on, oidx, PETSC_OWN_POINTER, &gois));
     nTotalInnerIndices = 0;
-    for (i = 0; i < osm->n; i++) {
+    for (PetscInt i = 0; i < osm->n; i++) {
       PetscCall(ISGetLocalSize(osm->iis[i], &nInnerIndices));
       nTotalInnerIndices += nInnerIndices;
     }
     PetscCall(VecCreateMPI(((PetscObject)pc)->comm, nTotalInnerIndices, PETSC_DETERMINE, &x));
     PetscCall(VecDuplicate(x, &y));
 
+    /* Keep the merged vectors on the host so that their arrays also work with host-only subdomain solvers. */
     PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), on, PETSC_DECIDE, &osm->gx));
     PetscCall(VecDuplicate(osm->gx, &osm->gy));
     PetscCall(VecGetOwnershipRange(osm->gx, &gostart, NULL));
@@ -449,7 +449,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscScalar    *array;
       const PetscInt *indices;
       on = 0;
-      for (i = 0; i < osm->n; i++) {
+      for (PetscInt i = 0; i < osm->n; i++) {
         PetscCall(ISGetLocalSize(osm->ois[i], &oni));
         on += oni;
       }
@@ -458,7 +458,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscCall(VecGetArray(y, &array));
       /* set communicator id to determine where overlap is */
       in = 0;
-      for (i = 0; i < osm->n; i++) {
+      for (PetscInt i = 0; i < osm->n; i++) {
         PetscCall(ISGetLocalSize(osm->iis[i], &ini));
         for (PetscInt k = 0; k < ini; ++k) array[in + k] = numbering[i];
         in += ini;
@@ -470,7 +470,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscCall(VecGetArray(osm->gy, &array));
       on = 0;
       in = 0;
-      for (i = 0; i < osm->n; i++) {
+      for (PetscInt i = 0; i < osm->n; i++) {
         PetscCall(ISGetLocalSize(osm->ois[i], &oni));
         PetscCall(ISGetIndices(osm->ois[i], &indices));
         for (PetscInt k = 0; k < oni; k++) {
@@ -493,24 +493,9 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     PetscCall(ISDestroy(&goid));
     PetscCall(PetscFree(numbering));
 
-    /* Create the subdomain work vectors. */
-    PetscCall(PetscMalloc1(osm->n, &osm->x));
-    PetscCall(PetscMalloc1(osm->n, &osm->y));
-    PetscCall(VecGetArray(osm->gx, &gxarray));
-    PetscCall(VecGetArray(osm->gy, &gyarray));
-    for (i = 0, on = 0; i < osm->n; ++i, on += oni) {
-      PetscInt oNi;
-      PetscCall(ISGetLocalSize(osm->ois[i], &oni));
-      /* on a sub communicator */
-      PetscCall(ISGetSize(osm->ois[i], &oNi));
-      PetscCall(VecCreateMPIWithArray(((PetscObject)osm->ois[i])->comm, 1, oni, oNi, gxarray + on, &osm->x[i]));
-      PetscCall(VecCreateMPIWithArray(((PetscObject)osm->ois[i])->comm, 1, oni, oNi, gyarray + on, &osm->y[i]));
-    }
-    PetscCall(VecRestoreArray(osm->gx, &gxarray));
-    PetscCall(VecRestoreArray(osm->gy, &gyarray));
     /* Create the subdomain solvers */
     PetscCall(PetscMalloc1(osm->n, &osm->ksp));
-    for (i = 0; i < osm->n; i++) {
+    for (PetscInt i = 0; i < osm->n; i++) {
       char subprefix[PETSC_MAX_PATH_LEN + 1];
       PetscCall(KSPCreate(((PetscObject)osm->ois[i])->comm, &ksp));
       PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
@@ -554,14 +539,11 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   /*
      Extract the submatrices.
   */
-  if (size > 1) {
-    PetscCall(MatCreateSubMatricesMPI(pc->pmat, osm->n, osm->ois, osm->ois, scall, &osm->pmat));
-  } else {
-    PetscCall(MatCreateSubMatrices(pc->pmat, osm->n, osm->ois, osm->ois, scall, &osm->pmat));
-  }
+  if (size > 1) PetscCall(MatCreateSubMatricesMPI(pc->pmat, osm->n, osm->ois, osm->ois, scall, &osm->pmat));
+  else PetscCall(MatCreateSubMatrices(pc->pmat, osm->n, osm->ois, osm->ois, scall, &osm->pmat));
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
+    for (PetscInt i = 0; i < osm->n; i++) PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -571,11 +553,50 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
   /*
      Loop over submatrices putting them into local ksps
   */
-  for (i = 0; i < osm->n; i++) {
+  for (PetscInt i = 0; i < osm->n; i++) {
     PetscCall(KSPSetOperators(osm->ksp[i], osm->pmat[i], osm->pmat[i]));
     PetscCall(KSPGetOptionsPrefix(osm->ksp[i], &prefix));
     PetscCall(MatSetOptionsPrefix(osm->pmat[i], prefix));
     if (!pc->setupcalled) PetscCall(KSPSetFromOptions(osm->ksp[i]));
+  }
+  if (!pc->setupcalled) {
+    /* MatCreateVecs() would allocate arrays before they are needed. Create arrayless work vectors where supported because
+       PCApply_GASM() and PCApplyTranspose_GASM() place the merged vectors' arrays into them. */
+    PetscCall(PetscMalloc1(osm->n, &osm->x));
+    PetscCall(PetscMalloc1(osm->n, &osm->y));
+    for (PetscInt i = 0; i < osm->n; ++i) {
+      VecType     vtype;
+      PetscInt    oNi, m, n, M, N;
+      PetscMPIInt subsize;
+      PetscBool   boundtocpu, bindingpropagates, iskok;
+
+      PetscCall(MatGetVecType(osm->pmat[i], &vtype));
+      PetscCall(PetscStrcmpAny(vtype, &iskok, VECKOKKOS, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+      PetscCall(ISGetLocalSize(osm->ois[i], &oni));
+      PetscCall(ISGetSize(osm->ois[i], &oNi));
+      PetscCall(MatGetLocalSize(osm->pmat[i], &m, &n));
+      PetscCall(MatGetSize(osm->pmat[i], &M, &N));
+      PetscCheck(m == oni && n == oni && M == oNi && N == oNi, PetscObjectComm((PetscObject)osm->pmat[i]), PETSC_ERR_ARG_SIZ, "Modified submatrix %" PetscInt_FMT " has size %" PetscInt_FMT " x %" PetscInt_FMT " (local %" PetscInt_FMT " x %" PetscInt_FMT "), but its outer index set has size %" PetscInt_FMT " (local %" PetscInt_FMT ")", i, M, N, m, n, oNi, oni);
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)osm->pmat[i]), &subsize));
+      PetscCall(MatBoundToCPU(osm->pmat[i], &boundtocpu));
+      PetscCall(MatGetBindingPropagates(osm->pmat[i], &bindingpropagates));
+      for (PetscInt j = 0; j < 2; ++j) {
+        Vec *v = j ? &osm->y[i] : &osm->x[i];
+
+        if (iskok) {
+          /* Kokkos vectors require valid host storage even when VecPlaceArray() will replace it. */
+          PetscCall(VecCreate(PetscObjectComm((PetscObject)osm->pmat[i]), v));
+          PetscCall(VecSetSizes(*v, oni, oNi));
+          PetscCall(VecSetBlockSize(*v, 1));
+        } else if (subsize == 1) PetscCall(VecCreateSeqWithArray(PetscObjectComm((PetscObject)osm->pmat[i]), 1, oni, NULL, v));
+        else PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)osm->pmat[i]), 1, oni, oNi, NULL, v));
+        PetscCall(VecSetType(*v, vtype));
+        if (boundtocpu && bindingpropagates) {
+          PetscCall(VecSetBindingPropagates(*v, PETSC_TRUE));
+          PetscCall(VecBindToCPU(*v, PETSC_TRUE));
+        }
+      }
+    }
   }
   if (osm->pcmat) {
     PetscCall(MatDestroy(&pc->pmat));
@@ -597,10 +618,12 @@ static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc)
 
 static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
 {
-  PC_GASM    *osm = (PC_GASM *)pc->data;
-  PetscInt    i;
-  Vec         x, y;
-  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+  PC_GASM           *osm = (PC_GASM *)pc->data;
+  const PetscScalar *gxarray;
+  PetscScalar       *gyarray;
+  PetscInt           i, oni, on;
+  Vec                x, y;
+  ScatterMode        forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
   if (osm->pctoouter) {
@@ -630,10 +653,19 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(VecScatterEnd(osm->gorestriction, x, osm->gx, INSERT_VALUES, forward));
   }
   /* do the subdomain solves */
-  for (i = 0; i < osm->n; ++i) {
+  PetscCall(VecGetArrayRead(osm->gx, &gxarray));
+  PetscCall(VecGetArray(osm->gy, &gyarray));
+  for (i = 0, on = 0; i < osm->n; ++i, on += oni) {
+    PetscCall(ISGetLocalSize(osm->ois[i], &oni));
+    PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
+    PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
     PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(VecResetArray(osm->x[i]));
+    PetscCall(VecResetArray(osm->y[i]));
   }
+  PetscCall(VecRestoreArrayRead(osm->gx, &gxarray));
+  PetscCall(VecRestoreArray(osm->gy, &gyarray));
   /* do we need to zero y? */
   PetscCall(VecZeroEntries(y));
   if (!(osm->type & PC_GASM_INTERPOLATE)) {
@@ -736,10 +768,12 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
 
 static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout)
 {
-  PC_GASM    *osm = (PC_GASM *)pc->data;
-  PetscInt    i;
-  Vec         x, y;
-  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+  PC_GASM           *osm = (PC_GASM *)pc->data;
+  const PetscScalar *gxarray;
+  PetscScalar       *gyarray;
+  PetscInt           i, oni, on;
+  Vec                x, y;
+  ScatterMode        forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
   if (osm->pctoouter) {
@@ -772,10 +806,19 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(VecScatterEnd(osm->gorestriction, x, osm->gx, INSERT_VALUES, forward));
   }
   /* do the local solves */
-  for (i = 0; i < osm->n; ++i) { /* Note that the solves are local, so we can go to osm->n, rather than osm->nmax. */
+  PetscCall(VecGetArrayRead(osm->gx, &gxarray));
+  PetscCall(VecGetArray(osm->gy, &gyarray));
+  for (i = 0, on = 0; i < osm->n; ++i, on += oni) { /* Note that the solves are local, so we can go to osm->n, rather than osm->nmax. */
+    PetscCall(ISGetLocalSize(osm->ois[i], &oni));
+    PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
+    PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
     PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(VecResetArray(osm->x[i]));
+    PetscCall(VecResetArray(osm->y[i]));
   }
+  PetscCall(VecRestoreArrayRead(osm->gx, &gxarray));
+  PetscCall(VecRestoreArray(osm->gy, &gyarray));
   PetscCall(VecZeroEntries(y));
   if (!(osm->type & PC_GASM_RESTRICT)) {
     PetscCall(VecScatterBegin(osm->girestriction, osm->gy, y, ADD_VALUES, reverse));
@@ -802,6 +845,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
   if (osm->pmat) {
     if (osm->n > 0) {
       PetscMPIInt size;
+
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
       if (size > 1) {
         /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
@@ -817,6 +861,8 @@ static PetscErrorCode PCReset_GASM(PC pc)
       PetscCall(VecDestroy(&osm->y[i]));
     }
   }
+  PetscCall(PetscFree(osm->x));
+  PetscCall(PetscFree(osm->y));
   PetscCall(VecDestroy(&osm->gx));
   PetscCall(VecDestroy(&osm->gy));
 
@@ -848,8 +894,6 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
     for (PetscInt i = 0; i < osm->n; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
     PetscCall(PetscFree(osm->ksp));
   }
-  PetscCall(PetscFree(osm->x));
-  PetscCall(PetscFree(osm->y));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetSubdomains_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetType_C", NULL));
@@ -1250,6 +1294,9 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
    To set the options on the solvers separate for each block call `PCGASMGetSubKSP()`
    and set the options directly on the resulting `KSP` object (you can access its `PC`
    with `KSPGetPC()`)
+
+   `PCGASM` uses host memory for the merged subdomain vectors so that host-only subdomain solvers work with device global vectors.
+   Device subdomain solvers therefore copy each right-hand side to the device and each solution back to the host during every application.
 
    See {cite}`dryja1987additive` and {cite}`1sbg` for details on additive Schwarz algorithms
 
