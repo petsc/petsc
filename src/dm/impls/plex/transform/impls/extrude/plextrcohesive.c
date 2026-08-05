@@ -1061,20 +1061,20 @@ static PetscErrorCode DMPlexTransformCheckImpingingPoint_Internal(DMPlexTransfor
     if (val >= 0 && val < 100) {
       PetscInt pOld, r;
 
-      // Check what size of the fault it is on
+      // Check what side of the fault it is on
       PetscCall(DMPlexTransformGetSourcePoint(tr, cone[c], NULL, NULL, &pOld, &r));
       if (debug > 3)
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r: %" PetscInt_FMT "\n", PetscGlobalRank, point, val, c, cone[c], val, pOld, r));
       PetscCheck(r == rTarget, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r should be %" PetscInt_FMT " not %" PetscInt_FMT, point, val, c, cone[c], val, pOld, rTarget, r);
     }
-    if (val >= 200 && val < 300) {
-      PetscInt pOld, r;
+    if (val >= 200 && val < 300)
+      if (debug) {
+        PetscInt pOld, r;
 
-      // Check what size of the fault it is on
-      PetscCall(DMPlexTransformGetSourcePoint(tr, cone[c], NULL, NULL, &pOld, &r));
-      if (debug)
+        // Check what side of the fault it is on
+        PetscCall(DMPlexTransformGetSourcePoint(tr, cone[c], NULL, NULL, &pOld, &r));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Impinging %" PetscInt_FMT " (%" PetscInt_FMT ") cone[%" PetscInt_FMT "]: %" PetscInt_FMT " (%" PetscInt_FMT ") pOld: %" PetscInt_FMT " r: %" PetscInt_FMT "\n", PetscGlobalRank, point, val, c, cone[c], val, pOld, r));
-    }
+      }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

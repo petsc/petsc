@@ -10,6 +10,7 @@ PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetCones;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_CreateSF;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_CreateLabels;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetCoordinates;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_Check;
 
 typedef struct _p_DMPlexTransformOps *DMPlexTransformOps;
 struct _p_DMPlexTransformOps {
