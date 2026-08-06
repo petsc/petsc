@@ -440,13 +440,47 @@ cdef class DMPlex(DM):
         DM, DMPlex, petsc.DMPlexCreateColoring
 
         """
+        return self.createColoringLabel(depth, distance)
+
+    def createColoringLabel(self, depth: int = 0, distance: int = 1,
+                            label: DMLabel | None = None, value: int = 0) -> list:
+        """Return the coloring of a labeled subset of the entities in the DMPlex.
+
+        Collective.
+
+        Parameters
+        ----------
+        depth
+            The entity dimension of nodes in the connectivity graph.
+        distance
+            The distance of the coloring (either 1 or 2).
+        label
+            Selects the entities to color, `None` to color the whole stratum.
+        value
+            The label value selecting the entities to color.
+
+        Notes
+        -----
+        The entities are colored as the subgraph they induce, so two of them
+        get different colors exactly when they are adjacent to each other,
+        regardless of how many unselected entities lie between them.
+
+        See Also
+        --------
+        DM, DMPlex, createColoring, petsc.DMPlexCreateColoringLabel
+
+        """
         cdef PetscInt cdepth = asInt(depth)
         cdef PetscInt cdistance = asInt(distance)
+        cdef PetscInt cvalue = asInt(value)
         cdef PetscInt ncolors = 0
         cdef PetscIS *iscolors = NULL
+        cdef PetscDMLabel clbl = NULL
         cdef ISColoring coloring = NULL
+        if label is not None:
+            clbl = (<DMLabel?>label).dmlabel
 
-        CHKERR(DMPlexCreateColoring(self.dm, cdepth, cdistance, &coloring))
+        CHKERR(DMPlexCreateColoringLabel(self.dm, cdepth, cdistance, clbl, cvalue, &coloring))
         cdef list isets = []
         try:
             CHKERR(ISColoringGetIS(coloring, PETSC_USE_POINTER, &ncolors, &iscolors))

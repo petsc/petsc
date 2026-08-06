@@ -49,6 +49,7 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexGetPointGlobalField(PetscDM, PetscInt, PetscInt, PetscInt*, PetscInt*)
     PetscErrorCode DMPlexCreateClosureIndex(PetscDM, PetscSection)
     PetscErrorCode DMPlexCreateColoring(PetscDM, PetscInt, PetscInt, ISColoring*)
+    PetscErrorCode DMPlexCreateColoringLabel(PetscDM, PetscInt, PetscInt, PetscDMLabel, PetscInt, ISColoring*)
 
     PetscErrorCode DMPlexGetCellNumbering(PetscDM, PetscIS*)
     PetscErrorCode DMPlexGetVertexNumbering(PetscDM, PetscIS*)
