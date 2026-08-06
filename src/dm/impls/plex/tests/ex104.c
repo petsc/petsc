@@ -121,6 +121,12 @@ int main(int argc, char **argv)
       suffix: grid_ordering
       args: -dm_plex_coloring_ordering_type {{rcm nd}separate output}
 
+  # Local coloring tests the induced graph on each rank; the reported count is the maximum across ranks.
+  test:
+    suffix: local
+    nsize: {{1 2}separate output}
+    args: -depth 0 -distance 1 -dm_plex_coloring_local -dm_coord_space 0 -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple
+
   # Color only the closure of a few cells.
   test:
     suffix: label
