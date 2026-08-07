@@ -1470,6 +1470,8 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
   can call `KSPConvergedDefaultSetUIRNorm()` to use the norm of (b - A*(initial guess))
   as the starting point for relative norm convergence testing, that is as `rnorm_0`.
   Call `KSPConvergedDefaultSetUMIRNorm()` to use the minimum of the norm of (b - A*(initial guess)) and the norm of b as the starting point.
+  During `KSPMatSolve()`, when the iteration is performed on a whole batch of right-hand sides at once, a batch being the whole block unless `KSPSetMatSolveBatchSize()` is used,
+  `rnorm_0` is by default the Frobenius norm of that batch of (preconditioned) right-hand sides.
 
   Use `KSPSetTolerances()` to alter the defaults for `rtol`, `abstol`, `dtol`.
 
@@ -1512,8 +1514,25 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
     if (!ksp->guess_zero && !cctx->initialrtol) {
       PetscReal snorm = 0.0;
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
-        PetscCall(PetscInfo(ksp, "user has provided nonzero initial guess, computing 2-norm of RHS\n"));
-        PetscCall(VecNorm(ksp->vec_rhs, NORM_2, &snorm)); /*     <- b'*b */
+        if (ksp->mat_rhs) {
+          PetscCall(PetscInfo(ksp, "user has provided nonzero initial guess, computing Frobenius norm of the batch of RHS\n"));
+          PetscCall(MatNorm(ksp->mat_rhs, NORM_FROBENIUS, &snorm)); /*     <- trace(B'*B) */
+        } else {
+          PetscCall(PetscInfo(ksp, "user has provided nonzero initial guess, computing 2-norm of RHS\n"));
+          PetscCall(VecNorm(ksp->vec_rhs, NORM_2, &snorm)); /*     <- b'*b */
+        }
+      } else if (ksp->mat_rhs) {
+        Mat Z;
+
+        PetscCheck(ksp->normtype != KSP_NORM_NATURAL, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSPConvergedDefault() does not support KSP_NORM_NATURAL with a batch of right-hand sides and a nonzero initial guess, use KSPConvergedDefaultSetUIRNorm()");
+        /* As with the Vec below, Z cannot be stashed in cctx because the number of right-hand sides may change between solves */
+        PetscCall(MatDuplicate(ksp->mat_rhs, MAT_DO_NOT_COPY_VALUES, &Z));
+        PetscCall(KSP_PCMatApply(ksp, ksp->mat_rhs, Z));
+        /* KSP_PCApply() below removes the null space of Amat, so the batch of preconditioned right-hand sides must be projected as well */
+        PetscCall(KSP_RemoveNullSpaceMat(ksp, Z));
+        PetscCall(PetscInfo(ksp, "user has provided nonzero initial guess, computing Frobenius norm of the preconditioned batch of RHS\n"));
+        PetscCall(MatNorm(Z, NORM_FROBENIUS, &snorm)); /*    dp <- trace(B'*P'*P*B) */
+        PetscCall(MatDestroy(&Z));
       } else {
         Vec z;
         /* Should avoid allocating the z vector each time but cannot stash it in cctx because if KSPReset() is called the vector size might change */

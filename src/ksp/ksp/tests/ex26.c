@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   Mat         A, B, X;
   GridCtx     fine_ctx;
   KSP         ksp;
-  PetscBool   Brand = PETSC_FALSE, flg;
+  PetscBool   Brand = PETSC_FALSE, transpose = PETSC_FALSE, flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -62,6 +62,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nx", &Nx, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &Ny, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rand", &Brand, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n", fine_ctx.mx, fine_ctx.my));
 
   /* Set up distributed array for fine grid */
@@ -98,6 +99,8 @@ int main(int argc, char **argv)
   PetscCall(MatSetOptionsPrefix(B, "rhs_"));
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &X));
+  /* start the -ksp_initial_guess_nonzero runs from a known state, MatDuplicate() zeroing is not guaranteed for all -rhs_mat_type values */
+  PetscCall(MatZeroEntries(X));
   if (Brand) {
     PetscCall(MatSetRandom(B, NULL));
   } else {
@@ -109,11 +112,12 @@ int main(int argc, char **argv)
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscCall(KSPMatSolve(ksp, B, X));
+  if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X));
+  else PetscCall(KSPMatSolve(ksp, B, X));
   PetscCall(MatViewFromOptions(X, NULL, "-debug"));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPPREONLY, &flg));
-  if ((flg || nrhs == 1) && !Brand) {
+  if ((flg || nrhs == 1) && !Brand && !transpose) { /* the operator is not symmetric, so KSPMatSolveTranspose() does not return the solution of KSPSolve() */
     const PetscScalar *xx, *XX;
 
     PetscCall(VecGetArrayRead(fine_ctx.x, &xx));
@@ -236,6 +240,21 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       suffix: matcycles
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      suffix: matcycles_richardson
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type richardson -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      suffix: matcycles_richardson_guess
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type richardson -ksp_initial_guess_nonzero -ksp_norm_type unpreconditioned -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      suffix: matcycles_richardson_transpose
+      nsize: {{1 2}}
+      args: -ksp_view_final_residual -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
 
     test:
       requires: ml

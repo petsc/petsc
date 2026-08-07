@@ -107,6 +107,10 @@
 - Add `KSPIDRSetS()`, `KSPIDRGetS()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`, `KSPIDRSetCosine()`, and `KSPIDRGetCosine()`
 - Deprecate `KSPMonitorResidualShort()` and `-ksp_monitor_short`, remove the `preconditioned_residual_short` monitor registry name
 - Remove `-ksp_plot_eigenvalues`, `-ksp_plot_eigenvalues_explicitly`, `-ksp_plot_eigencontours` that have been deprecated since version 3.9
+- Add native support for `KSPMatSolve()` and `KSPMatSolveTranspose()` with `KSPRICHARDSON`, which iterates on batches of or the entire block of right-hand sides instead of solving them one at a time
+- Change `KSPConvergedDefault()` to base the relative tolerance on the Frobenius norm of the batch of (preconditioned) right-hand sides during a `KSPMatSolve()` with a nonzero initial guess, matching `KSPSolve()`
+- Change `KSPMatSolve()` and `KSPMatSolveTranspose()` to reset the residual history at the start of each solve, and of each batch when `-ksp_matsolve_batch_size` is used, as `KSPSolve()` does, unless `KSPSetResidualHistory()` was called with `reset` set to `PETSC_FALSE`
+- Change `KSPRichardsonSetSelfScale()` to trigger a `KSPSetUp()` re-run when the flag changes, fixing an out-of-bounds work vector access when it was set after `KSPSetUp()`
 
 ## SNES
 
