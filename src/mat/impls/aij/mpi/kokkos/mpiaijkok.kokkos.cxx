@@ -1674,6 +1674,13 @@ static PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJGetLocalMatMerge_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_mpiaijkokkos_mpidense_C", NULL));
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_mpiaijkokkos_mpidensecuda_C", NULL));
+#endif
+#if PetscDefined(HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_mpiaijkokkos_mpidensehip_C", NULL));
+#endif
 #if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpiaijkokkos_hypre_C", NULL));
 #endif
@@ -1696,6 +1703,8 @@ static PetscErrorCode MatShift_MPIAIJKokkos(Mat A, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat);
+
 static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
 {
   PetscFunctionBegin;
@@ -1714,6 +1723,13 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetValuesCOO_C", MatSetValuesCOO_MPIAIJKokkos));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijkokkos_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijkokkos_mpidensecuda_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+#endif
+#if PetscDefined(HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijkokkos_mpidensehip_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+#endif
 #if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaijkokkos_hypre_C", MatConvert_AIJ_HYPRE));
 #endif

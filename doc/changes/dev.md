@@ -85,6 +85,7 @@
   `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` and uses `MatGetValues()`
 - Add new `MatType` `MATSEQBAIJLIBXSMM` and `MATMPIBAIJLIBXSMM`
 - Add support for `MatSetInf()` with `MATSEQDENSE` and `MATMPIDENSE`; no `MatType` implemented it before
+- Add device SpMM support for `MATPRODUCT_AB` and `MATPRODUCT_AtB` with a `MATAIJKOKKOS` matrix and dense matrices; previously these products looped `MatMult()` over the columns of the dense matrix
 
 ## MatCoarsen
 
