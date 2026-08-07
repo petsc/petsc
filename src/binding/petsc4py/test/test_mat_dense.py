@@ -50,13 +50,13 @@ class BaseTestMatAnyDense:
         self._chk_array(self.A, r, c, v)
 
     def testGetDiagonalBlock(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
         M, N = self.A.getSize()
         # only for square matrices
         if M != N:
             return
-        self._preallocate()
-        self._set_values()
-        self.A.assemble()
         B = self.A.getDiagonalBlock()
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
