@@ -957,11 +957,13 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
   Notes:
   To see all options, run your program with the -help option or consult the users manual
 
+  See `SNESLineSearchSetFromOptions()` for all the line search options available
+
   `SNES` supports three approaches for computing (approximate) Jacobians: user provided via `SNESSetJacobian()`, matrix-free using `MatCreateSNESMF()`,
   and computing explicitly with
   finite differences and coloring using `MatFDColoring`. It is also possible to use automatic differentiation and the `MatFDColoring` object.
 
-.seealso: [](ch_snes), `SNESType`, `SNESSetOptionsPrefix()`, `SNESResetFromOptions()`, `SNES`, `SNESCreate()`, `MatCreateSNESMF()`, `MatFDColoring`
+.seealso: [](ch_snes), `SNESType`, `SNESSetOptionsPrefix()`, `SNESResetFromOptions()`, `SNES`, `SNESCreate()`, `MatCreateSNESMF()`, `MatFDColoring`, `SNESLineSearchSetFromOptions()`
 @*/
 PetscErrorCode SNESSetFromOptions(SNES snes)
 {

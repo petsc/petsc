@@ -740,7 +740,10 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES, PetscErrorCode (*)(SNES, Vec
 
    Level: beginner
 
-.seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
+   Note:
+   See `SNESLineSearchSetFromOptions()` for all the line search options.
+
+.seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`, `SNESLineSearchSetFromOptions()`
 S*/
 typedef struct _p_SNESLineSearch *SNESLineSearch;
 

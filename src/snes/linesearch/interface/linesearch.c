@@ -1062,7 +1062,7 @@ PetscErrorCode SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
   This is useful in methods where the solver is ill-scaled and
   requires some adaptive notion of the difference in scale between the
   solution and the function.  For instance, `SNESQN` may be scaled by the
-  line search `lambda` using the argument -snes_qn_scaling ls.
+  line search `lambda` using the argument `-snes_qn_scaling ls`.
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetDamping()`, `SNESLineSearchApply()`
 @*/
@@ -1082,15 +1082,17 @@ PetscErrorCode SNESLineSearchGetLambda(SNESLineSearch linesearch, PetscReal *lam
 + linesearch - line search context
 - lambda     - The `lambda` to use
 
-  Level: advanced
+  Level: developer
 
-  Note:
+  Notes:
   This routine is typically used within implementations of `SNESLineSearchApply()`
   to set the final `lambda`.  This routine (and `SNESLineSearchGetLambda()`) were
   added to facilitate Quasi-Newton methods that use the previous `lambda`
   as an inner scaling parameter.
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetLambda()`
+  For `SNESLINESEARCHNONE` use `SNESLineSearchSetDamping()`, not this function.
+
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetLambda()`, `SNESLineSearchSetDamping()`
 @*/
 PetscErrorCode SNESLineSearchSetLambda(SNESLineSearch linesearch, PetscReal lambda)
 {
@@ -1270,7 +1272,7 @@ PetscErrorCode SNESLineSearchGetDamping(SNESLineSearch linesearch, PetscReal *da
   For `SNESLINESEARCHBISECTION` and `SNESLINESEARCHBT` the damping is instead used as the initial guess,
   below which the line search will not go. Hence, it is the maximum possible value for `lambda`.
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetDamping()`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetDamping()`, `SNESLineSearchSetLambda()`
 @*/
 PetscErrorCode SNESLineSearchSetDamping(SNESLineSearch linesearch, PetscReal damping)
 {
