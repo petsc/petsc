@@ -170,12 +170,7 @@ int main(int argc, char **args)
   PetscCall(VecSet(b, 1.0));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
   if (!transpose) PetscCall(KSPSolve(ksp, b, b));
-  else {
-    PetscCall(KSPSolveTranspose(ksp, b, b));
-    set = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_use_explicittranspose", &set, NULL));
-    if (set) PetscCall(KSPSetOperators(ksp, A, A)); /* -ksp_use_explicittranspose does not cache the initial Mat and will transpose the explicit transpose again if not set back to the original Mat */
-  }
+  else PetscCall(KSPSolveTranspose(ksp, b, b));
   PetscCall(VecGetLocalSize(b, &m));
   PetscCall(VecDestroy(&b));
   if (N > 1) {
@@ -191,10 +186,7 @@ int main(int argc, char **args)
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
     if (!transpose) PetscCall(KSPMatSolve(ksp, B, X));
-    else {
-      PetscCall(KSPMatSolveTranspose(ksp, B, X));
-      if (set) PetscCall(KSPSetOperators(ksp, A, A)); /* same as in the prior KSPSolveTranspose() */
-    }
+    else PetscCall(KSPMatSolveTranspose(ksp, B, X));
     PetscCall(KSPGetType(ksp, &type));
     PetscCall(PetscStrcmp(type, KSPHPDDM, &flg));
 #if PetscDefined(HAVE_HPDDM)
@@ -209,10 +201,7 @@ int main(int argc, char **args)
         PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &C));
         PetscCall(KSPSetMatSolveBatchSize(ksp, 1));
         if (!transpose) PetscCall(KSPMatSolve(ksp, B, C));
-        else {
-          PetscCall(KSPMatSolveTranspose(ksp, B, C));
-          if (set) PetscCall(KSPSetOperators(ksp, A, A)); /* same as in the prior KSPMatSolveTranspose() */
-        }
+        else PetscCall(KSPMatSolveTranspose(ksp, B, C));
         PetscCall(MatAYPX(C, -1.0, X, SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(C, NORM_INFINITY, &norm));
         PetscCall(MatDestroy(&C));
@@ -457,12 +446,12 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_share.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 14/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same -set_rhs {{false true} shared output}
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same -set_rhs {{false true}shared output}
       test:
         suffix: geneo_transpose
         output_file: output/ex76_geneo_share.out
-        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 2[26]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -ksp_use_explicittranspose {{false true}shared output} -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
       test:
         TODO: broken # slightly different convergence rate, which may be a sign of something wrong somewhere
         requires: cuda
@@ -566,7 +555,7 @@ int main(int argc, char **args)
       args: -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -rhs 4 -ksp_max_it 20 -ksp_type hpddm -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -ksp_error_if_not_converged
       test:
         suffix: reuse_symbolic
-        args: -pc_hpddm_coarse_correction {{additive deflated balanced}shared output} -ksp_pc_side {{left right}shared output} -transpose {{true false} shared output}
+        args: -pc_hpddm_coarse_correction {{additive deflated balanced}shared output} -ksp_pc_side {{left right}shared output} -transpose {{true false}shared output}
       test:
         requires: cuda
         suffix: reuse_symbolic_cuda

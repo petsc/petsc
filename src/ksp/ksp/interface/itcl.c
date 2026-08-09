@@ -319,7 +319,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 . -ksp_monitor_singular_value                                             - monitor extreme singular values at each iteration
 . -ksp_converged_reason                                                   - view the convergence state at the end of the solve
-. -ksp_use_explicittranspose                                              - transpose the system explicitly in `KSPSolveTranspose()`
+. -ksp_use_explicittranspose                                              - transpose the system explicitly in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
 . -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS`
                                                                             is not treated as an error on inner solves
 - -ksp_converged_rate                                                     - view the convergence rate at the end of the solve
@@ -633,7 +633,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-ksp_use_explicittranspose", "Explicitly transpose the system in KSPSolveTranspose", "KSPSetUseExplicitTranspose", ksp->transpose.use_explicittranspose, &flg, &set));
+  PetscCall(PetscOptionsBool("-ksp_use_explicittranspose", "Explicitly transpose the system in KSPSolveTranspose() and KSPMatSolveTranspose()", "KSPSetUseExplicitTranspose", ksp->transpose.use_explicittranspose, &flg, &set));
   if (set) PetscCall(KSPSetUseExplicitTranspose(ksp, flg));
 
   PetscTryTypeMethod(ksp, setfromoptions, PetscOptionsObject);

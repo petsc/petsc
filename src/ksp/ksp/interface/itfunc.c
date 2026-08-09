@@ -17,6 +17,8 @@ static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, Pet
   return PETSC_SUCCESS;
 }
 
+static PetscErrorCode KSPRestoreExplicitTranspose_Private(KSP);
+
 /*@
   KSPComputeExtremeSingularValues - Computes the extreme singular values
   for the preconditioned operator. Called after or during `KSPSolve()`.
@@ -877,7 +879,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 
   PetscCall(VecSetErrorIfLocked(ksp->vec_sol, 3));
 
-  PetscCall(PetscLogEventBegin(!ksp->transpose_solve ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  PetscCall(PetscLogEventBegin(!ksp->transpose.solve_requested ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
@@ -970,7 +972,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
-  PetscCall(PetscLogEventEnd(!ksp->transpose_solve ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  PetscCall(PetscLogEventEnd(!ksp->transpose.solve_requested ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   if (ksp->guess) PetscCall(KSPGuessUpdate(ksp->guess, ksp->vec_rhs, ksp->vec_sol));
   PetscCall(KSPPostSolve(ksp, ksp->vec_rhs, ksp->vec_sol));
 
@@ -1017,9 +1019,9 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   if (ksp->errorifnotconverged && ksp->reason < 0 && ((level == 1) || (ksp->reason != KSP_DIVERGED_ITS))) {
     PCFailedReason reason;
 
-    PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
+    PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s", !ksp->transpose.solve_requested ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
     PetscCall(PCGetFailedReason(ksp->pc, &reason));
-    SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
+    SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose.solve_requested ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
   }
   level--;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1109,7 +1111,9 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (b) PetscValidHeaderSpecific(b, VEC_CLASSID, 2);
   if (x) PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  ksp->transpose_solve = PETSC_FALSE;
+  PetscCall(KSPRestoreExplicitTranspose_Private(ksp));
+  ksp->transpose_solve           = PETSC_FALSE;
+  ksp->transpose.solve_requested = PETSC_FALSE;
   PetscCall(KSPSolve_Private(ksp, b, x));
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCMPI, &isPCMPI));
   if (PCMPIServerActive && isPCMPI) {
@@ -1122,25 +1126,100 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPUseExplicitTranspose_Private(KSP ksp)
+static PetscErrorCode KSPResetExplicitTranspose_Private(KSP ksp)
 {
-  Mat J, Jpre;
+  PetscFunctionBegin;
+  PetscCall(MatDestroy(&ksp->transpose.AT));
+  PetscCall(MatDestroy(&ksp->transpose.BT));
+  PetscCall(MatDestroy(&ksp->transpose.A));
+  PetscCall(MatDestroy(&ksp->transpose.B));
+  ksp->transpose.Aid             = 0;
+  ksp->transpose.Bid             = 0;
+  ksp->transpose.Anonzerostate   = 0;
+  ksp->transpose.Bnonzerostate   = 0;
+  ksp->transpose.reuse_transpose = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPRestoreExplicitTranspose_Private(KSP ksp)
+{
+  Mat              J, Jpre;
+  PetscObjectState Jnonzerostate, Jprenonzerostate;
+  PetscBool        reset, restore = PETSC_FALSE;
 
   PetscFunctionBegin;
+  if (!ksp->transpose.reuse_transpose) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(KSPGetOperators(ksp, &J, &Jpre));
+  if (J == ksp->transpose.AT) {
+    J       = ksp->transpose.A;
+    restore = PETSC_TRUE;
+  }
+  if (Jpre == ksp->transpose.BT) {
+    Jpre    = ksp->transpose.B;
+    restore = PETSC_TRUE;
+  }
+  PetscCall(MatGetNonzeroState(J, &Jnonzerostate));
+  PetscCall(MatGetNonzeroState(Jpre, &Jprenonzerostate));
+  reset = (PetscBool)(((PetscObject)J)->id != ksp->transpose.Aid || ((PetscObject)Jpre)->id != ksp->transpose.Bid || Jnonzerostate != ksp->transpose.Anonzerostate || Jprenonzerostate != ksp->transpose.Bnonzerostate);
+  if (restore) PetscCall(KSPSetOperators(ksp, J, Jpre));
+  if (reset) PetscCall(KSPResetExplicitTranspose_Private(ksp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPUseExplicitTranspose_Private(KSP ksp)
+{
+  Mat              J, Jpre, holdJ = NULL, holdJpre = NULL;
+  PetscObjectState ATstate, BTstate, Jnonzerostate, Jprenonzerostate, state;
+  PetscBool        rebuild, transposes_set = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  ksp->transpose_solve = PETSC_FALSE;
+  PetscCall(KSPGetOperators(ksp, &J, &Jpre));
+  if (ksp->transpose.reuse_transpose) {
+    transposes_set = (PetscBool)(J == ksp->transpose.AT && Jpre == ksp->transpose.BT);
+    /* A previous call set the cached transposes as the KSP operators; update them from their parent operators */
+    if (J == ksp->transpose.AT) J = ksp->transpose.A;
+    if (Jpre == ksp->transpose.BT) Jpre = ksp->transpose.B;
+  }
+  PetscCall(MatGetNonzeroState(J, &Jnonzerostate));
+  PetscCall(MatGetNonzeroState(Jpre, &Jprenonzerostate));
+  if (ksp->transpose.reuse_transpose && (((PetscObject)J)->id != ksp->transpose.Aid || ((PetscObject)Jpre)->id != ksp->transpose.Bid || Jnonzerostate != ksp->transpose.Anonzerostate || Jprenonzerostate != ksp->transpose.Bnonzerostate)) {
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    holdJ    = J;
+    holdJpre = Jpre;
+    PetscCall(KSPResetExplicitTranspose_Private(ksp));
+  }
   if (!ksp->transpose.reuse_transpose) {
+    PetscCall(PetscObjectReference((PetscObject)J));
+    PetscCall(PetscObjectReference((PetscObject)Jpre));
+    ksp->transpose.A             = J;
+    ksp->transpose.B             = Jpre;
+    ksp->transpose.Aid           = ((PetscObject)J)->id;
+    ksp->transpose.Bid           = ((PetscObject)Jpre)->id;
+    ksp->transpose.Anonzerostate = Jnonzerostate;
+    ksp->transpose.Bnonzerostate = Jprenonzerostate;
     PetscCall(MatTranspose(J, MAT_INITIAL_MATRIX, &ksp->transpose.AT));
     if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_INITIAL_MATRIX, &ksp->transpose.BT));
+    else {
+      PetscCall(PetscObjectReference((PetscObject)ksp->transpose.AT));
+      ksp->transpose.BT = ksp->transpose.AT;
+    }
     ksp->transpose.reuse_transpose = PETSC_TRUE;
+    rebuild                        = PETSC_TRUE;
   } else {
+    PetscCall(PetscObjectStateGet((PetscObject)ksp->transpose.AT, &ATstate));
+    PetscCall(PetscObjectStateGet((PetscObject)ksp->transpose.BT, &BTstate));
     PetscCall(MatTranspose(J, MAT_REUSE_MATRIX, &ksp->transpose.AT));
     if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_REUSE_MATRIX, &ksp->transpose.BT));
+    PetscCall(PetscObjectStateGet((PetscObject)ksp->transpose.AT, &state));
+    rebuild = (PetscBool)(ATstate != state);
+    PetscCall(PetscObjectStateGet((PetscObject)ksp->transpose.BT, &state));
+    rebuild = (PetscBool)(rebuild || BTstate != state);
   }
-  if (J == Jpre && ksp->transpose.BT != ksp->transpose.AT) {
-    PetscCall(PetscObjectReference((PetscObject)ksp->transpose.AT));
-    ksp->transpose.BT = ksp->transpose.AT;
-  }
-  PetscCall(KSPSetOperators(ksp, ksp->transpose.AT, ksp->transpose.BT));
+  if (rebuild || !transposes_set) PetscCall(KSPSetOperators(ksp, ksp->transpose.AT, ksp->transpose.BT));
+  PetscCall(MatDestroy(&holdJ));
+  PetscCall(MatDestroy(&holdJpre));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1157,13 +1236,14 @@ static PetscErrorCode KSPUseExplicitTranspose_Private(KSP ksp)
   Level: developer
 
   Note:
-  For complex numbers, this solve the non-Hermitian transpose system.
+  For complex numbers, this solves the non-Hermitian transpose system. `KSPSetUseExplicitTranspose()` controls whether the transpose is formed explicitly and describes the
+  effect on the `KSP` operators.
 
   Developer Note:
   We need to implement a `KSPSolveHermitianTranspose()`
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetUp()`, `KSPDestroy()`, `KSPSetTolerances()`, `KSPConvergedDefault()`,
-          `KSPSolve()`, `KSP`, `KSPSetOperators()`
+          `KSPSolve()`, `KSPSetUseExplicitTranspose()`, `KSP`, `KSPSetOperators()`
 @*/
 PetscErrorCode KSPSolveTranspose(KSP ksp, Vec b, Vec x)
 {
@@ -1171,25 +1251,9 @@ PetscErrorCode KSPSolveTranspose(KSP ksp, Vec b, Vec x)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (b) PetscValidHeaderSpecific(b, VEC_CLASSID, 2);
   if (x) PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  if (ksp->transpose.use_explicittranspose) {
-    Mat J, Jpre;
-    PetscCall(KSPGetOperators(ksp, &J, &Jpre));
-    if (!ksp->transpose.reuse_transpose) {
-      PetscCall(MatTranspose(J, MAT_INITIAL_MATRIX, &ksp->transpose.AT));
-      if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_INITIAL_MATRIX, &ksp->transpose.BT));
-      ksp->transpose.reuse_transpose = PETSC_TRUE;
-    } else {
-      PetscCall(MatTranspose(J, MAT_REUSE_MATRIX, &ksp->transpose.AT));
-      if (J != Jpre) PetscCall(MatTranspose(Jpre, MAT_REUSE_MATRIX, &ksp->transpose.BT));
-    }
-    if (J == Jpre && ksp->transpose.BT != ksp->transpose.AT) {
-      PetscCall(PetscObjectReference((PetscObject)ksp->transpose.AT));
-      ksp->transpose.BT = ksp->transpose.AT;
-    }
-    PetscCall(KSPSetOperators(ksp, ksp->transpose.AT, ksp->transpose.BT));
-  } else {
-    ksp->transpose_solve = PETSC_TRUE;
-  }
+  ksp->transpose.solve_requested = PETSC_TRUE;
+  if (ksp->transpose.use_explicittranspose) PetscCall(KSPUseExplicitTranspose_Private(ksp));
+  else ksp->transpose_solve = PETSC_TRUE;
   PetscCall(KSPSolve_Private(ksp, b, x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1226,9 +1290,6 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
   PetscBool match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
-  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
   PetscCheckSameType(B, 2, X, 3);
@@ -1255,12 +1316,12 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
   if (ksp->ops->matsolve) {
     level++;
     if (ksp->guess_zero) PetscCall(MatZeroEntries(X));
-    PetscCall(PetscLogEventBegin(!ksp->transpose_solve ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
+    PetscCall(PetscLogEventBegin(!ksp->transpose.solve_requested ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
     PetscCall(KSPGetMatSolveBatchSize(ksp, &Bbn));
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
     else PetscCheck(Bbn >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %" PetscInt_FMT " must be positive", Bbn);
-    PetscCall(PetscInfo(ksp, "KSP type %s%s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, ksp->transpose_solve ? " transpose" : "", Bbn));
+    PetscCall(PetscInfo(ksp, "KSP type %s%s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, ksp->transpose.solve_requested ? " transpose" : "", Bbn));
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       PetscUseTypeMethod(ksp, matsolve, B, X);
@@ -1296,13 +1357,13 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
     if (ksp->viewRhs) PetscCall(ObjectView((PetscObject)B, ksp->viewerRhs, ksp->formatRhs));
     if (ksp->viewSol) PetscCall(ObjectView((PetscObject)X, ksp->viewerSol, ksp->formatSol));
     if (ksp->view) PetscCall(KSPView(ksp, ksp->viewer));
-    PetscCall(PetscLogEventEnd(!ksp->transpose_solve ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
+    PetscCall(PetscLogEventEnd(!ksp->transpose.solve_requested ? KSP_MatSolve : KSP_MatSolveTranspose, ksp, B, X, 0));
     if (ksp->errorifnotconverged && ksp->reason < 0 && (level == 1 || ksp->reason != KSP_DIVERGED_ITS)) {
       PCFailedReason reason;
 
-      PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
+      PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s", !ksp->transpose.solve_requested ? "" : "Transpose", KSPConvergedReasons[ksp->reason]);
       PetscCall(PCGetFailedReason(ksp->pc, &reason));
-      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose_solve ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged, reason %s PC failed due to %s", !ksp->transpose.solve_requested ? "" : "Transpose", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
     }
     level--;
   } else {
@@ -1340,7 +1401,12 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
 PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
   PetscFunctionBegin;
-  ksp->transpose_solve = PETSC_FALSE;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
+  PetscCall(KSPRestoreExplicitTranspose_Private(ksp));
+  ksp->transpose_solve           = PETSC_FALSE;
+  ksp->transpose.solve_requested = PETSC_FALSE;
   PetscCall(KSPMatSolve_Private(ksp, B, X));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1360,14 +1426,17 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   Notes:
   This is a stripped-down version of `KSPSolveTranspose()`, which only handles `-ksp_view`, `-ksp_converged_reason`, `-ksp_converged_rate`, and `-ksp_view_final_residual`.
 
-  Unlike `KSPSolveTranspose()`,
-  `B` and `X` must be different matrices and the transposed matrix cannot be assembled explicitly for the user.
+  Unlike `KSPSolveTranspose()`, `B` and `X` must be different matrices.
 
-.seealso: [](ch_ksp), `KSPSolveTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
+.seealso: [](ch_ksp), `KSPSolveTranspose()`, `KSPSetUseExplicitTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
 @*/
 PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
+  ksp->transpose.solve_requested = PETSC_TRUE;
   if (ksp->transpose.use_explicittranspose) PetscCall(KSPUseExplicitTranspose_Private(ksp));
   else ksp->transpose_solve = PETSC_TRUE;
   PetscCall(KSPMatSolve_Private(ksp, B, X));
@@ -1501,6 +1570,7 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscCall(VecDestroy(&ksp->vec_sol));
   PetscCall(VecDestroy(&ksp->diagonal));
   PetscCall(VecDestroy(&ksp->truediagonal));
+  PetscCall(KSPResetExplicitTranspose_Private(ksp));
 
   ksp->setupstage = KSP_SETUP_NEW;
   ksp->nmax       = PETSC_DECIDE;
@@ -1544,12 +1614,6 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   PetscCall(KSPResetViewers(*ksp));
   (*ksp)->pc = pc;
   PetscTryTypeMethod(*ksp, destroy);
-
-  if ((*ksp)->transpose.use_explicittranspose) {
-    PetscCall(MatDestroy(&(*ksp)->transpose.AT));
-    PetscCall(MatDestroy(&(*ksp)->transpose.BT));
-    (*ksp)->transpose.reuse_transpose = PETSC_FALSE;
-  }
 
   PetscCall(KSPGuessDestroy(&(*ksp)->guess));
   PetscCall(DMDestroy(&(*ksp)->dm));
@@ -3122,26 +3186,36 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func
 }
 
 /*@
-  KSPSetUseExplicitTranspose - Determines the explicit transpose of the operator is formed in `KSPSolveTranspose()`. In some configurations (like GPUs) it may
-  be explicitly formed since the solve is much more efficient.
+  KSPSetUseExplicitTranspose - Determines whether the explicit transpose of the operator is formed in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
 
-  Logically Collective
+  Collective
 
-  Input Parameter:
-. ksp - the `KSP` context
+  Input Parameters:
++ ksp - the `KSP` context
+- flg - `PETSC_TRUE` to transpose the system explicitly, `PETSC_FALSE` to not transpose explicitly (default)
 
-  Output Parameter:
-. flg - `PETSC_TRUE` to transpose the system in `KSPSolveTranspose()`, `PETSC_FALSE` to not transpose (default)
+  Options Database Key:
+. -ksp_use_explicittranspose - transpose the system explicitly in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPSolveTranspose()`, `KSP`
+  Note:
+  Explicitly forming the transpose may improve solve performance in some configurations, such as on GPUs. When enabled, the explicitly transposed operators replace the `KSP`
+  operators and remain set after `KSPSolveTranspose()` or `KSPMatSolveTranspose()`, so `KSPGetOperators()` returns the transposed operators. A subsequent non-transpose
+  `KSPSolve()` or `KSPMatSolve()`, or disabling this option, restores any cached transposed operator that is still set to its parent operator. Alternating between transpose
+  and non-transpose solves requires the preconditioner to be set up again on every direction change; use separate `KSP` objects when both directions are solved repeatedly.
+
+.seealso: [](ch_ksp), `KSPSolveTranspose()`, `KSPMatSolveTranspose()`, `KSPSetOperators()`, `KSPGetOperators()`, `KSP`
 @*/
 PetscErrorCode KSPSetUseExplicitTranspose(KSP ksp, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
+  if (!flg && ksp->transpose.reuse_transpose) {
+    PetscCall(KSPRestoreExplicitTranspose_Private(ksp));
+    PetscCall(KSPResetExplicitTranspose_Private(ksp));
+  }
   ksp->transpose.use_explicittranspose = flg;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

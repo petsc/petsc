@@ -161,11 +161,14 @@ struct _p_KSP {
   PetscInt its;      /* number of iterations so far computed in THIS linear solve*/
   PetscInt totalits; /* number of iterations used by this KSP object since it was created */
 
-  PetscBool transpose_solve; /* solve transpose system instead */
+  PetscBool transpose_solve; /* PETSC_TRUE applies the set operators transposed; PETSC_FALSE applies them as-is, including for an explicit transpose solve */
   struct {
-    Mat       AT, BT;
-    PetscBool use_explicittranspose; /* transpose the system explicitly in KSP[Mat]SolveTranspose() */
-    PetscBool reuse_transpose;       /* reuse the previous transposed system */
+    Mat              A, B, AT, BT;                 /* parent operators, referenced by the KSP, and their explicit transposes */
+    PetscObjectId    Aid, Bid;                     /* IDs detect MatHeaderReplace() on A and B */
+    PetscObjectState Anonzerostate, Bnonzerostate; /* nonzero states of A and B when the transposes were formed */
+    PetscBool        solve_requested;              /* PETSC_TRUE means KSP[Mat]SolveTranspose() was requested; PETSC_FALSE means KSP[Mat]Solve() was requested */
+    PetscBool        use_explicittranspose;        /* transpose the system explicitly in KSP[Mat]SolveTranspose() */
+    PetscBool        reuse_transpose;              /* reuse the previous transposed system */
   } transpose;
 
   KSPNormType normtype; /* type of norm used for convergence tests */
