@@ -406,11 +406,11 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionI
   PetscFunctionBegin;
   PetscCall(VecTaggerSetFromOptions_Simple(tagger, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "VecTagger options for CDF boxes");
-  PetscCall(PetscOptionsEList("-vec_tagger_cdf_method", "Method for computing absolute boxes from CDF boxes", "VecTaggerCDFSetMethod()", VecTaggerCDFMethods, VECTAGGER_CDF_NUM_METHODS, VecTaggerCDFMethods[cuml->method], &method, &set));
+  PetscCall(PetscOptionsEList("-vec_tagger_cdf_method", "Method for computing absolute boxes from CDF boxes", "VecTaggerCDFSetMethod", VecTaggerCDFMethods, VECTAGGER_CDF_NUM_METHODS, VecTaggerCDFMethods[cuml->method], &method, &set));
   if (set) cuml->method = (VecTaggerCDFMethod)method;
-  PetscCall(PetscOptionsInt("-vec_tagger_cdf_max_it", "Maximum iterations for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances()", cuml->maxit, &cuml->maxit, NULL));
-  PetscCall(PetscOptionsReal("-vec_tagger_cdf_rtol", "Maximum relative tolerance for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances()", cuml->rtol, &cuml->rtol, NULL));
-  PetscCall(PetscOptionsReal("-vec_tagger_cdf_atol", "Maximum absolute tolerance for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances()", cuml->atol, &cuml->atol, NULL));
+  PetscCall(PetscOptionsInt("-vec_tagger_cdf_max_it", "Maximum iterations for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances", cuml->maxit, &cuml->maxit, NULL));
+  PetscCall(PetscOptionsReal("-vec_tagger_cdf_rtol", "Maximum relative tolerance for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances", cuml->rtol, &cuml->rtol, NULL));
+  PetscCall(PetscOptionsReal("-vec_tagger_cdf_atol", "Maximum absolute tolerance for iterative computation of absolute boxes from CDF boxes", "VecTaggerCDFIterativeSetTolerances", cuml->atol, &cuml->atol, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

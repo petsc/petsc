@@ -546,10 +546,10 @@ PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDev
   if (flg) PetscCall(PetscLogGpuEnergy());
 
   PetscOptionsBegin(comm, nullptr, "PetscDevice Options", "Sys");
-  PetscCall(PetscOptionsEList("-device_enable", "How (or whether) to initialize PetscDevices", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[initIdx], &initIdx, nullptr));
-  PetscCall(PetscOptionsEList("-default_device_type", "Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT()", "PetscDeviceSetDefaultDeviceType()", PetscDeviceTypes, PETSC_DEVICE_MAX, PetscDeviceTypes[initDeviceIdx], &initDeviceIdx, defaultDeviceIdSet));
-  PetscCall(PetscOptionsRangeInt("-device_select", "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *defaultDeviceId, defaultDeviceId, nullptr, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
-  PetscCall(PetscOptionsBool("-device_view", "Display device information and assignments (forces eager initialization)", "PetscDeviceView()", *defaultView, defaultView, &flg));
+  PetscCall(PetscOptionsEList("-device_enable", "How (or whether) to initialize PetscDevices", "PetscDeviceInitialize", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[initIdx], &initIdx, nullptr));
+  PetscCall(PetscOptionsEList("-default_device_type", "Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT()", "PetscDeviceSetDefaultDeviceType", PetscDeviceTypes, PETSC_DEVICE_MAX, PetscDeviceTypes[initDeviceIdx], &initDeviceIdx, defaultDeviceIdSet));
+  PetscCall(PetscOptionsRangeInt("-device_select", "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate", *defaultDeviceId, defaultDeviceId, nullptr, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
+  PetscCall(PetscOptionsBool("-device_view", "Display device information and assignments (forces eager initialization)", "PetscDeviceView", *defaultView, defaultView, &flg));
   PetscOptionsEnd();
 
   if (initIdx == PETSC_DEVICE_INIT_NONE) {

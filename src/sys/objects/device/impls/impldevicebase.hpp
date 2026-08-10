@@ -162,7 +162,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
   auto type = static_cast<PetscInt>(util::to_underlying(*inittype));
 
   PetscFunctionBegin;
-  PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, "How (or whether) to initialize a device", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[type], &type, flag));
+  PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, "How (or whether) to initialize a device", "PetscDeviceInitialize", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[type], &type, flag));
   *inittype = static_cast<PetscDeviceInitType>(type);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -180,7 +180,7 @@ template <typename D>
 inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems PetscOptionsObject, PetscInt *id, PetscBool *flag) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionDeviceSelect(PetscOptionsObject, "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *id, id, flag, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
+  PetscCall(PetscOptionDeviceSelect(PetscOptionsObject, "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate", *id, id, flag, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -197,7 +197,7 @@ template <typename D>
 inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems PetscOptionsObject, PetscBool *view, PetscBool *flag) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(PetscOptionDeviceView(PetscOptionsObject, "Display device information and assignments (forces eager initialization)", "PetscDeviceView()", *view, view, flag));
+  PetscCall(PetscOptionDeviceView(PetscOptionsObject, "Display device information and assignments (forces eager initialization)", "PetscDeviceView", *view, view, flag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
