@@ -160,6 +160,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexTrSF", DM_CLASSID, &DMPLEXTRANSFORM_CreateSF));
   PetscCall(PetscLogEventRegister("DMPlexTrLabels", DM_CLASSID, &DMPLEXTRANSFORM_CreateLabels));
   PetscCall(PetscLogEventRegister("DMPlexTrCoords", DM_CLASSID, &DMPLEXTRANSFORM_SetCoordinates));
+  PetscCall(PetscLogEventRegister("DMPlexTrCheck", DM_CLASSID, &DMPLEXTRANSFORM_Check));
 
   PetscCall(PetscLogEventRegister("DMSwarmMigrate", DM_CLASSID, &DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup", DM_CLASSID, &DMSWARM_DataExchangerTopologySetup));

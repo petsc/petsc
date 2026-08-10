@@ -7,7 +7,7 @@ PetscClassId DMPLEXTRANSFORM_CLASSID;
 PetscFunctionList DMPlexTransformList              = NULL;
 PetscBool         DMPlexTransformRegisterAllCalled = PETSC_FALSE;
 
-PetscLogEvent DMPLEXTRANSFORM_SetUp, DMPLEXTRANSFORM_Apply, DMPLEXTRANSFORM_SetConeSizes, DMPLEXTRANSFORM_SetCones, DMPLEXTRANSFORM_CreateSF, DMPLEXTRANSFORM_CreateLabels, DMPLEXTRANSFORM_SetCoordinates;
+PetscLogEvent DMPLEXTRANSFORM_SetUp, DMPLEXTRANSFORM_Apply, DMPLEXTRANSFORM_SetConeSizes, DMPLEXTRANSFORM_SetCones, DMPLEXTRANSFORM_CreateSF, DMPLEXTRANSFORM_CreateLabels, DMPLEXTRANSFORM_SetCoordinates, DMPLEXTRANSFORM_Check;
 
 /* Construct cell type order since we must loop over cell types in the same dimensional order they are stored in the plex if dm != NULL
         OR in standard plex ordering if dm == NULL */
@@ -1084,7 +1084,9 @@ PetscErrorCode DMPlexTransformSetMatchStrata(DMPlexTransform tr, PetscBool match
 PetscErrorCode DMPlexTransformCheck(DMPlexTransform tr, DM dm)
 {
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_Check, tr, dm, 0, 0));
   PetscTryTypeMethod(tr, check, dm);
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_Check, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1181,7 +1183,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
     DM              dm;
     IS              rtIS;
     const PetscInt *reftypes;
-    PetscInt        Nrt, r, rtStart;
+    PetscInt        Nrt, r;
 
     PetscCall(DMPlexTransformGetDM(tr, &dm));
     PetscCall(DMLabelGetNumValues(trType, &Nrt));
@@ -1202,12 +1204,12 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
     PetscCall(ISDestroy(&rtIS));
     PetscCheck(offset >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Source cell type for target point %" PetscInt_FMT " could be not found", pNew);
     /* TODO Map refinement types to cell types */
-    PetscCall(DMLabelGetStratumBounds(trType, rt, &rtStart, NULL));
-    PetscCheck(rtStart >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Refinement type %" PetscInt_FMT " has no source points", rt);
+    PetscCall(DMLabelGetStratumBounds(trType, rt, &rtS, NULL));
+    PetscCheck(rtS >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Refinement type %" PetscInt_FMT " has no source points", rt);
     for (ctO = 0; ctO < DM_NUM_POLYTOPES; ++ctO) {
       PetscInt ctS = tr->ctStart[ctO], ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO] + 1]];
 
-      if ((rtStart >= ctS) && (rtStart < ctE)) break;
+      if ((rtS >= ctS) && (rtS < ctE)) break;
     }
     PetscCheck(ctO != DM_NUM_POLYTOPES, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine a cell type for refinement type %" PetscInt_FMT, rt);
   } else {
@@ -1227,31 +1229,27 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   }
   ctS = tr->ctStart[ctO];
   ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO] + 1]];
-  if (trType) {
-    for (rtS = ctS; rtS < ctE; ++rtS) {
-      PetscInt val;
-      PetscCall(DMLabelGetValue(trType, rtS, &val));
-      if (val == rt) break;
-    }
-    PetscCheck(rtS < ctE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find point of type %s with refine type %" PetscInt_FMT, DMPolytopeTypes[ctO], rt);
-  } else rtS = ctS;
+  if (!trType) rtS = ctS;
   PetscCall(DMPlexTransformCellTransform(tr, (DMPolytopeType)ctO, rtS, &rtTmp, &Nct, &rct, &rsize, &cone, &ornt));
   PetscCheck(!trType || rt == rtTmp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has refine type %" PetscInt_FMT " != %" PetscInt_FMT " refine type which produced point %" PetscInt_FMT, rtS, rtTmp, rt, pNew);
   for (n = 0; n < Nct; ++n) {
     if (rct[n] == ctN) {
-      PetscInt tmp = pNew - tr->ctStartNew[ctN] - offset, val, c;
+      PetscInt tmp = pNew - tr->ctStartNew[ctN] - offset, c;
 
       if (trType) {
-        for (c = ctS; c < ctE; ++c) {
-          PetscCall(DMLabelGetValue(trType, c, &val));
-          if (val == rt) {
-            if (tmp < rsize[n]) break;
-            tmp -= rsize[n];
-          }
-        }
-        PetscCheck(c < ctE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parent point for target point %" PetscInt_FMT " could be not found", pNew);
+        IS              rtIS;
+        const PetscInt *points;
+        const PetscInt  idx = tmp / rsize[n];
+        PetscInt        pStart, pEnd;
+
+        PetscCall(DMLabelGetStratumIS(trType, rt, &rtIS));
+        PetscCall(ISGetPointRange(rtIS, &pStart, &pEnd, &points));
+        PetscCheck(idx < pEnd - pStart, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parent point for target point %" PetscInt_FMT " could not be found due to invalid index %" PetscInt_FMT " not in range [0, %" PetscInt_FMT ")", pNew, idx, pEnd - pStart);
+        c = points ? points[idx] : pStart + idx;
+        PetscCall(ISRestorePointRange(rtIS, &pStart, &pEnd, &points));
+        PetscCall(ISDestroy(&rtIS));
         rp = c - ctS;
-        rO = tmp;
+        rO = tmp % rsize[n];
       } else {
         // This assumes that all points of type ctO transform the same way
         rp = tmp / rsize[n];
