@@ -437,8 +437,6 @@ PetscErrorCode TaoMonitorSetFromOptions(Tao tao, const char name[], const char h
 . -tao_view_solution                                           - view the solution at the end of the optimization process
 . -tao_monitor                                                 - prints function value and residual norm at each iteration
 . -tao_monitor_interval interval                               - run the default monitor every `interval` iterations, and the last iteration
-. -tao_monitor_short                                           - same as `-tao_monitor`, but truncates very small values
-. -tao_monitor_short_interval interval                         - run the default short monitor every `interval` iterations, and the last iteration
 . -tao_monitor_constraint_norm [ascii][:filename]              - prints objective value, gradient, and constraint norm at each iteration
 . -tao_monitor_constraint_norm_interval interval               - run the constraint norm monitor every `interval` iterations, and the last iteration
 . -tao_monitor_globalization                                   - prints information about the globalization at each iteration
@@ -535,7 +533,9 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscCall(PetscOptionsDeprecated("-tao_gradient_monitor", "-tao_monitor_gradient", "3.21", NULL));
   PetscCall(PetscOptionsDeprecated("-tao_stepdirection_monitor", "-tao_monitor_step", "3.21", NULL));
   PetscCall(PetscOptionsDeprecated("-tao_residual_monitor", "-tao_monitor_residual", "3.21", NULL));
-  PetscCall(PetscOptionsDeprecated("-tao_smonitor", "-tao_monitor_short", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_smonitor", "-tao_monitor", "3.21", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_monitor_short", "-tao_monitor", "3.26", NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_monitor_short_interval", "-tao_monitor_interval", "3.26", NULL));
   PetscCall(PetscOptionsDeprecated("-tao_cmonitor", "-tao_monitor_constraint_norm", "3.21", NULL));
   PetscCall(PetscOptionsDeprecated("-tao_gmonitor", "-tao_monitor_globalization", "3.21", NULL));
   PetscCall(PetscOptionsDeprecated("-tao_draw_solution", "-tao_monitor_solution_draw", "3.21", NULL));
@@ -551,7 +551,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscCall(TaoMonitorSetFromOptions(tao, "-tao_monitor_residual", "View least-squares residual vector after each iteration", "TaoMonitorResidual", TaoMonitorResidual));
   PetscCall(TaoMonitorSetFromOptions(tao, "-tao_monitor", "Use the default convergence monitor", "TaoMonitorDefault", TaoMonitorDefault));
   PetscCall(TaoMonitorSetFromOptions(tao, "-tao_monitor_globalization", "Use the convergence monitor with extra globalization info", "TaoMonitorGlobalization", TaoMonitorGlobalization));
-  PetscCall(TaoMonitorSetFromOptions(tao, "-tao_monitor_short", "Use the short convergence monitor", "TaoMonitorDefaultShort", TaoMonitorDefaultShort));
   PetscCall(TaoMonitorSetFromOptions(tao, "-tao_monitor_constraint_norm", "Use the default convergence monitor with constraint norm", "TaoMonitorConstraintNorm", TaoMonitorConstraintNorm));
 
   flg = PETSC_FALSE;
@@ -1742,7 +1741,7 @@ PetscErrorCode TaoMonitorCancel(Tao tao)
   This monitor prints the function value and gradient
   norm at each iteration.
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorGlobalization()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorDefault(Tao tao, PetscViewerAndFormat *vf)
 {
@@ -1797,7 +1796,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, PetscViewerAndFormat *vf)
   iteration, as well as the step size and trust radius. Note that the
   step size and trust radius may be the same for some algorithms.
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorGlobalization(Tao tao, PetscViewerAndFormat *vf)
 {
@@ -1826,64 +1825,6 @@ PetscErrorCode TaoMonitorGlobalization(Tao tao, PetscViewerAndFormat *vf)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual: %g,", (double)tao->residual));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Step: %g,  Trust: %g\n", (double)tao->step, (double)tao->trust));
-    PetscCall(PetscViewerASCIISetTab(viewer, tabs));
-  }
-  PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  TaoMonitorDefaultShort - Routine for monitoring progress of `TaoSolve()` that displays fewer digits than `TaoMonitorDefault()`
-
-  Collective
-
-  Input Parameters:
-+ tao - the `Tao` context
-- vf  - `PetscViewerAndFormat` context
-
-  Options Database Keys:
-+ -tao_monitor_short [ascii][:filename] - monitor function and residual norms at each iteration, with fewer digits of the residual, only ASCII viewers are supported
-- -tao_monitor_short_interval interval  - only monitor function and residual norms every `interval` iterations, and the last iteration
-
-  Level: advanced
-
-  Note:
-  Same as `TaoMonitorDefault()` except
-  it prints fewer digits of the residual as the residual gets smaller.
-  This is because the later digits are meaningless and are often
-  different on different machines; by using this routine different
-  machines will usually generate the same output.
-
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
-@*/
-PetscErrorCode TaoMonitorDefaultShort(Tao tao, PetscViewerAndFormat *vf)
-{
-  PetscViewer viewer = vf->viewer;
-  PetscBool   isascii;
-  PetscInt    tabs;
-  PetscReal   gnorm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  if (vf->view_interval > 0 && tao->niter % vf->view_interval && !tao->reason) PetscFunctionReturn(PETSC_SUCCESS);
-
-  gnorm = tao->residual;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  if (isascii) {
-    PetscCall(PetscViewerASCIIGetTab(viewer, &tabs));
-    PetscCall(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "iter = %3" PetscInt_FMT ",", tao->niter));
-    PetscCall(PetscViewerASCIIPrintf(viewer, " Function value %g,", (double)tao->fc));
-    if (gnorm >= PETSC_INFINITY) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: infinity \n"));
-    } else if (gnorm > 1.e-6) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: %g \n", (double)gnorm));
-    } else if (gnorm > 1.e-11) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: < 1.0e-6 \n"));
-    } else {
-      PetscCall(PetscViewerASCIIPrintf(viewer, " Residual: < 1.0e-11 \n"));
-    }
     PetscCall(PetscViewerASCIISetTab(viewer, tabs));
   }
   PetscCall(PetscViewerPopFormat(viewer));
@@ -1948,7 +1889,7 @@ PetscErrorCode TaoMonitorConstraintNorm(Tao tao, PetscViewerAndFormat *vf)
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorSolution(Tao tao, PetscViewerAndFormat *vf)
 {
@@ -1976,7 +1917,7 @@ PetscErrorCode TaoMonitorSolution(Tao tao, PetscViewerAndFormat *vf)
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorGradient(Tao tao, PetscViewerAndFormat *vf)
 {
@@ -2004,7 +1945,7 @@ PetscErrorCode TaoMonitorGradient(Tao tao, PetscViewerAndFormat *vf)
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorStep(Tao tao, PetscViewerAndFormat *vf)
 {
@@ -2121,7 +2062,7 @@ PetscErrorCode TaoMonitorStepDraw(Tao tao, PetscCtx ctx)
 
   Level: advanced
 
-.seealso: [](ch_tao), `Tao`, `TaoMonitorDefaultShort()`, `TaoMonitorSet()`
+.seealso: [](ch_tao), `Tao`, `TaoMonitorDefault()`, `TaoMonitorSet()`
 @*/
 PetscErrorCode TaoMonitorResidual(Tao tao, PetscViewerAndFormat *vf)
 {

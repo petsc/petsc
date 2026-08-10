@@ -336,7 +336,7 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
 
    test:
       suffix: tsirm
-      args: -m 60 -n 60 -ksp_type tsirm -pc_type ksp -ksp_monitor_short -ksp_ksp_type fgmres -ksp_ksp_rtol 1e-10 -ksp_pc_type mg -ksp_ksp_max_it 30
+      args: -m 60 -n 60 -ksp_type tsirm -pc_type ksp -ksp_monitor -ksp_ksp_type fgmres -ksp_ksp_rtol 1e-10 -ksp_pc_type mg -ksp_ksp_max_it 30
       timeoutfactor: 4
 
 TEST*/

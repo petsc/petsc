@@ -511,33 +511,33 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
 
    test:
       nsize: 4
-      args: -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 4
-      args: -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 3
       nsize: 4
-      args: -fdcoloring -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -fdcoloring -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 3_ds
       nsize: 4
-      args: -fdcoloring -fdcoloring_ds -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -fdcoloring -fdcoloring_ds -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 4
       nsize: 4
-      args: -fdcoloring_local -fdcoloring -ksp_monitor_short -da_refine 1
+      args: -fdcoloring_local -fdcoloring -ksp_monitor -da_refine 1
       requires: !single
 
    test:
       suffix: 5
       nsize: 4
-      args: -fdcoloring_local -fdcoloring -ksp_monitor_short -da_refine 1 -snes_type newtontrdc
+      args: -fdcoloring_local -fdcoloring -ksp_monitor -da_refine 1 -snes_type newtontrdc
       requires: !single
 
    test:

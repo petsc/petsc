@@ -315,45 +315,45 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X)
 /*TEST
 
    test:
-      args: -snes_monitor_short -snes_type nrichardson
+      args: -snes_monitor -snes_type nrichardson
       requires: !single
 
    test:
       suffix: 2
-      args: -snes_monitor_short -ksp_monitor_short -ksp_type richardson -pc_type none -ksp_richardson_self_scale
+      args: -snes_monitor -ksp_monitor -ksp_type richardson -pc_type none -ksp_richardson_self_scale
       requires: !single
 
    test:
       suffix: 3
-      args: -snes_monitor_short -snes_type ngmres
+      args: -snes_monitor -snes_type ngmres
 
    test:
       suffix: 4
-      args: -snes_monitor_short -ksp_type gmres -ksp_monitor_short -pc_type none
+      args: -snes_monitor -ksp_type gmres -ksp_monitor -pc_type none
 
    test:
       suffix: 5
-      args: -snes_monitor_short -snes_type ncg
+      args: -snes_monitor -snes_type ncg
 
    test:
       suffix: 6
-      args: -snes_monitor_short -ksp_type cg -ksp_monitor_short -pc_type none
+      args: -snes_monitor -ksp_type cg -ksp_monitor -pc_type none
 
    test:
       suffix: 7
-      args: -da_refine 2 -snes_monitor_short -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor_short -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor_short
+      args: -da_refine 2 -snes_monitor -pc_type mg -mg_levels_ksp_type richardson -mg_levels_pc_type none -mg_levels_ksp_monitor -mg_levels_ksp_richardson_self_scale -ksp_type richardson -ksp_monitor
       requires: !single
 
    test:
       suffix: 8
-      args: -da_refine 2 -snes_monitor_short -snes_type fas -fas_levels_snes_monitor_short -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas -snes_rtol 1.e-5
+      args: -da_refine 2 -snes_monitor -snes_type fas -fas_levels_snes_monitor -fas_coarse_snes_type newtonls -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_type fas -snes_rtol 1.e-5
 
    test:
       suffix: 9
-      args: -snes_monitor_short -ksp_type gmres -ksp_monitor_short -pc_type none -snes_type newtontrdc
+      args: -snes_monitor -ksp_type gmres -ksp_monitor -pc_type none -snes_type newtontrdc
 
    test:
       suffix: 10
-      args: -snes_monitor_short -ksp_type gmres -ksp_monitor_short -pc_type none -snes_type newtontrdc -snes_trdc_use_cauchy false
+      args: -snes_monitor -ksp_type gmres -ksp_monitor -pc_type none -snes_type newtontrdc -snes_trdc_use_cauchy false
 
 TEST*/

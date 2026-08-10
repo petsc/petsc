@@ -179,36 +179,36 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: library_preload
       requires: defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -library_preload
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -library_preload
 
    test:
       suffix: 2
-      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2_aijcusparse
       requires: cuda
-      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda
       args: -ksp_view
 
    test:
       suffix: 3
-      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type eisenstat -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 3_aijcusparse
       requires: cuda
-      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
+      args: -pc_type eisenstat -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
 
    test:
       suffix: aijcusparse
       requires: cuda
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -mat_type aijcusparse -vec_type cuda -ksp_view
       output_file: output/ex1_1_aijcusparse.out
 
    test:

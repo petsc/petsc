@@ -239,7 +239,7 @@ end program main
 !
 !   test:
 !      nsize: 2
-!      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2

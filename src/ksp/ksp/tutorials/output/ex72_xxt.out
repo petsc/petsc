@@ -4,8 +4,8 @@ Smallest max row element 4. at row 4
 Largest row ratio 0. at row 0
 Largest row ratio 0. at row 0
 Largest l1 row element 10.6667 at row 34
-  0 KSP Residual norm 15.0395
-  1 KSP Residual norm < 1.e-11
+  0 KSP Residual norm 1.503953124270e+01
+  1 KSP Residual norm 3.431671978833e-15
 KSP Object: 4 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
@@ -22,4 +22,4 @@ PC Object: 4 MPI processes
     total number of mallocs used during MatSetValues calls=0
       using I-node (on process 0) routines: found 7 nodes, limit used is 5
 Number of iterations =   1
-  Residual norm < 1.e-12
+Residual norm 2.33931e-14

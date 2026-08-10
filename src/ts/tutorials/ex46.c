@@ -362,8 +362,8 @@ int main(int argc, char **argv)
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g"
     args: -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
           -ts_type beuler -ts_max_steps 10 -ts_time_step 0.1 -ts_monitor -dmts_check \
-          -snes_monitor_short -snes_converged_reason \
-          -ksp_monitor_short -ksp_converged_reason \
+          -snes_monitor -snes_converged_reason \
+          -ksp_monitor -ksp_converged_reason \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full \
             -fieldsplit_velocity_pc_type lu \
             -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi
@@ -374,8 +374,8 @@ int main(int argc, char **argv)
     filter: sed -e "s~ATOL~RTOL~g" -e "s~ABS~RELATIVE~g" -e "s~ 0\]~ 0.0\]~g"
     args: -dm_plex_simplex 0 -dm_refine 1 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
           -ts_type beuler -ts_max_steps 10 -ts_time_step 0.1 -ts_monitor -dmts_check \
-          -snes_monitor_short -snes_converged_reason \
-          -ksp_monitor_short -ksp_converged_reason \
+          -snes_monitor -snes_converged_reason \
+          -ksp_monitor -ksp_converged_reason \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full \
             -fieldsplit_velocity_pc_type lu \
             -fieldsplit_pressure_ksp_rtol 1.0e-10 -fieldsplit_pressure_pc_type jacobi

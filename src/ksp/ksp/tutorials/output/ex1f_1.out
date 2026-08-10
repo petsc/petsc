@@ -1,10 +1,10 @@
-  0 KSP Residual norm 0.707107
-  1 KSP Residual norm 0.316228
-  2 KSP Residual norm 0.188982
-  3 KSP Residual norm 0.129099
-  4 KSP Residual norm 0.0953463
-  5 KSP Residual norm < 1.e-11
-Linear solve converged due to CONVERGED_RTOL iterations 5
+  0 KSP Residual norm 7.071067811865e-01
+  1 KSP Residual norm 3.162277660168e-01
+  2 KSP Residual norm 1.889822365046e-01
+  3 KSP Residual norm 1.290994448736e-01
+  4 KSP Residual norm 9.534625892456e-02
+  5 KSP Residual norm 6.316825885498e-16
+  Linear solve converged due to CONVERGED_RTOL iterations 5
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
@@ -23,4 +23,4 @@ PC Object: 1 MPI process
     total: nonzeros=28, allocated nonzeros=28
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-Norm of error < 1.e-12, Iterations =     5
+Norm of error  0.2826E-14,  Iterations =     5

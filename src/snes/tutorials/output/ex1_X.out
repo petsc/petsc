@@ -1,26 +1,26 @@
-  0 SNES Function norm 6.04152
+  0 SNES Function norm 6.041522986797e+00
     Residual norms for mysolver_ solve.
-    0 KSP Residual norm 6.04152
-    1 KSP Residual norm 1.04249
-    2 KSP Residual norm < 1.e-11
-  1 SNES Function norm 4.78676
+    0 KSP Residual norm 6.041522986797e+00
+    1 KSP Residual norm 1.042493382631e+00
+    2 KSP Residual norm 8.611522992343e-16
+  1 SNES Function norm 4.786756692342e+00
     Residual norms for mysolver_ solve.
-    0 KSP Residual norm 4.78676
-    1 KSP Residual norm 0.142639
-    2 KSP Residual norm < 1.e-11
-  2 SNES Function norm 2.98646
+    0 KSP Residual norm 4.786756692342e+00
+    1 KSP Residual norm 1.426392207750e-01
+    2 KSP Residual norm 4.095689079426e-16
+  2 SNES Function norm 2.986456323228e+00
     Residual norms for mysolver_ solve.
-    0 KSP Residual norm 2.98646
-    1 KSP Residual norm 0.0766989
-    2 KSP Residual norm < 1.e-11
-  3 SNES Function norm 0.230624
+    0 KSP Residual norm 2.986456323228e+00
+    1 KSP Residual norm 7.669888809223e-02
+    2 KSP Residual norm 4.090582451985e-16
+  3 SNES Function norm 2.306244667700e-01
     Residual norms for mysolver_ solve.
-    0 KSP Residual norm 0.230624
-    1 KSP Residual norm 0.0135555
-    2 KSP Residual norm < 1.e-11
-  4 SNES Function norm 0.00193631
+    0 KSP Residual norm 2.306244667700e-01
+    1 KSP Residual norm 1.355550749587e-02
+    2 KSP Residual norm 5.637911372003e-17
+  4 SNES Function norm 1.936314002654e-03
     Residual norms for mysolver_ solve.
-    0 KSP Residual norm 0.00193631
-    1 KSP Residual norm 0.000212559
-    2 KSP Residual norm < 1.e-11
-  5 SNES Function norm 1.43559e-07
+    0 KSP Residual norm 1.936314002654e-03
+    1 KSP Residual norm 2.125593590817e-04
+    2 KSP Residual norm 8.146990642643e-20
+  5 SNES Function norm 1.435593549512e-07

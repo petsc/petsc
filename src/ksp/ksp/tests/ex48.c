@@ -182,10 +182,10 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_error_if_not_converged
+      args: -ksp_monitor -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_error_if_not_converged
 
    test:
       suffix: 2
-      args: -ksp_monitor_short -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_view_eigenvalues -ksp_view_singularvalues -shift 1.5 -ksp_rtol 0 -ksp_atol 0 -n 5 -ksp_max_it 5
+      args: -ksp_monitor -ksp_converged_reason -ksp_type minres -pc_type jacobi -ksp_view_eigenvalues -ksp_view_singularvalues -shift 1.5 -ksp_rtol 0 -ksp_atol 0 -n 5 -ksp_max_it 5
 
 TEST*/

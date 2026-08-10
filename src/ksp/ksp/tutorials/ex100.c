@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 /*TEST
 
     test:
-      args: -ksp_monitor_short
+      args: -ksp_monitor
       requires: petsc4py
       localrunfiles: example100.py
 

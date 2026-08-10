@@ -626,12 +626,12 @@ static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
    test:
       suffix: 1
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason
+      args: -ksp_monitor -ksp_converged_reason
 
    test:
       suffix: direct_umfpack
       requires: suitesparse
       nsize: 1
-      args: -pinpressure 1 -stag_grid_x 8 -stag_grid_y 6 -ksp_monitor_short -pc_type lu -pc_factor_mat_solver_type umfpack
+      args: -pinpressure 1 -stag_grid_x 8 -stag_grid_y 6 -ksp_monitor -pc_type lu -pc_factor_mat_solver_type umfpack
 
 TEST*/

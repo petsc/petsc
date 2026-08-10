@@ -3,4 +3,4 @@
  MUMPS INFOG(17) :: Sum memory in MB = 6 
   Mumps row pivot threshold = 1e-06
   Mumps determinant = (0.760785, 0.) * 2^4245 
-Norm of error < 1.e-12 iterations 1
+Norm of error 5.84562e-13 iterations 1

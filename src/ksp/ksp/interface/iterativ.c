@@ -262,35 +262,6 @@ PetscErrorCode KSPMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFor
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  This is the same as KSPMonitorResidual() except it prints fewer digits of the residual as the residual gets smaller.
-  This is because the later digits are meaningless and are often different on different machines; by using this routine different
-  machines will usually generate the same output.
-
-  Deprecated: Intentionally has no manual page
-*/
-PetscErrorCode KSPMonitorResidualShort(KSP ksp, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
-{
-  PetscViewer       viewer = vf->viewer;
-  PetscViewerFormat format = vf->format;
-  PetscInt          tablevel;
-  const char       *prefix;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscCall(PetscObjectGetTabLevel((PetscObject)ksp, &tablevel));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
-  PetscCall(PetscViewerPushFormat(viewer, format));
-  PetscCall(PetscViewerASCIIAddTab(viewer, tablevel));
-  if (its == 0 && prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual norms for %s solve.\n", prefix));
-  if (fnorm > 1.e-9) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %g\n", its, (double)fnorm));
-  else if (fnorm > 1.e-11) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm %5.3e\n", its, (double)fnorm));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " KSP Residual norm < 1.e-11\n", its));
-  PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
-  PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
 {
   Vec                resid;

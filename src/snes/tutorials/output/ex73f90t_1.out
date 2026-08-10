@@ -1,23 +1,23 @@
-  0 SNES Function norm 319.647
-    0 KSP Residual norm 319.647
-    1 KSP Residual norm 0.00336364
-    2 KSP Residual norm 2.04437e-08
-  1 SNES Function norm 82.1815
-    0 KSP Residual norm 82.1815
-    1 KSP Residual norm 0.0060829
-    2 KSP Residual norm 1.82909e-09
-  2 SNES Function norm 7.70871
-    0 KSP Residual norm 7.70871
-    1 KSP Residual norm 0.00100773
-    2 KSP Residual norm 5.769e-10
-  3 SNES Function norm 0.224462
-    0 KSP Residual norm 0.224462
-    1 KSP Residual norm 3.23133e-05
-    2 KSP Residual norm 2.226e-11
-  4 SNES Function norm 0.000223009
-    0 KSP Residual norm 0.000223009
-    1 KSP Residual norm 3.19136e-08
-    2 KSP Residual norm < 1.e-11
-  5 SNES Function norm 2.168e-10
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+  0 SNES Function norm 3.196472990575e+02
+    0 KSP Residual norm 3.196472990575e+02
+    1 KSP Residual norm 1.630228342572e-02
+    2 KSP Residual norm 5.601082418156e-08
+  1 SNES Function norm 8.218149741077e+01
+    0 KSP Residual norm 8.218149741077e+01
+    1 KSP Residual norm 1.500261911558e-03
+    2 KSP Residual norm 9.759514655234e-09
+  2 SNES Function norm 7.708710956350e+00
+    0 KSP Residual norm 7.708710956350e+00
+    1 KSP Residual norm 2.103861552915e-04
+    2 KSP Residual norm 8.899405229245e-11
+  3 SNES Function norm 2.244616962470e-01
+    0 KSP Residual norm 2.244616962470e-01
+    1 KSP Residual norm 6.589217009493e-06
+    2 KSP Residual norm 5.001984808394e-11
+  4 SNES Function norm 2.230091145191e-04
+    0 KSP Residual norm 2.230091145191e-04
+    1 KSP Residual norm 6.550544699974e-09
+    2 KSP Residual norm 4.695762237679e-14
+  5 SNES Function norm 2.168455379375e-10
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 Number of SNES iterations =     5

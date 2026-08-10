@@ -1,11 +1,11 @@
 lid velocity = 0.0204082, prandtl # = 1., grashof # = 1.
-  0 SNES Function norm 0.146194
-    0 KSP Residual norm 0.146194
-    1 KSP Residual norm < 1.e-11
-  1 SNES Function norm 2.50702e-05
-    0 KSP Residual norm 2.50702e-05
-    1 KSP Residual norm < 1.e-11
-  2 SNES Function norm < 1.e-11
+  0 SNES Function norm 1.461936698223e-01
+    0 KSP Residual norm 1.461936698223e-01
+    1 KSP Residual norm 5.901934267731e-17
+  1 SNES Function norm 2.507018401258e-05
+    0 KSP Residual norm 2.507018401258e-05
+    1 KSP Residual norm 5.805028410871e-21
+  2 SNES Function norm 5.121185514871e-13
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000

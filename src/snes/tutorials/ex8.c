@@ -165,6 +165,6 @@ int main(int argc, char **argv)
     suffix: qn_nasm
     filter: sed -e "s/CONVERGED_FNORM_ABS/CONVERGED_FNORM_RELATIVE/g"
     nsize: 4
-    args: -petscspace_degree 1 -dm_refine 2 -snes_type qn -snes_npc_side {{left right}separate output} -npc_snes_type nasm -npc_snes_nasm_type restrict -npc_sub_snes_linesearch_order 1 -npc_sub_snes_linesearch_type bt -dm_plex_dd_overlap 1 -snes_linesearch_type bt -snes_linesearch_order 1 -npc_sub_pc_type lu -npc_sub_ksp_type preonly -snes_converged_reason -snes_monitor_short -petscpartitioner_type simple -npc_sub_snes_max_it 1 -dm_plex_simplex 0 -snes_rtol 1.e-6
+    args: -petscspace_degree 1 -dm_refine 2 -snes_type qn -snes_npc_side {{left right}separate output} -npc_snes_type nasm -npc_snes_nasm_type restrict -npc_sub_snes_linesearch_order 1 -npc_sub_snes_linesearch_type bt -dm_plex_dd_overlap 1 -snes_linesearch_type bt -snes_linesearch_order 1 -npc_sub_pc_type lu -npc_sub_ksp_type preonly -snes_converged_reason -snes_monitor -petscpartitioner_type simple -npc_sub_snes_max_it 1 -dm_plex_simplex 0 -snes_rtol 1.e-6
 
 TEST*/

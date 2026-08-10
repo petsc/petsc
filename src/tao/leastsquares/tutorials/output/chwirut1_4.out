@@ -1,13 +1,14 @@
-iter =   0, Function value 2287.85, Residual: 1.33927e+06 
-iter =   1, Function value 1215.92, Residual: 268116. 
-iter =   2, Function value 1192.34, Residual: 8678.28 
-iter =   3, Function value 1192.24, Residual: 43.4647 
-iter =   4, Function value 1192.24, Residual: 9.61804 
-iter =   5, Function value 1192.24, Residual: 0.0193701 
-iter =   6, Function value 1192.24, Residual: 0.0198047 
-iter =   7, Function value 1192.24, Residual: 8.61459e-05 
-iter =   8, Function value 1192.24, Residual: 4.11132e-05 
-iter =   9, Function value 1192.24, Residual: < 1.0e-6 
+  Iteration information for tao_brgn_subsolver_ solve.
+  0 TAO,  Function value: 2287.85,  Residual: 1.33927e+06 
+  1 TAO,  Function value: 1215.66,  Residual: 267904. 
+  2 TAO,  Function value: 1192.33,  Residual: 8423.69 
+  3 TAO,  Function value: 1192.24,  Residual: 39.232 
+  4 TAO,  Function value: 1192.24,  Residual: 9.3377 
+  5 TAO,  Function value: 1192.24,  Residual: 0.0127289 
+  6 TAO,  Function value: 1192.24,  Residual: 0.0192633 
+  7 TAO,  Function value: 1192.24,  Residual: 9.73407e-05 
+  8 TAO,  Function value: 1192.24,  Residual: 4.00756e-05 
+  9 TAO,  Function value: 1192.24,  Residual: 4.46748e-07 
 Vec Object: 1 MPI process
   type: seq
 0.190278

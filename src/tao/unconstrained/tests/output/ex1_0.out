@@ -1,5 +1,5 @@
-iter =   0, Function value 76.5209, Residual: 85.0733
-iter =   1, Function value 51.7831, Residual: < 1.0e-11
+  0 TAO,  Function value: 76.5209,  Residual: 85.0733 
+  1 TAO,  Function value: 51.7831,  Residual: 3.69676e-14 
 Tao Object: 1 MPI process
   type: nls
     Newton steps: 1

@@ -374,9 +374,9 @@ test:
 test:
   suffix: 1
   nsize: 2
-  args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres
+  args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres
   args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
-  args: -s2_pc_type jacobi -s2_ksp_monitor_short
+  args: -s2_pc_type jacobi -s2_ksp_monitor
   requires: x
 ```
 
@@ -834,7 +834,7 @@ Using the `name` field is equivalent to the search above:
 Arguments are tricky to search for. Consider
 
 ```none
-args: -ksp_monitor_short -pc_type ml -ksp_max_it 3
+args: -ksp_monitor -pc_type ml -ksp_max_it 3
 ```
 
 Search terms are

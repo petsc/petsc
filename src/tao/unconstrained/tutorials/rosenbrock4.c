@@ -19,52 +19,52 @@ int main(int argc, char **argv)
   test:
     suffix: 1
     nsize: {{1 2 3}}
-    args: -tao_monitor_short -tao_type nls -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type nls -tao_gatol 1.e-4
     output_file: output/rosenbrock1_1.out
 
   test:
     suffix: 2
-    args: -tao_monitor_short -tao_type lmvm -tao_gatol 1.e-3
+    args: -tao_monitor -tao_type lmvm -tao_gatol 1.e-3
     output_file: output/rosenbrock1_2.out
 
   test:
     suffix: 3
-    args: -tao_monitor_short -tao_type ntr -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type ntr -tao_gatol 1.e-4
     output_file: output/rosenbrock1_3.out
 
   test:
     suffix: 4
-    args: -tao_monitor_short -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type ntr -tao_mf_hessian -tao_ntr_pc_type none -tao_gatol 1.e-4
     output_file: output/rosenbrock1_4.out
 
   test:
     suffix: 5
-    args: -tao_monitor_short -tao_type bntr -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type bntr -tao_gatol 1.e-4
     output_file: output/rosenbrock1_5.out
 
   test:
     suffix: 6
-    args: -tao_monitor_short -tao_type bntl -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type bntl -tao_gatol 1.e-4
     output_file: output/rosenbrock1_6.out
 
   test:
     suffix: 7
-    args: -tao_monitor_short -tao_type bnls -tao_gatol 1.e-4
+    args: -tao_monitor -tao_type bnls -tao_gatol 1.e-4
     output_file: output/rosenbrock1_7.out
 
   test:
     suffix: 8
-    args: -tao_monitor_short -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
+    args: -tao_monitor -tao_type bntr -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor
     output_file: output/rosenbrock1_8.out
 
   test:
     suffix: 9
-    args: -tao_monitor_short -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
+    args: -tao_monitor -tao_type bntl -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor
     output_file: output/rosenbrock1_9.out
 
   test:
     suffix: 10
-    args: -tao_monitor_short -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor_short
+    args: -tao_monitor -tao_type bnls -tao_bnk_max_cg_its 3 -tao_gatol 1.e-4 -tao_bnk_cg_tao_monitor
     output_file: output/rosenbrock1_10.out
 
   test:
@@ -99,17 +99,17 @@ int main(int argc, char **argv)
 
   test:
     suffix: 17
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type bqnls
+    args: -tao_monitor -tao_gatol 1e-4 -tao_type bqnls
     output_file: output/rosenbrock1_17.out
 
   test:
     suffix: 18
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type blmvm
+    args: -tao_monitor -tao_gatol 1e-4 -tao_type blmvm
     output_file: output/rosenbrock1_18.out
 
   test:
     suffix: 19
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
+    args: -tao_monitor -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
     output_file: output/rosenbrock1_19.out
 
   test:
@@ -196,11 +196,11 @@ int main(int argc, char **argv)
   test:
     suffix: bfgs_rejects
     output_file: output/rosenbrock4_bfgs_rejects.out
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 1.2 -tao_blmvm_mat_type lmvmbfgs -tao_blmvm_mat_lmvm_scale_type scalar -tao_blmvm_mat_lmvm_mult_algorithm {{recursive dense}}
+    args: -tao_monitor -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 1.2 -tao_blmvm_mat_type lmvmbfgs -tao_blmvm_mat_lmvm_scale_type scalar -tao_blmvm_mat_lmvm_mult_algorithm {{recursive dense}}
 
   test:
     suffix: dbfgs_rejects
     output_file: output/rosenbrock4_dbfgs_rejects.out
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 0.01 -tao_blmvm_mat_type lmvmdbfgs -tao_blmvm_mat_lmvm_scale_type scalar
+    args: -tao_monitor -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 0.01 -tao_blmvm_mat_type lmvmdbfgs -tao_blmvm_mat_lmvm_scale_type scalar
 
 TEST*/

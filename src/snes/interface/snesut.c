@@ -619,35 +619,6 @@ PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-     Default (short) SNES Monitor, same as SNESMonitorDefault() except
-  it prints fewer digits of the residual as the residual gets smaller.
-  This is because the later digits are meaningless and are often
-  different on different machines; by using this routine different
-  machines will usually generate the same output.
-
-  Deprecated: Intentionally has no manual page
-*/
-PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
-{
-  PetscViewer viewer = vf->viewer;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
-  if (fgnorm > 1.e-9) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %g\n", its, (double)fgnorm));
-  } else if (fgnorm > 1.e-11) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %5.3e\n", its, (double)fgnorm));
-  } else {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm < 1.e-11\n", its));
-  }
-  PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
-  PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   SNESMonitorDefaultField - Monitors progress of a `SNESSolve()`, separated into fields.
 

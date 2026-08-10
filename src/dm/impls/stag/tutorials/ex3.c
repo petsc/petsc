@@ -1860,18 +1860,18 @@ static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
       suffix: 1
       requires: mumps
       nsize: 27
-      args: -ksp_monitor_short -ksp_converged_reason -stag_ranks_x 3 -stag_ranks_y 3 -stag_ranks_z 3 -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20
+      args: -ksp_monitor -ksp_converged_reason -stag_ranks_x 3 -stag_ranks_y 3 -stag_ranks_z 3 -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type lu -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20
 
    test:
       suffix: 2
       requires: !single
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_gamg_esteig_ksp_max_it 5
+      args: -ksp_monitor -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_gamg_esteig_ksp_max_it 5
 
    test:
       suffix: direct_umfpack
       requires: suitesparse
       nsize: 1
-      args: -pinpressure 1 -stag_grid_x 5 -stag_grid_y 3 -stag_grid_z 4 -ksp_monitor_short -pc_type lu -pc_factor_mat_solver_type umfpack
+      args: -pinpressure 1 -stag_grid_x 5 -stag_grid_y 3 -stag_grid_z 4 -ksp_monitor -pc_type lu -pc_factor_mat_solver_type umfpack
 
 TEST*/

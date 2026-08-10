@@ -2,21 +2,21 @@
 ---- Journal Bearing Problem SHB-----
 mx: 8,  my: 12,  ecc: 0.1 
 
-iter =   0, Function value 0., Residual: 1.11613 
-iter =   1, Function value -0.149218, Residual: 0.455114 
-iter =   2, Function value -0.167821, Residual: 0.557349 
-iter =   3, Function value -0.181059, Residual: 0.154663 
-iter =   4, Function value -0.182828, Residual: 0.0401165 
-iter =   5, Function value -0.183093, Residual: 0.0251879 
-iter =   6, Function value -0.183316, Residual: 0.0195024 
-iter =   7, Function value -0.183403, Residual: 0.0172684 
-iter =   8, Function value -0.183423, Residual: 0.0119524 
-iter =   9, Function value -0.183434, Residual: 0.00307125 
-iter =  10, Function value -0.183436, Residual: 0.00202511 
-iter =  11, Function value -0.183437, Residual: 0.00180133 
-iter =  12, Function value -0.183437, Residual: 0.00170399 
-iter =  13, Function value -0.183437, Residual: 0.000443198 
-iter =  14, Function value -0.183437, Residual: 0.000211079 
-iter =  15, Function value -0.183437, Residual: 0.00013076 
-iter =  16, Function value -0.183437, Residual: 0.000136793 
-iter =  17, Function value -0.183437, Residual: 4.09509e-05 
+  0 TAO,  Function value: 0.,  Residual: 1.11613 
+  1 TAO,  Function value: -0.149218,  Residual: 0.455114 
+  2 TAO,  Function value: -0.167821,  Residual: 0.557349 
+  3 TAO,  Function value: -0.181059,  Residual: 0.154663 
+  4 TAO,  Function value: -0.182828,  Residual: 0.0401165 
+  5 TAO,  Function value: -0.183093,  Residual: 0.0251879 
+  6 TAO,  Function value: -0.183316,  Residual: 0.0195024 
+  7 TAO,  Function value: -0.183403,  Residual: 0.0172684 
+  8 TAO,  Function value: -0.183423,  Residual: 0.0119524 
+  9 TAO,  Function value: -0.183434,  Residual: 0.00307125 
+ 10 TAO,  Function value: -0.183436,  Residual: 0.00202511 
+ 11 TAO,  Function value: -0.183437,  Residual: 0.00180133 
+ 12 TAO,  Function value: -0.183437,  Residual: 0.00170399 
+ 13 TAO,  Function value: -0.183437,  Residual: 0.000443198 
+ 14 TAO,  Function value: -0.183437,  Residual: 0.000211079 
+ 15 TAO,  Function value: -0.183437,  Residual: 0.00013076 
+ 16 TAO,  Function value: -0.183437,  Residual: 0.000136793 
+ 17 TAO,  Function value: -0.183437,  Residual: 4.09509e-05 

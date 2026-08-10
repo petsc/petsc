@@ -460,22 +460,22 @@ PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *unused)
 /*TEST
 
    test:
-      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short
+      args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor
 
    test:
       requires: hpddm
       suffix: hpddm
-      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type {{gmres hpddm}} -s2_ksp_type {{gmres hpddm}} -s2_pc_type jacobi -s2_ksp_monitor_short
+      args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type {{gmres hpddm}} -s2_ksp_type {{gmres hpddm}} -s2_pc_type jacobi -s2_ksp_monitor
 
    test:
       requires: hpddm
       suffix: hpddm_2
-      args: -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_type gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor_short
+      args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_type gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor
 
    testset:
       requires: hpddm
       output_file: output/ex9_hpddm_cg.out
-      args: -unsym 0 -t 2 -pc_type jacobi -ksp_monitor_short -s2_pc_type jacobi -s2_ksp_monitor_short -ksp_rtol 1.e-2 -s2_ksp_rtol 1.e-2
+      args: -unsym 0 -t 2 -pc_type jacobi -ksp_monitor -s2_pc_type jacobi -s2_ksp_monitor -ksp_rtol 1.e-2 -s2_ksp_rtol 1.e-2
       test:
          suffix: hpddm_cg_p_p
          args: -ksp_type cg -s2_ksp_type cg

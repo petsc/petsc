@@ -1,27 +1,27 @@
-        0 SNES Function norm 0.995735
-        Linear solve converged due to CONVERGED_RTOL iterations 3
-        1 SNES Function norm 0.276938
-        Linear solve converged due to CONVERGED_RTOL iterations 3
-        2 SNES Function norm 0.00668678
+        0 SNES Function norm 9.957353116422e-01
+          Linear solve converged due to CONVERGED_RTOL iterations 3
+        1 SNES Function norm 2.769381199207e-01
+          Linear solve converged due to CONVERGED_RTOL iterations 3
+        2 SNES Function norm 6.686780196700e-03
+          Linear solve converged due to CONVERGED_RTOL iterations 2
+        3 SNES Function norm 4.615022353087e-06
+          Linear solve converged due to CONVERGED_RTOL iterations 2
+        4 SNES Function norm 1.567631273381e-11
+      0 SNES Function norm 7.639967175152e-02
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        3 SNES Function norm 4.61502e-06
+      1 SNES Function norm 2.679056167578e-05
         Linear solve converged due to CONVERGED_RTOL iterations 2
-        4 SNES Function norm 1.568e-11
-      0 SNES Function norm 0.0763997
+      2 SNES Function norm 9.311521781044e-11
+    0 SNES Function norm 4.083943611080e-02
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 2.67906e-05
+    1 SNES Function norm 9.105975484473e-07
       Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 9.312e-11
-    0 SNES Function norm 0.0408394
+    2 SNES Function norm 1.834299326259e-12
+  0 SNES Function norm 2.101199993602e-02
     Linear solve converged due to CONVERGED_RTOL iterations 2
-    1 SNES Function norm 9.10598e-07
+  1 SNES Function norm 3.840689837770e-08
     Linear solve converged due to CONVERGED_RTOL iterations 2
-    2 SNES Function norm < 1.e-11
-  0 SNES Function norm 0.021012
-  Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 3.84069e-08
-  Linear solve converged due to CONVERGED_RTOL iterations 2
-  2 SNES Function norm < 1.e-11
+  2 SNES Function norm 9.285883446075e-14
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -43,7 +43,7 @@ SNES Object: 1 MPI process
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
       happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances: relative=1e-05, absolute=-1., divergence=10000.
+    tolerances: relative=1e-05, absolute=0., divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 1 MPI process

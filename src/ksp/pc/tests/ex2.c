@@ -90,6 +90,6 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -ksp_type cg -ksp_monitor_short
+      args: -ksp_type cg -ksp_monitor
 
 TEST*/

@@ -2,10 +2,10 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 10   
 
-iter =   0, Function value 1.46076, Residual: 0.207785 
-iter =   1, Function value 1.41871, Residual: 0.0223274 
-iter =   2, Function value 1.41847, Residual: 0.000373636 
-iter =   3, Function value 1.41847, Residual: < 1.0e-6 
+  0 TAO,  Function value: 1.46076,  Residual: 0.207785 
+  1 TAO,  Function value: 1.41871,  Residual: 0.0223274 
+  2 TAO,  Function value: 1.41847,  Residual: 0.000373636 
+  3 TAO,  Function value: 1.41847,  Residual: 9.23151e-08 
 Tao Object: 2 MPI processes
   type: snes
   SNES Object: 2 MPI processes

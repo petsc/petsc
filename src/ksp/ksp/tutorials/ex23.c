@@ -203,16 +203,16 @@ int main(int argc, char **args)
       requires: !complex !single
 
    test:
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 3
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 3
       nsize: 2
-      args: -ksp_monitor_short -ksp_rtol 1e-6 -ksp_type pipefgmres
+      args: -ksp_monitor -ksp_rtol 1e-6 -ksp_type pipefgmres
 
 TEST*/

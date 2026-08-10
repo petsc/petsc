@@ -218,7 +218,7 @@ end program rosenbrock1f
 !      requires: !complex
 !
 !   test:
-!      args: -tao_monitor_short -tao_type ntr -tao_gatol 1.e-5
+!      args: -tao_monitor -tao_type ntr -tao_gatol 1.e-5
 !      requires: !single
 !
 !TEST*/

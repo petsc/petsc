@@ -228,11 +228,11 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user, GridCtx *grid, Mat *J)
 /*TEST
 
     test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor_short -ksp_type gmres
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type jacobi -ksp_monitor -ksp_type gmres
 
     test:
       suffix: 2
       nsize: 3
-      args: -ksp_monitor_short
+      args: -ksp_monitor
 
 TEST*/

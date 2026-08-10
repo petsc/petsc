@@ -145,9 +145,9 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -ksp_monitor_short -ksp_max_it 10
+      args: -ksp_monitor -ksp_max_it 10
    test:
       suffix: 2
-      args: -ksp_monitor_short -ksp_max_it 10
+      args: -ksp_monitor -ksp_max_it 10
 
 TEST*/

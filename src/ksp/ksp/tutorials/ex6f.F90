@@ -205,6 +205,6 @@ end program ex6f
 !/*TEST
 !
 !   test:
-!      args: -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -pc_type jacobi -mat_view -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 !
 !TEST*/

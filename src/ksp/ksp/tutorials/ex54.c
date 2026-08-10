@@ -235,7 +235,7 @@ int main(int argc, char **args)
    test:
       suffix: geo
       nsize: 4
-      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 4 -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.05 -ksp_monitor_short -ksp_converged_reason -ksp_rtol 1e-3 -ksp_norm_type unpreconditioned
+      args: -ne 49 -alpha 1.e-3 -ksp_type cg -pc_type gamg -mg_levels_ksp_max_it 4 -pc_gamg_type geo -pc_gamg_coarse_eq_limit 200 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.05 -ksp_monitor -ksp_converged_reason -ksp_rtol 1e-3 -ksp_norm_type unpreconditioned
       requires: triangle
       output_file: output/ex54_0.out
 

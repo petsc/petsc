@@ -861,33 +861,33 @@ PetscErrorCode My_Monitor(Tao tao, PetscCtx ctx)
       requires: !complex
 
    test:
-      args: -tao_monitor_short -tao_type lmvm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
+      args: -tao_monitor -tao_type lmvm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
       requires: !single
 
    test:
       suffix: 2
       nsize: 2
-      args: -tao_monitor_short -tao_type nls -tao_nls_ksp_max_it 15 -tao_gatol 1.e-4
+      args: -tao_monitor -tao_type nls -tao_nls_ksp_max_it 15 -tao_gatol 1.e-4
       filter: grep -v "nls ksp"
       requires: !single
 
    test:
       suffix: 2_snes
       nsize: 2
-      args: -tao_monitor_short -tao_type snes -ksp_converged_maxits -ksp_max_it 15 -snes_atol 1.e-4
+      args: -tao_monitor -tao_type snes -ksp_converged_maxits -ksp_max_it 15 -snes_atol 1.e-4
       filter: grep -v "nls ksp"
       requires: !single
 
    test:
       suffix: 3
       nsize: 3
-      args: -tao_monitor_short -tao_type cg -tao_cg_type fr -da_grid_x 10 -da_grid_y 10 -tao_gatol 1.e-3
+      args: -tao_monitor -tao_type cg -tao_cg_type fr -da_grid_x 10 -da_grid_y 10 -tao_gatol 1.e-3
       requires: !single
 
    test:
       suffix: 3_snes
       nsize: 3
-      args: -tao_monitor_short -tao_type snes -snes_type ncg -snes_ncg_type fr -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4
+      args: -tao_monitor -tao_type snes -snes_type ncg -snes_ncg_type fr -da_grid_x 10 -da_grid_y 10 -snes_atol 1.e-4
       requires: !single
 
    test:
@@ -898,7 +898,7 @@ PetscErrorCode My_Monitor(Tao tao, PetscCtx ctx)
    test:
       suffix: 5
       nsize: 2
-      args: -tao_monitor_short -tao_type bmrm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
+      args: -tao_monitor -tao_type bmrm -da_grid_x 10 -da_grid_y 8 -tao_gatol 1.e-3
       requires: !single
 
 TEST*/

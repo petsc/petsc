@@ -1,58 +1,58 @@
-  0 SNES Function norm 13709.3
-    0 SNES Function norm 13709.3
-    1 SNES Function norm 4063.09
-    2 SNES Function norm 1209.16
-    3 SNES Function norm 358.664
-    4 SNES Function norm 106.534
-      0 SNES Function norm 100.4
-      1 SNES Function norm 85.1096
-      2 SNES Function norm 73.9499
-      3 SNES Function norm 46.0381
-      4 SNES Function norm 21.1178
-        0 SNES Function norm 8.52767
-        1 SNES Function norm 720.169
-        2 SNES Function norm 211.546
-        3 SNES Function norm 60.9206
-        4 SNES Function norm 16.4878
-        5 SNES Function norm 3.75186
-        6 SNES Function norm 0.550474
-        7 SNES Function norm 0.0246361
-        8 SNES Function norm 6.49531e-05
-        9 SNES Function norm 5.157e-10
-      0 SNES Function norm 16.0595
-      1 SNES Function norm 3.22362
-      2 SNES Function norm 0.877344
-      3 SNES Function norm 0.241559
-      4 SNES Function norm 0.0458156
-    0 SNES Function norm 380.549
-    1 SNES Function norm 112.851
-    2 SNES Function norm 33.6101
-    3 SNES Function norm 10.1359
-    4 SNES Function norm 3.24012
-  1 SNES Function norm 3.24012
-    0 SNES Function norm 3.24012
-    1 SNES Function norm 1.103
-    2 SNES Function norm 0.274359
-    3 SNES Function norm 0.0273309
-    4 SNES Function norm 0.000588161
-      0 SNES Function norm 0.000492505
-      1 SNES Function norm 1.24678e-07
-      2 SNES Function norm < 1.e-11
-      3 SNES Function norm < 1.e-11
-      4 SNES Function norm < 1.e-11
-        0 SNES Function norm < 1.e-11
-        1 SNES Function norm < 1.e-11
-      0 SNES Function norm < 1.e-11
-      1 SNES Function norm < 1.e-11
-      2 SNES Function norm < 1.e-11
-      3 SNES Function norm < 1.e-11
-    0 SNES Function norm 0.000415292
-    1 SNES Function norm 6.33274e-08
-    2 SNES Function norm < 1.e-11
-    3 SNES Function norm < 1.e-11
-    4 SNES Function norm < 1.e-11
-  2 SNES Function norm < 1.e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  0 SNES Function norm 1.370926483435e+04
+    0 SNES Function norm 1.370926483435e+04
+    1 SNES Function norm 4.063094128706e+03
+    2 SNES Function norm 1.209157356135e+03
+    3 SNES Function norm 3.586639831070e+02
+    4 SNES Function norm 1.065337773311e+02
+      0 SNES Function norm 1.004000496852e+02
+      1 SNES Function norm 8.510996345469e+01
+      2 SNES Function norm 7.394900925098e+01
+      3 SNES Function norm 4.603596482241e+01
+      4 SNES Function norm 2.111155747361e+01
+        0 SNES Function norm 8.524661857626e+00
+        1 SNES Function norm 7.185561025440e+02
+        2 SNES Function norm 2.110689211451e+02
+        3 SNES Function norm 6.078039913748e+01
+        4 SNES Function norm 1.644773123646e+01
+        5 SNES Function norm 3.741775869833e+00
+        6 SNES Function norm 5.487156203719e-01
+        7 SNES Function norm 2.451948740840e-02
+        8 SNES Function norm 6.448976207133e-05
+        9 SNES Function norm 5.739092466237e-10
+      0 SNES Function norm 1.605948017214e+01
+      1 SNES Function norm 3.223475334442e+00
+      2 SNES Function norm 8.772571870422e-01
+      3 SNES Function norm 2.414678425846e-01
+      4 SNES Function norm 4.580472480837e-02
+    0 SNES Function norm 3.660353885512e+02
+    1 SNES Function norm 1.085074180890e+02
+    2 SNES Function norm 3.231990612157e+01
+    3 SNES Function norm 9.756525051620e+00
+    4 SNES Function norm 3.069357296324e+00
+  1 SNES Function norm 3.069357296324e+00
+    0 SNES Function norm 3.069357296324e+00
+    1 SNES Function norm 1.000563585623e+00
+    2 SNES Function norm 2.277478596306e-01
+    3 SNES Function norm 2.441769683589e-02
+    4 SNES Function norm 5.493764477452e-04
+      0 SNES Function norm 5.242457698325e-04
+      1 SNES Function norm 9.466239865618e-08
+      2 SNES Function norm 2.775161984304e-13
+      3 SNES Function norm 2.767148638138e-14
+      4 SNES Function norm 1.747808875644e-14
+        0 SNES Function norm 8.222716547558e-15
+        1 SNES Function norm 8.756321031870e-15
+      0 SNES Function norm 1.911317763315e-14
+      1 SNES Function norm 1.686268150746e-14
+      2 SNES Function norm 1.683524845957e-14
+      3 SNES Function norm 1.683424821887e-14
+    0 SNES Function norm 5.839887381984e-04
+    1 SNES Function norm 8.585378525289e-08
+    2 SNES Function norm 3.343861137650e-13
+    3 SNES Function norm 3.939582363847e-14
+    4 SNES Function norm 3.305780129408e-14
+  2 SNES Function norm 3.305780129408e-14
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 4 MPI processes
   type: fas
     type is MULTIPLICATIVE, levels=3, cycles=1
@@ -62,8 +62,9 @@ SNES Object: 4 MPI processes
       type: newtonls
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
-      total number of linear solver iterations=36
+      total number of linear solver iterations=41
       total number of function evaluations=1
+      norm schedule ALWAYS
       SNESLineSearch Object: (fas_coarse_) 4 MPI processes
         type: none
         maxlambda=1.000000e+00, minlambda=1.000000e-12
@@ -77,6 +78,7 @@ SNES Object: 4 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_coarse_) 4 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
@@ -89,8 +91,8 @@ SNES Object: 4 MPI processes
       type: newtonls
       maximum iterations=4, maximum function evaluations=10000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=235
-      total number of function evaluations=41
+      total number of linear solver iterations=227
+      total number of function evaluations=42
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_1_) 4 MPI processes
         type: bt
@@ -107,6 +109,7 @@ SNES Object: 4 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_1_) 4 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
@@ -120,7 +123,7 @@ SNES Object: 4 MPI processes
       type: newtonls
       maximum iterations=4, maximum function evaluations=10000
       tolerances: relative=0., absolute=0., solution=0.
-      total number of linear solver iterations=413
+      total number of linear solver iterations=434
       total number of function evaluations=5
       norm schedule FINALONLY
       SNESLineSearch Object: (fas_levels_2_) 4 MPI processes
@@ -138,6 +141,7 @@ SNES Object: 4 MPI processes
         using PRECONDITIONED norm type for convergence test
       PC Object: (fas_levels_2_) 4 MPI processes
         type: jacobi
+          type DIAGONAL
         linear system matrix, which is also used to construct the preconditioner:
         Mat Object: 4 MPI processes
           type: mpiaij
@@ -150,10 +154,12 @@ SNES Object: 4 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of function evaluations=1
   norm schedule ALWAYS
-  SNESLineSearch Object: 4 MPI processes
-    type: bt
-      interpolation: cubic
-      alpha=1.000000e-04
-    maxlambda=1.000000e+00, minlambda=1.000000e-12
-    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
-    maximum iterations=40
+solution vector:
+  Vec Object: Updated Fine solution 4 MPI processes
+    type: mpi
+    length=1477
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:-fas_levels_cycle_snes_linesearch_type value: bt source: command line
+Option left: name:-snes_linesearch_type value: bt source: command line

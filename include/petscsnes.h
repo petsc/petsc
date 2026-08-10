@@ -129,7 +129,10 @@ PETSC_EXTERN PetscErrorCode SNESMonitorRatioSetUp(SNES, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolution(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorResidual(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSolutionUpdate(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
-PETSC_EXTERN PetscErrorCode SNESMonitorDefaultShort(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "SNESMonitorDefault()", ) static inline PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt n, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
+  return SNESMonitorDefault(snes, n, fgnorm, vf);
+}
 PETSC_EXTERN PetscErrorCode SNESMonitorDefaultField(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode SNESMonitorFields(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);

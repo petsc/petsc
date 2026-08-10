@@ -332,7 +332,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 
    test:
       localrunfiles: cs1Data_A_b_xGT
-      args: -tao_monitor_short -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-6
+      args: -tao_monitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-6
 
    test:
       suffix: 2

@@ -1293,7 +1293,7 @@ int main(int argc, char **argv)
 
    test:
       suffix: implicit
-      args: -ts_monitor -snes_monitor_short
+      args: -ts_monitor -snes_monitor
       localrunfiles: petscoptions X.bin Ybus.bin
 
    test:
@@ -1304,7 +1304,7 @@ int main(int argc, char **argv)
    test:
       suffix: steprestart
       # needs ARKIMEX methods with all implicit stages since the mass matrix is not the identity
-      args: -ts_monitor -snes_monitor_short -ts_type arkimex -ts_arkimex_type prssp2
+      args: -ts_monitor -snes_monitor -ts_type arkimex -ts_arkimex_type prssp2
       localrunfiles: petscoptions X.bin Ybus.bin
 
 TEST*/

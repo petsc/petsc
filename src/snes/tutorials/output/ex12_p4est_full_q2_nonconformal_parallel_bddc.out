@@ -1,6 +1,6 @@
-  0 SNES Function norm 18.865
-  1 SNES Function norm 8.73683e-07
-  2 SNES Function norm < 1.e-11
+  0 SNES Function norm 1.886502775317e+01
+  1 SNES Function norm 8.736832034378e-07
+  2 SNES Function norm 3.013554314664e-12
   L_2 Error: < 1.0e-11
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 7 MPI processes

@@ -2,18 +2,18 @@
 ---- Journal Bearing Problem SHB-----
 mx: 10,  my: 16,  ecc: 0.9 
 
-iter =   0, Function value 0., Residual: 800.442 
-iter =   1, Function value 0.0017441, Residual: 405.909 
-iter =   2, Function value 357.169, Residual: 137.979 
-iter =   3, Function value 90.9068, Residual: 33.7992 
-iter =   4, Function value 11.8915, Residual: 10.1941 
-iter =   5, Function value -9.05935, Residual: 4.17324 
-iter =   6, Function value -14.5072, Residual: 1.66018 
-iter =   7, Function value -15.4413, Residual: 0.576854 
-iter =   8, Function value -15.5824, Residual: 0.19787 
-iter =   9, Function value -15.6022, Residual: 0.07793 
-iter =  10, Function value -15.6065, Residual: 0.024156 
-iter =  11, Function value -15.607, Residual: 0.00575167 
-iter =  12, Function value -15.607, Residual: 0.00129139 
-iter =  13, Function value -15.607, Residual: 0.000288823 
-iter =  14, Function value -15.607, Residual: 6.45834e-05 
+  0 TAO,  Function value: 0.,  Residual: 800.442 
+  1 TAO,  Function value: 0.0017441,  Residual: 405.909 
+  2 TAO,  Function value: 357.169,  Residual: 137.979 
+  3 TAO,  Function value: 90.9068,  Residual: 33.7992 
+  4 TAO,  Function value: 11.8915,  Residual: 10.1941 
+  5 TAO,  Function value: -9.05935,  Residual: 4.17324 
+  6 TAO,  Function value: -14.5072,  Residual: 1.66018 
+  7 TAO,  Function value: -15.4413,  Residual: 0.576854 
+  8 TAO,  Function value: -15.5824,  Residual: 0.19787 
+  9 TAO,  Function value: -15.6022,  Residual: 0.07793 
+ 10 TAO,  Function value: -15.6065,  Residual: 0.024156 
+ 11 TAO,  Function value: -15.607,  Residual: 0.00575167 
+ 12 TAO,  Function value: -15.607,  Residual: 0.00129139 
+ 13 TAO,  Function value: -15.607,  Residual: 0.000288823 
+ 14 TAO,  Function value: -15.607,  Residual: 6.45834e-05 

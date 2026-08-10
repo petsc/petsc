@@ -1175,18 +1175,18 @@ int main(int argc, char *argv[])
 /*TEST
 
     test:
-      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fd -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 1 -ts_time_step 2e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor_short -ksp_monitor_short
+      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fd -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 1 -ts_time_step 2e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor -ksp_monitor
       requires: !single
 
     test:
       suffix: 2
-      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 1 -ts_time_step 2e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor_short -ksp_monitor_short
+      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fe -rd_quadrature lobatto2 -rd_jacobian fd_coloring -rd_endpoint -ts_max_time 1 -ts_time_step 2e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor -ksp_monitor
       requires: !single
 
     test:
       suffix: 3
       nsize: 2
-      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fd -rd_jacobian analytic -rd_endpoint -ts_max_time 3 -ts_time_step 1e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor_short -ksp_monitor_short
+      args: -da_grid_x 20 -rd_initial 1 -rd_discretization fd -rd_jacobian analytic -rd_endpoint -ts_max_time 3 -ts_time_step 1e-1 -ts_theta_initial_guess_extrapolate 0 -ts_monitor -snes_monitor -ksp_monitor
       requires: !single
 
 TEST*/

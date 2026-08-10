@@ -256,13 +256,13 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
       suffix: 1
       requires: !single
       nsize: 1
-      args: -da_refine 1 -snes_monitor_short -snes_type vinewtonrsls
+      args: -da_refine 1 -snes_monitor -snes_type vinewtonrsls
 
    test:
       suffix: 2
       requires: !single
       nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type vinewtonssls
+      args: -da_refine 1 -snes_monitor -snes_type vinewtonssls
 
    test:
       suffix: 3
@@ -290,24 +290,24 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
       suffix: 6
       requires: !single
       nsize: 2
-      args: -snes_grid_sequence 2 -pc_type mg -snes_monitor_short -ksp_converged_reason
+      args: -snes_grid_sequence 2 -pc_type mg -snes_monitor -ksp_converged_reason
 
    test:
       suffix: 7
       nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type multiplicative -snes_composite_sneses vinewtonrsls,vinewtonssls -sub_0_snes_vi_monitor -sub_1_snes_vi_monitor
+      args: -da_refine 1 -snes_monitor -snes_type composite -snes_composite_type multiplicative -snes_composite_sneses vinewtonrsls,vinewtonssls -sub_0_snes_vi_monitor -sub_1_snes_vi_monitor
       TODO: fix nasty memory leak in SNESCOMPOSITE
 
    test:
       suffix: 8
       nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type additive -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor
+      args: -da_refine 1 -snes_monitor -snes_type composite -snes_composite_type additive -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor
       TODO: fix nasty memory leak in SNESCOMPOSITE
 
    test:
       suffix: 9
       nsize: 2
-      args: -da_refine 1 -snes_monitor_short -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor
+      args: -da_refine 1 -snes_monitor -snes_type composite -snes_composite_type additiveoptimal -snes_composite_sneses vinewtonrsls -sub_0_snes_vi_monitor
       TODO: fix nasty memory leak in SNESCOMPOSITE
 
 TEST*/

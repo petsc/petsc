@@ -481,6 +481,6 @@ for Scientists and Engineers" by David A. Kopriva.
 
    test:
       nsize: 2
-      args: -ksp_monitor_short
+      args: -ksp_monitor
 
 TEST*/

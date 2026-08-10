@@ -207,12 +207,12 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, PetscCtx ctx)
 
    test:
       suffix: 1
-      args: -snes_monitor_short -snes_max_it 1000 -sol_view
+      args: -snes_monitor -snes_max_it 1000 -sol_view
       requires: !single
 
    test:
       suffix: 2
-      args: -snes_monitor_short -snes_max_it 1000 -snes_type newtontrdc -snes_trdc_use_cauchy false -sol_view
+      args: -snes_monitor -snes_max_it 1000 -snes_type newtontrdc -snes_trdc_use_cauchy false -sol_view
       requires: !single
 
    test:

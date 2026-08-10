@@ -1,28 +1,28 @@
-  0 KSP Residual norm 1.41061
-  1 KSP Residual norm 0.333571
-  2 KSP Residual norm 0.126258
-  3 KSP Residual norm 0.0480409
-  4 KSP Residual norm 0.00177708
-  5 KSP Residual norm 0.000546227
-  6 KSP Residual norm 0.00010281
-  7 KSP Residual norm 1.96127e-05
-  8 KSP Residual norm 6.30336e-06
-  9 KSP Residual norm 2.22564e-06
- 10 KSP Residual norm 7.88522e-07
- 11 KSP Residual norm 2.05288e-07
- 12 KSP Residual norm 4.44472e-08
- 13 KSP Residual norm 1.38043e-08
- 14 KSP Residual norm 2.99946e-09
- 15 KSP Residual norm 9.405e-10
- 16 KSP Residual norm 3.205e-10
- 17 KSP Residual norm 1.258e-10
- 18 KSP Residual norm 1.354e-11
- 19 KSP Residual norm < 1.e-11
- 20 KSP Residual norm < 1.e-11
- 21 KSP Residual norm < 1.e-11
- 22 KSP Residual norm < 1.e-11
- 23 KSP Residual norm < 1.e-11
- 24 KSP Residual norm < 1.e-11
- 25 KSP Residual norm < 1.e-11
+  0 KSP Residual norm 1.410614471598e+00
+  1 KSP Residual norm 3.335711064591e-01
+  2 KSP Residual norm 1.262582450889e-01
+  3 KSP Residual norm 4.804088767853e-02
+  4 KSP Residual norm 1.777081424114e-03
+  5 KSP Residual norm 5.462269217198e-04
+  6 KSP Residual norm 1.028095163663e-04
+  7 KSP Residual norm 1.961272623306e-05
+  8 KSP Residual norm 6.303358507767e-06
+  9 KSP Residual norm 2.225636474192e-06
+ 10 KSP Residual norm 7.885222954093e-07
+ 11 KSP Residual norm 2.052882038530e-07
+ 12 KSP Residual norm 4.444716646177e-08
+ 13 KSP Residual norm 1.380434639097e-08
+ 14 KSP Residual norm 2.999457530859e-09
+ 15 KSP Residual norm 9.404780051492e-10
+ 16 KSP Residual norm 3.205465599278e-10
+ 17 KSP Residual norm 1.258159365053e-10
+ 18 KSP Residual norm 1.353565902108e-11
+ 19 KSP Residual norm 3.540859175468e-12
+ 20 KSP Residual norm 1.113447455091e-12
+ 21 KSP Residual norm 3.520124731994e-13
+ 22 KSP Residual norm 4.414513533678e-14
+ 23 KSP Residual norm 1.315835075380e-14
+ 24 KSP Residual norm 2.710080615565e-15
+ 25 KSP Residual norm 5.745693074374e-16
 Number of iterations =  25
-  Residual norm < 1.e-12
+Residual norm 8.20046e-15

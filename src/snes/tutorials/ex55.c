@@ -743,7 +743,7 @@ int main(int argc, char **argv)
   testset:
     output_file: output/ex55_asm_0.out
     requires: !single
-    args: -mms 1 -par 0.0 -snes_monitor_short -snes_converged_reason -ksp_rtol 1.0e-9 -ksp_monitor_short -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu
+    args: -mms 1 -par 0.0 -snes_monitor -snes_converged_reason -ksp_rtol 1.0e-9 -ksp_monitor -ksp_type richardson -pc_type asm -pc_asm_blocks 2 -pc_asm_overlap 0 -pc_asm_local_type additive -sub_pc_type lu
     filter: grep -v "type"
 
     test:

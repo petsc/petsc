@@ -192,17 +192,17 @@ PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
       requires: !complex !single
 
    test:
-      args: -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor_short -da_refine 3 -mg_coarse_pc_type svd -ksp_view
+      args: -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor -da_refine 3 -mg_coarse_pc_type svd -ksp_view
 
    test:
       suffix: 2
       nsize: 4
-      args: -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor_short -da_refine 3 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view
+      args: -pc_type mg -pc_mg_type full -ksp_type cg -ksp_monitor -da_refine 3 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd -ksp_view
 
    test:
       suffix: 3
       nsize: 2
-      args: -pc_type mg -pc_mg_type full -ksp_monitor_short -da_refine 5 -mg_coarse_ksp_type cg -mg_coarse_ksp_converged_reason -mg_coarse_ksp_rtol 1e-2 -mg_coarse_ksp_max_it 5 -mg_coarse_pc_type none -pc_mg_levels 2 -ksp_type pipefgmres -ksp_pipefgmres_shift 1.5
+      args: -pc_type mg -pc_mg_type full -ksp_monitor -da_refine 5 -mg_coarse_ksp_type cg -mg_coarse_ksp_converged_reason -mg_coarse_ksp_rtol 1e-2 -mg_coarse_ksp_max_it 5 -mg_coarse_pc_type none -pc_mg_levels 2 -ksp_type pipefgmres -ksp_pipefgmres_shift 1.5
 
    test:
       suffix: tut_1

@@ -136,7 +136,7 @@ end
 !/*TEST
 !
 !   test:
-!      args: -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type preconditioned -pc_type mg -da_refine 2 -ksp_type fgmres
+!      args: -pc_mg_type full -ksp_monitor -mg_levels_ksp_monitor -mg_levels_ksp_norm_type preconditioned -pc_type mg -da_refine 2 -ksp_type fgmres
 !      requires: !single
 !      output_file: output/ex22_1.out
 !

@@ -1652,7 +1652,7 @@ PetscErrorCode TestConvergence(SNES snes, PETSC_UNUSED PetscInt it, PETSC_UNUSED
 
    test:
       nsize: 4
-      args: -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin pmat
+      args: -snes_monitor -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin pmat
       requires: !single
 
    test:

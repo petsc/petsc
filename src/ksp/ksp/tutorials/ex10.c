@@ -30,11 +30,7 @@ PetscErrorCode CheckResult(KSP *ksp, Mat *A, Vec *b, Vec *x, IS *rowperm)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %" PetscInt_FMT "\n", its));
 
   PetscCall(KSPGetResidualNorm(*ksp, &norm));
-  if (norm < 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm < 1.e-12\n"));
-  } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %e\n", (double)norm));
-  }
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %e\n", (double)norm));
 
   PetscCall(KSPDestroy(ksp));
   PetscCall(MatDestroy(A));

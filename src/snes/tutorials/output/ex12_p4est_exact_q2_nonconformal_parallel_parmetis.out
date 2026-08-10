@@ -1,15 +1,15 @@
-  0 SNES Function norm < 1.e-11
-    0 SNES Function norm < 1.e-11
-    1 SNES Function norm < 1.e-11
-      0 SNES Function norm < 1.e-11
-      1 SNES Function norm < 1.e-11
-        0 SNES Function norm < 1.e-11
-        1 SNES Function norm < 1.e-11
-      0 SNES Function norm < 1.e-11
-      1 SNES Function norm < 1.e-11
-    0 SNES Function norm < 1.e-11
-    1 SNES Function norm < 1.e-11
-  1 SNES Function norm < 1.e-11
+  0 SNES Function norm 5.306138466639e-14
+    0 SNES Function norm 5.306138466639e-14
+    1 SNES Function norm 2.512452515320e-14
+      0 SNES Function norm 1.226587544406e-14
+      1 SNES Function norm 7.045777088076e-15
+        0 SNES Function norm 4.568041480073e-15
+        1 SNES Function norm 1.892464715029e-14
+      0 SNES Function norm 1.811375092110e-14
+      1 SNES Function norm 7.826749838097e-15
+    0 SNES Function norm 2.624862089058e-14
+    1 SNES Function norm 1.459896135926e-14
+  1 SNES Function norm 1.459896135926e-14
   L_2 Error: < 1.0e-11
   Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
 SNES Object: 4 MPI processes

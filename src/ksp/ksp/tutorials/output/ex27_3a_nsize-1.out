@@ -1,8 +1,8 @@
 Failed to load initial guess, so use a vector of all zeros.
-  0 KSP Residual norm 7.07107
-  1 KSP Residual norm 0.392837
-  2 KSP Residual norm < 1.e-11
-Linear solve converged due to CONVERGED_RTOL iterations 2
+  0 KSP Residual norm 7.071067811865e+00
+  1 KSP Residual norm 3.928371006592e-01
+  2 KSP Residual norm 4.888717177631e-16
+  Linear solve converged due to CONVERGED_RTOL iterations 2
 KSP Object: 1 MPI process
   type: cg
   maximum iterations=10, initial guess is zero

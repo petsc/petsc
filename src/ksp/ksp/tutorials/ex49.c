@@ -1285,82 +1285,82 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, 
       requires: !complex !single
 
    test:
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_rtol 5e-3 -elas_ksp_view
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_rtol 5e-3 -elas_ksp_view
       output_file: output/ex49_1.out
 
    test:
       suffix: 2
       nsize: 4
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type gcr -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3
 
    test:
       suffix: 3
       nsize: 4
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 2 -brick_E 1,10,1000,100 -brick_nu 0.4,0.2,0.3,0.1 -brick_span 3 -elas_pc_type asm -elas_sub_pc_type lu -elas_ksp_rtol 5e-3
 
    test:
       suffix: 4
       nsize: 4
-      args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebyshev -elas_pc_type ml -elas_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 3 -use_nonsymbc -elas_pc_ml_nullspace user
+      args: -elas_ksp_monitor -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type unpreconditioned -mx 40 -my 40 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_mg_levels_ksp_type chebyshev -elas_pc_type ml -elas_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1 -elas_mg_levels_pc_type pbjacobi -elas_mg_levels_ksp_max_it 3 -use_nonsymbc -elas_pc_ml_nullspace user
       requires: ml
 
    test:
       suffix: 5
       nsize: 3
-      args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_fine_ksp_type richardson -elas_mg_fine_pc_type jacobi -elas_mg_fine_pc_jacobi_type rowl1 -elas_mg_fine_pc_jacobi_rowl1_scale .25 -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi -elas_pc_gamg_esteig_ksp_type cg
+      args: -elas_ksp_monitor -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type gamg -elas_mg_fine_ksp_type richardson -elas_mg_fine_pc_type jacobi -elas_mg_fine_pc_jacobi_type rowl1 -elas_mg_fine_pc_jacobi_rowl1_scale .25 -elas_mg_levels_ksp_type chebyshev -elas_mg_levels_ksp_max_it 1 -elas_mg_levels_ksp_chebyshev_esteig 0.2,1.1 -elas_mg_levels_pc_type jacobi -elas_pc_gamg_esteig_ksp_type cg
 
    test:
       suffix: 6
       nsize: 4
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipegcr -elas_pc_type asm -elas_sub_pc_type lu
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipegcr -elas_pc_type asm -elas_sub_pc_type lu
 
    test:
       suffix: 7
       nsize: 4
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipegcr -elas_pc_type asm -elas_sub_pc_type ksp -elas_sub_ksp_ksp_type cg -elas_sub_ksp_ksp_max_it 15
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipegcr -elas_pc_type asm -elas_sub_pc_type ksp -elas_sub_ksp_ksp_type cg -elas_sub_ksp_ksp_max_it 15
 
    test:
       suffix: 8
       nsize: 4
-      args: -mx 20 -my 30 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipefgmres -elas_pc_type asm -elas_sub_pc_type ksp -elas_sub_ksp_ksp_type cg -elas_sub_ksp_ksp_max_it 15
+      args: -mx 20 -my 30 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type pipefgmres -elas_pc_type asm -elas_sub_pc_type ksp -elas_sub_ksp_ksp_type cg -elas_sub_ksp_ksp_max_it 15
 
    test:
       suffix: hypre_nullspace
       requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre -elas_pc_hypre_boomeramg_nodal_coarsen 6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_pc_hypre_boomeramg_interp_type ext+i -elas_ksp_view
+      args: -elas_ksp_monitor -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre -elas_pc_hypre_boomeramg_nodal_coarsen 6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_pc_hypre_boomeramg_interp_type ext+i -elas_ksp_view
 
    test:
       nsize: 4
       suffix: bddc
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic
+      args: -elas_ksp_monitor -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic
 
    test:
       nsize: 4
       suffix: bddc_unsym
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0
+      args: -elas_ksp_monitor -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0
 
    test:
       nsize: 4
       suffix: bddc_unsym_deluxe
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0 -elas_pc_bddc_use_deluxe_scaling -elas_sub_schurs_symmetric 0
+      args: -elas_ksp_monitor -no_view -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_pc_type bddc -elas_pc_bddc_monolithic -use_nonsymbc -elas_pc_bddc_symmetric 0 -elas_pc_bddc_use_deluxe_scaling -elas_sub_schurs_symmetric 0
 
    test:
       nsize: 4
       suffix: fetidp_unsym_deluxe
-      args: -elas_ksp_monitor_short -no_view -elas_ksp_converged_reason -elas_ksp_type fetidp -elas_fetidp_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_fetidp_bddc_pc_bddc_monolithic -use_nonsymbc -elas_fetidp_bddc_pc_bddc_use_deluxe_scaling -elas_fetidp_bddc_sub_schurs_symmetric 0 -elas_fetidp_bddc_pc_bddc_deluxe_singlemat
+      args: -elas_ksp_monitor -no_view -elas_ksp_converged_reason -elas_ksp_type fetidp -elas_fetidp_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -dm_mat_type is -elas_fetidp_bddc_pc_bddc_monolithic -use_nonsymbc -elas_fetidp_bddc_pc_bddc_use_deluxe_scaling -elas_fetidp_bddc_sub_schurs_symmetric 0 -elas_fetidp_bddc_pc_bddc_deluxe_singlemat
 
    test:
       nsize: 4
       suffix: bddc_layerjump
-      args: -mx 40 -my 40 -elas_ksp_monitor_short -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_ksp_norm_type natural
+      args: -mx 40 -my 40 -elas_ksp_monitor -no_view -c_str 3 -sponge_E0 1 -sponge_E1 1000 -sponge_nu0 0.4 -sponge_nu1 0.2 -sponge_t 1 -sponge_w 8 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_ksp_norm_type natural
 
    test:
       nsize: 4
       suffix: bddc_subdomainjump
-      args: -mx 40 -my 40 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,1000 -brick_nu 0.4,0.2 -brick_span 20 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_pc_is_use_stiffness_scaling -elas_ksp_norm_type natural
+      args: -mx 40 -my 40 -elas_ksp_monitor -no_view -c_str 2 -brick_E 1,1000 -brick_nu 0.4,0.2 -brick_span 20 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_pc_is_use_stiffness_scaling -elas_ksp_norm_type natural
 
    test:
       nsize: 9
       suffix: bddc_subdomainjump_deluxe
-      args: -mx 30 -my 30 -elas_ksp_monitor_short -no_view -c_str 2 -brick_E 1,1000 -brick_nu 0.4,0.2 -brick_span 10 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_pc_bddc_use_deluxe_scaling -elas_ksp_norm_type natural -elas_pc_bddc_schur_layers 1
+      args: -mx 30 -my 30 -elas_ksp_monitor -no_view -c_str 2 -brick_E 1,1000 -brick_nu 0.4,0.2 -brick_span 10 -elas_ksp_type cg -elas_pc_type bddc -elas_pc_bddc_monolithic -dm_mat_type is -elas_pc_bddc_use_deluxe_scaling -elas_ksp_norm_type natural -elas_pc_bddc_schur_layers 1
 TEST*/

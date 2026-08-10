@@ -474,7 +474,7 @@ end
 !
 !   test:
 !      nsize: 3
-!      args: -tao_monitor_short -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
+!      args: -tao_monitor -tao_max_it 100 -tao_type pounders -tao_gatol 1.e-5
 !      requires: !single
 !
 !

@@ -209,11 +209,8 @@ int main(int argc, char **args)
     PetscCall(VecLoad(x, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
     initialguess = PETSC_TRUE;
-  } else if (initialguess) {
-    PetscCall(VecSet(x, 1.0));
-  } else {
-    PetscCall(VecSet(x, 0.0));
-  }
+  } else if (initialguess) PetscCall(VecSet(x, 1.0));
+  else PetscCall(VecSet(x, 0.0));
 
   /* Check scaling in A */
   flg = PETSC_FALSE;
@@ -291,9 +288,7 @@ int main(int argc, char **args)
       PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, 4, &BtB));
       PetscCall(KSPSetOperators(ksp, A, BtB));
       PetscCall(MatDestroy(&BtB));
-    } else {
-      PetscCall(KSPSetOperators(ksp, A, A));
-    }
+    } else PetscCall(KSPSetOperators(ksp, A, A));
     PetscCall(KSPSetFromOptions(ksp));
 
     /* if we test BDDC, make sure pmat is of type MATIS */
@@ -338,21 +333,12 @@ int main(int argc, char **args)
       }
       PetscCall(KSPGetIterationNumber(ksp, &its));
       if (cknorm) { /* Check error for each rhs */
-        if (trans) {
-          PetscCall(MatMultTranspose(A, x, u));
-        } else {
-          PetscCall(MatMult(A, x, u));
-        }
+        if (trans) PetscCall(MatMultTranspose(A, x, u));
+        else PetscCall(MatMult(A, x, u));
         PetscCall(VecAXPY(u, -1.0, b));
         PetscCall(VecNorm(u, NORM_2, &norm));
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Number of iterations = %3" PetscInt_FMT "\n", its));
-        if (!PetscIsNanScalar(norm)) {
-          if (norm < 1.e-12) {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Residual norm < 1.e-12\n"));
-          } else {
-            PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Residual norm %g\n", (double)norm));
-          }
-        }
+        if (!PetscIsNanScalar(norm)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Residual norm %g\n", (double)norm));
       }
     } /* while (num_rhs--) */
 
@@ -363,11 +349,8 @@ int main(int argc, char **args)
     /*
        Check error
     */
-    if (trans) {
-      PetscCall(MatMultTranspose(A, x, u));
-    } else {
-      PetscCall(MatMult(A, x, u));
-    }
+    if (trans) PetscCall(MatMultTranspose(A, x, u));
+    else PetscCall(MatMult(A, x, u));
     PetscCall(VecAXPY(u, -1.0, b));
     PetscCall(VecNorm(u, NORM_2, &norm));
     /*
@@ -393,13 +376,7 @@ int main(int argc, char **args)
       PetscCall(PetscViewerDestroy(&viewer));
     } else {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %3" PetscInt_FMT "\n", its));
-      if (!PetscIsNanReal(norm)) {
-        if (norm < 1.e-12) {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Residual norm < 1.e-12\n"));
-        } else {
-          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %g\n", (double)norm));
-        }
-      }
+      if (!PetscIsNanReal(norm)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %g\n", (double)norm));
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-solution", file[3], sizeof(file[3]), &flg));
     if (flg) {
@@ -497,7 +474,7 @@ int main(int argc, char **args)
       args: -viewer_binary_skip_info -mat_type seqbaij
       args: -matload_block_size {{2 3 4 5 6 7 8}separate output}
       args: -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always
-      args: -ksp_rtol 1.0e-15 -ksp_monitor_short
+      args: -ksp_rtol 1.0e-15 -ksp_monitor
       test:
          suffix: a
       test:
@@ -524,14 +501,14 @@ int main(int argc, char **args)
       suffix: 8
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
+      args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
 
    testset:
       TODO: Matrix row/column sizes are not compatible with block size
       suffix: 9
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -viewer_binary_skip_info -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor_short
+      args: -viewer_binary_skip_info -matload_block_size {{1 2 3 4 5 6 7}separate output} -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol 1.0e-15 -ksp_monitor
       test:
          suffix: a
          args: -mat_type seqbaij
@@ -559,7 +536,7 @@ int main(int argc, char **args)
       suffix: 10
       nsize: 2
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
-      args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short
+      args: -ksp_type fgmres -pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor
 
    testset:
       suffix: 12
@@ -624,7 +601,7 @@ int main(int argc, char **args)
    testset:
       suffix: aijcusparse
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) cuda
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu -vec_type cuda
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor -ksp_view -mat_view ascii::ascii_info -mat_type aijcusparse -pc_factor_mat_solver_type cusparse -pc_type ilu -vec_type cuda
 
    testset:
       TODO: No output file. Need to determine if deprecated
@@ -636,7 +613,7 @@ int main(int argc, char **args)
    testset:
       nsize: 2
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor_short -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
+      args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz -ksp_monitor -ksp_rtol 1.E-9 -pc_type hypre -pc_hypre_type boomeramg
       test:
          suffix: boomeramg_euclid
          args: -pc_hypre_boomeramg_smooth_type Euclid -pc_hypre_boomeramg_smooth_num_levels 2 -pc_hypre_boomeramg_eu_level 1 -pc_hypre_boomeramg_eu_droptolerance 0.01
@@ -657,7 +634,7 @@ int main(int argc, char **args)
       suffix: cg_singlereduction
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
-      args: -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason
+      args: -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor -ksp_converged_reason
       test:
       test:
          args: -ksp_cg_single_reduction
@@ -665,7 +642,7 @@ int main(int argc, char **args)
    testset:
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/poisson2.gz
-      args: -ksp_monitor_short -pc_type icc
+      args: -ksp_monitor -pc_type icc
       test:
          suffix: cr
          args: -ksp_type cr
@@ -676,7 +653,7 @@ int main(int argc, char **args)
    testset:
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
-      args: -ksp_monitor_short -ksp_view -mat_view ascii::ascii_info
+      args: -ksp_monitor -ksp_view -mat_view ascii::ascii_info
       test:
          suffix: seqaijcrl
          args: -mat_type seqaijcrl
@@ -688,7 +665,7 @@ int main(int argc, char **args)
       nsize: 2
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/small
-      args: -ksp_monitor_short -ksp_view
+      args: -ksp_monitor -ksp_view
       # Different output files
       test:
          suffix: mpiaijcrl
@@ -700,7 +677,7 @@ int main(int argc, char **args)
    testset:
       nsize: 4
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) !defined(PETSC_HAVE_I_MPI)
-      args: -ksp_monitor_short -ksp_view
+      args: -ksp_monitor -ksp_view
       test:
          suffix: xxt
          args: -f0 ${DATAFILESPATH}/matrices/poisson1 -check_symmetry -check_scaling -ksp_type cg -pc_type tfs
@@ -886,7 +863,7 @@ int main(int argc, char **args)
          output_file: output/ex72_10.out
          nsize: 4
          timeoutfactor: 2
-         args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold_absolute 0.8 -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2 -ksp_monitor_short
+         args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold_absolute 0.8 -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2 -ksp_monitor
       test:
          requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
          suffix: hpddm_too_much_oversampling

@@ -1541,17 +1541,17 @@ int main(int argc, char *argv[])
       requires: !single
 
    test:
-      args: -M 6 -P 4 -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type icc
+      args: -M 6 -P 4 -da_refine 1 -snes_monitor -snes_converged_reason -ksp_monitor -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type icc
 
    test:
       suffix: 2
       nsize: 2
-      args: -M 6 -P 4 -thi_hom z -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current -ksp_atol 0
+      args: -M 6 -P 4 -thi_hom z -snes_monitor -snes_converged_reason -ksp_monitor -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current -ksp_atol 0
 
    test:
       suffix: 3
       nsize: 3
-      args: -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_asm_type restrict -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current
+      args: -M 7 -P 4 -thi_hom z -da_refine 1 -snes_monitor -snes_converged_reason -ksp_monitor -ksp_converged_reason -thi_mat_type baij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_pc_asm_type restrict -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 9 -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mat_partitioning_type current
 
    test:
       suffix: 4
@@ -1561,6 +1561,6 @@ int main(int argc, char *argv[])
    test:
       suffix: 5
       nsize: 6
-      args: -M 12 -P 5 -snes_monitor_short -ksp_converged_reason -pc_type asm -pc_asm_type restrict -dm_mat_type {{aij baij sbaij}}
+      args: -M 12 -P 5 -snes_monitor -ksp_converged_reason -pc_type asm -pc_asm_type restrict -dm_mat_type {{aij baij sbaij}}
 
 TEST*/

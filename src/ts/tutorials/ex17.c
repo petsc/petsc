@@ -306,7 +306,7 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ptr)
 
     test:
       requires: !single
-      args: -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short -ts_monitor
+      args: -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor -ts_monitor
 
     test:
       suffix: 2

@@ -433,11 +433,7 @@ int main(int argc, char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  if (norm < 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error < 1.e-12 iterations %" PetscInt_FMT "\n", its));
-  } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
-  }
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g iterations %" PetscInt_FMT "\n", (double)norm, its));
 
 #if PetscDefined(HAVE_MUMPS)
   // Get the OCC tmpdir via F before it is destroyed in KSPDestroy().

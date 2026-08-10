@@ -218,6 +218,6 @@ PetscErrorCode FormElementRhs(PetscScalar x, PetscScalar y, PetscReal H, PetscSc
    test:
       suffix: 1
       nsize: 2
-      args: -ksp_monitor_short
+      args: -ksp_monitor
 
 TEST*/

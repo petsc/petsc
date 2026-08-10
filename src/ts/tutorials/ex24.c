@@ -7,8 +7,7 @@ static PetscErrorCode FormIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 static PetscErrorCode MonitorObjective(TS, PetscInt, PetscReal, Vec, void *);
 
 typedef struct {
-  PetscInt  n;
-  PetscBool monitor_short;
+  PetscInt n;
 } Ctx;
 
 int main(int argc, char **argv)
@@ -30,9 +29,6 @@ int main(int argc, char **argv)
 
   view_final = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_final", &view_final, NULL));
-
-  ctx.monitor_short = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor_short", &ctx.monitor_short, NULL));
 
   /*
      Create Jacobian matrix data structure and state vector
@@ -123,7 +119,7 @@ static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X,
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESGetIterationNumber(snes, &snesit));
   PetscCall(SNESGetLinearSolveIterations(snes, &linit));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, ctx->monitor_short ? "%3" PetscInt_FMT " t=%10.1e  dt=%10.1e  f=%10.1e  df=%10.1e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n" : "%3" PetscInt_FMT " t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n", step, (double)t, (double)dt, (double)PetscRealPart(f), (double)gnorm, snesit, linit));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%3" PetscInt_FMT " t=%10.4e  dt=%10.4e  f=%10.4e  df=%10.4e  it=(%2" PetscInt_FMT ",%3" PetscInt_FMT ")\n", step, (double)t, (double)dt, (double)PetscRealPart(f), (double)gnorm, snesit, linit));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -245,7 +241,7 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
       requires: !single
 
     test:
-      args: -pc_type lu -ts_time_step 1e-5 -ts_max_time 1e5 -n 50 -monitor_short -snes_max_it 5 -snes_type newtonls -ts_max_snes_failures unlimited
+      args: -pc_type lu -ts_time_step 1e-5 -ts_max_time 1e5 -n 50 -snes_max_it 5 -snes_type newtonls -ts_max_snes_failures unlimited
       requires: !single
       suffix: 2
 

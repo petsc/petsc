@@ -18,17 +18,17 @@ Example language
      requires: moab
    # This is equivalent to test:
    testset:
-      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor -mg_levels_ksp_monitor -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
 
    testset:
       suffix: 2
       nsize: 2
-      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor -mg_levels_ksp_monitor -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
 
    testset:
       suffix: 2
       nsize: 2
-      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor_short -mg_levels_ksp_monitor_short -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
+      args: -pc_type mg -ksp_type fgmres -da_refine 2 -ksp_monitor -mg_levels_ksp_monitor -mg_levels_ksp_norm_type unpreconditioned -ksp_view -pc_mg_type full
       test:
 
 TEST*/

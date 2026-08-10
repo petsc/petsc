@@ -266,24 +266,24 @@ int main(int argc, char **args)
 
    test:
       nsize: 3
-      args: -m 39 -n 18 -ksp_monitor_short -permute nd
+      args: -m 39 -n 18 -ksp_monitor -permute nd
       requires: !single
 
    test:
       suffix: 2
       nsize: 3
-      args: -m 39 -n 18 -ksp_monitor_short -permute rcm
+      args: -m 39 -n 18 -ksp_monitor -permute rcm
       requires: !single
 
    test:
       suffix: 3
       nsize: 3
-      args: -m 13 -n 17 -ksp_monitor_short -ksp_type cg -ksp_cg_single_reduction
+      args: -m 13 -n 17 -ksp_monitor -ksp_type cg -ksp_cg_single_reduction
       requires: !single
 
    test:
       suffix: bas
-      args: -m 13 -n 17 -ksp_monitor_short -ksp_type cg -pc_type icc -pc_factor_mat_solver_type bas -ksp_view -pc_factor_levels 1
+      args: -m 13 -n 17 -ksp_monitor -ksp_type cg -pc_type icc -pc_factor_mat_solver_type bas -ksp_view -pc_factor_levels 1
       filter: grep -v "variant "
       requires: !single
 

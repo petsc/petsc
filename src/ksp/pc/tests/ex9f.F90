@@ -143,13 +143,8 @@ program main
   PetscCallA(VecAXPY(x, none, u, ierr))
   PetscCallA(VecNorm(x, NORM_2, norm, ierr))
   PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
-  if (norm > 1.e-12) then
-    write (6, 100) norm, its
-  else
-    write (6, 200) its
-  end if
+  write (6, 100) norm, its
 100 format('Norm of error ', e11.4, ',  Iterations = ', i5)
-200 format('Norm of error < 1.e-12, Iterations = ', i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.

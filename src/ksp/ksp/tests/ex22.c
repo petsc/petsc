@@ -232,7 +232,7 @@ int main(int argc, char **args)
     test:
       suffix: 3
       nsize: 2
-      args: -ksp_monitor_short -ksp_type bicg
+      args: -ksp_monitor -ksp_type bicg
       requires: !single
 
 TEST*/
