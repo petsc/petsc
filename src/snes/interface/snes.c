@@ -2392,7 +2392,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, PetscC
 
   One can call `SNESSetPicard()` or `SNESSetFunction()` (and possibly `SNESSetJacobian()`) but cannot call both
 
-  Solves the equation $A(x) x = bp(x) - b$ via the defect correction algorithm $A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}$.
+  Solves the equation $A(x) x = bp(x) + b$ via the defect correction algorithm $A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}$.
   When an exact solver is used this corresponds to the "classic" Picard $A(x^{n}) x^{n+1} = bp(x^{n}) + b$ iteration.
 
   Run with `-snes_mf_operator` to solve the system with Newton's method using $A(x^{n})$ to construct the preconditioner.
