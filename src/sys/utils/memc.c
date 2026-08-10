@@ -49,8 +49,15 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
 }
 
 #if defined(PETSC_HAVE_HWLOC)
-  #include <petsc/private/petscimpl.h>
   #include <hwloc.h>
+  #if defined(HWLOC_HAVE_WINDOWS_H)
+    // hwloc_pid_t is a HANDLE on Windows, and hwloc.h has already included windows.h
+    #define PetscHwlocSelf() GetCurrentProcess()
+    #define PetscHwlocPid()  ((unsigned long)GetCurrentProcessId())
+  #else
+    #define PetscHwlocSelf() getpid()
+    #define PetscHwlocPid()  ((unsigned long)getpid())
+  #endif
 #endif
 
 /*@
@@ -84,9 +91,9 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   hwloc_topology_load(topology);
   set = hwloc_bitmap_alloc();
 
-  PetscCallExternal(hwloc_get_proc_cpubind, topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
+  PetscCallExternal(hwloc_get_proc_cpubind, topology, PetscHwlocSelf(), set, HWLOC_CPUBIND_PROCESS);
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "MPI rank %d Process id: %d coreid %d\n", rank, getpid(), hwloc_bitmap_first(set)));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "MPI rank %d Process id: %lu coreid %d\n", rank, PetscHwlocPid(), hwloc_bitmap_first(set)));
   PetscCall(PetscViewerFlush(viewer));
   hwloc_bitmap_free(set);
   hwloc_topology_destroy(topology);
