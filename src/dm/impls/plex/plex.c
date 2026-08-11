@@ -4971,6 +4971,9 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 /*@
   DMPlexGetJoin - Get an array for the join of the set of points
 
+  A "join" is the intersection of the support of each of the input points.
+  A "full join" is the intersection of the transitive support of each of the input points.
+
   Not Collective
 
   Input Parameters:
@@ -4993,7 +4996,7 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
   PetscInt, pointer :: coveredPints(:)
 .ve
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`, `DMPlexGetFullJoin()`
 @*/
 PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
 {
@@ -5079,7 +5082,10 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
 }
 
 /*@
-  DMPlexGetFullJoin - Get an array for the join of the set of points
+  DMPlexGetFullJoin - Get an array for the full join of the set of points
+
+  A "join" is the intersection of the support of each of the input points.
+  A "full join" is the intersection of the transitive support of each of the input points.
 
   Not Collective
 
@@ -5180,6 +5186,9 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 /*@
   DMPlexGetMeet - Get an array for the meet of the set of points
 
+  A "meet" is the intersection of the cone of each of the input points.
+  A "full meet" is the intersection of the transitive cone of each of the input points.
+
   Not Collective
 
   Input Parameters:
@@ -5202,7 +5211,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   PetscInt, pointer :: coveringPoints(:)
 .ve
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`, `DMPlexGetFullMeet()`
 @*/
 PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveringPoints, const PetscInt *coveringPoints[])
 {
@@ -5280,7 +5289,10 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
 }
 
 /*@
-  DMPlexGetFullMeet - Get an array for the meet of the set of points
+  DMPlexGetFullMeet - Get an array for the full meet of the set of points
+
+  A "meet" is the intersection of the cone of each of the input points.
+  A "full meet" is the intersection of the transitive cone of each of the input points.
 
   Not Collective
 
