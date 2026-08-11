@@ -190,6 +190,7 @@ cdef extern from * nogil:
     PetscErrorCode PCASMSetType(PetscPC, PetscPCASMType)
     PetscErrorCode PCASMSetOverlap(PetscPC, PetscInt)
     PetscErrorCode PCASMSetLocalSubdomains(PetscPC, PetscInt, PetscIS[], PetscIS[])
+    PetscErrorCode PCASMGetLocalSubdomains(PetscPC, PetscInt*, PetscIS*[], PetscIS*[])
     PetscErrorCode PCASMSetTotalSubdomains(PetscPC, PetscInt, PetscIS[], PetscIS[])
     PetscErrorCode PCASMGetSubKSP(PetscPC, PetscInt*, PetscInt*, PetscKSP*[])
     PetscErrorCode PCASMSetSortIndices(PetscPC, PetscBool)
