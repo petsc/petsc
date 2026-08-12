@@ -155,8 +155,9 @@ static PetscErrorCode KSPMatSolveCheckNorm_Richardson(KSP ksp, PetscReal rnorm, 
   PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged due to infinity or NaN norm", ksp->transpose.solve_requested ? "Transpose" : "");
   PetscCall(PCReduceFailedReason(ksp->pc));
   PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
-  PetscCall(PetscObjectStateIncrease((PetscObject)X));
-  PetscCall(MatSetInf(X));
+  /* as with VecFlag() in KSPCheckNorm(), the state of the block of solutions increases exactly once whether or not it is flagged, so that an outer solver detects the failure, MatSetInf() does the increase itself and PCReduceFailedReason() above makes pcreason the same on all processes */
+  if (pcreason) PetscCall(MatSetInf(X));
+  else PetscCall(PetscObjectStateIncrease((PetscObject)X));
   ksp->reason = pcreason ? KSP_DIVERGED_PC_FAILED : KSP_DIVERGED_NANORINF;
   ksp->rnorm  = rnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -176,10 +177,12 @@ static PetscErrorCode KSPMatSolvePCMatApply_Richardson(KSP ksp, Mat R, Mat Z)
 static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
 {
   PetscReal       rnorm = 0.0;
-  Mat             Amat, R, Z;
-  PetscInt        i, maxit;
+  Mat             Amat, Pmat, R, Z;
+  Vec             cb, cx, w;
+  PetscInt        i, maxit, N;
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
-  PetscBool       diagonalscale;
+  PetscBool       diagonalscale, exists, matexists;
+  MatNullSpace    nullsp;
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
@@ -188,7 +191,42 @@ static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
   ksp->its    = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   maxit       = ksp->max_it;
-  PetscCall(PCGetOperators(ksp->pc, &Amat, NULL));
+  PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
+
+  /* if user has provided fast Richardson code use that, with the same conditions as in KSPSolve_Richardson() except for the monitors, which are not called during KSPMatSolve() */
+  PetscCall(PCApplyRichardsonExists(ksp->pc, &exists));
+  PetscCall(PCMatApplyRichardsonExists(ksp->pc, &matexists));
+  PetscCall(MatGetNullSpace(Pmat, &nullsp));
+  if ((exists || matexists) && maxit > 0 && richardsonP->scale == 1.0 && (ksp->converged == KSPConvergedDefault || ksp->converged == KSPConvergedSkip) && !ksp->transpose_solve && !nullsp) {
+    PCRichardsonConvergedReason reason;
+
+    if (matexists) {
+      PetscCall(PetscInfo(ksp, "Using PCMatApplyRichardson() on each batch of right-hand sides, by default the whole block\n"));
+      PetscCall(PCMatApplyRichardson(ksp->pc, B, X, NULL, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
+      ksp->reason = (KSPConvergedReason)reason;
+    } else {
+      /* the block iteration below does not compute the same thing as PCApplyRichardson(), so the right-hand sides are solved one at a time to match KSPSolve() */
+      PetscCall(PetscInfo(ksp, "Using PCApplyRichardson() on one right-hand side at a time\n"));
+      PetscCall(MatGetSize(B, NULL, &N));
+      /* ksp->work may have the size of an earlier operator since setup is not run again, so a fresh work vector is created */
+      PetscCall(MatCreateVecs(B, NULL, &w));
+      /* as with the column-by-column fallback of KSPMatSolve_Private(), ksp->reason and ksp->its reflect the last right-hand side */
+      for (i = 0; i < N; i++) {
+        PetscCall(MatDenseGetColumnVecRead(B, i, &cb));
+        if (ksp->guess_zero) PetscCall(MatDenseGetColumnVecWrite(X, i, &cx));
+        else PetscCall(MatDenseGetColumnVec(X, i, &cx));
+        PetscCall(PCApplyRichardson(ksp->pc, cb, cx, w, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
+        if (ksp->guess_zero) PetscCall(MatDenseRestoreColumnVecWrite(X, i, &cx));
+        else PetscCall(MatDenseRestoreColumnVec(X, i, &cx));
+        PetscCall(MatDenseRestoreColumnVecRead(B, i, &cb));
+        ksp->reason = (KSPConvergedReason)reason;
+      }
+      PetscCall(VecDestroy(&w));
+    }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscInfo(ksp, "Iterating on each batch of right-hand sides, by default the whole block\n"));
   /* R and Z are rebuilt on each call since the number of right-hand sides may change between calls */
   PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &R));
   PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &Z));
@@ -366,8 +404,13 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
    base it on the initial residual norm instead. Unlike `KSPSolve()`, `KSPMatSolve()` does not remove the (transpose) null space of the operator from the block of
    right-hand sides, so the caller must make a singular system consistent by projecting `B` itself
 
+   As in `KSPSolve()`, the iteration is delegated to the preconditioner when it provides a fast Richardson code, the convergence test is the default one or is skipped,
+   and `Pmat` has no null space. `PCMatApplyRichardson()` is used when the preconditioner provides it, otherwise `PCApplyRichardson()` is applied
+   to one right-hand side at a time so that `KSPMatSolve()` computes the same solutions as `KSPSolve()`. Since `KSPMatSolve()` is a stripped-down version of `KSPSolve()`,
+   monitors are not called during a block iteration and so, unlike in `KSPSolve()`, they do not prevent this delegation
+
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPRichardsonSetScale()`, `KSPPREONLY`, `KSPRichardsonSetSelfScale()`, `KSPMatSolve()`
+          `KSPRichardsonSetScale()`, `KSPPREONLY`, `KSPRichardsonSetSelfScale()`, `KSPMatSolve()`, `PCApplyRichardson()`, `PCMatApplyRichardson()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)

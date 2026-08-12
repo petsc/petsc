@@ -549,12 +549,37 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMatApplyTranspose_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
+/*
+   Checks that the blocks of vectors In and Out are dense and have layouts compatible with each other and with Pmat, inname and outname naming them in the error messages
+*/
+static PetscErrorCode PCMatCheckBlocks_Private(PC pc, Mat In, Mat Out, const char *inname, const char *outname)
 {
   Mat       A;
-  Vec       cy, cx;
   PetscInt  m1, M1, m2, M2, n1, N1, n2, N2, m3, M3, n3, N3;
   PetscBool match;
+
+  PetscFunctionBegin;
+  PetscCall(PCGetOperators(pc, NULL, &A));
+  PetscCall(MatGetLocalSize(A, &m3, &n3));
+  PetscCall(MatGetLocalSize(In, &m2, &n2));
+  PetscCall(MatGetLocalSize(Out, &m1, &n1));
+  PetscCall(MatGetSize(A, &M3, &N3));
+  PetscCall(MatGetSize(In, &M2, &N2));
+  PetscCall(MatGetSize(Out, &M1, &N1));
+  PetscCheck(n1 == n2 && N1 == N2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of %s (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and block of %s (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")", inname, n2, N2, outname, n1, N1);
+  PetscCheck(m2 == m3 && M2 == M3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of %s (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", inname, m2, M2, m3, M3, n3, N3);
+  PetscCheck(m1 == n3 && M1 == N3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of %s (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", outname, m1, M1, m3, M3, n3, N3);
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Out, &match, MATSEQDENSE, MATMPIDENSE, ""));
+  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of %s not stored in a dense Mat", outname);
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)In, &match, MATSEQDENSE, MATMPIDENSE, ""));
+  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of %s not stored in a dense Mat", inname);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApplyTranspose_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
+{
+  Vec      cy, cx;
+  PetscInt n1, N1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -563,20 +588,8 @@ static PetscErrorCode PCMatApplyTranspose_Private(PC pc, Mat X, Mat Y, PetscBool
   PetscCheckSameComm(pc, 1, X, 2);
   PetscCheckSameComm(pc, 1, Y, 3);
   PetscCheck(Y != X, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and X must be different matrices");
-  PetscCall(PCGetOperators(pc, NULL, &A));
-  PetscCall(MatGetLocalSize(A, &m3, &n3));
-  PetscCall(MatGetLocalSize(X, &m2, &n2));
-  PetscCall(MatGetLocalSize(Y, &m1, &n1));
-  PetscCall(MatGetSize(A, &M3, &N3));
-  PetscCall(MatGetSize(X, &M2, &N2));
-  PetscCall(MatGetSize(Y, &M1, &N1));
-  PetscCheck(n1 == n2 && N1 == N2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of input vectors (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and block of output vectors (n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")", n2, N2, n1, N1);
-  PetscCheck(m2 == m3 && M2 == M3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", m2, M2, m3, M3, n3, N3);
-  PetscCheck(m1 == n3 && M1 == N3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%" PetscInt_FMT ",%" PetscInt_FMT ") and Pmat (m,M)x(n,N) = (%" PetscInt_FMT ",%" PetscInt_FMT ")x(%" PetscInt_FMT ",%" PetscInt_FMT ")", m1, M1, m3, M3, n3, N3);
-  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of output vectors not stored in a dense Mat");
-  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of input vectors not stored in a dense Mat");
+  PetscCall(PCMatCheckBlocks_Private(pc, X, Y, "input vectors", "output vectors"));
+  PetscCall(MatGetSize(Y, NULL, &N1));
   PetscCall(PCSetUp(pc));
   if (!transpose && pc->ops->matapply) {
     PetscCall(PetscLogEventBegin(PC_MatApply, pc, X, Y, 0));
@@ -931,7 +944,7 @@ PetscErrorCode PCApplyBAorABTranspose(PC pc, PCSide side, Vec x, Vec y, Vec work
 
   Level: developer
 
-.seealso: [](ch_ksp), `PC`, `KSPRICHARDSON`, `PCApplyRichardson()`
+.seealso: [](ch_ksp), `PC`, `KSPRICHARDSON`, `PCApplyRichardson()`, `PCMatApplyRichardsonExists()`
 @*/
 PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
 {
@@ -974,7 +987,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
   Except for the `PCMG` this routine ignores the convergence tolerances
   and always runs for the number of iterations
 
-.seealso: [](ch_ksp), `PC`, `PCApplyRichardsonExists()`
+.seealso: [](ch_ksp), `PC`, `PCApplyRichardsonExists()`, `PCMatApplyRichardson()`
 @*/
 PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
 {
@@ -986,6 +999,87 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
   PetscCheck(b != y, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "b and y must be different vectors");
   PetscCall(PCSetUp(pc));
   PetscUseTypeMethod(pc, applyrichardson, b, y, w, rtol, abstol, dtol, its, guesszero, outits, reason);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCMatApplyRichardsonExists - Determines whether a particular preconditioner has a
+  built-in fast application of Richardson's method on a block of vectors stored as a `MATDENSE`.
+
+  Not Collective
+
+  Input Parameter:
+. pc - the preconditioner
+
+  Output Parameter:
+. exists - `PETSC_TRUE` or `PETSC_FALSE`
+
+  Level: developer
+
+.seealso: [](ch_ksp), `PC`, `KSPRICHARDSON`, `PCMatApplyRichardson()`, `PCApplyRichardsonExists()`
+@*/
+PetscErrorCode PCMatApplyRichardsonExists(PC pc, PetscBool *exists)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscAssertPointer(exists, 2);
+  if (pc->ops->matapplyrichardson) *exists = PETSC_TRUE;
+  else *exists = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCMatApplyRichardson - Applies several steps of Richardson iteration with the particular preconditioner
+  to multiple vectors stored as a `MATDENSE`. This routine is usually used by the Krylov solvers and not
+  the application code directly.
+
+  Collective
+
+  Input Parameters:
++ pc        - the `PC` preconditioner context
+. B         - the block of right-hand sides
+. W         - one work block of vectors, may be `NULL`
+. rtol      - relative decrease in residual norm convergence criteria
+. abstol    - absolute residual norm convergence criteria
+. dtol      - divergence residual norm increase criteria
+. its       - the number of iterations to apply
+- guesszero - `PETSC_TRUE` if `Y` is known to be initially zero
+
+  Output Parameters:
++ outits - number of iterations actually used
+. reason - the reason the apply terminated
+- Y      - the block of solutions (also contains the initial guess if guesszero is `PETSC_FALSE`)
+
+  Level: developer
+
+  Notes:
+  Most preconditioners do not support this function. Use the command
+  `PCMatApplyRichardsonExists()` to determine if one does.
+
+  `W` may be `NULL`. For example `KSPRICHARDSON` does not provide one, so implementations that need scratch space must allocate it themselves.
+
+  Like `PCMatApply()`, `B` and `Y` must be different matrices.
+
+.seealso: [](ch_ksp), `PC`, `PCMatApplyRichardsonExists()`, `PCApplyRichardson()`, `PCMatApply()`, `KSPMatSolve()`
+@*/
+PetscErrorCode PCMatApplyRichardson(PC pc, Mat B, Mat Y, Mat W, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
+  if (W) PetscValidHeaderSpecific(W, MAT_CLASSID, 4);
+  PetscCheckSameComm(pc, 1, B, 2);
+  PetscCheckSameComm(pc, 1, Y, 3);
+  if (W) PetscCheckSameComm(pc, 1, W, 4);
+  PetscCheckSameType(B, 2, Y, 3);
+  PetscCheck(Y != B, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and B must be different matrices");
+  PetscCheck(!W || (W != Y && W != B), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "W must be different from B and Y");
+  PetscCall(PCMatCheckBlocks_Private(pc, B, Y, "right-hand sides", "solutions"));
+  /* W has the same layout as B, so it is checked against Pmat and against the number of columns of Y in the same way */
+  if (W) PetscCall(PCMatCheckBlocks_Private(pc, W, Y, "work vectors", "solutions"));
+  PetscCall(PCSetUp(pc));
+  PetscUseTypeMethod(pc, matapplyrichardson, B, Y, W, rtol, abstol, dtol, its, guesszero, outits, reason);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

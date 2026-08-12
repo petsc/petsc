@@ -2243,7 +2243,7 @@ PetscErrorCode VecSetLayout(Vec x, PetscLayout map)
   `KSPCheckNorm()` detects an infinity and at least one of the MPI processes has a not converged reason then the `KSP`
   object collectively is labeled as not converged.
 
-.seealso: [](ch_vectors), `Vec`, `PetscLayout`, `VecGetLayout()`, `VecGetSize()`, `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`
+.seealso: [](ch_vectors), `Vec`, `PetscLayout`, `VecGetLayout()`, `VecGetSize()`, `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`, `MatSetInf()`
 @*/
 PetscErrorCode VecFlag(Vec xin, PetscInt flg)
 {

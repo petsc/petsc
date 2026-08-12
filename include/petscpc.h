@@ -75,6 +75,8 @@ PETSC_EXTERN PetscErrorCode PCSetErrorIfFailure(PC, PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCApplyRichardson(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
 PETSC_EXTERN PetscErrorCode PCApplyRichardsonExists(PC, PetscBool *);
+PETSC_EXTERN PetscErrorCode PCMatApplyRichardson(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
+PETSC_EXTERN PetscErrorCode PCMatApplyRichardsonExists(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCSetUseAmat(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGetUseAmat(PC, PetscBool *);
 
@@ -185,6 +187,7 @@ PETSC_EXTERN PetscErrorCode PCShellSetApplyTranspose(PC, PetscErrorCode (*)(PC, 
 PETSC_EXTERN PetscErrorCode PCShellSetMatApplyTranspose(PC, PetscErrorCode (*)(PC, Mat, Mat));
 PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC, PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyRichardson(PC, PetscErrorCode (*)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *));
+PETSC_EXTERN PetscErrorCode PCShellSetMatApplyRichardson(PC, PetscErrorCode (*)(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *));
 PETSC_EXTERN PetscErrorCode PCShellSetView(PC, PetscErrorCode (*)(PC, PetscViewer));
 PETSC_EXTERN PetscErrorCode PCShellSetDestroy(PC, PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCShellSetContext(PC, PetscCtx);

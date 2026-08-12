@@ -436,6 +436,15 @@ static PetscErrorCode MatZeroEntries_MPIDense(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatSetInf_MPIDense(Mat A)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatSetInf(l->A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatZeroRows_MPIDense(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
   Mat_MPIDense *l = (Mat_MPIDense *)A->data;
@@ -1265,7 +1274,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
                                        NULL,
                                        NULL,
                                        MatGetDiagonalBlock_MPIDense,
-                                       NULL,
+                                       MatSetInf_MPIDense,
                                        /* 34*/ MatDuplicate_MPIDense,
                                        NULL,
                                        NULL,

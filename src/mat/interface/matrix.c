@@ -11802,12 +11802,19 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat, PetscBool *cong)
 
   Level: developer
 
-.seealso: `Mat`, `MatZeroEntries()`, `MatSetValues()`
+  Note:
+  Only the dense types (`MATSEQDENSE`, `MATMPIDENSE`, and their device variants) currently implement this operation, which is used to flag a block of solutions that a linear solver failed to compute, as `VecFlag()` does for a single solution.
+
+.seealso: `Mat`, `MatZeroEntries()`, `MatSetValues()`, `VecFlag()`
 @*/
 PetscErrorCode MatSetInf(Mat A)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidType(A, 1);
+  MatCheckPreallocated(A, 1);
   PetscUseTypeMethod(A, setinf);
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -12,6 +12,8 @@ module ex62fmodule
   implicit none
   PC jacobi, sor
   Vec work
+  Mat matwork
+  PetscInt matapply_calls, matapplyrichardson_calls
 
 contains
 !/***********************************************************************/
@@ -89,6 +91,97 @@ contains
     PetscCallA(VecAXPY(y, one, work, ierr))
   end
 
+! -------------------------------------------------------------------
+!
+!   SampleShellPCMatApply - Block analog of SampleShellPCApply(), the
+!   preconditioner is applied to a whole block of vectors at once
+!
+!   Input Parameters:
+!   pc - preconditioner object
+!   x - input block of vectors
+!
+!   Output Parameters:
+!   y - preconditioned block of vectors
+!   ierr  - error code (nonzero if error has been detected)
+!
+  subroutine SampleShellPCMatApply(pc, x, y, ierr)
+
+    PC pc
+    Mat x, y
+    PetscErrorCode ierr
+    PetscScalar, parameter :: one = 1.0
+
+    PetscCallA(PCMatApply(jacobi, x, y, ierr))
+    PetscCallA(PCMatApply(sor, x, matwork, ierr))
+    PetscCallA(MatAXPY(y, one, matwork, SAME_NONZERO_PATTERN, ierr))
+    matapply_calls = matapply_calls + 1
+  end
+
+! -------------------------------------------------------------------
+!
+!   SampleShellPCMatApplyRichardson - Richardson iteration on a whole block
+!   of right-hand sides, x <- x + M (b - A x) with M the preconditioner of
+!   SampleShellPCMatApply(), so that it computes the same solutions as the
+!   block iteration of KSPRICHARDSON
+!
+!   Input Parameters:
+!   pc        - preconditioner object
+!   b         - block of right-hand sides
+!   x         - block of initial guesses
+!   w         - block of work vectors, KSPRICHARDSON passes a null Mat so the work blocks are created here
+!   rtol      - relative tolerance, unused since the iteration is not tested for convergence
+!   abstol    - absolute tolerance, unused
+!   dtol      - divergence tolerance, unused
+!   maxits    - number of iterations to perform
+!   guesszero - PETSC_TRUE if x is zero on entry
+!
+!   Output Parameters:
+!   x      - block of solutions
+!   outits - number of iterations performed
+!   reason - why the iteration stopped
+!   ierr   - error code (nonzero if error has been detected)
+!
+  subroutine SampleShellPCMatApplyRichardson(pc, b, x, w, rtol, abstol, dtol, maxits, guesszero, outits, reason, ierr)
+
+    PC pc
+    Mat b, x, w
+    PetscReal rtol, abstol, dtol
+    PetscInt maxits, outits
+    PetscBool guesszero
+    PCRichardsonConvergedReason reason
+    PetscErrorCode ierr
+    Mat amat, r, z
+    PetscInt i
+    PetscScalar, parameter :: one = 1.0, neg_one = -1.0
+
+    PetscCallA(PCGetOperators(pc, amat, PETSC_NULL_MAT, ierr))
+    PetscCallA(MatDuplicate(b, MAT_DO_NOT_COPY_VALUES, z, ierr))
+    PetscCallA(MatDuplicate(b, MAT_DO_NOT_COPY_VALUES, r, ierr))
+!   set the product A x up once so that only its numeric phase is run in the loop below
+    PetscCallA(MatProductCreateWithMat(amat, x, PETSC_NULL_MAT, r, ierr))
+    PetscCallA(MatProductSetType(r, MATPRODUCT_AB, ierr))
+    PetscCallA(MatProductSetFromOptions(r, ierr))
+    PetscCallA(MatProductSymbolic(r, ierr))
+    do i = 1, maxits
+      if (i == 1 .and. guesszero) then
+        PetscCallA(MatCopy(b, r, SAME_NONZERO_PATTERN, ierr))
+      else
+        PetscCallA(MatProductNumeric(r, ierr))
+        PetscCallA(MatAYPX(r, neg_one, b, SAME_NONZERO_PATTERN, ierr))
+      end if
+      PetscCallA(PCMatApply(jacobi, r, z, ierr))
+      PetscCallA(PCMatApply(sor, r, matwork, ierr))
+      PetscCallA(MatAXPY(z, one, matwork, SAME_NONZERO_PATTERN, ierr))
+      PetscCallA(MatAXPY(x, one, z, SAME_NONZERO_PATTERN, ierr))
+    end do
+    PetscCallA(MatProductClear(r, ierr))
+    PetscCallA(MatDestroy(r, ierr))
+    PetscCallA(MatDestroy(z, ierr))
+    outits = maxits
+    reason = PCRICHARDSON_CONVERGED_ITS
+    matapplyrichardson_calls = matapplyrichardson_calls + 1
+  end
+
 end module
 
 program main
@@ -109,17 +202,17 @@ program main
 !     norm     - norm of solution error
 
   Vec x, b, u
-  Mat A
-  PC pc
-  KSP ksp
+  Mat A, blockb, blockx, blocky
+  PC pc, blockpc
+  KSP ksp, blockksp
   PetscScalar v
   PetscScalar, parameter :: one = 1.0, neg_one = -1.0
   PetscReal, parameter :: tol = 1e-7
-  PetscReal norm
+  PetscReal norm, blocknorm
   PetscInt i, j, II, JJ, Istart, Iend, its
-  PetscInt m, n
+  PetscInt m, n, mloc, nrhs, nits
   PetscMPIInt rank
-  PetscBool flg
+  PetscBool flg, blocksolve
   PetscErrorCode ierr
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,6 +224,8 @@ program main
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
   n = 7
   PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
+  blocksolve = PETSC_FALSE
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-matsolve', blocksolve, flg, ierr))
   PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -276,6 +371,63 @@ program main
   end if
 100 format('Norm of error ', 1pe11.4, ' iterations ', i5)
 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!       Solve with a block of right-hand sides using the block
+!       callbacks of the shell preconditioner
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if (blocksolve) then
+    nrhs = 3
+    nits = 5
+    matapply_calls = 0
+    matapplyrichardson_calls = 0
+
+    PetscCallA(MatGetLocalSize(A, mloc, PETSC_NULL_INTEGER, ierr))
+    PetscCallA(MatCreateDense(PETSC_COMM_WORLD, mloc, PETSC_DECIDE, PETSC_DECIDE, nrhs, PETSC_NULL_SCALAR_ARRAY, blockb, ierr))
+    PetscCallA(MatSetRandom(blockb, PETSC_NULL_RANDOM, ierr))
+    PetscCallA(MatDuplicate(blockb, MAT_DO_NOT_COPY_VALUES, blockx, ierr))
+    PetscCallA(MatDuplicate(blockb, MAT_DO_NOT_COPY_VALUES, blocky, ierr))
+    PetscCallA(MatDuplicate(blockb, MAT_DO_NOT_COPY_VALUES, matwork, ierr))
+
+!   A fixed number of Richardson iterations, so that the two block solves below perform the same operations
+    PetscCallA(KSPCreate(PETSC_COMM_WORLD, blockksp, ierr))
+    PetscCallA(KSPSetOperators(blockksp, A, A, ierr))
+    PetscCallA(KSPSetType(blockksp, KSPRICHARDSON, ierr))
+    PetscCallA(KSPSetNormType(blockksp, KSP_NORM_NONE, ierr))
+    PetscCallA(KSPSetTolerances(blockksp, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, nits, ierr))
+    PetscCallA(KSPGetPC(blockksp, blockpc, ierr))
+    PetscCallA(PCSetType(blockpc, PCSHELL, ierr))
+    PetscCallA(PCShellSetApply(blockpc, SampleShellPCApply, ierr))
+    PetscCallA(PCShellSetMatApply(blockpc, SampleShellPCMatApply, ierr))
+
+!   Without PCMatApplyRichardson(), the block iteration of KSPRICHARDSON calls PCMatApply() once per iteration
+    PetscCallA(KSPMatSolve(blockksp, blockb, blockx, ierr))
+
+!   With PCMatApplyRichardson(), KSPRICHARDSON delegates the whole block iteration to the preconditioner
+    PetscCallA(PCShellSetMatApplyRichardson(blockpc, SampleShellPCMatApplyRichardson, ierr))
+    PetscCallA(KSPMatSolve(blockksp, blockb, blocky, ierr))
+
+    PetscCallA(MatAXPY(blocky, neg_one, blockx, SAME_NONZERO_PATTERN, ierr))
+    PetscCallA(MatNorm(blocky, NORM_FROBENIUS, blocknorm, ierr))
+    if (rank == 0) then
+      write (6, 120) matapply_calls, matapplyrichardson_calls
+      if (blocknorm < 1.e-12) then
+        write (6, 130)
+      else
+        write (6, 140)
+      end if
+    end if
+
+    PetscCallA(KSPDestroy(blockksp, ierr))
+    PetscCallA(MatDestroy(matwork, ierr))
+    PetscCallA(MatDestroy(blocky, ierr))
+    PetscCallA(MatDestroy(blockx, ierr))
+    PetscCallA(MatDestroy(blockb, ierr))
+  end if
+120 format('SampleShellPCMatApply() calls ', i5, ' SampleShellPCMatApplyRichardson() calls ', i5)
+130 format('KSPMatSolve() with and without PCMatApplyRichardson() agree')
+140 format('KSPMatSolve() with and without PCMatApplyRichardson() disagree')
+
 ! Free work space.  All PETSc objects should be destroyed when they
 ! are no longer needed.
   PetscCallA(KSPDestroy(ksp, ierr))
@@ -297,5 +449,10 @@ end
 !
 !   test:
 !     requires: !single
+!
+!   test:
+!     suffix: matsolve
+!     requires: !single
+!     args: -matsolve
 !
 !TEST*/
