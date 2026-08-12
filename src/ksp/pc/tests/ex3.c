@@ -106,7 +106,7 @@ int main(int argc, char **args)
        args: -mat_type seqbaij
      test:
        suffix: sor_seqsbaij
-       args: -mat_type seqbaij
+       args: -mat_type seqsbaij
      test:
        suffix: sor_seqsell
        args: -mat_type seqsell

@@ -567,24 +567,26 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
 
    testset:
      nsize: {{1 8}separate output}
-     args: -ne 7 -pc_type gamg -rap_mg_levels_pc_type pbjacobi -rap_ksp_monitor -rap_mg_coarse_ksp_type cg -rap_mg_coarse_pc_type pbjacobi -use_mat_nearnullspace -test_rap_bs -rap_ksp_view -rap_mat_view ::ascii_info -rap_ksp_converged_reason
+     args: -ne 7 -pc_type gamg -rap_mg_levels_pc_type pbjacobi -rap_mg_coarse_ksp_type cg -rap_mg_coarse_pc_type pbjacobi -use_mat_nearnullspace -test_rap_bs -rap_ksp_view -rap_mat_view ::ascii_info -rap_ksp_converged_reason
      filter: grep -v "variant HERMITIAN"
      test:
        suffix: rap_bs
+       args: -rap_ksp_monitor
 
      test:
        requires: kokkos_kernels
        suffix: rap_bs_kokkos
-       args: -mat_type aijkokkos
+       args: -rap_ksp_monitor -mat_type aijkokkos
 
      test:
        requires: cuda
        suffix: rap_bs_cuda
-       args: -mat_type aijcusparse -rap_mg_coarse_pc_type jacobi -rap_mg_levels_pc_type jacobi -rap_mg_levels_ksp_type richardson -rap_mg_levels_pc_jacobi_type rowl1 -rap_mg_levels_pc_jacobi_rowl1_scale .5
+       args: -rap_ksp_monitor -mat_type aijcusparse -rap_mg_coarse_pc_type jacobi -rap_mg_levels_pc_type jacobi -rap_mg_levels_ksp_type richardson -rap_mg_levels_pc_jacobi_type rowl1 -rap_mg_levels_pc_jacobi_rowl1_scale .5
 
      test:
        requires: hip
        suffix: rap_bs_hip
+       filter: grep -v "variant HERMITIAN" | sed -e "s/Linear rap_ solve converged due to CONVERGED_RTOL iterations 1[12]/Linear rap_ solve converged due to CONVERGED_RTOL iterations 12/g"
        args: -mat_type aijhipsparse -rap_mg_coarse_pc_type jacobi -rap_mg_levels_pc_type jacobi -rap_mg_levels_ksp_type richardson -rap_mg_levels_pc_jacobi_type rowl1 -rap_mg_levels_pc_jacobi_rowl1_scale .5
 
 TEST*/

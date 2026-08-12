@@ -215,6 +215,6 @@ PetscErrorCode ComputeMatrix(DM da, Mat B)
 /*TEST
 
    test:
-      args: -ksp_monitor -sbaij -ksp_monitor -pc_type cholesky -ksp_view
+      args: -ksp_monitor -sbaij -pc_type cholesky -ksp_view
 
 TEST*/

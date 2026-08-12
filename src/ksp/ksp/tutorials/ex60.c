@@ -252,9 +252,4 @@ int main(int argc, char **argv)
       nsize: 2
       args: -ksp_monitor -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-2 -ksp_ksp_converged_reason
 
-   test:
-      suffix: 9
-      nsize: 2
-      args: -ksp_monitor -ksp_rtol 1e-6 -diagfunc 1 -ksp_type pipefgmres -pc_type ksp -ksp_ksp_type cg -ksp_pc_type none -ksp_ksp_rtol 1e-2 -ksp_ksp_converged_reason
-
 TEST*/

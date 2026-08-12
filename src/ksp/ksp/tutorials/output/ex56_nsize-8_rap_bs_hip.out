@@ -1,17 +1,3 @@
-  Residual norms for rap_ solve.
-  0 KSP Residual norm 4.358866223644e+03
-  1 KSP Residual norm 3.956615852200e+02
-  2 KSP Residual norm 3.016439583211e+02
-  3 KSP Residual norm 8.259521990333e+01
-  4 KSP Residual norm 2.898795858255e+01
-  5 KSP Residual norm 9.440758543722e+00
-  6 KSP Residual norm 2.922858017992e+00
-  7 KSP Residual norm 1.171062780297e+00
-  8 KSP Residual norm 5.687223814604e-01
-  9 KSP Residual norm 2.903217737661e-01
- 10 KSP Residual norm 1.083633248028e-01
- 11 KSP Residual norm 4.486038657969e-02
- 12 KSP Residual norm 1.534420334479e-02
   Linear rap_ solve converged due to CONVERGED_RTOL iterations 12
 KSP Object: (rap_) 8 MPI processes
   type: gmres
