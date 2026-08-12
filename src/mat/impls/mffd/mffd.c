@@ -665,7 +665,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 . -mat_mffd_umin umin        - Sets umin (for default PETSc routine that computes h only)
 . -mat_mffd_complex          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
                                (requires real valued functions but that PETSc be configured for complex numbers)
-. -snes_mf                   - use the finite difference based matrix-free matrix with `SNESSolve()` and no preconditioner
+. -snes_mf                   - use the finite difference based matrix-free matrix with `SNESSolve()` with no preconditioner by default
 - -snes_mf_operator          - use the finite difference based matrix-free matrix with `SNESSolve()` but construct a preconditioner
                                using the matrix passed as `pmat` to `SNESSetJacobian()`.
 
