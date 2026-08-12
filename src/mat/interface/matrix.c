@@ -3014,7 +3014,7 @@ PetscErrorCode MatANorm_Default(Mat mat, Vec x, PetscReal *val)
   PetscScalar sval;
 
   PetscFunctionBegin;
-  PetscCall(MatADot_Default(mat, x, x, &sval));
+  PetscCall(MatADot(mat, x, x, &sval));
   PetscCheck(PetscRealPart(sval) >= 0.0, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Matrix argument is not positive definite");
   PetscCheck(PetscAbsReal(PetscImaginaryPart(sval)) < 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONG, "Matrix argument is not Hermitian");
   *val = PetscSqrtReal(PetscRealPart(sval));
