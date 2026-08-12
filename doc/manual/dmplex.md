@@ -113,6 +113,30 @@ search structures and indices for the different types of points using
 DMPlexStratify(dm);
 ```
 
+### Querying the DMPlex Grid
+
+Once a DMPlex grid is created, there are several ways of querying to the grid to determine relations between different mesh points.
+The most obvious functions for this to this point are `DMPlexGetCone()` and `DMPlexGetSupport()`, which simply return the information given above to create the DAG in the first place.
+
+There are more advanced functions too.
+`DMPlexGetTransitiveClosure()` will return all the points which are in the cone/support of a given point recursively.
+For example, given a cell, the transitive cone will contain the points of the faces, edges, and vertices which are "owned" by that cell.
+Similarly, the transitive support of a vertex will return the edges, faces, and cells which "touch" that vertex.
+
+DMPlex also provides functions for doing an inverse search.
+Given a set of points in the DAG, `DMPlexGetJoin()` returns the intersection of the support of each point in the input set.
+For example, in a fully interpolated mesh, given a pair of points which are vertices, it will return the edge point formed by those vertices if such an edge exists.
+`DMPlexGetMeet()` is the opposite of `DMPlexGetJoin()`[^meet-join-footnote]; it returns the intersection of the cone of each of the input points.
+So if the input points are a pair of edges, it will return the vertices shared by those edges if they share any.
+
+The usage of cones and supports by`DMPlexGetMeet()` and `DMPlexGetJoin()` can limit the usefulness of the search.
+For example, for a fully interpolated mesh, if the set of input points are vertices which form a face, `DMPlexGetJoin()` will not find the face, as only the edges of those vertices are in the cone.
+A more complete search is offered by `DMPlexGetFullJoin()`, which returns the intersection of the *transitive* support of each point in the input set.
+By using the transitive support, `DMPlexGetFullJoin()` could equivalently be described as finding the point(s) whose cone is the input set of points.
+The use of the transitive support allows a face or cell to be discovered from its vertices.
+`DMPlexGetFullMeet()` does similar, but returns the intersection of the transitive cone of each point in the input set (or equivalently finds the point(s) whose support is the input set of points).
+The reason to use the more restrictive `DMPlexGetJoin()`/`DMPlexGetMeet()` instead of `DMPlexGetFullJoin()`/`DMPlexGetFullMeet()` is that the latter is significantly more expensive.
+
 (subsec_pointorientations)=
 ## Grid Point Orientations
 
@@ -838,6 +862,8 @@ preserved under adaptation, respectively.
 ```
 
 [^boundary-footnote]: In three dimensions, the boundary of a cell (sometimes called an element) is its faces, the boundary of a face is its edges and the boundary of an edge is the two vertices.
+
+[^meet-join-footnote]: The terms "meet" and "join" derive from the [operations](https://en.wikipedia.org/wiki/Join_and_meet) on a [lattice](https://en.wikipedia.org/wiki/Lattice_(order)). The Hasse diagram for a mesh can be viewed as a partially ordered set (a lattice), where the points are partially ordered by their depth.
 
 ```{eval-rst}
 .. bibliography:: /petsc.bib
