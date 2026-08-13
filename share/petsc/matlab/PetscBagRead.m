@@ -26,8 +26,8 @@ for lcv = 1:count
     val = read(fd,msize,'double');
   elseif dtype == 6 % char
     val = deblank(char(read(fd,msize,'uchar')'));
-  elseif dtype == 9 % truth
-    val = read(fd,1,'int32');
+  elseif dtype == 9 % PetscBool
+    val = read(fd,msize,'uchar');
 % PETSC_LOGICAL is a bit boolean and not currently handled
 %  elseif dtype == 7 % boolean
 %    val = read(fd,1,'bit1');
