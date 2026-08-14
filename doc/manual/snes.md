@@ -883,16 +883,6 @@ a simple line graph of the residual norm’s convergence.
 One can cancel hardwired monitoring routines for `SNES` at runtime
 with `-snes_monitor_cancel`.
 
-As the Newton method converges so that the residual norm is small, say
-$10^{-10}$, many of the final digits printed with the
-`-snes_monitor` option are meaningless. Worse, they are different on
-different machines; due to different round-off rules used by, say, the
-IBM RS6000 and the Sun SPARC. This makes testing between different
-machines difficult. The option `-snes_monitor_short` causes PETSc to
-print fewer of the digits of the residual norm as it gets smaller; thus
-on most of the machines it will always print the same numbers making
-cross-process testing easier.
-
 The routines
 
 ```

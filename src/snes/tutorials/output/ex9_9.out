@@ -1,21 +1,41 @@
-setup done: grid  Mx,My = 21,21  with spacing  dx,dy = 0.2000,0.2000
-  0 SNES Function norm 4.16496
-    0 SNES VI Function norm 5.52931 Active lower constraints 69/79 upper constraints 0/0 Percent of total 0.156463 Percent of bounded 0.156463
-    1 SNES VI Function norm 0.695513 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.129252
-  1 SNES Function norm 0.708647
-    0 SNES VI Function norm 0.652081 Active lower constraints 57/69 upper constraints 0/0 Percent of total 0.129252 Percent of bounded 0.129252
-    1 SNES VI Function norm 0.224211 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.111111
-  2 SNES Function norm 0.759478
-    0 SNES VI Function norm 0.224211 Active lower constraints 49/57 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.111111
-    1 SNES VI Function norm 0.0852096 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-  3 SNES Function norm 0.134526
-    0 SNES VI Function norm 0.134526 Active lower constraints 45/49 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-    1 SNES VI Function norm 2.34708e-07 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-  4 SNES Function norm 0.00191518
-    0 SNES VI Function norm 0.00191518 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-    1 SNES VI Function norm 3.33709e-09 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-  5 SNES Function norm 3.82153e-07
-    0 SNES VI Function norm 3.82153e-07 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-    1 SNES VI Function norm 7.03211e-13 Active lower constraints 45/45 upper constraints 0/0 Percent of total 0.102041 Percent of bounded 0.102041
-  6 SNES Function norm < 1.e-11
-errors:     av |u-uexact|  = 1.287e-03    |u-uexact|_inf = 7.882e-03
+  0 SNES Function norm 2.777872593632e+00
+    0 SNES VI Function norm 3.86571 Active lower constraints 13/13 upper constraints 0/0 Percent of total 0.160494 Percent of bounded 0.
+    1 SNES VI Function norm 1.3323 Active lower constraints 9/13 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  1 SNES Function norm 1.408073795059e+00
+    0 SNES VI Function norm 1.79595 Active lower constraints 9/13 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 5.72822e-06 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  2 SNES Function norm 8.103020210407e-01
+    0 SNES VI Function norm 1.20407 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 3.44086e-06 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  3 SNES Function norm 1.521083925749e+00
+    0 SNES VI Function norm 1.52108 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.410306 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  4 SNES Function norm 1.476908597566e+00
+    0 SNES VI Function norm 1.47691 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.201668 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  5 SNES Function norm 1.450259713333e+00
+    0 SNES VI Function norm 1.45026 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.378823 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  6 SNES Function norm 1.397868650680e+00
+    0 SNES VI Function norm 1.39787 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.203699 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  7 SNES Function norm 1.393571670119e+00
+    0 SNES VI Function norm 1.39357 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.2101 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  8 SNES Function norm 1.392385741925e+00
+    0 SNES VI Function norm 1.39239 Active lower constraints 0/0 upper constraints 0/0 Percent of total 0. Percent of bounded 0.
+    1 SNES VI Function norm 0.199868 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+  9 SNES Function norm 1.480798922717e+00
+    0 SNES VI Function norm 0.199868 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 3.67737e-07 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+ 10 SNES Function norm 1.153758910183e-01
+    0 SNES VI Function norm 0.115376 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 2.12346e-07 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+ 11 SNES Function norm 7.744261736847e-04
+    0 SNES VI Function norm 0.000774426 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 1.42592e-09 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+ 12 SNES Function norm 3.408537680532e-08
+    0 SNES VI Function norm 3.40854e-08 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+    1 SNES VI Function norm 5.67626e-14 Active lower constraints 9/9 upper constraints 0/0 Percent of total 0.111111 Percent of bounded 0.
+ 13 SNES Function norm 5.676258451195e-14
+errors on 9 x 9 grid:  av |u-uexact|  = 3.076e-03,  |u-uexact|_inf = 1.334e-02

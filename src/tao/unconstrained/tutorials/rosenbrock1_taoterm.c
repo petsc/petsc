@@ -174,40 +174,40 @@ static PetscErrorCode CreateSolutionVec(TaoTerm term, Vec *solution)
 
    test:
      output_file: output/rosenbrock1_1.out
-     args: -tao_monitor_short -tao_type nls -tao_gatol 1.e-4
+     args: -tao_monitor -tao_type nls -tao_gatol 1.e-4
 
    test:
      suffix: test_gradient
-     args: -tao_monitor_short -tao_type nls -tao_gatol 1.e-4 -tao_test_gradient -tao_fd_delta 1.e-6 -n 4 -chained -tao_term_hessian_mat_type aij -alpha 49.0
+     args: -tao_monitor -tao_type nls -tao_gatol 1.e-4 -tao_test_gradient -tao_fd_delta 1.e-6 -n 4 -chained -tao_term_hessian_mat_type aij -alpha 49.0
 
    test:
      suffix: test_gradient_fd_check
-     args: -tao_monitor_short -tao_type nls -tao_gatol 1.e-4 -tao_test_gradient
+     args: -tao_monitor -tao_type nls -tao_gatol 1.e-4 -tao_test_gradient
      args: -n 4 -chained -tao_term_hessian_mat_type aij -alpha 49.0 -test_gradient_fd_check 1
 
    test:
      suffix: fd_grad
-     args: -tao_monitor_short -tao_type nls -tao_term_gradient_use_fd
+     args: -tao_monitor -tao_type nls -tao_term_gradient_use_fd
 
    test:
      suffix: fd_hess
-     args: -tao_monitor_short -tao_type nls -tao_term_hessian_use_fd
+     args: -tao_monitor -tao_type nls -tao_term_hessian_use_fd
 
    test:
      suffix: fd_hess_diffpre
-     args: -tao_monitor_short -tao_type nls -tao_term_hessian_use_fd -tao_term_hessian_pre_is_hessian 0
+     args: -tao_monitor -tao_type nls -tao_term_hessian_use_fd -tao_term_hessian_pre_is_hessian 0
 
    test:
      suffix: use_fd
-     args: -tao_monitor_short -tao_type nls -use_fd
+     args: -tao_monitor -tao_type nls -use_fd
 
    test:
      suffix: test_fd_hess
-     args: -tao_type nls -tao_fd_hessian -tao_view -tao_monitor_short
+     args: -tao_type nls -tao_fd_hessian -tao_view -tao_monitor
 
    test:
      suffix: test_mf_hessian
-     args: -tao_type nls -tao_term_hessian_mat_type mffd -tao_monitor_short -tao_view
+     args: -tao_type nls -tao_term_hessian_mat_type mffd -tao_monitor -tao_view
 
    test:
      suffix: add_term
@@ -216,6 +216,6 @@ static PetscErrorCode CreateSolutionVec(TaoTerm term, Vec *solution)
    test:
      suffix: separate_hessians
      requires: !single
-     args: -tao_monitor_short -tao_type nls -tao_gatol 1.e-4 -tao_term_hessian_pre_is_hessian 0 -tao_term_hessian_mat_type aij -tao_term_hessian_pre_mat_type sbaij -tao_view
+     args: -tao_monitor -tao_type nls -tao_gatol 1.e-4 -tao_term_hessian_pre_is_hessian 0 -tao_term_hessian_mat_type aij -tao_term_hessian_pre_mat_type sbaij -tao_view
 
 TEST*/

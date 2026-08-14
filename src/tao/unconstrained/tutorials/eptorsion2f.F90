@@ -448,12 +448,12 @@ end
 !      requires: !complex
 !
 !   test:
-!      args: -tao_monitor_short -tao_type nls -tao_gttol 1.e-2
+!      args: -tao_monitor -tao_type nls -tao_gttol 1.e-2
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
-!      args: -tao_monitor_short -tao_type lmvm -tao_gttol 1.e-2
+!      args: -tao_monitor -tao_type lmvm -tao_gttol 1.e-2
 !
 !   test:
 !      suffix: 3

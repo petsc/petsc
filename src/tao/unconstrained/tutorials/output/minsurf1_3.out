@@ -2,11 +2,11 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 8   
 
-iter =   0, Function value 1.45591, Residual: 0.21372 
-iter =   1, Function value 1.43049, Residual: 0.132023 
-iter =   2, Function value 1.42069, Residual: 0.0887699 
-iter =   3, Function value 1.41857, Residual: 0.0676407 
-iter =   4, Function value 1.41781, Residual: 0.0161113 
-iter =   5, Function value 1.41776, Residual: 0.00313094 
-iter =   6, Function value 1.41776, Residual: 0.00280956 
-iter =   7, Function value 1.41776, Residual: 0.000935101 
+  0 TAO,  Function value: 1.45591,  Residual: 0.21372 
+  1 TAO,  Function value: 1.43049,  Residual: 0.132023 
+  2 TAO,  Function value: 1.42069,  Residual: 0.0887699 
+  3 TAO,  Function value: 1.41857,  Residual: 0.0676407 
+  4 TAO,  Function value: 1.41781,  Residual: 0.0161113 
+  5 TAO,  Function value: 1.41776,  Residual: 0.00313094 
+  6 TAO,  Function value: 1.41776,  Residual: 0.00280956 
+  7 TAO,  Function value: 1.41776,  Residual: 0.000935101 

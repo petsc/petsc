@@ -248,7 +248,7 @@ int main(int argc, char **args)
    test:
       suffix: 1
       nsize: 2
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
@@ -258,51 +258,51 @@ int main(int argc, char **args)
    test:
       suffix: viennacl
       requires: viennacl
-      args: -ksp_monitor_short -mat_type aijviennacl
+      args: -ksp_monitor -mat_type aijviennacl
       output_file: output/ex7_mpiaijcusparse.out
 
    test:
       suffix: viennacl_2
       nsize: 2
       requires: viennacl
-      args: -ksp_monitor_short -mat_type aijviennacl
+      args: -ksp_monitor -mat_type aijviennacl
       output_file: output/ex7_mpiaijcusparse_2.out
 
    test:
       suffix: mpiaijcusparse
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse
+      args: -ksp_monitor -mat_type aijcusparse
 
    test:
       suffix: mpiaijcusparse_2
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse
+      args: -ksp_monitor -mat_type aijcusparse
 
    test:
       suffix: mpiaijcusparse_simple
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_simple_2
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
+      args: -ksp_monitor -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse -sub_ksp_type preonly -sub_pc_type ilu
 
    test:
       suffix: mpiaijcusparse_3
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
+      args: -ksp_monitor -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
 
    test:
       suffix: mpiaijcusparse_4
       nsize: 2
       requires: cuda
-      args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
+      args: -ksp_monitor -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
 
    testset:
-      args: -ksp_monitor_short -pc_type gamg -ksp_view -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10
+      args: -ksp_monitor -pc_type gamg -ksp_view -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10
       test:
         suffix: gamg_cuda
         nsize: {{1 2}separate output}

@@ -1,7 +1,7 @@
 lid velocity = 0.00591716, prandtl # = 1., grashof # = 1.
-    0 KSP Residual norm 0.070841
-    1 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 1
+    0 KSP Residual norm 7.084104801410e-02
+    1 KSP Residual norm 1.189456831791e-15
+    Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero
@@ -28,9 +28,9 @@ PC Object: 1 MPI process
     total: nonzeros=12688, allocated nonzeros=12688
     total number of mallocs used during MatSetValues calls=0
       using I-node routines: found 169 nodes, limit used is 5
-    0 KSP Residual norm 1.46462e-05
-    1 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 1
+    0 KSP Residual norm 1.464622263413e-05
+    1 KSP Residual norm 7.863098198354e-20
+    Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: cgne
   maximum iterations=10000, initial guess is zero

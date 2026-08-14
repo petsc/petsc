@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -tao_monitor_short -tao_view -tao_type nls
+    args: -tao_monitor -tao_view -tao_type nls
 
   test:
     suffix: 1

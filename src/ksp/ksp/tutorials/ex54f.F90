@@ -428,10 +428,10 @@ end
 !   requires: !single
 !   test:
 !      suffix: misk
-!      args: -pc_gamg_mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0 -ksp_monitor_short
+!      args: -pc_gamg_mat_coarsen_type misk -pc_gamg_aggressive_coarsening 0 -ksp_monitor
 !   test:
 !      suffix: mis
-!      args: -pc_gamg_mat_coarsen_type mis -ksp_monitor_short
+!      args: -pc_gamg_mat_coarsen_type mis -ksp_monitor
 !   test:
 !      suffix: hem
 !      args: -pc_gamg_mat_coarsen_type hem -ksp_converged_reason

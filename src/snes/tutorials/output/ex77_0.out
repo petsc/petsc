@@ -1,28 +1,28 @@
-  0 SNES Function norm 0.334788
-    0 KSP Residual norm 0.334788
-    1 KSP Residual norm 0.0352782
-    2 KSP Residual norm < 1.e-11
+  0 SNES Function norm 3.347884904433e-01
+    0 KSP Residual norm 3.347884904433e-01
+    1 KSP Residual norm 3.527819715900e-02
+    2 KSP Residual norm 2.421290481902e-12
     Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm 0.144267
-    0 KSP Residual norm 0.144267
-    1 KSP Residual norm 0.0111639
-    2 KSP Residual norm < 1.e-11
+  1 SNES Function norm 1.442667243831e-01
+    0 KSP Residual norm 1.442667243831e-01
+    1 KSP Residual norm 1.116387592340e-02
+    2 KSP Residual norm 1.055438938995e-12
     Linear solve converged due to CONVERGED_RTOL iterations 2
-  2 SNES Function norm 0.0276657
-    0 KSP Residual norm 0.0276657
-    1 KSP Residual norm 0.00247755
-    2 KSP Residual norm < 1.e-11
+  2 SNES Function norm 2.766569049821e-02
+    0 KSP Residual norm 2.766569049821e-02
+    1 KSP Residual norm 2.477547725611e-03
+    2 KSP Residual norm 2.060235908559e-13
     Linear solve converged due to CONVERGED_RTOL iterations 2
-  3 SNES Function norm 0.00826251
-    0 KSP Residual norm 0.00826251
-    1 KSP Residual norm 0.000289934
-    2 KSP Residual norm < 1.e-11
+  3 SNES Function norm 8.262511886845e-03
+    0 KSP Residual norm 8.262511886845e-03
+    1 KSP Residual norm 2.899336263141e-04
+    2 KSP Residual norm 2.326656664512e-14
     Linear solve converged due to CONVERGED_RTOL iterations 2
-  4 SNES Function norm 0.000260571
-    0 KSP Residual norm 0.000260571
-    1 KSP Residual norm 9.82302e-06
-    2 KSP Residual norm < 1.e-11
+  4 SNES Function norm 2.605711052952e-04
+    0 KSP Residual norm 2.605711052952e-04
+    1 KSP Residual norm 9.823019425993e-06
+    2 KSP Residual norm 8.753157403345e-16
     Linear solve converged due to CONVERGED_RTOL iterations 2
-  5 SNES Function norm 6.47516e-07
+  5 SNES Function norm 6.475155354021e-07
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 Number of SNES iterations = 5

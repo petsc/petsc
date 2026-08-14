@@ -57,7 +57,7 @@ testex19_mpi:
 	${RM} -f ex19.tmp ex19.dtmp;
 #use unpreconditioned norm because HYPRE device installations use different AMG parameters
 runex19_hypre:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp 2>&1;
+	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp 2>&1;
 	-${QUIET}${DIFF} output/ex19_hypre.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE"; \
@@ -69,7 +69,7 @@ runex19_hypre:
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_hypre_cuda:
 	-${QUIET}USE_DEVICE=$$(echo $${CUDA_VISIBLE_DEVICES:-0} | cut -d ',' -f 1); \
-	CUDA_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
+	CUDA_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 3 -snes_monitor -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_hypre.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/CUDA"; \
@@ -81,7 +81,7 @@ runex19_hypre_cuda:
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_hypre_hip:
 	-${QUIET}USE_DEVICE=$$(echo $${ROCR_VISIBLE_DEVICES:-0} | cut -d ',' -f 1); \
-	ROCR_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type hip -dm_mat_type aijhipsparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
+	ROCR_VISIBLE_DEVICES=$$USE_DEVICE ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -petsc_ci -dm_vec_type hip -dm_mat_type aijhipsparse -da_refine 3 -snes_monitor -ksp_norm_type unpreconditioned -pc_type hypre > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_hypre.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/HIP"; \
@@ -114,7 +114,7 @@ runex19_hip:
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_ml:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor_short -pc_type ml > ex19.tmp;
+	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor -pc_type ml > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_ml.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with ML"; \
@@ -125,7 +125,7 @@ runex19_ml:
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_fieldsplit_mumps:
-	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor_short -ksp_monitor_short  -fieldsplit_0_pc_factor_mat_solver_type mumps -fieldsplit_1_pc_factor_mat_solver_type mumps > ex19.tmp;
+	-${QUIET}${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -pc_type fieldsplit -pc_fieldsplit_block_size 4 -pc_fieldsplit_type SCHUR -pc_fieldsplit_0_fields 0,1,2 -pc_fieldsplit_1_fields 3 -fieldsplit_0_pc_type lu -fieldsplit_1_pc_type lu -snes_monitor -ksp_monitor  -fieldsplit_0_pc_factor_mat_solver_type mumps -fieldsplit_1_pc_factor_mat_solver_type mumps > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_fieldsplit_5.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with MUMPS"; \
@@ -147,7 +147,7 @@ runex19_superlu_dist:
 	fi; \
 	${RM} -f ex19.tmp ex19.dtmp;
 runex19_suitesparse:
-	-${QUIET}${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor_short -pc_type lu -pc_factor_mat_solver_type umfpack > ex19.tmp;
+	-${QUIET}${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor -pc_type lu -pc_factor_mat_solver_type umfpack > ex19.tmp;
 	-${QUIET}${DIFF} output/ex19_suitesparse.out ex19.tmp > ex19.dtmp;
 	-@if [ ! -s ex19.dtmp ];  then \
 		echo "C/C++ example src/snes/tutorials/ex19 run successfully with SuiteSparse"; \

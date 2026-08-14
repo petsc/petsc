@@ -819,74 +819,74 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
 
    test:
       nsize: 2
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype NEWTON
       requires: !single
 
    test:
       suffix: 2
       nsize: 2
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -precheck 1
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -precheck 1
       requires: !single
 
    test:
       suffix: 3
       nsize: 2
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3
       requires: !single
 
    test:
       suffix: 3_star
       nsize: 2
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3 -alloc_star
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -jtype PICARD -picard -precheck 1 -p 3 -alloc_star
       output_file: output/ex15_3.out
       requires: !single
 
    test:
       suffix: 4
-      args: -snes_monitor_short -snes_type newtonls -npc_snes_type ngs -snes_npc_side left -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_monitor_short -pc_type none
+      args: -snes_monitor -snes_type newtonls -npc_snes_type ngs -snes_npc_side left -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_monitor -pc_type none
       requires: !single
 
    test:
       suffix: 5
-      args: -snes_monitor_short -snes_type newtontr -npc_snes_type ngs -snes_npc_side right -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_converged_reason -pc_type ilu
+      args: -snes_monitor -snes_type newtontr -npc_snes_type ngs -snes_npc_side right -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -ksp_converged_reason -pc_type ilu
       requires: !single
 
    test:
       suffix: lag_jac
       nsize: 4
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_jacobian 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_jacobian_persists
       requires: !single
 
    test:
       suffix: lag_pc
       nsize: 4
-      args: -snes_monitor_short -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists
+      args: -snes_monitor -da_grid_x 20 -da_grid_y 20 -p 6.0 -lambda 0 -jtype NEWTON -snes_type ngmres -npc_snes_type newtonls -npc_snes_lag_preconditioner 5 -npc_pc_type asm -npc_ksp_converged_reason -npc_snes_lag_preconditioner_persists
       requires: !single
 
    test:
       suffix: nleqerr
-      args: -snes_monitor_short -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr
+      args: -snes_monitor -snes_type newtonls -da_grid_x 20 -da_grid_y 20 -p 1.3 -lambda 1 -snes_linesearch_monitor -pc_type lu -snes_linesearch_type nleqerr
       requires: !single
 
    test:
       suffix: mf
-      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator
+      args: -snes_monitor -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator
       requires: !single
 
    test:
       suffix: mf_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator -picard
+      args: -snes_monitor -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_mf_operator -picard
       requires: !single
       output_file: output/ex15_mf.out
 
    test:
       suffix: fd_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 2 -p 3 -ksp_rtol 1.e-12 -snes_fd -picard
+      args: -snes_monitor -pc_type lu -da_refine 2 -p 3 -ksp_rtol 1.e-12 -snes_fd -picard
       requires: !single
 
    test:
       suffix: fd_color_picard
-      args: -snes_monitor_short -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_fd_color -picard
+      args: -snes_monitor -pc_type lu -da_refine 4 -p 3 -ksp_rtol 1.e-12 -snes_fd_color -picard
       requires: !single
       output_file: output/ex15_mf.out
 

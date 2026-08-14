@@ -367,7 +367,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
 
 /*TEST
  testset:
-   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -irk_type gauss -irk_nstages 2
+   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor -pc_type pbjacobi -irk_type gauss -irk_nstages 2
    test:
      suffix: 1
      requires: !single
@@ -384,11 +384,11 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
      args: -ksp_atol 1e-4 -ksp_view_final_residual -ksp_type hpddm -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 2
  test:
    suffix: 2
-   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100
+   args: -a 0.1 -dt .125 -niter 5 -imax 40 -ksp_monitor -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100
  testset:
    suffix: 3
    requires: !single
-   args: -a 1 -dt .33 -niter 3 -imax 40 -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100 -physics_type advection
+   args: -a 1 -dt .33 -niter 3 -imax 40 -ksp_monitor -pc_type pbjacobi -ksp_atol 1e-6 -irk_type gauss -irk_nstages 4 -ksp_gmres_restart 100 -physics_type advection
    test:
      args: -vec_mdot_use_gemv {{0 1}} -vec_maxpy_use_gemv {{0 1}}
    test:

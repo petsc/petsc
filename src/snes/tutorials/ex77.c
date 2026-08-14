@@ -526,8 +526,8 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -run_type full -dm_plex_dim 3 \
           -def_petscspace_degree 2 -pres_petscspace_degree 1 -elastMat_petscspace_degree 0 -wall_pres_petscspace_degree 0 \
-          -snes_rtol 1e-05 -snes_monitor_short -snes_converged_reason \
-          -ksp_type fgmres -ksp_rtol 1e-10 -ksp_monitor_short -ksp_converged_reason \
+          -snes_rtol 1e-05 -snes_monitor -snes_converged_reason \
+          -ksp_type fgmres -ksp_rtol 1e-10 -ksp_monitor -ksp_converged_reason \
           -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper \
             -fieldsplit_deformation_ksp_type preonly -fieldsplit_deformation_pc_type lu \
             -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi

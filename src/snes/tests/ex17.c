@@ -667,7 +667,7 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-      args: -snes_monitor_short
+      args: -snes_monitor
       requires: !single
 
 TEST*/

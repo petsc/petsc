@@ -1,11 +1,11 @@
-  0 SNES Function norm 8.32828
-    0 KSP Residual norm 11.2821
-    1 KSP Residual norm 0.0646504
-    2 KSP Residual norm < 1.e-11
-  Linear solve converged due to CONVERGED_RTOL iterations 2
-  1 SNES Function norm < 1.e-11
-L_2 Error: 0.00131794
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  0 SNES Function norm 8.328278903362e+00
+    0 KSP Residual norm 1.128213618889e+01
+    1 KSP Residual norm 6.465040018411e-02
+    2 KSP Residual norm 3.624586508094e-15
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+  1 SNES Function norm 5.828550325080e-15
+  L_2 Error: 0.00131109
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 1 MPI process
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -35,32 +35,32 @@ SNES Object: 1 MPI process
       Additive Schwarz: local solve composition type - MULTIPLICATIVE
       Local solver information for first block is in the following KSP and PC objects on rank 0:
       Use -ksp_view ::ascii_info_detail to display information for all blocks
-    KSP Object: (sub_) 1 MPI process
-      type: preonly
-      maximum iterations=10000, initial guess is zero
-      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
-      left preconditioning
-      not checking for convergence
-    PC Object: (sub_) 1 MPI process
-      type: lu
-        out-of-place factorization
-        tolerance for zero pivot 2.22045e-14
-        matrix ordering: nd
-        factor fill ratio given 5., needed 3.40496
-          Factored matrix:
-            Mat Object: (sub_) 1 MPI process
-              type: seqaij
-              rows=224, cols=224
-              package used to perform factorization: petsc
-              total: nonzeros=4944, allocated nonzeros=4944
-                not using I-node routines
-      linear system matrix, which is also used to construct the preconditioner:
-      Mat Object: (sub_) 1 MPI process
-        type: seqaij
-        rows=224, cols=224
-        total: nonzeros=1452, allocated nonzeros=1452
-        total number of mallocs used during MatSetValues calls=0
-          not using I-node routines
+      KSP Object: (sub_) 1 MPI process
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+        left preconditioning
+        not checking for convergence
+      PC Object: (sub_) 1 MPI process
+        type: lu
+          out-of-place factorization
+          tolerance for zero pivot 2.22045e-14
+          matrix ordering: nd
+          factor fill ratio given 5., needed 3.40496
+            Factored matrix:
+              Mat Object: (sub_) 1 MPI process
+                type: seqaij
+                rows=224, cols=224
+                package used to perform factorization: petsc
+                total: nonzeros=4944, allocated nonzeros=4944
+                  not using I-node routines
+        linear system matrix, which is also used to construct the preconditioner:
+        Mat Object: (sub_) 1 MPI process
+          type: seqaij
+          rows=224, cols=224
+          total: nonzeros=1452, allocated nonzeros=1452
+          total number of mallocs used during MatSetValues calls=0
+            not using I-node routines
     linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij

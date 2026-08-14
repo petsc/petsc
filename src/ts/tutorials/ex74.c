@@ -195,16 +195,16 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, Pe
     requires: double
     suffix: 1
     nsize: {{1 2}}
-    args: -ts_max_steps 5 -ts_monitor -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -ts_type irk -ts_irk_nstages 2
+    args: -ts_max_steps 5 -ts_monitor -ksp_monitor -pc_type pbjacobi -ksp_atol 1e-6 -ts_type irk -ts_irk_nstages 2
 
   test:
     requires: double
     suffix: 2
-    args: -ts_max_steps 5 -ts_monitor -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-6 -ts_type irk -ts_irk_nstages 3
+    args: -ts_max_steps 5 -ts_monitor -ksp_monitor -pc_type pbjacobi -ksp_atol 1e-6 -ts_type irk -ts_irk_nstages 3
 
   testset:
     requires: hpddm
-    args: -ts_max_steps 5 -ts_monitor -ksp_monitor_short -pc_type pbjacobi -ksp_atol 1e-4 -ts_type irk -ts_irk_nstages 3 -ksp_view_final_residual -ksp_hpddm_type gcrodr -ksp_type hpddm
+    args: -ts_max_steps 5 -ts_monitor -ksp_monitor -pc_type pbjacobi -ksp_atol 1e-4 -ts_type irk -ts_irk_nstages 3 -ksp_view_final_residual -ksp_hpddm_type gcrodr -ksp_type hpddm
     test:
       suffix: 3
       requires: double

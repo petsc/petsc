@@ -389,7 +389,7 @@ int main(int argc, char **argv)
    test:
       suffix: 1
       nsize: 7
-      args: -dm_view -stag_grid_x 11 -stag_stencil_type star -a 1.33 -b 7.22 -c 347.2 -ksp_monitor_short
+      args: -dm_view -stag_grid_x 11 -stag_stencil_type star -a 1.33 -b 7.22 -c 347.2 -ksp_monitor
 
    test:
       suffix: periodic

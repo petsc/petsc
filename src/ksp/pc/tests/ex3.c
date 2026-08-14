@@ -97,7 +97,7 @@ int main(int argc, char **args)
 /*TEST
 
    testset:
-     args: -ksp_type gmres -ksp_monitor_short -pc_type sor -pc_sor_symmetric
+     args: -ksp_type gmres -ksp_monitor -pc_type sor -pc_sor_symmetric
      output_file: output/ex3_1.out
      test:
        suffix: sor_aij
@@ -106,7 +106,7 @@ int main(int argc, char **args)
        args: -mat_type seqbaij
      test:
        suffix: sor_seqsbaij
-       args: -mat_type seqbaij
+       args: -mat_type seqsbaij
      test:
        suffix: sor_seqsell
        args: -mat_type seqsell

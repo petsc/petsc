@@ -1,29 +1,29 @@
-  0 KSP Residual norm 8.94427
-  1 KSP Residual norm 6.94908
-  2 KSP Residual norm 3.22682
-  3 KSP Residual norm 1.23968
-  4 KSP Residual norm 0.360413
-  5 KSP Residual norm 0.0728862
-  6 KSP Residual norm 0.0136682
-  7 KSP Residual norm 0.00215914
-  8 KSP Residual norm < 1.e-11
-  0 KSP Residual norm 8.94427
-  1 KSP Residual norm 6.94908
-  2 KSP Residual norm 3.22682
-  3 KSP Residual norm 1.23968
-  4 KSP Residual norm 0.360413
-  5 KSP Residual norm 0.0728862
-  6 KSP Residual norm 0.0136682
-  7 KSP Residual norm 0.00215914
-  8 KSP Residual norm < 1.e-11
-  0 KSP Residual norm 8.94427
-  1 KSP Residual norm 6.94908
-  2 KSP Residual norm 3.22682
-  3 KSP Residual norm 1.23968
-  4 KSP Residual norm 0.360413
-  5 KSP Residual norm 0.0728862
-  6 KSP Residual norm 0.0136682
-  7 KSP Residual norm 0.00215914
-  8 KSP Residual norm < 1.e-11
+  0 KSP Residual norm 8.944271909999e+00
+  1 KSP Residual norm 6.949080842620e+00
+  2 KSP Residual norm 3.226824737043e+00
+  3 KSP Residual norm 1.239684154661e+00
+  4 KSP Residual norm 3.604128670012e-01
+  5 KSP Residual norm 7.288619060067e-02
+  6 KSP Residual norm 1.366815803555e-02
+  7 KSP Residual norm 2.159137282160e-03
+  8 KSP Residual norm 5.011345941359e-30
+  0 KSP Residual norm 8.944271909999e+00
+  1 KSP Residual norm 6.949080842620e+00
+  2 KSP Residual norm 3.226824737043e+00
+  3 KSP Residual norm 1.239684154661e+00
+  4 KSP Residual norm 3.604128670012e-01
+  5 KSP Residual norm 7.288619060067e-02
+  6 KSP Residual norm 1.366815803555e-02
+  7 KSP Residual norm 2.159137282160e-03
+  8 KSP Residual norm 6.490029651543e-26
+  0 KSP Residual norm 8.944271909999e+00
+  1 KSP Residual norm 6.949080842620e+00
+  2 KSP Residual norm 3.226824737043e+00
+  3 KSP Residual norm 1.239684154661e+00
+  4 KSP Residual norm 3.604128670012e-01
+  5 KSP Residual norm 7.288619060067e-02
+  6 KSP Residual norm 1.366815803555e-02
+  7 KSP Residual norm 2.159137282160e-03
+  8 KSP Residual norm 9.348041810605e-22
 L2 norm of the numerical error = 0.0181154 (time=0.99)
 Number of time steps: 3 (24 Krylov iterations)

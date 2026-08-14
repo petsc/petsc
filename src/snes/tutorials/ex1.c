@@ -311,43 +311,43 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 /*TEST
 
    test:
-      args: -prefix_push mysolver_ -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_gmres_cgs_refinement_type refine_always -snes_monitor -prefix_pop
       requires: !single
 
    # test harness puts {{ }} options always at the end, need to specify the prefix explicitly
    test:
       suffix: 2
       requires: !single
-      args: -prefix_push mysolver_ -snes_monitor_short -prefix_pop -mysolver_snes_ksp_ew {{0 1}}
+      args: -prefix_push mysolver_ -snes_monitor -prefix_pop -mysolver_snes_ksp_ew {{0 1}}
       output_file: output/ex1_1.out
 
    test:
       suffix: 3
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab -snes_monitor -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 4
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp::append -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp::append -snes_monitor -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 5
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:ascii_matlab:append -snes_monitor -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: 6
-      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:default:append -snes_monitor_short -prefix_pop
+      args: -prefix_push mysolver_ -ksp_view_solution ascii:ex1_2_sol.tmp:default:append -snes_monitor -prefix_pop
       requires: !single
       output_file: output/ex1_1.out
 
    test:
       suffix: X
-      args: -prefix_push mysolver_ -ksp_monitor_short -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor_short -snes_rtol 1.e-4 -prefix_pop
+      args: -prefix_push mysolver_ -ksp_monitor -ksp_type gmres -ksp_gmres_krylov_monitor -snes_monitor -snes_rtol 1.e-4 -prefix_pop
       requires: !single x
 
 TEST*/

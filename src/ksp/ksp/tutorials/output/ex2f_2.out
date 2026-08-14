@@ -6,7 +6,7 @@
   2 KSP preconditioned resid norm 3.162277660168e-01 true resid norm 1.264911064067e+00 ||r(i)||/||b|| 2.828427124746e-01
   3 KSP Residual norm 2.569666978571e-17
   3 KSP preconditioned resid norm 2.569666978571e-17 true resid norm 2.082963028648e-15 ||r(i)||/||b|| 4.657646926676e-16
-Norm of error < 1.e-12 iterations     3
+Norm of error  0.6848E-06 iterations     3
 iteration     0 residual norm  0.1118E+01
 iteration     0 solution vector:
 iteration     1 residual norm  0.5916E+00

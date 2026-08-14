@@ -1,29 +1,29 @@
-      0 SNES Function norm 0.995735
-      Linear solve converged due to CONVERGED_RTOL iterations 2
-      1 SNES Function norm 0.276938
-      Linear solve converged due to CONVERGED_RTOL iterations 2
-      2 SNES Function norm 0.00668678
-      Linear solve converged due to CONVERGED_RTOL iterations 2
-      3 SNES Function norm 4.61503e-06
-      Linear solve converged due to CONVERGED_RTOL iterations 2
-      4 SNES Function norm < 1.e-11
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
-    0 SNES Function norm 0.0763997
+      0 SNES Function norm 9.957353116422e-01
+        Linear solve converged due to CONVERGED_RTOL iterations 2
+      1 SNES Function norm 2.769381199207e-01
+        Linear solve converged due to CONVERGED_RTOL iterations 2
+      2 SNES Function norm 6.686780196700e-03
+        Linear solve converged due to CONVERGED_RTOL iterations 2
+      3 SNES Function norm 4.615028596780e-06
+        Linear solve converged due to CONVERGED_RTOL iterations 2
+      4 SNES Function norm 2.208167119663e-12
+      Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+    0 SNES Function norm 7.639967175151e-02
+      Linear solve converged due to CONVERGED_RTOL iterations 6
+    1 SNES Function norm 2.685027778235e-05
+      Linear solve converged due to CONVERGED_RTOL iterations 5
+    2 SNES Function norm 6.776837577319e-10
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+  0 SNES Function norm 4.083943608361e-02
     Linear solve converged due to CONVERGED_RTOL iterations 6
-    1 SNES Function norm 2.68503e-05
-    Linear solve converged due to CONVERGED_RTOL iterations 5
-    2 SNES Function norm 6.777e-10
+  1 SNES Function norm 9.576122456134e-07
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+  2 SNES Function norm 2.903441714389e-10
   Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
-  0 SNES Function norm 0.0408394
-  Linear solve converged due to CONVERGED_RTOL iterations 6
-  1 SNES Function norm 9.57612e-07
-  Linear solve converged due to CONVERGED_RTOL iterations 4
-  2 SNES Function norm 2.903e-10
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
 SNES Object: 2 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
-  tolerances: relative=1e-08, absolute=-1., solution=1e-08
+  tolerances: relative=1e-08, absolute=0., solution=1e-08
   total number of linear solver iterations=29
   total number of function evaluations=11
   norm schedule ALWAYS
@@ -41,7 +41,7 @@ SNES Object: 2 MPI processes
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
       happy breakdown tolerance=1e-30
     maximum iterations=10000, initial guess is zero
-    tolerances: relative=1e-05, absolute=-1., divergence=10000.
+    tolerances: relative=1e-05, absolute=0., divergence=10000.
     left preconditioning
     using PRECONDITIONED norm type for convergence test
   PC Object: 2 MPI processes

@@ -454,110 +454,110 @@ PetscErrorCode ConvergenceTest(Tao tao, PetscCtx ctx)
       requires: !complex
 
    test:
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type tron -tao_gatol 1.e-5
+      args: -tao_monitor -mx 8 -my 12 -tao_type tron -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 2
       nsize: 2
-      args: -tao_monitor_short -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gatol 1.e-5
+      args: -tao_monitor -mx 50 -my 50 -ecc 0.99 -tao_type gpcg -tao_gatol 1.e-5
       requires: !single
 
    test:
       suffix: 3
       nsize: 2
-      args: -tao_monitor_short -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4
+      args: -tao_monitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4
       requires: !single
 
    test:
       suffix: 4
       nsize: 2
-      args: -tao_monitor_short -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 -test_getdiagonal
+      args: -tao_monitor -mx 10 -my 16 -ecc 0.9 -tao_type bqpip -tao_gatol 1.e-4 -test_getdiagonal
       output_file: output/jbearing2_3.out
       requires: !single
 
    test:
       suffix: 5
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bncg -tao_bncg_type gd -tao_gatol 1e-4
+      args: -tao_monitor -mx 8 -my 12 -tao_type bncg -tao_bncg_type gd -tao_gatol 1e-4
       requires: !single
 
    test:
       suffix: 6
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bncg -tao_gatol 1e-4
+      args: -tao_monitor -mx 8 -my 12 -tao_type bncg -tao_gatol 1e-4
       requires: !single
 
    test:
       suffix: 7
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5
+      args: -tao_monitor -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5
       requires: !single
 
    test:
       suffix: 8
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5
       requires: !single
 
    test:
       suffix: 9
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5
       requires: !single
 
    test:
       suffix: 10
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor_short
+      args: -tao_monitor -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor
       requires: !single
 
    test:
       suffix: 11
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor_short
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor
       requires: !single
 
    test:
       suffix: 12
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor_short
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_bnk_max_cg_its 3 -tao_bnk_cg_tao_monitor
       requires: !single
 
    test:
      suffix: 13
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls
      requires: !single
 
    test:
      suffix: 14
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type blmvm
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type blmvm
      requires: !single
 
    test:
      suffix: 15
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
      requires: !single
 
    test:
      suffix: 16
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnktr -tao_bqnk_mat_type lmvmsr1
      requires: !single
 
    test:
      suffix: 17
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type scalar -tao_view
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type scalar -tao_view
      requires: !single
 
    test:
      suffix: 18
-     args: -tao_monitor_short -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type none -tao_view
+     args: -tao_monitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type none -tao_view
      requires: !single
 
    test:
      suffix: 19
-     args: -tao_monitor_short -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
+     args: -tao_monitor -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
      requires: !single
 
    test:
       suffix: 20
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
       requires: !single
 
    test:
       suffix: 21
-      args: -tao_monitor_short -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
+      args: -tao_monitor -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
       requires: !single
 TEST*/

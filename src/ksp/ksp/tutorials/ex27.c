@@ -409,18 +409,18 @@ int main(int argc, char **args)
    test:
       suffix: 1
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal
+      args: -f ${DATAFILESPATH}/matrices/medium -ksp_view -ksp_monitor -ksp_max_it 100 -solve_normal
 
    test:
       suffix: 2
       nsize: 2
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor_short -ksp_max_it 100 -solve_normal -pc_type none
+      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -ksp_view -ksp_monitor -ksp_max_it 100 -solve_normal -pc_type none
 
    # Test handling failing VecLoad without abort
    testset:
      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
-     args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor_short -ksp_max_it 10
+     args: -ksp_type cg -ksp_view -ksp_converged_reason -ksp_monitor -ksp_max_it 10
      test:
         suffix: 3
         nsize: {{1 2}separate output}
@@ -449,12 +449,12 @@ int main(int argc, char **args)
      test:
         suffix: 4
         nsize: {{1 2 4}}
-        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -ksp_converged_reason -ksp_monitor -ksp_rtol 1e-5 -ksp_max_it 100
         args: -solve_normal -ksp_type cg
      test:
         suffix: 4a
         nsize: {{1 2 4}}
-        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -ksp_converged_reason -ksp_monitor -ksp_rtol 1e-5 -ksp_max_it 100
         args: -ksp_type {{cgls lsqr}separate output}
      test:
         # Test KSPLSQR-specific options
@@ -512,7 +512,7 @@ int main(int argc, char **args)
         suffix: 4g
         nsize: 4
         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
-        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -ksp_converged_reason -ksp_monitor -ksp_rtol 1e-5 -ksp_max_it 100
         args: -ksp_type lsqr -pc_type hypre
      test:
         suffix: 4h
@@ -525,7 +525,7 @@ int main(int argc, char **args)
       nsize: {{1 2 4 8}}
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
       args: -f ${DATAFILESPATH}/matrices/matlab/rectangular_ultrasound_4889x841.mat -hdf5
-      args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+      args: -ksp_converged_reason -ksp_monitor -ksp_rtol 1e-5 -ksp_max_it 100
       args: -ksp_type lsqr
       args: -test_custom_layout {{0 1}}
 
@@ -542,7 +542,7 @@ int main(int argc, char **args)
    testset:
      nsize: {{1 2 4 8}}
      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) hdf5 defined(PETSC_HDF5_HAVE_ZLIB)
-     args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 10
+     args: -ksp_converged_reason -ksp_monitor -ksp_rtol 1e-5 -ksp_max_it 10
      args: -ksp_type lsqr
      args: -test_custom_layout {{0 1}}
      args: -hdf5 -x0_name x

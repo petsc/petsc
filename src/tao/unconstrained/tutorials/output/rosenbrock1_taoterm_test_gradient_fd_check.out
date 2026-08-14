@@ -6,73 +6,73 @@
   ||Gfd|| 3.4641, ||G|| = 3.4641, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
   2-norm ||G - Gfd||/||G|| = 2.22045e-16, ||G - Gfd|| = 7.69185e-16
   max-norm ||G - Gfd||/||G|| = 2.22045e-16, ||G - Gfd|| = 4.44089e-16
-iter =   0, Function value 3., Residual: 3.4641
+  0 TAO,  Function value: 3.,  Residual: 3.4641 
   ---------- Testing Gradient -------------
   ||Gfd|| 215.671, ||G|| = 215.671, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
   2-norm ||G - Gfd||/||G|| = 1.61865e-09, ||G - Gfd|| = 3.49096e-07
   max-norm ||G - Gfd||/||G|| = 1.53303e-09, ||G - Gfd|| = 2.94464e-07
   ---------- Testing Gradient -------------
   ||Gfd|| 5.34786, ||G|| = 5.34786, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 8.11591e-09, ||G - Gfd|| = 4.34028e-08
-  max-norm ||G - Gfd||/||G|| = 7.96804e-09, ||G - Gfd|| = 4.04198e-08
-iter =   1, Function value 2.69421, Residual: 5.34786
+  2-norm ||G - Gfd||/||G|| = 4.57603e-09, ||G - Gfd|| = 2.4472e-08
+  max-norm ||G - Gfd||/||G|| = 3.71838e-09, ||G - Gfd|| = 1.88623e-08
+  1 TAO,  Function value: 2.69421,  Residual: 5.34786 
   ---------- Testing Gradient -------------
   ||Gfd|| 9.15522, ||G|| = 9.15522, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 2.68764e-09, ||G - Gfd|| = 2.46059e-08
+  2-norm ||G - Gfd||/||G|| = 2.84071e-09, ||G - Gfd|| = 2.60073e-08
   max-norm ||G - Gfd||/||G|| = 2.42994e-09, ||G - Gfd|| = 1.83625e-08
-iter =   2, Function value 2.13064, Residual: 9.15522
+  2 TAO,  Function value: 2.13064,  Residual: 9.15522 
   ---------- Testing Gradient -------------
   ||Gfd|| 5.93818, ||G|| = 5.93818, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 1.57668e-09, ||G - Gfd|| = 9.36263e-09
-  max-norm ||G - Gfd||/||G|| = 1.13654e-09, ||G - Gfd|| = 6.43695e-09
-iter =   3, Function value 1.35475, Residual: 5.93818
+  2-norm ||G - Gfd||/||G|| = 4.01156e-09, ||G - Gfd|| = 2.38214e-08
+  max-norm ||G - Gfd||/||G|| = 2.94066e-09, ||G - Gfd|| = 1.66549e-08
+  3 TAO,  Function value: 1.35475,  Residual: 5.93818 
   ---------- Testing Gradient -------------
   ||Gfd|| 4.93594, ||G|| = 4.93594, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 2.55346e-09, ||G - Gfd|| = 1.26037e-08
-  max-norm ||G - Gfd||/||G|| = 2.06282e-09, ||G - Gfd|| = 8.55437e-09
-iter =   4, Function value 0.801826, Residual: 4.93594
+  2-norm ||G - Gfd||/||G|| = 1.96576e-09, ||G - Gfd|| = 9.70287e-09
+  max-norm ||G - Gfd||/||G|| = 1.65649e-09, ||G - Gfd|| = 6.86934e-09
+  4 TAO,  Function value: 0.801826,  Residual: 4.93594 
   ---------- Testing Gradient -------------
   ||Gfd|| 2.18101, ||G|| = 2.18101, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 3.27218e-09, ||G - Gfd|| = 7.13666e-09
-  max-norm ||G - Gfd||/||G|| = 2.19144e-09, ||G - Gfd|| = 4.50998e-09
-iter =   5, Function value 0.426963, Residual: 2.18101
+  2-norm ||G - Gfd||/||G|| = 1.44309e-09, ||G - Gfd|| = 3.14739e-09
+  max-norm ||G - Gfd||/||G|| = 1.42885e-09, ||G - Gfd|| = 2.94059e-09
+  5 TAO,  Function value: 0.426963,  Residual: 2.18101 
   ---------- Testing Gradient -------------
   ||Gfd|| 4.61285, ||G|| = 4.61285, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 2.19258e-09, ||G - Gfd|| = 1.0114e-08
-  max-norm ||G - Gfd||/||G|| = 2.33359e-09, ||G - Gfd|| = 8.12172e-09
-iter =   6, Function value 0.232727, Residual: 4.61285
+  2-norm ||G - Gfd||/||G|| = 4.84117e-10, ||G - Gfd|| = 2.23316e-09
+  max-norm ||G - Gfd||/||G|| = 4.2751e-10, ||G - Gfd|| = 1.48788e-09
+  6 TAO,  Function value: 0.232727,  Residual: 4.61285 
   ---------- Testing Gradient -------------
   ||Gfd|| 0.841947, ||G|| = 0.841947, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 2.17359e-09, ||G - Gfd|| = 1.83005e-09
-  max-norm ||G - Gfd||/||G|| = 2.24555e-09, ||G - Gfd|| = 1.69982e-09
-iter =   7, Function value 0.0890218, Residual: 0.841947
+  2-norm ||G - Gfd||/||G|| = 5.57901e-10, ||G - Gfd|| = 4.69723e-10
+  max-norm ||G - Gfd||/||G|| = 4.26773e-10, ||G - Gfd|| = 3.23054e-10
+  7 TAO,  Function value: 0.0890218,  Residual: 0.841947 
   ---------- Testing Gradient -------------
   ||Gfd|| 4.09842, ||G|| = 4.09842, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 5.7412e-10, ||G - Gfd|| = 2.35298e-09
-  max-norm ||G - Gfd||/||G|| = 7.28866e-10, ||G - Gfd|| = 2.30981e-09
-iter =   8, Function value 0.0424996, Residual: 4.09842
+  2-norm ||G - Gfd||/||G|| = 8.32874e-11, ||G - Gfd|| = 3.41347e-10
+  max-norm ||G - Gfd||/||G|| = 8.45979e-11, ||G - Gfd|| = 2.68095e-10
+  8 TAO,  Function value: 0.0424996,  Residual: 4.09842 
   ---------- Testing Gradient -------------
   ||Gfd|| 0.124006, ||G|| = 0.124006, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 1.09115e-09, ||G - Gfd|| = 1.35309e-10
-  max-norm ||G - Gfd||/||G|| = 7.93171e-10, ||G - Gfd|| = 9.23602e-11
-iter =   9, Function value 0.00547324, Residual: 0.124006
+  2-norm ||G - Gfd||/||G|| = 3.41479e-10, ||G - Gfd|| = 4.23453e-11
+  max-norm ||G - Gfd||/||G|| = 2.74461e-10, ||G - Gfd|| = 3.19594e-11
+  9 TAO,  Function value: 0.00547324,  Residual: 0.124006 
   ---------- Testing Gradient -------------
   ||Gfd|| 0.66336, ||G|| = 0.66336, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 1.30657e-09, ||G - Gfd|| = 8.66726e-10
-  max-norm ||G - Gfd||/||G|| = 1.55118e-09, ||G - Gfd|| = 8.60734e-10
-iter =  10, Function value 0.00063918, Residual: 0.66336
+  2-norm ||G - Gfd||/||G|| = 1.22693e-11, ||G - Gfd|| = 8.13897e-12
+  max-norm ||G - Gfd||/||G|| = 9.35476e-12, ||G - Gfd|| = 5.19085e-12
+ 10 TAO,  Function value: 0.00063918,  Residual: 0.66336 
   ---------- Testing Gradient -------------
   ||Gfd|| 0.00237993, ||G|| = 0.00237993, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 1.12025e-09, ||G - Gfd|| = 2.66612e-12
-  max-norm ||G - Gfd||/||G|| = 1.14066e-09, ||G - Gfd|| = 2.48926e-12
-iter =  11, Function value 2.08573e-06, Residual: 0.00237993
+  2-norm ||G - Gfd||/||G|| = 9.84691e-12, ||G - Gfd|| = 2.3435e-14
+  max-norm ||G - Gfd||/||G|| = 8.2402e-12, ||G - Gfd|| = 1.79825e-14
+ 11 TAO,  Function value: 2.08573e-06,  Residual: 0.00237993 
   ---------- Testing Gradient -------------
   ||Gfd|| 0.00031266, ||G|| = 0.00031266, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 2.2495e-10, ||G - Gfd|| = 7.03329e-14
-  max-norm ||G - Gfd||/||G|| = 2.16793e-10, ||G - Gfd|| = 5.71915e-14
-iter =  12, Function value 1.35488e-10, Residual: 0.00031266
+  2-norm ||G - Gfd||/||G|| = 6.02737e-11, ||G - Gfd|| = 1.88451e-14
+  max-norm ||G - Gfd||/||G|| = 4.12453e-11, ||G - Gfd|| = 1.08808e-14
+ 12 TAO,  Function value: 1.35488e-10,  Residual: 0.00031266 
   ---------- Testing Gradient -------------
   ||Gfd|| 6.6681e-10, ||G|| = 6.66815e-10, angle cosine = (Gfd'G)/||Gfd||||G|| = 1.
-  2-norm ||G - Gfd||/||G|| = 5.78997e-05, ||G - Gfd|| = 3.86084e-14
-  max-norm ||G - Gfd||/||G|| = 5.64897e-05, ||G - Gfd|| = 3.27512e-14
-iter =  13, Function value 1.2047e-19, Residual: < 1.0e-6
+  2-norm ||G - Gfd||/||G|| = 5.78999e-05, ||G - Gfd|| = 3.86086e-14
+  max-norm ||G - Gfd||/||G|| = 5.64908e-05, ||G - Gfd|| = 3.27518e-14
+ 13 TAO,  Function value: 1.2047e-19,  Residual: 6.66815e-10 

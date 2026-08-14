@@ -1,8 +1,8 @@
-iter =   0, Function value 153.798, Residual: 132.652
-iter =   1, Function value 19.6011, Residual: 1.73952
-iter =   2, Function value 19.561, Residual: 0.0251996
-iter =   3, Function value 19.561, Residual: 2.02571e-05
-iter =   4, Function value 19.561, Residual: < 1.0e-6
+  0 TAO,  Function value: 153.798,  Residual: 132.652 
+  1 TAO,  Function value: 19.6011,  Residual: 1.73952 
+  2 TAO,  Function value: 19.561,  Residual: 0.0251996 
+  3 TAO,  Function value: 19.561,  Residual: 2.02571e-05 
+  4 TAO,  Function value: 19.561,  Residual: 1.33274e-11 
 Tao Object: 1 MPI process
   type: snes
   SNES Object: 1 MPI process
@@ -100,7 +100,7 @@ Tao Object: 1 MPI process
       total number of gradient evaluations=5
       total number of Hessian evaluations=4
   convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.33258e-11
+  Residual in Function/Gradient:=1.33274e-11
   Objective value=19.561
   total number of iterations=4,                          (max: 10000)
   total number of function evaluations=13,                  (max: unlimited)

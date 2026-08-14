@@ -1,13 +1,13 @@
-iter =   0, Function value 153.545, Residual: 132.41
-iter =   1, Function value 19.5801, Residual: 1.83082
-iter =   2, Function value 19.5516, Residual: 0.0449057
-iter =   3, Function value 19.5515, Residual: 0.00639275
-iter =   4, Function value 19.5515, Residual: 0.000967751
-iter =   5, Function value 19.5515, Residual: 0.000147493
-iter =   6, Function value 19.5515, Residual: 2.25016e-05
-iter =   7, Function value 19.5515, Residual: 3.43352e-06
-iter =   8, Function value 19.5515, Residual: < 1.0e-6
-iter =   9, Function value 19.5515, Residual: < 1.0e-6
+  0 TAO,  Function value: 153.545,  Residual: 132.41 
+  1 TAO,  Function value: 19.5801,  Residual: 1.83082 
+  2 TAO,  Function value: 19.5516,  Residual: 0.0449057 
+  3 TAO,  Function value: 19.5515,  Residual: 0.00639275 
+  4 TAO,  Function value: 19.5515,  Residual: 0.000967751 
+  5 TAO,  Function value: 19.5515,  Residual: 0.000147493 
+  6 TAO,  Function value: 19.5515,  Residual: 2.25016e-05 
+  7 TAO,  Function value: 19.5515,  Residual: 3.43352e-06 
+  8 TAO,  Function value: 19.5515,  Residual: 5.23945e-07 
+  9 TAO,  Function value: 19.5515,  Residual: 7.99536e-08 
 Tao Object: 1 MPI process
   type: nls
     Newton steps: 9

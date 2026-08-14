@@ -139,12 +139,12 @@ int main(int argc, char **args)
 
     test:
       suffix: 2
-      args: -sub_pc_type ilu -options_left no -f ${DATAFILESPATH}/matrices/arco1 -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor_short
+      args: -sub_pc_type ilu -options_left no -f ${DATAFILESPATH}/matrices/arco1 -ksp_gmres_restart 100 -ksp_gmres_cgs_refinement_type refine_always -sub_ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 8 -sub_pc_factor_in_place -ksp_monitor
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:
       suffix: 7
-      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6 -ksp_monitor_short
+      args: -ksp_gmres_cgs_refinement_type refine_always -pc_type asm -pc_asm_blocks 6 -f ${DATAFILESPATH}/matrices/small -matload_block_size 6 -ksp_monitor
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
 
     test:

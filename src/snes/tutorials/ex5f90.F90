@@ -598,25 +598,25 @@ end
 !
 !   test:
 !      nsize: 4
-!      args: -snes_mf -pc_type none -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_mf -pc_type none -da_processors_x 4 -da_processors_y 1 -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 !      requires: !single
 !
 !   test:
 !      suffix: 2
 !      nsize: 4
-!      args: -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -da_processors_x 2 -da_processors_y 2 -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 !      requires: !single
 !
 !   test:
 !      suffix: 3
 !      nsize: 3
-!      args: -snes_fd -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_fd -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 !      requires: !single
 !
 !   test:
 !      suffix: 4
 !      nsize: 3
-!      args: -snes_mf_operator -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_mf_operator -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
 !      requires: !single
 !
 !   test:

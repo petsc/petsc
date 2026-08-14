@@ -2,15 +2,17 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 8   
 
-iter =   0, Function value 1.45591, Residual: 0.21372 
-  iter =   0,   Function value 1.45591,   Residual: 0.21372 
-  iter =   0,   Function value 1.42961,   Residual: 0.150207 
-  iter =   1,   Function value 1.42481,   Residual: 0.154781 
-  iter =   2,   Function value 1.41983,   Residual: 0.0516731 
-  iter =   3,   Function value 1.41888,   Residual: 0.0332344 
-iter =   1, Function value 1.41775, Residual: 0.00157412 
-  iter =   0,   Function value 1.41775,   Residual: 0.00157412 
-  iter =   1,   Function value 1.41775,   Residual: 0.000526997 
-  iter =   2,   Function value 1.41775,   Residual: 0.000328923 
-  iter =   3,   Function value 1.41775,   Residual: 0.000126604 
-iter =   2, Function value 1.41775, Residual: < 1.0e-6 
+  0 TAO,  Function value: 1.45591,  Residual: 0.21372 
+    Iteration information for tao_bnk_cg_ solve.
+    0 TAO,    Function value: 1.45591,    Residual: 0.21372 
+    0 TAO,    Function value: 1.42961,    Residual: 0.150207 
+    1 TAO,    Function value: 1.42481,    Residual: 0.154781 
+    2 TAO,    Function value: 1.41983,    Residual: 0.0516731 
+    3 TAO,    Function value: 1.41888,    Residual: 0.0332344 
+  1 TAO,  Function value: 1.41775,  Residual: 0.00157412 
+    Iteration information for tao_bnk_cg_ solve.
+    0 TAO,    Function value: 1.41775,    Residual: 0.00157412 
+    1 TAO,    Function value: 1.41775,    Residual: 0.000526968 
+    2 TAO,    Function value: 1.41775,    Residual: 0.000328829 
+    3 TAO,    Function value: 1.41775,    Residual: 0.000129398 
+  2 TAO,  Function value: 1.41775,  Residual: 4.15337e-08 

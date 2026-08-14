@@ -58,6 +58,6 @@ end
 !/*TEST
 !
 !    test:
-!      args: -ksp_monitor_short
+!      args: -ksp_monitor
 !
 !TEST*/

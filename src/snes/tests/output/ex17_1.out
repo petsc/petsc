@@ -2,25 +2,25 @@
 
 ========================= Assembled system =========================
 
-  0 SNES Function norm 6.04152
-  1 SNES Function norm 4.78676
-  2 SNES Function norm 2.98646
-  3 SNES Function norm 0.230624
-  4 SNES Function norm 0.00193631
-  5 SNES Function norm 1.43559e-07
-  6 SNES Function norm < 1.e-11
+  0 SNES Function norm 6.041522986797e+00
+  1 SNES Function norm 4.786756692342e+00
+  2 SNES Function norm 2.986456323228e+00
+  3 SNES Function norm 2.306244667700e-01
+  4 SNES Function norm 1.936314002654e-03
+  5 SNES Function norm 1.435593549512e-07
+  6 SNES Function norm 1.776356839400e-15
 number of SNES iterations = 6
 
 
 
 ========================= Block system =========================
 
-  0 SNES Function norm 6.04152
-  1 SNES Function norm 4.78676
-  2 SNES Function norm 2.98646
-  3 SNES Function norm 0.230624
-  4 SNES Function norm 0.00193631
-  5 SNES Function norm 1.43559e-07
-  6 SNES Function norm < 1.e-11
+  0 SNES Function norm 6.041522986797e+00
+  1 SNES Function norm 4.786756692342e+00
+  2 SNES Function norm 2.986456323228e+00
+  3 SNES Function norm 2.306244667700e-01
+  4 SNES Function norm 1.936314002656e-03
+  5 SNES Function norm 1.435593549512e-07
+  6 SNES Function norm 1.776356839400e-15
 number of SNES iterations = 6
 

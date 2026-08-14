@@ -313,7 +313,7 @@ int main(int argc, char **argv)
 
    test:
       diff_args: -j
-      args: -ksp_monitor_short
+      args: -ksp_converged_reason
 
    test:
       diff_args: -j

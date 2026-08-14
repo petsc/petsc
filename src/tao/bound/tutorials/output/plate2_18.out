@@ -1,11 +1,11 @@
 
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
-iter =   0, Function value 1.67039, Residual: 0.47529
-iter =   1, Function value 1.50978, Residual: 0.128026
-iter =   2, Function value 1.5058, Residual: 0.0448655
-iter =   3, Function value 1.50566, Residual: 0.000115801
-iter =   4, Function value 1.50566, Residual: < 1.0e-6
+  0 TAO,  Function value: 1.67039,  Residual: 0.47529 
+  1 TAO,  Function value: 1.50978,  Residual: 0.128026 
+  2 TAO,  Function value: 1.5058,  Residual: 0.0448655 
+  3 TAO,  Function value: 1.50566,  Residual: 0.000115801 
+  4 TAO,  Function value: 1.50566,  Residual: 9.00327e-09 
 Tao Object: 1 MPI process
   type: bnls
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -87,7 +87,7 @@ Tao Object: 1 MPI process
   total KSP iterations: 79
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-05,   grtol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=9.00397e-09
+  Residual in Function/Gradient:=9.00327e-09
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=89,      (max: unlimited)

@@ -99,11 +99,7 @@ int main(int argc, char **args)
   PetscCall(VecAXPY(x, none, u));
   PetscCall(VecNorm(x, NORM_2, &norm));
   PetscCall(KSPGetIterationNumber(ksp, &its));
-  if (norm >= 1.e-12) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
-  } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error < 1.e-12, Iterations %" PetscInt_FMT "\n", its));
-  }
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
 
   /* Free work space */
   PetscCall(VecDestroy(&x));
@@ -292,14 +288,14 @@ PetscErrorCode FormTestMatrix(Mat A, PetscInt n, TestType type)
       requires: complex
 
     test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
+      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
       requires: complex
 
     test:
       suffix: 2
       nsize: 3
       requires: complex
-      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor_short -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
+      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
       output_file: output/ex17_1.out
 
     test:

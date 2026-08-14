@@ -329,7 +329,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 /*TEST
 
    testset:
-     args: -snes_monitor_short -snes_view -ksp_monitor
+     args: -snes_monitor -snes_view -ksp_monitor
      output_file: output/ex5_1.out
      filter: grep -v "type: seqaij"
 
@@ -351,19 +351,19 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
    test:
       requires: !single !complex
       suffix: transpose_only
-      args: -snes_monitor_short -snes_view -ksp_monitor -snes_type ksptransposeonly -pc_type ilu -snes_test_jacobian -snes_test_jacobian_view -ksp_view_rhs -ksp_view_solution -ksp_view_mat_explicit -ksp_view_preconditioned_operator_explicit
+      args: -snes_monitor -snes_view -ksp_monitor -snes_type ksptransposeonly -pc_type ilu -snes_test_jacobian -snes_test_jacobian_view -ksp_view_rhs -ksp_view_solution -ksp_view_mat_explicit -ksp_view_preconditioned_operator_explicit
 
    test:
       requires: mumps
       suffix: mumps
-      args: -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_15 1 -snes_monitor_short -ksp_monitor
+      args: -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_15 1 -snes_monitor -ksp_monitor
 
    test:
       suffix: fieldsplit_1
-      args: -snes_monitor_short -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2,3,4
+      args: -snes_monitor -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2,3,4
 
    test:
       suffix: fieldsplit_2
-      args: -snes_monitor_short -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 1,0 -pc_fieldsplit_1_fields 2,3,4
+      args: -snes_monitor -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 1,0 -pc_fieldsplit_1_fields 2,3,4
 
 TEST*/

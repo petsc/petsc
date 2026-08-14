@@ -1,12 +1,12 @@
 
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
-iter =   0, Function value 1.67039, Residual: 0.47529
-iter =   0, Function value 1.57687, Residual: 0.447462
-iter =   1, Function value 1.52082, Residual: 0.221251
-iter =   2, Function value 1.50587, Residual: 0.0266265
-iter =   3, Function value 1.50566, Residual: 0.000666715
-iter =   4, Function value 1.50566, Residual: < 1.0e-6
+  0 TAO,  Function value: 1.67039,  Residual: 0.47529 
+  0 TAO,  Function value: 1.57687,  Residual: 0.447462 
+  1 TAO,  Function value: 1.52082,  Residual: 0.221251 
+  2 TAO,  Function value: 1.50587,  Residual: 0.0266265 
+  3 TAO,  Function value: 1.50566,  Residual: 0.000666716 
+  4 TAO,  Function value: 1.50566,  Residual: 7.77429e-07 
 Tao Object: 1 MPI process
   type: bntr
     Tao Object: (tao_bnk_cg_) 1 MPI process

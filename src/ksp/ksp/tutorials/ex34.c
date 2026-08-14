@@ -310,12 +310,12 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
       requires: !complex !single
 
    test:
-      args: -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor_short -pc_mg_levels 3 -mg_coarse_pc_factor_shift_type nonzero -ksp_view
+      args: -pc_type mg -pc_mg_type full -ksp_type fgmres -ksp_monitor -pc_mg_levels 3 -mg_coarse_pc_factor_shift_type nonzero -ksp_view
 
    test:
       suffix: 2
       nsize: 2
-      args: -ksp_monitor_short -da_grid_x 50 -da_grid_y 50 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_ksp_rtol 1e-1 -ksp_ksp_monitor -ksp_type pipefgmres -ksp_gmres_restart 5
+      args: -ksp_monitor -da_grid_x 50 -da_grid_y 50 -pc_type ksp -ksp_ksp_type cg -ksp_pc_type bjacobi -ksp_ksp_rtol 1e-1 -ksp_ksp_monitor -ksp_type pipefgmres -ksp_gmres_restart 5
 
    test:
       suffix: hyprestruct

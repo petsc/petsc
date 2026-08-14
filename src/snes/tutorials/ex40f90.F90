@@ -67,7 +67,7 @@ end
 !/*TEST
 !
 !   test:
-!     args: -snes_monitor_short -snes_view -da_refine 1 -pc_type mg -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin pmat
+!     args: -snes_monitor -snes_view -da_refine 1 -pc_type mg -pc_mg_type full -ksp_type fgmres -pc_mg_galerkin pmat
 !     requires: !single
 !
 !TEST*/

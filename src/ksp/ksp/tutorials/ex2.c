@@ -219,48 +219,48 @@ int main(int argc, char **args)
 
    test:
       suffix: chebyest_1
-      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_monitor_short
+      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_monitor
 
    test:
       suffix: chebyest_2
-      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor_short
+      args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor
 
    test:
-      args: -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 2
-      args: -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 3
-      args: -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 4
-      args: -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type eisenstat -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 5
       nsize: 2
-      args: -ksp_monitor_short -m 5 -n 5 -mat_view draw -ksp_gmres_cgs_refinement_type refine_always -nox
+      args: -ksp_monitor -m 5 -n 5 -mat_view draw -ksp_gmres_cgs_refinement_type refine_always -nox
       output_file: output/ex2_2.out
 
    test:
       suffix: bjacobi
       nsize: 4
-      args: -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres
+      args: -pc_type bjacobi -pc_bjacobi_blocks 1 -ksp_monitor -sub_pc_type jacobi -sub_ksp_type gmres
 
    test:
       suffix: bjacobi_2
       nsize: 4
-      args: -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres -ksp_view
+      args: -pc_type bjacobi -pc_bjacobi_blocks 2 -ksp_monitor -sub_pc_type jacobi -sub_ksp_type gmres -ksp_view
 
    test:
       suffix: bjacobi_3
       nsize: 4
-      args: -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor_short -sub_pc_type jacobi -sub_ksp_type gmres
+      args: -pc_type bjacobi -pc_bjacobi_blocks 4 -ksp_monitor -sub_pc_type jacobi -sub_ksp_type gmres
 
    test:
       suffix: qmrcgs
@@ -284,7 +284,7 @@ int main(int argc, char **args)
 
    test:
       suffix: groppcg
-      args: -ksp_monitor_short -ksp_type groppcg -m 9 -n 9
+      args: -ksp_monitor -ksp_type groppcg -m 9 -n 9
 
    test:
       suffix: mkl_pardiso_cholesky
@@ -298,28 +298,28 @@ int main(int argc, char **args)
 
    test:
       suffix: pipebcgs
-      args: -ksp_monitor_short -ksp_type pipebcgs -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipebcgs -m 9 -n 9
 
    test:
       suffix: pipecg
-      args: -ksp_monitor_short -ksp_type pipecg -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipecg -m 9 -n 9
 
    test:
       suffix: pipecgrr
-      args: -ksp_monitor_short -ksp_type pipecgrr -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipecgrr -m 9 -n 9
 
    test:
       suffix: pipecr
-      args: -ksp_monitor_short -ksp_type pipecr -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipecr -m 9 -n 9
 
    test:
       suffix: pipelcg
-      args: -ksp_monitor_short -ksp_type pipelcg -m 9 -n 9 -pc_type none -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmax 2
+      args: -ksp_monitor -ksp_type pipelcg -m 9 -n 9 -pc_type none -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmax 2
       filter: grep -v "sqrt breakdown in iteration"
 
    test:
       suffix: sell
-      args: -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type sell
+      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type sell
 
    test:
       requires: mumps
@@ -354,22 +354,22 @@ int main(int argc, char **args)
 
    test:
       suffix: pipeprcg
-      args: -ksp_monitor_short -ksp_type pipeprcg -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipeprcg -m 9 -n 9
 
    test:
       suffix: pipeprcg_rcw
-      args: -ksp_monitor_short -ksp_type pipeprcg -recompute_w false -m 9 -n 9
+      args: -ksp_monitor -ksp_type pipeprcg -recompute_w false -m 9 -n 9
 
    test:
       suffix: pipecg2
       requires: !defined(PETSC_HAVE_THREADSAFETY)
-      args: -ksp_monitor_short -ksp_type pipecg2 -m 9 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
+      args: -ksp_monitor -ksp_type pipecg2 -m 9 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
 
    test:
       suffix: pipecg2_2
       requires: !defined(PETSC_HAVE_THREADSAFETY)
       nsize: 4
-      args: -ksp_monitor_short -ksp_type pipecg2 -m 15 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
+      args: -ksp_monitor -ksp_type pipecg2 -m 15 -n 9 -ksp_norm_type {{preconditioned unpreconditioned natural}}
 
    test:
       suffix: hpddm

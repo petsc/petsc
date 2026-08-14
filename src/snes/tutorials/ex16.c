@@ -1030,54 +1030,54 @@ PetscErrorCode DisplayLine(SNES snes, Vec X)
 
    test:
       nsize: 2
-      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor_short -ksp_monitor_short
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor
       requires: !single
       timeoutfactor: 3
 
    test:
       suffix: 2
-      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor_short -ksp_monitor_short -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor_short -npc_fas_levels_snes_linesearch_maxlambda 2.0
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading 0.0 -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor -npc_snes_type fas -npc_fas_levels_snes_type ncg -npc_fas_levels_snes_max_it 3 -npc_snes_monitor -npc_fas_levels_snes_linesearch_maxlambda 2.0
       requires: !single
 
    test:
       suffix: 3
-      args: -da_refine 1 -da_overlap 3 -da_local_subdomains 4 -snes_type aspin -rad 10.0 -young 10. -ploading 0.0 -loading -0.5 -snes_monitor_short -ksp_monitor_short -npc_sub_snes_rtol 1e-2 -ksp_rtol 1e-2 -ksp_max_it 14 -snes_converged_reason -snes_max_linear_solve_fail 100 -npc_sub_ksp_type preonly -npc_sub_pc_type lu
+      args: -da_refine 1 -da_overlap 3 -da_local_subdomains 4 -snes_type aspin -rad 10.0 -young 10. -ploading 0.0 -loading -0.5 -snes_monitor -ksp_monitor -npc_sub_snes_rtol 1e-2 -ksp_rtol 1e-2 -ksp_max_it 14 -snes_converged_reason -snes_max_linear_solve_fail 100 -npc_sub_ksp_type preonly -npc_sub_pc_type lu
       requires: !single
 
    test:
       suffix: 4
-      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -1. -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor_short -ksp_monitor_short -snes_type newtonal -snes_newtonal_step_size 30 -ksp_rtol 1e-4 -info
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -1. -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor -snes_type newtonal -snes_newtonal_step_size 30 -ksp_rtol 1e-4 -info
       requires: !single defined(PETSC_USE_INFO)
       filter: grep -h -e "KSP Residual norm" -e "SNES Function norm" -e "Number of SNES iterations" -e "mu:"
 
    test:
       suffix: 5
-      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -1. -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor_short -ksp_monitor_short -snes_type newtonal -snes_newtonal_step_size 30 -snes_newtonal_correction_type normal -ksp_rtol 1e-4
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -1. -loading -1. -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor -snes_type newtonal -snes_newtonal_step_size 30 -snes_newtonal_correction_type normal -ksp_rtol 1e-4
       requires: !single
 
    test:
       suffix: 6
-      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -0.5 -loading -1 -mg_levels_ksp_max_it 2 -snes_monitor_short -ksp_monitor_short -snes_type newtonal -snes_newtonal_step_size 0.5 -snes_newtonal_max_continuation_steps 3 -snes_newtonal_scale_rhs false -snes_newtonal_lambda_min -0.1 -ksp_rtol 1e-4
+      args: -da_refine 2 -pc_type mg -rad 10.0 -young 10. -ploading -0.5 -loading -1 -mg_levels_ksp_max_it 2 -snes_monitor -ksp_monitor -snes_type newtonal -snes_newtonal_step_size 0.5 -snes_newtonal_max_continuation_steps 3 -snes_newtonal_scale_rhs false -snes_newtonal_lambda_min -0.1 -ksp_rtol 1e-4
       requires: !single
 
    test:
       nsize: {{1 2}}
       suffix: 7
-      args: -dm_vec_type kokkos -dm_mat_type aijkokkos -da_refine 1 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor_short -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type exact -ksp_rtol 1e-4
+      args: -dm_vec_type kokkos -dm_mat_type aijkokkos -da_refine 1 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type exact -ksp_rtol 1e-4
       requires: kokkos_kernels !complex !single
       timeoutfactor: 3
 
    test:
       nsize: {{1 2}}
       suffix: 8
-      args: -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 1 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor_short -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type exact -ksp_rtol 1e-4
+      args: -dm_vec_type cuda -dm_mat_type aijcusparse -da_refine 1 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type exact -ksp_rtol 1e-4
       requires: cuda !complex !single
       timeoutfactor: 3
 
    test:
       nsize: {{1 2}}
       suffix: 9
-      args: -da_refine 2 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor_short -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type normal -ksp_rtol 1e-4
+      args: -da_refine 2 -rad 10.0 -young 10. -ploading -1. -loading -1. -rescale -pc_type mg -mg_levels_ksp_max_it 2 -snes_monitor -snes_type newtonal -snes_newtonal_step_size 10 -snes_newtonal_correction_type normal -ksp_rtol 1e-4
       requires: !single
 
 TEST*/

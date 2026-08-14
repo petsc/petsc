@@ -564,15 +564,15 @@ end
 !      requires: !single !complex
 !
 !   test:
-!      args: -snes_monitor_short -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_monitor -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2
-!      args: -snes_monitor_short -nox -snes_fd -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_monitor -nox -snes_fd -ksp_gmres_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 3
-!      args: -snes_monitor_short -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_monitor -nox -snes_fd_coloring -mat_coloring_type sl -ksp_gmres_cgs_refinement_type refine_always
 !      filter: sort -b
 !      filter_output: sort -b
 !

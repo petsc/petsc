@@ -263,7 +263,7 @@ int main(int argc, char **args)
    test:
       suffix: 1
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2 -pc_gamg_aggressive_coarsening 0
       output_file: output/ex55_sa.out
 
    test:
@@ -283,7 +283,7 @@ int main(int argc, char **args)
    test:
       suffix: geo
       nsize: 4
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type geo -use_coordinates -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -mg_levels_ksp_max_it 3 -pc_gamg_threshold 0
       output_file: output/ex55_0.out
       requires: triangle
 
@@ -291,13 +291,13 @@ int main(int argc, char **args)
       suffix: hypre
       nsize: 4
       requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short
+      args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor
 
    test:
       suffix: hypre_ilu
       nsize: 4
       requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type ilu -ksp_monitor_short
+      args: -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type ilu -ksp_monitor
 
    test:
       suffix: kok
@@ -312,6 +312,6 @@ int main(int argc, char **args)
       suffix: hypre_device
       nsize: 4
       requires: hypre !complex
-      args: -mat_type hypre -ksp_view -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_interp_type ext+i -pc_hypre_boomeramg_coarsen_type PMIS -pc_hypre_boomeramg_no_CF -pc_mg_galerkin_mat_product_algorithm hypre
+      args: -mat_type hypre -ksp_view -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_interp_type ext+i -pc_hypre_boomeramg_coarsen_type PMIS -pc_hypre_boomeramg_no_CF -pc_mg_galerkin_mat_product_algorithm hypre
 
 TEST*/

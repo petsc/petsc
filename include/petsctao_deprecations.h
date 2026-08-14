@@ -58,9 +58,9 @@ PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorGlobalization()", ) static inline
 {
   return TaoMonitorGlobalization(tao, (PetscViewerAndFormat *)ctx);
 }
-PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorDefaultShort()", ) static inline PetscErrorCode TaoSMonitor(Tao tao, PetscCtx ctx)
+PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorDefault()", ) static inline PetscErrorCode TaoSMonitor(Tao tao, PetscCtx ctx)
 {
-  return TaoMonitorDefaultShort(tao, (PetscViewerAndFormat *)ctx);
+  return TaoMonitorDefault(tao, (PetscViewerAndFormat *)ctx);
 }
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorConstraintNorm()", ) static inline PetscErrorCode TaoCMonitor(Tao tao, PetscCtx ctx)
 {
@@ -93,4 +93,8 @@ PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorGradientDraw()", ) static inline 
 PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorStepDraw()", ) static inline PetscErrorCode TaoDrawStepDirectionMonitor(Tao tao, PetscCtx ctx)
 {
   return TaoMonitorStepDraw(tao, ctx);
+}
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "TaoMonitorDefault()", ) static inline PetscErrorCode TaoMonitorDefaultShort(Tao tao, PetscViewerAndFormat *vf)
+{
+  return TaoMonitorDefault(tao, vf);
 }

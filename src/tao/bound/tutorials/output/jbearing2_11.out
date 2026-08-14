@@ -2,10 +2,11 @@
 ---- Journal Bearing Problem SHB-----
 mx: 8,  my: 12,  ecc: 0.1 
 
-iter =   0, Function value 0., Residual: 1.11613 
-iter =   0, Function value -0.146978, Residual: 0.424351 
-  iter =   0,   Function value -0.146978,   Residual: 0.424351 
-  iter =   1,   Function value -0.162905,   Residual: 0.517784 
-  iter =   2,   Function value -0.173661,   Residual: 0.296026 
-  iter =   3,   Function value -0.179552,   Residual: 0.122928 
-iter =   1, Function value -0.183437, Residual: < 1.0e-6 
+  0 TAO,  Function value: 0.,  Residual: 1.11613 
+  0 TAO,  Function value: -0.146978,  Residual: 0.424351 
+    Iteration information for tao_bnk_cg_ solve.
+    0 TAO,    Function value: -0.146978,    Residual: 0.424351 
+    1 TAO,    Function value: -0.162905,    Residual: 0.517784 
+    2 TAO,    Function value: -0.173661,    Residual: 0.296026 
+    3 TAO,    Function value: -0.179552,    Residual: 0.122928 
+  1 TAO,  Function value: -0.183437,  Residual: 8.78355e-07 

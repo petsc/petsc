@@ -254,7 +254,7 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscCt
 PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
 {
   PetscFunctionBeginUser;
-  PetscCall(SNESMonitorDefaultShort(snes, its, fnorm, vf));
+  PetscCall(SNESMonitorDefault(snes, its, fnorm, vf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

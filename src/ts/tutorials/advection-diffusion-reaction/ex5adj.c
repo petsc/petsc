@@ -207,7 +207,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
    test:
       suffix: 2
       nsize: 2
-      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
+      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor -da_grid_x 20 -da_grid_y 20 -ts_trajectory_dirname Test-dir -ts_trajectory_file_template test-%06D.cp
 
    test:
       suffix: 3
@@ -218,7 +218,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
    test:
       suffix: 4
       nsize: 2
-      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor_short -da_grid_x 20 -da_grid_y 20 -snes_fd_color
+      args: -ts_max_steps 10 -ts_time_step 10 -ts_monitor -ts_adjoint_monitor -ksp_monitor -da_grid_x 20 -da_grid_y 20 -snes_fd_color
       output_file: output/ex5adj_2.out
 
    test:
@@ -236,49 +236,49 @@ PetscErrorCode InitialConditions(DM da, Vec U)
    test:
       suffix: sell
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type none
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type sell -pc_type none
       output_file: output/ex5adj_sell_1.out
 
    test:
       suffix: aijsell
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell -pc_type none
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type aijsell -pc_type none
       output_file: output/ex5adj_sell_1.out
 
    test:
       suffix: sell2
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
       output_file: output/ex5adj_sell_2.out
 
    test:
       suffix: aijsell2
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type aijsell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type sor
       output_file: output/ex5adj_sell_2.out
 
    test:
       suffix: sell3
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
       output_file: output/ex5adj_sell_3.out
 
    test:
       suffix: sell4
       nsize: 4
-      args: -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
+      args: -forwardonly -implicitform -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type sell -pc_type mg -pc_mg_levels 2 -mg_coarse_pc_type bjacobi -mg_levels_pc_type bjacobi
       output_file: output/ex5adj_sell_4.out
 
    test:
       suffix: sell5
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type sell -aijpc
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type sell -aijpc
       output_file: output/ex5adj_sell_5.out
 
    test:
       suffix: aijsell5
       nsize: 4
-      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor_short -dm_mat_type aijsell
+      args: -forwardonly -ts_max_steps 10 -ts_monitor -snes_monitor -dm_mat_type aijsell
       output_file: output/ex5adj_sell_5.out
 
    test:
@@ -294,11 +294,11 @@ PetscErrorCode InitialConditions(DM da, Vec U)
 
    test:
       suffix: gamg1
-      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
+      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
       output_file: output/ex5adj_gamg.out
 
    test:
       suffix: gamg2
-      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_use_explicittranspose -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
+      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_use_explicittranspose -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
       output_file: output/ex5adj_gamg.out
 TEST*/

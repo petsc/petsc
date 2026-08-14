@@ -1,10 +1,10 @@
 atol=1e-50, rtol=1e-08, stol=0., maxit=50, maxf=10000
-  0 SNES Function norm 5.41468
-  1 SNES Function norm 4.27553
-  2 SNES Function norm 1.96849
-  3 SNES Function norm 0.0348357
-  4 SNES Function norm 6.16133e-06
-  5 SNES Function norm < 1.e-11
+  0 SNES Function norm 5.414682427127e+00
+  1 SNES Function norm 4.275534879940e+00
+  2 SNES Function norm 1.968492864185e+00
+  3 SNES Function norm 3.483570307403e-02
+  4 SNES Function norm 6.161325963818e-06
+  5 SNES Function norm 2.588944875292e-13
 SNES Object: 1 MPI process
   type: newtontr
     Trust region parameters:
@@ -49,4 +49,4 @@ SNES Object: 1 MPI process
         not using I-node routines
 number of SNES iterations = 5
 
-Norm of error 1.27238e-13, Iterations 5
+Norm of error 1.27312e-13, Iterations 5

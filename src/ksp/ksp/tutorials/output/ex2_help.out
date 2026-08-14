@@ -84,12 +84,6 @@ Viewer (-ksp_monitor) options:
   -ksp_monitor draw[:[drawtype][:filename|format]] Draws object (PetscOptionsCreateViewer)
   -ksp_monitor socket[:port]: Pushes object to a Unix socket (PetscOptionsCreateViewer)
   -ksp_monitor saws[:communicatorname]: Publishes object to SAWs (PetscOptionsCreateViewer)
-Viewer (-ksp_monitor_short) options:
-  -ksp_monitor_short ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsCreateViewer)
-  -ksp_monitor_short binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsCreateViewer)
-  -ksp_monitor_short draw[:[drawtype][:filename|format]] Draws object (PetscOptionsCreateViewer)
-  -ksp_monitor_short socket[:port]: Pushes object to a Unix socket (PetscOptionsCreateViewer)
-  -ksp_monitor_short saws[:communicatorname]: Publishes object to SAWs (PetscOptionsCreateViewer)
 Viewer (-all_ksp_monitor) options:
   -all_ksp_monitor ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsCreateViewer)
   -all_ksp_monitor binary[:[filename][:[format][:append]]]: Saves object to a binary file (PetscOptionsCreateViewer)

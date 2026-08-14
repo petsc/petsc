@@ -707,13 +707,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
 
    test:
       nsize: 2
-      args: -snes_monitor_short
+      args: -snes_monitor
       localrunfiles: options.inf adj.in
 
    test:
       suffix: 2
       nsize: 2
-      args: -snes_monitor_short -fd_jacobian_coloring
+      args: -snes_monitor -fd_jacobian_coloring
       localrunfiles: options.inf adj.in
 
 TEST*/

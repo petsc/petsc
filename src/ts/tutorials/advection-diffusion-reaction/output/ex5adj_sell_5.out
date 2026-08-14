@@ -1,41 +1,41 @@
 0 TS dt 0.5 time 0.
-    0 SNES Function norm 0.117767
-    1 SNES Function norm 1.94131e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.177670582622e-01
+    1 SNES Function norm 1.941310745992e-05
+    2 SNES Function norm 4.420915288672e-12
 1 TS dt 0.5 time 0.5
-    0 SNES Function norm 0.112186
-    1 SNES Function norm 1.93286e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.121863736156e-01
+    1 SNES Function norm 1.932862842878e-05
+    2 SNES Function norm 3.825878655977e-12
 2 TS dt 0.5 time 1.
-    0 SNES Function norm 0.107393
-    1 SNES Function norm 1.93257e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.073929650781e-01
+    1 SNES Function norm 1.932568112510e-05
+    2 SNES Function norm 3.336540864906e-12
 3 TS dt 0.5 time 1.5
-    0 SNES Function norm 0.103381
-    1 SNES Function norm 1.93524e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.033808186415e-01
+    1 SNES Function norm 1.935242323049e-05
+    2 SNES Function norm 2.930229112591e-12
 4 TS dt 0.5 time 2.
-    0 SNES Function norm 0.100148
-    1 SNES Function norm 1.93692e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 1.001480431513e-01
+    1 SNES Function norm 1.936924355661e-05
+    2 SNES Function norm 2.590906229587e-12
 5 TS dt 0.5 time 2.5
-    0 SNES Function norm 0.0976942
-    1 SNES Function norm 1.93443e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 9.769415782148e-02
+    1 SNES Function norm 1.934433446214e-05
+    2 SNES Function norm 2.305672633423e-12
 6 TS dt 0.5 time 3.
-    0 SNES Function norm 0.0960174
-    1 SNES Function norm 1.92505e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 9.601737123843e-02
+    1 SNES Function norm 1.925051892523e-05
+    2 SNES Function norm 2.064784985128e-12
 7 TS dt 0.5 time 3.5
-    0 SNES Function norm 0.0951121
-    1 SNES Function norm 1.90632e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 9.511214395593e-02
+    1 SNES Function norm 1.906315763199e-05
+    2 SNES Function norm 1.859430818296e-12
 8 TS dt 0.5 time 4.
-    0 SNES Function norm 0.0949674
-    1 SNES Function norm 1.8759e-05
-    2 SNES Function norm < 1.e-11
+    0 SNES Function norm 9.496736556194e-02
+    1 SNES Function norm 1.875900066459e-05
+    2 SNES Function norm 1.682426501086e-12
 9 TS dt 0.5 time 4.5
-    0 SNES Function norm 0.0955654
-    1 SNES Function norm 1.8316e-05
-    2 SNES Function norm 1.747e-10
+    0 SNES Function norm 9.556541227242e-02
+    1 SNES Function norm 1.831599808262e-05
+    2 SNES Function norm 1.747280944726e-10
 10 TS dt 0.5 time 5.

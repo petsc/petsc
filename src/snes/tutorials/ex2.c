@@ -366,20 +366,20 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, PetscCtx ctx)
 /*TEST
 
    test:
-      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+      args: -nox -snes_monitor_cancel -snes_monitor -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 2
-      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontr -snes_view
+      args: -nox -snes_monitor_cancel -snes_monitor -snes_type newtontr -snes_view
       requires: !single
 
    test:
       suffix: 3
-      args: -nox -malloc no -options_left no -snes_monitor_cancel -snes_monitor_short -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+      args: -nox -malloc no -options_left no -snes_monitor_cancel -snes_monitor -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
 
    test:
       suffix: 4
-      args: -nox -snes_monitor_cancel -snes_monitor_short -snes_type newtontrdc -snes_view
+      args: -nox -snes_monitor_cancel -snes_monitor -snes_type newtontrdc -snes_view
       requires: !single
 
    test:

@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    args: -tao_monitor_short -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -check_l1_eps 1
+    args: -tao_monitor -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -check_l1_eps 1
 
   test:
     suffix: 1
@@ -193,29 +193,29 @@ int main(int argc, char **argv)
 
   test:
     suffix: no_prefix
-    args: -tao_monitor_short -tao_view -tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 0
+    args: -tao_monitor -tao_view -tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 0
 
   test:
     suffix: no_prefix_yes_name
-    args: -tao_monitor_short -tao_view -tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 0 -set_term_name 1
+    args: -tao_monitor -tao_view -tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 0 -set_term_name 1
 
   test:
     suffix: yes_prefix_yes_name
-    args: -tao_monitor_short -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 1 -set_term_name 1
+    args: -tao_monitor -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -set_term_prefix 1 -set_term_name 1
 
   test:
     suffix: mask_failure
-    args: -tao_monitor_short -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls
+    args: -tao_monitor -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls
     args: -tao_term_sum_ridge_mask objective -tao_term_sum_lasso_mask gradient
     args: -tao_view ::ascii_info_detail
 
   test:
     suffix: assembled
-    args: -tao_monitor_short -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -ridge_tao_term_hessian_mat_type constantdiagonal -lasso_tao_term_hessian_mat_type diagonal
+    args: -tao_monitor -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type nls -ridge_tao_term_hessian_mat_type constantdiagonal -lasso_tao_term_hessian_mat_type diagonal
 
   test:
     suffix: snes
-    args: -tao_monitor_short -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type snes
+    args: -tao_monitor -tao_view -lasso_tao_term_l1_epsilon 0.1 -tao_type snes
 
   test:
     suffix: extra_info_view
