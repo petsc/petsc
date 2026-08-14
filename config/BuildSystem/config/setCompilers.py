@@ -339,90 +339,59 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
-  def isGcc110plus(compiler, log):
-    '''returns true if the compiler is gcc-11.0.x or later'''
+  def gnuVersion(compiler, log):
+    '''Returns the version of a GNU compiler as a tuple of at least three integers, or None if the compiler is not a GNU compiler or its version cannot be determined'''
+    import re
+    if not Configure.isGNU(compiler, log): return None
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'gcc[-0-9]*\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (11,0):
-          if log: log.write('Detected Gcc110plus compiler\n')
-          return 1
-      else:
-        if config.setCompilers.Configure.isGNU(compiler, log) and config.setCompilers.Configure.isMINGW(compiler, log):
-          (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpversion', log = log)
-          strmatch = re.match(r'(\d+)\.(\d+)',output)
-          if strmatch:
-            VMAJOR,VMINOR = strmatch.groups()
-            if (int(VMAJOR),int(VMINOR)) >= (11,0):
-              if log: log.write('Detected Gcc110plus compiler\n')
-              return 1
-      if log: log.write('Did not detect Gcc110plus compiler\n')
+      # gcc-7 and later print only the major version with -dumpversion, hence -dumpfullversion is needed
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpfullversion -dumpversion', log = log)
     except RuntimeError:
-      if log: log.write('Did not detect Gcc110plus compiler due to exception\n')
-      pass
+      try:
+        # gcc-6 and earlier do not accept -dumpfullversion, but their -dumpversion prints the full version
+        (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpversion', log = log)
+      except RuntimeError:
+        if log: log.write('Unable to determine the version of the GNU compiler '+compiler+'\n')
+        return None
+    strmatch = re.match(r'\s*(\d+(\.\d+)*)',output)
+    if not strmatch:
+      if log: log.write('Unable to parse the version of the GNU compiler '+compiler+' from: '+output+'\n')
+      return None
+    version = tuple(int(v) for v in strmatch.group(1).split('.'))
+    version = version + (0,)*(3-len(version))
+    if log: log.write('Detected GNU compiler version '+'.'.join(map(str,version))+'\n')
+    return version
 
   @staticmethod
-  def isGcc150plus(compiler, log):
-    '''returns true if the compiler is gcc-15.0.x or later'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'gcc[-0-9]*\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (15,0):
-          if log: log.write('Detected Gcc150plus compiler\n')
-          return 1
-      else:
-        if config.setCompilers.Configure.isGNU(compiler, log) and config.setCompilers.Configure.isMINGW(compiler, log):
-          (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpversion', log = log)
-          strmatch = re.match(r'(\d+)\.(\d+)',output)
-          if strmatch:
-            VMAJOR,VMINOR = strmatch.groups()
-            if (int(VMAJOR),int(VMINOR)) >= (15,0):
-              if log: log.write('Detected Gcc150plus compiler\n')
-              return 1
-      if log: log.write('Did not detect Gcc150plus compiler\n')
-    except RuntimeError:
-      if log: log.write('Did not detect Gcc150plus compiler due to exception\n')
-      pass
+  def isGNUVersionAtLeast(compiler, version, log):
+    '''Returns true if the compiler is a GNU compiler whose version is at least the tuple version
+       The GNU C, C++ and Fortran compilers share the same version numbering, so the language is determined by the caller'''
+    name       = 'GNU%d%dplus' % version[:2]
+    gnuversion = Configure.gnuVersion(compiler, log)
+    if gnuversion and gnuversion >= version:
+      if log: log.write('Detected '+name+' compiler\n')
+      return 1
+    if log: log.write('Did not detect '+name+' compiler\n')
 
   @staticmethod
-  def isGfortran100plus(compiler, log):
-    '''returns true if the compiler is gfortran-10.0.x or later'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (10,0):
-          if log: log.write('Detected GFortran100plus compiler\n')
-          return 1
-    except RuntimeError:
-      pass
+  def isGNU80plus(compiler, log):
+    '''Returns true if the compiler is a GNU compiler, version 8.0.x or later'''
+    return Configure.isGNUVersionAtLeast(compiler, (8,0), log)
 
   @staticmethod
-  def isGfortran8plus(compiler, log):
-    '''returns true if the compiler is gfortran-8 or later'''
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
-      output = output + error
-      import re
-      strmatch = re.match(r'GNU Fortran\s+\(.*\)\s+(\d+)\.(\d+)',output)
-      if strmatch:
-        VMAJOR,VMINOR = strmatch.groups()
-        if (int(VMAJOR),int(VMINOR)) >= (8,0):
-          if log: log.write('Detected GFortran8plus compiler\n')
-          return 1
-    except RuntimeError:
-      pass
+  def isGNU100plus(compiler, log):
+    '''Returns true if the compiler is a GNU compiler, version 10.0.x or later'''
+    return Configure.isGNUVersionAtLeast(compiler, (10,0), log)
+
+  @staticmethod
+  def isGNU110plus(compiler, log):
+    '''Returns true if the compiler is a GNU compiler, version 11.0.x or later'''
+    return Configure.isGNUVersionAtLeast(compiler, (11,0), log)
+
+  @staticmethod
+  def isGNU150plus(compiler, log):
+    '''Returns true if the compiler is a GNU compiler, version 15.0.x or later'''
+    return Configure.isGNUVersionAtLeast(compiler, (15,0), log)
 
   @staticmethod
   def isSun(compiler, log):

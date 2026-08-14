@@ -811,7 +811,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
     elif self.fortranMangling == 'stdcall':
       raise RuntimeError('Fortran STDCALL compilers are unsupported!\n')
-    if config.setCompilers.Configure.isGfortran8plus(self.getCompiler('FC'), self.log):
+    if config.setCompilers.Configure.isGNU80plus(self.getCompiler('FC'), self.log):
       self.addDefine('FORTRAN_CHARLEN_T', 'size_t')
     else:
       self.addDefine('FORTRAN_CHARLEN_T', 'int')

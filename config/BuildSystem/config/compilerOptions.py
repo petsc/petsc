@@ -33,7 +33,7 @@ class CompilerOptions(config.base.Configure):
             flags.extend(['-fno-stack-check'])
         else:
           flags.extend(['-Wno-lto-type-mismatch'])
-          if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
+          if config.setCompilers.Configure.isGNU110plus(compiler, self.log):
             flags.extend(['-Wno-stringop-overflow'])
           if config.setCompilers.Configure.isARM(self.log):
             flags.extend(['-mfp16-format=ieee']) #  ARM for utilizing 16 bit storage of floating point
@@ -256,7 +256,7 @@ class CompilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler, self.log):
       if bopt == '':
         flags.extend(['-Wall', '-ffree-line-length-none', '-ffree-line-length-0', '-Wno-lto-type-mismatch'])
-        if config.setCompilers.Configure.isGfortran8plus(compiler, self.log):
+        if config.setCompilers.Configure.isGNU80plus(compiler, self.log):
           flags.extend(['-Wno-unused-dummy-argument']) # Silence warning because dummy parameters are sometimes necessary
         if config.setCompilers.Configure.isMINGW(compiler, self.log):
           flags.extend(['-fallow-invalid-boz'])
