@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscScalar v, v0, v1, v2, a0 = 0.1, a, rhsval, *boundary_values, diag = 1.0;
   PetscReal   norm;
   char        convname[64];
-  PetscBool   upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE, zerorhs = PETSC_TRUE, convert = PETSC_FALSE;
+  PetscBool   upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE, zerorhs = PETSC_TRUE, convert = PETSC_FALSE, missingdiag = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -26,6 +26,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-diag", &diag, NULL));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-convname", convname, sizeof(convname), &convert));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-zerorhs", &zerorhs, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-missing_diagonal", &missingdiag, NULL));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m * n * bs, m * n * bs));
@@ -61,7 +62,7 @@ int main(int argc, char **args)
           PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v, ADD_VALUES));
         }
         v = 4.0;
-        PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, ADD_VALUES));
+        if (!missingdiag || Ii != m * n * bs - 1) PetscCall(MatSetValues(A, 1, &Ii, 1, &Ii, &v, ADD_VALUES));
         if (upwind) {
           /* now add a 2nd order upwind advection term to add a little asymmetry */
           if (j > 2) {
@@ -108,6 +109,9 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&A));
     A = B;
   }
+
+  /* the diagonal shift is only inserted where the diagonal entry is already allocated, so it must not need new nonzeros */
+  if (missingdiag) PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
 
   PetscCall(VecAssemblyBegin(rhs));
   PetscCall(VecAssemblyEnd(rhs));
@@ -323,5 +327,11 @@ int main(int argc, char **args)
       suffix: 18
       nsize: 3
       args: -diag 0.12 -convname {{mpisbaij is}separate output} -zerorhs 0
+
+   testset:
+      diff_args: -j
+      suffix: missing_diagonal
+      nsize: {{1 3}separate output}
+      args: -missing_diagonal -diag 0.12 -zerorhs 0
 
 TEST*/
