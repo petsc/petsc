@@ -2973,6 +2973,39 @@ static PetscErrorCode MatAssemblyBegin_IS(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Give nmap the block size of omap, but only if the indices of nmap are laid out in whole consecutive
+  blocks of that size on every process. ISLocalToGlobalMappingSetBlockSize() checks the same condition
+  and errors when it does not hold, so test it here and decline instead.
+*/
+static PetscErrorCode ISLocalToGlobalMappingSetBlockSizeFromMapping_Private(MPI_Comm comm, ISLocalToGlobalMapping omap, ISLocalToGlobalMapping nmap)
+{
+  const PetscInt *idxs;
+  PetscInt        bs, n, i, j;
+  PetscBool       blocked = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(omap, &bs));
+  PetscCall(ISLocalToGlobalMappingGetSize(nmap, &n));
+  if (bs == 1 || n % bs) blocked = PETSC_FALSE;
+  if (blocked) {
+    PetscCall(ISLocalToGlobalMappingGetIndices(nmap, &idxs));
+    for (i = 0; i < n / bs && blocked; i++) {
+      PetscInt dropped = 0;
+
+      for (j = 0; j < bs; j++) {
+        if (idxs[i * bs + j] < 0) dropped++;
+        else if (j && idxs[i * bs + j] != idxs[i * bs + j - 1] + 1) blocked = PETSC_FALSE;
+      }
+      if (dropped && dropped != bs) blocked = PETSC_FALSE;
+    }
+    PetscCall(ISLocalToGlobalMappingRestoreIndices(nmap, &idxs));
+  }
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &blocked, 1, MPI_C_BOOL, MPI_LAND, comm));
+  if (blocked) PetscCall(ISLocalToGlobalMappingSetBlockSize(nmap, bs));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
 {
   Mat_IS   *is = (Mat_IS *)A->data;
@@ -3027,9 +3060,11 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
       PetscCall(PetscArraycpy(nidxs, ridxs, nr));
       for (i = 0; i < nnzr; i++) nidxs[zridxs[i]] = -1;
       PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A), 1, nr, nidxs, PETSC_COPY_VALUES, &rl2g));
+      PetscCall(ISLocalToGlobalMappingSetBlockSizeFromMapping_Private(PetscObjectComm((PetscObject)A), is->rmapping, rl2g));
       PetscCall(PetscArraycpy(nidxs, cidxs, nc));
       for (i = 0; i < nnzc; i++) nidxs[zcidxs[i]] = -1;
       PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A), 1, nc, nidxs, PETSC_COPY_VALUES, &cl2g));
+      PetscCall(ISLocalToGlobalMappingSetBlockSizeFromMapping_Private(PetscObjectComm((PetscObject)A), is->cmapping, cl2g));
 
       PetscCall(ISRestoreIndices(zr, &zridxs));
       PetscCall(ISRestoreIndices(zc, &zcidxs));
