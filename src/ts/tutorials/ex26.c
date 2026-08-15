@@ -38,7 +38,7 @@ The flow can be driven with the lid or with buoyancy or both:\n\
         -snes_type ksponly has only minor impact on number of steps, but
         significantly reduces the required number of linear solves.
 
-      See also https://lists.mcs.anl.gov/pipermail/petsc-dev/2010-March/002362.html
+      See also https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/6YXJJQBZCWRTJSW3E3FWA6YB7SRRCP3A/
 */
 
 /* ------------------------------------------------------------------------

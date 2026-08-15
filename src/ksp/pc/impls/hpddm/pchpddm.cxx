@@ -1284,7 +1284,7 @@ static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, Pe
   /* previously-composed Mat */
   PetscCall(PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C));
   PetscCall(MatGetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, &op));
-  /* trick suggested by Barry https://lists.mcs.anl.gov/pipermail/petsc-dev/2020-January/025491.html */
+  /* See https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/22HXNMER6OU7N7CXWA2LJAY6RZPGQYXT/ */
   PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (PetscErrorCodeFn *)PCHPDDMCreateSubMatrices_Private));
   if (sorted) PetscCall(PCASMSetSortIndices(pc, PETSC_FALSE)); /* everything is already sorted */
   PetscCall(PCSetFromOptions(pc));                             /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
