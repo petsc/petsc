@@ -506,13 +506,9 @@ class Configure(config.package.Package):
     assert isinstance(self.version_tuple[0], int)
     if self.version_tuple[:2] == (11, 5):
       # CUDA 11.5.X
-      cxx = self.setCompilers.CXX
-      if self.setCompilers.isGNU(cxx, self.log):
-        output, _, _      = self.executeShellCommand(cxx + ' -dumpfullversion', log=self.log)
-        gcc_version       = output.strip().split('.')
-        gcc_version_tuple = tuple(map(int, gcc_version))
-        if gcc_version_tuple[:3] == (11, 3, 0):
-          mess = """
+      gcc_version_tuple = self.setCompilers.gnuVersion(self.setCompilers.CXX, self.log)
+      if gcc_version_tuple and gcc_version_tuple[:3] == (11, 3, 0):
+        mess = """
           You appear to be using CUDA {} and GCC {}. If you get compile errors along the lines of:
 
           /usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with '...':
@@ -525,8 +521,8 @@ class Configure(config.package.Package):
           Your only options are:
           - Use a newer nvcc version
           - Use an older gcc version
-          """.format('.'.join(map(str, self.version_tuple)), gcc_version)
-          self.logPrintWarning(mess)
+          """.format('.'.join(map(str, self.version_tuple)), '.'.join(map(str, gcc_version_tuple)))
+        self.logPrintWarning(mess)
     return
 
   def configure(self, *args, **kwargs):

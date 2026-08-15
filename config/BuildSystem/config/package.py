@@ -433,7 +433,7 @@ class Package(config.base.Configure):
     if self.requirekandr:
       outflags += self.setCompilers.KandRFlags
     with self.Language('C'):
-      if self.brokengnu23 and config.setCompilers.Configure.isGcc150plus(self.getCompiler(), self.log):
+      if self.brokengnu23 and config.setCompilers.Configure.isGNU150plus(self.getCompiler(), self.log):
         outflags.append('-std=gnu17')
     return ' '.join(outflags)
 
@@ -444,7 +444,7 @@ class Package(config.base.Configure):
     with self.Language('FC'):
       if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
          outflags.extend(['-mismatch','-dusty','-dcfuns'])
-      if config.setCompilers.Configure.isGfortran100plus(self.getCompiler(), self.log):
+      if config.setCompilers.Configure.isGNU100plus(self.getCompiler(), self.log):
         outflags.append('-fallow-argument-mismatch')
     return ' '.join(outflags)
 
