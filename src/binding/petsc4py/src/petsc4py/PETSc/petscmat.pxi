@@ -1098,8 +1098,7 @@ cdef inline matgetvalues(PetscMat mat,
     cdef ndarray rows = iarray_i(orows, &ni, &i)
     cdef ndarray cols = iarray_i(ocols, &nj, &j)
     if values is None:
-        values = empty_s(ni*nj)
-        values.shape = rows.shape + cols.shape
+        values = empty_s(ni*nj).reshape(rows.shape+cols.shape)
     values = oarray_s(values, &nv, &v)
     if (ni*nj != nv): raise ValueError(
         "incompatible array sizes: ni=%d, nj=%d, nv=%d" %
