@@ -528,6 +528,12 @@ OVERRIDE = {
     },
     'Options': {
         '__init__': 'def __init__(self, prefix: str | None = None) -> None: ...',
+        '__getitem__': 'def __getitem__(self, item: str) -> str: ...',
+        '__setitem__': (
+            'def __setitem__(self, item: str, value: '
+            'bool | int | float | Scalar | str | Sequence[bool] | Sequence[int] | '
+            'Sequence[float] | Sequence[Scalar] | Sequence[str]) -> None: ...'
+        ),
     },
     '__pyx_capi__': '__pyx_capi__: Final[dict[str, Any]] = ...',
     '__type_registry__': '__type_registry__: Final[dict[int, type[Object]]] = ...',
