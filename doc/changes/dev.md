@@ -122,6 +122,7 @@
 - Add `TaoGetDM()` and `TaoSetDM()`
 - Deprecate `TaoMonitorDefaultShort()`, `-tao_monitor_short`, and `-tao_monitor_short_interval`
 - Change the deprecated `TaoSMonitor()` and `-tao_smonitor` to use the full-precision default monitor
+- Add `TaoGetConvergedReasonString()` to retrieve a human readable string describing the `TaoConvergedReason`
 
 ## TaoTerm
 

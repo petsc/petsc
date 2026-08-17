@@ -2537,7 +2537,7 @@ PetscErrorCode TaoSetConvergedReason(Tao tao, TaoConvergedReason reason)
 
   Level: intermediate
 
-.seealso: [](ch_tao), `Tao`, `TaoConvergedReason`, `TaoSetConvergenceTest()`, `TaoSetTolerances()`
+.seealso: [](ch_tao), `Tao`, `TaoConvergedReason`, `TaoSetConvergenceTest()`, `TaoSetTolerances()`, `TaoGetConvergedReasonString()`
 @*/
 PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 {
@@ -2545,6 +2545,30 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscAssertPointer(reason, 2);
   *reason = tao->reason;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TaoGetConvergedReasonString - Return a human readable string for a `TaoConvergedReason`
+
+  Not Collective
+
+  Input Parameter:
+. tao - the `Tao` solver context
+
+  Output Parameter:
+. strreason - a human readable string that describes the `Tao` converged reason
+
+  Level: beginner
+
+.seealso: [](ch_tao), `Tao`, `TaoConvergedReason`, `TaoGetConvergedReason()`
+@*/
+PetscErrorCode TaoGetConvergedReasonString(Tao tao, const char *strreason[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscAssertPointer(strreason, 2);
+  *strreason = TaoConvergedReasons[tao->reason];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
