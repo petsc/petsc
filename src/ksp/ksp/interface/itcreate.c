@@ -571,11 +571,14 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
   Notes:
   If `KSPSetOperators()` has not been called then the `KSP` object will attempt to automatically create the matrix `Amat` and return it
 
-  Use `KSPGetOperatorsSet()` to determine if matrices have been provided.
+  Use `KSPGetOperatorsSet()` to determine if matrices have been provided. After `KSPSolveTranspose()` or `KSPMatSolveTranspose()` with explicit transposition enabled by
+  `KSPSetUseExplicitTranspose()`, this function returns the explicitly transposed operators until a non-transpose solve restores their parent operators. These explicitly transposed
+  operators are owned by the `KSP` and may be destroyed by `KSPSetUseExplicitTranspose(ksp, PETSC_FALSE)`, by `KSPReset()`, or by a non-transpose solve after `KSPSetOperators()`
+  changes the operators.
 
   DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`, `KSPSetUseExplicitTranspose()`
 @*/
 PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 {

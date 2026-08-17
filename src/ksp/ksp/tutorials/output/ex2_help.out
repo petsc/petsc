@@ -247,7 +247,7 @@ Viewer (-ksp_view_diagonal_scale) options:
   -ksp_plot_eigenvalues_explicitly: [deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw] (KSPView)
   -ksp_pc_side: <now LEFT : formerly LEFT> KSP preconditioner side (choose one of) LEFT RIGHT SYMMETRIC (KSPSetPCSide)
   -ksp_matsolve_batch_size: <now -1 : formerly -1>: Maximum number of columns treated simultaneously (KSPSetMatSolveBatchSize)
-  -ksp_use_explicittranspose: <now FALSE : formerly FALSE> Explicitly transpose the system in KSPSolveTranspose (KSPSetUseExplicitTranspose)
+  -ksp_use_explicittranspose: <now FALSE : formerly FALSE> Explicitly transpose the system in KSPSolveTranspose() and KSPMatSolveTranspose() (KSPSetUseExplicitTranspose)
   KSP GMRES Options
   -ksp_gmres_restart: <now 30 : formerly 30>: Number of Krylov search directions (KSPGMRESSetRestart)
   -ksp_gmres_haptol: <now 1e-30 : formerly 1e-30>: Tolerance for exact convergence (happy breakdown) (KSPGMRESSetHapTol)
