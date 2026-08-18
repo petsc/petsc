@@ -167,4 +167,14 @@ int main(int argc, char **argv)
     nsize: 4
     args: -petscspace_degree 1 -dm_refine 2 -snes_type qn -snes_npc_side {{left right}separate output} -npc_snes_type nasm -npc_snes_nasm_type restrict -npc_sub_snes_linesearch_order 1 -npc_sub_snes_linesearch_type bt -dm_plex_dd_overlap 1 -snes_linesearch_type bt -snes_linesearch_order 1 -npc_sub_pc_type lu -npc_sub_ksp_type preonly -snes_converged_reason -snes_monitor -petscpartitioner_type simple -npc_sub_snes_max_it 1 -dm_plex_simplex 0 -snes_rtol 1.e-6
 
+  test:
+    requires: !single
+    suffix: fas_multiplicative
+    args: -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 4 -snes_type fas -snes_fas_type multiplicative -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -fas_coarse_snes_max_it 3 -fas_levels_snes_type ngmres -fas_levels_snes_max_it 4 -snes_monitor -snes_converged_reason -snes_max_it 20
+
+  test:
+    requires: !single
+    suffix: fas_multiplicative_linesearch
+    args: -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -dm_refine_hierarchy 4 -snes_type fas -snes_fas_type multiplicative -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -fas_coarse_snes_max_it 3 -fas_levels_snes_type ngmres -fas_levels_snes_max_it 4 -snes_fas_use_coarse_correction_linesearch -fas_coarse_correction_snes_linesearch_type bt -snes_monitor -snes_converged_reason -snes_max_it 20
+
 TEST*/

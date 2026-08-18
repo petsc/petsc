@@ -258,7 +258,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     PetscCall(SNESLineSearchApply(linesearch, X, F, &fnorm, lX));
     if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(SNESLineSearchGetNorms(linesearch, &xnorm, &fnorm, &ynorm));
-    SNESCheckLineSearchFailure(snes);
+    SNESCheckLineSearchFailure(snes, snes->linesearch);
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       PetscFunctionReturn(PETSC_SUCCESS);

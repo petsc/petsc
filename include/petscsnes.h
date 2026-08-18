@@ -740,7 +740,10 @@ PETSC_EXTERN PetscErrorCode SNESShellSetSolve(SNES, PetscErrorCode (*)(SNES, Vec
 
    Level: beginner
 
-.seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`
+   Note:
+   See `SNESLineSearchSetFromOptions()` for all the line search options.
+
+.seealso: [](ch_snes), `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNES`, `SNESLineSearchSetFromOptions()`
 S*/
 typedef struct _p_SNESLineSearch *SNESLineSearch;
 
@@ -1454,6 +1457,8 @@ PETSC_EXTERN PetscErrorCode SNESFASGetSmoother(SNES, PetscInt, SNES *);
 PETSC_EXTERN PetscErrorCode SNESFASGetSmootherUp(SNES, PetscInt, SNES *);
 PETSC_EXTERN PetscErrorCode SNESFASGetSmootherDown(SNES, PetscInt, SNES *);
 PETSC_EXTERN PetscErrorCode SNESFASGetCoarseSolve(SNES, SNES *);
+PETSC_EXTERN PetscErrorCode SNESFASSetUseCoarseCorrectionLineSearch(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESFASGetCoarseCorrectionLineSearch(SNES, PetscInt, SNESLineSearch *);
 
 /* parameters for full FAS */
 PETSC_EXTERN PetscErrorCode SNESFASFullSetDownSweep(SNES, PetscBool);

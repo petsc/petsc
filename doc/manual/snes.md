@@ -771,6 +771,13 @@ The coarse solve context may be acquired with
 SNESFASGetCoarseSolve(SNES snes, SNES *smooth);
 ```
 
+`SNESFASSetUseCoarseCorrectionLineSearch()`, or the options
+database key `-snes_fas_use_coarse_correction_linesearch`, can be used
+to improve the convergence of `SNESFAS` for a `SNES_FAS_MULTIPLICATIVE` cycle in certain situations instead of using
+the default full coarse grid correction. The options prefix `-fas_coarse_correction_`
+can be used to control the line searches or `SNESFASGetCoarseCorrectionLineSearch()`
+may be called and then changes made to the line searches using the `SNESLineSearch` API.
+
 ### Nonlinear Additive Schwarz
 
 Nonlinear Additive Schwarz methods (NASM) take a number of local

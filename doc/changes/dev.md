@@ -105,6 +105,9 @@
 - Add support for nonlinear preconditioners with a `DM` different from the parent `SNES` `DM`. Calling `SNESSetNPC()` will no longer enforce default parameters on the npc.
 - Change `-snes_mf` to respect an explicitly set `PC` type instead of silently overriding it with `PCNONE`; an explicitly requested `PC` that requires an assembled matrix now errors
 - Deprecate `SNESMonitorDefaultShort()` and `-snes_monitor_short`
+- Add `SNESFASSetUseCoarseCorrectionLineSearch()` and `-snes_fas_use_coarse_correction_linesearch` to implement the algorithm in {cite}`nash2000mgopt`.
+- Add `SNESFASGetCoarseCorrectionLineSearch()`
+- Change default linesearch for `SNESFAS` with `SNESFASType` of `SNES_FAS_ADDITIVE` to `SNESLINESEARCHSECANT`
 
 ## SNESLineSearch
 
