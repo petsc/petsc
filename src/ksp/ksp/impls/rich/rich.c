@@ -174,15 +174,44 @@ static PetscErrorCode KSPMatSolvePCMatApply_Richardson(KSP ksp, Mat R, Mat Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+   Releases the work blocks of vectors cached by the block iteration of KSPMatSolve_Richardson(), together with the product cached in R, but not the work vector
+   of its PCApplyRichardson() fallback, which the two paths do not share
+*/
+static PetscErrorCode KSPMatSolveResetBlocks_Richardson(KSP ksp)
+{
+  KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDestroy(&richardsonP->R));
+  PetscCall(MatDestroy(&richardsonP->Z));
+  richardsonP->transpose = PETSC_FALSE;
+  richardsonP->id        = 0;
+  richardsonP->state     = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPReset_Richardson(KSP ksp)
+{
+  KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
+
+  PetscFunctionBegin;
+  PetscCall(KSPMatSolveResetBlocks_Richardson(ksp));
+  PetscCall(VecDestroy(&richardsonP->w));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
 {
-  PetscReal       rnorm = 0.0;
-  Mat             Amat, Pmat, R, Z;
-  Vec             cb, cx, w;
-  PetscInt        i, maxit, N;
-  KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
-  PetscBool       diagonalscale, exists, matexists;
-  MatNullSpace    nullsp;
+  PetscReal        rnorm = 0.0;
+  Mat              Amat, Pmat, R, Z;
+  Vec              cb, cx;
+  PetscInt         i, maxit, m, mn, n, nn, N, NN;
+  KSP_Richardson  *richardsonP = (KSP_Richardson *)ksp->data;
+  PetscBool        diagonalscale, exists, matexists, match = PETSC_FALSE, reuse = PETSC_FALSE;
+  PetscObjectId    id;
+  PetscObjectState state;
+  MatNullSpace     nullsp;
 
   PetscFunctionBegin;
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
@@ -200,6 +229,8 @@ static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
   if ((exists || matexists) && maxit > 0 && richardsonP->scale == 1.0 && (ksp->converged == KSPConvergedDefault || ksp->converged == KSPConvergedSkip) && !ksp->transpose_solve && !nullsp) {
     PCRichardsonConvergedReason reason;
 
+    /* the block iteration is not run in this call, so the work blocks of vectors it may have cached in an earlier one are released */
+    PetscCall(KSPMatSolveResetBlocks_Richardson(ksp));
     if (matexists) {
       PetscCall(PetscInfo(ksp, "Using PCMatApplyRichardson() on each batch of right-hand sides, by default the whole block\n"));
       PetscCall(PCMatApplyRichardson(ksp->pc, B, X, NULL, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
@@ -208,33 +239,70 @@ static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
       /* the block iteration below does not compute the same thing as PCApplyRichardson(), so the right-hand sides are solved one at a time to match KSPSolve() */
       PetscCall(PetscInfo(ksp, "Using PCApplyRichardson() on one right-hand side at a time\n"));
       PetscCall(MatGetSize(B, NULL, &N));
-      /* ksp->work may have the size of an earlier operator since setup is not run again, so a fresh work vector is created */
-      PetscCall(MatCreateVecs(B, NULL, &w));
+      PetscCall(MatGetLocalSize(B, &m, NULL));
+      /* ksp->work may have the size of an earlier operator since setup is not run again, so a work vector is cached here instead, it is rebuilt only when the
+         layout or the type of the columns of the block of right-hand sides changes, which a column of that block reports directly */
+      if (N > 0) {
+        PetscCall(MatDenseGetColumnVecRead(B, 0, &cb));
+        if (richardsonP->w) { /* a process without a cached work vector contributes PETSC_FALSE to the reduction below */
+          PetscCall(VecGetLocalSize(richardsonP->w, &n));
+          if (n == m) PetscCall(PetscObjectTypeCompare((PetscObject)richardsonP->w, ((PetscObject)cb)->type_name, &match));
+        }
+        /* the local size above may match on some processes only, while VecDestroy() and VecDuplicate() below are collective, so the verdict must be the same on all of them */
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &match, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)ksp)));
+        if (!match) PetscCall(VecDestroy(&richardsonP->w));
+        if (!richardsonP->w) PetscCall(VecDuplicate(cb, &richardsonP->w));
+        PetscCall(MatDenseRestoreColumnVecRead(B, 0, &cb));
+      }
       /* as with the column-by-column fallback of KSPMatSolve_Private(), ksp->reason and ksp->its reflect the last right-hand side */
       for (i = 0; i < N; i++) {
         PetscCall(MatDenseGetColumnVecRead(B, i, &cb));
         if (ksp->guess_zero) PetscCall(MatDenseGetColumnVecWrite(X, i, &cx));
         else PetscCall(MatDenseGetColumnVec(X, i, &cx));
-        PetscCall(PCApplyRichardson(ksp->pc, cb, cx, w, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
+        PetscCall(PCApplyRichardson(ksp->pc, cb, cx, richardsonP->w, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
         if (ksp->guess_zero) PetscCall(MatDenseRestoreColumnVecWrite(X, i, &cx));
         else PetscCall(MatDenseRestoreColumnVec(X, i, &cx));
         PetscCall(MatDenseRestoreColumnVecRead(B, i, &cb));
         ksp->reason = (KSPConvergedReason)reason;
       }
-      PetscCall(VecDestroy(&w));
     }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscInfo(ksp, "Iterating on each batch of right-hand sides, by default the whole block\n"));
-  /* R and Z are rebuilt on each call since the number of right-hand sides may change between calls */
-  PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &R));
-  PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &Z));
-  /* set the product A X (or A^T X) up once so that only its numeric phase is run in the loop below */
-  PetscCall(MatProductCreateWithMat(Amat, X, NULL, R));
-  PetscCall(MatProductSetType(R, ksp->transpose_solve ? MATPRODUCT_AtB : MATPRODUCT_AB));
-  PetscCall(MatProductSetFromOptions(R));
-  PetscCall(MatProductSymbolic(R));
+  /* R and Z are cached between calls, they are rebuilt only when the shape or the type of the block of right-hand sides, the direction of the solve, or the nonzero pattern of the operator changes,
+     the local column layout is part of the shape since MatDenseGetSubMatrix() may distribute two batches of the same global width differently */
+  PetscCall(MatGetLocalSize(B, &m, &mn));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCall(PetscObjectGetId((PetscObject)Amat, &id));
+  PetscCall(MatGetNonzeroState(Amat, &state));
+  if (richardsonP->R) { /* a process without cached work blocks of vectors contributes PETSC_FALSE to the reduction below */
+    PetscCall(MatGetLocalSize(richardsonP->R, &n, &nn));
+    PetscCall(MatGetSize(richardsonP->R, NULL, &NN));
+    if (n == m && nn == mn && NN == N) PetscCall(PetscObjectTypeCompare((PetscObject)richardsonP->R, ((PetscObject)B)->type_name, &reuse));
+    if (richardsonP->transpose != ksp->transpose_solve || richardsonP->id != id || richardsonP->state != state) reuse = PETSC_FALSE;
+  }
+  /* the local sizes above may match on some processes only, while both branches below are collective, so the verdict must be the same on all of them */
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reuse, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)ksp)));
+  if (reuse) {
+    PetscCall(PetscInfo(ksp, "Reusing the cached work blocks of vectors and the symbolic phase of the product\n"));
+    /* the cached product is bound to Z between calls, so it is bound back to the block of solutions of this call */
+    PetscCall(MatProductReplaceMats(NULL, X, NULL, richardsonP->R));
+  } else {
+    PetscCall(KSPMatSolveResetBlocks_Richardson(ksp));
+    PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &richardsonP->R));
+    PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &richardsonP->Z));
+    /* set the product A X (or A^T X) up once so that only its numeric phase is run in the loop below and in the following calls */
+    PetscCall(MatProductCreateWithMat(Amat, X, NULL, richardsonP->R));
+    PetscCall(MatProductSetType(richardsonP->R, ksp->transpose_solve ? MATPRODUCT_AtB : MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(richardsonP->R));
+    PetscCall(MatProductSymbolic(richardsonP->R));
+    richardsonP->transpose = ksp->transpose_solve;
+    richardsonP->id        = id;
+    richardsonP->state     = state;
+  }
+  R = richardsonP->R;
+  Z = richardsonP->Z;
 
   if (!ksp->guess_zero) { /*   R <- B - A X      */
     PetscCall(MatProductNumeric(R));
@@ -283,9 +351,8 @@ static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
       }
     }
   }
-  PetscCall(MatProductClear(R));
-  PetscCall(MatDestroy(&R));
-  PetscCall(MatDestroy(&Z));
+  /* rebind the cached product to a work block owned by the KSP so that it does not keep the block of solutions of this call alive until the next one, Z has the same type and layout as X so the symbolic phase is not run again */
+  PetscCall(MatProductReplaceMats(NULL, Z, NULL, R));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -347,8 +414,12 @@ static PetscErrorCode KSPRichardsonSetSelfScale_Richardson(KSP ksp, PetscBool se
 
   PetscFunctionBegin;
   richardsonP = (KSP_Richardson *)ksp->data;
-  /* KSPSetUp_Richardson() picks the number of work vectors from this flag, so setup must be run again */
-  if (richardsonP->selfscale != selfscale) ksp->setupstage = KSP_SETUP_NEW;
+  if (richardsonP->selfscale != selfscale) {
+    /* KSPSetUp_Richardson() picks the number of work vectors from this flag, so setup must be run again */
+    ksp->setupstage = KSP_SETUP_NEW;
+    /* neither the block iteration nor its PCApplyRichardson() fallback is reachable once the self-scaled variant is on, so their cached work space is released */
+    if (selfscale) PetscCall(KSPReset_Richardson(ksp));
+  }
   richardsonP->selfscale = selfscale;
   /* the self-scaled variant has no block analog, so KSPMatSolve() falls back to solving the right-hand sides one at a time */
   ksp->ops->matsolve = selfscale ? NULL : KSPMatSolve_Richardson;
@@ -428,6 +499,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Richardson(KSP ksp)
   ksp->ops->setup          = KSPSetUp_Richardson;
   ksp->ops->solve          = KSPSolve_Richardson;
   ksp->ops->matsolve       = KSPMatSolve_Richardson;
+  ksp->ops->reset          = KSPReset_Richardson;
   ksp->ops->destroy        = KSPDestroy_Richardson;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidual_Richardson;

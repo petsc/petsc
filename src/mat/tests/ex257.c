@@ -58,7 +58,7 @@ static PetscErrorCode TestSetInf(PetscInt n, PetscInt lda, PetscBool cuda)
     /* the values are put on the device so that MatSetInf() has to invalidate them, as when it is called on the block of solutions of a KSPMatSolve() which has not converged */
     PetscCall(MatZeroEntries(A));
   } else {
-    PetscCall(PetscCalloc1(lda * n, &data));
+    PetscCall(PetscCalloc1((size_t)lda * n, &data));
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, PETSC_DETERMINE, n, data, &A));
     PetscCall(MatDenseSetLDA(A, lda));
   }

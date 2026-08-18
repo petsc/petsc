@@ -2,7 +2,8 @@ static char help[] = "Tests KSPMatSolve() with KSPRICHARDSON and preconditioners
 Use -set_initial_guess to fill both blocks of solutions with the same nonzero initial guess and -compare false to skip the comparison against KSPSolve().\n\
 Use -nullspace to solve instead with a singular operator that has a constant null space, and -nullspace_attach false to leave that null space off the operator.\n\
 Use -shell to precondition with a PCSHELL that provides PCApplyRichardson() and -shell_block to make it provide PCMatApplyRichardson() as well.\n\
-Use -resize to solve a second system of twice the size with the same KSP.\n\
+Use -resize to solve a second system of twice the size with the same KSP, and -resize_uneven to grow it by one row instead, which changes the local size on some processes only.\n\
+Use -transpose to solve a second time with a nonsymmetric operator and KSPMatSolveTranspose().\n\
 Use -selfscale to solve a second time after turning KSPRichardsonSetSelfScale() on.\n\
 Use -n to set the size of the system and -nrhs to set the number of right-hand sides.\n\n";
 
@@ -84,9 +85,9 @@ static PetscErrorCode MatApplyRichardson_User(PC pc, Mat B, Mat X, Mat W, PetscR
 }
 
 /*
-   Tridiagonal operator, singular with a constant null space when nullspace is PETSC_TRUE (1D Laplacian with Neumann ends)
+   Tridiagonal operator, singular with a constant null space when nullspace is PETSC_TRUE (1D Laplacian with Neumann ends), nonsymmetric when nonsymmetric is PETSC_TRUE so that a transpose solve differs from a forward one
 */
-static PetscErrorCode CreateOperator(PetscInt n, PetscBool nullspace, Mat *A, MatNullSpace *nsp)
+static PetscErrorCode CreateOperator(PetscInt n, PetscBool nullspace, PetscBool nonsymmetric, Mat *A, MatNullSpace *nsp)
 {
   PetscInt i, Istart, Iend;
 
@@ -100,7 +101,7 @@ static PetscErrorCode CreateOperator(PetscInt n, PetscBool nullspace, Mat *A, Ma
   for (i = Istart; i < Iend; i++) {
     if (nullspace) PetscCall(MatSetValue(*A, i, i, i == 0 || i == n - 1 ? 1.0 : 2.0, INSERT_VALUES));
     else PetscCall(MatSetValue(*A, i, i, 4.0, INSERT_VALUES));
-    if (i > 0) PetscCall(MatSetValue(*A, i, i - 1, -1.0, INSERT_VALUES));
+    if (i > 0) PetscCall(MatSetValue(*A, i, i - 1, nonsymmetric ? -2.0 : -1.0, INSERT_VALUES));
     if (i < n - 1) PetscCall(MatSetValue(*A, i, i + 1, -1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
@@ -115,7 +116,7 @@ static PetscErrorCode CreateOperator(PetscInt n, PetscBool nullspace, Mat *A, Ma
 /*
    Solve with the whole block of right-hand sides at once, then one right-hand side at a time, and compare the two blocks of solutions
 */
-static PetscErrorCode SolveAndCompare(KSP ksp, Mat A, MatNullSpace nsp, PetscInt nrhs, PetscBool set_initial_guess, PetscBool compare)
+static PetscErrorCode SolveAndCompare(KSP ksp, Mat A, MatNullSpace nsp, PetscInt nrhs, PetscBool set_initial_guess, PetscBool compare, PetscBool transpose)
 {
   Mat       B, X, Y;
   Vec       cb, cx;
@@ -147,13 +148,15 @@ static PetscErrorCode SolveAndCompare(KSP ksp, Mat A, MatNullSpace nsp, PetscInt
   }
   PetscCall(KSPGetInitialGuessNonzero(ksp, &guess_nonzero));
 
-  PetscCall(KSPMatSolve(ksp, B, X));
+  if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X));
+  else PetscCall(KSPMatSolve(ksp, B, X));
   for (i = 0; i < nrhs; i++) {
     PetscCall(MatDenseGetColumnVecRead(B, i, &cb));
     /* KSPSolve() reads the column when it is used as the initial guess */
     if (guess_nonzero) PetscCall(MatDenseGetColumnVec(Y, i, &cx));
     else PetscCall(MatDenseGetColumnVecWrite(Y, i, &cx));
-    PetscCall(KSPSolve(ksp, cb, cx));
+    if (transpose) PetscCall(KSPSolveTranspose(ksp, cb, cx));
+    else PetscCall(KSPSolve(ksp, cb, cx));
     if (guess_nonzero) PetscCall(MatDenseRestoreColumnVec(Y, i, &cx));
     else PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &cx));
     PetscCall(MatDenseRestoreColumnVecRead(B, i, &cb));
@@ -178,7 +181,7 @@ int main(int argc, char **args)
   KSP          ksp;
   PC           pc;
   PetscInt     n = 20, nrhs = 5;
-  PetscBool    shell = PETSC_FALSE, block = PETSC_FALSE, set_initial_guess = PETSC_FALSE, compare = PETSC_TRUE, nullspace = PETSC_FALSE, resize = PETSC_FALSE, selfscale = PETSC_FALSE;
+  PetscBool    shell = PETSC_FALSE, block = PETSC_FALSE, set_initial_guess = PETSC_FALSE, compare = PETSC_TRUE, nullspace = PETSC_FALSE, resize = PETSC_FALSE, resize_uneven = PETSC_FALSE, selfscale = PETSC_FALSE, transpose = PETSC_FALSE;
   PetscBool    nullspace_attach = PETSC_TRUE;
 
   PetscFunctionBeginUser;
@@ -192,9 +195,11 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-nullspace", &nullspace, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-nullspace_attach", &nullspace_attach, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-resize", &resize, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-resize_uneven", &resize_uneven, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-selfscale", &selfscale, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
 
-  PetscCall(CreateOperator(n, nullspace, &A, &nsp));
+  PetscCall(CreateOperator(n, nullspace, transpose, &A, &nsp));
   /* a failed preconditioner flags the block of solutions with infinities, and removing a null space from such a block turns them into NaN in complex arithmetic, so leaving the null space off the
      operator lets the failure path be exercised on a singular operator, the local MatNullSpace is still used to make the right-hand sides consistent */
   if (nsp && !nullspace_attach) PetscCall(MatSetNullSpace(A, NULL));
@@ -216,19 +221,23 @@ int main(int argc, char **args)
   }
   PetscCall(KSPSetFromOptions(ksp));
 
-  PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare));
+  PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare, PETSC_FALSE));
+
+  /* the transpose of the operator is not the operator itself, so a transpose block solve on the same KSP must not reuse the product set up by the forward one */
+  if (transpose) PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare, PETSC_TRUE));
 
   /* the self-scaled variant needs more work vectors than the plain one, so turning it on after a first solve must run KSPSetUp() again */
   if (selfscale) {
     PetscCall(KSPRichardsonSetSelfScale(ksp, PETSC_TRUE));
-    PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare));
+    PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare, PETSC_FALSE));
   }
 
-  /* a second operator of a different size only bumps the setup stage to KSP_SETUP_NEWMATRIX, so the KSP implementation, and not KSPSetUp(), must revalidate the size of any work vector it uses */
-  if (resize) {
+  /* a second operator of a different size only bumps the setup stage to KSP_SETUP_NEWMATRIX, so the KSP implementation, and not KSPSetUp(), must revalidate the size of any work vector it uses,
+     -resize_uneven grows the operator by a single row so that the local size changes on the first process only, which the revalidation must not decide process by process */
+  if (resize || resize_uneven) {
     PetscCall(MatNullSpaceDestroy(&nsp));
     PetscCall(MatDestroy(&A));
-    PetscCall(CreateOperator(2 * n, nullspace, &A, &nsp));
+    PetscCall(CreateOperator(resize_uneven ? n + 1 : 2 * n, nullspace, transpose, &A, &nsp));
     if (nsp && !nullspace_attach) PetscCall(MatSetNullSpace(A, NULL)); /* the second operator is built the same way, so it follows the same choice */
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCReset(pc)); /* PCSetOperators() does not accept an operator of a different size otherwise */
@@ -240,7 +249,7 @@ int main(int argc, char **args)
       PetscCall(VecReciprocal(dinv));
       PetscCall(PCShellSetContext(pc, dinv));
     }
-    PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare));
+    PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare, PETSC_FALSE));
   }
 
   PetscCall(MatNullSpaceDestroy(&nsp));
@@ -286,7 +295,8 @@ int main(int argc, char **args)
          suffix: nullspace
          args: -nullspace -pc_type jacobi
 
-   # a second system of a different size solved with the same KSP, the work vector of the PCApplyRichardson() fallback of KSPMatSolve_Richardson() must be resized
+   # a second system of a different size solved with the same KSP, the work space cached by KSPMatSolve_Richardson() must be rebuilt, the two preconditioners
+   # below provide PCApplyRichardson() so they exercise the work vector of the fallback, while the third one exercises the work blocks of the block iteration
    testset:
       output_file: output/ex90_resize.out
       nsize: {{1 2}}
@@ -299,6 +309,10 @@ int main(int argc, char **args)
       test:
          suffix: resize_shell_applyrichardson
          args: -shell
+
+      test:
+         suffix: resize_jacobi
+         args: -pc_type jacobi
 
    # KSPConvergedDefault() removes the null space of the operator from the left-preconditioned block of right-hand sides, as in the Vec path
    test:
@@ -320,6 +334,31 @@ int main(int argc, char **args)
       suffix: pc_failed_batch
       nsize: 1
       args: -ksp_type richardson -nullspace -nullspace_attach false -pc_type cholesky -pc_factor_shift_type none -compare false -ksp_converged_reason -ksp_matsolve_batch_size 2 -fp_trap 0
+
+   # two batches of the same global width but of different local column layouts, the cached work blocks of KSPMatSolve_Richardson() must be rebuilt for the second one
+   test:
+      suffix: batch_layout
+      nsize: 2
+      args: -ksp_type richardson -ksp_max_it 5 -ksp_norm_type none -pc_type jacobi -ksp_matsolve_batch_size 2
+
+   # the local column layouts of the two batches match on the second process only, so the decision to rebuild the cached work blocks must be reduced over the processes
+   test:
+      suffix: batch_layout_uneven
+      nsize: 3
+      args: -ksp_type richardson -ksp_max_it 5 -ksp_norm_type none -pc_type jacobi -nrhs 6 -ksp_matsolve_batch_size 3
+
+   # the local row count of the second operator changes on the first process only, so the decision to rebuild the work vector of the PCApplyRichardson() fallback must be reduced over the processes
+   test:
+      suffix: resize_uneven_sor
+      nsize: 2
+      args: -ksp_type richardson -ksp_max_it 5 -ksp_norm_type none -pc_type sor -resize_uneven
+
+   # a forward block solve followed by a transpose one on the same KSP, the cached product of KSPMatSolve_Richardson() must be set up again for the other direction
+   test:
+      suffix: transpose
+      nsize: {{1 2}}
+      output_file: output/ex90_transpose.out
+      args: -ksp_type richardson -ksp_max_it 5 -ksp_norm_type none -pc_type jacobi -transpose
 
    # KSPRichardsonSetSelfScale() after a first solve must run KSPSetUp() again, the self-scaled variant has no block analog so KSPMatSolve() falls back to solving one right-hand side at a time
    test:

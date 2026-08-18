@@ -11802,8 +11802,10 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat, PetscBool *cong)
 
   Level: developer
 
-  Note:
+  Notes:
   Only the dense types (`MATSEQDENSE`, `MATMPIDENSE`, and their device variants) currently implement this operation, which is used to flag a block of solutions that a linear solver failed to compute, as `VecFlag()` does for a single solution.
+
+  The state of `A` is increased, so an outer solver that tracks it detects the failure even when the entries were already infinite.
 
 .seealso: `Mat`, `MatZeroEntries()`, `MatSetValues()`, `VecFlag()`
 @*/
