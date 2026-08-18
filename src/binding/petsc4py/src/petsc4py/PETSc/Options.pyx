@@ -159,7 +159,7 @@ cdef class Options:
         return toBool(flag)
 
     def setValue(self, name: str,
-                 value: bool | int | float | Scalar | Sequence[bool] | Sequence[int] | Sequence[float] | Sequence[Scalar] | str) -> None:
+                 value: bool | int | float | Scalar | str | Sequence[bool] | Sequence[int] | Sequence[float] | Sequence[Scalar] | Sequence[str]) -> None:
         """Set a value for an option.
 
         Logically collective.
