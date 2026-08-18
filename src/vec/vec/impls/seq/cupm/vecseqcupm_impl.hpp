@@ -19,6 +19,9 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/inner_product.h>
+#if CCCL_VERSION >= 3004000
+  #include <cuda/iterator>
+#endif
 
 namespace Petsc
 {
@@ -1937,9 +1940,14 @@ inline PetscErrorCode ExecuteWNorm(Tuple &&first, Tuple &&last, NormType wnormty
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::ErrorWnorm(Vec U, Vec Y, Vec E, NormType wnormtype, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol, PetscReal ignore_max, PetscReal *norm, PetscInt *norm_loc, PetscReal *norma, PetscInt *norma_loc, PetscReal *normr, PetscInt *normr_loc) noexcept
 {
-  const auto         nl  = U->map->n;
-  auto               ait = thrust::make_constant_iterator(static_cast<PetscScalar>(atol));
-  auto               rit = thrust::make_constant_iterator(static_cast<PetscScalar>(rtol));
+  const auto nl = U->map->n;
+#if CCCL_VERSION >= 3004000
+  auto ait = cuda::make_constant_iterator(static_cast<PetscScalar>(atol));
+  auto rit = cuda::make_constant_iterator(static_cast<PetscScalar>(rtol));
+#else
+  auto ait = thrust::make_constant_iterator(static_cast<PetscScalar>(atol));
+  auto rit = thrust::make_constant_iterator(static_cast<PetscScalar>(rtol));
+#endif
   PetscDeviceContext dctx;
   cupmStream_t       stream;
 
