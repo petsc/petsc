@@ -394,8 +394,7 @@ cdef object vecgetvalues(PetscVec vec, object oindices, object values):
     cdef PetscScalar *v=NULL
     cdef object indices = iarray_i(oindices, &ni, &i)
     if values is None:
-        values = empty_s(ni)
-        values.shape = indices.shape
+        values = empty_s(ni).reshape(indices.shape)
     values = oarray_s(values, &nv, &v)
     if (ni != nv): raise ValueError(
         ("incompatible array sizes: "

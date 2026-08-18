@@ -1,7 +1,7 @@
 ---
 name: review-mr-post
 description: Review a PETSc GitLab merge request and post the findings back as inline DiffNote comments (with apply-able suggestion blocks where possible). Use when the user asks to "post review comments on MR <N>", "leave inline comments on the MR", or "review and post" — anything that should land on GitLab, not stdout.
-argument-hint: <MR_IID | diff-file | empty for current branch>
+argument-hint: <MR_IID | empty for current branch>
 ---
 
 Adhere to @AGENTS.md while reviewing and drafting comments.
@@ -22,7 +22,7 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 Each posted comment opens a discussion thread the author must resolve — avoid noise.
 
 ## 9. Post inline comments as DiffNotes
-Use the GitLab Discussions API with JSON input to create inline DiffNote comments.
+Use the GitLab Discussions API with JSON input to create inline DiffNote comments. `<BASE_SHA>`/`<HEAD_SHA>`/`<START_SHA>` are the `diff_refs` recorded in @../review-mr/identify.md Section 2.
 
 **IMPORTANT:** Use `--input -` with `-H "Content-Type: application/json"` — the `-f` flag with bracket notation does NOT work for nested `position` fields.
 

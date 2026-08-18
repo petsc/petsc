@@ -302,7 +302,6 @@ class Installer(script.Script):
     for pattern in (
         self.destLibDir  + '/*.a',
         self.destLibDir  + '/*.la',
-        self.destLibDir  + '/pkgconfig',  # TODO: keep?
         self.destConfDir + '/configure-hash',
         self.destConfDir + '/uninstall.py',
         self.destConfDir + '/reconfigure-*.py',
@@ -349,6 +348,16 @@ class Installer(script.Script):
         r'\1 = python%d' % sys.version_info[0],
         contents, flags=re.MULTILINE,
       )
+      with open(filename, 'w') as newFile:
+        newFile.write(contents)
+    #
+    # The pkg-config files are kept in the wheel so build systems that locate PETSc with
+    # pkg-config can find it. Everything in them is derived from prefix, so pointing prefix
+    # at the directory holding the .pc file makes them work wherever the wheel is unpacked.
+    for filename in glob.glob(os.path.join(self.destLibDir, 'pkgconfig', '*.pc')):
+      with open(filename, 'r') as oldFile:
+        contents = oldFile.read()
+      contents = contents.replace(self.installDir, '${pcfiledir}/../..')
       with open(filename, 'w') as newFile:
         newFile.write(contents)
     #
