@@ -20,16 +20,22 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 
   Level: intermediate
 
-  Note:
+  Notes:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](ch_ts), `TS`, `TSRHSJacobianPFn`, `TSGetRHSJacobianP()`
+  When `TSSetIJacobianP()` is also called, the two must be given different matrices since each holds a separate term of the
+  parameter Jacobian; sharing one is an error.
+
+.seealso: [](ch_ts), `TS`, `TSRHSJacobianPFn`, `TSGetRHSJacobianP()`, `TSSetIJacobianP()`
 @*/
 PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
+  /* ts->Jacp may legitimately alias ts->Jacprhs after TSSetUp() when only this routine was called, so a shared matrix is
+     rejected only once an IJacobianP exists whose separate term would be stored in it */
+  PetscCheck(!ts->ijacobianp || Amat != ts->Jacp, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSSetIJacobianP() and TSSetRHSJacobianP() must be given different matrices");
 
   ts->rhsjacobianp    = func;
   ts->rhsjacobianpctx = ctx;
@@ -129,8 +135,11 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 
   Level: intermediate
 
-  Note:
+  Notes:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
+
+  When `TSSetRHSJacobianP()` is also called, the two must be given different matrices since each holds a separate term of the
+  parameter Jacobian; sharing one is an error.
 
 .seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`
 @*/
@@ -139,6 +148,9 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
+  /* ts->Jacprhs is only ever the RHSJacobianP matrix, so reusing it here always means the two parameter Jacobian terms
+     would clobber each other */
+  PetscCheck(Amat != ts->Jacprhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSSetIJacobianP() and TSSetRHSJacobianP() must be given different matrices");
 
   ts->ijacobianp    = func;
   ts->ijacobianpctx = ctx;

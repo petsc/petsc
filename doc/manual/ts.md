@@ -1181,7 +1181,9 @@ or
 TSSetIJacobianP(TS ts,Mat Amat,PetscErrorCode (*fp)(TS,PetscReal,Vec,Vec,PetscReal,Mat,PetscCtx),PetscCtx ctx)
 ```
 
-or both, depending on which form is used to define the ODE.
+or both, depending on which form is used to define the ODE. When both are
+called they must be given different matrices, since each stores a separate
+term of the parameter Jacobian.
 
 The arguments for the function `fp()` are the timestep context,
 current time, $y$, and the (optional) user-provided context.
