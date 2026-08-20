@@ -473,6 +473,7 @@ from petsc4py.typing import (
     NormTypeSpec,
     OptionValueSpec,
     PetscOptionsHandlerFunction,
+    PCHPDDMAssembleAuxiliaryMatFunction,
     ScatterModeSpec,
     SNESMonitorFunction,
     SNESObjFunction,

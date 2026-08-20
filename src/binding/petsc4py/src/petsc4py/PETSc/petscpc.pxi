@@ -494,3 +494,22 @@ cdef PetscErrorCode PCPatch_UserConstructOperator(
     userIterationSet[0] = (<IS?>iterationSet).iset
     CHKERR(PetscINCREF(<PetscObject*>&userIterationSet[0]))
     return PETSC_SUCCESS
+
+cdef PetscErrorCode PCHPDDM_AssembleAuxMat(
+    PetscMat J,
+    PetscReal t,
+    PetscVec X,
+    PetscVec X_t,
+    PetscReal s,
+    PetscIS ovl,
+    void *ctx) except PETSC_ERR_PYTHON with gil:
+    cdef Mat Jmat = ref_Mat(J)
+    cdef Vec Xvec = ref_Vec(X)
+    cdef Vec Xtvec = ref_Vec(X_t)
+    cdef IS ovlis = ref_IS(ovl)
+    assert ctx != NULL
+    cdef object context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (assemble, args, kargs) = context
+    assemble(Jmat, toReal(t), Xvec, Xtvec, toReal(s), ovlis, *args, **kargs)
+    return PETSC_SUCCESS

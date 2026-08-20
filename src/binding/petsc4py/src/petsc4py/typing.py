@@ -20,6 +20,7 @@ from .PETSc import (
     NormType,
     Object,
     Vec,
+    IS,
     Mat,
     NullSpace,
     KSP,
@@ -62,6 +63,7 @@ __all__ = [
     'KSPMonitorFunction',
     'KSPPreSolveFunction',
     'KSPPostSolveFunction',
+    'PCHPDDMAssembleAuxiliaryMatFunction',
     'SNESMonitorFunction',
     'SNESObjFunction',
     'SNESFunction',
@@ -356,6 +358,11 @@ KSPPreSolveFunction = Callable[[KSP, Vec, Vec], None]
 
 KSPPostSolveFunction = Callable[[KSP, Vec, Vec], None]
 """`PETSc.KSP` post solve callback."""
+
+# --- PC ---
+
+PCHPDDMAssembleAuxiliaryMatFunction = Callable[[Mat, float, Vec, Vec, float, IS], None]
+"""`PC.Type.HPDDM` auxiliary matrix assemble callback."""
 
 # --- SNES ---
 

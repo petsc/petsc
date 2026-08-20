@@ -2558,7 +2558,10 @@ cdef class PC(Object):
 
     # --- HPDDM ---
 
-    def setHPDDMAuxiliaryMat(self, IS uis, Mat uaux) -> None:
+    def setHPDDMAuxiliaryMat(self, IS uis, Mat uaux,
+                             assemble: PCHPDDMAssembleAuxiliaryMatFunction | None = None,
+                             args: tuple[Any, ...] | None = None,
+                             kargs: dict[str, Any] | None = None) -> None:
         """Set the auxiliary matrix used by the preconditioner.
 
         Logically collective.
@@ -2566,16 +2569,30 @@ cdef class PC(Object):
         Parameters
         ----------
         uis
-            The `IS` of the local auxiliary matrix
+            The `IS` of the local auxiliary matrix.
         uaux
-            The auxiliary sequential matrix
+            The auxiliary sequential matrix.
+        assemble
+            The callback to optionally assemble the matrix.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
 
         See Also
         --------
         petsc.PCHPDDMSetAuxiliaryMat
 
         """
-        CHKERR(PCHPDDMSetAuxiliaryMat(self.pc, uis.iset, uaux.mat, NULL, <void*>NULL))
+        if assemble is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (assemble, args, kargs)
+            self.set_attr('__hpddm_assembleauxmat__', context)
+            CHKERR(PCHPDDMSetAuxiliaryMat(self.pc, uis.iset, uaux.mat, PCHPDDM_AssembleAuxMat, <void*>context))
+        else:
+            # TODO: Currently it is not possible to remove an assembly callback
+            CHKERR(PCHPDDMSetAuxiliaryMat(self.pc, uis.iset, uaux.mat, NULL, <void*>NULL))
 
     def setHPDDMRHSMat(self, Mat B) -> None:
         """Set the right-hand side matrix of the preconditioner.
@@ -2608,7 +2625,7 @@ cdef class PC(Object):
         CHKERR(PCHPDDMGetComplexities(self.pc, &gc, &oc))
         return (toReal(gc), toReal(oc))
 
-    def setHPDDMHasNeumannMat(self, has: bool) -> None:
+    def setHPDDMHasNeumannMat(self, has: bool = True) -> None:
         """Set to indicate that the `Mat` passed to the `PC` is the local Neumann matrix.
 
         Logically collective.
