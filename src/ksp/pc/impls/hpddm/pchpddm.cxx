@@ -20,6 +20,18 @@ PetscLogEvent PC_HPDDM_Solve[PETSC_PCHPDDM_MAXLEVELS];
 const char *const PCHPDDMCoarseCorrectionTypes[] = {"DEFLATED", "ADDITIVE", "BALANCED", "NONE", "PCHPDDMCoarseCorrectionType", "PC_HPDDM_COARSE_CORRECTION_", nullptr};
 const char *const PCHPDDMSchurPreTypes[]         = {"LEAST_SQUARES", "GENEO", "PCHPDDMSchurPreType", "PC_HPDDM_SCHUR_PRE", nullptr};
 
+static PetscErrorCode PCHPDDMInitializeLevels_Private(PC_HPDDM *data)
+{
+  PetscFunctionBegin;
+  if (!data->levels) { /* usually allocated in PCSetFromOptions_HPDDM(), but PCSetUp_HPDDM() may be called without a prior PCSetFromOptions() */
+    PetscCall(PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &data->levels));
+    PetscCall(PetscNew(data->levels));
+    data->levels[0]->parent = data;
+    data->N                 = 1;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCReset_HPDDM(PC pc)
 {
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
@@ -32,6 +44,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
       PetscCall(PetscFree(data->levels[i]));
     }
     PetscCall(PetscFree(data->levels));
+    data->N = 0;
   }
   PetscCall(ISDestroy(&data->is));
   PetscCall(MatDestroy(&data->aux));
@@ -325,8 +338,7 @@ PetscErrorCode PCHPDDMSetRHSMat(PC pc, Mat B)
 
 static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems PetscOptionsObject)
 {
-  PC_HPDDM                   *data   = (PC_HPDDM *)pc->data;
-  PC_HPDDM_Level            **levels = data->levels;
+  PC_HPDDM                   *data = (PC_HPDDM *)pc->data;
   char                        prefix[256], deprecated[256];
   int                         i = 1;
   PetscMPIInt                 size, previous;
@@ -335,10 +347,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems PetscOption
   PetscBool                   flg = PETSC_TRUE, set;
 
   PetscFunctionBegin;
-  if (!data->levels) {
-    PetscCall(PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &levels));
-    data->levels = levels;
-  }
+  PetscCall(PCHPDDMInitializeLevels_Private(data));
   PetscOptionsHeadBegin(PetscOptionsObject, "PCHPDDM options");
   PetscCall(PetscOptionsBoundedInt("-pc_hpddm_harmonic_overlap", "Overlap prior to computing local harmonic extensions", "PCHPDDM", overlap, &overlap, &set, 1));
   if (!set) overlap = -1;
@@ -452,7 +461,15 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems PetscOption
     }
   }
   PetscOptionsHeadEnd();
-  while (i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]) PetscCall(PetscFree(data->levels[i++]));
+  for (; i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]; ++i) {
+    PetscCall(KSPDestroy(&data->levels[i]->ksp));
+    PetscCall(PCDestroy(&data->levels[i]->pc));
+    PetscCall(PetscFree(data->levels[i]));
+  }
+  if (data->levels[0]->ksp) { /* PCSetUp_HPDDM() may have created this KSP initially as a single-level solver before PCSetFromOptions() enabled multiple levels */
+    PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_%s_", ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", data->N > 1 ? "levels_1" : "coarse"));
+    PetscCall(KSPSetOptionsPrefix(data->levels[0]->ksp, prefix));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -589,7 +606,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc));
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-    if (data->levels[0]->ksp) {
+    if (data->levels && data->levels[0]->ksp) {
       PetscCall(KSPView(data->levels[0]->ksp, viewer));
       if (data->levels[0]->pc) PetscCall(PCView(data->levels[0]->pc, viewer));
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
@@ -1766,7 +1783,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   char                                       prefix[256];
   const char                                *pcpre;
   Mat                                        ev;
-  PetscInt                                   n, requested = data->N, reused = 0, overlap = -1;
+  PetscInt                                   n, requested, reused = 0, overlap = -1;
   MatStructure                               structure  = UNKNOWN_NONZERO_PATTERN;
   PetscBool                                  subdomains = PETSC_FALSE, flg = PETSC_FALSE, ismatis, swap = PETSC_FALSE, algebraic = PETSC_FALSE, block = PETSC_FALSE;
   DM                                         dm;
@@ -1775,7 +1792,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   Mat                                        daux = nullptr;
 
   PetscFunctionBegin;
-  PetscCheck(data->levels && data->levels[0], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not a single level allocated");
+  if (!data->levels) PetscCall(PetscInfo(pc, "No level allocated, defaulting to a single level, PCSetFromOptions() should be called before PCSetUp() to avoid this\n"));
+  PetscCall(PCHPDDMInitializeLevels_Private(data));
+  requested = data->N;
   PetscCall(PCGetOptionsPrefix(pc, &pcpre));
   PetscCall(PCGetOperators(pc, &A, &P));
   if (!data->levels[0]->ksp) {
