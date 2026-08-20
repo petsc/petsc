@@ -3,8 +3,8 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit         = 'v2024-06-27'
-    self.download          = ['git://https://github.com/gsjaardema/seacas.git','https://github.com/gsjaardema/seacas/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit         = 'v2026-08-11'
+    self.download          = ['git://https://github.com/sandialabs/seacas.git','https://github.com/sandialabs/seacas/archive/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['seacas']
     self.functions         = ['ex_close']
     self.includes          = ['exodusII.h']

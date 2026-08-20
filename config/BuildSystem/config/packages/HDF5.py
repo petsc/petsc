@@ -4,10 +4,10 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.minversion       = '1.8'
+    self.minversion       = '2.0'
     self.versionname      = 'H5_VERSION'
-    self.version          = '1.14.6'
-    self.download         = ['https://github.com/HDFGroup/hdf5/archive/hdf5_'+self.version+'/hdf5-'+self.version+'.tar.gz',
+    self.version          = '2.2.0'
+    self.download         = ['https://github.com/HDFGroup/hdf5/releases/download/'+self.version+'/hdf5-'+self.version+'.tar.gz',
                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/hdf5-'+self.version+'.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
@@ -22,10 +22,6 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.setupHelp(self, help)
     import nargs
     # PETSc does not need the Fortran/CXX interface.
-    # We currently need it to be disabled by default as HDF5 has bugs in their build process as of hdf5-1.12.0.
-    # Not all dependencies for Fortran bindings are given in the makefiles, hence a parallel build can fail
-    # when it starts a Fortran file before all its needed modules are finished.
-    # Barry has reported this to them and they acknowledged it.
     help.addArgument('HDF5', '-with-hdf5-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Fortran interface (PETSc does not need it)'))
     help.addArgument('HDF5', '-with-hdf5-cxx-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Cxx interface (PETSc does not need it)'))
 
@@ -40,15 +36,6 @@ class Configure(config.package.CMakePackage):
     self.odeps          = [self.mpi, self.zlib,self.szlib,self.flibs]
     return
 
-  def applyPatches(self):
-    try:
-      with open(self.packageDir+'/config/cmake/HDFMacros.cmake') as f_in:
-        content = f_in.readlines()
-      with open(self.packageDir+'/config/cmake/HDFMacros.cmake','w') as f_out:
-        f_out.writelines(c.replace('(CMAKE_DEBUG_POSTFIX "_debug")','(CMAKE_DEBUG_POSTFIX "")') for c in content)
-    except:
-      self.logPrintWarning("Patching HDF5 failed! Continuing with build")
-
   def versionToStandardForm(self,ver):
     '''HDF5 indicates patches by appending a -patch<n> after the regular part of the version'''
     return ver.replace('-patch','.')
@@ -58,6 +45,7 @@ class Configure(config.package.CMakePackage):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DHDF5_BUILD_HL_LIB=ON')
     args.append('-DHDF5_BUILD_TOOLS=OFF')
+    args.append('-DHDF5_ALLOW_UNSUPPORTED=ON') # to enable the combination of ENABLE_PARALLEL and BUILD_CPP_LIB
     args.append('-DBUILD_TESTING=OFF')
 
     if not self.mpi.usingMPIUni:
@@ -69,11 +57,11 @@ class Configure(config.package.CMakePackage):
         raise RuntimeError('Cannot build HDF5 Fortran bindings --with-fc=0 or with a malfunctioning Fortran compiler.')
     if self.argDB['with-hdf5-cxx-bindings']:
       if hasattr(self.compilers, 'CXX'):
-        args.extend(['-DHDF5_BUILD_CPP_LIB=ON', '-DALLOW_UNSUPPORTED=ON'])
+        args.append('-DHDF5_BUILD_CPP_LIB=ON')
       else:
         raise RuntimeError('Cannot build HDF5 Cxx bindings --with-cxx=0 or with a malfunctioning Cxx compiler.')
 
-    args.append('-DHDF5_ENABLE_Z_LIB_SUPPORT='+('ON' if self.zlib.found else 'OFF'))
+    args.append('-DHDF5_ENABLE_ZLIB_SUPPORT='+('ON' if self.zlib.found else 'OFF'))
     args.append('-DHDF5_ENABLE_SZIP_SUPPORT='+('ON' if self.szlib.found else 'OFF'))
 
     return args
