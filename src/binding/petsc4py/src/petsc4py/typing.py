@@ -50,6 +50,7 @@ __all__ = [
     'CSRIndicesSpec',
     'CSRSpec',
     'NNZSpec',
+    'OptionValueSpec',
     'MatNullFunction',
     'MatHtoolKernelFunction',
     'DMCoarsenHookFunction',
@@ -206,6 +207,29 @@ NormTypeSpec: TypeAlias = NormType | None
     See Also
     --------
     PETSc.NormType, petsc.NormType
+
+"""
+
+OptionValueSpec: TypeAlias = (
+    bool
+    | int
+    | float
+    | Scalar
+    | str
+    | Sequence[bool]
+    | Sequence[int]
+    | Sequence[float]
+    | Sequence[Scalar]
+    | Sequence[str]
+    | None
+)
+"""Option value specification.
+
+    All types which are usable with `Options` database.
+
+    See Also
+    --------
+    PETSc.Options, petsc.PetscOptions
 
 """
 
