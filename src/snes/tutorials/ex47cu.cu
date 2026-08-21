@@ -10,8 +10,12 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 #include <thrust/device_ptr.h>
 #include <thrust/for_each.h>
 #include <thrust/tuple.h>
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/iterator/counting_iterator.h>
+#if CCCL_VERSION >= 3004000
+  #include <cuda/iterator>
+#else
+  #include <thrust/iterator/constant_iterator.h>
+  #include <thrust/iterator/counting_iterator.h>
+#endif
 #include <thrust/iterator/zip_iterator.h>
 
 extern PetscErrorCode ComputeFunction(SNES, Vec, Vec, void *), ComputeJacobian(SNES, Vec, Mat, Mat, void *);
@@ -112,18 +116,30 @@ PetscErrorCode ComputeFunction(SNES, Vec x, Vec f, PetscCtx ctx)
             thrust::device_ptr<const PetscScalar>(xarray + xstartshift),
             thrust::device_ptr<const PetscScalar>(xarray + xstartshift + 1),
             thrust::device_ptr<const PetscScalar>(xarray + xstartshift - 1),
+#if CCCL_VERSION >= 3004000
+            cuda::counting_iterator<int>(fstart),
+            cuda::constant_iterator<int>(Mx),
+            cuda::constant_iterator<PetscScalar>(hx))),
+#else
             thrust::counting_iterator<int>(fstart),
             thrust::constant_iterator<int>(Mx),
             thrust::constant_iterator<PetscScalar>(hx))),
+#endif
         thrust::make_zip_iterator(
           thrust::make_tuple(
             thrust::device_ptr<PetscScalar>(farray + lsize),
             thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift),
             thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift + 1),
             thrust::device_ptr<const PetscScalar>(xarray + lsize - xendshift - 1),
+#if CCCL_VERSION >= 3004000
+            cuda::counting_iterator<int>(fstart) + lsize,
+            cuda::constant_iterator<int>(Mx),
+            cuda::constant_iterator<PetscScalar>(hx))),
+#else
             thrust::counting_iterator<int>(fstart) + lsize,
             thrust::constant_iterator<int>(Mx),
             thrust::constant_iterator<PetscScalar>(hx))),
+#endif
         ApplyStencil());
     }
     // clang-format on

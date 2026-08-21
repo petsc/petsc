@@ -27,6 +27,9 @@
 #if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0)
   #include <cuda/std/functional>
 #endif
+#if CCCL_VERSION >= 3004000
+  #include <cuda/iterator>
+#endif
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatCUSPARSEStorageFormat", "MAT_CUSPARSE_", 0};
 /*
@@ -3335,8 +3338,13 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       PetscCallThrust(thrust::for_each(thrust::device, thrust::counting_iterator<PetscInt>(0), thrust::counting_iterator<PetscInt>(m), Csr2coo(Broff->data().get(), Bcoo->data().get())));
 
       /* Issues when using bool with large matrices on SUMMIT 10.2.89 */
+#if CCCL_VERSION >= 3004000
+      auto Aperm = cuda::make_constant_iterator(1);
+      auto Bperm = cuda::make_constant_iterator(0);
+#else
       auto Aperm = thrust::make_constant_iterator(1);
       auto Bperm = thrust::make_constant_iterator(0);
+#endif
       auto Bcib  = thrust::make_transform_iterator(Bcsr->column_indices->begin(), Shift(A->cmap->n));
       auto Bcie  = thrust::make_transform_iterator(Bcsr->column_indices->end(), Shift(A->cmap->n));
       auto wPerm = new THRUSTINTARRAY(Annz + Bnnz);
