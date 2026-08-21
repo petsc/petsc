@@ -1485,15 +1485,13 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
   def compilePETSc(self):
     try:
       self.logPrintBox('Compiling PETSc; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=1000, log = self.log)
-      self.log.write(output+err)
+      config.package.Package.executeShellCommand(self.make.make+' all PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=1000, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make all on PETSc: '+str(e))
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
-        self.log.write(output+err)
+        config.package.Package.executeShellCommand(self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
     elif not self.argDB['with-batch']:
@@ -1501,7 +1499,6 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
         self.logPrintBox('Testing PETSc; this may take several minutes')
         output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' test PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         output = output+err
-        self.log.write(output)
         if output.find('error') > -1 or output.find('Error') > -1:
           raise RuntimeError('Error running make check on PETSc: '+output)
       except RuntimeError as e:

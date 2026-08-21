@@ -95,7 +95,6 @@ class Configure(config.package.CMakePackage):
         self.logPrintBox('Testing xSDKTrilinos; this may take several minutes')
         output,err,ret  = config.package.CMakePackage.executeShellCommand('cd '+os.path.join(self.packageDir,'petsc-build')+' && '+self.cmake.ctest,timeout=60, log = self.log)
         output = output+err
-        self.log.write(output)
         if output.find('Failure') > -1:
           raise RuntimeError('Error running ctest on xSDKTrilinos: '+output)
       except RuntimeError as e:

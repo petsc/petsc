@@ -54,8 +54,7 @@ class Configure(config.package.Package):
     self.include = [incDir]
     try:
       self.logPrintBox('Copying HPDDM; this may take several seconds')
-      output,err,ret = config.package.Package.executeShellCommand(['cp','-rf',os.path.join(self.packageDir,'include'),prefix],timeout=100,log=self.log) # cannot use shutil.copytree since target directory likely exists
-      self.log.write(output+err)
+      config.package.Package.executeShellCommand(['cp','-rf',os.path.join(self.packageDir,'include'),prefix],timeout=100,log=self.log) # cannot use shutil.copytree since target directory likely exists
     except RuntimeError as e:
       raise RuntimeError('Error copying HPDDM: '+str(e))
     if self.checkSharedLibrariesEnabled():
