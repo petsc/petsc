@@ -18,14 +18,6 @@ elif useThreads == None or useThreads == 'yes' or useThreads == '1':
 else:
   raise RuntimeError('Unknown option value for --useThreads ',useThreads)
 
-useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
-if useSelect == 'no' or useSelect == '0':
-  useSelect = 0
-elif  useSelect is None or useSelect == 'yes' or useSelect == '1':
-  useSelect = 1
-else:
-  raise RuntimeError('Unknown option value for --useSelect ',useSelect)
-
 import logger
 
 class Script(logger.Logger):
@@ -107,23 +99,6 @@ class Script(logger.Logger):
     if not hasattr(sys, 'version_info') or sys.version_info < (3,6):
       raise RuntimeError('BuildSystem requires Python version 3.6 or higher. Get Python at https://www.python.org/')
     return
-
-  @staticmethod
-  def getModule(root, name):
-    '''Retrieve a specific module from the directory root, bypassing the usual paths'''
-    if sys.version_info < (3,12):
-      import imp
-      (fp, pathname, description) = imp.find_module(name, [root])
-      try:
-        return imp.load_module(name, fp, pathname, description)
-      finally:
-        if fp: fp.close()
-    else:
-      import importlib.util
-      spec = importlib.util.spec_from_file_location(name, root)
-      module = importlib.util.module_from_spec(spec)
-      sys.modules[name] = module
-      spec.loader.exec_module(module)
 
   @staticmethod
   def importModule(moduleName):
@@ -364,19 +339,16 @@ class LanguageProcessor(args.ArgumentProcessor):
     '''Return the module associated with operations for a given language
        - Giving a moduleName explicitly forces a reimport'''
     if not language in self.languageModule or not moduleName is None:
-      try:
-        if moduleName is None:
-          moduleName = self.modulePath+'.'+language
+      defaultName = self.modulePath+'.'+language
+      if moduleName is None:
+        moduleName = defaultName
         module     = __import__(moduleName)
-      except ImportError as e:
-        if not moduleName is None:
-          self.logPrint('Failure to find language module: '+str(e))
+      else:
         try:
-          moduleName = self.modulePath+'.'+language
-          module     = __import__(moduleName)
+          module = __import__(moduleName)
         except ImportError as e:
           self.logPrint('Failure to find language module: '+str(e))
-          moduleName = 'config.compile.'+language
+          moduleName = defaultName
           module     = __import__(moduleName)
       components = moduleName.split('.')
       for component in components[1:]:
