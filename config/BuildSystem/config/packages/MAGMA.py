@@ -204,13 +204,13 @@ class Configure(config.package.Package):
         if 'sparse-lib' not in self.makerulename:
           incDir = os.path.join(self.installDir,'include')
           libDir = self.libDir
-          output,err,ret = config.package.Package.executeShellCommand(self.make.make + ' install_dirs', cwd=self.packageDir, timeout=2500, log = self.log)
-          output,err,ret = config.package.Package.executeShellCommand(self.make.make + ' pkgconfig', cwd=self.packageDir, timeout=2500, log = self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.h')+' '+incDir, timeout=100, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.mod')+' '+incDir, timeout=100, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'lib','libmagma.*')+' '+libDir, timeout=100, log=self.log)
+          config.package.Package.executeShellCommand(self.make.make + ' install_dirs', cwd=self.packageDir, timeout=2500, log = self.log)
+          config.package.Package.executeShellCommand(self.make.make + ' pkgconfig', cwd=self.packageDir, timeout=2500, log = self.log)
+          config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.h')+' '+incDir, timeout=100, log=self.log)
+          config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.mod')+' '+incDir, timeout=100, log=self.log)
+          config.package.Package.executeShellCommand('cp '+os.path.join(self.packageDir,'lib','libmagma.*')+' '+libDir, timeout=100, log=self.log)
         else:
-          output,err,ret = config.package.Package.executeShellCommand(self.make.make + ' install', cwd=self.packageDir, timeout=2500, log = self.log)
+          config.package.Package.executeShellCommand(self.make.make + ' install', cwd=self.packageDir, timeout=2500, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on MAGMA: '+str(e))
         raise RuntimeError('Error running make on MAGMA')

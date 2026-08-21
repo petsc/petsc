@@ -62,12 +62,12 @@ class Configure(config.package.Package):
     if self.setCompilers.LDFLAGS: args += ['LDFLAGS={0}'.format(self.setCompilers.LDFLAGS)]
     try:
       self.logPrintBox('Compiling libCEED; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand(self.make.make_jnp_list + args + ['-B'], cwd=self.packageDir, timeout=250, log=self.log)
+      config.package.Package.executeShellCommand(self.make.make_jnp_list + args + ['-B'], cwd=self.packageDir, timeout=250, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make on libCEED: '+str(e))
     try:
       self.logPrintBox('Installing libCEED; this may take several seconds')
-      output,err,ret  = config.package.Package.executeShellCommand(self.make.make_jnp_list + args + ['install'], cwd=self.packageDir, timeout=60, log=self.log)
+      config.package.Package.executeShellCommand(self.make.make_jnp_list + args + ['install'], cwd=self.packageDir, timeout=60, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running install on libCEED: '+str(e))
     return self.installDir

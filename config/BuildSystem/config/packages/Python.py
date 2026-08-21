@@ -43,7 +43,7 @@ class Configure(config.package.Package):
       self.logPrint('Unable to determine version of',self.pyexe)
 
     try:
-      output,err1,ret1  = config.package.Package.executeShellCommand([self.pyexe,'-c','import setuptools;print(setuptools.__version__)'],timeout=60, log = self.log)
+      config.package.Package.executeShellCommand([self.pyexe,'-c','import setuptools;print(setuptools.__version__)'],timeout=60, log = self.log)
       self.setuptools = 1
     except:
       self.logPrint('Python being used '+self.pyexe+' does not have the setuptools package')
@@ -59,7 +59,7 @@ class Configure(config.package.Package):
       self.numpy = int(have_numpy)
     else:
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand(self.pyexe + ' -c "import numpy"',timeout=60, log = self.log)
+        config.package.Package.executeShellCommand(self.pyexe + ' -c "import numpy"',timeout=60, log = self.log)
         self.numpy = 1
       except:
         self.logPrint('Python being used '+self.pyexe+' does not have the numpy package')

@@ -2156,7 +2156,7 @@ class CMakePackage(Package):
           self.popLanguage()
         try:
           # Uses --no-deps so does not install any listed dependencies of the package that Python pip would normally install
-          output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), '.']],cwd=self.packageDir, env=env, timeout=30, log = self.log)
+          config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), '.']],cwd=self.packageDir, env=env, timeout=30, log = self.log)
         except RuntimeError as e:
           raise RuntimeError('Error running pip install on '+self.pkgname)
     return self.installDir
@@ -2236,7 +2236,7 @@ class PythonPackage(Package):
         env['PYTHONPATH'] = os.path.join(self.installDir,'lib')
 
       try:
-        output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), pkgname]],env=env, timeout=30, log = self.log)
+        config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), pkgname]],env=env, timeout=30, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running pip install on '+self.pkgname)
     else:

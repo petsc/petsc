@@ -74,8 +74,8 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         raise RuntimeError('Error running make on HPL dmatgen: '+str(e))
       self.logPrintBox('Installing HPL dmatgen; this may take several minutes')
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=25, log=self.log)
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=25, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=25, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=25, log=self.log)
       config.package.Package.executeShellCommand('cp -f '+os.path.join(srcDir,'libhpl.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
       config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include', '*.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall(makefile)

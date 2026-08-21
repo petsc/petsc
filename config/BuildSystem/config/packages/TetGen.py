@@ -78,8 +78,8 @@ class Configure(config.package.Package):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
-        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
         config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
         if self.argDB['download-tetgen-build-exec']:
           config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags_exe + '" PREDCXXFLAGS="' + predcflags + '" tetgen && cp tetgen ' + binDir + ' && rm tetgen', timeout=2500, log = self.log)

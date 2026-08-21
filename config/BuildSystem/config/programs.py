@@ -59,7 +59,7 @@ AC_OUTPUT
       fd.write(accode)
       fd.close()
       try:
-        output,err,ret  = config.base.Configure.executeShellCommand([self.autoreconf], log = self.log, cwd=testdir)
+        config.base.Configure.executeShellCommand([self.autoreconf], log = self.log, cwd=testdir)
         self.logPrint('autoreconf test successful!')
       except RuntimeError as e:
         self.autoreconf = None

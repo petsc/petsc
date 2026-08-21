@@ -112,8 +112,8 @@ ks_shared:
       except RuntimeError as e:
         raise RuntimeError('Error running make on KS: '+str(e))
       self.logPrintBox('Installing KS; this may take several minutes')
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
       config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libks.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
       config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'KolmogorovSmirnovDist.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall('make.inc')

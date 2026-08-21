@@ -42,7 +42,7 @@ class Configure(config.package.Package):
 
     if self.installNeeded('Makefile.in'):
       self.logPrintBox('Configuring, compiling and installing Spai; this may take several minutes')
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
       config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && make clean && make && cp -f libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.log)
       config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'lib')+' && cp -f *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.log)
       try:

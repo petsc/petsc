@@ -30,7 +30,7 @@ class Configure(config.package.Package):
       cflags = self.getCompilerFlags()
     try:
       self.logPrintBox('Installing zstd; this may take several minutes')
-      output,err,ret  = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['CC='+cc, 'CFLAGS='+cflags, 'PREFIX='+self.installDir, 'install'], cwd=self.packageDir, timeout=250, log=self.log)
+      config.package.Package.executeShellCommand(self.make.make_jnp_list + ['CC='+cc, 'CFLAGS='+cflags, 'PREFIX='+self.installDir, 'install'], cwd=self.packageDir, timeout=250, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running make on zstd: '+str(e))
     return self.installDir

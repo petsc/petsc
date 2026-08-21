@@ -22,9 +22,9 @@ class Configure(config.package.Package):
     import os
     try:
       self.pushLanguage('FC')
-      output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make AR=ar FC=\''+self.getCompiler()+' '+self.getCompilerFlags()+'\'',timeout=2500,log = self.log)
+      config.package.Package.executeShellCommand('cd '+self.packageDir+' && make AR=ar FC=\''+self.getCompiler()+' '+self.getCompilerFlags()+'\'',timeout=2500,log = self.log)
       self.popLanguage()
     except RuntimeError as e:
       raise RuntimeError('Error running make on radau5: '+str(e))
-    output,err,ret  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libradau5.a')+' '+os.path.join(self.confDir,'lib'), timeout=60, log = self.log)
+    config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libradau5.a')+' '+os.path.join(self.confDir,'lib'), timeout=60, log = self.log)
     return os.path.join(self.confDir,'lib')

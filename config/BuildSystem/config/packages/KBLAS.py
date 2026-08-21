@@ -105,7 +105,7 @@ class Configure(config.package.Package):
         libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing KBLAS; this may take several minutes')
-        output,err,ret = config.package.Package.executeShellCommandSeq(
+        config.package.Package.executeShellCommandSeq(
           ['mkdir -p '+libDir+' '+includeDir,
            'cp -f lib/*.* '+libDir+'/.',
            'cp -f include/*.* '+includeDir+'/.'
