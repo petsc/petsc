@@ -26,25 +26,6 @@ elif  useSelect is None or useSelect == 'yes' or useSelect == '1':
 else:
   raise RuntimeError('Unknown option value for --useSelect ',useSelect)
 
-#  Run parts of configure in parallel, does not currently work;
-#  see config/BuildSystem/config/framework.parallelQueueEvaluation()
-useParallel = nargs.Arg.findArgument('useParallel', sys.argv[1:])
-if useParallel == 'no' or useParallel == '0':
-  useParallel = 0
-elif  useParallel is None or useParallel == 'yes':
-  useParallel = 5
-else:
-  if useParallel == '1':
-    # handle case with --useParallel was used
-    found = 0
-    for i in sys.argv[1:]:
-      if i.startswith('--useParallel='):
-        found = 1
-        break
-    if found: useParallel = int(useParallel)
-    else: useParallel = 5
-useParallel = 0
-
 import logger
 
 class Script(logger.Logger):
