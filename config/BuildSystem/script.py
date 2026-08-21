@@ -217,7 +217,7 @@ class Script(logger.Logger):
       checkCommand = Script.defaultCheckCommand
     if log is None:
       log = logger.Logger.defaultLog
-    def logOutput(log, output, logOutputflg):
+    def logOutput(log, output, logOutputflg, label):
       import re
       if not logOutputflg: return output
       # get rid of multiple blank lines
@@ -225,10 +225,10 @@ class Script(logger.Logger):
       if output:
         if lineLimit:
           output = '\n'.join(output.split('\n')[:lineLimit])
-        if '\n' in output:      # multi-line output
-          log.write('stdout:\n'+output+'\n')
+        if '\n' in output or len(output) > 120:      # multi-line or long-line output
+          log.write(label+':\n'+output+'\n')
         else:
-          log.write('stdout: '+output+'\n')
+          log.write(label+': '+output+'\n')
       return output
     def runInShell(commandseq, log, cwd, env):
       if useThreads and threads:
@@ -255,8 +255,8 @@ class Script(logger.Logger):
         return Script.runShellCommandSeq(commandseq, log, cwd, env)
 
     (output, error, status) = runInShell(commandseq, log, cwd, env)
-    output = logOutput(log, output,logOutputflg)
-    logOutput(log, error,logOutputflg)
+    output = logOutput(log, output, logOutputflg, label='stdout')
+    logOutput(log, error, logOutputflg, label='stderr')
     checkCommand(commandseq, status, output, error)
     return (output, error, status)
 
