@@ -18,6 +18,15 @@ typedef int PETSC4PY_MPI_Fint;
 
 #endif /* MPI_ABI_VERSION >= 1 */
 
+#if MPI_VERSION < 5
+
+/* MPI_Comm_toint() and MPI_Comm_fromint() are new in MPI-5.0 section 20.4.5. */
+
+#define MPI_Comm_toint(comm)  ((int)MPI_Comm_c2f(comm))
+#define MPI_Comm_fromint(arg) MPI_Comm_f2c((MPI_Fint)(arg))
+
+#endif /* MPI_VERSION < 5 */
+
 #if defined(OPEN_MPI)
 
 /*

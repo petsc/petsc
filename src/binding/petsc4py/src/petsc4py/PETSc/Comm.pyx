@@ -142,6 +142,28 @@ cdef class Comm:
         def __get__(self) -> int:
             return self.getRank()
 
+    # --- integer handle support ---
+
+    def toint(self) -> int:
+        """Translate the communicator to an integer handle.
+
+        Not collective.
+
+        """
+        cdef MPI_Comm comm = self.comm
+        return MPI_Comm_toint(comm)
+
+    @classmethod
+    def fromint(cls, arg: int) -> Comm:
+        """Translate an integer handle to a communicator.
+
+        Not collective.
+
+        """
+        cdef Comm comm = cls()
+        comm.comm = MPI_Comm_fromint(arg)
+        return comm
+
     # --- Fortran support ---
 
     property fortran:

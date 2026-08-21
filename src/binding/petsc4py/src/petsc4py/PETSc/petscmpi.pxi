@@ -23,6 +23,9 @@ cdef extern from * nogil:
     ctypedef int MPI_Fint
     MPI_Fint MPI_Comm_c2f(MPI_Comm)
 
+    int MPI_Comm_toint(MPI_Comm)
+    MPI_Comm MPI_Comm_fromint(int)
+
 cdef extern from * nogil:
 
     MPI_Comm PETSC_COMM_SELF
