@@ -115,16 +115,20 @@ class Configure(script.Script):
   def __str__(self):
     return ''
 
-  def logError(self, component, status, output, error):
+  def logError(self, component, status, output, error, logErrorFlag = False):
+    '''Log that a command may have failed
+       - executeShellCommand() already logs stdout and stderr, so only pass logErrorFlag
+         when it was called with logOutputflg = False'''
     if status:
       exitstr = ' exit code ' + str(status)
     else:
       exitstr = 'exit code 0'
     self.logWrite('Possible ERROR while running %s:%s\n' % (component, exitstr))
-    if output:
-      self.logWrite('stdout:\n' + output)
-    if error:
-      self.logWrite('stderr:\n' + error)
+    if logErrorFlag:
+      if output:
+        self.logWrite('stdout:\n' + output)
+      if error:
+        self.logWrite('stderr:\n' + error)
 
   def executeTest(self, test, args = [], kargs = {}):
     '''Prints the function and class information for the test and then runs the test'''
@@ -474,7 +478,7 @@ class Configure(script.Script):
   def preprocess(self, codeStr, timeout = 600.0):
     def report(command, status, output, error):
       if error or status:
-        self.logError('preprocessor', status, output, error)
+        self.logError('preprocessor', status, output, error, logErrorFlag = True)
         self.logWrite('Source:\n'+self.getCode(codeStr))
 
     command = self.getPreprocessorCmd()
