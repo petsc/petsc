@@ -88,6 +88,8 @@
 ## PC
 
 - Add `PCGAMGSetProlongatorFilter()` and `PCGAMGGetProlongatorFilter()` to set/get the threshold for filtering small entries from the prolongator in `PCGAMG`
+- `PCGAMGSetThresholdScale()` now requires its argument to be in [0,1]
+- `PCGAMGSetThreshold()` now requires each threshold value to be less than 1; negative values still mean keeping even zero entries in the graph. It is also now `Logically Collective` (checked in debug builds), matching `PCGAMGSetThresholdScale()`
 - Add `PCAIR` and `PCPFLAREINV` manual pages, generated from the PFLARE sources when the documentation is built
 - Add `PCParametersInitialize`
 - Fix `PCMG` to honor `PCSetUseAmat(pc, PETSC_FALSE)` at all levels

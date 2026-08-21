@@ -1109,10 +1109,10 @@ constructor (or the `-mat_type` from the command line). For instance,
   >   See `PCGAMGAGGSetNSmooths()`. The larger value produces a faster preconditioner to create and solve, but the convergence may be slower.
   > - `-pc_gamg_low_memory_threshold_filter (true|false)` Filter small matrix entries before coarsening the mesh.
   >   See `PCGAMGSetLowMemoryFilter()`.
-  > - `-pc_gamg_threshold tol` The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used. A
-  >   negative value means keeping even the locations with 0.0. See `PCGAMGSetThreshold()`
-  > - `-pc_gamg_threshold_scale scale` Set a scale factor applied to each coarser level when `-pc_gamg_low_memory_threshold_filter` is used.
-  >   See `PCGAMGSetThresholdScale()`.
+  > - `-pc_gamg_threshold tol` The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used; it
+  >   must be less than 1. A negative value means keeping even the locations with 0.0. See `PCGAMGSetThreshold()`
+  > - `-pc_gamg_threshold_scale scale` Set a scale factor, in [0,1], applied to each coarser level when
+  >   `-pc_gamg_low_memory_threshold_filter` is used. See `PCGAMGSetThresholdScale()`.
   > - `-pc_gamg_mat_coarsen_type (mis|hem|misk)` Algorithm used to coarsen the matrix graph. See `MatCoarsenSetType()`.
   > - `-pc_gamg_mat_coarsen_max_it it` Maximum HEM iterations to use. See `MatCoarsenSetMaximumIterations()`.
   > - `-pc_gamg_aggressive_mis_k k` the k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
