@@ -40,9 +40,10 @@ typedef struct gamg_TAG {
   PetscInt   data_cell_cols;
   PetscInt   orig_data_cell_rows;
   PetscInt   orig_data_cell_cols;
-  PetscReal *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
-  PetscReal *orig_data; /* cache data */
-  PetscReal  prolongator_filter;
+  PetscReal *data;                     /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
+  PetscReal *orig_data;                /* cache data */
+  PetscReal  prolongator_filter;       /* base threshold for filtering the prolongator on the finest level */
+  PetscReal  prolongator_filter_scale; /* per-level multiplier: effective threshold on level l is prolongator_filter * prolongator_filter_scale^l */
 
   struct _PCGAMGOps *ops;
   char              *gamg_type_name;

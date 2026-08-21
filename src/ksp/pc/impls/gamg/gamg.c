@@ -1944,9 +1944,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscCall(PetscNew(&pc_gamg->ops));
 
   /* these should be in subctx but repartitioning needs simple arrays */
-  pc_gamg->prolongator_filter = 0.0;
-  pc_gamg->data_sz            = 0;
-  pc_gamg->data               = NULL;
+  pc_gamg->prolongator_filter       = 0.0;
+  pc_gamg->prolongator_filter_scale = 1.0;
+  pc_gamg->data_sz                  = 0;
+  pc_gamg->data                     = NULL;
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;

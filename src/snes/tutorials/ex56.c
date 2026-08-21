@@ -595,7 +595,7 @@ int main(int argc, char **args)
     nsize: 4
     requires: !single
     filter: sed "s/iterations 9/iterations 8/"
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_type cg -ksp_rtol 1.e-4 -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_threshold 0.001 -ksp_converged_reason -use_mat_nearnullspace true -petscpartitioner_type simple -snes_type ksponly -pc_gamg_low_memory_threshold_filter -pc_gamg_prolongator_filter 0.1 -run_type 1 -max_conv_its 3 -my_dm_view
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -petscpartitioner_simple_process_grid 2,2,1 -petscspace_degree 2 -snes_max_it 1 -ksp_type cg -ksp_rtol 1.e-4 -pc_type gamg -pc_gamg_coarse_eq_limit 10 -pc_gamg_threshold 0.001 -ksp_converged_reason -use_mat_nearnullspace true -petscpartitioner_type simple -snes_type ksponly -pc_gamg_low_memory_threshold_filter -pc_gamg_prolongator_filter 0.1 -pc_gamg_prolongator_filter_scale 0.5 -run_type 1 -max_conv_its 3 -my_dm_view
     timeoutfactor: 2
 
 TEST*/
