@@ -48,7 +48,7 @@ class Configure(config.package.GNUPackage):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand(os.path.join('.',self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
+      config.base.Configure.executeShellCommand(os.path.join('.',self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
       try:
@@ -75,12 +75,12 @@ class Configure(config.package.GNUPackage):
       if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
       else: pmake = self.make.make+' '+self.makerulename+' '
 
-      output2,err2,ret2  = config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand(pmake+' V=1 all', cwd=self.packageDir, timeout=6000, log = self.log)
+      config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
+      config.base.Configure.executeShellCommand(pmake+' V=1 all', cwd=self.packageDir, timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
+      config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
       raise RuntimeError('Error running make; make install on '+self.PACKAGE)
-    self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
+    self.postInstall(conffile)
     return self.installDir

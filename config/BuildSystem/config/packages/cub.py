@@ -34,9 +34,9 @@ class Configure(config.package.Package):
     cpstr = ' mkdir -p '+incDir+' && cp -r '+os.path.join(self.packageDir,'cub')+' '+incDir
     try:
       self.logPrintBox('Copying CUB; this may take several seconds')
-      output,err,ret = config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
+      config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
     except RuntimeError as e:
       self.logPrint('Error executing "'+cpstr+'": '+str(e))
       raise RuntimeError('Error copying CUB')
-    self.postInstall(output+err,'petsc.mk')
+    self.postInstall('petsc.mk')
     return self.installDir

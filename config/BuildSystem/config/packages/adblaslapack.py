@@ -34,13 +34,13 @@ class Configure(config.package.Package):
 
     if self.installNeeded('Makefile.inc'):
       self.logPrintBox('Configuring, compiling and installing adblaslapack; this may take several seconds')
-      output1,err1,ret1  = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'all'], cwd=os.path.join(self.packageDir,'src'), timeout=60, log = self.log)
+      config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'all'], cwd=os.path.join(self.packageDir,'src'), timeout=60, log = self.log)
       libdir = self.libDir
       includedir = os.path.join(self.installDir, 'lib')
-      output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
+      config.package.Package.executeShellCommandSeq([
         ['mkdir', '-p', libdir, includedir],
         ['cp', '-f', os.path.join('src', 'libadblaslapack.a'), libdir],
         ['cp', '-f', os.path.join('include', 'adblaslapack.hpp'), includedir],
         ], cwd=self.packageDir, timeout=60, log = self.log)
-      self.postInstall(output1+err1+output2+err2,'Makefile.inc')
+      self.postInstall('Makefile.inc')
     return self.installDir

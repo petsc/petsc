@@ -69,11 +69,11 @@ class Configure(config.package.GNUPackage):
     if self.installNeeded('glvis_config.mk'):
       try:
         self.logPrintBox('Compiling GLVis; this may take several minutes')
-        output0,err0,ret0 = config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' serial '+mfem_flags, cwd=self.packageDir+'/mfem', timeout=2500, log = self.log)
-        output1,err1,ret1 = config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' GLVIS_CONFIG_MK=glvis_config.mk', cwd=self.packageDir, timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' serial '+mfem_flags, cwd=self.packageDir+'/mfem', timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand('make clean && '+self.make.make_jnp+' GLVIS_CONFIG_MK=glvis_config.mk', cwd=self.packageDir, timeout=2500, log = self.log)
         installBinDir = os.path.join(self.installDir,'bin')
         self.logPrintBox('Installing GLVis; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommandSeq(
+        config.package.Package.executeShellCommandSeq(
           ['mkdir -p '+installBinDir,
            'cp -f glvis '+installBinDir+'/.',
            'chmod 750 '+installBinDir+'/glvis'
@@ -81,6 +81,6 @@ class Configure(config.package.GNUPackage):
       except RuntimeError as e:
         self.logPrint('Error running make on GLVis: '+str(e))
         raise RuntimeError('Error running make on GLVis')
-      self.postInstall(output0+err0+output1+err1+output2+err2,'glvis_config.mk')
+      self.postInstall('glvis_config.mk')
 
     return self.installDir

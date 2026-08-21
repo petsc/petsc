@@ -776,11 +776,8 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     self.log.write('Do not need to rebuild '+self.PACKAGE+'\n')
     return 0
 
-  def postInstall(self, output, mkfile):
-    '''Dump package build log into configure.log - also copy package config to prevent unnecessary rebuild'''
-    self.log.write('********Output of running make on '+self.PACKAGE+' follows *******\n')
-    self.log.write(output)
-    self.log.write('********End of Output of running make on '+self.PACKAGE+' *******\n')
+  def postInstall(self, mkfile):
+    '''Copy package config to prevent unnecessary rebuild'''
     subconfDir = os.path.join(self.confDir, 'lib', 'petsc', 'conf')
     if not os.path.isdir(subconfDir):
       os.makedirs(subconfDir)
@@ -1708,8 +1705,8 @@ Brief overview of how BuildSystem\'s configuration of packages works.
         This helper method should be run at the beginning of an Install implementation,
         to determine whether an install is actually needed.
     The other useful helper method provided by the parent class is
-       postInstall(self, output,mkfile):
-         This method will simply save string output in the file with name mkfile in self.confDir.
+       postInstall(self, mkfile):
+         This method will simply save the file with name mkfile in self.confDir.
          Storing package configuration parameters there will enable installNeeded to do its job
          next time this package is being configured.
 
@@ -1917,7 +1914,7 @@ class GNUPackage(Package):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand(os.path.join(dot, self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
+      config.base.Configure.executeShellCommand(os.path.join(dot, self.configureName)+' '+args, cwd=self.packageDir, timeout=2000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running configure on ' + self.PACKAGE+': '+str(e))
       try:
@@ -1933,14 +1930,14 @@ class GNUPackage(Package):
       if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
       else: pmake = self.make.make+' '+self.makerulename+' '
 
-      output2,err2,ret2  = config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
-      output3,err3,ret3  = config.base.Configure.executeShellCommand(pmake, cwd=self.packageDir, timeout=6000, log = self.log)
+      config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
+      config.base.Configure.executeShellCommand(pmake, cwd=self.packageDir, timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
+      config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
       raise RuntimeError('Error running make; make install on '+self.PACKAGE)
-    self.postInstall(output1+err1+output2+err2+output3+err3+output4+err4, conffile)
+    self.postInstall(conffile)
     return self.installDir
 
   def Bootstrap(self,command):
@@ -2116,7 +2113,7 @@ class CMakePackage(Package):
 
       try:
         self.logPrintBox('Configuring '+self.PACKAGE+' with CMake; this may take several minutes')
-        output1,err1,ret1  = config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
+        config.package.Package.executeShellCommand(self.cmake.cmake+' .. '+args, cwd=folder, timeout=900, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error configuring '+self.PACKAGE+' with CMake '+str(e))
         try:
@@ -2131,12 +2128,12 @@ class CMakePackage(Package):
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
         if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
         else: pmake = self.make.make+' '+self.makerulename+' '
-        output2,err2,ret2  = config.package.Package.executeShellCommand(pmake, cwd=folder, timeout=3000, log = self.log)
-        output3,err3,ret3  = config.package.Package.executeShellCommand(self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
+        config.package.Package.executeShellCommand(pmake, cwd=folder, timeout=3000, log = self.log)
+        config.package.Package.executeShellCommand(self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
         raise RuntimeError('Error running make on  '+self.PACKAGE)
-      self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
+      self.postInstall(conffile)
       # CMake has no option to set the library name to .lib instead of .a so rename libraries
       if config.setCompilers.Configure.isWindows(self.setCompilers.AR, self.log):
         import pathlib

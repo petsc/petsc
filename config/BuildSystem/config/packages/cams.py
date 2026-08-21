@@ -43,12 +43,12 @@ class Configure(config.package.Package):
     if self.installNeeded('make.inc'):
       self.logPrintBox('Configuring, compiling and installing cams; this may take several seconds')
       try:
-        output1,err1,ret1 = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'lib'], cwd=self.packageDir, timeout=250, log=self.log)
+        config.package.Package.executeShellCommand(self.make.make_jnp_list + ['clean', 'lib'], cwd=self.packageDir, timeout=250, log=self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on CAMS: '+str(e))
       try:
-        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp_list + ['install'], cwd=self.packageDir, timeout=250, log=self.log)
+        config.package.Package.executeShellCommand(self.make.make_jnp_list + ['install'], cwd=self.packageDir, timeout=250, log=self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running install on CAMS: '+str(e))
-      self.postInstall(output1+err1+output2+err2, 'make.inc')
+      self.postInstall('make.inc')
     return self.installDir

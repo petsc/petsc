@@ -70,15 +70,15 @@ class Configure(config.package.Package):
     if self.installNeeded(makefile):
       try:
         self.logPrintBox('Compiling HPL dmatgen; this may take several minutes')
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+srcDir+' && make clean && make libhpl.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=250, log = self.log)
+        config.package.Package.executeShellCommand('cd '+srcDir+' && make clean && make libhpl.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=250, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on HPL dmatgen: '+str(e))
       self.logPrintBox('Installing HPL dmatgen; this may take several minutes')
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=25, log=self.log)
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=25, log=self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(srcDir,'libhpl.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include', '*.h')+' '+includeDir, timeout=60, log = self.log)
-      self.postInstall(output1+err1+output2+err2,makefile)
+      config.package.Package.executeShellCommand('cp -f '+os.path.join(srcDir,'libhpl.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
+      config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'include', '*.h')+' '+includeDir, timeout=60, log = self.log)
+      self.postInstall(makefile)
     return self.installDir
 
   def configureLibrary(self):

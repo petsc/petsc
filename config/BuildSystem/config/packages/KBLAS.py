@@ -96,12 +96,12 @@ class Configure(config.package.Package):
 
     if self.installNeeded('make.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
+        config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         pass
       try:
         self.logPrintBox('Compiling KBLAS; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommand('cd src && ' + self.make.make_jnp, cwd=self.packageDir, timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand('cd src && ' + self.make.make_jnp, cwd=self.packageDir, timeout=2500, log = self.log)
         libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing KBLAS; this may take several minutes')
@@ -113,5 +113,5 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         self.logPrint('Error running make on KBLAS: '+str(e))
         raise RuntimeError('Error running make on KBLAS')
-      self.postInstall(output1+err1+output2+err2,'make.inc')
+      self.postInstall('make.inc')
     return self.installDir

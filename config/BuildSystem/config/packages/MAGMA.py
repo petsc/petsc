@@ -186,14 +186,14 @@ class Configure(config.package.Package):
 
     if self.installNeeded('make.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
+        config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make clean on MAGMA: '+str(e))
         raise RuntimeError('Error running make clean on MAGMA')
       try:
         self.logPrintBox('Compiling MAGMA; this may take several minutes')
         codegen = ' codegen="' + sys.executable + ' tools/codegen.py"' # as of 2.6.1 they use /usr/bin/env python inside tools/codegen.py
-        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp + self.makerulename + codegen, cwd=self.packageDir, timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand(self.make.make_jnp + self.makerulename + codegen, cwd=self.packageDir, timeout=2500, log = self.log)
         # magma install is broken when fortran bindings are not requested
         dummymod = os.path.join(self.packageDir,'include','magma_petsc_dummy.mod')
         if not fcbindings and not os.path.isfile(dummymod):
@@ -214,7 +214,7 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         self.logPrint('Error running make on MAGMA: '+str(e))
         raise RuntimeError('Error running make on MAGMA')
-      self.postInstall(output1+err1+output2+err2,'make.inc')
+      self.postInstall('make.inc')
     return self.installDir
 
   def configureLibrary(self):

@@ -110,7 +110,7 @@ lapack_qhlib:\n\
 
     try:
       self.logPrintBox('Compiling F2CBLASLAPACK; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommandSeq([
+      config.package.Package.executeShellCommandSeq([
         self.make.make_jnp_list + ['-f', 'tmpmakefile', 'cleanblaslapck', 'cleanlib'],
         self.make.make_jnp_list + ['-f', 'tmpmakefile'] + make_target.split(),
         ], cwd=self.packageDir, timeout=2500, log = self.log)
@@ -119,12 +119,12 @@ lapack_qhlib:\n\
       raise RuntimeError('Error running make on '+self.packageDir)
     try:
       self.logPrintBox('Installing F2CBLASLAPACK; this may take several minutes')
-      output2,err2,ret  = config.package.Package.executeShellCommandSeq([
+      config.package.Package.executeShellCommandSeq([
         ['mkdir', '-p', libdir],
         ['cp', '-f', 'libf2clapack.' + self.setCompilers.AR_LIB_SUFFIX, 'libf2cblas.' + self.setCompilers.AR_LIB_SUFFIX, libdir],
         ], cwd=self.packageDir, timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+self.packageDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+self.packageDir+' libraries')
-    self.postInstall(output1+err1+output2+err2,'tmpmakefile')
+    self.postInstall('tmpmakefile')
     return self.installDir
