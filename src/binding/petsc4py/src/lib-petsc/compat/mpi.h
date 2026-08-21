@@ -14,7 +14,7 @@ typedef int PETSC4PY_MPI_Fint;
 #define MPI_Fint PETSC4PY_MPI_Fint
 
 #undef  MPI_Comm_c2f
-#define MPI_Comm_c2f(comm) ((MPI_Fint)MPI_Comm_toint(comm))
+#define MPI_Comm_c2f MPI_Comm_toint
 
 #endif /* MPI_ABI_VERSION >= 1 */
 
