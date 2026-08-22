@@ -176,10 +176,9 @@ class Script(logger.Logger):
         err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except Exception as e:
-        if hasattr(e,'message') and hasattr(e,'errno'):
-          return ('', e.message, e.errno)
-        else:
-          return ('', str(e),1)
+        # errno is absent on most exceptions and may be None on OSError; the status is
+        # tested for truth by defaultCheckCommand() so it must never be falsy here
+        return ('', str(e), getattr(e, 'errno', None) or 1)
       output += out
       error += err
       if ret:
