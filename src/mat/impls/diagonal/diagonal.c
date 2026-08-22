@@ -420,7 +420,7 @@ static PetscErrorCode MatANorm_Diagonal_Local(Mat A, Vec x, PetscReal *val)
   if (n > 0) PetscCall(PetscLogFlops(3.0 * n));
   PetscCall(VecRestoreArrayRead(x, &xa));
   PetscCall(VecRestoreArrayRead(ctx->diag, &wa));
-  PetscCheck(PetscAbsReal(PetscImaginaryPart(sum)) < 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix argument is not Hermitian (diagonal has nonzero imaginary parts)");
+  PetscCheck(PetscAbsReal(PetscImaginaryPart(sum)) <= 100 * PETSC_MACHINE_EPSILON * PetscMax(1.0, PetscAbsScalar(sum)), PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Matrix argument is not Hermitian (diagonal has nonzero imaginary parts)");
   *val = PetscRealPart(sum);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
