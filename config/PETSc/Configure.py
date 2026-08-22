@@ -1054,11 +1054,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
         try:
           import inspect
 
-          calling_func_stack = inspect.stack()[1]
-          if sys.version_info >= (3, 5):
-            func_name = calling_func_stack.function
-          else:
-            func_name = calling_func_stack[3]
+          func_name = inspect.stack()[1].function
         except:
           func_name = 'Unknown'
         self.fmt_str = func_name + '(): {}'
