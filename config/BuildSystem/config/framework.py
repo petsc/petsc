@@ -1305,7 +1305,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Set up some threads to fetch the enclosures
     for i in range(numThreads):
       worker = Thread(target = processChildren, args = (i, todo,))
-      worker.setDaemon(True)
+      worker.daemon = True
       worker.start()
 
     while numChildren > 0:

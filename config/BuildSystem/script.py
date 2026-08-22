@@ -238,7 +238,7 @@ class Script(logger.Logger):
           def __init__(self):
             threading.Thread.__init__(self)
             self.name = 'Shell Command'
-            self.setDaemon(1)
+            self.daemon = True
           def run(self):
             (self.output, self.error, self.status) = ('', '', -1) # So these fields exist even if command fails with no output
             (self.output, self.error, self.status) = Script.runShellCommandSeq(commandseq, log, cwd, env)
