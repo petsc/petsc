@@ -1249,21 +1249,24 @@ cdef class PC(Object):
         if ND_Pi_Full is not None: ND_full_mat = ND_Pi_Full.mat
         cdef PetscInt idim = asInt(dim)
         cdef PetscMat *RT_Pi_mat = NULL
-        if RT_Pi is not None:
-            PetscMalloc(<size_t>dim*sizeof(PetscMat), &RT_Pi_mat)
-            assert len(RT_Pi) == dim
-            for i in range(dim):
-                RT_Pi_mat[i] = (<Mat?>RT_Pi[i]).mat
         cdef PetscMat *ND_Pi_mat = NULL
-        if ND_Pi is not None:
-            PetscMalloc(<size_t>dim*sizeof(PetscMat), &ND_Pi_mat)
-            assert len(ND_Pi) == dim
-            for i in range(dim):
-                ND_Pi_mat[dim] = (<Mat?>ND_Pi[i]).mat
-        CHKERR (PCHYPRESetInterpolations(self.pc, idim, RT_full_mat, RT_Pi_mat,
-                                         ND_full_mat, ND_Pi_mat))
-        CHKERR (PetscFree(RT_Pi_mat))
-        CHKERR (PetscFree(ND_Pi_mat))
+        try:
+            if RT_Pi is not None:
+                CHKERR (PetscMalloc(<size_t>dim*sizeof(PetscMat), &RT_Pi_mat))
+                assert len(RT_Pi) == idim
+                for i in range(idim):
+                    RT_Pi_mat[i] = (<Mat?>RT_Pi[i]).mat
+            if ND_Pi is not None:
+                CHKERR (PetscMalloc(<size_t>dim*sizeof(PetscMat), &ND_Pi_mat))
+                assert len(ND_Pi) == idim
+                for i in range(idim):
+                    ND_Pi_mat[i] = (<Mat?>ND_Pi[i]).mat
+            CHKERR (PCHYPRESetInterpolations(self.pc, idim,
+                                             RT_full_mat, RT_Pi_mat,
+                                             ND_full_mat, ND_Pi_mat))
+        finally:
+            CHKERR (PetscFree(RT_Pi_mat))
+            CHKERR (PetscFree(ND_Pi_mat))
 
     def setHYPRESetEdgeConstantVectors(self, Vec ozz, Vec zoz, Vec zzo=None) -> None:
         """Set the representation of the constant vector fields in the edge element basis.
