@@ -21,7 +21,6 @@ However, in this case, rather than using the configure objects from the existing
 PETSc, we contribute objects to the PETSc which will be built.
 
 '''
-from __future__ import generators
 import config.base
 
 import re

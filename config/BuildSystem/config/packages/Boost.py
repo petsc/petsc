@@ -1,4 +1,3 @@
-from __future__ import generators
 import config.package
 import sysconfig
 from pathlib import Path

@@ -54,7 +54,6 @@ what's tested is actually `z in y'.
 # - Raymond Hettinger added a number of speedups and other
 #   improvements.
 
-from __future__ import generators
 try:
     from itertools import ifilter, ifilterfalse
 except ImportError:

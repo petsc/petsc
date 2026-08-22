@@ -1,5 +1,3 @@
-from __future__ import generators
-from __future__ import print_function
 from functools import reduce
 
 class DirectedGraph(object):

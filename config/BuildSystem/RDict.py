@@ -52,8 +52,6 @@
         Creates a dictionary in the current directory with a parent, and removes
         the given key. If "parent" is "None", no parent is assigned.
 '''
-from __future__ import print_function
-from __future__ import absolute_import
 try:
   import project          # This is necessary for us to create Project objects on load
   import build.buildGraph # This is necessary for us to create BuildGraph objects on load

@@ -1,6 +1,4 @@
 '''This module is meant to provide support for information and help systems based upon RDict.'''
-from __future__ import print_function
-from __future__ import absolute_import
 import logger
 import sys
 

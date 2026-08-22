@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
 import sys
 if not hasattr(sys, 'version_info'):
   print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
