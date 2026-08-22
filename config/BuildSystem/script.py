@@ -142,7 +142,7 @@ class Script(logger.Logger):
     else:
       import importlib.util
       spec = importlib.util.spec_from_file_location(name, root)
-      module = importlib.util.module_from_spec(spec) # novermin
+      module = importlib.util.module_from_spec(spec)
       sys.modules[name] = module
       spec.loader.exec_module(module)
 
