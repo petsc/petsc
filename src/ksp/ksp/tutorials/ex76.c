@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscViewer     viewer;
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
-  PetscBool       flg, set, transpose = PETSC_FALSE;
+  PetscBool       flg, set, transpose = PETSC_FALSE, skip_set_from_options = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -152,7 +152,8 @@ int main(int argc, char **args)
   (void)share;
 #endif
   PetscCall(MatDestroy(&aux));
-  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-skip_set_from_options", &skip_set_from_options, NULL));
+  if (!skip_set_from_options) PetscCall(KSPSetFromOptions(ksp));
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &flg));
   if (flg) {
     flg = PETSC_FALSE;
@@ -245,7 +246,7 @@ int main(int argc, char **args)
 
       PetscCall(KSPGetConvergedReason(ksp, reason));
       PetscCall(KSPGetTotalIterations(ksp, iterations));
-      PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
+      if (!skip_set_from_options) PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
       PetscCall(KSPSetFromOptions(ksp));
       flg = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
@@ -295,7 +296,13 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
       iterations[1] -= iterations[0];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve%s() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", (transpose ? "Transpose" : ""), KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
+      if (!skip_set_from_options) {
+        PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve%s() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", (transpose ? "Transpose" : ""), KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
+      } else {
+        reason[0] = reason[1];
+        PetscCall(PetscOptionsClearValue(NULL, "-ksp_converged_reason"));
+        PetscCall(KSPSetFromOptions(ksp));
+      }
       PetscCall(PetscObjectStateIncrease((PetscObject)A));
       if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
       PetscCall(PCSetFromOptions(pc));
@@ -305,6 +312,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 2));
       iterations[2] -= iterations[0] + iterations[1];
+      if (skip_set_from_options) iterations[0] = iterations[1];
       PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve%s() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", (transpose ? "Transpose" : ""), KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[2]);
       PetscCall(VecDestroy(&b));
       PetscCall(ISDestroy(&is));
@@ -441,6 +449,10 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_share.out
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -mat_type {{aij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp {{false true}shared output} -successive_solves
+      test:
+        suffix: skip_set_from_options
+        output_file: output/ex76_geneo_share.out
+        args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -skip_set_from_options
       test:
         suffix: geneo_share_cholesky_matstructure
         output_file: output/ex76_geneo_share.out
