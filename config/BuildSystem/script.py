@@ -204,15 +204,18 @@ class Script(logger.Logger):
 
   @staticmethod
   def executeShellCommand(command, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, env=None, logOutputflg = True, threads = 0):
-    '''Execute a shell command returning the output, and optionally provide a custom error checker
-       - This returns a tuple of the (output, error, statuscode)'''
-    '''The timeout is ignored unless the threads values is nonzero'''
+    '''Execute a shell command and return the tuple (stdout, stderr, status-code)
+       Single command form of executeShellCommandSeq(); see it for the checkCommand and timeout behavior'''
     return Script.executeShellCommandSeq([command], checkCommand=checkCommand, timeout=timeout, log=log, lineLimit=lineLimit, cwd=cwd, env=env, logOutputflg = logOutputflg, threads = threads)
 
   @staticmethod
   def executeShellCommandSeq(commandseq, checkCommand = None, timeout = 600.0, log = None, lineLimit = 0, cwd=None, env=None, logOutputflg = True, threads = 0):
-    '''Execute a sequence of shell commands (an && chain) returning the output, and optionally provide a custom error checker
-       - This returns a tuple of the (output, error, statuscode)'''
+    '''Execute a sequence of shell commands, each in its own process, and return the tuple (stdout, stderr, status-code)
+       Each command gets the same cwd and env; shell state such as "cd" does not carry over between them
+       The stdout and stderr of all the commands are concatenated; execution stops at the first nonzero status code
+       A RuntimeError is raised when the status code is nonzero
+       Passing a custom checkCommand replaces this check; use Script.passCheckCommand() to skip it
+       The timeout is ignored unless the threads value is nonzero'''
     if not checkCommand:
       checkCommand = Script.defaultCheckCommand
     if log is None:
