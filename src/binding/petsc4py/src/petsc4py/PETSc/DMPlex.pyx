@@ -2349,7 +2349,7 @@ cdef class DMPlex(DM):
 
     #
 
-    def getCellCoordinates(self, cell: int) -> tuple[bool, ArrayScalar]:
+    def getPlexCellCoordinates(self, cell: int) -> tuple[bool, ArrayScalar]:
         """Get coordinates for a cell, taking into account periodicity.
 
         Not collective.
@@ -2369,6 +2369,7 @@ cdef class DMPlex(DM):
         See Also
         --------
         DMPlex, DM.getCoordinateSection, DM.getCoordinates
+        petsc.DMPlexGetCellCoordinates
         petsc.DMPlexComputeCellGeometryFVM
 
         """
