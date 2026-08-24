@@ -373,7 +373,7 @@ int main(int argc, char **args)
         suffix: geneo_block_splitting
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-15.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[5-9]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
-        args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij}shared output} -successive_solves
+        args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij sbaij}shared output} -successive_solves -pc_hpddm_levels_1_st_pc_factor_mat_ordering_type rcm
       test:
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
