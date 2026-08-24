@@ -107,7 +107,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
   PetscObjectOptionsBegin((PetscObject)ts);
   if (((PetscObject)ts)->type_name) defaultType = ((PetscObject)ts)->type_name;
   else defaultType = ifun ? TSBEULER : TSEULER;
-  PetscCall(PetscOptionsFList("-ts_type", "TS method", "TSSetType", TSList, defaultType, typeName, 256, &opt));
+  PetscCall(PetscOptionsFList("-ts_type", "TS method", "TSSetType", TSList, defaultType, typeName, sizeof(typeName), &opt));
   if (opt) PetscCall(TSSetType(ts, typeName));
   else PetscCall(TSSetType(ts, defaultType));
 

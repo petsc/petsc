@@ -89,7 +89,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
     PetscViewerAndFormat *vf;
     char                  interval_key[1024];
 
-    PetscCall(PetscSNPrintf(interval_key, sizeof interval_key, "%s_interval", name));
+    PetscCall(PetscSNPrintf(interval_key, sizeof(interval_key), "%s_interval", name));
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     vf->view_interval = 1;
     PetscCall(PetscOptionsGetInt(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, interval_key, &vf->view_interval, NULL));

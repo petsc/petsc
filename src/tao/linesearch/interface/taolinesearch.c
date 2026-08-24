@@ -483,7 +483,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   PetscObjectOptionsBegin((PetscObject)ls);
   if (((PetscObject)ls)->type_name) default_type = ((PetscObject)ls)->type_name;
   /* Check for type from options */
-  PetscCall(PetscOptionsFList("-tao_ls_type", "Tao Line Search type", "TaoLineSearchSetType", TaoLineSearchList, default_type, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-tao_ls_type", "Tao Line Search type", "TaoLineSearchSetType", TaoLineSearchList, default_type, type, sizeof(type), &flg));
   if (flg) {
     PetscCall(TaoLineSearchSetType(ls, type));
   } else if (!((PetscObject)ls)->type_name) {

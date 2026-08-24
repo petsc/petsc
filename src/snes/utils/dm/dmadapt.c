@@ -497,7 +497,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 
   PetscFunctionBegin;
   PetscObjectOptionsBegin((PetscObject)adaptor);
-  PetscCall(PetscOptionsFList("-adaptor_type", "DMAdaptor", "DMAdaptorSetType", DMAdaptorList, defName, typeName, 1024, &flg));
+  PetscCall(PetscOptionsFList("-adaptor_type", "DMAdaptor", "DMAdaptorSetType", DMAdaptorList, defName, typeName, sizeof(typeName), &flg));
   if (flg) PetscCall(DMAdaptorSetType(adaptor, typeName));
   else if (!((PetscObject)adaptor)->type_name) PetscCall(DMAdaptorSetType(adaptor, defName));
   PetscCall(PetscOptionsEnum("-adaptor_criterion", "Criterion used to drive adaptation", "", DMAdaptationCriteria, (PetscEnum)criterion, (PetscEnum *)&criterion, &flg));

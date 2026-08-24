@@ -196,7 +196,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscCall(MatColoringRegisterAll());
   PetscObjectOptionsBegin((PetscObject)mc);
   if (((PetscObject)mc)->type_name) deft = ((PetscObject)mc)->type_name;
-  PetscCall(PetscOptionsFList("-mat_coloring_type", "The coloring method used", "MatColoringSetType", MatColoringList, deft, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_coloring_type", "The coloring method used", "MatColoringSetType", MatColoringList, deft, type, sizeof(type), &flg));
   if (flg) {
     PetscCall(MatColoringSetType(mc, type));
   } else if (!((PetscObject)mc)->type_name) {

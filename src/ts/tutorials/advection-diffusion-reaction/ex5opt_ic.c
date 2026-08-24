@@ -34,7 +34,7 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, Vec U, AppCtx *appctx)
 
   PetscFunctionBegin;
   PetscCall(VecDuplicate(U, &Uob));
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "ex5opt.ob"));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "ex5opt.ob"));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer));
   PetscCall(VecLoad(Uob, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
@@ -70,7 +70,7 @@ PetscErrorCode GenerateOBs(TS ts, Vec U, AppCtx *appctx)
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(TSSolve(ts, U));
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "ex5opt.ob"));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "ex5opt.ob"));
   PetscCall(OutputBIN(da, filename, &viewer));
   PetscCall(VecView(U, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
@@ -352,7 +352,7 @@ PetscErrorCode FormFunctionAndGradient(Tao tao, Vec P, PetscReal *f, Vec G, Pets
   *f = 0;
 
   PetscCall(TSSolve(appctx->ts, appctx->U));
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "ex5opt.ob"));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "ex5opt.ob"));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer));
   PetscCall(VecLoad(SDiff, viewer));
   PetscCall(PetscViewerDestroy(&viewer));

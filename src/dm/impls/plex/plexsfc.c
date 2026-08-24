@@ -314,7 +314,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     PetscCall(PetscSFSetGraph(face_sfs[num_directions], pEnd - pStart, inum_faces, faces, PETSC_COPY_VALUES, leaf, PETSC_OWN_POINTER));
     {
       char face_sf_name[PETSC_MAX_PATH_LEN];
-      PetscCall(PetscSNPrintf(face_sf_name, sizeof face_sf_name, "Z-order Isoperiodic Faces #%" PetscInt_FMT, num_directions));
+      PetscCall(PetscSNPrintf(face_sf_name, sizeof(face_sf_name), "Z-order Isoperiodic Faces #%" PetscInt_FMT, num_directions));
       PetscCall(PetscObjectSetName((PetscObject)face_sfs[num_directions], face_sf_name));
     }
 
@@ -1069,7 +1069,7 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
     PetscCall(PetscSFSetGraph(new_face_sfs[f], new_npoints, nface, new_local, PETSC_OWN_POINTER, new_remote, PETSC_OWN_POINTER));
     {
       char new_face_sf_name[PETSC_MAX_PATH_LEN];
-      PetscCall(PetscSNPrintf(new_face_sf_name, sizeof new_face_sf_name, "Migrated Isoperiodic Faces #%" PetscInt_FMT, f));
+      PetscCall(PetscSNPrintf(new_face_sf_name, sizeof(new_face_sf_name), "Migrated Isoperiodic Faces #%" PetscInt_FMT, f));
       PetscCall(PetscObjectSetName((PetscObject)new_face_sfs[f], new_face_sf_name));
     }
   }

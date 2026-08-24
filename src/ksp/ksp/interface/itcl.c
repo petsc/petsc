@@ -361,7 +361,7 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 PetscErrorCode KSPSetFromOptions(KSP ksp)
 {
   const char *convtests[] = {"default", "skip", "lsqr"}, *prefix;
-  char        type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
+  char        type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscBool   flg, flag, reuse, set;
   PetscInt    indx, model[2] = {0, 0}, nmax, max_it;
   KSPNormType normtype;
@@ -378,7 +378,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
-  PetscCall(PetscOptionsFList("-ksp_type", "Krylov method", "KSPSetType", KSPList, (char *)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES), type, 256, &flg));
+  PetscCall(PetscOptionsFList("-ksp_type", "Krylov method", "KSPSetType", KSPList, (char *)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES), type, sizeof(type), &flg));
   if (flg) PetscCall(KSPSetType(ksp, type));
   /*
     Set the type if it was never set.
@@ -459,10 +459,10 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   if (set) PetscCall(KSPSetConvergedNegativeCurvature(ksp, flag));
 
   PetscCall(PetscOptionsBool("-ksp_knoll", "Use preconditioner applied to b for initial guess", "KSPSetInitialGuessKnoll", ksp->guess_knoll, &ksp->guess_knoll, NULL));
-  PetscCall(PetscOptionsFList("-ksp_guess_type", "Initial guess in Krylov method", NULL, KSPGuessList, NULL, guesstype, 256, &flg));
+  PetscCall(PetscOptionsFList("-ksp_guess_type", "Initial guess in Krylov method", NULL, KSPGuessList, NULL, type, sizeof(type), &flg));
   if (flg) {
     PetscCall(KSPGetGuess(ksp, &ksp->guess));
-    PetscCall(KSPGuessSetType(ksp->guess, guesstype));
+    PetscCall(KSPGuessSetType(ksp->guess, type));
     PetscCall(KSPGuessSetFromOptions(ksp->guess));
   } else { /* old option for KSP */
     nmax = 2;

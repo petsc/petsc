@@ -193,7 +193,7 @@ PetscErrorCode PetscRegressorSetFromOptions(PetscRegressor regressor)
   if (((PetscObject)regressor)->type_name) default_type = ((PetscObject)regressor)->type_name;
   PetscObjectOptionsBegin((PetscObject)regressor);
   /* Check for type from options */
-  PetscCall(PetscOptionsFList("-regressor_type", "PetscRegressor type", "PetscRegressorSetType", PetscRegressorList, default_type, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-regressor_type", "PetscRegressor type", "PetscRegressorSetType", PetscRegressorList, default_type, type, sizeof(type), &flg));
   if (flg) {
     PetscCall(PetscRegressorSetType(regressor, type));
   } else if (!((PetscObject)regressor)->type_name) {

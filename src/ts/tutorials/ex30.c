@@ -1657,7 +1657,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
       char      convType[256];
       PetscBool flg;
       PetscOptionsBegin(comm, "", "Additional mesh options", "DMPLEX");
-      PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", __FILE__, DMList, DMPLEX, convType, 256, &flg));
+      PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", __FILE__, DMList, DMPLEX, convType, sizeof(convType), &flg));
       PetscOptionsEnd();
       if (flg) {
         DM dmConv;

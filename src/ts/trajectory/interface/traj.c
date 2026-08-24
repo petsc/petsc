@@ -628,7 +628,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems Pe
   else defaultType = TSTRAJECTORYBASIC;
 
   PetscCall(TSTrajectoryRegisterAll());
-  PetscCall(PetscOptionsFList("-ts_trajectory_type", "TSTrajectory method", "TSTrajectorySetType", TSTrajectoryList, defaultType, typeName, 256, &opt));
+  PetscCall(PetscOptionsFList("-ts_trajectory_type", "TSTrajectory method", "TSTrajectorySetType", TSTrajectoryList, defaultType, typeName, sizeof(typeName), &opt));
   if (opt) {
     PetscCall(TSTrajectorySetType(tj, ts, typeName));
   } else {

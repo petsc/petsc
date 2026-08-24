@@ -14,7 +14,6 @@ int main(int argc, char **args)
   PetscReal          norm, deflation = -1.0;
   PetscInt           m, M, N = 5, i;
   PetscMPIInt        rank, size;
-  const char        *deft = MATAIJ;
   PetscViewer        viewer;
   char               name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool          breakdown = PETSC_FALSE, flg;
@@ -36,7 +35,7 @@ int main(int argc, char **args)
   PetscCall(MatLoad(A, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, MATAIJ, type, sizeof(type), &flg));
   PetscOptionsEnd();
   if (flg) {
     PetscCall(PetscStrcmp(type, MATKAIJ, &flg));

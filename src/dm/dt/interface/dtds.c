@@ -335,7 +335,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
       PetscCall(PetscArraycpy(b->comps, ids, len));
     }
   }
-  PetscCall(PetscOptionsFList("-petscds_type", "Discrete System", "PetscDSSetType", PetscDSList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petscds_type", "Discrete System", "PetscDSSetType", PetscDSList, defaultType, name, sizeof(name), &flg));
   if (flg) {
     PetscCall(PetscDSSetType(prob, name));
   } else if (!((PetscObject)prob)->type_name) {

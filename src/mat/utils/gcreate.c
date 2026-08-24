@@ -288,10 +288,10 @@ PetscErrorCode MatSetFromOptions(Mat B)
     PetscCall(PetscLayoutSetBlockSize(B->cmap, newbs));
   }
 
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, PETSC_STATIC_ARRAY_LENGTH(type), &flg));
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, sizeof(type), &flg));
   if (flg) PetscCall(MatSetType(B, type));
   else if (!((PetscObject)B)->type_name) PetscCall(MatSetType(B, deft));
-  PetscCall(PetscOptionsFList("-mat_vec_type", "Vec type used by MatCreateVecs()", "MatSetVecType", VecList, B->defaultvectype, type, PETSC_STATIC_ARRAY_LENGTH(type), &flg));
+  PetscCall(PetscOptionsFList("-mat_vec_type", "Vec type used by MatCreateVecs()", "MatSetVecType", VecList, B->defaultvectype, type, sizeof(type), &flg));
   if (flg) PetscCall(MatSetVecType(B, type));
 
   if (newbs > 0) PetscTryTypeMethod(B, setblocksizes, newbs, newbs);

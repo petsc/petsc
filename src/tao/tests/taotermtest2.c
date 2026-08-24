@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsInt("-n", "Problem size", "", n, &n, NULL));
   PetscCall(PetscOptionsInt("-m", "Mapping matrix row size", "", m, &m, NULL));
   PetscCall(PetscOptionsReal("-diag_val", "Value of constant diagonal matrix", NULL, diag_val, &diag_val, NULL));
-  PetscCall(PetscOptionsFList("-mapping_mtype", "Mapping matrix type", "", MatList, mtype, typeName, 256, &opt));
+  PetscCall(PetscOptionsFList("-mapping_mtype", "Mapping matrix type", "", MatList, mtype, typeName, sizeof(typeName), &opt));
   PetscOptionsEnd();
 
   PetscCall(PetscNew(&ctx));

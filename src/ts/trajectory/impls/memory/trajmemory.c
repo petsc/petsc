@@ -388,7 +388,7 @@ static PetscErrorCode StackLoadAll(TSTrajectory tj, TS ts, Stack *stack, PetscIn
     PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Load stack from file\n"));
     PetscCall(PetscViewerASCIISubtractTab(tj->monitor, ((PetscObject)tj)->tablevel));
   }
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "%s/TS-STACK%06" PetscInt_FMT ".bin", tj->dirname, id));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s/TS-STACK%06" PetscInt_FMT ".bin", tj->dirname, id));
   PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj), filename, FILE_MODE_READ, &viewer));
   PetscCall(PetscViewerBinarySetSkipInfo(viewer, PETSC_TRUE));
   PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE));
@@ -437,7 +437,7 @@ static PetscErrorCode StackLoadLast(TSTrajectory tj, TS ts, Stack *stack, PetscI
   /* VecView writes to file two extra int's for class id and number of rows */
   off = -((stack->solution_only ? 0 : stack->numY) + 1) * (size * PETSC_BINARY_SCALAR_SIZE + 2 * PETSC_BINARY_INT_SIZE) - PETSC_BINARY_INT_SIZE - 2 * PETSC_BINARY_SCALAR_SIZE;
 
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "%s/TS-STACK%06" PetscInt_FMT ".bin", tj->dirname, id));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s/TS-STACK%06" PetscInt_FMT ".bin", tj->dirname, id));
   PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj), filename, FILE_MODE_READ, &viewer));
   PetscCall(PetscViewerBinarySetSkipInfo(viewer, PETSC_TRUE));
   PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE));
@@ -504,7 +504,7 @@ static PetscErrorCode LoadSingle(TSTrajectory tj, TS ts, Stack *stack, PetscInt 
     PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Load a single point from file\n"));
     PetscCall(PetscViewerASCIISubtractTab(tj->monitor, ((PetscObject)tj)->tablevel));
   }
-  PetscCall(PetscSNPrintf(filename, sizeof filename, "%s/TS-CPS%06" PetscInt_FMT ".bin", tj->dirname, id));
+  PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s/TS-CPS%06" PetscInt_FMT ".bin", tj->dirname, id));
   PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)tj), filename, FILE_MODE_READ, &viewer));
   PetscCall(PetscViewerBinarySetSkipInfo(viewer, PETSC_TRUE));
   PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_NATIVE));

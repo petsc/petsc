@@ -241,7 +241,7 @@ PetscErrorCode PetscFESetFromOptions(PetscFE fem)
   if (!PetscFERegisterAllCalled) PetscCall(PetscFERegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)fem);
-  PetscCall(PetscOptionsFList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petscfe_type", "Finite element space", "PetscFESetType", PetscFEList, defaultType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscFESetType(fem, name));
   else if (!((PetscObject)fem)->type_name) PetscCall(PetscFESetType(fem, defaultType));
   PetscCall(PetscOptionsBoundedInt("-petscfe_num_blocks", "The number of cell blocks to integrate concurrently", "PetscSpaceSetTileSizes", fem->numBlocks, &fem->numBlocks, NULL, 1));

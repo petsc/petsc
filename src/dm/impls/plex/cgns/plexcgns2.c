@@ -2116,7 +2116,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     for (PetscInt d = 0; d < coord_dim; d++) {
       const double exponents[] = {0, 1, 0, 0, 0};
       char         coord_name[64];
-      PetscCall(PetscSNPrintf(coord_name, sizeof coord_name, "Coordinate%c", 'X' + (int)d));
+      PetscCall(PetscSNPrintf(coord_name, sizeof(coord_name), "Coordinate%c", 'X' + (int)d));
       PetscCallCGNSWrite(cgp_coord_write(cgv->file_num, base, zone, CGNS_ENUMV(RealDouble), coord_name, &coord_ids[d]), dm, viewer);
       PetscCallCGNS(cg_goto(cgv->file_num, base, "Zone_t", zone, "GridCoordinates", 0, coord_name, 0, NULL));
       PetscCallCGNSWrite(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents), dm, viewer);
@@ -2349,7 +2349,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCallMPI(MPI_Exscan(&fs_owned, &fs_start, 1, MPIU_CGSIZE, MPI_SUM, comm));
       PetscCheck(fs_start + fs_owned <= fs_global, PETSC_COMM_SELF, PETSC_ERR_PLIB, "End range of point set (%" PRIdCGSIZE ") greater than global point set size (%" PRIdCGSIZE ")", fs_start + fs_owned, fs_global);
 
-      PetscCall(PetscSNPrintf(bc_name, sizeof bc_name, "FaceSet%" PetscInt_FMT, fsID));
+      PetscCall(PetscSNPrintf(bc_name, sizeof(bc_name), "FaceSet%" PetscInt_FMT, fsID));
       PetscCallCGNSWrite(cg_boco_write(cgv->file_num, base, zone, bc_name, CGNS_ENUMV(BCTypeNull), CGNS_ENUMV(PointList), fs_global, NULL, &BC), dm, viewer);
 
       PetscCall(PetscMalloc1(fs_owned, &fs_pnts_cg));
@@ -2436,7 +2436,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   *time_slot = time;
   PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
   *step_slot = cgv->previous_output_step = time_step;
-  PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
+  PetscCall(PetscSNPrintf(solution_name, sizeof(solution_name), "FlowSolution%" PetscInt_FMT, time_step));
   PetscCallCGNSWrite(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, cgv->grid_loc, &sol), V, viewer);
   PetscCall(VecGetArrayRead(V, &v));
   PetscCall(PetscSectionGetNumFields(section, &num_fields));
@@ -2461,9 +2461,9 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
       CGNS_ENUMT(DataType_t) datatype;
 
       PetscCall(PetscSectionGetComponentName(section, field, comp, &comp_name));
-      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0' && field_name[0] != '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof cgns_field_name));
-      else if (field_name[0] == '\0') PetscCall(PetscStrncpy(cgns_field_name, comp_name, sizeof cgns_field_name));
-      else PetscCall(PetscSNPrintf(cgns_field_name, sizeof cgns_field_name, "%s.%s", field_name, comp_name));
+      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0' && field_name[0] != '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof(cgns_field_name)));
+      else if (field_name[0] == '\0') PetscCall(PetscStrncpy(cgns_field_name, comp_name, sizeof(cgns_field_name)));
+      else PetscCall(PetscSNPrintf(cgns_field_name, sizeof(cgns_field_name), "%s.%s", field_name, comp_name));
       PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));
       PetscCallCGNSWrite(cgp_field_write(cgv->file_num, cgv->base, cgv->zone, sol, datatype, cgns_field_name, &cgfield_ids[nodal_field_idx]), V, viewer);
 

@@ -96,7 +96,7 @@ int main(int argc, char **args)
   /* ready for testing */
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
   PetscCall(PetscStrncpy(type, MATAIJ, sizeof(type)));
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, type, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, type, type, sizeof(type), &flg));
   PetscOptionsEnd();
   PetscCall(MatConvert(A, type, MAT_INPLACE_MATRIX, &A));
   PetscCall(MatConvert(aux, type, MAT_INPLACE_MATRIX, &aux));

@@ -413,7 +413,7 @@ PetscErrorCode PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf, PF_CLASSID, 1);
 
   PetscObjectOptionsBegin((PetscObject)pf);
-  PetscCall(PetscOptionsFList("-pf_type", "Type of function", "PFSetType", PFList, NULL, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-pf_type", "Type of function", "PFSetType", PFList, NULL, type, sizeof(type), &flg));
   if (flg) PetscCall(PFSetType(pf, type, NULL));
   PetscTryTypeMethod(pf, setfromoptions, PetscOptionsObject);
 

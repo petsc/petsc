@@ -193,7 +193,7 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
   PetscCall(PetscLimiterRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)lim);
-  PetscCall(PetscOptionsFList("-petsclimiter_type", "Finite volume slope limiter", "PetscLimiterSetType", PetscLimiterList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petsclimiter_type", "Finite volume slope limiter", "PetscLimiterSetType", PetscLimiterList, defaultType, name, sizeof(name), &flg));
   if (flg) {
     PetscCall(PetscLimiterSetType(lim, name));
   } else if (!((PetscObject)lim)->type_name) {
@@ -1076,7 +1076,7 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
   PetscCall(PetscFVRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)fvm);
-  PetscCall(PetscOptionsFList("-petscfv_type", "Finite volume discretization", "PetscFVSetType", PetscFVList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petscfv_type", "Finite volume discretization", "PetscFVSetType", PetscFVList, defaultType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscFVSetType(fvm, name));
   else if (!((PetscObject)fvm)->type_name) PetscCall(PetscFVSetType(fvm, defaultType));
   PetscCall(PetscOptionsBool("-petscfv_compute_gradients", "Compute cell gradients", "PetscFVSetComputeGradients", fvm->computeGradients, &fvm->computeGradients, NULL));

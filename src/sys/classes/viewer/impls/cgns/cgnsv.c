@@ -122,7 +122,7 @@ PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt seq
     char filename_numbered[PETSC_MAX_PATH_LEN];
     // Cast sequence_number so %d can be used also when PetscInt is 64-bit. We could upgrade the format string if users
     // run more than 2B time steps.
-    PetscCall(PetscSNPrintf(filename_numbered, sizeof filename_numbered, cgv->filename_template, (int)sequence_number));
+    PetscCall(PetscSNPrintf(filename_numbered, sizeof(filename_numbered), cgv->filename_template, (int)sequence_number));
     PetscCall(PetscStrallocpy(filename_numbered, &cgv->filename));
   }
   switch (cgv->btype) {

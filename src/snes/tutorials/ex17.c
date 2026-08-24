@@ -348,7 +348,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->deform           = DEFORM_NONE;
   options->solType          = SOL_VLAP_QUADRATIC;
   options->useNearNullspace = PETSC_TRUE;
-  PetscCall(PetscStrncpy(options->dmType, DMPLEX, 256));
+  PetscCall(PetscStrncpy(options->dmType, DMPLEX, sizeof(options->dmType)));
 
   PetscOptionsBegin(comm, "", "Linear Elasticity Problem Options", "DMPLEX");
   PetscCall(PetscOptionsEList("-deform_type", "Type of domain deformation", "ex17.c", deformTypes, NUM_DEFORM_TYPES, deformTypes[options->deform], &def, NULL));
@@ -356,7 +356,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex17.c", solutionTypes, NUM_SOLUTION_TYPES, solutionTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType)sol;
   PetscCall(PetscOptionsBool("-near_nullspace", "Use the rigid body modes as an AMG near nullspace", "ex17.c", options->useNearNullspace, &options->useNearNullspace, NULL));
-  PetscCall(PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex17.c", DMList, options->dmType, options->dmType, 256, NULL));
+  PetscCall(PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex17.c", DMList, options->dmType, options->dmType, sizeof(options->dmType), NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

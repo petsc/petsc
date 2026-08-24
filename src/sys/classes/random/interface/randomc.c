@@ -127,7 +127,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
   }
 
   PetscCall(PetscRandomRegisterAll());
-  PetscCall(PetscOptionsFList("-random_type", "PetscRandom type", "PetscRandomSetType", PetscRandomList, defaultType, typeName, 256, &opt));
+  PetscCall(PetscOptionsFList("-random_type", "PetscRandom type", "PetscRandomSetType", PetscRandomList, defaultType, typeName, sizeof(typeName), &opt));
   if (opt) {
     PetscCall(PetscRandomSetType(rnd, typeName));
   } else {

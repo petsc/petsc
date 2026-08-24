@@ -132,7 +132,7 @@ int main(int argc, char **args)
   Vec       x, b;
   Mat       A;   /* linear system matrix */
   KSP       ksp; /* Krylov subspace method context */
-  char      file[2][PETSC_MAX_PATH_LEN], ordering[256] = MATORDERINGRCM;
+  char      file[2][PETSC_MAX_PATH_LEN] = {{0}}, ordering[256] = MATORDERINGRCM;
   RHSType   rhstype = RHS_FILE;
   PetscBool flg, preload = PETSC_FALSE, trans = PETSC_FALSE, permute = PETSC_FALSE;
   IS        colperm = NULL;

@@ -3446,7 +3446,7 @@ static PetscErrorCode PCSetFromOptions_PATCH(PC pc, PetscOptionItems PetscOption
   PetscCall(PetscOptionsInt(option, "What overlap should we use in construct type pardecomp?", "PCPATCH", patch->pardecomp_overlap, &patch->pardecomp_overlap, &flg));
 
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_sub_mat_type", patch->classname));
-  PetscCall(PetscOptionsFList(option, "Matrix type for patch solves", "PCPatchSetSubMatType", MatList, NULL, sub_mat_type, PETSC_MAX_PATH_LEN, &flg));
+  PetscCall(PetscOptionsFList(option, "Matrix type for patch solves", "PCPatchSetSubMatType", MatList, NULL, sub_mat_type, sizeof(sub_mat_type), &flg));
   if (flg) PetscCall(PCPatchSetSubMatType(pc, sub_mat_type));
 
   PetscCall(PetscSNPrintf(option, PETSC_MAX_PATH_LEN, "-%s_patch_symmetrise_sweep", patch->classname));
