@@ -52,6 +52,11 @@ class TestComm(unittest.TestCase):
         self.assertTrue(isinstance(PETSc.COMM_WORLD.fortran, int))
         self.assertNotEqual(PETSc.COMM_SELF.fortran, PETSc.COMM_WORLD.fortran)
 
+    def testToFromInt(self):
+        for comm in (PETSc.COMM_SELF, PETSc.COMM_WORLD):
+            clon = PETSc.Comm.fromint(comm.toint())
+            self.assertEqual(clon, comm)
+
     def testCompatMPI4PY(self):
         try:
             from mpi4py import MPI
