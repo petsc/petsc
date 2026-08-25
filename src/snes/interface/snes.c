@@ -330,15 +330,19 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
 
   Input Parameters:
 + A    - the `SNES` context
-. obj  - Optional object that provides the options prefix for the checks
+. obj  - optional object that provides the options prefix for the checks, pass `NULL` to use the options prefix of `A`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESView`, `PetscObjectViewFromOptions()`, `SNESCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_snes), `SNES`, `SNESView()`, `PetscObjectViewFromOptions()`, `SNESCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode SNESViewFromOptions(SNES A, PetscObject obj, const char name[])
 {
@@ -360,7 +364,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *
 - viewer - the `PetscViewer`
 
   Options Database Key:
-. -snes_view - Calls `SNESView()` at end of `SNESSolve()`
+. -snes_view viewer_specification - Calls `SNESView()` at end of `SNESSolve()`, see `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -381,7 +385,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *
 
   In the debugger you can do "call `SNESView`(snes,0)" to display the `SNES` solver. (The same holds for any PETSc object viewer).
 
-.seealso: [](ch_snes), `SNES`, `SNESLoad()`, `SNESCreate()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_snes), `SNES`, `SNESLoad()`, `SNESCreate()`, `PetscViewerASCIIOpen()`, `SNESViewFromOptions()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
 {
@@ -908,39 +912,39 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . snes - the `SNES` context
 
   Options Database Keys:
-+ -snes_type type                                                              - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
-. -snes_rtol rtol                                                              - relative decrease in tolerance norm from initial
-. -snes_atol abstol                                                            - absolute tolerance of residual norm
-. -snes_stol stol                                                              - convergence tolerance in terms of the norm of the change in the solution between steps
-. -snes_divergence_tolerance divtol                                            - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_max_it max_it                                                          - maximum number of iterations
-. -snes_max_funcs max_funcs                                                    - maximum number of function evaluations
-. -snes_force_iteration force                                                  - force `SNESSolve()` to take at least one iteration
-. -snes_max_fail max_fail                                                      - maximum number of line search failures allowed before stopping, default is none
-. -snes_max_linear_solve_fail                                                  - number of linear solver failures before SNESSolve() stops
-. -snes_lag_preconditioner lag                                                 - how often preconditioner is rebuilt (use -1 to never rebuild)
-. -snes_lag_preconditioner_persists (true|false)                               - retains the -snes_lag_preconditioner information across multiple SNESSolve()
-. -snes_lag_jacobian lag                                                       - how often Jacobian is rebuilt (use -1 to never rebuild)
-. -snes_lag_jacobian_persists (true|false)                                     - retains the -snes_lag_jacobian information across multiple SNESSolve()
-. -snes_convergence_test (default|skip|correct_pressure)                       - convergence test in nonlinear solver. default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue
-                                                                                 iterating until max_it or some other criterion is reached, saving expense of convergence test. correct_pressure
-                                                                                 `SNESConvergedCorrectPressure()` has special handling of a pressure null space.
-. -snes_monitor [ascii][:filename][:viewer format]                             - prints residual norm at each iteration. if no filename given prints to stdout
-. -snes_monitor_solution [ascii binary draw][:filename][:viewer format]        - plots solution at each iteration
-. -snes_monitor_residual [ascii binary draw][:filename][:viewer format]        - plots residual (not its norm) at each iteration
-. -snes_monitor_solution_update [ascii binary draw][:filename][:viewer format] - plots update to solution at each iteration
-. -snes_monitor draw::draw_lg                                                  - plots residual norm at each iteration
-. -snes_monitor_lg_range                                                       - plots function range at each iteration
-. -snes_monitor_pause_final                                                    - Pauses all monitor drawing after the solver ends
-. -snes_fd                                                                     - use finite differences to compute Jacobian; very slow, only for testing
-. -snes_fd_color                                                               - use finite differences with coloring to compute Jacobian
-. -snes_mf_ksp_monitor                                                         - if using matrix-free multiply then print h at each `KSP` iteration
-. -snes_converged_reason                                                       - print the reason for convergence/divergence after each solve
-. -npc_snes_type type                                                          - the `SNES` type to use as a nonlinear preconditioner
-. -snes_test_jacobian [threshold]                                              - compare the user provided Jacobian with one computed via finite differences to check for errors.
-                                                                                 If a threshold is given, display only those entries whose difference is greater than the threshold.
-- -snes_test_jacobian_view                                                     - display the user provided Jacobian, the finite difference Jacobian and the difference between them
-                                                                                 to help users detect the location of errors in the user provided Jacobian.
++ -snes_view_pre viewer_specification                    - view information about the nonlinear solver before the solve
+. -snes_view viewer_specification                        - view information about the nonlinear solver after the solve
+. -snes_type type                                        - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
+. -snes_rtol rtol                                        - relative decrease in tolerance norm from initial
+. -snes_atol abstol                                      - absolute tolerance of residual norm
+. -snes_stol stol                                        - convergence tolerance in terms of the norm of the change in the solution between steps
+. -snes_divergence_tolerance divtol                      - if the residual goes above divtol*rnorm0, exit with divergence
+. -snes_max_it max_it                                    - maximum number of iterations
+. -snes_max_funcs max_funcs                              - maximum number of function evaluations
+. -snes_force_iteration force                            - force `SNESSolve()` to take at least one iteration
+. -snes_max_fail max_fail                                - maximum number of line search failures allowed before stopping, default is none
+. -snes_max_linear_solve_fail num                        - number of linear solver failures allowed before `SNESSolve()` is stopped
+. -snes_lag_preconditioner lag                           - how often preconditioner is rebuilt (use -1 to never rebuild)
+. -snes_lag_preconditioner_persists (true|false)         - retains the `-snes_lag_preconditioner` information across multiple `SNESSolve()`
+. -snes_lag_jacobian lag                                 - how often Jacobian is rebuilt (use -1 to never rebuild)
+. -snes_lag_jacobian_persists (true|false)               - retains the `-snes_lag_jacobian` information across multiple `SNESSolve()`
+. -snes_convergence_test (default|skip|correct_pressure) - convergence test in nonlinear solver. default `SNESConvergedDefault()`. `skip` uses `SNESConvergedSkip()` and means continue
+                                                           iterating until `max_it` or some other criterion is reached. `correct_pressure` uses
+                                                           `SNESConvergedCorrectPressure()` and has special handling of a pressure null space.
+. -snes_monitor viewer_specification                     - displays residual norm at each iteration. if no filename given prints to stdout
+. -snes_monitor_solution viewer_specification            - displays solution at each iteration
+. -snes_monitor_residual viewer_specification            - displays residual (not its norm) at each iteration
+. -snes_monitor_solution_update viewer_specification     - displays update to solution at each iteration
+. -snes_monitor_lg_range (true|false)                    - plots function range at each iteration
+. -snes_monitor_pause_final (true|false)                 - Pauses all monitor drawing after the solver ends
+. -snes_fd (true|false)                                  - use finite differences to compute Jacobian; very slow, only for testing
+. -snes_fd_color (true|false)                            - use finite differences with coloring to compute Jacobian
+. -snes_converged_reason viewer_specification            - print the reason for convergence/divergence after each solve
+. -npc_snes_type type                                    - the `SNES` type to use as a nonlinear preconditioner
+. -snes_test_jacobian [threshold]                        - compare the user provided Jacobian with one computed via finite differences to check for errors.
+                                                           If a threshold is given, display only those entries whose difference is greater than the threshold.
+- -snes_test_jacobian_view viewer_specification          - display the user provided Jacobian, the finite difference Jacobian and the difference between them
+                                                           to help users detect the location of errors in the user provided Jacobian.
 
   Options Database Keys for Eisenstat-Walker method:
 + -snes_ksp_ew                     - use Eisenstat-Walker method for determining linear system convergence
@@ -955,6 +959,10 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
   Level: beginner
 
   Notes:
+  See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+
+  See `KSPSetFromOptions()` for the `KSP` options database keys
+
   To see all options, run your program with the -help option or consult the users manual
 
   See `SNESLineSearchSetFromOptions()` for all the line search options available
@@ -2837,8 +2845,10 @@ PetscErrorCode SNESTestFunction(SNES snes)
 - diffNorm - the Frobenius norm of the difference of the computed and finite-difference Jacobians, or `NULL`
 
   Options Database Keys:
-+ -snes_test_jacobian [threshold] - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
-- -snes_test_jacobian_view        - display the user provided Jacobian, the finite difference Jacobian and the difference
++ -snes_test_jacobian [threshold]               - compare the user provided Jacobian with one compute via finite differences to check for errors.
+                                                  If a threshold is given, display only those entries whose difference is greater than the threshold.
+- -snes_test_jacobian_view viewer_specification - display the user provided Jacobian, the finite difference Jacobian and the difference, see `PetscOptionsCreateViewer()` for the
+                                                  format of `viewer_specification`
 
   Level: developer
 
@@ -3000,22 +3010,23 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
 - B - optional matrix for building the preconditioner, usually the same as `A`
 
   Options Database Keys:
-+ -snes_lag_preconditioner lag          - how often to rebuild preconditioner
-. -snes_lag_jacobian lag                - how often to rebuild Jacobian
-. -snes_test_jacobian [threshold]       - compare the user provided Jacobian with one compute via finite differences to check for errors.
-                                          If a threshold is given, display only those entries whose difference is greater than the threshold.
-. -snes_test_jacobian_view [viewer]     - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
-. -snes_compare_explicit                - Compare the computed Jacobian to the finite difference Jacobian and output the differences
-. -snes_compare_explicit_draw           - Compare the computed Jacobian to the finite difference Jacobian and draw the result
-. -snes_compare_explicit_contour        - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
-. -snes_compare_operator                - Make the comparison options above use the operator instead of the matrix used to construct the preconditioner
-. -snes_compare_coloring                - Compute the finite difference Jacobian using coloring and display norms of difference
-. -snes_compare_coloring_display        - Compute the finite difference Jacobian using coloring and display verbose differences
-. -snes_compare_coloring_threshold      - Display only those matrix entries that differ by more than a given threshold
-. -snes_compare_coloring_threshold_atol - Absolute tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
-. -snes_compare_coloring_threshold_rtol - Relative tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
-. -snes_compare_coloring_draw           - Compute the finite difference Jacobian using coloring and draw differences
-- -snes_compare_coloring_draw_contour   - Compute the finite difference Jacobian using coloring and show contours of matrices and differences
++ -snes_lag_preconditioner lag                  - how often to rebuild preconditioner
+. -snes_lag_jacobian lag                        - how often to rebuild Jacobian
+. -snes_test_jacobian [threshold]               - compare the user provided Jacobian with one compute via finite differences to check for errors.
+                                                  If a threshold is given, display only those entries whose difference is greater than the threshold.
+. -snes_test_jacobian_view viewer_specification - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian.
+                                                  See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+. -snes_compare_explicit                        - compare the computed Jacobian to the finite difference Jacobian and output the differences
+. -snes_compare_explicit_draw                   - compare the computed Jacobian to the finite difference Jacobian and draw the result
+. -snes_compare_explicit_draw_contour           - compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
+. -snes_compare_operator                        - make the comparison options above use the operator instead of the matrix used to construct the preconditioner
+. -snes_compare_coloring                        - compute the finite difference Jacobian using coloring and display norms of difference
+. -snes_compare_coloring_display                - compute the finite difference Jacobian using coloring and display verbose differences
+. -snes_compare_coloring_threshold              - display only those matrix entries that differ by more than a given threshold
+. -snes_compare_coloring_threshold_atol         - absolute tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
+. -snes_compare_coloring_threshold_rtol         - relative tolerance for difference in matrix entries to be displayed by `-snes_compare_coloring_threshold`
+. -snes_compare_coloring_draw                   - compute the finite difference Jacobian using coloring and draw differences
+- -snes_compare_coloring_draw_contour           - compute the finite difference Jacobian using coloring and show contours of matrices and differences
 
   Level: developer
 
@@ -3024,8 +3035,7 @@ PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm
   is used internally within the nonlinear solvers.
 
   Developer Note:
-  This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons, the routine `SNESTestJacobian()` use to used
-  with the `SNESType` of test that has been removed.
+  This has duplicative ways of checking the accuracy of the user provided Jacobian (see the options above). This is for historical reasons.
 
 .seealso: [](ch_snes), `SNESSetJacobian()`, `KSPSetOperators()`, `MatStructure`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`,
           `SNESSetJacobianDomainError()`, `SNESCheckJacobianDomainError()`, `SNESSetCheckJacobianDomainError()`

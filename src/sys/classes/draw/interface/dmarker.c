@@ -66,7 +66,7 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 - mtype - either `PETSC_DRAW_MARKER_CROSS` (default) or `PETSC_DRAW_MARKER_POINT`
 
   Options Database Key:
-. -draw_marker_type - x or point
+. -draw_marker_type (cross|point|plus|circle) - see `PetscDrawMarkerType`
 
   Level: beginner
 

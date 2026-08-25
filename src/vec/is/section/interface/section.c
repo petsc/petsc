@@ -2485,15 +2485,19 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 
   Input Parameters:
 + A    - the `PetscSection` object to view
-. obj  - Optional object that provides the options prefix used for the options
+. obj  - optional object that provides the options prefix used for the options, pass `NULL` to use the options prefix of `A`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscSectionView()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionView()`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, const char name[])
 {

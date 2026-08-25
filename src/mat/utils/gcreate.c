@@ -251,16 +251,8 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 . B - the matrix
 
   Options Database Keys:
-+ -mat_type seqaij   - `MATSEQAIJ` type, uses `MatCreateSeqAIJ()`
-. -mat_type mpiaij   - `MATMPIAIJ` type, uses `MatCreateAIJ()`
-. -mat_type seqdense - `MATSEQDENSE` type, uses `MatCreateSeqDense()`
-. -mat_type mpidense - `MATMPIDENSE`, uses `MatCreateDense()`
-. -mat_type seqbaij  - `MATSEQBAIJ`, uses `MatCreateSeqBAIJ()`
-. -mat_type mpibaij  - `MATMPIBAIJ`, uses `MatCreateBAIJ()`
-- -mat_vec_type      - the `VecType` used by `MatCreateVecs()`, see `MatSetVecType()`
-
-   See the manpages for particular formats (e.g., `MATSEQAIJ`)
-   for additional format-specific options.
++ -mat_type type      - see `MatType`
+- -mat_vec_type vtype - the `VecType` used by `MatCreateVecs()`, see `MatSetVecType()`
 
   Level: beginner
 
@@ -269,7 +261,10 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
   matrix type is `MATAIJ`, using the routines `MatCreateSeqAIJ()` and `MatCreateAIJ()` if you
   do not select a type in the options database.
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+  See the manpages for particular formats (e.g., `MATSEQAIJ`)
+  for additional format-specific options.
+
+.seealso: [](ch_matrices), `Mat`, `MatType`, `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,

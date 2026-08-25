@@ -22,9 +22,9 @@
 . dm - the new `DMSTAG` object
 
   Options Database Keys:
-+ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
++ -dm_view viewer_specification                 - calls `DMView()` at the conclusion of `DMSetUp()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 . -stag_grid_x nx                               - number of elements in the x direction
-. -stag_ghost_stencil_width                     - width of ghost region, in elements
+. -stag_stencil_width width                     - width of ghost region, in elements
 - -stag_boundary_type_x (none|ghosted|periodic) - `DMBoundaryType` value
 
   Level: beginner
@@ -34,7 +34,8 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`,
+          `DMDACreate1d()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {

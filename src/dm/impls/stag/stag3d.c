@@ -14,9 +14,9 @@
 . M            - global number of elements in x direction
 . N            - global number of elements in y direction
 . P            - global number of elements in z direction
-. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
-. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
-. p            - number of ranks in the z direction (may be `PETSC_DECIDE`)
+. m            - number of MPI processes in the x direction (may be `PETSC_DECIDE`)
+. n            - number of MPI processes in the y direction (may be `PETSC_DECIDE`)
+. p            - number of MPI processes in the z direction (may be `PETSC_DECIDE`)
 . dof0         - number of degrees of freedom per vertex/0-cell
 . dof1         - number of degrees of freedom per edge/1-cell
 . dof2         - number of degrees of freedom per face/2-cell
@@ -31,17 +31,17 @@
 . dm - the new `DMSTAG` object
 
   Options Database Keys:
-+ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
++ -dm_view viewer_specification                 - calls `DMView()` at the conclusion of `DMSetUp()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 . -stag_grid_x nx                               - number of elements in the x direction
 . -stag_grid_y ny                               - number of elements in the y direction
 . -stag_grid_z nz                               - number of elements in the z direction
-. -stag_ranks_x rx                              - number of ranks in the x direction
-. -stag_ranks_y ry                              - number of ranks in the y direction
-. -stag_ranks_z rz                              - number of ranks in the z direction
-. -stag_ghost_stencil_width                     - width of ghost region, in elements
-. -stag_boundary_type x (none|ghosted|periodic) - `DMBoundaryType` value
-. -stag_boundary_type y (none|ghosted|periodic) - `DMBoundaryType` value
-- -stag_boundary_type z (none|ghosted|periodic) - `DMBoundaryType` value
+. -stag_ranks_x rx                              - number of MPI processes in the x direction
+. -stag_ranks_y ry                              - number of MPI processes in the y direction
+. -stag_ranks_z rz                              - number of MPI processes in the z direction
+. -stag_stencil_width width                     - width of ghost region, in elements
+. -stag_boundary_type_x (none|ghosted|periodic) - `DMBoundaryType` to use in x direction
+. -stag_boundary_type_y (none|ghosted|periodic) - `DMBoundaryType` to use in y direction
+- -stag_boundary_type_z (none|ghosted|periodic) - `DMBoundaryType` to use in z direction
 
   Level: beginner
 
@@ -50,7 +50,8 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate3d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`,
+          `DMDACreate3d()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode DMStagCreate3d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, DMBoundaryType bndz, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof0, PetscInt dof1, PetscInt dof2, PetscInt dof3, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *dm)
 {

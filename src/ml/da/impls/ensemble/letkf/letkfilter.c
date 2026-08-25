@@ -1008,7 +1008,8 @@ static PetscErrorCode PetscDASetFromOptions_LETKF(PetscDA da, PetscOptionItems *
 . -petscda_letkf_batch_size batch_size                                 - set the batch size for GPU processing
 . -petscda_letkf_localization_radius radius                            - localization cutoff radius for the built-in kernels (must be positive)
 . -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel
-- -petscda_view                                                        - view the `PetscDA` at the end of every `PetscDAEnsembleAnalysis()` call
+- -petscda_view viewer_specification                                   - view the `PetscDA` at the end of every `PetscDAEnsembleAnalysis()` call.
+                                                                         See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
    Level: beginner
 

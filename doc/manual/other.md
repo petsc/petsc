@@ -1056,7 +1056,7 @@ One way to index and build PETSc in Eclipse is as follows.
 1. Open
    “File$\rightarrow$Import$\rightarrow$Git$\rightarrow$Projects
    from Git”. In the next two panels, you can either add your existing
-   local repository or download PETSc from Bitbucket by providing the
+   local repository or download PETSc from GitLab by providing the
    URL. Most Eclipse distributions come with Git support. If not,
    install the EGit plugin. When importing the project, select the
    wizard “Import as general project”.
@@ -1289,7 +1289,7 @@ The installation process has not been tested for iOS or Android since 2017.
 ```{rubric} Footnotes
 ```
 
-[^saws]: [Saws wiki on Bitbucket](https://bitbucket.org/saws/saws/wiki/Home)
+[^saws]: [SAWs on GitLab](https://gitlab.com/petsc/saws)
 
 [^cxx-note]: Note that this option is not required to use PETSc with C++
 

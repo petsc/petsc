@@ -1044,13 +1044,20 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
   PetscDeviceContextViewFromOptions - View a `PetscDeviceContext` from options
 
   Input Parameters:
-+ dctx - The `PetscDeviceContext` to view
-. obj  - Optional `PetscObject` to associate (may be `NULL`)
-- name - The command line option
++ dctx - the `PetscDeviceContext` to view
+. obj  - optional `PetscObject` to provide the options prefix, pass `NULL` to use the options prefix of `dctx`
+- name - the command line option
+
+  Options Database Key:
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: beginner
 
-.seealso: `PetscDeviceContextView()`, `PetscObjectViewFromOptions()`, `PetscDeviceContextCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: `PetscDeviceContextView()`, `PetscObjectViewFromOptions()`, `PetscDeviceContextCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscObject obj, const char name[])
 {

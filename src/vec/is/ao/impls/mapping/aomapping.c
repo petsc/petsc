@@ -214,7 +214,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 
   Input Parameters:
 + comm    - MPI communicator that is to share the `AO`
-. napp    - size of integer arrays
+. napp    - size of the integer arrays `myapp` and `mypetsc`
 . myapp   - integer array that defines an ordering
 - mypetsc - integer array that defines another ordering (may be `NULL` to indicate the identity ordering)
 
@@ -222,7 +222,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 . aoout - the new application mapping
 
   Options Database Key:
-. -ao_view - call `AOView()` at the conclusion of `AOCreateMapping()`
+. -ao_view viewer_specification - call `AOView()` at the conclusion of `AOCreateMapping()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -230,7 +230,7 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
   The arrays `myapp` and `mypetsc` need NOT contain the all the integers 0 to `napp`-1, that is there CAN be "holes"  in the indices.
   Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
-.seealso: [](sec_ao), `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
+.seealso: [](sec_ao), `AO`, `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`, `AOView()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
 {
@@ -331,7 +331,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 . aoout - the new application ordering
 
   Options Database Key:
-. -ao_view - call `AOView()` at the conclusion of `AOCreateMappingIS()`
+. -ao_view viewer_specification - call `AOView()` at the conclusion of `AOCreateMappingIS()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -339,7 +339,7 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   The index sets `isapp` and `ispetsc` need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
   Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
-.seealso: [](sec_ao), [](sec_scatter), `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`
+.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOView()`, `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {

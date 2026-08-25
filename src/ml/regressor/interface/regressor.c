@@ -93,7 +93,7 @@ PetscErrorCode PetscRegressorCreate(MPI_Comm comm, PetscRegressor *newregressor)
 - viewer    - a `PetscViewer` context
 
   Options Database Key:
-. -regressor_view - Calls `PetscRegressorView()` at the end of `PetscRegressorFit()`
+. -regressor_view viewer_specification - Calls `PetscRegressorView()` at the end of `PetscRegressorFit()`, see `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -105,7 +105,7 @@ PetscErrorCode PetscRegressorCreate(MPI_Comm comm, PetscRegressor *newregressor)
   the file.  All other processors send their
   data to the first processor to print.
 
-.seealso: [](ch_regressor), `PetscRegressor`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_regressor), `PetscRegressor`, `PetscViewerASCIIOpen()`, `PetscRegressorViewFromOptions()`, `PetscRegressorFit()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscRegressorView(PetscRegressor regressor, PetscViewer viewer)
 {
@@ -141,15 +141,19 @@ PetscErrorCode PetscRegressorView(PetscRegressor regressor, PetscViewer viewer)
 
   Input Parameters:
 + A    - the  `PetscRegressor` context
-. obj  - Optional object that provides the prefix for the options database
+. obj  - optional object that provides the prefix for the options database, pass `NULL` to use the options prefix of `A`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](ch_regressor), `PetscRegressor`, `PetscRegressorView`, `PetscObjectViewFromOptions()`, `PetscRegressorCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_regressor), `PetscRegressor`, `PetscRegressorView()`, `PetscObjectViewFromOptions()`, `PetscRegressorCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscRegressorViewFromOptions(PetscRegressor A, PetscObject obj, const char name[])
 {

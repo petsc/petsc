@@ -77,8 +77,8 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 - file     - file where function is
 
   Options Database Keys:
-+ -malloc_test  - turns this feature on when PETSc was not configured with `--with-debugging=0`
-- -malloc_debug - turns this feature on anytime
++ -malloc_test               - turns this feature on when PETSc was not configured with `--with-debugging=0`
+- -malloc_debug (true|false) - turns this feature on anytime
 
   Level: advanced
 
@@ -442,9 +442,9 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
 - message - string printed before values
 
   Options Database Keys:
-+ -malloc_debug    - have PETSc track how much memory it has allocated
-. -log_view_memory - print memory usage per event when `-log_view` is used
-- -memory_view     - during `PetscFinalize()` have this routine called
++ -malloc_debug (true|false)    - have PETSc track how much memory it has allocated
+. -log_view_memory (true|false) - print memory usage per event when `-log_view` is used
+- -memory_view (true|false)     - during `PetscFinalize()` have this routine called with `PETSC_VIEWER_STDOUT_WORLD`
 
   Level: intermediate
 
@@ -661,12 +661,12 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 . fp - file pointer.  If `fp` is `NULL`, `stdout` is assumed.
 
   Options Database Key:
-. -malloc_dump optional filename - Print summary of unfreed memory during call to `PetscFinalize()`, writing to filename if given
+. -malloc_dump [filename] - Print summary of unfreed memory during call to `PetscFinalize()`, writing to `filename` if given otherwise `stdout`
 
   Level: intermediate
 
   Notes:
-  Uses `MPI_COMM_WORLD` to display rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
+  Uses `MPI_COMM_WORLD` to display the MPI rank, because this may be called in `PetscFinalize()` after `PETSC_COMM_WORLD` has been freed.
 
   When called in `PetscFinalize()` dumps only the allocations that have not been properly freed
 
@@ -724,9 +724,9 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 . logmin - minimum allocation size to log, or `PETSC_DEFAULT` to log all memory allocations
 
   Options Database Keys:
-+ -malloc_view optional filename - Activates `PetscMallocView()` in `PetscFinalize()`
-. -malloc_view_threshold min     - Sets a minimum size if `-malloc_view` is used
-- -log_view_memory               - view the memory usage also with the -log_view option
++ -malloc_view [filename]       - Activates `PetscMallocView()` in `PetscFinalize()`
+. -malloc_view_threshold logmin - Sets a minimum size if `-malloc_view` is used
+- -log_view_memory (true|false) - View the memory usage also with the `-log_view` option
 
   Level: advanced
 
@@ -755,9 +755,6 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
 
   Output Parameter:
 . logging - `PETSC_TRUE` if logging is active
-
-  Options Database Key:
-. -malloc_view optional filename - Activates `PetscMallocView()`
 
   Level: advanced
 
@@ -814,9 +811,6 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
   Output Parameter:
 . logging - `PETSC_TRUE` if logging is active
 
-  Options Database Key:
-. -malloc_view optional filename - Activates `PetscMallocView()`
-
   Level: advanced
 
   This only does anything if `-malloc_debug` (or `-malloc_test` if PETSc was configured with debugging) has been used
@@ -839,17 +833,17 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
 . fp - file pointer; or `NULL`
 
   Options Database Key:
-. -malloc_view optional filename - Activates `PetscMallocView()` in `PetscFinalize()`
+. -malloc_view [filename] - Activates `PetscMallocView()` in `PetscFinalize()`
 
   Level: advanced
 
   Notes:
-  `PetscMallocDump()` dumps only the currently unfreed memory, this dumps all memory ever allocated
+  `PetscMallocDump()` dumps only the currently unfreed memory, this routine dumps all memory ever allocated
 
   `PetscMemoryView()` gives a brief summary of current memory usage
 
   Fortran Notes:
-  The calling sequence in Fortran is `PetscMallocView`(integer ierr)
+  The calling sequence in Fortran is `PetscMallocView`(integer ierr) and can only write to `stdout`
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`, `PetscMalloc()`, `PetscFree()`
 @*/
@@ -926,10 +920,10 @@ PetscErrorCode PetscMallocView(FILE *fp)
 - initializenan - initializes all memory with `NaN` to catch use of uninitialized floating point arrays
 
   Options Database Keys:
-+ -malloc_debug (true|false) - turns on or off debugging
-. -malloc_test               - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
-. -malloc_view_threshold t   - log only allocations larger than t
-- -malloc_dump filename      - print a list of all memory that has not been freed, in `PetscFinalize()`
++ -malloc_debug (true|false)    - turns on or off debugging
+. -malloc_test                  - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
+. -malloc_view_threshold logmin - log only allocations larger than `logmin`
+- -malloc_dump [filename]       - print a list of all memory that has not been freed, in `PetscFinalize()`
 
   Level: developer
 

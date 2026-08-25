@@ -472,9 +472,9 @@ PETSC_INTERN PetscErrorCode PetscLogTypeBegin(PetscLogHandlerType type)
   Logically Collective on `PETSC_COMM_WORLD`
 
   Options Database Key:
-. -log_view [viewertype[:filename[:viewerformat]]] - Prints summary of flop and timing (profiling) information to the
-                                                     screen (for PETSc configured with `--with-log=1` (which is the default)).
-                                                     This option must be provided before `PetscInitialize()`.
+. -log_view viewer_specification - Displays summary of flop and timing (profiling) information (for PETSc configured `--with-log`, which is the default).
+                                   This option must be provided before `PetscInitialize()`. See `PetscOptionsCreateViewer()` for the
+                                   format of `viewer_specification`
 
   Example Usage:
 .vb
@@ -546,12 +546,13 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Nested(MPI_Comm, PetscLogHandl
 
 /*@
   PetscLogNestedBegin - Turns on nested logging of objects and events. This logs flop
-  rates and object creation and should not slow programs down too much.
+  rates and object creation and should not slow programs down much.
 
   Logically Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
-  Options Database Keys:
-. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+  Options Database Key:
+. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file `filename.xml`.
+                                      See `PetscOptionsCreateViewer()` for other possible viewer specifications
 
   Example Usage:
 .vb
@@ -1655,9 +1656,6 @@ PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage stage, PetscLogEvent event
 . n     - The dof index, in [0, 8)
 - dof   - The number of dofs
 
-  Options Database Key:
-. -log_view - Activates log summary
-
   Level: developer
 
   Note:
@@ -1691,9 +1689,6 @@ PetscErrorCode PetscLogEventSetDof(PetscLogEvent event, PetscInt n, PetscLogDoub
 + event - The event id to log
 . n     - The error index, in [0, 8)
 - error - The error
-
-  Options Database Key:
-. -log_view - Activates log summary
 
   Level: developer
 
@@ -2010,19 +2005,15 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 . viewer - an ASCII viewer
 
   Options Database Keys:
-+ -log_view [:filename]                    - Prints summary of log information
-. -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
-. -log_view :filename.xml:ascii_xml        - Saves a summary of the logging information in a nested format (see below for how to view it)
-. -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see below for how to view it)
-. -log_view :filename.csv:ascii_csv        - Saves logging information as a comma-separated values file
-. -log_view_memory                         - Also display memory usage in each event
-. -log_view_gpu_time                       - Also display time in each event for GPU kernels (Note this may slow the computation)
-. -log_view_gpu_energy                     - Also display energy (estimated with power*gtime) in Joules for GPU kernels
-. -log_view_gpu_energy_meter               - [Experimental] Also display energy (readings from energy meters) in Joules for GPU kernels.
-                                             This option is ignored if `-log_view_gpu_energy` is provided.
-. -log_all                                 - Saves a file `Log.rank` for each MPI process with details of each step of the computation, where
-                                             `rank` is the MPI rank of each process
-- -log_trace [filename]                    - Displays a trace of what each process is doing
++ -log_view viewer_specification - Views summary of the logging at the conclusion of the program, see `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+. -log_view_memory (true|false)  - Also display memory usage in each event
+. -log_view_gpu_time             - Also display time in each event for GPU kernels (Note this may slow the computation)
+. -log_view_gpu_energy           - Also display energy (estimated with power*gtime) in Joules for GPU kernels
+. -log_view_gpu_energy_meter     - [Experimental] Also display energy (readings from energy meters) in Joules for GPU kernels.
+                                   This option is ignored if `-log_view_gpu_energy` is provided.
+. -log_all [filename]            - Saves a file `Log.rank` for each MPI process with details of each step of the computation, where
+                                   `rank` is the rank of each MPI process
+- -log_trace [filename]          - Displays a trace of what each process is doing
 
   Level: beginner
 
@@ -2034,23 +2025,32 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 
   If PETSc is configured with `--with-log=0` then this functionality is not available
 
-  To view the nested XML format filename.xml first copy  ${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl to the current
-  directory then open filename.xml with your browser. Specific notes for certain browsers
+  To view the nested XML format `filename.xml` first copy  `${PETSC_DIR}/share/petsc/xml/performance_xml2html.xsl` to the current
+  directory then open `filename.xml` with your browser. Specific notes for certain browsers
 .vb
     Firefox and Internet explorer - simply open the file
-    Google Chrome - you must start up Chrome with the option --allow-file-access-from-files
-    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
+    Google Chrome                 - you must start up Chrome with the option `--allow-file-access-from-files`
+    Safari                        - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-access
 .ve
   or one can use the package <http://xmlsoft.org/XSLT/xsltproc2.html> to translate the xml file to html and then open it with
   your browser.
-  Alternatively, use the script ${PETSC_DIR}/lib/petsc/bin/petsc-performance-view to automatically open a new browser
+  Alternatively, use the script `${PETSC_DIR}/lib/petsc/bin/petsc-performance-view` to automatically open a new browser
   window and render the XML log file contents.
 
   The nested XML format was kindly donated by Koos Huijssen and Christiaan M. Klaij  MARITIME  RESEARCH  INSTITUTE  NETHERLANDS
 
   The Flame Graph output can be visualised using either the original Flame Graph script <https://github.com/brendangregg/FlameGraph>
   or using speedscope <https://www.speedscope.app>.
-  Old XML profiles may be converted into this format using the script ${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py.
+  Old XML profiles may be converted into this format using the script `${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py`.
+
+  Example Usage:
+.vb
+ -log_view :filename                      - Prints summary of log information to a file
+ -log_view :filename.py:ascii_info_detail - Saves logging information from each process as a Python file
+ -log_view :filename.xml:ascii_xml        - Saves a summary of the logging information in a nested format (see above for how to view it)
+ -log_view :filename.txt:ascii_flamegraph - Saves logging information in a format suitable for visualising as a Flame Graph (see above for how to view it)
+ -log_view :filename.csv:ascii_csv        - Saves logging information as a comma-separated values file
+.ve
 
 .seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogDump()`
 @*/
@@ -2098,6 +2098,9 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
   PetscLogViewFromOptions - Processes command line options to determine if/how a `PetscLog` is to be viewed.
 
   Collective on `PETSC_COMM_WORLD`
+
+  Options Database Key:
+. -log_view viewer_specification,viewer_specification - list of up to four specifications of viewers, see `PetscOptionsCreateViewer()` for their format
 
   Level: developer
 
@@ -2147,8 +2150,8 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerNestedSetThreshold(PetscLogHandler, P
   Output Parameter:
 . oldThresh - the previously set threshold value
 
-  Options Database Keys:
-. -log_view :filename.xml:ascii_xml - Prints an XML summary of flop and timing information to the file
+  Options Database Key:
+. -log_threshold threshold - provide the threshold
 
   Example Usage:
 .vb
@@ -2214,7 +2217,7 @@ PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
   Input Parameters:
 + obj    - the `PetscObject`
 . format - a printf-style format string
-- ...    - printf arguments to format
+- ...    - `printf()` arguments to format
 
   Level: developer
 

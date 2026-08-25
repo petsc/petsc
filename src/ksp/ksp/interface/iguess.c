@@ -67,15 +67,14 @@ PetscErrorCode KSPGuessRegisterAll(void)
 . guess - `KSPGuess` object
 
   Options Database Keys:
-+ -ksp_guess_type method             - Turns on generation of initial guesses and sets the method; see `KSPGuessType`
-. -ksp_guess_view viewer             - view the `KSPGuess` object
-. -ksp_guess_fischer_model a,b       - set details for the Fischer models
-. -ksp_guess_fischer_monitor         - monitor the Fischer models
-. -ksp_guess_fischer_tol tol         - set the tolerance for the Fischer models
-. -ksp_guess_pod_size size           - Number of snapshots
-. -ksp_guess_pod_monitor             - monitor the pod initial guess processing
-. -ksp_guess_pod_tol tol             - Tolerance to retain eigenvectors
-- -ksp_guess_pod_Ainner (true|false) - Use the operator as inner product (must be SPD)
++ -ksp_guess_type (fischer|pod)           - turns on generation of initial guesses and sets the method; see `KSPGuessType`
+. -ksp_guess_fischer_model model,size     - set details for the Fischer models
+. -ksp_guess_fischer_monitor (true|false) - monitor the Fischer models
+. -ksp_guess_fischer_tol tol              - set the tolerance for the Fischer models
+. -ksp_guess_pod_size size                - number of POD snapshots
+. -ksp_guess_pod_monitor (true|false)     - monitor the POD initial guess processing
+. -ksp_guess_pod_tol tol                  - tolerance to retain eigenvectors
+- -ksp_guess_pod_Ainner (true|false)      - use the operator as the inner product (must be SPD)
 
   Level: developer
 
@@ -98,9 +97,9 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
 + guess - `KSPGuess` object
 - tol   - the tolerance
 
-  Options Database Key:
+  Options Database Keys:
 + -ksp_guess_fischer_tol tol - set the tolerance for the Fischer models
-- -ksp_guess_pod_tol tol     - set the tolerance for the Pod models
+- -ksp_guess_pod_tol tol     - set the tolerance for the POD models
 
   Level: developer
 
@@ -153,9 +152,6 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 + guess - the initial guess object for the Krylov method
 - view  - the viewer object
 
-  Options Database Key:
-. -ksp_guess_view viewer - view the `KSPGuess` object
-
   Level: developer
 
 .seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
@@ -190,21 +186,11 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
   Output Parameter:
 . guess - location to put the `KSPGuess` context
 
-  Options Database Keys:
-+ -ksp_guess_type type               - Turns on generation of initial guesses and sets the method; see `KSPGuessType`
-. -ksp_guess_view viewer             - view the `KSPGuess` object
-. -ksp_guess_fischer_model a,b       - set details for the Fischer models
-. -ksp_guess_fischer_monitor         - monitor the fischer models
-. -ksp_guess_fischer_tol tol         - set the tolerance for the Fischer models
-. -ksp_guess_pod_size size           - Number of snapshots
-. -ksp_guess_pod_monitor             - monitor the pod initial guess processing
-. -ksp_guess_pod_tol tol             - Tolerance to retain eigenvectors
-- -ksp_guess_pod_Ainner (true|false) - Use the operator as inner product (must be SPD)
-
   Level: developer
 
-  Note:
-  These are generally created automatically by using the option `-ksp_guess_type type` and controlled from the options database
+  Notes:
+  These are generally created automatically by using the option `-ksp_guess_type (fischer|pod)` and controlled from the options database.
+  See `KSPGuessSetFromOptions()` for the `KSPGuess` options database keys
 
   There are two families of methods `KSPGUESSFISCHER`, developed by Paul Fischer and `KSPGUESSPOD`
 
@@ -234,7 +220,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 - type  - a known `KSPGuessType`
 
   Options Database Key:
-. -ksp_guess_type  type - Turns on generation of initial guesses and sets the method; see `KSPGuessType` for a list of available types
+. -ksp_guess_type (fischer|pod) - Turns on generation of initial guesses and sets the method; see `KSPGuessType`
 
   Level: developer
 

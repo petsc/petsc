@@ -14,9 +14,9 @@
 
   Options Database Keys:
 + -saws_port port number - port number where you are running SAWs client
-. -xxx_view saws         - publish the object xxx
+. -xxx_view saws         - publish the object xxx, for example, `-snes_view saws`
 - -xxx_saws_block        - blocks the program at the end of a critical point (for `KSP` and `SNES` it is the end of a solve) until
-                    the user unblocks the problem with an external tool that access the object with SAWS
+                           the user unblocks the problem with an external tool that accesses the object with SAWs
 
   Level: advanced
 
@@ -25,7 +25,7 @@
   one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
   `PetscObjectSAWsViewOff()`.
 
-  Information about the SAWs is available via https://bitbucket.org/saws/saws
+  Information about the SAWs is available via <https://gitlab.com/petsc/saws>
 
 .seealso: [](sec_viewers), `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`

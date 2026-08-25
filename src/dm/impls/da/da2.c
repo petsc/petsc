@@ -759,8 +759,8 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 . stencil_type - stencil type.  Use either `DMDA_STENCIL_BOX` or `DMDA_STENCIL_STAR`.
 . M            - global dimension in the x direction of the array
 . N            - global dimension in the y direction of the array
-. m            - corresponding number of processors in the x dimension (or `PETSC_DECIDE` to have calculated)
-. n            - corresponding number of processors in the y dimension (or `PETSC_DECIDE` to have calculated)
+. m            - corresponding number of MPI processes in the x dimension (or `PETSC_DECIDE` to have calculated)
+. n            - corresponding number of MPI processes in the y dimension (or `PETSC_DECIDE` to have calculated)
 . dof          - number of degrees of freedom per node
 . s            - stencil width
 . lx           - arrays containing the number of nodes in each cell along the x coordinates, or `NULL`.
@@ -770,17 +770,17 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 . da - the resulting distributed array object
 
   Options Database Keys:
-+ -dm_view            - Calls `DMView()` at the conclusion of `DMDACreate2d()`
-. -da_grid_x nx       - number of grid points in the x direction
-. -da_grid_y ny       - number of grid points in the y direction
-. -da_processors_x nx - number of processors in the x direction
-. -da_processors_y ny - number of processors in the y direction
-. -da_bd_x bx         - boundary type in the x direction
-. -da_bd_y by         - boundary type in the y direction
-. -da_bd_all bt       - boundary type in all directions
-. -da_refine_x rx     - refinement ratio in the x direction
-. -da_refine_y ry     - refinement ratio in the y direction
-- -da_refine n        - refine the `DMDA` `n` times before creating
++ -dm_view viewer_specification - calls `DMView()` at the conclusion of `DMDACreate2d()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+. -da_grid_x nx                 - number of grid points in the x direction
+. -da_grid_y ny                 - number of grid points in the y direction
+. -da_processors_x nx           - number of MPI processes in the x direction
+. -da_processors_y ny           - number of MPI processes in the y direction
+. -da_bd_x bx                   - boundary type in the x direction
+. -da_bd_y by                   - boundary type in the y direction
+. -da_bd_all bt                 - boundary type in all directions
+. -da_refine_x rx               - refinement ratio in the x direction
+. -da_refine_y ry               - refinement ratio in the y direction
+- -da_refine n                  - refine the `DMDA` `n` times before creating
 
   Level: beginner
 

@@ -945,12 +945,12 @@ static PetscBool PetscCIOption(const char *name)
 - viewer  - must be an `PETSCVIEWERASCII` viewer
 
   Options Database Key:
-. -options_view - Activates `PetscOptionsView()` within `PetscFinalize()`
+. -options_view (true|false) - Activates `PetscOptionsView()` within `PetscFinalize()`.
 
   Level: advanced
 
   Note:
-  Only the MPI rank 0 of the `MPI_Comm` used to create view prints the option values. Other processes
+  Only the MPI rank 0 of the `MPI_Comm` used to create `viewer` displays the option values. Other processes
   may have different values but they are not printed.
 
 .seealso: `PetscOptionsAllUsed()`

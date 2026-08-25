@@ -6015,8 +6015,8 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_check_skeleton (true|false)     - Check that each cell has the correct number of vertices
 . -dm_plex_check_faces (true|false)        - Check that the faces of each cell give a vertex order this is consistent with what we expect from the cell type
 . -dm_plex_check_geometry (true|false)     - Check that cells have positive volume
-. -dm_view :mesh.tex:ascii_latex           - View the mesh in LaTeX/TikZ
-. -dm_plex_view_scale num                  - Scale the TikZ
+. -dm_view viewer_specification            - View the `DM`, see `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+. -dm_plex_view_scale num                  - Scale the TikZ drawing
 . -dm_plex_print_fem num                   - View FEM assembly information, such as element vectors and matrices
 - -dm_plex_print_fvm num                   - View FVM assembly information, such as flux updates
 

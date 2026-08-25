@@ -78,7 +78,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 - viewer - visualization context
 
   Options Database Key:
-. -ksp_view - print the `KSP` data structure at the end of each `KSPSolve()` call
+. -ksp_view viewer_specification - Display the `KSP` at the end of each `KSPSolve()` call, see `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -101,7 +101,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 
   In the debugger you can do call `KSPView(ksp,0)` to display the `KSP`. (The same holds for any PETSc object viewer).
 
-.seealso: [](ch_ksp), `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`, `KSPViewFromOptions()`
+.seealso: [](ch_ksp), `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`, `KSPViewFromOptions()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
@@ -224,15 +224,19 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 
   Input Parameters:
 + A    - Krylov solver context
-. obj  - Optional object that provides the options prefix used to query the options database
+. obj  - optional object that provides the options prefix used to query the options database, pass `NULL` to use the options prefix of `A`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSP`, `KSPView()`, `PetscObjectViewFromOptions()`, `KSPCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_ksp), `KSP`, `KSPView()`, `PetscObjectViewFromOptions()`, `KSPCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 {

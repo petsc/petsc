@@ -280,15 +280,19 @@ PetscErrorCode PetscRandomGetOptionsPrefix(PetscRandom r, const char *prefix[])
 
   Input Parameters:
 + A    - the random number generator context
-. obj  - Optional object
+. obj  - optional object that provides the prefix for the option names, pass `NULL` to use the options prefix of `A`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: `PetscRandom`, `PetscRandomView`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: `PetscRandom`, `PetscRandomView()`, `PetscOptionsCreateViewer()`, `PetscObjectViewFromOptions()`, `PetscRandomCreate()`
 @*/
 PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const char name[])
 {

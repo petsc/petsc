@@ -1887,15 +1887,19 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
 
   Input Parameters:
 + ts   - the `TS` context
-. obj  - Optional object that provides the prefix for the options database keys
+. obj  - optional object that provides the prefix for the options database keys, pass `NULL` to use the options prefix of `ts`
 - name - command line option string to be passed by user
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSView`, `PetscObjectViewFromOptions()`, `TSCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_ts), `TS`, `TSView()`, `PetscObjectViewFromOptions()`, `TSCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 {
@@ -1906,7 +1910,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 }
 
 /*@
-  TSView - Prints the `TS` data structure.
+  TSView - Displays the `TS` data structure.
 
   Collective
 
@@ -1915,7 +1919,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 - viewer - visualization context
 
   Options Database Key:
-. -ts_view - calls `TSView()` at end of `TSStep()`
+. -ts_view viewer_specification - calls `TSView()` at end of `TSStep()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
@@ -1934,7 +1938,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 
   The "initial time step" displayed is the default time step from `TSCreate()` or that set with `TSSetTimeStep()` or `-ts_time_step`
 
-.seealso: [](ch_ts), `TS`, `PetscViewer`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ts), `TS`, `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscOptionsCreateViewer()`, `TSViewFromOptions()`
 @*/
 PetscErrorCode TSView(TS ts, PetscViewer viewer)
 {

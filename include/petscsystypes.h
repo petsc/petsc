@@ -910,11 +910,11 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 
   Values:
 +  `FILE_MODE_UNDEFINED`     - initial invalid value
-.  `FILE_MODE_READ`          - open a file at its beginning for reading
-.  `FILE_MODE_WRITE`         - open a file at its beginning for writing (will create if the file does not exist)
-.  `FILE_MODE_APPEND`        - open a file at end for writing
-.  `FILE_MODE_UPDATE`        - open a file for updating, meaning for reading and writing
--  `FILE_MODE_APPEND_UPDATE` - open a file for updating, meaning for reading and writing, at the end
+.  `FILE_MODE_READ`          - open a file at its beginning for reading, string value `"read"`
+.  `FILE_MODE_WRITE`         - open a file at its beginning for writing (will create if the file does not exist), string value `"write"`
+.  `FILE_MODE_APPEND`        - open a file at end for writing, string value `"append"`
+.  `FILE_MODE_UPDATE`        - open a file for updating, meaning for reading and writing, string value `"update"`
+-  `FILE_MODE_APPEND_UPDATE` - open a file for updating, meaning for reading and writing, at the end, string value `"append_update"`
 
   Level: beginner
 

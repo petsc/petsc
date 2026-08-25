@@ -212,7 +212,9 @@ PETSC_EXTERN PetscErrorCode PetscOptionsCreateViewers(MPI_Comm, PetscOptions, co
 
    Level: beginner
 
-   Note:
+   Notes:
+   See `PetscOptionsCreateViewer()` for the format of the viewer specification
+
    Must be called between `PetscOptionsBegin()` and `PetscOptionsEnd()`; expands to a call to the internal `PetscOptionsViewer_Private()`, which has access to the current `PetscOptionsObject`. Destroy `viewer` with `PetscViewerDestroy()` when finished.
 
 .seealso: `PetscOptionsCreateViewer()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscViewer`, `PetscViewerFormat`,
