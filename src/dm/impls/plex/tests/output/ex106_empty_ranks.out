@@ -1,0 +1,11 @@
+FromCentroids: N=2 cells=8 permutation ok, globally curve sorted, balanced
+FromCentroids: N=2 cells=8 permutation ok, globally curve sorted, balanced
+CellList: N=2 cells=4 plex built and checked
+Locality: reorder cuts shared points
+Degenerate geometry: 4 cases permutation ok, globally key sorted, balanced
+Unknown curve: 4 names rejected by both interfaces
+OneDimensional: cells ascending on one axis, plex built and checked
+Validation: every invalid argument set rejected
+NoCells: empty input gives an empty migration
+HighCoordinateDim: four coordinates per vertex rejected
+NoCoordinates: Morton ordering rejected a mesh without coordinates

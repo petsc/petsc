@@ -1555,3 +1555,530 @@ PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, PetscInt n, const PetscS
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+// ***** Space-filling-curve reorder of a distributed cell list *****
+//
+// `DMPlexCreateFromCellListParallelPetsc()` interpolates in parallel. The cost of that interpolation
+// depends on how spatially compact each rank's cells are. Cells supplied in file order leave each
+// rank owning a globally scattered set, so most created faces and edges are shared and the
+// interpolation star forest is large. Sorting the cells along a space-filling curve before the
+// build makes each rank's cells spatially compact, so almost all created faces are rank-local.
+//
+// The reorder runs before any `DM` exists, so it works on the same plain arrays that
+// `DMPlexCreateFromCellListParallelPetsc()` accepts. It returns a migration `PetscSF` whose roots are
+// the caller's original cells and whose leaves are the reordered cells. Callers use that
+// `PetscSF` to migrate their own per-cell data, such as region tags or boundary labels.
+//
+// Two passes. A sample sort puts the cells in global curve order, then an exact split assigns them
+// from their global position. Sampling alone leaves an imbalance of up to a factor of two, which
+// measured 1.49 on 32 processes, and every process pays for the worst one during interpolation.
+//
+// The sort follows Parallel Sorting by Regular Sampling: H. Shi and J. Schaeffer, Parallel sorting
+// by regular sampling, Journal of Parallel and Distributed Computing 14(4), 1992. The split follows
+// the partition step of p4est, which equidistributes an already ordered set of octants from a
+// prefix sum: C. Burstedde, L. C. Wilcox and O. Ghattas, p4est: Scalable algorithms for parallel
+// adaptive mesh refinement on forests of octrees, SIAM Journal on Scientific Computing 33(3), 2011.
+// p4est needs no sample sort, because a linear octree is already in curve order.
+
+#define ZCODE_MAX_INDEX ((PetscInt)((1 << 21) - 1)) // ZEncode1() keeps 21 bits per index
+
+// Resolve a DMPlexCurveType to the curve it names. `known` reports whether the name is a registered
+// curve, which lets DMPlexGetOrdering() fall through to its graph orderings; pass NULL to require
+// one. Registering a second curve changes only this routine.
+PETSC_INTERN PetscErrorCode DMPlexCurveTypeResolve_Internal(MPI_Comm comm, DMPlexCurveType curvetype, PetscBool *known)
+{
+  PetscBool ismorton;
+
+  PetscFunctionBegin;
+  PetscCall(PetscStrcmp(curvetype, DMPLEXCURVEMORTON, &ismorton));
+  if (known) *known = ismorton;
+  else PetscCheck(ismorton, comm, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexCurveType \"%s\"; only \"%s\" is registered", curvetype ? curvetype : "(null)", DMPLEXCURVEMORTON);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// A curve code alone does not order the cells uniquely. Quantizing to 21 bits per axis makes many
+// cells share a code whenever the bounding box is much larger than the spacing between cells, which
+// one distant node is enough to cause. Splitters taken from equal codes cannot separate the cells
+// that carry them, and every such cell lands on one rank. Pairing the code with a globally unique
+// cell number removes the ties, so the splitters always cut and the balance bound always holds.
+typedef struct {
+  ZCode      z;
+  PetscInt64 g;
+} ZKey;
+
+static int ZKeyCompare(const void *a, const void *b, void *ctx)
+{
+  const ZKey *x = (const ZKey *)a;
+  const ZKey *y = (const ZKey *)b;
+
+  (void)ctx;
+  if (x->z != y->z) return x->z < y->z ? -1 : 1;
+  return x->g < y->g ? -1 : (x->g > y->g ? 1 : 0);
+}
+
+// Find the bounding box of the centroids. `global` reduces the box over the communicator, which the
+// distributed reorder needs so that every rank quantizes onto the same grid. A per-rank box would
+// place each rank on a different grid and the global order would be meaningless. A purely local
+// reorder wants the local box instead, because that spends all 21 bits on the cells it owns. On
+// return every dimension satisfies lo[d] <= hi[d], including inactive dimensions and an empty box.
+static PetscErrorCode DMPlexCentroidBoundingBox(MPI_Comm comm, PetscBool global, PetscInt spaceDim, PetscInt numCells, const PetscReal centroids[], PetscReal lo[], PetscReal hi[])
+{
+  PetscFunctionBegin;
+  for (PetscInt d = 0; d < 3; ++d) {
+    lo[d] = PETSC_MAX_REAL;
+    hi[d] = PETSC_MIN_REAL;
+  }
+  for (PetscInt c = 0; c < numCells; ++c) {
+    for (PetscInt d = 0; d < spaceDim; ++d) {
+      const PetscReal x = centroids[c * spaceDim + d];
+
+      lo[d] = PetscMin(lo[d], x);
+      hi[d] = PetscMax(hi[d], x);
+    }
+  }
+  if (global) {
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, lo, 3, MPIU_REAL, MPIU_MIN, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, hi, 3, MPIU_REAL, MPIU_MAX, comm));
+  }
+  // Inactive dimensions, and every dimension when there are no cells, retain inverted sentinel
+  // bounds. Normalize them before a vectorizing compiler can speculatively evaluate hi[d] - lo[d]
+  // in a discarded branch and overflow under floating-point traps.
+  for (PetscInt d = 0; d < 3; ++d) {
+    if (lo[d] > hi[d]) {
+      lo[d] = 0.;
+      hi[d] = 0.;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Quantize centroids onto the integer grid of the given bounding box, then Morton encode them.
+static PetscErrorCode DMPlexCentroidsToZCodes(PetscInt spaceDim, PetscInt numCells, const PetscReal centroids[], const PetscReal lo[], const PetscReal hi[], ZCode zcodes[])
+{
+  PetscReal span[3];
+
+  PetscFunctionBegin;
+  // DMPlexCentroidBoundingBox() normalizes empty and inactive dimensions, so vectorization cannot
+  // speculatively subtract their sentinel bounds.
+  for (PetscInt d = 0; d < 3; ++d) span[d] = hi[d] > lo[d] ? hi[d] - lo[d] : 1.;
+  for (PetscInt c = 0; c < numCells; ++c) {
+    Ijk idx = {0, 0, 0};
+
+    for (PetscInt d = 0; d < spaceDim; ++d) {
+      const PetscReal t = (centroids[c * spaceDim + d] - lo[d]) / span[d];
+      PetscInt        q = (PetscInt)(t * (PetscReal)ZCODE_MAX_INDEX);
+
+      q = PetscMax(0, PetscMin(ZCODE_MAX_INDEX, q));
+      if (d == 0) idx.i = q;
+      else if (d == 1) idx.j = q;
+      else idx.k = q;
+    }
+    zcodes[c] = ZEncode(idx);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Choose `size`-1 splitters that cut the global ZCode order into balanced contiguous ranges.
+//
+// Regular sampling, with the sample count on each rank proportional to the number of cells that
+// rank holds. The proportional part is load bearing. The caller chooses the input distribution, and
+// it is often very uneven: reading a mesh on one rank and building on all of them leaves every
+// other rank empty. A fixed sample count per rank would then fill the sample set with values from
+// ranks that hold almost no data, every splitter would fall in that range, and the reorder would
+// move nothing.
+//
+// The target is 32 samples per destination, or 32*`size` in total. Rounding and limiting each local
+// sample count to the local number of cells can reduce the actual total. The selection uses no
+// random numbers, so every rank derives the same splitters from the gathered samples without
+// further communication.
+//
+// These splitters decide the intermediate distribution only. The caller equidistributes exactly
+// afterwards, so a poor split costs memory and message volume in the exchange below, and it does
+// not reach the caller as an unbalanced result.
+static PetscErrorCode DMPlexZCodeSelectSplitters(MPI_Comm comm, MPI_Datatype keytype, PetscInt numCells, PetscInt NCells, const ZKey zkeys[], ZKey *splitters[])
+{
+  ZKey        *samples = NULL, *allsamples = NULL, *split;
+  PetscMPIInt *counts, *displs;
+  PetscMPIInt  size, nloci;
+  PetscInt     nloc = 0, total = 0;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCall(PetscMalloc1(PetscMax(1, size - 1), &split));
+
+  // Sample count for this rank, proportional to its share of the cells. A rank with cells always
+  // offers at least one sample; a rank with none offers none.
+  //
+  // The target is 32 samples per destination. A target proportional to `size` keeps the replicated
+  // sample set linear in the number of processes. The factor of 32 also avoids undersampling at low
+  // process counts. With only two samples per rank, rounding gives three in total, so one value
+  // decides the only splitter. On a mesh whose cells reach every rank in file order that value sits
+  // near the start of the curve, and every cell lands on one rank. Measured on 11.4 million
+  // tetrahedra over two ranks: one rank kept 11,416,998 of them.
+  //
+  // Round to nearest rather than truncate, so equal shares ask for equal counts. Form the product
+  // in 64 bits because `numCells` times the target can exceed 2^31.
+  if (NCells > 0 && numCells > 0) {
+    const PetscInt64 target = 32 * (PetscInt64)size;
+    PetscInt64       want   = ((PetscInt64)numCells * target + (PetscInt64)NCells / 2) / (PetscInt64)NCells;
+
+    nloc = (PetscInt)PetscMin((PetscInt64)numCells, PetscMax((PetscInt64)1, want));
+  }
+  PetscCall(PetscMPIIntCast(nloc, &nloci));
+  PetscCall(PetscCalloc2(size, &counts, size + 1, &displs));
+  PetscCallMPI(MPI_Allgather(&nloci, 1, MPI_INT, counts, 1, MPI_INT, comm));
+  for (PetscMPIInt r = 0; r < size; ++r) displs[r + 1] = displs[r] + counts[r];
+  total = displs[size];
+
+  if (nloc) PetscCall(PetscMalloc1(nloc, &samples));
+  // Form the sample-index numerator in 64 bits. `nloc` reaches 32*`size` when one rank holds nearly
+  // every cell, so the product with `numCells` passes 2^31 for a mesh of a few million cells on 16
+  // ranks. A 32-bit product would wrap to a negative index. The check below guards that regression;
+  // the sample_overflow suffix in ex106.c runs the sampling at that scale.
+  for (PetscInt j = 0; j < nloc; ++j) {
+    const PetscInt64 pos = ((PetscInt64)j * (PetscInt64)numCells) / (PetscInt64)nloc;
+
+    PetscCheck(pos >= 0 && pos < (PetscInt64)numCells, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Sample index %" PetscInt64_FMT " outside [0, %" PetscInt_FMT "); the product overflowed", pos, numCells);
+    samples[j] = zkeys[(PetscInt)pos];
+  }
+  PetscCall(PetscMalloc1(PetscMax(1, total), &allsamples));
+  PetscCallMPI(MPI_Allgatherv(samples, nloci, keytype, allsamples, counts, displs, keytype, comm));
+
+  // With no cells anywhere there is nothing to cut; leave the splitters at the maximum so every
+  // cell would fall in the first range.
+  if (total > 0) PetscCall(PetscTimSort(total, allsamples, sizeof(ZKey), ZKeyCompare, NULL));
+  for (PetscMPIInt k = 0; k < size - 1; ++k) {
+    PetscInt splitidx = 0;
+
+    if (total > 0) {
+      PetscCall(PetscIntCast(((PetscInt64)k + 1) * (PetscInt64)total / (PetscInt64)size, &splitidx));
+      split[k] = allsamples[splitidx];
+    } else {
+      split[k].z = ~(ZCode)0;
+      split[k].g = PETSC_INT64_MAX;
+    }
+  }
+
+  PetscCall(PetscFree(samples));
+  PetscCall(PetscFree(allsamples));
+  PetscCall(PetscFree2(counts, displs));
+  *splitters = split;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexReorderCellListByCurveFromCentroids - Compute the migration `PetscSF` that sorts a
+  distributed set of cells along a space-filling curve
+
+  Collective
+
+  Input Parameters:
++ comm      - The communicator
+. curvetype - The space-filling curve, for example `DMPLEXCURVEMORTON`
+. spaceDim  - The spatial dimension of the centroids, at most 3
+. numCells  - The number of cells owned by this process
+- centroids - The cell centroids, an array of `numCells`*`spaceDim` values
+
+  Output Parameters:
++ migrationSF - `PetscSF` whose roots are the input cells and whose leaves are the reordered cells
+- newNumCells - The number of cells owned by this process after the reorder
+
+  Level: advanced
+
+  Notes:
+  The caller migrates per-cell data with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` on
+  `migrationSF`, using the input order as the root data.
+
+  The reorder redistributes cells across the communicator, so `newNumCells` normally differs from
+  `numCells`. The total number of cells does not change.
+
+  `curvetype` and `spaceDim` must hold the same value on every process. `numCells` is local and the
+  input distribution may be arbitrary, including processes that own nothing.
+
+  The cells are equidistributed: every process receives the same number of cells, up to one cell.
+  A sample sort puts the cells in global curve order, and a second pass then assigns them from
+  their global position, so the balance does not depend on the quality of the samples. Cells whose
+  centroids fall on the same point of the curve are separated by a global cell number, so the order
+  is well defined even for a mesh whose extent dwarfs the spacing between cells.
+
+  Use `DMPlexReorderCellListByCurve()` to reorder a cell connectivity array directly.
+
+.seealso: [](ch_unstructured), `DMPLEX`, `DMPlexReorderCellListByCurve()`, `DMPlexCreateFromCellListParallelPetsc()`, `PetscSF`
+@*/
+PetscErrorCode DMPlexReorderCellListByCurveFromCentroids(MPI_Comm comm, DMPlexCurveType curvetype, PetscInt spaceDim, PetscInt numCells, const PetscReal centroids[], PetscSF *migrationSF, PetscInt *newNumCells)
+{
+  ZCode       *zcodes;
+  ZKey        *zkeys, *splitters = NULL, *recvkeys;
+  MPI_Datatype keytype;
+  PetscInt    *lidx, *recvidx, *perm;
+  PetscInt     NCells = 0, nrecv = 0, nfinal = 0;
+  PetscMPIInt *sendcounts, *recvcounts, *senddispls, *recvdispls;
+  PetscMPIInt  size, rank;
+  PetscSFNode *iremote, *finalremote;
+  PetscSF      sf;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(migrationSF, 6);
+  PetscAssertPointer(newNumCells, 7);
+  PetscCheck(spaceDim >= 1 && spaceDim <= 3, comm, PETSC_ERR_ARG_OUTOFRANGE, "spaceDim %" PetscInt_FMT " must be in [1, 3]", spaceDim);
+  PetscCheck(numCells >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "numCells %" PetscInt_FMT " must be non-negative", numCells);
+  PetscCall(DMPlexCurveTypeResolve_Internal(comm, curvetype, NULL));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+
+  // One MPI datatype covers a key; both members are 8 bytes wide and only ever copied.
+  PetscCallMPI(MPI_Type_contiguous(2, MPIU_INT64, &keytype));
+  PetscCallMPI(MPI_Type_commit(&keytype));
+
+  // Morton encode the centroids, pair each code with a globally unique cell number, then sort
+  // locally, carrying the input index along.
+  PetscCall(PetscMalloc3(numCells, &zcodes, numCells, &zkeys, numCells, &lidx));
+  {
+    PetscReal lo[3], hi[3];
+    PetscInt  base = 0;
+
+    PetscCall(DMPlexCentroidBoundingBox(comm, PETSC_TRUE, spaceDim, numCells, centroids, lo, hi));
+    PetscCall(DMPlexCentroidsToZCodes(spaceDim, numCells, centroids, lo, hi, zcodes));
+    PetscCallMPI(MPI_Exscan(&numCells, &base, 1, MPIU_INT, MPI_SUM, comm));
+    if (!rank) base = 0;
+    NCells = numCells;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &NCells, 1, MPIU_INT, MPI_SUM, comm));
+    for (PetscInt c = 0; c < numCells; ++c) {
+      zkeys[c].z = zcodes[c];
+      zkeys[c].g = (PetscInt64)base + c;
+    }
+  }
+  for (PetscInt c = 0; c < numCells; ++c) lidx[c] = c;
+  // PetscTimSortWithArray() does not accept an empty array, and a rank may own no cells.
+  if (numCells) PetscCall(PetscTimSortWithArray(numCells, zkeys, sizeof(ZKey), lidx, sizeof(PetscInt), ZKeyCompare, NULL));
+
+  // Count how many of the locally sorted cells fall in each rank's range of the curve.
+  PetscCall(DMPlexZCodeSelectSplitters(comm, keytype, numCells, NCells, zkeys, &splitters));
+  PetscCall(PetscCalloc4(size, &sendcounts, size, &recvcounts, size + 1, &senddispls, size + 1, &recvdispls));
+  {
+    PetscMPIInt dest = 0;
+
+    for (PetscInt c = 0; c < numCells; ++c) {
+      while (dest < size - 1 && ZKeyCompare(&zkeys[c], &splitters[dest], NULL) >= 0) ++dest;
+      ++sendcounts[dest];
+    }
+  }
+  PetscCallMPI(MPI_Alltoall(sendcounts, 1, MPI_INT, recvcounts, 1, MPI_INT, comm));
+  for (PetscMPIInt r = 0; r < size; ++r) {
+    senddispls[r + 1] = senddispls[r] + sendcounts[r];
+    recvdispls[r + 1] = recvdispls[r] + recvcounts[r];
+  }
+  nrecv = recvdispls[size];
+
+  // Send each cell's ZKey and its index in the caller's array. The local sort already grouped the
+  // cells by destination and carried the indices along in `lidx`, so both send buffers are ready.
+  PetscCall(PetscMalloc2(nrecv, &recvidx, nrecv, &recvkeys));
+  PetscCallMPI(MPI_Alltoallv(zkeys, sendcounts, senddispls, keytype, recvkeys, recvcounts, recvdispls, keytype, comm));
+  PetscCallMPI(MPI_Alltoallv(lidx, sendcounts, senddispls, MPIU_INT, recvidx, recvcounts, recvdispls, MPIU_INT, comm));
+
+  // The received cells are grouped by source rank, not by ZCode. Sort them so that this rank owns
+  // a contiguous, ascending piece of the curve.
+  PetscCall(PetscMalloc1(nrecv, &perm));
+  for (PetscInt i = 0; i < nrecv; ++i) perm[i] = i;
+  if (nrecv) PetscCall(PetscTimSortWithArray(nrecv, recvkeys, sizeof(ZKey), perm, sizeof(PetscInt), ZKeyCompare, NULL));
+
+  // Record which rank sent each received slot once, then read it back through the permutation. A
+  // scan per cell would cost nrecv*size, and nrecv reaches the whole mesh when the cells arrive on
+  // few ranks.
+  PetscCall(PetscMalloc1(nrecv, &iremote));
+  {
+    PetscMPIInt *srcrank;
+
+    PetscCall(PetscMalloc1(PetscMax(1, nrecv), &srcrank));
+    for (PetscMPIInt r = 0; r < size; ++r)
+      for (PetscInt j = recvdispls[r]; j < recvdispls[r + 1]; ++j) srcrank[j] = r;
+    for (PetscInt i = 0; i < nrecv; ++i) {
+      const PetscInt src = perm[i];
+
+      iremote[i].rank  = srcrank[src];
+      iremote[i].index = recvidx[src];
+    }
+    PetscCall(PetscFree(srcrank));
+  }
+  PetscCall(PetscFree(splitters));
+  PetscCall(PetscFree4(sendcounts, recvcounts, senddispls, recvdispls));
+  PetscCall(PetscFree2(recvidx, recvkeys));
+  PetscCall(PetscFree(perm));
+  PetscCall(PetscFree3(zcodes, zkeys, lidx));
+  PetscCallMPI(MPI_Type_free(&keytype));
+
+  // Second pass: equidistribute exactly. The leaves now sit in global curve order, but the counts
+  // still come from the splitters, which only bound the busiest process at twice the average. An
+  // exclusive scan of the local counts gives each leaf its global position, a `PetscLayout` says
+  // which process owns that position, and one exchange of the leaf descriptors moves it there. The
+  // result differs from the ideal by at most one cell.
+  //
+  // Positions rise with the rank of the sender, so the receiver reads its incoming groups in rank
+  // order and the curve order survives without another sort.
+  {
+    const PetscInt *ranges;
+    PetscLayout     layout;
+    PetscMPIInt    *scounts, *rcounts, *sdispls, *rdispls;
+    PetscInt        base = 0;
+
+    PetscCall(PetscLayoutCreate(comm, &layout));
+    PetscCall(PetscLayoutSetLocalSize(layout, PETSC_DECIDE));
+    PetscCall(PetscLayoutSetSize(layout, NCells));
+    PetscCall(PetscLayoutSetBlockSize(layout, 1));
+    PetscCall(PetscLayoutSetUp(layout));
+    PetscCall(PetscLayoutGetLocalSize(layout, &nfinal));
+    PetscCall(PetscLayoutGetRanges(layout, &ranges));
+    PetscCallMPI(MPI_Exscan(&nrecv, &base, 1, MPIU_INT, MPI_SUM, comm));
+    if (!rank) base = 0;
+
+    // This process holds the contiguous run of positions [base, base+nrecv), so the cells that go
+    // to any one destination are contiguous too.
+    PetscCall(PetscCalloc4(size, &scounts, size, &rcounts, size + 1, &sdispls, size + 1, &rdispls));
+    for (PetscMPIInt d = 0; d < size; ++d) {
+      const PetscInt first = PetscMax(base, ranges[d]);
+      const PetscInt last  = PetscMin(base + nrecv, ranges[d + 1]);
+
+      PetscCall(PetscMPIIntCast(PetscMax(0, last - first), &scounts[d]));
+    }
+    PetscCallMPI(MPI_Alltoall(scounts, 1, MPI_INT, rcounts, 1, MPI_INT, comm));
+    for (PetscMPIInt r = 0; r < size; ++r) {
+      sdispls[r + 1] = sdispls[r] + scounts[r];
+      rdispls[r + 1] = rdispls[r] + rcounts[r];
+    }
+    PetscCheck(rdispls[size] == nfinal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Received %d leaves for a layout of %" PetscInt_FMT, rdispls[size], nfinal);
+    PetscCall(PetscMalloc1(nfinal, &finalremote));
+    PetscCallMPI(MPI_Alltoallv(iremote, scounts, sdispls, MPIU_SF_NODE, finalremote, rcounts, rdispls, MPIU_SF_NODE, comm));
+    // Free the send buffer here rather than at the end, so the two descriptor arrays do not both
+    // occupy memory for longer than the exchange needs.
+    PetscCall(PetscFree(iremote));
+    PetscCall(PetscFree4(scounts, rcounts, sdispls, rdispls));
+    PetscCall(PetscLayoutDestroy(&layout));
+  }
+  // The exact split hides the quality of the splitters from the caller, so report it. A rank whose
+  // intermediate count sits far from its final count paid for a poor sample set.
+  PetscCall(PetscInfo(NULL, "Curve reorder: %" PetscInt_FMT " cells after the sort, %" PetscInt_FMT " after the exact split\n", nrecv, nfinal));
+  PetscCall(PetscSFCreate(comm, &sf));
+  PetscCall(PetscObjectSetName((PetscObject)sf, "Curve Reorder Migration SF"));
+  PetscCall(PetscSFSetGraph(sf, numCells, nfinal, NULL, PETSC_OWN_POINTER, finalremote, PETSC_OWN_POINTER));
+
+  *migrationSF = sf;
+  *newNumCells = nfinal;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexReorderCellListByCurve - Reorder a distributed cell list along a space-filling curve, so
+  that each process owns a spatially compact set of cells
+
+  Collective
+
+  Input Parameters:
++ comm        - The communicator
+. curvetype   - The space-filling curve, for example `DMPLEXCURVEMORTON`
+. numCells    - The number of cells owned by this process
+. numCorners  - The number of vertices for each cell
+. cells       - The global vertex numbers for each cell, an array of `numCells`*`numCorners` values
+. spaceDim    - The spatial dimension of the coordinates, at most 3
+. numVertices - The number of vertices owned by this process
+. NVertices   - The global number of vertices, or `PETSC_DECIDE`
+- coords      - The coordinates of the owned vertices, an array of `numVertices`*`spaceDim` values
+
+  Output Parameters:
++ migrationSF - `PetscSF` whose roots are the input cells and whose leaves are the reordered cells
+. newNumCells - The number of cells owned by this process after the reorder
+- newCells    - The reordered cell connectivity, an array of `newNumCells`*`numCorners` values,
+                which the caller must free
+
+  Level: advanced
+
+  Notes:
+  Call this before `DMPlexCreateFromCellListParallelPetsc()` to reduce the cost of parallel
+  interpolation. The vertex distribution stays unchanged, because the interpolation cost follows
+  the cell distribution.
+
+  Use `migrationSF` with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` to migrate per-cell data,
+  such as region tags, into the new order.
+
+  The cells are equidistributed: every process receives the same number of cells, up to one cell.
+
+  This routine gathers the coordinates of every cell corner in order to compute cell centroids. It
+  therefore holds `numCells`*`numCorners`*`spaceDim` reals at once, and it gathers a corner shared
+  by several cells once per cell. If the centroids are already available, or that buffer is too
+  large, call `DMPlexReorderCellListByCurveFromCentroids()` instead.
+
+  `curvetype`, `numCorners`, `spaceDim`, and `NVertices` must hold the same value on every process.
+
+.seealso: [](ch_unstructured), `DMPLEX`, `DMPlexReorderCellListByCurveFromCentroids()`, `DMPlexCreateFromCellListParallelPetsc()`, `PetscSF`
+@*/
+PetscErrorCode DMPlexReorderCellListByCurve(MPI_Comm comm, DMPlexCurveType curvetype, PetscInt numCells, PetscInt numCorners, const PetscInt cells[], PetscInt spaceDim, PetscInt numVertices, PetscInt NVertices, const PetscReal coords[], PetscSF *migrationSF, PetscInt *newNumCells, PetscInt *newCells[])
+{
+  PetscLayout  layout;
+  PetscSF      sfVert, sf;
+  PetscReal   *cornercoords, *centroids;
+  PetscInt    *ncells;
+  PetscInt     nnew = 0;
+  MPI_Datatype coordtype, celltype;
+  PetscMPIInt  spaceDimi, numCornersi;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(migrationSF, 10);
+  PetscAssertPointer(newNumCells, 11);
+  PetscAssertPointer(newCells, 12);
+  PetscCheck(numCells >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "numCells %" PetscInt_FMT " must be non-negative", numCells);
+  PetscCheck(numCorners > 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "numCorners %" PetscInt_FMT " must be positive", numCorners);
+  PetscCheck(spaceDim >= 1 && spaceDim <= 3, comm, PETSC_ERR_ARG_OUTOFRANGE, "spaceDim %" PetscInt_FMT " must be in [1, 3]", spaceDim);
+  // The corner buffer below holds numCorners*spaceDim reals per cell, and the star forest holds
+  // numCorners leaves per cell. Check the larger count with division before either product is
+  // formed, because it can overflow even when PetscInt is 64 bits.
+  PetscCall(DMPlexCurveTypeResolve_Internal(comm, curvetype, NULL));
+  PetscCheck(numCells <= PETSC_INT_MAX / numCorners / spaceDim, comm, PETSC_ERR_SUP, "Local cell count %" PetscInt_FMT " with %" PetscInt_FMT " corners in %" PetscInt_FMT " dimensions exceeds the addressable range; call DMPlexReorderCellListByCurveFromCentroids() with centroids you compute yourself", numCells, numCorners, spaceDim);
+
+  // Gather the coordinates of every corner of every local cell. Corners repeat between cells, so
+  // the leaf count exceeds the number of distinct vertices; that costs a little more communication
+  // and keeps the indexing simple.
+  PetscCall(PetscLayoutCreate(comm, &layout));
+  PetscCall(PetscLayoutSetLocalSize(layout, numVertices));
+  PetscCall(PetscLayoutSetSize(layout, NVertices < 0 ? PETSC_DETERMINE : NVertices));
+  PetscCall(PetscLayoutSetBlockSize(layout, 1));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscSFCreate(comm, &sfVert));
+  PetscCall(PetscSFSetGraphLayout(sfVert, layout, numCells * numCorners, NULL, PETSC_OWN_POINTER, cells));
+  PetscCall(PetscLayoutDestroy(&layout));
+
+  PetscCall(PetscMalloc1(numCells * numCorners * spaceDim, &cornercoords));
+  PetscCall(PetscMalloc1(numCells * spaceDim, &centroids));
+  PetscCall(PetscMPIIntCast(spaceDim, &spaceDimi));
+  PetscCallMPI(MPI_Type_contiguous(spaceDimi, MPIU_REAL, &coordtype));
+  PetscCallMPI(MPI_Type_commit(&coordtype));
+  PetscCall(PetscSFBcastBegin(sfVert, coordtype, coords, cornercoords, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfVert, coordtype, coords, cornercoords, MPI_REPLACE));
+  PetscCallMPI(MPI_Type_free(&coordtype));
+  PetscCall(PetscSFDestroy(&sfVert));
+
+  for (PetscInt c = 0; c < numCells; ++c) {
+    for (PetscInt d = 0; d < spaceDim; ++d) {
+      PetscReal sum = 0.;
+
+      for (PetscInt p = 0; p < numCorners; ++p) sum += cornercoords[(c * numCorners + p) * spaceDim + d];
+      centroids[c * spaceDim + d] = sum / (PetscReal)numCorners;
+    }
+  }
+  PetscCall(PetscFree(cornercoords));
+
+  PetscCall(DMPlexReorderCellListByCurveFromCentroids(comm, curvetype, spaceDim, numCells, centroids, &sf, &nnew));
+  PetscCall(PetscFree(centroids));
+
+  // Move the connectivity into the new order. One cell is one unit of numCorners vertices.
+  PetscCall(PetscMalloc1(nnew * numCorners, &ncells));
+  PetscCall(PetscMPIIntCast(numCorners, &numCornersi));
+  PetscCallMPI(MPI_Type_contiguous(numCornersi, MPIU_INT, &celltype));
+  PetscCallMPI(MPI_Type_commit(&celltype));
+  PetscCall(PetscSFBcastBegin(sf, celltype, cells, ncells, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, celltype, cells, ncells, MPI_REPLACE));
+  PetscCallMPI(MPI_Type_free(&celltype));
+
+  *migrationSF = sf;
+  *newNumCells = nnew;
+  *newCells    = ncells;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
