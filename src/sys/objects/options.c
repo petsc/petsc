@@ -3370,24 +3370,28 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems PetscOptionsObject, const char oldname[], const char newname[], const char version[], const char info[])
+PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems PetscOptionsObject, MPI_Comm incomm, const char inprefix[], const char oldname[], const char newname[], const char version[], const char info[])
 {
   PetscBool         found, quiet;
   const char       *value;
   const char *const quietopt = "-options_suppress_deprecated_warnings";
   char              msg[4096];
-  char             *prefix  = NULL;
+  const char       *prefix  = NULL;
   PetscOptions      options = NULL;
   MPI_Comm          comm    = PETSC_COMM_SELF;
 
   PetscFunctionBegin;
-  PetscAssertPointer(oldname, 2);
-  PetscAssertPointer(version, 4);
+  PetscAssertPointer(oldname, 4);
+  PetscAssertPointer(version, 6);
   if (PetscOptionsObject) {
     prefix  = PetscOptionsObject->prefix;
     options = PetscOptionsObject->options;
     comm    = PetscOptionsObject->comm;
+  } else {
+    prefix = inprefix;
+    comm   = incomm;
   }
+
   PetscCall(PetscOptionsFindPair(options, prefix, oldname, &value, &found));
   if (found) {
     if (newname) {
@@ -3400,7 +3404,12 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems PetscOptionsObjec
         PetscCall(PetscOptionsSetValue(options, newname, value));
         if (prefix) PetscCall(PetscOptionsPrefixPop(options));
       }
-      PetscCall(PetscOptionsClearValue(options, oldname));
+      if (prefix) {
+        char key[PETSC_MAX_OPTION_NAME];
+
+        PetscCall(PetscSNPrintf(key, sizeof(key), "-%s%s", prefix, oldname + 1));
+        PetscCall(PetscOptionsClearValue(options, key));
+      } else PetscCall(PetscOptionsClearValue(options, oldname));
     }
     quiet = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(options, NULL, quietopt, &quiet, NULL));

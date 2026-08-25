@@ -71,7 +71,7 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   {
     PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
+    PetscCall(PetscOptionsDeprecatedNoObject(PETSC_COMM_SELF, NULL, "-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
     /*
        Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
        has already been checked in PetscPartitionerSetFromOptions().
@@ -114,7 +114,7 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   PetscFunctionBegin;
   {
     PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject("-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
+    PetscCall(PetscOptionsDeprecatedNoObject(comm, NULL, "-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
     /*
        Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
        has already been checked in PetscPartitionerSetFromOptions().
