@@ -1606,6 +1606,17 @@ typedef struct {
   PetscInt64 g;
 } ZKey;
 
+// The local ordering in DMPlexGetCellOrderingByCurve_Internal() only sorts one rank's cells for
+// cache locality. It never partitions, so equal codes are harmless there and a bare code suffices.
+static int ZCodeCompare(const void *a, const void *b, void *ctx)
+{
+  ZCode x = *(const ZCode *)a;
+  ZCode y = *(const ZCode *)b;
+
+  (void)ctx;
+  return x < y ? -1 : (x > y ? 1 : 0);
+}
+
 static int ZKeyCompare(const void *a, const void *b, void *ctx)
 {
   const ZKey *x = (const ZKey *)a;
@@ -2080,5 +2091,51 @@ PetscErrorCode DMPlexReorderCellListByCurve(MPI_Comm comm, DMPlexCurveType curve
   *migrationSF = sf;
   *newNumCells = nnew;
   *newCells    = ncells;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Order the local cells of an existing DMPlex along a space-filling curve, for cache locality.
+// `DMPlexGetOrdering()` uses this. The permutation is local to each process, so the bounding box is
+// local too, which spends all 21 bits per axis on the cells this process owns.
+//
+// On output cperm[i] is the cell point that moves to position i, matching what the reverse
+// Cuthill-McKee path in `DMPlexGetOrdering()` produces.
+PETSC_INTERN PetscErrorCode DMPlexGetCellOrderingByCurve_Internal(DM dm, DMPlexCurveType curvetype, PetscInt cStart, PetscInt cEnd, PetscInt cperm[])
+{
+  ZCode     *zcodes;
+  PetscReal *centroids;
+  PetscReal  lo[3], hi[3];
+  PetscInt   numCells = cEnd - cStart, cdim;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexCurveTypeResolve_Internal(PetscObjectComm((PetscObject)dm), curvetype, NULL));
+  // DMPlexGetOrdering() checks that the coordinate dimension is at most 3, which the bounding box
+  // below requires, and it checks it before it allocates.
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(PetscMalloc2(numCells * cdim, &centroids, numCells, &zcodes));
+  // Average the cell's own coordinates. DMPlexComputeCellGeometryFVM() is not usable here, because
+  // it needs an interpolated mesh, and DMPlexGetOrdering() accepts uninterpolated ones. Averaging
+  // the corners also matches the centroid that DMPlexReorderCellListByCurve() computes.
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    const PetscScalar *array;
+    PetscScalar       *cc = NULL;
+    PetscBool          isDG;
+    PetscInt           Nc;
+
+    PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &Nc, &array, &cc));
+    PetscCheck(Nc >= cdim && Nc % cdim == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " has %" PetscInt_FMT " coordinate values, not a multiple of the coordinate dimension %" PetscInt_FMT, c, Nc, cdim);
+    for (PetscInt d = 0; d < cdim; ++d) {
+      PetscReal sum = 0.;
+
+      for (PetscInt v = 0; v < Nc / cdim; ++v) sum += PetscRealPart(cc[v * cdim + d]);
+      centroids[(c - cStart) * cdim + d] = sum / (PetscReal)(Nc / cdim);
+    }
+    PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &Nc, &array, &cc));
+  }
+  PetscCall(DMPlexCentroidBoundingBox(PETSC_COMM_SELF, PETSC_FALSE, cdim, numCells, centroids, lo, hi));
+  PetscCall(DMPlexCentroidsToZCodes(cdim, numCells, centroids, lo, hi, zcodes));
+  for (PetscInt c = 0; c < numCells; ++c) cperm[c] = cStart + c;
+  if (numCells) PetscCall(PetscTimSortWithArray(numCells, zcodes, sizeof(ZCode), cperm, sizeof(PetscInt), ZCodeCompare, NULL));
+  PetscCall(PetscFree2(centroids, zcodes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

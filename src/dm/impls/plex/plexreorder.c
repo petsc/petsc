@@ -52,7 +52,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
 
   Input Parameters:
 + dm    - The `DMPLEX` object
-. otype - type of reordering, see `MatOrderingType`
+. otype - type of reordering, see `MatOrderingType`; `DMPLEXCURVEMORTON` selects a space-filling curve
 - label - [Optional] Label used to segregate ordering into sets, or `NULL`
 
   Output Parameter:
@@ -64,28 +64,58 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   The label is used to group sets of points together by label value. This makes it easy to reorder a mesh which
   has different types of cells, and then loop over each set of reordered cells for assembly.
 
+  Passing `DMPLEXCURVEMORTON` orders the cells along a Morton (Z-order) curve computed from the cell
+  centroids. This requires the `DMPLEX` to have coordinates. It needs no adjacency graph. Every other
+  value currently gives reverse Cuthill-McKee.
+
 .seealso: `DMPLEX`, `DMPlexPermute()`, `MatOrderingType`, `MatGetOrdering()`
 @*/
 PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
 {
   PetscInt  numCells = 0;
-  PetscInt *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, *mask, *xls, pStart, pEnd, c, i;
+  PetscInt *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, pStart, pEnd, c, i;
+  PetscBool iscurve;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(perm, 4);
-  PetscCall(DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency));
-  PetscCall(PetscMalloc3(numCells, &cperm, numCells, &mask, numCells * 2, &xls));
-  if (numCells) {
+  PetscCall(DMPlexCurveTypeResolve_Internal(PetscObjectComm((PetscObject)dm), otype, &iscurve));
+  if (iscurve) {
+    /* A space-filling curve orders the cells from their coordinates, so it needs no adjacency graph */
+    Vec      coordinates;
+    PetscInt cStart, cEnd, cdim;
+
+    /* The curve interleaves at most three axes. Check that before anything is allocated, so a mesh
+       in a higher-dimensional space reports the limit instead of leaking the work arrays. */
+    PetscCall(DMGetCoordinateDim(dm, &cdim));
+    PetscCheck(cdim >= 1 && cdim <= 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension %" PetscInt_FMT " must be in [1, 3] for a space-filling curve", cdim);
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCheck(coordinates, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "A space-filling curve orders cells by centroid, but this DMPLEX has no coordinates");
+    PetscCall(DMGetCellCoordinatesLocalSetUp(dm));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    /* DMPlexCreateOrderingClosure_Static() indexes the permutation by the cell point number */
+    PetscCheck(cStart == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cells must start at point 0, not %" PetscInt_FMT, cStart);
+    numCells = cEnd - cStart;
+    PetscCall(PetscMalloc1(numCells, &cperm));
+    PetscCall(DMPlexGetCellOrderingByCurve_Internal(dm, otype, cStart, cEnd, cperm));
+  } else {
+    PetscInt *mask, *xls;
+
+    PetscCall(DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency));
+    PetscCall(PetscMalloc1(numCells, &cperm));
+    PetscCall(PetscMalloc2(numCells, &mask, numCells * 2, &xls));
+    if (numCells) {
+      /* Shift for Fortran numbering */
+      for (i = 0; i < start[numCells]; ++i) ++adjacency[i];
+      for (i = 0; i <= numCells; ++i) ++start[i];
+      PetscCall(SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls));
+    }
+    PetscCall(PetscFree2(mask, xls));
+    PetscCall(PetscFree(start));
+    PetscCall(PetscFree(adjacency));
     /* Shift for Fortran numbering */
-    for (i = 0; i < start[numCells]; ++i) ++adjacency[i];
-    for (i = 0; i <= numCells; ++i) ++start[i];
-    PetscCall(SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls));
+    for (c = 0; c < numCells; ++c) --cperm[c];
   }
-  PetscCall(PetscFree(start));
-  PetscCall(PetscFree(adjacency));
-  /* Shift for Fortran numbering */
-  for (c = 0; c < numCells; ++c) --cperm[c];
   /* Segregate */
   if (label) {
     IS              valueIS;
@@ -125,7 +155,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
   }
   /* Construct closure */
   PetscCall(DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm));
-  PetscCall(PetscFree3(cperm, mask, xls));
+  PetscCall(PetscFree(cperm));
   PetscCall(PetscFree(clperm));
   /* Invert permutation */
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));

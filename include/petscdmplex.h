@@ -28,7 +28,7 @@ PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM, PetscInt, con
 PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM, PetscInt, PetscSF, const PetscReal[]);
 
 /*J
-  DMPlexCurveType - String with the name of a space-filling curve for `DMPlexReorderCellListByCurve()`
+  DMPlexCurveType - String with the name of a space-filling curve for `DMPlexReorderCellListByCurve()` and `DMPlexGetOrdering()`
 
   Level: advanced
 
@@ -36,7 +36,7 @@ PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM, Petsc
   The curve is selected by name so that a new curve does not change the calling sequence of
   `DMPlexReorderCellListByCurve()`.
 
-.seealso: `DMPlexReorderCellListByCurve()`, `DMPlexReorderCellListByCurveFromCentroids()`
+.seealso: `DMPlexReorderCellListByCurve()`, `DMPlexReorderCellListByCurveFromCentroids()`, `DMPlexGetOrdering()`
 J*/
 typedef const char *DMPlexCurveType;
 #define DMPLEXCURVEMORTON "morton"

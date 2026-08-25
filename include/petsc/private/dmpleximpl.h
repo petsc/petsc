@@ -362,6 +362,7 @@ PETSC_INTERN PetscErrorCode DMPlexInterpolateInPlace_Internal(DM);
 PETSC_INTERN PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool);
 PETSC_INTERN PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM, DM, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexCurveTypeResolve_Internal(MPI_Comm, DMPlexCurveType, PetscBool *);
+PETSC_INTERN PetscErrorCode DMPlexGetCellOrderingByCurve_Internal(DM, DMPlexCurveType, PetscInt, PetscInt, PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DMLabel, DM *);
