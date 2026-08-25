@@ -329,12 +329,10 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
   PetscCall(MatDestroy(&pcbddc->divudotp));
   pcbddc->divudotp          = divudotp;
   pcbddc->divudotp_trans    = trans;
-  pcbddc->compute_nonetflux = PETSC_TRUE;
-  if (vl2l) {
-    PetscCall(PetscObjectReference((PetscObject)vl2l));
-    PetscCall(ISDestroy(&pcbddc->divudotp_vl2l));
-    pcbddc->divudotp_vl2l = vl2l;
-  }
+  pcbddc->compute_nonetflux = (PetscBool)(divudotp != NULL);
+  PetscCall(PetscObjectReference((PetscObject)vl2l));
+  PetscCall(ISDestroy(&pcbddc->divudotp_vl2l));
+  pcbddc->divudotp_vl2l = vl2l;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
