@@ -13,6 +13,10 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType)
     PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType*)
+
+    PetscErrorCode PetscRandomSetOptionsPrefix(PetscRandom, char[])
+    PetscErrorCode PetscRandomAppendOptionsPrefix(PetscRandom, char[])
+    PetscErrorCode PetscRandomGetOptionsPrefix(PetscRandom, char*[])
     PetscErrorCode PetscRandomSetFromOptions(PetscRandom)
 
     PetscErrorCode PetscRandomGetValue(PetscRandom, PetscScalar*)
