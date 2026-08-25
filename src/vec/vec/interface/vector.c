@@ -119,7 +119,8 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  PetscCall(VecStashViewFromOptions(vec, NULL, "-vec_view_stash"));
+  PetscCall(PetscOptionsDeprecatedNoObject(PetscObjectComm((PetscObject)vec), ((PetscObject)vec)->prefix, "-vec_view_stash", "-vec_stash_view", "3.26", NULL));
+  PetscCall(VecStashViewFromOptions(vec, NULL, "-vec_stash_view"));
   PetscCall(PetscLogEventBegin(VEC_AssemblyBegin, vec, 0, 0, 0));
   PetscTryTypeMethod(vec, assemblybegin);
   PetscCall(PetscLogEventEnd(VEC_AssemblyBegin, vec, 0, 0, 0));
@@ -136,12 +137,12 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 . vec - the vector
 
   Options Database Keys:
-+ -vec_view [viewertype][:...]      - Display the vector. See `VecViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
-- -vecstash_view [viewertype][:...] - Display the vector stash. See `VecStashViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
++ -vec_view viewer_specification       - Call `VecView()` at the conclusion of `VecAssemblyEnd()`. See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
+- -vec_stash_view viewer_specification - Call `VecStashView()` during `VecAssemblyBegin()`. See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`, `VecViewFromOptions()`, `VecStashViewFromOptions()`,
+.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`, `VecView()`, `VecStashView()`, `VecViewFromOptions()`, `VecStashViewFromOptions()`,
           `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode VecAssemblyEnd(Vec vec)
