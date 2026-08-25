@@ -1,6 +1,32 @@
 #if !defined(PETSC4PY_COMPAT_MPI_H)
 #define PETSC4PY_COMPAT_MPI_H
 
+#if defined(MPI_ABI_VERSION) && MPI_ABI_VERSION >= 1
+
+/*
+  Fortran interoperability is outside the MPI ABI (MPI-5.0 section 20.4), so use
+  section 20.4.5 handle serialization instead, as mpi4py does. Non-ABI Open MPI 6
+  defines MPI_ABI_VERSION as -1, hence the version test.
+*/
+
+#undef  MPI_Fint
+typedef int PETSC4PY_MPI_Fint;
+#define MPI_Fint PETSC4PY_MPI_Fint
+
+#undef  MPI_Comm_c2f
+#define MPI_Comm_c2f MPI_Comm_toint
+
+#endif /* MPI_ABI_VERSION >= 1 */
+
+#if MPI_VERSION < 5
+
+/* MPI_Comm_toint() and MPI_Comm_fromint() are new in MPI-5.0 section 20.4.5. */
+
+#define MPI_Comm_toint(comm)  ((int)MPI_Comm_c2f(comm))
+#define MPI_Comm_fromint(arg) MPI_Comm_f2c((MPI_Fint)(arg))
+
+#endif /* MPI_VERSION < 5 */
+
 #if defined(OPEN_MPI)
 
 /*

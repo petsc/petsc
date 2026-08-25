@@ -47,6 +47,16 @@ class TestComm(unittest.TestCase):
         self.assertEqual(PETSc.COMM_WORLD.getSize(), PETSc.COMM_WORLD.size)
         self.assertEqual(PETSc.COMM_WORLD.getRank(), PETSc.COMM_WORLD.rank)
 
+    def testFortran(self):
+        self.assertTrue(isinstance(PETSc.COMM_SELF.fortran, int))
+        self.assertTrue(isinstance(PETSc.COMM_WORLD.fortran, int))
+        self.assertNotEqual(PETSc.COMM_SELF.fortran, PETSc.COMM_WORLD.fortran)
+
+    def testToFromInt(self):
+        for comm in (PETSc.COMM_SELF, PETSc.COMM_WORLD):
+            clon = PETSc.Comm.fromint(comm.toint())
+            self.assertEqual(clon, comm)
+
     def testCompatMPI4PY(self):
         try:
             from mpi4py import MPI
@@ -71,6 +81,9 @@ class TestComm(unittest.TestCase):
         self.assertTrue(isinstance(cw, MPI.Intracomm))
         self.assertEqual(cw.Get_size(), PETSc.COMM_WORLD.getSize())
         self.assertEqual(cw.Get_rank(), PETSc.COMM_WORLD.getRank())
+        # Fortran handles agree with mpi4py
+        self.assertEqual(PETSc.COMM_SELF.fortran, cs.py2f())
+        self.assertEqual(PETSc.COMM_WORLD.fortran, cw.py2f())
 
 
 # --------------------------------------------------------------------
