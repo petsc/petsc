@@ -1936,6 +1936,11 @@ static PetscErrorCode DMDABCApplyFreeSlip(DM da_Stokes, Mat A, Vec f)
       args: -dm_mat_type is -stokes_ksp_type fetidp -stokes_ksp_monitor_true_residual -stokes_ksp_converged_reason -stokes_fetidp_bddc_pc_bddc_coarse_redundant_pc_type svd
 
    test:
+      suffix: fetidp_nonetflux
+      nsize: 8
+      args: -dm_mat_type is -stokes_ksp_type fetidp -stokes_ksp_fetidp_saddlepoint -stokes_fetidp_ksp_type cg -stokes_ksp_converged_reason -stokes_fetidp_pc_fieldsplit_schur_fact_type diag -stokes_fetidp_fieldsplit_p_pc_type bjacobi -stokes_fetidp_fieldsplit_lag_ksp_type preonly -stokes_fetidp_fieldsplit_p_ksp_type preonly -stokes_ksp_fetidp_pressure_field 2 -stokes_fetidp_pc_fieldsplit_schur_scale -1 -stokes_fetidp_bddc_pc_bddc_nonetflux -stokes_ksp_error_if_not_converged
+
+   test:
       suffix: bddc_stokes_deluxe
       nsize: 8
       args: -stokes_ksp_monitor -stokes_ksp_converged_reason -stokes_pc_type bddc -dm_mat_type is -stokes_pc_bddc_coarse_redundant_pc_type svd -stokes_pc_bddc_use_deluxe_scaling -stokes_sub_schurs_posdef 0 -stokes_sub_schurs_symmetric -stokes_sub_schurs_mat_solver_type petsc

@@ -2993,7 +2993,9 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    (i.e. an edge or a face), a robust method based on local QR factorizations is used.
    User defined change of basis can be passed to `PCBDDC` with `PCBDDCSetChangeOfBasisMat()`
 
-   The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Coarse grids are partitioned using a `MatPartitioning` object.
+   The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Process subdomains are partitioned using a `MatPartitioning` object.
+   When a local `MATIS` matrix stores multiple elements, their local coarse contributions are first aggregated using a `PetscPartitioner` object. In this case,
+   the coarsening ratio is the number of local elements in each aggregate.
 
    Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
 
@@ -3006,20 +3008,23 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 .    -pc_bddc_use_change_on_faces (true|false) - use change of basis approach on faces if change of basis has been requested
 .    -pc_bddc_switch_static (true|false)       - switches from M_2 (default) to M_3 operator (see reference article [1])
 .    -pc_bddc_levels 0                         - maximum number of levels for multilevel
-.    -pc_bddc_coarsening_ratio 8               - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
+.    -pc_bddc_coarsening_ratio 8               - number of process subdomains or local elements which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significant only in the multilevel case)
 .    -pc_bddc_coarse_redistribute 0            - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
 .    -pc_bddc_use_deluxe_scaling (true|false)  - use deluxe scaling
 .    -pc_bddc_schur_layers \-1                 - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
 .    -pc_bddc_adaptive_threshold 0.0           - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
 -    -pc_bddc_check_level 0                    - set verbosity level of debugging output
 
-   Options for Dirichlet, Neumann or coarse solver can be set using the appropriate options prefix
+   Options for the Dirichlet, Neumann, coarse solver, or aggregation objects can be set using the appropriate options prefix
 .vb
       -pc_bddc_dirichlet_
       -pc_bddc_neumann_
       -pc_bddc_coarse_
+      -pc_bddc_aggregator_n_
 .ve
    e.g. -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg. `PCBDDC` uses by default `KSPPREONLY` and `PCLU`.
+   At level n the aggregator prefix is `pc_bddc_aggregator_n_`, preceded by any user prefix. Numeric-prefix fallback allows options such as
+   `-pc_bddc_aggregator_mat_partitioning_type type` and `-pc_bddc_aggregator_petscpartitioner_type type` to configure all levels.
 
    When using a multilevel approach, solvers' options at the N-th level (N > 1) can be specified using the options prefix
 .vb
