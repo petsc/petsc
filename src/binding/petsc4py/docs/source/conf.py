@@ -89,6 +89,7 @@ nitpicky = True
 nitpick_ignore = [
     ('envvar', 'NUMPY_INCLUDE'),
     ('py:class', 'ndarray'),  # FIXME
+    ('py:class', 'numpy._typing._array_like.NDArray'),  # FIXME
     ('py:class', 'typing_extensions.Self'),
 ]
 nitpick_ignore_regex = [
@@ -118,6 +119,8 @@ if Version(sphinx_version) >= Version(
     '7.4'
 ):  # https://github.com/sphinx-doc/sphinx/issues/12589
     suppress_warnings.append('autosummary.import_cycle')
+if Version(sphinx_version) >= Version('9.0'):
+    suppress_warnings.append('app.add_directive')
 
 # Links depends on the actual branch -> release or main
 www = f'https://gitlab.com/petsc/petsc/-/tree/{get_doc_branch()}'
@@ -203,9 +206,22 @@ def _setup_mpi4py_typing():
         setattr(mod, clsname, cls)
 
 
-def _patch_domain_python():
+def _fix_builtin_type_xrefs(app, doctree):
+    from sphinx import addnodes
+
+    for node in doctree.findall(addnodes.pending_xref):
+        if (
+            node.get('refdomain') == 'py'
+            and node.get('reftype') == 'class'
+            and node.get('reftarget') == 'type'
+        ):
+            node.attributes.pop('refspecific', None)
+
+
+def _patch_domain_python(app):
     from sphinx.domains.python import PythonDomain
 
+    app.connect('doctree-read', _fix_builtin_type_xrefs)
     PythonDomain.object_types['data'].roles += ('class',)
 
 
@@ -360,7 +376,7 @@ _process_demos('poisson2d/poisson2d.py')
 
 def setup(app):
     _setup_mpi4py_typing()
-    _patch_domain_python()
+    _patch_domain_python(app)
     _monkey_patch_returns()
     _monkey_patch_see_also()
     _setup_autodoc(app)
