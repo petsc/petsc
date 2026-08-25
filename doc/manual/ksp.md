@@ -1109,10 +1109,10 @@ constructor (or the `-mat_type` from the command line). For instance,
   >   See `PCGAMGAGGSetNSmooths()`. The larger value produces a faster preconditioner to create and solve, but the convergence may be slower.
   > - `-pc_gamg_low_memory_threshold_filter (true|false)` Filter small matrix entries before coarsening the mesh.
   >   See `PCGAMGSetLowMemoryFilter()`.
-  > - `-pc_gamg_threshold tol` The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used. A
-  >   negative value means keeping even the locations with 0.0. See `PCGAMGSetThreshold()`
-  > - `-pc_gamg_threshold_scale scale` Set a scale factor applied to each coarser level when `-pc_gamg_low_memory_threshold_filter` is used.
-  >   See `PCGAMGSetThresholdScale()`.
+  > - `-pc_gamg_threshold tol` The threshold of small values to drop when `-pc_gamg_low_memory_threshold_filter` is used; it
+  >   must be less than 1. A negative value means keeping even the locations with 0.0. See `PCGAMGSetThreshold()`
+  > - `-pc_gamg_threshold_scale scale` Set a scale factor, in [0,1], applied to each coarser level when
+  >   `-pc_gamg_low_memory_threshold_filter` is used. See `PCGAMGSetThresholdScale()`.
   > - `-pc_gamg_mat_coarsen_type (mis|hem|misk)` Algorithm used to coarsen the matrix graph. See `MatCoarsenSetType()`.
   > - `-pc_gamg_mat_coarsen_max_it it` Maximum HEM iterations to use. See `MatCoarsenSetMaximumIterations()`.
   > - `-pc_gamg_aggressive_mis_k k` the k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
@@ -1125,10 +1125,17 @@ constructor (or the `-mat_type` from the command line). For instance,
 
   > - `-pc_gamg_agg_nsmooths n` Number of smoothing steps to be used in constructing the prolongation. For symmetric problems,
   >   generally, one or more is best. For some strongly nonsymmetric problems, 0 may be best. See `PCGAMGSetNSmooths()`.
-  > - `-pc_gamg_prolongator_filter thr` Filter small entries from the smoothed prolongator while preserving the near-null space.
-  >   Entries with absolute value below `thr` are dropped, then each row is corrected to maintain the constraint $P B_c = B$.
-  >   A value of 0 disables filtering (default). Typical values are 0.001-0.0025. This can reduce operator complexity and
-  >   improve solve time with minimal impact on convergence. See `PCGAMGSetProlongatorFilter()`.
+  > - `-pc_gamg_prolongator_filter thr` Filter small entries from the (optionally smoothed) prolongator while preserving the
+  >   near-null space. The entries coupling a fine node to a coarse node form a small dense block; a block is dropped when its
+  >   Frobenius norm is below `thr` times the largest such block norm in that fine node's rows, then each row is corrected to
+  >   maintain the constraint $P B_c = B$. A value of 0 disables filtering (default). Typical values are 0.01-0.1. This can
+  >   reduce operator complexity and improve solve time with minimal impact on convergence. On matrix types that do not
+  >   implement `MatEliminateZeros()`, and on HIPSPARSE where it is bypassed due to a known issue, dropped entries are zeroed
+  >   but remain in the sparsity pattern, so the complexity reduction is not realized. See `PCGAMGSetProlongatorFilter()`.
+  > - `-pc_gamg_prolongator_filter_scale scale` Scale the prolongator filter threshold by `scale` on each successive coarser
+  >   level; the threshold on level $l$ is `thr` times `scale` to the power $l$, with $l=0$ the finest level. A value below 1
+  >   filters less aggressively on the coarser levels, where the prolongator is denser; values above 1 are not allowed. The
+  >   default is 1. See `PCGAMGSetProlongatorFilterScale()`.
 
 - Control the amount of parallelism on the levels
 

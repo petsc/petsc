@@ -1490,11 +1490,11 @@ static PetscErrorCode PCGAMGASMSetHEM_GAMG(PC pc, PetscInt n)
 /*@
   PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + pc - the preconditioner context
-. v  - array of threshold values for finest `n` levels; 0.0 means keep all nonzero entries in the graph; negative means keep even zero entries in the graph
+. v  - array of threshold values for finest `n` levels; each value must be less than 1; 0.0 means drop only zero entries (keep all nonzero entries in the graph); negative means keep even zero entries in the graph
 - n  - number of threshold values provided in array
 
   Options Database Key:
@@ -1522,6 +1522,7 @@ PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (n) PetscAssertPointer(v, 2);
+  PetscValidLogicalCollectiveInt(pc, n, 3);
   PetscTryMethod(pc, "PCGAMGSetThreshold_C", (PC, PetscReal[], PetscInt), (pc, v, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1533,7 +1534,11 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
   PetscInt i;
 
   PetscFunctionBegin;
-  for (i = 0; i < PetscMin(n, PETSC_MG_MAXLEVELS); i++) pc_gamg->threshold[i] = v[i];
+  for (i = 0; i < PetscMin(n, PETSC_MG_MAXLEVELS); i++) {
+    PetscCheck(v[i] < 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Threshold %g (entry %" PetscInt_FMT ") must be less than 1", (double)v[i], i);
+    pc_gamg->threshold[i] = v[i];
+  }
+  if (i == 0) i = 1; /* n == 0: keep threshold[0] and derive the coarser levels from it */
   for (; i < PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i - 1] * pc_gamg->threshold_scale;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1579,11 +1584,11 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 /*@
   PCGAMGSetThresholdScale - Relative threshold reduction at each level
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + pc - the preconditioner context
-- v  - the threshold value reduction, usually < 1.0
+- v  - the threshold value reduction, in [0,1]
 
   Options Database Key:
 . -pc_gamg_threshold_scale v - set the relative threshold reduction on each level
@@ -1592,7 +1597,8 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 
   Note:
   The initial threshold (for an arbitrary number of levels starting from the finest) can be set with `PCGAMGSetThreshold()`.
-  This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`.
+  This scaling is used for each subsequent coarsening, but must be called before `PCGAMGSetThreshold()`. Values above 1, which
+  would make coarser levels filter more aggressively than the finest, are not allowed.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`
 @*/
@@ -1600,6 +1606,7 @@ PetscErrorCode PCGAMGSetThresholdScale(PC pc, PetscReal v)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(pc, v, 2);
   PetscTryMethod(pc, "PCGAMGSetThresholdScale_C", (PC, PetscReal), (pc, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1610,6 +1617,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
 
   PetscFunctionBegin;
+  PetscCheck(v >= 0.0 && v <= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Threshold scale %g must be in [0,1]", (double)v);
   pc_gamg->threshold_scale = v;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1807,6 +1815,8 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
   MPI_Comm           comm;
   char               prefix[256], tname[32];
   PetscInt           i, n;
+  PetscReal          tscale = pc_gamg->threshold_scale;
+  PetscReal          tarr[PETSC_MG_MAXLEVELS];
   const char        *pcpre;
   static const char *LayoutTypes[] = {"compact", "spread", "PCGAMGLayoutType", "PC_GAMG_LAYOUT", NULL};
 
@@ -1829,16 +1839,14 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
   PetscCall(PetscOptionsInt("-pc_gamg_process_eq_limit", "Limit (goal) on number of equations per process on coarse grids", "PCGAMGSetProcEqLim", pc_gamg->min_eq_proc, &pc_gamg->min_eq_proc, NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_coarse_eq_limit", "Limit on number of equations for the coarse grid", "PCGAMGSetCoarseEqLim", pc_gamg->coarse_eq_limit, &pc_gamg->coarse_eq_limit, NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_asm_hem_aggs", "Number of HEM matching passed in aggregates for ASM smoother", "PCGAMGASMSetHEM", pc_gamg->asm_hem_aggs, &pc_gamg->asm_hem_aggs, NULL));
-  PetscCall(PetscOptionsReal("-pc_gamg_threshold_scale", "Scaling of threshold for each level not specified", "PCGAMGSetThresholdScale", pc_gamg->threshold_scale, &pc_gamg->threshold_scale, NULL));
+  PetscCall(PetscOptionsRangeReal("-pc_gamg_threshold_scale", "Scaling of threshold for each level not specified", "PCGAMGSetThresholdScale", tscale, &tscale, &flag, 0.0, 1.0));
+  if (flag) PetscCall(PCGAMGSetThresholdScale(pc, tscale));
   n = PETSC_MG_MAXLEVELS;
-  PetscCall(PetscOptionsRealArray("-pc_gamg_threshold", "Relative threshold to use for dropping edges in aggregation graph", "PCGAMGSetThreshold", pc_gamg->threshold, &n, &flag));
-  if (!flag || n < PETSC_MG_MAXLEVELS) {
-    if (!flag) n = 1;
-    i = n;
-    do {
-      pc_gamg->threshold[i] = pc_gamg->threshold[i - 1] * pc_gamg->threshold_scale;
-    } while (++i < PETSC_MG_MAXLEVELS);
-  }
+  PetscCall(PetscArraycpy(tarr, pc_gamg->threshold, PETSC_MG_MAXLEVELS));
+  PetscCall(PetscOptionsRealArray("-pc_gamg_threshold", "Relative threshold to use for dropping edges in aggregation graph", "PCGAMGSetThreshold", tarr, &n, &flag));
+  if (flag) PetscCall(PCGAMGSetThreshold(pc, tarr, n)); /* through the setter so the range is checked */
+  else                                                  /* -pc_gamg_threshold_scale may have changed above; rederive the unspecified coarser levels */
+    for (i = 1; i < PETSC_MG_MAXLEVELS; i++) pc_gamg->threshold[i] = pc_gamg->threshold[i - 1] * pc_gamg->threshold_scale;
   PetscCall(PetscOptionsInt("-pc_mg_levels", "Set number of MG levels (should get from base class)", "PCGAMGSetNlevels", pc_gamg->Nlevels, &pc_gamg->Nlevels, NULL));
   PetscCheck(pc_gamg->Nlevels <= PETSC_MG_MAXLEVELS, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "-pc_mg_levels (%" PetscInt_FMT ") >= PETSC_MG_MAXLEVELS (%d)", pc_gamg->Nlevels, PETSC_MG_MAXLEVELS);
   n = PETSC_MG_MAXLEVELS;
@@ -1880,8 +1888,8 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
                                                equations on each process that has degrees of freedom
 . -pc_gamg_coarse_eq_limit limit             - set maximum number of equations on coarsest grid to aim for
 . -pc_gamg_reuse_interpolation (true|false)  - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
-. -pc_gamg_threshold l0,l1,...               - before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
-- -pc_gamg_threshold_scale scale             - scaling of threshold on each coarser grid if not specified
+. -pc_gamg_threshold l0,l1,...               - before aggregating the graph `PCGAMG` will remove small values from the graph on each level; each value must be less than 1, 0 drops only zero entries, and a negative value keeps even zero entries
+- -pc_gamg_threshold_scale scale             - scaling of threshold, in [0,1], on each coarser grid if not specified
 
   Options Database Keys for Aggregation:
 + -pc_gamg_agg_nsmooths nsmooth                       - number of smoothing steps to use with smooth aggregation to construct prolongation
@@ -1936,9 +1944,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscCall(PetscNew(&pc_gamg->ops));
 
   /* these should be in subctx but repartitioning needs simple arrays */
-  pc_gamg->prolongator_filter = 0.0;
-  pc_gamg->data_sz            = 0;
-  pc_gamg->data               = NULL;
+  pc_gamg->prolongator_filter       = 0.0;
+  pc_gamg->prolongator_filter_scale = 1.0;
+  pc_gamg->data_sz                  = 0;
+  pc_gamg->data                     = NULL;
 
   /* overwrite the pointers of PCMG by the functions of base class PCGAMG */
   pc->ops->setfromoptions = PCSetFromOptions_GAMG;

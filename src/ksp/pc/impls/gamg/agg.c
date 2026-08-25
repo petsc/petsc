@@ -227,20 +227,37 @@ PetscErrorCode PCGAMGSetGraphSymmetrize(PC pc, PetscBool b)
 }
 
 /*@
-  PCGAMGSetProlongatorFilter - Set threshold for filtering small entries from the prolongator (a kernel-preserving correction is applied afterward)
+  PCGAMGSetProlongatorFilter - Set the relative threshold for block filtering of the prolongator (a kernel-preserving correction is applied afterward)
 
   Logically Collective
 
   Input Parameters:
 + pc  - the preconditioner context
-- thr - threshold value; entries with absolute value below this are dropped (0 disables filtering)
+- thr - relative threshold in [0,1); the block of prolongator entries coupling a fine node to a coarse node is dropped when its Frobenius norm is below `thr` times the
+        largest such block norm in that fine node's block row (0 disables filtering)
 
   Options Database Key:
-. -pc_gamg_prolongator_filter thr - threshold for filtering small entries from prolongator (0=disabled, 0.0025=typical)
+. -pc_gamg_prolongator_filter thr - relative threshold for block filtering of the prolongator (0=disabled, 0.01-0.1=typical)
 
   Level: intermediate
 
-.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGGetProlongatorFilter()`, `PCGAMGSetLowMemoryFilter()`
+  Notes:
+  Each fine node corresponds to a block of rows (one per degree of freedom of the node, as given by the block size of the operator) and each coarse node to a
+  block of columns (one per near-null space vector), so the filtering drops small dense sub-blocks of the prolongator, not individual entries. The threshold is
+  relative to the largest block Frobenius norm in the same fine-node block row so the decision is invariant to the differing scales of the near-null space modes.
+  The comparison is strict, so the strongest block of a fine node always survives. On coarser levels the threshold is scaled by `PCGAMGSetProlongatorFilterScale()`.
+  Dropping whole blocks (rather than individual entries) keeps complete coarse-node blocks in every surviving fine row, so the near-null space correction below
+  remains full rank. The dropped entries are removed from the sparsity pattern with `MatEliminateZeros()`; on matrix types that do not implement it, and on
+  HIPSPARSE where it is bypassed due to a known issue, they are zeroed but remain in the pattern, so the coarse operators are unchanged in structure and the
+  complexity and memory reduction is not realized (reported with `-info`).
+
+  After filtering, each row of the prolongator is corrected so that the filtered prolongator still reproduces the near-null space exactly, that is, P applied to the coarse
+  representation of the near-null space equals the fine near-null space. With a single near-null space vector each row is simply rescaled; with several, a small symmetric
+  positive-definite system (of size the number of near-null space vectors) is solved for each row and the resulting correction, a combination of the coarse near-null space
+  vectors, is added to the surviving entries of the row. Rows with fewer surviving entries than near-null space vectors are left uncorrected, as are, in the single-vector
+  case, rows whose near-null space entry is zero or whose required scale factor would be extremely large (an empty or nearly empty filtered row).
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGGetProlongatorFilter()`, `PCGAMGSetProlongatorFilterScale()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGSetProlongatorFilter(PC pc, PetscReal thr)
 {
@@ -252,7 +269,7 @@ PetscErrorCode PCGAMGSetProlongatorFilter(PC pc, PetscReal thr)
 }
 
 /*@
-  PCGAMGGetProlongatorFilter - Get threshold for filtering small entries from the prolongator
+  PCGAMGGetProlongatorFilter - Get the relative threshold for block filtering of the prolongator
 
   Not Collective
 
@@ -260,11 +277,12 @@ PetscErrorCode PCGAMGSetProlongatorFilter(PC pc, PetscReal thr)
 . pc - the preconditioner context
 
   Output Parameter:
-. thr - threshold value; entries with absolute value below this are dropped (0 disables filtering)
+. thr - relative block-filtering threshold; the block of prolongator entries coupling a fine node to a coarse node is dropped when its Frobenius norm is below `thr` times
+        the largest such block norm in that fine node's block row (0 disables filtering, see `PCGAMGSetProlongatorFilter()`)
 
   Level: intermediate
 
-.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetProlongatorFilter()`, `PCGAMGSetLowMemoryFilter()`
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetProlongatorFilter()`, `PCGAMGSetProlongatorFilterScale()`, `PCGAMGSetLowMemoryFilter()`
 @*/
 PetscErrorCode PCGAMGGetProlongatorFilter(PC pc, PetscReal *thr)
 {
@@ -272,6 +290,59 @@ PetscErrorCode PCGAMGGetProlongatorFilter(PC pc, PetscReal *thr)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscAssertPointer(thr, 2);
   PetscUseMethod(pc, "PCGAMGGetProlongatorFilter_C", (PC, PetscReal *), (pc, thr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCGAMGSetProlongatorFilterScale - Set the per-level scaling of the prolongator filter threshold (see `PCGAMGSetProlongatorFilter()`)
+
+  Logically Collective
+
+  Input Parameters:
++ pc    - the preconditioner context
+- scale - per-level multiplier in [0,1]; the effective threshold on level l is `prolongator_filter` times `scale` raised to the power l, where level 0 is the finest
+
+  Options Database Key:
+. -pc_gamg_prolongator_filter_scale scale - per-level scaling of the prolongator filter threshold (1.0=default)
+
+  Level: intermediate
+
+  Note:
+  A scale below 1 filters less aggressively on the coarser levels, where the prolongator is denser. Values above 1, which would make coarser levels filter more
+  aggressively than the finest, are not allowed. A scale of 0 disables filtering on all levels but the finest.
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetProlongatorFilter()`, `PCGAMGGetProlongatorFilterScale()`
+@*/
+PetscErrorCode PCGAMGSetProlongatorFilterScale(PC pc, PetscReal scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(pc, scale, 2);
+  PetscTryMethod(pc, "PCGAMGSetProlongatorFilterScale_C", (PC, PetscReal), (pc, scale));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCGAMGGetProlongatorFilterScale - Get the per-level scaling of the prolongator filter threshold
+
+  Not Collective
+
+  Input Parameter:
+. pc - the preconditioner context
+
+  Output Parameter:
+. scale - per-level multiplier in [0,1]; the effective threshold on level l is `prolongator_filter` times `scale` raised to the power l, where level 0 is the finest
+
+  Level: intermediate
+
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetProlongatorFilter()`, `PCGAMGSetProlongatorFilterScale()`
+@*/
+PetscErrorCode PCGAMGGetProlongatorFilterScale(PC pc, PetscReal *scale)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscAssertPointer(scale, 2);
+  PetscUseMethod(pc, "PCGAMGGetProlongatorFilterScale_C", (PC, PetscReal *), (pc, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -347,7 +418,8 @@ static PetscErrorCode PCGAMGSetProlongatorFilter_AGG(PC pc, PetscReal thr)
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
 
   PetscFunctionBegin;
-  PetscCheck(thr >= 0.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Filter threshold %g must be non-negative", (double)thr);
+  PetscCheck(thr >= 0.0 && thr < 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relative prolongator filter threshold %g must be in [0,1)", (double)thr);
+  if (thr > 0.2) PetscCall(PetscInfo(pc, "Warning: prolongator filter threshold %g is unusually large; typical values are 0.01 to 0.1\n", (double)thr));
   pc_gamg->prolongator_filter = thr;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -362,6 +434,27 @@ static PetscErrorCode PCGAMGGetProlongatorFilter_AGG(PC pc, PetscReal *thr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCGAMGSetProlongatorFilterScale_AGG(PC pc, PetscReal scale)
+{
+  PC_MG   *mg      = (PC_MG *)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
+  PetscFunctionBegin;
+  PetscCheck(scale >= 0.0 && scale <= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Prolongator filter scale %g must be in [0,1]", (double)scale);
+  pc_gamg->prolongator_filter_scale = scale;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCGAMGGetProlongatorFilterScale_AGG(PC pc, PetscReal *scale)
+{
+  PC_MG   *mg      = (PC_MG *)pc->data;
+  PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
+
+  PetscFunctionBegin;
+  *scale = pc_gamg->prolongator_filter_scale;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_MG       *mg          = (PC_MG *)pc->data;
@@ -370,6 +463,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems PetscOpt
   PetscBool    n_aggressive_flg, old_sq_provided = PETSC_FALSE, new_sq_provided = PETSC_FALSE, new_sqr_graph = pc_gamg_agg->use_aggressive_square_graph;
   PetscInt     nsq_graph_old = 0;
   PetscReal    thr           = pc_gamg->prolongator_filter;
+  PetscReal    scale         = pc_gamg->prolongator_filter_scale;
   PetscBool    flg;
 
   PetscFunctionBegin;
@@ -390,8 +484,10 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems PetscOpt
   PetscCall(PetscOptionsBool("-pc_gamg_low_memory_threshold_filter", "Use the (built-in) low memory graph/matrix filter", "PCGAMGSetLowMemoryFilter", pc_gamg_agg->use_low_mem_filter, &pc_gamg_agg->use_low_mem_filter, NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_aggressive_mis_k", "Number of levels of multigrid to use.", "PCGAMGMISkSetAggressive", pc_gamg_agg->aggressive_mis_k, &pc_gamg_agg->aggressive_mis_k, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_graph_symmetrize", "Symmetrize graph for coarsening", "PCGAMGSetGraphSymmetrize", pc_gamg_agg->graph_symmetrize, &pc_gamg_agg->graph_symmetrize, NULL));
-  PetscCall(PetscOptionsReal("-pc_gamg_prolongator_filter", "Threshold for filtering small entries from prolongator (0=disabled)", "PCGAMGSetProlongatorFilter", thr, &thr, &flg));
+  PetscCall(PetscOptionsBoundedReal("-pc_gamg_prolongator_filter", "Relative Frobenius-norm threshold for block filtering of the prolongator (0=disabled)", "PCGAMGSetProlongatorFilter", thr, &thr, &flg, 0.0));
   if (flg) PetscCall(PCGAMGSetProlongatorFilter(pc, thr));
+  PetscCall(PetscOptionsRangeReal("-pc_gamg_prolongator_filter_scale", "Per-level scaling of the prolongator filter threshold", "PCGAMGSetProlongatorFilterScale", scale, &scale, &flg, 0.0, 1.0));
+  if (flg) PetscCall(PCGAMGSetProlongatorFilterScale(pc, scale));
 
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -415,6 +511,8 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetGraphSymmetrize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetProlongatorFilter_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGGetProlongatorFilter_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetProlongatorFilterScale_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGGetProlongatorFilterScale_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1490,16 +1588,135 @@ static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoars
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   PCGAMGKernelPreservingFilter_AGG - filter the prolongator while preserving the near-null space constraint P*B_c = B
+// Drop small node-coupling blocks of the prolongator; see the PCGAMGSetProlongatorFilter() manual page
+static PetscErrorCode PCGAMGProlongatorBlockFilter_AGG(PC pc, Mat Prol, PetscInt col_bs, PetscReal thr)
+{
+  PetscInt     rbs, cbs, rStart, rEnd, nfn, local_nnz = 0, max_fn_cols = 0, max_row_cols = 0, ndrows = 0, zoff = 0;
+  PetscInt    *cn_gid, *fn_col, *fn_slot, *fn_rcnt, *zcols, *drow, *doff, *dcnt;
+  PetscReal   *cn_n2;
+  PetscReal    thr2 = thr * thr;
+  PetscScalar *zeros;
+  PetscBool    no_off_proc, ishipsparse;
 
-   Applies `MatFilter()` to drop small entries, then corrects each row so that
-   P_filtered * B_c = B (the fine near-null space) is restored.
+  PetscFunctionBegin;
+  PetscCall(MatGetBlockSizes(Prol, &rbs, &cbs));
+  /* Prol is built internally with MatSetBlockSizes(..., col_bs); a mismatch here means smoothing corrupted the block structure */
+  PetscCheck(cbs == col_bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Prolongator column block size %" PetscInt_FMT " != nSAvec %" PetscInt_FMT " (block structure lost during smoothing; should be unreachable with a user-facing config)", cbs, col_bs);
+  PetscCall(MatGetOwnershipRange(Prol, &rStart, &rEnd));
+  PetscCheck((rEnd - rStart) % rbs == 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Local rows %" PetscInt_FMT " not divisible by row block size %" PetscInt_FMT, rEnd - rStart, rbs);
+  nfn = (rEnd - rStart) / rbs;
 
-   For nSAvec == 1: rescale each row by B[i] / (P_filtered[i,:] * B_c[J_i]).
-   For nSAvec > 1:  solve a small nSAvec x nSAvec SPD system per row and add
-                    a rank-nSAvec correction to the row entries.
-*/
+  /* Pre-pass over the row widths to size the scratch tightly: the total local nonzeros bound
+     the dropped columns (zcols), the widest fine-node block row bounds the distinct coarse
+     nodes of one fine node (cn_gid/cn_n2), and the widest single row bounds the entries
+     zeroed by one MatSetValues() call (zeros) */
+  for (PetscInt fn = 0; fn < nfn; fn++) {
+    PetscInt fn_cols = 0;
+
+    for (PetscInt rr = 0; rr < rbs; rr++) {
+      PetscInt grow = rStart + fn * rbs + rr, ncols;
+
+      PetscCall(MatGetRow(Prol, grow, &ncols, NULL, NULL));
+      fn_cols += ncols;
+      if (ncols > max_row_cols) max_row_cols = ncols;
+      PetscCall(MatRestoreRow(Prol, grow, &ncols, NULL, NULL));
+    }
+    local_nnz += fn_cols;
+    if (fn_cols > max_fn_cols) max_fn_cols = fn_cols;
+  }
+
+  PetscCall(PetscMalloc5(max_fn_cols, &cn_gid, max_fn_cols, &cn_n2, max_fn_cols, &fn_col, max_fn_cols, &fn_slot, rbs, &fn_rcnt));
+  PetscCall(PetscCalloc1(max_row_cols, &zeros));
+  PetscCall(PetscMalloc1(local_nnz, &zcols));
+  PetscCall(PetscMalloc3(rEnd - rStart, &drow, rEnd - rStart, &doff, rEnd - rStart, &dcnt));
+
+  for (PetscInt fn = 0; fn < nfn; fn++) {
+    PetscInt  ncn   = 0; /* distinct coarse nodes touched by this fine node-block */
+    PetscInt  nent  = 0; /* entries of this fine node-block cached in fn_col/fn_slot */
+    PetscReal maxn2 = 0.0;
+
+    /* Pass A: accumulate the per-coarse-node block Frobenius norm^2 over the rbs rows, caching each
+       entry's column and resolved coarse-node slot so that Pass B needs no second MatGetRow() sweep */
+    for (PetscInt rr = 0; rr < rbs; rr++) {
+      PetscInt           grow = rStart + fn * rbs + rr, ncols;
+      const PetscInt    *cols;
+      const PetscScalar *vals;
+
+      PetscCall(MatGetRow(Prol, grow, &ncols, &cols, &vals));
+      fn_rcnt[rr] = ncols;
+      for (PetscInt k = 0; k < ncols; k++) {
+        PetscInt  cn = cols[k] / col_bs, s = -1;
+        PetscReal av = PetscAbsScalar(vals[k]);
+
+        /* Linear dedup scan: ncn is bounded by the coarse-node degree of this
+           fine node (typically ~5-20 for AMG-coarsened elasticity), so O(ncn)
+           per entry is faster than a hash map at this scale */
+        for (PetscInt t = 0; t < ncn; t++)
+          if (cn_gid[t] == cn) {
+            s = t;
+            break;
+          }
+        if (s < 0) {
+          s         = ncn++;
+          cn_gid[s] = cn;
+          cn_n2[s]  = 0.0;
+        }
+        cn_n2[s] += av * av;
+        fn_col[nent]  = cols[k];
+        fn_slot[nent] = s;
+        nent++;
+      }
+      PetscCall(MatRestoreRow(Prol, grow, &ncols, &cols, &vals));
+    }
+    for (PetscInt t = 0; t < ncn; t++)
+      if (cn_n2[t] > maxn2) maxn2 = cn_n2[t];
+
+    /* Pass B: collect the entries of blocks below thr*max for zeroing. The test is strict, so the
+       strongest block of the node survives for any thr <= 1 */
+    nent = 0;
+    for (PetscInt rr = 0; rr < rbs; rr++) {
+      PetscInt rec_off = zoff;
+
+      for (PetscInt k = 0; k < fn_rcnt[rr]; k++, nent++)
+        if (cn_n2[fn_slot[nent]] < thr2 * maxn2) zcols[zoff++] = fn_col[nent];
+      if (zoff > rec_off) {
+        drow[ndrows] = rStart + fn * rbs + rr;
+        doff[ndrows] = rec_off;
+        dcnt[ndrows] = zoff - rec_off;
+        ndrows++;
+      }
+    }
+  }
+
+  /* all insertions are in local rows; skip the off-process assembly communication */
+  PetscCall(MatGetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, &no_off_proc));
+  PetscCall(MatSetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  for (PetscInt i = 0; i < ndrows; i++) PetscCall(MatSetValues(Prol, 1, &drow[i], dcnt[i], &zcols[doff[i]], zeros, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(Prol, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(Prol, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, no_off_proc));
+
+  PetscCall(PetscFree5(cn_gid, cn_n2, fn_col, fn_slot, fn_rcnt));
+  PetscCall(PetscFree(zeros));
+  PetscCall(PetscFree(zcols));
+  PetscCall(PetscFree3(drow, doff, dcnt));
+
+  /* Compress out the explicit zeros just set, so the filter actually sparsifies. keep must be
+     PETSC_FALSE: with keep, a zero whose local column index equals its local row index survives (an
+     index-based diagonal test that is meaningless for the rectangular Prol). The compression is done
+     in place, deliberately: a MatDuplicate()/MatHeaderReplace() copy as in MatFilter() would return
+     the freed CSR tail to the allocator, at the cost of a peak-memory spike. MatEliminateZeros() has
+     a known issue with HIPSPARSE (see the bypass in MatFilter()) and is not implemented by all matrix
+     types; in those cases the zeros are left in the sparsity pattern; the step-3 correction in
+     PCGAMGKernelPreservingFilter_AGG() skips exactly-zero entries, so a dropped block stays dropped
+     either way, it just still costs storage here. */
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)Prol, &ishipsparse, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+  if (!ishipsparse && Prol->ops->eliminatezeros) PetscCall(MatEliminateZeros(Prol, PETSC_FALSE));
+  else PetscCall(PetscInfo(pc, "PCGAMGProlongatorBlockFilter_AGG: skipping zero elimination for %s; filtered entries are zeroed but not removed\n", ((PetscObject)Prol)->type_name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Filter the prolongator by fine-node/coarse-node coupling blocks, then restore the near-null space constraint P*B_c = B; see the PCGAMGSetProlongatorFilter() manual page
 static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscReal threshold)
 {
   PC_MG           *mg      = (PC_MG *)pc->data;
@@ -1532,13 +1749,15 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
     }
   }
 
-  /* Step 2: apply the threshold filter */
+  /* Step 2: apply the block-aware threshold filter (drops whole node-coupling
+     blocks, preserving the coarse-node block structure; see
+     PCGAMGProlongatorBlockFilter_AGG()) */
   {
     PetscBool info_active = PETSC_FALSE;
     MatInfo   info0, info1;
     PetscCall(PetscInfoEnabled(((PetscObject)pc)->classid, &info_active));
     if (info_active) PetscCall(MatGetInfo(Prol, MAT_GLOBAL_SUM, &info0));
-    PetscCall(MatFilter(Prol, threshold, PETSC_TRUE, PETSC_TRUE));
+    PetscCall(PCGAMGProlongatorBlockFilter_AGG(pc, Prol, nSAvec, threshold));
     if (info_active) {
       PetscCall(MatGetInfo(Prol, MAT_GLOBAL_SUM, &info1));
       PetscCall(PetscInfo(pc, "Prolongator filter: nnz before=%g after=%g reduction=%g%%\n", info0.nz_used, info1.nz_used, (info0.nz_used > 0) ? 100.0 * (info0.nz_used - info1.nz_used) / info0.nz_used : 0.0));
@@ -1550,11 +1769,17 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
     /*
       Scalar case: use `MatMult()` + element-wise scaling + `MatDiagonalScale()`.
       scale_i = B_i / (P_filtered * Bc)_i, then P_new = diag(scale) * P_filtered.
-      Guard against zero denominators (empty rows after filter).
+      A row is left unscaled, that is, the near-null space constraint is not enforced
+      for it, in the two cases where scaling would do more harm than the constraint is
+      worth: when |scale_i| would exceed smax, which covers a denominator that is zero
+      (an empty row after the filter) or tiny relative to B_i, and when B_i is zero,
+      where enforcing the constraint would zero the whole row of the prolongator.
+      Zeros left in the sparsity pattern stay zero under `MatDiagonalScale()`.
       No ghost column access needed.
     */
     Vec                d_vec, scale_vec;
-    PetscInt           n_local;
+    PetscInt           n_local, n_unscaled = 0;
+    PetscReal          smax = 1.0e4; /* cap on the row scale; the filter drops small blocks, so a healthy row has scale ~1 */
     PetscScalar       *s_arr;
     const PetscScalar *b_arr, *d_arr;
 
@@ -1565,7 +1790,16 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
     PetscCall(VecGetArrayRead(B_vecs[0], &b_arr));
     PetscCall(VecGetArrayRead(d_vec, &d_arr));
     PetscCall(VecGetArray(scale_vec, &s_arr));
-    for (PetscInt i = 0; i < n_local; i++) s_arr[i] = (PetscAbsScalar(d_arr[i]) > 0.0) ? b_arr[i] / d_arr[i] : 1.0;
+    for (PetscInt i = 0; i < n_local; i++) {
+      PetscReal b = PetscAbsScalar(b_arr[i]), d = PetscAbsScalar(d_arr[i]);
+
+      if (b > 0.0 && smax * d > b) s_arr[i] = b_arr[i] / d_arr[i];
+      else {
+        s_arr[i] = 1.0;
+        n_unscaled++;
+      }
+    }
+    if (n_unscaled > 0) PetscCall(PetscInfo(pc, "PCGAMGKernelPreservingFilter_AGG: %" PetscInt_FMT " rows left unscaled (zero target or row scale above %g)\n", n_unscaled, (double)smax));
     PetscCall(VecRestoreArray(scale_vec, &s_arr));
     PetscCall(VecRestoreArrayRead(d_vec, &d_arr));
     PetscCall(VecRestoreArrayRead(B_vecs[0], &b_arr));
@@ -1574,7 +1808,7 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
     PetscCall(VecDestroy(&scale_vec));
   } else {
     /*
-      Vector case (nSAvec > 1): per-row least-squares correction.
+      Vector case (nSAvec > 1): per-row minimum-norm correction (Gram-matrix solve).
       Scatter Bc_data to include ghost column values using Prol's Mvctx,
       then build a hash map from global ghost column index to local ghost index
       so that `MatGetRow()` global column indices can be mapped to the ghosted array.
@@ -1586,6 +1820,7 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
     PetscMPIInt      comm_size;
     PetscHMapI       ghost_gid_to_lid; /* global ghost col index -> local ghost index (0-based) */
     PetscInt         num_ghosts = 0;
+    PetscBool        no_off_proc;
 
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)Prol), &comm_size));
     if (comm_size > 1) {
@@ -1593,7 +1828,10 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
       Vec          tmp_vec;
       PetscScalar *data_arr;
       PetscInt     nnodes;
+      PetscBool    isaij;
 
+      PetscCall(PetscObjectBaseTypeCompare((PetscObject)Prol, MATMPIAIJ, &isaij));
+      PetscCheck(isaij, PetscObjectComm((PetscObject)Prol), PETSC_ERR_SUP, "Prolongator filter requires an MPIAIJ-based prolongator, not %s", ((PetscObject)Prol)->type_name);
       PetscCall(VecGetLocalSize(mpimat->lvec, &num_ghosts));
       nnodes       = nloc + num_ghosts;
       ghost_stride = nnodes;
@@ -1635,7 +1873,8 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
       PetscInt            nrows = rEnd - rStart, max_ncols = 0;
       const PetscScalar **B_arrays;
       PetscScalar        *work, *new_vals, *G, *rhs, *x, *bc_col;
-      PetscInt           *ghosted_idx, *col_buf;
+      PetscReal          *dscale;
+      PetscInt           *ghosted_idx, *act, *col_buf;
       PetscBLASInt       *ipiv;
       PetscBLASInt        N_b;
 
@@ -1643,6 +1882,7 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
       for (PetscInt k = 0; k < nSAvec; k++) PetscCall(VecGetArrayRead(B_vecs[k], &B_arrays[k]));
       /* work: nSAvec*nSAvec Gram + nSAvec rhs + nSAvec solution + nSAvec bc_col scratch */
       PetscCall(PetscMalloc1(nSAvec * nSAvec + 3 * nSAvec, &work));
+      PetscCall(PetscMalloc1(nSAvec, &dscale));
       PetscCall(PetscMalloc1(nSAvec, &ipiv));
       PetscCall(PetscBLASIntCast(nSAvec, &N_b));
       G      = work;
@@ -1664,72 +1904,76 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
         PetscCall(PetscMalloc1(total_nnz, &new_vals));
         PetscCall(PetscMalloc1(total_nnz, &col_buf));
       }
-      PetscCall(PetscMalloc1(max_ncols, &ghosted_idx));
+      PetscCall(PetscMalloc2(max_ncols, &ghosted_idx, max_ncols, &act));
 
       /* Pass 1: read rows, compute corrections, store in flat buffers */
       {
         PetscInt *row_offsets;
         PetscInt  offset = 0, n_singular = 0, n_zero_rows = 0, n_corrected = 0, n_underdetermined = 0;
-        PetscReal max_xnorm = 0.0;
+        PetscReal max_ynorm = 0.0;
 
         PetscCall(PetscMalloc1(nrows + 1, &row_offsets));
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 
         for (PetscInt row = 0; row < nrows; row++) {
-          PetscInt           ncols;
+          PetscInt           ncols, nact = 0, grow = rStart + row, roff = offset;
+          PetscBLASInt       NRHS = 1, LDA = N_b, LDB = N_b, info;
           const PetscInt    *cols;
           const PetscScalar *vals;
-          PetscInt           grow = rStart + row;
-          PetscBLASInt       NRHS = 1, LDA = N_b, LDB = N_b, info;
 
-          row_offsets[row] = offset;
+          row_offsets[row] = roff;
           PetscCall(MatGetRow(Prol, grow, &ncols, &cols, &vals));
-          if (ncols == 0) {
+          /* Save the row unchanged, then correct only its nonzero entries: the block filter zeroes
+             dropped entries but they are not removed from the sparsity pattern for every matrix type
+             (see PCGAMGProlongatorBlockFilter_AGG()), and adding the correction to them would turn a
+             dropped block back into a nonzero one */
+          for (PetscInt j = 0; j < ncols; j++) {
+            col_buf[roff + j]  = cols[j];
+            new_vals[roff + j] = vals[j];
+            if (vals[j] != 0.0) act[nact++] = j;
+          }
+          offset = roff + ncols;
+          if (nact == 0) {
             n_zero_rows++;
             PetscCall(MatRestoreRow(Prol, grow, &ncols, &cols, &vals));
             continue;
           }
 
-          /* When ncols < nSAvec the Gram matrix G is rank-deficient by construction;
+          /* When nact < nSAvec the Gram matrix G is rank-deficient by construction;
              skip correction for this row (keep filtered values as-is).
              Note: the near-null space constraint P*Bc = B is NOT enforced for these rows.
              This typically occurs at boundary or isolated nodes where few coarse neighbors
              remain after filtering; the impact on convergence is generally small. */
-          if (ncols < nSAvec) {
+          if (nact < nSAvec) {
             n_underdetermined++;
-            for (PetscInt j = 0; j < ncols; j++) {
-              col_buf[offset + j]  = cols[j];
-              new_vals[offset + j] = vals[j];
-            }
-            offset += ncols;
             PetscCall(MatRestoreRow(Prol, grow, &ncols, &cols, &vals));
             continue;
           }
 
-          /* map global column indices to ghosted array indices and save cols */
-          for (PetscInt j = 0; j < ncols; j++) {
-            col_buf[offset + j] = cols[j];
-            if (cols[j] >= cStart && cols[j] < cEnd) ghosted_idx[j] = cols[j] - cStart;
+          /* map the global column indices of the surviving entries to ghosted array indices */
+          for (PetscInt a = 0; a < nact; a++) {
+            PetscInt col = cols[act[a]];
+            if (col >= cStart && col < cEnd) ghosted_idx[a] = col - cStart;
             else {
               PetscInt g = -1;
-              PetscCall(PetscHMapIGet(ghost_gid_to_lid, cols[j], &g));
-              PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal column %" PetscInt_FMT " not found in ghost map for prolongator filter", cols[j]);
-              ghosted_idx[j] = nloc + g;
+              PetscCall(PetscHMapIGet(ghost_gid_to_lid, col, &g));
+              PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal column %" PetscInt_FMT " not found in ghost map for prolongator filter", col);
+              ghosted_idx[a] = nloc + g;
             }
           }
 
           for (PetscInt i = 0; i < nSAvec * nSAvec; i++) G[i] = 0.0;
 
-          /* rhs[k] = B[row,k] - sum_j P[row,j] * Bc[ghosted_idx[j], k] */
+          /* rhs[k] = B[row,k] - sum_a P[row,act[a]] * Bc[ghosted_idx[a], k] */
           for (PetscInt k = 0; k < nSAvec; k++) {
             PetscScalar dot = 0.0;
-            for (PetscInt j = 0; j < ncols; j++) dot += vals[j] * (PetscScalar)Bc_ghosted_ro[k * ghost_stride + ghosted_idx[j]];
+            for (PetscInt a = 0; a < nact; a++) dot += vals[act[a]] * (PetscScalar)Bc_ghosted_ro[k * ghost_stride + ghosted_idx[a]];
             rhs[k] = B_arrays[k][row] - dot;
           }
 
-          /* G[k1,k2] = sum_j Bc[j,k1] * Bc[j,k2] using pre-gathered bc_col */
-          for (PetscInt j = 0; j < ncols; j++) {
-            PetscInt gidx = ghosted_idx[j];
+          /* G[k1,k2] = sum_a Bc[a,k1] * Bc[a,k2] using pre-gathered bc_col */
+          for (PetscInt a = 0; a < nact; a++) {
+            PetscInt gidx = ghosted_idx[a];
             for (PetscInt k = 0; k < nSAvec; k++) bc_col[k] = (PetscScalar)Bc_ghosted_ro[k * ghost_stride + gidx];
             for (PetscInt k1 = 0; k1 < nSAvec; k1++)
               for (PetscInt k2 = k1; k2 < nSAvec; k2++) G[k1 * nSAvec + k2] += bc_col[k1] * bc_col[k2];
@@ -1738,40 +1982,55 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
           for (PetscInt k1 = 1; k1 < nSAvec; k1++)
             for (PetscInt k2 = 0; k2 < k1; k2++) G[k1 * nSAvec + k2] = G[k2 * nSAvec + k1];
 
-          /* solve G * x = rhs */
-          for (PetscInt i = 0; i < nSAvec; i++) x[i] = rhs[i];
+          /* Symmetric (Jacobi) equilibration: G is severely ill-conditioned for
+             elasticity because the near-null modes have disparate scales (O(1)
+             translations vs rotations that scale with the coordinates). Scale by
+             dscale[k] = 1/sqrt(G[k,k]) so the rescaled Gram has a unit diagonal,
+             then solve (D G D) y = D rhs and recover x = D y. This is identical to
+             solving G x = rhs in exact arithmetic but removes the mode-scale
+             ill-conditioning, making the correction accurate and FP-robust. */
+          for (PetscInt k = 0; k < nSAvec; k++) {
+            PetscReal gkk = PetscRealPart(G[k * nSAvec + k]);
+            dscale[k]     = gkk > 0.0 ? 1.0 / PetscSqrtReal(gkk) : 1.0;
+          }
+          for (PetscInt k1 = 0; k1 < nSAvec; k1++)
+            for (PetscInt k2 = 0; k2 < nSAvec; k2++) G[k1 * nSAvec + k2] *= dscale[k1] * dscale[k2];
+
+          /* solve (D G D) y = D rhs, then x = D y */
+          for (PetscInt k = 0; k < nSAvec; k++) x[k] = dscale[k] * rhs[k];
           PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&N_b, &NRHS, G, &LDA, ipiv, x, &LDB, &info));
-          if (info != 0) {
-            /* G is singular despite ncols >= nSAvec (Bc columns linearly dependent);
+          PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "LAPACKgesv: %" PetscBLASInt_FMT "-th argument had an illegal value", -info);
+          if (info > 0) {
+            /* G is singular despite nact >= nSAvec (Bc columns linearly dependent);
                keep filtered values as-is (near-null space constraint not enforced for this row) */
             n_singular++;
-            for (PetscInt j = 0; j < ncols; j++) new_vals[offset + j] = vals[j];
-            offset += ncols;
             PetscCall(MatRestoreRow(Prol, grow, &ncols, &cols, &vals));
             continue;
           }
-
-          /* track ||x||^2 */
+          /* track the equilibrated solution norm ||y||^2 (x still holds y here): a
+             basis-independent health metric, large values flag a problematic row */
           {
-            PetscReal xnorm2 = 0.0;
-            for (PetscInt k = 0; k < nSAvec; k++) xnorm2 += PetscSqr(PetscAbsScalar(x[k]));
-            if (xnorm2 > max_xnorm) max_xnorm = xnorm2;
+            PetscReal ynorm2 = 0.0;
+            for (PetscInt k = 0; k < nSAvec; k++) ynorm2 += PetscSqr(PetscAbsScalar(x[k]));
+            if (ynorm2 > max_ynorm) max_ynorm = ynorm2;
           }
+          for (PetscInt k = 0; k < nSAvec; k++) x[k] *= dscale[k]; /* recover x = D y */
           n_corrected++;
 
-          /* new_vals[j] = vals[j] + sum_k Bc[ghosted_idx[j],k] * x[k] */
-          for (PetscInt j = 0; j < ncols; j++) {
+          /* new_vals[act[a]] = vals[act[a]] + sum_k Bc[ghosted_idx[a],k] * x[k] */
+          for (PetscInt a = 0; a < nact; a++) {
             PetscScalar delta = 0.0;
-            PetscInt    gidx  = ghosted_idx[j];
+            PetscInt    gidx  = ghosted_idx[a];
             for (PetscInt k = 0; k < nSAvec; k++) delta += (PetscScalar)Bc_ghosted_ro[k * ghost_stride + gidx] * x[k];
-            new_vals[offset + j] = vals[j] + delta;
+            new_vals[roff + act[a]] += delta;
           }
-          offset += ncols;
           PetscCall(MatRestoreRow(Prol, grow, &ncols, &cols, &vals));
         }
         row_offsets[nrows] = offset;
         PetscCall(PetscFPTrapPop());
-        PetscCall(PetscInfo(pc, "PCGAMGKernelPreservingFilter_AGG: nrows=%" PetscInt_FMT " corrected=%" PetscInt_FMT " zero_rows=%" PetscInt_FMT " underdetermined(ncols<nSAvec)=%" PetscInt_FMT " singular_G=%" PetscInt_FMT " max_xnorm2=%g\n", nrows, n_corrected, n_zero_rows, n_underdetermined, n_singular, (double)max_xnorm));
+        PetscCall(PetscInfo(pc, "PCGAMGKernelPreservingFilter_AGG: corrected %" PetscInt_FMT "/%" PetscInt_FMT " rows, max equilibrated correction ||y||^2=%g\n", n_corrected, nrows, (double)max_ynorm));
+        if (n_zero_rows + n_underdetermined + n_singular > 0)
+          PetscCall(PetscInfo(pc, "PCGAMGKernelPreservingFilter_AGG: %" PetscInt_FMT " rows left uncorrected (zero=%" PetscInt_FMT " underdetermined=%" PetscInt_FMT " singular_G=%" PetscInt_FMT ")\n", n_zero_rows + n_underdetermined + n_singular, n_zero_rows, n_underdetermined, n_singular));
 
         /* Pass 2: apply all corrections at once */
         for (PetscInt row = 0; row < nrows; row++) {
@@ -1785,18 +2044,24 @@ static PetscErrorCode PCGAMGKernelPreservingFilter_AGG(PC pc, Mat Prol, PetscRea
       for (PetscInt k = 0; k < nSAvec; k++) PetscCall(VecRestoreArrayRead(B_vecs[k], &B_arrays[k]));
       PetscCall(PetscFree(B_arrays));
       PetscCall(PetscFree(work));
+      PetscCall(PetscFree(dscale));
       PetscCall(PetscFree(ipiv));
-      PetscCall(PetscFree(ghosted_idx));
+      PetscCall(PetscFree2(ghosted_idx, act));
       PetscCall(PetscFree(new_vals));
       PetscCall(PetscFree(col_buf));
     }
 
     PetscCall(PetscHMapIDestroy(&ghost_gid_to_lid));
     if (comm_size > 1) PetscCall(PetscFree(Bc_ghosted));
-  }
 
-  PetscCall(MatAssemblyBegin(Prol, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(Prol, MAT_FINAL_ASSEMBLY));
+    /* all insertions are in local rows; skip the off-process assembly communication. The scalar
+       branch needs no assembly at all: MatDiagonalScale() requires and preserves assembly */
+    PetscCall(MatGetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, &no_off_proc));
+    PetscCall(MatSetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+    PetscCall(MatAssemblyBegin(Prol, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(Prol, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatSetOption(Prol, MAT_NO_OFF_PROC_ENTRIES, no_off_proc));
+  }
 
   for (PetscInt k = 0; k < nSAvec; k++) {
     PetscCall(VecDestroy(&Bc_vecs[k]));
@@ -1827,6 +2092,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   Vec          bb, xx;
   PC           epc;
   PetscReal    alpha, emax, emin;
+  PetscReal    pfilter = pc_gamg->prolongator_filter * PetscPowRealInt(pc_gamg->prolongator_filter_scale, pc_gamg->current_level);
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)Amat, &comm));
@@ -1926,7 +2192,13 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
     }
     PetscCall(VecDestroy(&diag));
   }
-  if (pc_gamg->prolongator_filter > 0.0) PetscCall(PCGAMGKernelPreservingFilter_AGG(pc, Prol, pc_gamg->prolongator_filter));
+  /* a per-level threshold of 0 (from prolongator_filter_scale == 0 on the coarser levels) drops
+     nothing, so skip the whole filter rather than pay for its passes and per-row solves */
+  if (pfilter > 0.0) {
+    PetscCall(PetscInfo(pc, "%s: level %" PetscInt_FMT " prolongator filter threshold %g (base %g, scale %g^%" PetscInt_FMT ")\n", ((PetscObject)pc)->prefix, pc_gamg->current_level, (double)pfilter, (double)pc_gamg->prolongator_filter,
+                        (double)pc_gamg->prolongator_filter_scale, pc_gamg->current_level));
+    PetscCall(PCGAMGKernelPreservingFilter_AGG(pc, Prol, pfilter));
+  }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPT], 0, 0, 0, 0));
   PetscCall(MatViewFromOptions(Prol, NULL, "-pc_gamg_agg_view_prolongation"));
   *a_P = Prol;
@@ -1938,7 +2210,8 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
 
   Options Database Keys:
 + -pc_gamg_agg_nsmooths nsmooth                       - number of smoothing steps to use with smooth aggregation to construct prolongation
-. -pc_gamg_prolongator_filter thr                     - filter small entries from the prolongator, preserving the near-null space (0=disabled, 0.0025=typical)
+. -pc_gamg_prolongator_filter thr                     - relative threshold for block filtering of the prolongator, preserving the near-null space (0=disabled, 0.01-0.1=typical)
+. -pc_gamg_prolongator_filter_scale scale             - per-level scaling of the prolongator filter threshold (1.0=default)
 . -pc_gamg_aggressive_coarsening n                    - number of aggressive coarsening (MIS-2 or square graph) levels from finest.
 . -pc_gamg_aggressive_square_graph (true|false)       - use square graph ($A^T A$), alternative is MIS-k (k=2), for aggressive coarsening
 . -pc_gamg_mis_k_minimum_degree_ordering (true|false) - use minimum degree ordering in greedy MIS algorithm
@@ -2003,6 +2276,8 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetGraphSymmetrize_C", PCGAMGSetGraphSymmetrize_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetProlongatorFilter_C", PCGAMGSetProlongatorFilter_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGGetProlongatorFilter_C", PCGAMGGetProlongatorFilter_AGG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetProlongatorFilterScale_C", PCGAMGSetProlongatorFilterScale_AGG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGGetProlongatorFilterScale_C", PCGAMGGetProlongatorFilterScale_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_AGG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
