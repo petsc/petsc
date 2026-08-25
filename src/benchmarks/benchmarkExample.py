@@ -555,7 +555,7 @@ if __name__ == '__main__':
 
 # Old GPU benchmarks
 # Benchmark for ex50
-# ./src/benchmarks/benchmarkExample.py --events VecMDot VecMAXPY KSPGMRESOrthog MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --num 50 DMDA --size 10 20 50 100 --comp 4 CPU='pc_type=none mat_no_inode dm_vec_type=seq dm_mat_type=seqaij' GPU='pc_type=none mat_no_inode dm_vec_type=seqcusp dm_mat_type=seqaijcusp cusp_synchronize'
+# ./src/benchmarks/benchmarkExample.py --events VecMDot VecMAXPY KSPOrthogonalize MatMult VecCUSPCopyTo VecCUSPCopyFrom MatCUSPCopyTo --num 50 DMDA --size 10 20 50 100 --comp 4 CPU='pc_type=none mat_no_inode dm_vec_type=seq dm_mat_type=seqaij' GPU='pc_type=none mat_no_inode dm_vec_type=seqcusp dm_mat_type=seqaijcusp cusp_synchronize'
 # Benchmark for ex52
 # ./src/benchmarks/benchmarkExample.py --events IntegBatchCPU IntegBatchGPU IntegGPUOnly --num 52 DMPlex --refine 0.0625 0.00625 0.000625 0.0000625 --blockExp 4 --order=1 CPU='dm_view show_residual=0 compute_function batch' GPU='dm_view show_residual=0 compute_function batch gpu gpu_batches=8'
 # ./src/benchmarks/benchmarkExample.py --events IntegBatchCPU IntegBatchGPU IntegGPUOnly --num 52 DMPlex --refine 0.0625 0.00625 0.000625 0.0000625 --blockExp 4 --order=1 --operator=elasticity CPU='dm_view op_type=elasticity show_residual=0 compute_function batch' GPU='dm_view op_type=elasticity show_residual=0 compute_function batch gpu gpu_batches=8'

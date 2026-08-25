@@ -33,7 +33,7 @@ PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it
   PetscScalar *hh, *hes;
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(KSP_Orthogonalization, ksp, 0, 0, 0));
   /* update Hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0, it);
   hes = HES(0, it);
@@ -46,6 +46,6 @@ PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp, PetscInt it
     /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
     PetscCall(VecAXPY(VEC_VV(it + 1), -(*hh++), VEC_VV(j)));
   }
-  PetscCall(PetscLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(KSP_Orthogonalization, ksp, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -102,7 +102,7 @@ include `MatILUFactor()`, and so on.
 
     - `MatSolve` - Forward/backward triangular solves
 
-  - `KSPGMRESOrthog` - Orthogonalization in GMRES
+  - `KSPOrthogonalize` - Orthogonalization in GMRES
 
     - `VecDot` or `VecMDot` - Inner products
     - `VecAXPY` or `VecMAXPY` - vector updates
@@ -281,7 +281,7 @@ VecMAXPY              61 1.0 8.8558e-03 1.1 5.18e+07 1.0 0.0e+00 0.0e+00 0.0e+00
 VecScatterBegin       60 1.0 9.6416e-04 1.8 0.00e+00 0.0 6.0e+02 2.1e+04 0.0e+00  0  0 73 37  0   1  0100100  0     0
 VecScatterEnd         60 1.0 6.1543e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0   8  0  0  0  0     0
 VecNormalize          61 1.0 4.2675e-03 1.3 4.94e+06 1.0 0.0e+00 0.0e+00 6.1e+01  2  2  0  0 28   5  2  0  0 51  4632
-KSPGMRESOrthog        59 1.0 2.2627e-02 1.1 9.72e+07 1.0 0.0e+00 0.0e+00 5.9e+01 11 41  0  0 27  29 42  0  0 49 17185
+KSPOrthogonalize      59 1.0 2.2627e-02 1.1 9.72e+07 1.0 0.0e+00 0.0e+00 5.9e+01 11 41  0  0 27  29 42  0  0 49 17185
 KSPSolve               1 1.0 7.2577e-02 1.0 2.31e+08 1.0 6.0e+02 2.1e+04 1.2e+02 39 98 73 37 56  99100100100100 12673
 PCSetUpOnBlocks        1 1.0 9.5367e-07 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
 PCApply               61 1.0 2.0427e-02 1.0 5.99e+07 1.0 0.0e+00 0.0e+00 0.0e+00 11 25  0  0  0  28 26  0  0  0 11726

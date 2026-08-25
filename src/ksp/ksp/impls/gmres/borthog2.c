@@ -41,7 +41,7 @@ PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt i
   PetscBool    refine = (PetscBool)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);
 
   PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(KSP_Orthogonalization, ksp, 0, 0, 0));
   if (!gmres->orthogwork) PetscCall(PetscMalloc1(gmres->max_k + 2, &gmres->orthogwork));
   lhh = gmres->orthogwork;
 
@@ -110,6 +110,6 @@ PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt i
     }
   }
 done:
-  PetscCall(PetscLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(KSP_Orthogonalization, ksp, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
