@@ -123,6 +123,58 @@ cdef class Random(Object):
         CHKERR(PetscRandomGetType(self.rnd, &cval))
         return bytes2str(cval)
 
+    def setOptionsPrefix(self, prefix: str | None) -> None:
+        """Set the prefix used for all `Random` options in the database.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        prefix
+            The options prefix.
+
+        See Also
+        --------
+        petsc_options, getOptionsPrefix, petsc.PetscRandomSetOptionsPrefix
+
+        """
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR(PetscRandomSetOptionsPrefix(self.rnd, cval))
+
+    def getOptionsPrefix(self) -> str:
+        """Return the prefix used for all `Random` options in the database.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.PetscRandomGetOptionsPrefix
+
+        """
+        cdef const char *cval = NULL
+        CHKERR(PetscRandomGetOptionsPrefix(self.rnd, &cval))
+        return bytes2str(cval)
+
+    def appendOptionsPrefix(self, prefix: str | None) -> None:
+        """Append to prefix used for all `Random` options in the database.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        prefix
+            The options prefix to append.
+
+        See Also
+        --------
+        petsc_options, setOptionsPrefix, petsc.PetscRandomAppendOptionsPrefix
+
+        """
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR(PetscRandomAppendOptionsPrefix(self.rnd, cval))
+
     def setFromOptions(self) -> None:
         """Configure the random number generator from the options database.
 
