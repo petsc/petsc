@@ -546,9 +546,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_roctx", &start_log_roctx, NULL));
       if (start_log_roctx) PetscCall(PetscLogTypeBegin(PETSCLOGHANDLERROCTX));
     }
-    flg1 = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-log", &flg2, NULL));
+    PetscCall(PetscOptionsHasName(NULL, NULL, "-log_all", &flg1));
+    PetscCall(PetscOptionsHasName(NULL, NULL, "-log", &flg2));
     if (flg1 || flg2 || ci_log) PetscCall(PetscLogDefaultBegin());
 
     PetscCall(PetscOptionsGetString(NULL, NULL, "-log_trace", mname, sizeof(mname), &flg1));

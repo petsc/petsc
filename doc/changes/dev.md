@@ -37,6 +37,7 @@
 
 ## Event Logging
 
+- Change `-log` and `-log_all` to only take optional filename arguments. They no longer take optional boolean argument
 
 ## PetscViewer
 
