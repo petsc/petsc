@@ -188,7 +188,7 @@ class PetscPyVista:
         conesLength = 0
         Np = 0
         for c in range(cStart, cEnd):
-            (_, cellCoords) = plex.getCellCoordinates(c)
+            (_, cellCoords) = plex.getPlexCellCoordinates(c)
             nc = cellCoords.shape[0]
             conesLength += 1 + nc
             Np += nc
@@ -197,7 +197,7 @@ class PetscPyVista:
         conesLength = 0
         off = 0
         for c in range(cStart, cEnd):
-            (_, cellCoords) = plex.getCellCoordinates(c)
+            (_, cellCoords) = plex.getPlexCellCoordinates(c)
             nc = cellCoords.shape[0]
             cells[conesLength] = nc
             for i in range(nc):

@@ -1451,10 +1451,13 @@ cdef class DM(Object):
         ----------
         maxCell
             The longest allowable cell dimension in each direction.
+            Negative for non-periodic dimensions.
         Lstart
-            The start of each coordinate direction, usually [0, 0, 0]
+            The start of each coordinate direction, usually [0, 0, 0].
+            0 for non-periodic dimensions.
         L
-            The periodic length of each coordinate direction, or -1 for non-periodic
+            The periodic length of each coordinate direction, or -1 for
+            non-periodic.
 
         See Also
         --------
@@ -1473,9 +1476,21 @@ cdef class DM(Object):
         cdef const PetscReal *Lstart = NULL
         cdef const PetscReal *L = NULL
         CHKERR(DMGetPeriodicity(self.dm, &maxCell, &Lstart, &L))
-        CHKERR(PetscMemcpy(MAXCELL, maxCell, <size_t>dim*sizeof(PetscReal)))
-        CHKERR(PetscMemcpy(LSTART, Lstart, <size_t>dim*sizeof(PetscReal)))
-        CHKERR(PetscMemcpy(LPY, L, <size_t>dim*sizeof(PetscReal)))
+        if maxCell:
+            CHKERR(PetscMemcpy(MAXCELL, maxCell, <size_t>dim*sizeof(PetscReal)))
+        else:
+            for d in range(dim):
+                mcell[d] = -1
+        if Lstart:
+            CHKERR(PetscMemcpy(LSTART, Lstart, <size_t>dim*sizeof(PetscReal)))
+        else:
+            for d in range(dim):
+                lstart[d] = 0
+        if L:
+            CHKERR(PetscMemcpy(LPY, L, <size_t>dim*sizeof(PetscReal)))
+        else:
+            for d in range(dim):
+                lpy[d] = -1
         return (mcell, lstart, lpy)
 
     def setPeriodicity(self, maxCell: Sequence[float], Lstart: Sequence[float], L: Sequence[float]) -> None:
