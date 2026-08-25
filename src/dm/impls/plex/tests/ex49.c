@@ -7,6 +7,7 @@ typedef struct {
   PetscBool useFE;
   PetscInt  check_face;
   PetscBool closure_tensor;
+  PetscBool bc;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -15,10 +16,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->useFE          = PETSC_TRUE;
   options->check_face     = 1;
   options->closure_tensor = PETSC_FALSE;
+  options->bc             = PETSC_FALSE;
   PetscOptionsBegin(comm, "", "Dof Ordering Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-use_fe", "Use FE or FV discretization", "ex49.c", options->useFE, &options->useFE, NULL));
   PetscCall(PetscOptionsInt("-check_face", "Face set to report on", "ex49.c", options->check_face, &options->check_face, NULL));
   PetscCall(PetscOptionsBool("-closure_tensor", "Use DMPlexSetClosurePermutationTensor()", "ex49.c", options->closure_tensor, &options->closure_tensor, NULL));
+  PetscCall(PetscOptionsBool("-bc", "Add an essential boundary condition on field 0 over marker 1, so the section carries constrained dofs", "ex49.c", options->bc, &options->bc, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -67,6 +70,13 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     PetscCall(PetscFVDestroy(&fv));
   }
   PetscCall(DMCreateDS(dm));
+  if (user->bc) {
+    DMLabel  label;
+    PetscInt id = 1;
+
+    PetscCall(DMGetLabel(dm, "marker", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, NULL, NULL, NULL, NULL));
+  }
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
@@ -240,6 +250,28 @@ int main(int argc, char **argv)
     PetscCall(MatViewFromOptions(A, NULL, "-view_mat"));
     PetscCall(MatDestroy(&A));
   }
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-test_section_reset", &flg));
+  if (flg) {
+    PetscSection           sec;
+    ISLocalToGlobalMapping ltog, ltognew;
+
+    /* Setting a section must invalidate a previously built local-to-global mapping. Hold a
+       reference to the old mapping so a rebuilt one cannot alias its address. */
+    PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
+    PetscCall(PetscObjectReference((PetscObject)ltog));
+    PetscCall(DMGetLocalSection(dm, &sec));
+    PetscCall(DMSetLocalSection(dm, sec));
+    PetscCall(DMGetLocalToGlobalMapping(dm, &ltognew));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "l2g map %s by DMSetLocalSection()\n", ltognew != ltog ? "invalidated" : "NOT invalidated"));
+    PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
+    ltog = ltognew;
+    PetscCall(PetscObjectReference((PetscObject)ltog));
+    PetscCall(DMGetGlobalSection(dm, &sec));
+    PetscCall(DMSetGlobalSection(dm, sec));
+    PetscCall(DMGetLocalToGlobalMapping(dm, &ltognew));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "l2g map %s by DMSetGlobalSection()\n", ltognew != ltog ? "invalidated" : "NOT invalidated"));
+    PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
+  }
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -261,6 +293,33 @@ int main(int argc, char **argv)
     suffix: cg_2d
     args: -dm_plex_simplex 0 -dm_plex_box_bd none,none -dm_plex_box_faces 3,3 -petscspace_degree 1 \
           -dm_view -offsets_view
+
+  # A chart permutation makes the local storage slot of a point differ from a running count over
+  # the chart, so the local-to-global map must be indexed by the local section's offsets.  Serial
+  # and unconstrained, the map must still come out as the identity.
+  test:
+    suffix: reorder_ltog
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -petscspace_degree 1 \
+          -dm_reorder_section -dm_reorder_section_type reverse -offsets_view -ltog_view -test_section_reset
+
+  # The parallel companion pins a non-identity map: ghost points have local slots that differ from
+  # their global indices, so indexing by the wrong offset shows up here. No -offsets_view: those
+  # per-rank views interleave nondeterministically on stdout
+  test:
+    suffix: reorder_ltog_par
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -petscspace_degree 1 -petscpartitioner_type simple \
+          -dm_reorder_section -dm_reorder_section_type reverse -ltog_view
+
+  # Adds constrained dofs (essential bc on field 0 only, so points mix constrained and unconstrained
+  # fields), combined with the chart permutation and parallel ghost points: the map must encode the
+  # constrained dofs as negative entries at the permuted local slots, while unconstrained ghost dofs
+  # carry their positive owner-side global indices
+  test:
+    suffix: reorder_ltog_bc_par
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -petscspace_degree 1 -petscpartitioner_type simple \
+          -dm_reorder_section -dm_reorder_section_type reverse -bc -ltog_view
 
   test:
     suffix: 1d_sfc
