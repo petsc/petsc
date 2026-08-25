@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import args
 import sys
 import os

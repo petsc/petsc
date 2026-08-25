@@ -52,8 +52,6 @@
         Creates a dictionary in the current directory with a parent, and removes
         the given key. If "parent" is "None", no parent is assigned.
 '''
-from __future__ import print_function
-from __future__ import absolute_import
 try:
   import project          # This is necessary for us to create Project objects on load
   import build.buildGraph # This is necessary for us to create BuildGraph objects on load
@@ -648,7 +646,7 @@ Arg class, which wraps the usual value.'''
     elif not self.saveTimer:
       import threading
       self.saveTimer = threading.Timer(5, self.save, [], {'force': 1})
-      self.saveTimer.setDaemon(1)
+      self.saveTimer.daemon = True
       self.saveTimer.start()
     return
 
@@ -672,7 +670,7 @@ Arg class, which wraps the usual value.'''
       import threading
 
       self.shutdownTimer = threading.Timer(delay, self.serverShutdown, [pid], {'delay': 0})
-      self.shutdownTimer.setDaemon(1)
+      self.shutdownTimer.daemon = True
       self.shutdownTimer.start()
       self.writeLogLine('SERVER: Set shutdown timer for process '+str(pid)+' at '+str(delay)+' seconds')
     else:

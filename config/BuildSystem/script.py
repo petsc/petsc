@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
 import sys
 if not hasattr(sys, 'version_info'):
   print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
@@ -125,8 +123,8 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or sys.version_info < (3,4):
-      raise RuntimeError('BuildSystem requires Python version 3.4 or higher. Get Python at https://www.python.org/')
+    if not hasattr(sys, 'version_info') or sys.version_info < (3,6):
+      raise RuntimeError('BuildSystem requires Python version 3.6 or higher. Get Python at https://www.python.org/')
     return
 
   @staticmethod
@@ -142,7 +140,7 @@ class Script(logger.Logger):
     else:
       import importlib.util
       spec = importlib.util.spec_from_file_location(name, root)
-      module = importlib.util.module_from_spec(spec) # novermin
+      module = importlib.util.module_from_spec(spec)
       sys.modules[name] = module
       spec.loader.exec_module(module)
 
@@ -178,10 +176,9 @@ class Script(logger.Logger):
         err = err.decode(encoding='UTF-8',errors='replace')
         ret = pipe.returncode
       except Exception as e:
-        if hasattr(e,'message') and hasattr(e,'errno'):
-          return ('', e.message, e.errno)
-        else:
-          return ('', str(e),1)
+        # errno is absent on most exceptions and may be None on OSError; the status is
+        # tested for truth by defaultCheckCommand() so it must never be falsy here
+        return ('', str(e), getattr(e, 'errno', None) or 1)
       output += out
       error += err
       if ret:
@@ -241,7 +238,7 @@ class Script(logger.Logger):
           def __init__(self):
             threading.Thread.__init__(self)
             self.name = 'Shell Command'
-            self.setDaemon(1)
+            self.daemon = True
           def run(self):
             (self.output, self.error, self.status) = ('', '', -1) # So these fields exist even if command fails with no output
             (self.output, self.error, self.status) = Script.runShellCommandSeq(commandseq, log, cwd, env)

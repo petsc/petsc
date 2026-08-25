@@ -544,7 +544,7 @@ prepend-path PATH "%s"
     import time
     import script
     def escape(s):
-      return s.replace('"',r'\"').replace(r'\ ',r'\\ ') # novermin
+      return s.replace('"',r'\"').replace(r'\ ',r'\\ ')
     fd = open(os.path.join(self.arch.arch,'include','petscmachineinfo.h'),'w')
     fd.write('static const char *petscmachineinfo = \"\\n\"\n')
     fd.write('\"-----------------------------------------\\n\"\n')
@@ -1054,11 +1054,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
         try:
           import inspect
 
-          calling_func_stack = inspect.stack()[1]
-          if sys.version_info >= (3, 5):
-            func_name = calling_func_stack.function
-          else:
-            func_name = calling_func_stack[3]
+          func_name = inspect.stack()[1].function
         except:
           func_name = 'Unknown'
         self.fmt_str = func_name + '(): {}'

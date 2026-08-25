@@ -5,9 +5,9 @@ banner_length = 93
 banner_sep    = '*'
 banner_line   = banner_sep*banner_length
 
-if sys.version_info < (3,4):
+if sys.version_info < (3,6):
   print(banner_line)
-  print(banner_sep+'Python version 3.4+ is required to run ./configure'.center(banner_length-2)+banner_sep)
+  print(banner_sep+'Python version 3.6+ is required to run ./configure'.center(banner_length-2)+banner_sep)
   print(banner_line)
   sys.exit(4)
 

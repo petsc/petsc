@@ -81,7 +81,7 @@ checkbadFileChange:
 	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
 
 vermin:
-	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+	@vermin --violations -t=3.6- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 	@vermin --violations -t=3.6- --exclude-regex '\.pyi$$' ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
 
 # Check that source code does not violate basic PETSc coding standards

@@ -40,7 +40,6 @@ self.mpi so that we may interogate it later. HYPRE can initially test whether
 MPI was indeed found using self.mpi.found. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
-from __future__ import print_function
 import script
 import config.base
 import time
@@ -1306,7 +1305,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Set up some threads to fetch the enclosures
     for i in range(numThreads):
       worker = Thread(target = processChildren, args = (i, todo,))
-      worker.setDaemon(True)
+      worker.daemon = True
       worker.start()
 
     while numChildren > 0:

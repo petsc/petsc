@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
-from __future__ import print_function
 import os
 import sys
 import pickle
 import traceback
 
 banner_length = 93
+
+# The whole of this module must stay parseable by older Python versions, or the
+# import fails with a SyntaxError before this check can run.
+# Batch/cross-compile reconfigure scripts and config/examples scripts import this
+# module directly, so they never reach the version check in ./configure
+if sys.version_info < (3,6):
+  print('*'*banner_length)
+  print('*'+'Python version 3.6+ is required to run ./configure'.center(banner_length-2)+'*')
+  print('*'*banner_length)
+  sys.exit(4)
+
 extraLogs     = []
 petsc_arch    = ''
 
@@ -301,11 +311,11 @@ def chkrhl9():
   return 0
 
 def chktmpnoexec():
-  if not hasattr(os,'ST_NOEXEC'): return # novermin
+  if not hasattr(os,'ST_NOEXEC'): return
   if 'TMPDIR' in os.environ: tmpDir = os.environ['TMPDIR']
   else: tmpDir = '/tmp'
-  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC: # novermin
-    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC: # novermin
+  if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC:
+    if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC:
       print('************************************************************************')
       print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where PETSc is built.')
       print('* Suggest building PETSc in a location without this restriction!')
