@@ -106,6 +106,11 @@ struct _p_KSP {
                                       the solution and rhs, these are
                                       never touched by the code, only
                                       passed back to the user */
+  Mat        mat_rhs;          /* borrowed reference to the batch of
+                                      right-hand sides being solved, set
+                                      by KSPMatSolve_Private() only while
+                                      ksp->ops->matsolve runs, never
+                                      destroyed by the KSP */
   PetscReal *res_hist;         /* If !0 stores residual each at iteration */
   PetscReal *res_hist_alloc;   /* If !0 means user did not provide buffer, needs deallocation */
   PetscCount res_hist_len;     /* current entry count of residual history array */
@@ -377,6 +382,35 @@ static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp, Vec y)
     PetscCall(PCGetOperators(ksp->pc, &A, NULL));
     PetscCall(MatGetTransposeNullSpace(A, &nullsp));
     if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, y));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  Block analog of KSP_RemoveNullSpace() and KSP_RemoveNullSpaceTranspose(), the null space is removed from each column of Y. The removal is deliberately
+  kept out of KSP_PCMatApply() so that the behavior of the ksp->ops->matsolve implementations which do not need it, KSPPREONLY and KSPHPDDM, is left unchanged
+*/
+static inline PetscErrorCode KSP_RemoveNullSpaceMat(KSP ksp, Mat Y)
+{
+  PetscFunctionBegin;
+  if (ksp->pc_side == PC_LEFT) {
+    Mat          A;
+    Vec          cy;
+    PetscInt     N;
+    MatNullSpace nullsp;
+
+    PetscCall(PCGetOperators(ksp->pc, &A, NULL));
+    if (ksp->transpose_solve) PetscCall(MatGetTransposeNullSpace(A, &nullsp));
+    else PetscCall(MatGetNullSpace(A, &nullsp));
+    if (nullsp) {
+      /* a matrix-based null space removal with dense kernels could replace this column loop for BLAS-3 performance */
+      PetscCall(MatGetSize(Y, NULL, &N));
+      for (PetscInt i = 0; i < N; i++) {
+        PetscCall(MatDenseGetColumnVec(Y, i, &cy));
+        PetscCall(MatNullSpaceRemove(nullsp, cy));
+        PetscCall(MatDenseRestoreColumnVec(Y, i, &cy));
+      }
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

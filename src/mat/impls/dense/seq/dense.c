@@ -2043,9 +2043,38 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
   PetscFunctionBegin;
   PetscCall(MatDenseGetArrayWrite(A, &v));
   if (lda > m) {
-    for (j = 0; j < n; j++) PetscCall(PetscArrayzero(v + j * lda, m));
+    for (j = 0; j < n; j++) PetscCall(PetscArrayzero(v + PetscInt64Mult(j, lda), m));
   } else {
     PetscCall(PetscArrayzero(v, PetscInt64Mult(m, n)));
+  }
+  PetscCall(MatDenseRestoreArrayWrite(A, &v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSetInf_SeqDense(Mat A)
+{
+  // MSVC gives "divide by zero" error at compile time - so declare as volatile to skip this check.
+  volatile PetscReal one = 1.0, zero = 0.0;
+  Mat_SeqDense      *l   = (Mat_SeqDense *)A->data;
+  PetscInt           lda = l->lda, m = A->rmap->n, n = A->cmap->n, i, j;
+  PetscScalar       *v;
+  PetscScalar        inf;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  inf = one / zero;
+  PetscCall(PetscFPTrapPop());
+  PetscCall(MatDenseGetArrayWrite(A, &v));
+  if (lda > m) {
+    for (j = 0; j < n; j++) {
+      PetscScalar *vj = v + PetscInt64Mult(j, lda);
+
+      for (i = 0; i < m; i++) vj[i] = inf;
+    }
+  } else {
+    const PetscInt64 mn = PetscInt64Mult(m, n);
+
+    for (PetscInt64 k = 0; k < mn; k++) v[k] = inf;
   }
   PetscCall(MatDenseRestoreArrayWrite(A, &v));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3122,7 +3151,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       NULL,
+                                       MatSetInf_SeqDense,
                                        /* 34*/ MatDuplicate_SeqDense,
                                        NULL,
                                        NULL,

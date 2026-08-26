@@ -84,6 +84,7 @@
 - Change `MatGetValues()` to respect the row or column orientation set with `MatSetOption(mat, MAT_ROW_ORIENTED, ...)`. This will break current code that calls
   `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` and uses `MatGetValues()`
 - Add new `MatType` `MATSEQBAIJLIBXSMM` and `MATMPIBAIJLIBXSMM`
+- Add support for `MatSetInf()` with `MATSEQDENSE` and `MATMPIDENSE`; no `MatType` implemented it before
 
 ## MatCoarsen
 
@@ -97,6 +98,8 @@
 - Add `PCAIR` and `PCPFLAREINV` manual pages, generated from the PFLARE sources when the documentation is built
 - Add `PCParametersInitialize`
 - Fix `PCMG` to honor `PCSetUseAmat(pc, PETSC_FALSE)` at all levels
+- Add `PCMatApplyRichardson()`, `PCMatApplyRichardsonExists()`, and `PCShellSetMatApplyRichardson()`, the block analogs of `PCApplyRichardson()`, `PCApplyRichardsonExists()`, and `PCShellSetApplyRichardson()`
+- Add the missing Fortran binding for `PCShellSetMatApply()`
 
 ## KSP
 
@@ -107,6 +110,11 @@
 - Add `KSPIDRSetS()`, `KSPIDRGetS()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`, `KSPIDRSetCosine()`, and `KSPIDRGetCosine()`
 - Deprecate `KSPMonitorResidualShort()` and `-ksp_monitor_short`, remove the `preconditioned_residual_short` monitor registry name
 - Remove `-ksp_plot_eigenvalues`, `-ksp_plot_eigenvalues_explicitly`, `-ksp_plot_eigencontours` that have been deprecated since version 3.9
+- Add native support for `KSPMatSolve()` and `KSPMatSolveTranspose()` with `KSPRICHARDSON`, which iterates on batches of or the entire block of right-hand sides instead of solving them one at a time
+- Add delegation of the `KSPRICHARDSON` block iteration to `PCMatApplyRichardson()` when the `PC` provides it, falling back to `PCApplyRichardson()` on one right-hand side at a time so that the result matches `KSPSolve()`
+- Change `KSPConvergedDefault()` to base the relative tolerance on the Frobenius norm of the batch of (preconditioned) right-hand sides during a `KSPMatSolve()` with a nonzero initial guess, matching `KSPSolve()`
+- Change `KSPMatSolve()` and `KSPMatSolveTranspose()` to reset the residual history at the start of each solve, and of each batch when `-ksp_matsolve_batch_size` is used, as `KSPSolve()` does, unless `KSPSetResidualHistory()` was called with `reset` set to `PETSC_FALSE`
+- Change `KSPRichardsonSetSelfScale()` to trigger a `KSPSetUp()` re-run when the flag changes, fixing an out-of-bounds work vector access when it was set after `KSPSetUp()`
 
 ## SNES
 

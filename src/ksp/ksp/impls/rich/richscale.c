@@ -40,13 +40,16 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 
   Level: intermediate
 
-  Note:
+  Notes:
   Requires two extra work vectors. Uses an extra `VecAXPY()` and `VecDotNorm2()` per iteration.
+
+  Changing this flag runs `KSPSetUp()` again, since the number of work vectors depends on it. The self-scaled variant has no block analog, so turning it on makes
+  `KSPMatSolve()` solve the right-hand sides one at a time instead of iterating on the whole block at once, and releases the work space that block iteration cached
 
   Developer Note:
   Could also minimize the 2-norm of the true residual with one less work vector
 
-.seealso: [](ch_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`
+.seealso: [](ch_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`, `KSPMatSolve()`
 @*/
 PetscErrorCode KSPRichardsonSetSelfScale(KSP ksp, PetscBool scale)
 {

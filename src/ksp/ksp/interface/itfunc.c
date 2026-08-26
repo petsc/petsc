@@ -834,6 +834,8 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   PetscFunctionBegin;
   level++;
   comm = PetscObjectComm((PetscObject)ksp);
+  /* ksp->mat_rhs is only set around the ksp->ops->matsolve call in KSPMatSolve_Private(), so clearing it here keeps KSPConvergedDefault() from reading a block of right-hand sides that this solve does not own */
+  ksp->mat_rhs = NULL;
   if (x && x == b) {
     PetscCheck(ksp->guess_zero, comm, PETSC_ERR_ARG_INCOMP, "Cannot use x == b with nonzero initial guess");
     PetscCall(VecDuplicate(b, &x));
@@ -1275,6 +1277,7 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
   PetscCheckSameType(B, 2, X, 3);
+  ksp->mat_rhs = NULL; /* it is set around the ksp->ops->matsolve calls below, an erroring type method must not leave it dangling */
   PetscCheck(B->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(X, 3);
   if (!X->assembled) {
@@ -1306,7 +1309,12 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
     PetscCall(PetscInfo(ksp, "KSP type %s%s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, ksp->transpose.solve_requested ? " transpose" : "", Bbn));
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
+      /* reset the history lists (residual and error) if requested, as in KSPSolve_Private(), since KSPMatSolve() supports -ksp_converged_rate, which reads the residual history */
+      if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+      if (ksp->err_hist_reset) ksp->err_hist_len = 0;
+      ksp->mat_rhs = B;
       PetscUseTypeMethod(ksp, matsolve, B, X);
+      ksp->mat_rhs = NULL;
       if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, B, X, ksp->viewerFinalRes, ksp->formatFinalRes, 0));
 
       PetscCall(KSPConvergedReasonViewFromOptions(ksp));
@@ -1320,7 +1328,11 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
       for (n2 = 0; n2 < N2; n2 += Bbn) {
         PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2 + Bbn, N2), &vB));
         PetscCall(MatDenseGetSubMatrix(X, PETSC_DECIDE, PETSC_DECIDE, n2, PetscMin(n2 + Bbn, N2), &vX));
+        if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+        if (ksp->err_hist_reset) ksp->err_hist_len = 0;
+        ksp->mat_rhs = vB;
         PetscUseTypeMethod(ksp, matsolve, vB, vX);
+        ksp->mat_rhs = NULL;
         if (ksp->viewFinalRes) PetscCall(KSPViewFinalMatResidual_Internal(ksp, vB, vX, ksp->viewerFinalRes, ksp->formatFinalRes, n2));
 
         PetscCall(KSPConvergedReasonViewFromOptions(ksp));
@@ -1332,6 +1344,8 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
         }
         PetscCall(MatDenseRestoreSubMatrix(B, &vB));
         PetscCall(MatDenseRestoreSubMatrix(X, &vX));
+        /* the state increase a failed solve does on the view is not propagated by the restore above, so it is redone on the whole block of solutions */
+        if (ksp->reason < 0) PetscCall(PetscObjectStateIncrease((PetscObject)X));
       }
     }
     if (ksp->viewMat) PetscCall(ObjectView((PetscObject)A, ksp->viewerMat, ksp->formatMat));
@@ -1378,7 +1392,13 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
 
   Unlike with `KSPSolve()`, `B` and `X` must be different matrices.
 
-.seealso: [](ch_ksp), `KSPSolve()`, `MatMatSolve()`, `KSPMatSolveTranspose()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`, `KSPSetMatSolveBatchSize()`
+  The columns of `B` are solved in batches of at most the size set with `KSPSetMatSolveBatchSize()`, which defaults to the whole block, and the `KSPType`
+  implementation is called once per batch.
+
+  As `KSPSolve()` does, this resets the residual and error history lists at the start of the solve, and at the start of each batch when `KSPSetMatSolveBatchSize()` is
+  used, unless `KSPSetResidualHistory()` or `KSPSetErrorHistory()` was called with `reset` set to `PETSC_FALSE`.
+
+.seealso: [](ch_ksp), `KSPSolve()`, `MatMatSolve()`, `KSPMatSolveTranspose()`, `MATDENSE`, `KSPHPDDM`, `KSPRICHARDSON`, `PCBJACOBI`, `PCASM`, `KSPSetMatSolveBatchSize()`
 @*/
 PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 {
@@ -1410,7 +1430,13 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
 
   Unlike `KSPSolveTranspose()`, `B` and `X` must be different matrices.
 
-.seealso: [](ch_ksp), `KSPSolveTranspose()`, `KSPSetUseExplicitTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve()`, `MATDENSE`, `KSPHPDDM`, `PCBJACOBI`, `PCASM`
+  The columns of `B` are solved in batches of at most the size set with `KSPSetMatSolveBatchSize()`, which defaults to the whole block, and the `KSPType`
+  implementation is called once per batch.
+
+  As `KSPSolveTranspose()` does, this resets the residual and error history lists at the start of the solve, and at the start of each batch when
+  `KSPSetMatSolveBatchSize()` is used, unless `KSPSetResidualHistory()` or `KSPSetErrorHistory()` was called with `reset` set to `PETSC_FALSE`.
+
+.seealso: [](ch_ksp), `KSPSolveTranspose()`, `KSPSetUseExplicitTranspose()`, `MatMatTransposeSolve()`, `KSPMatSolve()`, `MATDENSE`, `KSPHPDDM`, `KSPRICHARDSON`, `PCBJACOBI`, `PCASM`
 @*/
 PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 {
@@ -1434,12 +1460,16 @@ PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 + ksp - the `KSP` iterative solver
 - bs  - batch size
 
+  Options Database Key:
+. -ksp_matsolve_batch_size bs - the maximum number of columns treated simultaneously
+
   Level: advanced
 
   Note:
-  Using a larger block size can improve the efficiency of the solver.
+  `KSPMatSolve()` splits the columns of the block of right-hand sides into batches of at most `bs` columns and calls the `KSPType` implementation once per batch.
+  The default is to treat the whole block at once. Using a larger batch size can improve the solver's efficiency but requires more memory.
 
-.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPGetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
+.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPMatSolveTranspose()`, `KSPGetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
 @*/
 PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 {
@@ -1461,7 +1491,10 @@ PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPSetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
+  Note:
+  `PETSC_DECIDE` means that `KSPMatSolve()` treats the whole block of right-hand sides at once.
+
+.seealso: [](ch_ksp), `KSPMatSolve()`, `KSPMatSolveTranspose()`, `KSPSetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matproduct_batch_size`
 @*/
 PetscErrorCode KSPGetMatSolveBatchSize(KSP ksp, PetscInt *bs)
 {
@@ -1554,6 +1587,7 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscCall(VecDestroy(&ksp->truediagonal));
   PetscCall(KSPResetExplicitTranspose_Private(ksp));
 
+  ksp->mat_rhs    = NULL;
   ksp->setupstage = KSP_SETUP_NEW;
   ksp->nmax       = PETSC_DECIDE;
   PetscFunctionReturn(PETSC_SUCCESS);

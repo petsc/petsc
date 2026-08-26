@@ -13,6 +13,7 @@ struct _PCOps {
   PetscErrorCode (*apply)(PC, Vec, Vec);
   PetscErrorCode (*matapply)(PC, Mat, Mat);
   PetscErrorCode (*applyrichardson)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
+  PetscErrorCode (*matapplyrichardson)(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
   PetscErrorCode (*applyBA)(PC, PCSide, Vec, Vec, Vec);
   PetscErrorCode (*applytranspose)(PC, Vec, Vec);
   PetscErrorCode (*matapplytranspose)(PC, Mat, Mat);

@@ -21,6 +21,7 @@ typedef struct {
   PetscErrorCode (*applytranspose)(PC, Vec, Vec);
   PetscErrorCode (*matapplytranspose)(PC, Mat, Mat);
   PetscErrorCode (*applyrich)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
+  PetscErrorCode (*matapplyrich)(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
 
   char *name;
 } PC_Shell;
@@ -243,6 +244,21 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc, Vec x, Vec y, Vec w, PetscR
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCMatApplyRichardson_Shell(PC pc, Mat B, Mat Y, Mat W, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt it, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
+{
+  PC_Shell        *shell = (PC_Shell *)pc->data;
+  PetscObjectState instate, outstate;
+
+  PetscFunctionBegin;
+  PetscCheck(shell->matapplyrich, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No matapplyrichardson() routine provided to Shell PC");
+  PetscCall(PetscObjectStateGet((PetscObject)Y, &instate));
+  PetscCallBack("PCSHELL callback matapplyrichardson", (*shell->matapplyrich)(pc, B, Y, W, rtol, abstol, dtol, it, guesszero, outits, reason));
+  PetscCall(PetscObjectStateGet((PetscObject)Y, &outstate));
+  /* increase the state of the output block of vectors since the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)Y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCDestroy_Shell(PC pc)
 {
   PC_Shell *shell = (PC_Shell *)pc->data;
@@ -265,6 +281,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellGetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyRichardson_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetMatApplyRichardson_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCPreSolveChangeRHS_C", NULL));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -424,6 +441,17 @@ static PetscErrorCode PCShellSetApplyRichardson_Shell(PC pc, PetscErrorCode (*ap
   shell->applyrich = applyrich;
   if (applyrich) pc->ops->applyrichardson = PCApplyRichardson_Shell;
   else pc->ops->applyrichardson = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCShellSetMatApplyRichardson_Shell(PC pc, PetscErrorCode (*matapplyrich)(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *))
+{
+  PC_Shell *shell = (PC_Shell *)pc->data;
+
+  PetscFunctionBegin;
+  shell->matapplyrich = matapplyrich;
+  if (matapplyrich) pc->ops->matapplyrichardson = PCMatApplyRichardson_Shell;
+  else pc->ops->matapplyrichardson = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -864,13 +892,57 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
   This is used when one can provide code for multiple steps of Richardson's method that is more efficient than computing a single step,
   recomputing the residual via $ r = b - A x $, and then computing the next step. SOR is an algorithm for which this is true.
 
-.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`, `KSPRICHARDSON`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`, `PCShellSetMatApplyRichardson()`, `KSPRICHARDSON`
 @*/
 PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits, PetscBool zeroinitialguess, PetscInt *its, PCRichardsonConvergedReason *reason))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCShellSetApplyRichardson_C", (PC, PetscErrorCode (*)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *)), (pc, apply));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCShellSetMatApplyRichardson - Sets routine to use as preconditioner
+  in Richardson iteration on a block of vectors stored as a `MATDENSE`.
+
+  Logically Collective
+
+  Input Parameters:
++ pc       - the preconditioner context
+- matapply - the application-provided preconditioning routine
+
+  Calling sequence of `matapply`:
++ pc               - the preconditioner
+. B                - block of right-hand sides
+. X                - block of current iterates
+. W                - block of work vectors, may be `NULL`
+. rtol             - relative tolerance of residual norm to stop at
+. abstol           - absolute tolerance of residual norm to stop at
+. dtol             - if residual norm increases by this factor then return
+. maxits           - number of iterations to run
+. zeroinitialguess - `PETSC_TRUE` if `X` is known to be initially zero
+. its              - returns the number of iterations used
+- reason           - returns the reason the iteration has converged
+
+  Level: advanced
+
+  Notes:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `matapply`.
+
+  This is the block analog of `PCShellSetApplyRichardson()` and is used by `KSPMatSolve()` with `KSPRICHARDSON` to run Richardson's
+  method on the whole block of right-hand sides at once instead of one right-hand side at a time. `KSPRICHARDSON` passes `NULL` for
+  `W`, so `matapply` must allocate any scratch space it needs itself. Setting this callback without also setting
+  `PCShellSetApplyRichardson()` makes `KSPMatSolve()` delegate to `matapply` while `KSPSolve()` runs the generic Richardson
+  iteration with the plain apply callback, so the two can compute different solutions unless the callbacks are consistent.
+
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetMatApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`, `KSPRICHARDSON`, `KSPMatSolve()`
+@*/
+PetscErrorCode PCShellSetMatApplyRichardson(PC pc, PetscErrorCode (*matapply)(PC pc, Mat B, Mat X, Mat W, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits, PetscBool zeroinitialguess, PetscInt *its, PCRichardsonConvergedReason *reason))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCShellSetMatApplyRichardson_C", (PC, PetscErrorCode (*)(PC, Mat, Mat, Mat, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *)), (pc, matapply));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -909,7 +981,7 @@ PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, V
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `MATSHELL`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetView()`, `PCShellSetDestroy()`, `PCShellSetPostSolve()`,
           `PCShellSetApplyTranspose()`, `PCShellSetName()`, `PCShellSetApplyRichardson()`, `PCShellSetPreSolve()`,
-          `PCShellGetName()`, `PCShellSetContext()`, `PCShellGetContext()`, `PCShellSetApplyBA()`, `PCShellSetMatApply()`
+          `PCShellGetName()`, `PCShellSetContext()`, `PCShellGetContext()`, `PCShellSetApplyBA()`, `PCShellSetMatApply()`, `PCShellSetMatApplyRichardson()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
@@ -928,6 +1000,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   pc->ops->matapply            = NULL;
   pc->ops->applytranspose      = NULL;
   pc->ops->applyrichardson     = NULL;
+  pc->ops->matapplyrichardson  = NULL;
   pc->ops->setup               = NULL;
   pc->ops->presolve            = NULL;
   pc->ops->postsolve           = NULL;
@@ -936,6 +1009,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   shell->applytranspose      = NULL;
   shell->name                = NULL;
   shell->applyrich           = NULL;
+  shell->matapplyrich        = NULL;
   shell->presolve            = NULL;
   shell->postsolve           = NULL;
   shell->ctx                 = NULL;
@@ -960,5 +1034,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetName_C", PCShellSetName_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellGetName_C", PCShellGetName_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyRichardson_C", PCShellSetApplyRichardson_Shell));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetMatApplyRichardson_C", PCShellSetMatApplyRichardson_Shell));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
