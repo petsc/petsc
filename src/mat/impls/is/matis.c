@@ -3364,7 +3364,7 @@ static PetscErrorCode MatSetFromOptions_IS(Mat A, PetscOptionItems PetscOptionsO
   PetscCall(PetscOptionsBool("-mat_is_fixempty", "Fix local matrices in case of empty local rows/columns", "MatISFixLocalEmpty", a->locempty, &a->locempty, NULL));
   PetscCall(PetscOptionsBool("-mat_is_storel2l", "Store local-to-local matrices generated from PtAP operations", "MatISStoreL2L", a->storel2l, &a->storel2l, NULL));
   PetscCall(PetscOptionsBool("-mat_is_allow_repeated", "Allow local repeated entries", "MatISSetAllowRepeated", a->allow_repeated, &a->allow_repeated, NULL));
-  PetscCall(PetscOptionsFList("-mat_is_localmat_type", "Matrix type", "MatISSetLocalMatType", MatList, a->lmattype, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_is_localmat_type", "Matrix type", "MatISSetLocalMatType", MatList, a->lmattype, type, sizeof(type), &flg));
   if (flg) PetscCall(MatISSetLocalMatType(A, type));
   if (a->A) PetscCall(MatSetFromOptions(a->A));
   PetscOptionsHeadEnd();

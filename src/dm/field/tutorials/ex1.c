@@ -236,7 +236,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");
-  PetscCall(PetscOptionsFList("-dm_type", "DM implementation on which to define field", "ex1.c", DMList, type, type, 256, NULL));
+  PetscCall(PetscOptionsFList("-dm_type", "DM implementation on which to define field", "ex1.c", DMList, type, type, sizeof(type), NULL));
   PetscCall(PetscOptionsRangeInt("-dim", "DM intrinsic dimension", "ex1.c", dim, &dim, NULL, 1, 3));
   PetscCall(PetscOptionsBoundedInt("-num_components", "Number of components in field", "ex1.c", nc, &nc, NULL, 1));
   PetscCall(PetscOptionsBoundedInt("-num_quad_points", "Number of quadrature points per dimension", "ex1.c", pointsPerEdge, &pointsPerEdge, NULL, 1));

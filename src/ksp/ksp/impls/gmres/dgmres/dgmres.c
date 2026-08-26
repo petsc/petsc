@@ -863,7 +863,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
   /* Computation of the eigenvectors */
   PetscCall(PetscBLASIntCast(aug1, &ldA));
   PetscCall(PetscBLASIntCast(aug, &N));
-  lwork = 8 * N + 20; /* sizeof the working space */
+  lwork = 8 * N + 20; /* size of the working space */
   PetscCall(PetscMalloc1(N, &wr));
   PetscCall(PetscMalloc1(N, &wi));
   PetscCall(PetscMalloc1(N, &beta));

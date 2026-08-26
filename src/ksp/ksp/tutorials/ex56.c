@@ -44,7 +44,7 @@ int main(int argc, char **args)
   PetscOptionsBegin(comm, NULL, "3D bilinear Q1 elasticity options", "");
   {
     char nestring[256];
-    PetscCall(PetscSNPrintf(nestring, sizeof nestring, "number of elements in each direction, ne+1 must be a multiple of %" PetscInt_FMT " (sizes^{1/3})", (PetscInt)(PetscPowReal((PetscReal)npe, 1. / 3.) + .5)));
+    PetscCall(PetscSNPrintf(nestring, sizeof(nestring), "number of elements in each direction, ne+1 must be a multiple of %" PetscInt_FMT " (sizes^{1/3})", (PetscInt)(PetscPowReal((PetscReal)npe, 1. / 3.) + .5)));
     PetscCall(PetscOptionsInt("-ne", nestring, "", ne, &ne, NULL));
     PetscCall(PetscOptionsBool("-log_stages", "Log stages of solve separately", "", log_stages, &log_stages, NULL));
     PetscCall(PetscOptionsReal("-alpha", "material coefficient inside circle", "", soft_alpha, &soft_alpha, NULL));

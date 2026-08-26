@@ -896,7 +896,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   if (dm->coordinates[0].dm) PetscCall(DMSetFromOptions(dm->coordinates[0].dm));
   PetscObjectOptionsBegin((PetscObject)dm);
   PetscCall(PetscOptionsBool("-dm_preallocate_only", "only preallocate matrix, but do not set column indices", "DMSetMatrixPreallocateOnly", dm->prealloc_only, &dm->prealloc_only, NULL));
-  PetscCall(PetscOptionsFList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg));
+  PetscCall(PetscOptionsFList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, sizeof(typeName), &flg));
   if (flg) PetscCall(DMSetVecType(dm, typeName));
   PetscCall(PetscOptionsFList("-dm_mat_type", "Matrix type used for created matrices", "DMSetMatType", MatList, dm->mattype ? dm->mattype : typeName, typeName, sizeof(typeName), &flg));
   if (flg) PetscCall(DMSetMatType(dm, typeName));

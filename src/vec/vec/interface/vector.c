@@ -1578,7 +1578,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec, PetscOptionItems Pe
   }
 
   PetscCall(VecRegisterAll());
-  PetscCall(PetscOptionsFList("-vec_type", "Vector type", "VecSetType", VecList, defaultType, typeName, 256, &opt));
+  PetscCall(PetscOptionsFList("-vec_type", "Vector type", "VecSetType", VecList, defaultType, typeName, sizeof(typeName), &opt));
   if (opt) PetscCall(VecSetType(vec, typeName));
   else PetscCall(VecSetType(vec, defaultType));
   PetscFunctionReturn(PETSC_SUCCESS);

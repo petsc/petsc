@@ -827,7 +827,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
 
   PetscObjectOptionsBegin((PetscObject)linesearch);
   if (((PetscObject)linesearch)->type_name) deft = ((PetscObject)linesearch)->type_name;
-  PetscCall(PetscOptionsFList("-snes_linesearch_type", "Linesearch type", "SNESLineSearchSetType", SNESLineSearchList, deft, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-snes_linesearch_type", "Linesearch type", "SNESLineSearchSetType", SNESLineSearchList, deft, type, sizeof(type), &flg));
   if (flg) {
     PetscCall(SNESLineSearchSetType(linesearch, type));
   } else if (!((PetscObject)linesearch)->type_name) {

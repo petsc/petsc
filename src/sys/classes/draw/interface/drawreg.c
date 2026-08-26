@@ -411,7 +411,7 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
 #endif
   }
   PetscObjectOptionsBegin((PetscObject)draw);
-  PetscCall(PetscOptionsFList("-draw_type", "Type of graphical output", "PetscDrawSetType", PetscDrawList, def, vtype, 256, &flg));
+  PetscCall(PetscOptionsFList("-draw_type", "Type of graphical output", "PetscDrawSetType", PetscDrawList, def, vtype, sizeof(vtype), &flg));
   if (flg) {
     PetscCall(PetscDrawSetType(draw, vtype));
   } else if (!((PetscObject)draw)->type_name) {

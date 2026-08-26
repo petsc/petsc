@@ -713,7 +713,7 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
     PetscBool flg;
 
     PetscOptionsBegin(ctx->comm, prefix, "Mesh conversion options", "DMPLEX");
-    PetscCall(PetscOptionsFList("-dm_landau_type", "Convert DMPlex to another format (p4est)", "plexland.c", DMList, DMPLEX, convType, 256, &flg));
+    PetscCall(PetscOptionsFList("-dm_landau_type", "Convert DMPlex to another format (p4est)", "plexland.c", DMList, DMPLEX, convType, sizeof(convType), &flg));
     PetscOptionsEnd();
     if (flg) {
       ctx->use_p4est = PETSC_TRUE; /* flag for Forest */

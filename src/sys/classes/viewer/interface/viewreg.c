@@ -655,7 +655,7 @@ PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer)
 
   if (!PetscViewerList) PetscCall(PetscViewerRegisterAll());
   PetscObjectOptionsBegin((PetscObject)viewer);
-  PetscCall(PetscOptionsFList("-viewer_type", "Type of PetscViewer", "None", PetscViewerList, (char *)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII), vtype, 256, &flg));
+  PetscCall(PetscOptionsFList("-viewer_type", "Type of PetscViewer", "None", PetscViewerList, (char *)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII), vtype, sizeof(vtype), &flg));
   if (flg) PetscCall(PetscViewerSetType(viewer, vtype));
   /* type has not been set? */
   if (!((PetscObject)viewer)->type_name) PetscCall(PetscViewerSetType(viewer, PETSCVIEWERASCII));

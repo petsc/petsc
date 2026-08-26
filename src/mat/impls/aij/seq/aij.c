@@ -25,7 +25,7 @@ static PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
 
   PetscFunctionBegin;
   PetscObjectOptionsBegin((PetscObject)A);
-  PetscCall(PetscOptionsFList("-mat_seqaij_type", "Matrix SeqAIJ type", "MatSeqAIJSetType", MatSeqAIJList, "seqaij", type, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_seqaij_type", "Matrix SeqAIJ type", "MatSeqAIJSetType", MatSeqAIJList, "seqaij", type, sizeof(type), &flg));
   if (flg) PetscCall(MatSeqAIJSetType(A, type));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

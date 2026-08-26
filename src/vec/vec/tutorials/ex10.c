@@ -87,7 +87,7 @@ int main(int argc, char **args)
 
   char read_file[PETSC_MAX_PATH_LEN] = "vector.dat";
   // By default, read the same file we just wrote, but with -read_file, read a different input file.
-  PetscCall(PetscOptionsGetString(NULL, NULL, "-read_file", read_file, sizeof read_file, NULL));
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-read_file", read_file, sizeof(read_file), NULL));
   /* Read new vector in binary format */
   PetscCall(PetscLogEventRegister("Read Vector", VEC_CLASSID, &VECTOR_READ));
   PetscCall(PetscLogEventBegin(VECTOR_READ, 0, 0, 0, 0));

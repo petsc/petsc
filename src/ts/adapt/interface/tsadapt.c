@@ -1102,14 +1102,14 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
   if (adapt->checkstage) {
     PetscCallBack("TSAdapt callback check stage", (*adapt->checkstage)(adapt, ts, t, Y, accept));
     if (!*accept) {
-      PetscCall(PetscStrncpy(reject_stage_message, "rejected by TSAdaptSetCheckStage", sizeof reject_stage_message));
+      PetscCall(PetscStrncpy(reject_stage_message, "rejected by TSAdaptSetCheckStage", sizeof(reject_stage_message)));
       goto reject_stage;
     }
   }
 
   PetscCall(TSFunctionDomainError(ts, t, Y, &func_accept));
   if (!func_accept) {
-    PetscCall(PetscStrncpy(reject_stage_message, "rejected by TSSetFunctionDomainError()", sizeof reject_stage_message));
+    PetscCall(PetscStrncpy(reject_stage_message, "rejected by TSSetFunctionDomainError()", sizeof(reject_stage_message)));
     goto reject_stage;
   }
 
@@ -1118,8 +1118,8 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
     // SNES_DIVERGED_FUNCTION_DOMAIN should not count against ts->max_snes_failures, see !6581 and commit 6c6709e3a
     if (snesreason != SNES_DIVERGED_FUNCTION_DOMAIN && ++ts->num_snes_failures >= ts->max_snes_failures && ts->max_snes_failures != PETSC_UNLIMITED) {
       ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-      PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve", ts->num_snes_failures));
-    } else PetscCall(PetscSNPrintf(reject_stage_message, sizeof reject_stage_message, "SNES solve failure %s", SNESConvergedReasons[snesreason]));
+      PetscCall(PetscSNPrintf(reject_stage_message, sizeof(reject_stage_message), "nonlinear solve failures %" PetscInt_FMT " greater than current TS allowed, stopping solve", ts->num_snes_failures));
+    } else PetscCall(PetscSNPrintf(reject_stage_message, sizeof(reject_stage_message), "SNES solve failure %s", SNESConvergedReasons[snesreason]));
     goto reject_stage;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

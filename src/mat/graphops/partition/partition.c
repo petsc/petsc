@@ -857,7 +857,7 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
   } else {
     def = ((PetscObject)part)->type_name;
   }
-  PetscCall(PetscOptionsFList("-mat_partitioning_type", "Type of partitioner", "MatPartitioningSetType", MatPartitioningList, def, type, 256, &flag));
+  PetscCall(PetscOptionsFList("-mat_partitioning_type", "Type of partitioner", "MatPartitioningSetType", MatPartitioningList, def, type, sizeof(type), &flag));
   if (flag) PetscCall(MatPartitioningSetType(part, type));
 
   PetscCall(PetscOptionsInt("-mat_partitioning_nparts", "number of fine parts", NULL, part->n, &part->n, &flag));

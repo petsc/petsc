@@ -958,7 +958,7 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
       } else {
         p = buffer;
       }
-      PetscCall(PetscSNPrintfCount(p, sizeof buffer - (p - buffer), "%12s [%12.6g,%12.6g] int %12.6g", &countused, func->name, (double)fmin[id], (double)fmax[id], (double)fint[id]));
+      PetscCall(PetscSNPrintfCount(p, sizeof(buffer) - (p - buffer), "%12s [%12.6g,%12.6g] int %12.6g", &countused, func->name, (double)fmin[id], (double)fmax[id], (double)fint[id]));
       countused += p - buffer;
       /* reallocate */
       if (countused > ftablealloc - ftableused - 1) {

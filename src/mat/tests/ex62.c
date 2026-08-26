@@ -28,14 +28,13 @@ int main(int argc, char **args)
   PetscInt     i, j, *idxn, PM, PN = PETSC_DECIDE, rstart, rend;
   PetscReal    norm;
   PetscRandom  rdm;
-  char         file[2][PETSC_MAX_PATH_LEN] = {"", ""};
+  char         file[2][PETSC_MAX_PATH_LEN] = {{0}};
   PetscScalar *a, rval, alpha;
   PetscBool    Test_MatMatMult = PETSC_TRUE, Test_MatTrMat = PETSC_TRUE, Test_MatMatTr = PETSC_TRUE;
   PetscBool    Test_MatPtAP = PETSC_TRUE, Test_MatRARt = PETSC_TRUE, flg, seqaij, flgA, flgB;
   MatInfo      info;
   PetscInt     nzp = 5; /* num of nonzeros in each row of P */
   MatType      mattype;
-  const char  *deft = MATAIJ;
   char         A_mattype[256], B_mattype[256];
   PetscInt     mcheck = 10;
 
@@ -52,8 +51,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsString("-fA", "Path for matrix A", "", file[0], file[0], sizeof(file[0]), &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a file name for matrix A with the -fA option.");
   PetscCall(PetscOptionsString("-fB", "Path for matrix B", "", file[1], file[1], sizeof(file[1]), &flg));
-  PetscCall(PetscOptionsFList("-A_mat_type", "Matrix type", "MatSetType", MatList, deft, A_mattype, 256, &flgA));
-  PetscCall(PetscOptionsFList("-B_mat_type", "Matrix type", "MatSetType", MatList, deft, B_mattype, 256, &flgB));
+  PetscCall(PetscOptionsFList("-A_mat_type", "Matrix type", "MatSetType", MatList, MATAIJ, A_mattype, sizeof(A_mattype), &flgA));
+  PetscCall(PetscOptionsFList("-B_mat_type", "Matrix type", "MatSetType", MatList, MATAIJ, B_mattype, sizeof(B_mattype), &flgB));
   PetscOptionsEnd();
 
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file[0], FILE_MODE_READ, &viewer));

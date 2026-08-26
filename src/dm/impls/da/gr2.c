@@ -734,7 +734,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin, PetscViewer viewer)
       for (n = 0; n < dof; n++) {
         PetscCall(DMDAGetFieldName(da, n, &fieldname));
         if (!fieldname || !fieldname[0]) {
-          PetscCall(PetscSNPrintf(fieldbuf, sizeof fieldbuf, "field%" PetscInt_FMT, n));
+          PetscCall(PetscSNPrintf(fieldbuf, sizeof(fieldbuf), "field%" PetscInt_FMT, n));
           fieldname = fieldbuf;
         }
         if (dim == 1) PetscCall(PetscFPrintf(comm, info, "#$$ Set.%s.%s = squeeze(tmp(%" PetscInt_FMT ",:))';\n", name, fieldname, n + 1));

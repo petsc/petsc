@@ -559,7 +559,7 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%sexplicit_operator_", ((PetscObject)A)->prefix ? ((PetscObject)A)->prefix : ""));
   PetscCall(MatSetOptionsPrefix(*S, prefix));
   PetscObjectOptionsBegin((PetscObject)*S);
-  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, !E && flg ? MATSBAIJ : mtype, type, 256, &set));
+  PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, !E && flg ? MATSBAIJ : mtype, type, sizeof(type), &set));
   if (set) PetscCall(MatConvert(*S, type, MAT_INPLACE_MATRIX, S));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_symmetric", "Sets the MAT_SYMMETRIC option", "MatSetOption", flg, &flg, &set));

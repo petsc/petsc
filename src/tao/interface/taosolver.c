@@ -414,7 +414,7 @@ PetscErrorCode TaoMonitorSetFromOptions(Tao tao, const char name[], const char h
     PetscViewerAndFormat *vf;
     char                  interval_key[1024];
 
-    PetscCall(PetscSNPrintf(interval_key, sizeof interval_key, "%s_interval", name));
+    PetscCall(PetscSNPrintf(interval_key, sizeof(interval_key), "%s_interval", name));
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     vf->view_interval = 1;
     PetscCall(PetscOptionsGetInt(((PetscObject)tao)->options, ((PetscObject)tao)->prefix, interval_key, &vf->view_interval, NULL));
@@ -491,7 +491,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   PetscObjectOptionsBegin((PetscObject)tao);
   /* Check for type from options */
-  PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, sizeof(type), &flg));
   if (flg) PetscCall(TaoSetType(tao, type));
   else if (!((PetscObject)tao)->type_name) PetscCall(TaoSetType(tao, default_type));
 

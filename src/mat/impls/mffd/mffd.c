@@ -499,7 +499,7 @@ static PetscErrorCode MatSetFromOptions_MFFD(Mat mat, PetscOptionItems PetscOpti
   PetscCall(MatShellGetContext(mat, &mfctx));
   PetscValidHeaderSpecific(mfctx, MATMFFD_CLASSID, 1);
   PetscObjectOptionsBegin((PetscObject)mfctx);
-  PetscCall(PetscOptionsFList("-mat_mffd_type", "Matrix free type", "MatMFFDSetType", MatMFFDList, ((PetscObject)mfctx)->type_name, ftype, 256, &flg));
+  PetscCall(PetscOptionsFList("-mat_mffd_type", "Matrix free type", "MatMFFDSetType", MatMFFDList, ((PetscObject)mfctx)->type_name, ftype, sizeof(ftype), &flg));
   if (flg) PetscCall(MatMFFDSetType(mat, ftype));
 
   PetscCall(PetscOptionsReal("-mat_mffd_err", "set sqrt relative error in function", "MatMFFDSetFunctionError", mfctx->error_rel, &mfctx->error_rel, NULL));

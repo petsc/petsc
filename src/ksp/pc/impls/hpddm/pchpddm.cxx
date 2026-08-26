@@ -1301,7 +1301,7 @@ static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, Pe
   /* previously-composed Mat */
   PetscCall(PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C));
   PetscCall(MatGetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, &op));
-  /* See https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/22HXNMER6OU7N7CXWA2LJAY6RZPGQYXT/ */
+  /* see https://mailman.cels.anl.gov/archives/list/petsc-dev@lists.mcs.anl.gov/message/22HXNMER6OU7N7CXWA2LJAY6RZPGQYXT/ */
   PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (PetscErrorCodeFn *)PCHPDDMCreateSubMatrices_Private));
   if (sorted) PetscCall(PCASMSetSortIndices(pc, PETSC_FALSE)); /* everything is already sorted */
   PetscCall(PCSetFromOptions(pc));                             /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
@@ -1499,18 +1499,28 @@ static PetscErrorCode PCHPDDMDestroySubMatrices_Private(PetscBool flg, PetscBool
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *sub[], PetscBool block)
+static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat Q, IS *is, Mat *sub[], PetscBool block)
 {
   IS         icol[3], irow[2];
   Mat       *M;
+  Mat        P = Q;
   PetscReal *ptr;
   PetscInt  *idx, p = 0, bs = P->cmap->bs;
+  PetscBool  flg;
 
   PetscFunctionBegin;
+  /* MatCreateSubMatrices_MPISBAIJ() may return a rectangular MATSEQSBAIJ containing only the explicitly stored upper-triangular entries */
+  /* of the selected rows. But the missing lower-triangular entries are needed by MatGetColumnNorms(), MatGetRowSum(), and MatMatMult()  */
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, MATMPISBAIJ, &flg));
+  if (flg) PetscCall(MatConvert(Q, MATBAIJ, MAT_INITIAL_MATRIX, &P));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, P->cmap->N, 0, 1, icol + 2));
   PetscCall(ISSetBlockSize(icol[2], bs));
   PetscCall(ISSetIdentity(icol[2]));
   PetscCall(MatCreateSubMatrices(P, 1, is, icol + 2, MAT_INITIAL_MATRIX, &M));
+  if (flg) {
+    PetscCall(MatDestroy(&P));
+    P = Q; /* continue using the caller-owned (MATMPISBAIJ) matrix */
+  }
   PetscCall(ISDestroy(icol + 2));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, M[0]->rmap->N, 0, 1, irow));
   PetscCall(ISSetBlockSize(irow[0], bs));
@@ -1595,6 +1605,7 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   }
   PetscCall(ISDestroy(irow));
   PetscCall(MatDestroySubMatrices(1, &M));
+  PetscCall(MatPropagateSymmetryOptions(P, (*sub)[0]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

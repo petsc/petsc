@@ -850,7 +850,7 @@ int main(int argc, char **args)
          output_file: output/ex72_bddc_seq.out
          filter: sed -e "s/Number of iterations =   2/Number of iterations =   1/g"
          nsize: 2
-         args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_type mat
+         args: -f0 ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int@PETSC_INDEX_SIZE@-float@PETSC_SCALAR_SIZE@ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_pc_type mat -mat_type {{aij sbaij}shared output}
       test:
          requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
          suffix: hpddm_gen_non_hermitian

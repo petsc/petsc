@@ -200,7 +200,7 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)sp);
-  PetscCall(PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petscspace_type", "Linear space", "PetscSpaceSetType", PetscSpaceList, defaultType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscSpaceSetType(sp, name));
   else if (!((PetscObject)sp)->type_name) PetscCall(PetscSpaceSetType(sp, defaultType));
   {

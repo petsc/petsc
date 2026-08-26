@@ -477,7 +477,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscBool flg;
 
     PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
-    PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", "ex12", DMList, DMPLEX, convType, 256, &flg));
+    PetscCall(PetscOptionsFList("-dm_plex_convert_type", "Convert DMPlex to another format", "ex12", DMList, DMPLEX, convType, sizeof(convType), &flg));
     PetscOptionsEnd();
     if (flg) {
       DM dmConv;

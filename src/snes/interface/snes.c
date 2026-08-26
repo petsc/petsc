@@ -990,7 +990,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   PetscCall(SNESRegisterAll());
   PetscObjectOptionsBegin((PetscObject)snes);
   if (((PetscObject)snes)->type_name) deft = ((PetscObject)snes)->type_name;
-  PetscCall(PetscOptionsFList("-snes_type", "Nonlinear solver method", "SNESSetType", SNESList, deft, type, 256, &flg));
+  PetscCall(PetscOptionsFList("-snes_type", "Nonlinear solver method", "SNESSetType", SNESList, deft, type, sizeof(type), &flg));
   if (flg) PetscCall(SNESSetType(snes, type));
   else if (!((PetscObject)snes)->type_name) PetscCall(SNESSetType(snes, deft));
 

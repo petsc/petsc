@@ -442,7 +442,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
     void (*PhysicsRiemann_SW)(PetscInt, PetscInt, const PetscReal *, const PetscReal *, const PetscScalar *, const PetscScalar *, PetscInt, const PetscScalar, PetscScalar *, Physics);
     sw->gravity = 1.0;
     PetscCall(PetscOptionsReal("-sw_gravity", "Gravitational constant", "", sw->gravity, &sw->gravity, NULL));
-    PetscCall(PetscOptionsFList("-sw_riemann", "Riemann solver", "", PhysicsRiemannList_SW, sw_riemann, sw_riemann, sizeof sw_riemann, NULL));
+    PetscCall(PetscOptionsFList("-sw_riemann", "Riemann solver", "", PhysicsRiemannList_SW, sw_riemann, sw_riemann, sizeof(sw_riemann), NULL));
     PetscCall(PetscFunctionListFind(PhysicsRiemannList_SW, sw_riemann, &PhysicsRiemann_SW));
     phys->riemann = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_SW;
   }
@@ -654,7 +654,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
     eu->amach = 2.02;
     eu->rhoR  = 3.0;
     eu->itana = 0.57735026918963; /* angle of Euler self similar (SS) shock */
-    PetscCall(PetscOptionsFList("-eu_riemann", "Riemann solver", "", PhysicsRiemannList_Euler, eu_riemann, eu_riemann, sizeof eu_riemann, NULL));
+    PetscCall(PetscOptionsFList("-eu_riemann", "Riemann solver", "", PhysicsRiemannList_Euler, eu_riemann, eu_riemann, sizeof(eu_riemann), NULL));
     PetscCall(PetscFunctionListFind(PhysicsRiemannList_Euler, eu_riemann, &PhysicsRiemann_Euler));
     phys->riemann = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_Euler;
     PetscCall(PetscOptionsReal("-eu_gamma", "Heat capacity ratio", "", eu->gamma, &eu->gamma, NULL));
@@ -1031,7 +1031,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
       } else {
         p = buffer;
       }
-      PetscCall(PetscSNPrintfCount(p, sizeof buffer - (p - buffer), "%12s [%10.7g,%10.7g] int %10.7g", &countused, flink->name, (double)fmin[id], (double)fmax[id], (double)fintegral[id]));
+      PetscCall(PetscSNPrintfCount(p, sizeof(buffer) - (p - buffer), "%12s [%10.7g,%10.7g] int %10.7g", &countused, flink->name, (double)fmin[id], (double)fmax[id], (double)fintegral[id]));
       countused--;
       countused += p - buffer;
       if (countused > ftablealloc - ftableused - 1) { /* reallocate */
@@ -1056,7 +1056,7 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
     if (stepnum == -1) { /* Final time is not multiple of normal time interval, write it anyway */
       PetscCall(TSGetStepNumber(ts, &stepnum));
     }
-    PetscCall(PetscSNPrintf(filename, sizeof filename, "%s-%03" PetscInt_FMT ".vtu", user->outputBasename, stepnum));
+    PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s-%03" PetscInt_FMT ".vtu", user->outputBasename, stepnum));
     PetscCall(OutputVTK(dm, filename, &viewer));
     PetscCall(VecView(X, viewer));
     PetscCall(PetscViewerDestroy(&viewer));
@@ -1313,7 +1313,7 @@ int main(int argc, char **argv)
   PetscOptionsBegin(comm, NULL, "Unstructured Finite Volume Physics Options", "");
   {
     PetscErrorCode (*physcreate)(Model, Physics, PetscOptionItems);
-    PetscCall(PetscOptionsFList("-physics", "Physics module to solve", "", PhysicsList, physname, physname, sizeof physname, NULL));
+    PetscCall(PetscOptionsFList("-physics", "Physics module to solve", "", PhysicsList, physname, physname, sizeof(physname), NULL));
     PetscCall(PetscFunctionListFind(PhysicsList, physname, &physcreate));
     PetscCall(PetscMemzero(phys, sizeof(struct _n_Physics)));
     PetscCall((*physcreate)(mod, phys, PetscOptionsObject));
@@ -1428,7 +1428,7 @@ int main(int argc, char **argv)
     PetscBool flg;
 
     PetscOptionsBegin(comm, "", "Mesh conversion options", "DMPLEX");
-    PetscCall(PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex12", DMList, DMPLEX, convType, 256, &flg));
+    PetscCall(PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex12", DMList, DMPLEX, convType, sizeof(convType), &flg));
     PetscOptionsEnd();
     if (flg) {
       DM dmConv;

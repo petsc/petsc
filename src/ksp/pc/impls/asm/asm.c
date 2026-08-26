@@ -740,7 +740,7 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems PetscOptionsO
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsEnum("-pc_asm_local_type", "Type of local solver composition", "PCASMSetLocalType", PCCompositeTypes, (PetscEnum)osm->loctype, (PetscEnum *)&loctype, &flg));
   if (flg) PetscCall(PCASMSetLocalType(pc, loctype));
-  PetscCall(PetscOptionsFList("-pc_asm_sub_mat_type", "Subsolve Matrix Type", "PCASMSetSubMatType", MatList, NULL, sub_mat_type, 256, &flg));
+  PetscCall(PetscOptionsFList("-pc_asm_sub_mat_type", "Subsolve Matrix Type", "PCASMSetSubMatType", MatList, NULL, sub_mat_type, sizeof(sub_mat_type), &flg));
   if (flg) PetscCall(PCASMSetSubMatType(pc, sub_mat_type));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

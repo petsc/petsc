@@ -366,7 +366,7 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   } else {
     def = ((PetscObject)coarser)->type_name;
   }
-  PetscCall(PetscOptionsFList("-mat_coarsen_type", "Type of aggregator", "MatCoarsenSetType", MatCoarsenList, def, type, 256, &flag));
+  PetscCall(PetscOptionsFList("-mat_coarsen_type", "Type of aggregator", "MatCoarsenSetType", MatCoarsenList, def, type, sizeof(type), &flag));
   if (flag) PetscCall(MatCoarsenSetType(coarser, type));
 
   PetscCall(PetscOptionsInt("-mat_coarsen_max_it", "Number of iterations (for HEM)", "MatCoarsenSetMaximumIterations", coarser->max_it, &coarser->max_it, NULL));

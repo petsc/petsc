@@ -195,7 +195,6 @@ int main(int argc, char **args)
   Mat          X, B, A, Bt, T, T2, PtAP = NULL, RARt = NULL, R = NULL;
   Vec          r, l, rs, ls;
   PetscInt     m, n, k, M = 10, N = 10, K = 5, ldx = 3, ldb = 5, ldr = 4;
-  const char  *deft = MATAIJ;
   char         mattype[256];
   PetscBool    flg, symm = PETSC_FALSE, testtt = PETSC_TRUE, testnest = PETSC_TRUE, testtranspose = PETSC_TRUE, testcircular = PETSC_FALSE, local = PETSC_TRUE;
   PetscBool    testhtranspose = PETSC_FALSE; /* Hermitian transpose is not handled correctly and generates an error */
@@ -245,7 +244,7 @@ int main(int argc, char **args)
   }
   PetscCall(MatViewFromOptions(A, NULL, "-A_init_view"));
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "", "");
-  PetscCall(PetscOptionsFList("-A_mat_type", "Matrix type", "MatSetType", MatList, deft, mattype, 256, &flg));
+  PetscCall(PetscOptionsFList("-A_mat_type", "Matrix type", "MatSetType", MatList, MATAIJ, mattype, sizeof(mattype), &flg));
   PetscOptionsEnd();
   if (flg) {
     Mat A2;

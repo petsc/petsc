@@ -298,7 +298,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   if (!PetscSpaceRegisterAllCalled) PetscCall(PetscSpaceRegisterAll());
 
   PetscObjectOptionsBegin((PetscObject)sp);
-  PetscCall(PetscOptionsFList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, 256, &flg));
+  PetscCall(PetscOptionsFList("-petscdualspace_type", "Dual space", "PetscDualSpaceSetType", PetscDualSpaceList, defaultType, name, sizeof(name), &flg));
   if (flg) PetscCall(PetscDualSpaceSetType(sp, name));
   else if (!((PetscObject)sp)->type_name) PetscCall(PetscDualSpaceSetType(sp, defaultType));
   PetscCall(PetscOptionsBoundedInt("-petscdualspace_order", "The approximation order", "PetscDualSpaceSetOrder", sp->order, &sp->order, NULL, 0));
