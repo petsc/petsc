@@ -1,4 +1,5 @@
 #include <petsc/private/randomimpl.h>
+#include <thrust/tuple.h>
 #include <thrust/transform.h>
 #include <thrust/device_ptr.h>
 #include <thrust/iterator/counting_iterator.h>
