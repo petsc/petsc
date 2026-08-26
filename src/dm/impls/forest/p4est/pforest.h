@@ -2150,6 +2150,9 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
     PetscCall(MatDestroy(&dmB->defaultConstraint.mat));
     dmB->defaultConstraint.mat = dmA->defaultConstraint.mat;
     if (dmA->map) PetscCall(PetscLayoutReference(dmA->map, &dmB->map));
+    /* The sections are assigned directly here, so replicate the invalidation DMSetLocalSection() and
+       DMSetGlobalSection() do: a section-derived mapping was built from the sections being replaced */
+    if (dmB->ltogmapFromSection) PetscCall(ISLocalToGlobalMappingDestroy(&dmB->ltogmap));
   }
   if (dmB->sectionSF != dmA->sectionSF) {
     PetscCall(PetscObjectReference((PetscObject)dmA->sectionSF));

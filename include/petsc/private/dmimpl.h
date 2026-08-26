@@ -245,6 +245,7 @@ struct _p_DM {
   PetscInt               bs;
   DMBlockingType         blocking_type;
   ISLocalToGlobalMapping ltogmap;
+  PetscBool              ltogmapFromSection; // Flag indicating ltogmap was derived from the sections, so setting a section invalidates it
   PetscBool              prealloc_skip;      // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
   PetscBool              prealloc_only;      /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscBool              structure_only;     /* Flag indicating the DMCreateMatrix() create matrix nonzero structure without values */
