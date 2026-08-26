@@ -64,15 +64,15 @@ class Configure(config.package.GNUPackage):
     ### Configure and Build package
     try:
       self.logPrintBox('Running configure on ' +self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
+      config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ./configure '+args, timeout=2000, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running configure on ' + self.PACKAGE+': '+str(e))
     try:
       self.logPrintBox('Running make on '+self.PACKAGE+'; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
+      config.package.Package.executeShellCommand('cd '+self.packageDir+' && ./build.sh && ./make install && ./make clean', timeout=2500, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error building or installing make '+self.PACKAGE+': '+str(e))
-    self.postInstall(output1+err1, conffile)
+    self.postInstall(conffile)
     return self.installDir
 
   def generateGMakeGuesses(self):

@@ -72,13 +72,13 @@ class Configure(config.package.Package):
         bootstrap_arguments = ''
 
       bootstrap_cmd = 'cd {} && ./bootstrap.sh --with-toolset={} --prefix={}'.format(self.packageDir, toolset, self.installDir)
-      out, err, ret = config.base.Configure.executeShellCommand(bootstrap_cmd, timeout=6000, log=self.log)
+      config.base.Configure.executeShellCommand(bootstrap_cmd, timeout=6000, log=self.log)
 
       build_cmd = 'cd {} && ./b2 toolset={} {} pch={} -j{}'.format(self.packageDir, toolset, bootstrap_arguments, pch, self.make.make_np)
-      out, err, ret = config.base.Configure.executeShellCommand(build_cmd, timeout=6000, log=self.log)
+      config.base.Configure.executeShellCommand(build_cmd, timeout=6000, log=self.log)
 
       install_cmd = 'cd {} && ./b2 toolset={} {} pch={} -j{} install'.format(self.packageDir, toolset, bootstrap_arguments, pch, self.make.make_np)
-      out, err, ret = config.base.Configure.executeShellCommand(install_cmd, timeout=6000, log=self.log)
+      config.base.Configure.executeShellCommand(install_cmd, timeout=6000, log=self.log)
 
-      self.postInstall(out + err, str(conffile))
+      self.postInstall(str(conffile))
     return self.installDir

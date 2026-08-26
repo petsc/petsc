@@ -184,25 +184,25 @@ class Configure(config.package.Package):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output1,err1,ret1  = config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
+        config.package.Package.executeShellCommand('make clean', cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         pass
       try:
         self.logPrintBox('Compiling MUMPS; this may take several minutes')
-        output2,err2,ret2 = config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
-        output3,err3,ret3 = config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand(self.make.make_jnp+' prerequisites', cwd=self.packageDir, timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand(self.make.make_jnp+' all', cwd=os.path.join(self.packageDir,'src'), timeout=2500, log = self.log)
         libDir     = self.libDir
         includeDir = os.path.join(self.installDir, self.includedir)
         self.logPrintBox('Installing MUMPS; this may take several minutes')
-        output,err,ret = config.package.Package.executeShellCommandSeq(
+        config.package.Package.executeShellCommandSeq(
           ['mkdir -p '+libDir+' '+includeDir,
            'cp -f lib/*.* '+libDir,
            'cp -f include/*.* '+includeDir
           ], cwd=self.packageDir, timeout=60, log = self.log)
         if self.mpi.usingMPIUni:
-          output,err,ret = config.package.Package.executeShellCommand(['cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
+          config.package.Package.executeShellCommand(['cp', '-f', 'libseq/libmpiseq.a', libDir+'/.'], cwd=self.packageDir, timeout=60, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on MUMPS: '+str(e))
         raise RuntimeError('Error running make on MUMPS')
-      self.postInstall(output2+err2+output3+err3,'Makefile.inc')
+      self.postInstall('Makefile.inc')
     return self.installDir

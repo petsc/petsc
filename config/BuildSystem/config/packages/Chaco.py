@@ -39,7 +39,7 @@ class Configure(config.package.Package):
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling and installing chaco; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommandSeq(
+        config.package.Package.executeShellCommandSeq(
           ['make clean',
            'make',
            self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+'libchaco.'+
@@ -51,7 +51,7 @@ class Configure(config.package.Package):
 
       except RuntimeError as e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
-      self.postInstall(output+err, mkfile)
+      self.postInstall(mkfile)
     return self.installDir
 
   def configureLibrary(self):

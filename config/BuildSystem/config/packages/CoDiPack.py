@@ -19,7 +19,7 @@ class Configure(config.package.Package):
 
     self.logPrintBox('Copying CoDiPack include files to install location')
     includedir = os.path.join(self.installDir, 'include')
-    output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
+    config.package.Package.executeShellCommandSeq([
       ['mkdir', '-p', includedir],
       ['cp', '-rf', os.path.join('include', 'codi'), os.path.join('include', 'codi.hpp'), includedir],
       ], cwd=self.packageDir, timeout=250, log = self.log)

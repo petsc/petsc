@@ -119,22 +119,22 @@ triangle_shared:
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling Triangle; this may take several minutes')
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && make libtriangle.'+self.setCompilers.AR_LIB_SUFFIX+' && make clean', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       self.logPrintBox('Installing Triangle; this may take several minutes')
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
-      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'bin'), timeout=2500, log=self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
-      output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=60, log = self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'bin'), timeout=2500, log=self.log)
+      config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
+      config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=60, log = self.log)
       if self.argDB['download-triangle-build-exec']:
         try:
-          output3,err3,ret3  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && '+self.getCompiler()+' '+cflags+' -DNO_PETSC_MALLOC src/triangle.c -o triangle -lm && make clean', timeout=2500, log = self.log)
+          config.package.Package.executeShellCommand('cd '+self.packageDir+' && make clean && '+self.getCompiler()+' '+cflags+' -DNO_PETSC_MALLOC src/triangle.c -o triangle -lm && make clean', timeout=2500, log = self.log)
         except RuntimeError as e:
           raise RuntimeError('Error building Triangle executable: '+str(e))
-        output3,err3,ret3  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'triangle')+' '+os.path.join(self.installDir,'bin'), timeout=60, log = self.log)
-      self.postInstall(output1+err1+output2+err2,'make.inc')
+        config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'triangle')+' '+os.path.join(self.installDir,'bin'), timeout=60, log = self.log)
+      self.postInstall('make.inc')
     return self.installDir
 
   def configureLibrary(self):

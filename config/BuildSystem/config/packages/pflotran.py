@@ -60,15 +60,12 @@ class Configure(config.package.GNUPackage):
         PDIR   = 'PETSC_DIR='+self.petscdir.dir
         PARCH  = 'PETSC_ARCH='+self.arch
         PREFIX = '--prefix='+os.path.join(self.petscdir.dir,self.arch)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+PARCH+' '+PDIR+' ./configure all '+PREFIX,timeout=60, log = self.log)
-      self.log.write(output+err)
+      config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && '+PARCH+' '+PDIR+' ./configure all '+PREFIX,timeout=60, log = self.log)
 
       self.logPrintBox('Compiling Pflotran; this may take several minutes')
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make all',timeout=1000, log = self.log)
-      self.log.write(output+err)
+      config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make all',timeout=1000, log = self.log)
 
       self.logPrintBox('Installing Pflotran; this may take several minutes')
-      output,err,ret  = config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make install',timeout=100, log = self.log)
-      self.log.write(output+err)
+      config.package.GNUPackage.executeShellCommand('cd '+self.packageDir+' && make install',timeout=100, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error configuring/compiling or installing Pflotran: '+str(e))

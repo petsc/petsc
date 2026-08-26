@@ -26,7 +26,7 @@ class Configure(config.package.Package):
       self.log.write('Looking for default Gmsh executable\n')
     if self.getExecutable(gmsh, getFullPath=1, resultName='gmsh', setMakeMacro = 0):
       try:
-        out,err,ret  = config.package.Package.executeShellCommand(self.gmsh + ' -info', timeout=60, log = self.log)
+        config.package.Package.executeShellCommand(self.gmsh + ' -info', timeout=60, log = self.log)
         self.addDefine('GMSH_EXE','"'+self.gmsh+'"')
       except RuntimeError as e:
         self.log.write('Unable to run Gmsh executable '+self.gmsh+'\n'+str(e)+'\n')

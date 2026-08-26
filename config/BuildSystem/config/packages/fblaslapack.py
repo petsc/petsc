@@ -87,14 +87,14 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling FBLASLAPACK; this may take several minutes')
-      output1,err1,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && rm -rf */*.c && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile', timeout=2500, log = self.log)
+      config.package.Package.executeShellCommand('cd '+blasDir+' && rm -rf */*.c && make -f tmpmakefile cleanblaslapck cleanlib && '+self.make.make_jnp+' -f tmpmakefile', timeout=2500, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make on '+blasDir+': '+str(e))
       raise RuntimeError('Error running make on '+blasDir)
     try:
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && mkdir -p '+libdir+' && cp -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=300, log = self.log)
+      config.package.Package.executeShellCommand('cd '+blasDir+' && mkdir -p '+libdir+' && cp -f libfblas.'+self.setCompilers.AR_LIB_SUFFIX+' libflapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=300, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')
-    self.postInstall(output1+err1+output2+err2,'tmpmakefile')
+    self.postInstall('tmpmakefile')
     return self.installDir

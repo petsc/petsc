@@ -54,9 +54,9 @@ class Configure(config.package.GNUPackage):
     cpstr = ' mkdir -p '+incDir + ' && cp -RL '+srcThrustDir+' '+srcCubDir+' '+incDir
     try:
       self.logPrintBox('Copying THRUST; this may take several seconds')
-      output,err,ret = config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
+      config.package.Package.executeShellCommand(cpstr,timeout=100,log=self.log)
     except RuntimeError as e:
       self.logPrint('Error executing "'+cpstr+'": '+str(e))
       raise RuntimeError('Error copying THRUST')
-    self.postInstall(output+err,'petsc.mk')
+    self.postInstall('petsc.mk')
     return self.installDir

@@ -37,8 +37,8 @@ class Configure(config.package.Package):
     if self.installNeeded('compiledata'):
       try:
         self.logPrintBox('Compiling and installing ascem-io; this may take several minutes')
-        output,err,ret = config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.make.make+' '+MAKEARGS+' && '+self.make.make+' '+INSTALLARGS+' install', timeout=2500, log = self.log)
+        config.package.Package.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && '+self.make.make+' '+MAKEARGS+' && '+self.make.make+' '+INSTALLARGS+' install', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on ascem-io: '+str(e))
-      self.postInstall(output+err,'compiledata')
+      self.postInstall('compiledata')
     return self.installDir

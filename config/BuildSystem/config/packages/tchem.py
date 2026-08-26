@@ -43,13 +43,13 @@ class Configure(config.package.Package):
     if self.installNeeded(conffile):
       try:
         self.logPrintBox('Configuring TChem')
-        output1,err1,ret1  = config.package.Package.executeShellCommand(['./configure'] + args, cwd=self.packageDir, timeout=300, log = self.log)
+        config.package.Package.executeShellCommand(['./configure'] + args, cwd=self.packageDir, timeout=300, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running configure on TChem: '+str(e))
       try:
         self.logPrintBox('Compiling TChem; this may take several minutes')
-        output2,err2,ret2  = config.package.Package.executeShellCommand(['make'], cwd=self.packageDir, timeout=500, log = self.log)
-        output2,err2,ret2  = config.package.Package.executeShellCommandSeq([
+        config.package.Package.executeShellCommand(['make'], cwd=self.packageDir, timeout=500, log = self.log)
+        config.package.Package.executeShellCommandSeq([
           ['mkdir', '-p', includeDir, libDir, shareDir],
           ['cp'] + glob.glob(os.path.join(self.packageDir, 'include', 'TC_*')) + [includeDir],
           ['cp'] + glob.glob(os.path.join(self.packageDir, 'lib', 'libtchem*')) + [libDir],
@@ -57,5 +57,5 @@ class Configure(config.package.Package):
           ], timeout=500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TChem: '+str(e))
-      self.postInstall(output1+err1+output2+err2,'tchem')
+      self.postInstall('tchem')
     return self.installDir

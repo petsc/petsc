@@ -45,8 +45,8 @@ class Configure(config.package.Package):
     self.log.write('zlibDir = '+self.packageDir+' installDir '+self.installDir+'\n')
     self.logPrintBox('Building and installing zlib; this may take several minutes')
     try:
-      output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=600, log = self.log)
+      config.base.Configure.executeShellCommand('cd '+self.packageDir+' && ' + args + ' ./configure '+cargs+' && '+self.make.make_jnp+' && '+self.make.make+' install', timeout=600, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error building/install zlib files from '+os.path.join(self.packageDir, 'zlib')+' to '+self.packageDir)
-    self.postInstall(output+err,conffile)
+    self.postInstall(conffile)
     return self.installDir

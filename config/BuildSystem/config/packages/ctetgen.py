@@ -52,10 +52,8 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('C')
       cflags = self.checkNoOptFlag()+' '+self.getSharedFlag(self.getCompilerFlags())+' '+self.getPointerSizeFlag(self.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.getCompilerFlags())+' '+self.getDebugFlags(self.getCompilerFlags())
       self.popLanguage()
-      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib PCC_FLAGS="'+cflags+'"',timeout=1000, log = self.log, cwd=self.packageDir)
-      self.log.write(output+err)
+      config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib PCC_FLAGS="'+cflags+'"',timeout=1000, log = self.log, cwd=self.packageDir)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
-      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
-      self.log.write(output+err)
+      config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
     except RuntimeError as e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))
