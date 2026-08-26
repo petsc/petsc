@@ -92,6 +92,7 @@ class Configure(config.package.GNUPackage):
         return
       self.found = 1
       output = output.replace('stdout: ','')
+      minCmakeVersion = '.'.join(map(str, self.maxminCmakeVersion))
       gver = None
       try:
         gver = re.compile('cmake version ([0-9]+).([0-9]+).([0-9]+)').match(output)
@@ -102,8 +103,8 @@ class Configure(config.package.GNUPackage):
         except: pass
         else:
           self.log.write('CMake version found '+self.foundversion+'\n')
-          if parseVersion(self.foundversion) < parseVersion('.'.join(map(str, self.maxminCmakeVersion))):
-            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+self.foundversion+'): use --download-cmake')
+          if parseVersion(self.foundversion) < parseVersion(minCmakeVersion):
+            raise RuntimeError('A package requires CMake version '+minCmakeVersion+' (detected version is '+self.foundversion+'): use --download-cmake')
           return
       gver = None
       try:
@@ -117,8 +118,8 @@ class Configure(config.package.GNUPackage):
         except: pass
         else:
           self.log.write('CMake version found '+self.foundversion+'\n')
-          if parseVersion(self.foundversion) < parseVersion('.'.join(map(str, self.maxminCmakeVersion))):
-            raise RuntimeError('A package requires CMake version '+'.'.join(map(str, self.maxminCmakeVersion))+' (detected version is '+self.foundversion+'): use --download-cmake')
+          if parseVersion(self.foundversion) < parseVersion(minCmakeVersion):
+            raise RuntimeError('A package requires CMake version '+minCmakeVersion+' (detected version is '+self.foundversion+'): use --download-cmake')
           return
         self.log.write('CMake version check failed\n')
     else:

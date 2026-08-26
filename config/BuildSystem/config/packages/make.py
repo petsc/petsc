@@ -143,12 +143,11 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
       (output, error, status) = config.base.Configure.executeShellCommand(make+' --version', log = self.log)
       gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
       if not status and gver:
-        major = int(gver.group(1))
-        minor = int(gver.group(2))
-        if parseVersion('%d.%d' % (major,minor)) >= parseVersion(self.minversion): haveGNUMake = True
-        if (major > 3): haveGNUMake4 = True
-        foundVersion = ".".join([str(major),str(minor)])
-        if (major,minor) >= (4,4): haveGNUMake44 = True
+        foundVersion = ".".join([gver.group(1),gver.group(2)])
+        version      = parseVersion(foundVersion)
+        if version >= parseVersion(self.minversion): haveGNUMake = True
+        if version >= parseVersion('4'): haveGNUMake4 = True
+        if version >= parseVersion('4.4'): haveGNUMake44 = True
     except RuntimeError as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
     return foundVersion, haveGNUMake, haveGNUMake4, haveGNUMake44

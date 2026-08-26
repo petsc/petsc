@@ -1,4 +1,5 @@
 import config.package
+from config.utilities.parseVersion import parseVersion
 import os
 
 class Configure(config.package.GNUPackage):
@@ -63,9 +64,8 @@ class Configure(config.package.GNUPackage):
         (output, error, status) = config.base.Configure.executeShellCommand(self.bison+' --version', log = self.log)
         gver = re.compile(r'bison \(GNU Bison\) ([0-9]+).([0-9]+)').match(output)
         if not status and gver:
-          foundversion = tuple(map(int,gver.groups()))
-          self.foundversion = ".".join(map(str,foundversion))
-          if foundversion[0] >= 3:
+          self.foundversion = ".".join(gver.groups())
+          if parseVersion(self.foundversion) >= parseVersion('3'):
             self.haveBison3plus = 1
       except RuntimeError as e:
         self.log.write('Bison check failed: '+str(e)+'\n')
