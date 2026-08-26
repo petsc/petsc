@@ -7,10 +7,10 @@ argument-hint: <MR_IID | empty for current branch>
 Reviews the **remote MR state**, not local `HEAD`. Adhere to @AGENTS.md.
 
 ## Identify and fetch
-Follow @identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for local-vs-remote drift.
+Follow @identify.md (Sections 1–2) to fetch the merge request, check for drift, and repeat its warnings.
 
 ## Review
-Follow @review-procedure.md (Sections 4–7) to read the diff, classify findings, verify each one, compose and write report.
+Follow @review-procedure.md (Sections 3–5) to read the diff, classify findings, verify each one, compose report.
 
-## Verify report
-Verify that the ai-review.html report was written, as instructed in Section 7.
+## Write report
+Always write the report (with a title) to ai-review.html! Add a footnote with claude version and model used, the effort level (read from `$CLAUDE_EFFORT`), date, time, MR_IID, CI_PIPELINE_ID, CI_JOB_ID, when available.

@@ -7,12 +7,15 @@ argument-hint: <MR_IID | empty for current branch>
 Adhere to @AGENTS.md while reviewing and drafting comments.
 
 ## Identify and fetch
-Follow @../review-mr/identify.md (Sections 1–3) to resolve `<MR_IID>`, fetch metadata, and check for drift.
+Follow @../review-mr/identify.md (Sections 1–2) to fetch the merge request, check for drift, and repeat its warnings.
 
 ## Review
-Follow @../review-mr/review-procedure.md (Sections 4–7) to classify and verify findings. Then continue below to filter and post.
+Follow @../review-mr/review-procedure.md (Sections 3–5) to read the diff, classify findings, verify each one, compose report. Then continue below to filter and post.
 
-## 8. Filter findings
+## 6. Write report
+Always write the report (with a title) to ai-review.html! Add a footnote with claude version and model used, the effort level (read from `$CLAUDE_EFFORT`), date, time, MR_IID, CI_PIPELINE_ID, CI_JOB_ID, when available.
+
+## 7. Filter findings
 Only post findings that have a **concrete, actionable fix** (a code change the author can apply). Do NOT post:
 - Informational or observational notes ("just noting...", "no issue, but...")
 - Findings that acknowledge correctness but flag theoretical fragility
@@ -21,48 +24,14 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 
 Each posted comment opens a discussion thread the author must resolve — avoid noise.
 
-## 9. Post inline comments as DiffNotes
-Use the GitLab Discussions API with JSON input to create inline DiffNote comments. `<BASE_SHA>`/`<HEAD_SHA>`/`<START_SHA>` are the `diff_refs` recorded in @../review-mr/identify.md Section 2.
+## 8. Line number mapping
+Each comment anchors to `line`, the line number in the **new** version of the file.
+- For **new files**: the line number in the file itself.
+- For **modified files**: parse the `@@` hunk headers in `DIFF_FILE` to map correctly.
+- **Only comment on lines that are part of the MR diff.** Do not comment on unchanged code that happens to be near the diff.
 
-**IMPORTANT:** Use `--input -` with `-H "Content-Type: application/json"` — the `-f` flag with bracket notation does NOT work for nested `position` fields.
-
-For each comment, use this Python pattern:
-```python
-import json, re, subprocess
-
-body = "<comment body with optional suggestion block>"
-# Guard against patterns that break GitLab suggestion blocks:
-# 1. Trailing backslash breaks suggestion rendering
-# 2. Triple backticks inside suggestion body (e.g., in markdown files)
-suggestion_match = re.search(r'(```suggestion[^\n]*\n)(.*?)(```)\s*$', body, re.DOTALL)
-if suggestion_match:
-    opening, inner, _ = suggestion_match.groups()
-    if inner.count('```') > 0 or inner.rstrip('\n').endswith('\\'):
-        # Fall back to plain code block
-        body = body.replace(opening, '```\n', 1)
-
-payload = {
-    "body": body,
-    "position": {
-        "position_type": "text",
-        "base_sha": "<BASE_SHA>",
-        "head_sha": "<HEAD_SHA>",
-        "start_sha": "<START_SHA>",
-        "new_path": "<file_path>",
-        "old_path": "<file_path>",
-        "new_line": <line_number_in_new_file>
-    }
-}
-p = subprocess.run(
-    ["glab", "api", "projects/:id/merge_requests/<MR_IID>/discussions",
-     "-X", "POST", "--input", "-", "-H", "Content-Type: application/json"],
-    input=json.dumps(payload), capture_output=True, text=True, check=True
-)
-assert '"DiffNote"' in p.stdout, f"Unexpected response: {p.stdout}"
-```
-
-## 10. Use GitLab suggestion blocks for concrete fixes
-When a comment has a specific code fix, include a suggestion block in the body so the author can click "Apply suggestion":
+## 9. Use GitLab suggestion blocks for concrete fixes
+When a comment has a specific code fix, end the body with a suggestion block so the author can click "Apply suggestion":
 
 ````
 ```suggestion:-0+0
@@ -70,17 +39,22 @@ corrected line here
 ```
 ````
 
-- `-0+0` means replace just the target line (the `new_line` in the position). Use `-N+M` to expand the range to N lines before and M lines after the target line.
+- `-0+0` means replace just the target line (the `line` in the finding). Use `-N+M` to expand the range to N lines before and M lines after the target line.
 - **CRITICAL:** The suggestion body **replaces the entire selected range**. You MUST reproduce every line in the range, not just the changed ones. For example, `suggestion:-2+0` selects 3 lines (2 before + the target); the body must contain all 3 lines (with your edits applied). Omitting unchanged lines will **delete them**. When in doubt, prefer `suggestion:-0+0` targeting a single line.
 - To insert a new line after the target, use `suggestion:-0+0` and include both the original target line and the new line.
 - To delete a line, use an empty suggestion block.
 - Only use suggestions for concrete fixes. Use plain comments for design/architectural feedback.
-- **Only comment on lines that are part of the MR diff.** Do not suggest changes to unchanged code that happens to be near the diff.
 
-## 11. Line number mapping
-- For **new files**: `new_line` = the line number in the file itself.
-- For **modified files**: `new_line` = the line number in the new version of the file. Parse the `@@` hunk headers to map correctly.
+## 10. Post inline comments as DiffNotes
+Write the findings to `mr-<MR_IID>-findings.json` as a list of objects, each with `file` (the new-side path in the MR diff — the `b/` path of its `diff --git` header, even where the file is renamed), `line` (Section 8) and `body` (Section 9):
 
-## 12. Verify
-- After posting, confirm each response has `"DiffNote"` to ensure comments appear inline on the Changes tab.
-- Verify that the ai-review.html report was written, as instructed in Section 7.
+```json
+[
+  {"file": "src/ts/interface/ts.c", "line": 412, "body": "Missing `PetscCall()`.\n\n```suggestion:-0+0\n  PetscCall(TSSetUp(ts));\n```"}
+]
+```
+
+Then run `python3 lib/petsc/bin/maint/ai_review_post.py <MR_IID> mr-<MR_IID>-findings.json` as a single shell command (path relative to the repository root; write the findings file there too, so CI collects it). It anchors every comment to the `diff_refs` in `mr-<MR_IID>-meta.json`, demotes suggestion blocks GitLab would render incorrectly, and confirms each response is a DiffNote. Add `--dry-run` to validate the findings file without posting. A non-zero exit with no `POSTED` line means nothing was posted; fix the reported problem and rerun. A non-zero exit after one or more `POSTED` lines means only some findings posted; do not re-run the script — the comments that did post would duplicate. Report per Section 11.
+
+## 11. Verify
+- Report `POSTED_OK` and `POSTED_FAILED`, and quote every `FAILED` line.

@@ -332,6 +332,7 @@ pause-for-approval:
   script:
     - claude --version || { echo "claude not installed"; exit 1; }
     - glab --version || { echo "glab not installed"; exit 1; }
+    - python3 --version || { echo "python3 not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
       if [ -z "$GRAFANA_CLOUD_OTLP_ENDPOINT" ] || [ -z "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
@@ -359,8 +360,8 @@ pause-for-approval:
     when: always
     paths:
       - ai-review.*
-      - mr-*-raw.diff
-      - mr-*-meta.json
+      # one glob for meta (always written) and findings (posting runs only), so the glob always matches and never warns
+      - mr-*.json
       - mr-*-diff.txt
     expire_in: one week
 
