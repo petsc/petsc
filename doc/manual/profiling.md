@@ -160,7 +160,7 @@ object creation and destruction is presented.
 (listing_exparprof)=
 
 ```none
-mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
+mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_orthogonalization cgs -log_view -mat_type baij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 Number of iterations = 19
@@ -232,7 +232,7 @@ length, and the number of global reductions.
 (listing_exparprof2)=
 
 ```none
-mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_view -mat_type baij \
+mpiexec -n 4 ./ex10 -f0 medium -f1 arco6 -ksp_orthogonalization cgs -log_view -mat_type baij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------

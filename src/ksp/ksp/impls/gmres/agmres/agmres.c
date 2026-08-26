@@ -604,9 +604,9 @@ static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems PetscOp
   Desire NUENTSA WAKAM, INRIA <desire.nuentsa_wakam@inria.fr> with inputs from Guy Atenekeng <atenekeng@yahoo.com> and R.B. Sidje <roger.b.sidje@ua.edu>
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPDGMRES`, `KSPPGMRES`,
-           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
-           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
-           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
+           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
+           `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
+           `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
  M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
@@ -630,10 +630,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetOrthogonalization_C", KSPGMRESSetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
   /* -- New functions defined in DGMRES -- */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C", KSPDGMRESSetEigen_DGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESComputeSchurForm_C", KSPDGMRESComputeSchurForm_DGMRES));
@@ -648,13 +646,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->haptol         = 1.0e-30;
   agmres->q_preallocate  = 0;
   agmres->delta_allocate = AGMRES_DELTA_DIRECTIONS;
-  agmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   agmres->nrs            = NULL;
   agmres->sol_temp       = NULL;
   agmres->max_k          = AGMRES_DEFAULT_MAXK;
   agmres->Rsvd           = NULL;
-  agmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  agmres->orthogwork     = NULL;
 
   /* Default values for the deflation */
   agmres->r           = 0;

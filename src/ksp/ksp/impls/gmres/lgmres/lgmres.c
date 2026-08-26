@@ -183,7 +183,8 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
     }
 
     /* update Hessenberg matrix and do Gram-Schmidt - new direction is in VEC_VV(1+loc_it)*/
-    PetscCall((*lgmres->orthog)(ksp, loc_it));
+    PetscCall((*ksp->orthog)(ksp, &VEC_VV(0), loc_it + 1, NULL, HH(0, loc_it)));
+    PetscCall(PetscArraycpy(HES(0, loc_it), HH(0, loc_it), loc_it + 1));
 
     /* new entry in Hessenberg is the 2-norm of our new direction */
     PetscCall(VecNorm(VEC_VV(loc_it + 1), NORM_2, &tt));
@@ -613,11 +614,6 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize against
-                                                                                  the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt (true|false)                                 - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
-                                                                                  stability of the classical Gram-Schmidt  orthogonalization.
 .   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 .   -ksp_lgmres_augment k                                                       - number of error approximations to augment the Krylov space with
 -   -ksp_lgmres_constant                                                        - use a constant approximate space size
@@ -648,9 +644,9 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
   Allison Baker
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
-          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
-          `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
-          `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPLGMRESSetAugDim()`,
+          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
+          `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
+          `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPLGMRESSetAugDim()`,
           `KSPGMRESSetConstant()`, `KSPLGMRESSetConstant()`
 M*/
 
@@ -677,13 +673,9 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetOrthogonalization_C", KSPGMRESSetOrthogonalization_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetOrthogonalization_C", KSPGMRESGetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", KSPGMRESGetCGSRefinementType_GMRES));
 
   /* LGMRES_MOD add extra functions here - like the one to set num of aug vectors */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLGMRESSetConstant_C", KSPLGMRESSetConstant_LGMRES));
@@ -693,13 +685,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   lgmres->haptol         = 1.0e-30;
   lgmres->q_preallocate  = PETSC_FALSE;
   lgmres->delta_allocate = LGMRES_DELTA_DIRECTIONS;
-  lgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   lgmres->nrs            = NULL;
   lgmres->sol_temp       = NULL;
   lgmres->max_k          = LGMRES_DEFAULT_MAXK;
   lgmres->Rsvd           = NULL;
-  lgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  lgmres->orthogwork     = NULL;
 
   /* LGMRES_MOD - new defaults */
   lgmres->aug_dim         = LGMRES_DEFAULT_AUGDIM;

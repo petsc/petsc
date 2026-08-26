@@ -181,7 +181,7 @@ int main(int argc, char **argv)
      requires: !complex !single
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_max_steps 10
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -snes_type newtonls -ts_max_steps 10
       output_file: output/empty.out
 
    test:

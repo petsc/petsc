@@ -214,6 +214,6 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always
 
 TEST*/

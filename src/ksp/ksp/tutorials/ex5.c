@@ -365,17 +365,17 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      args: -pc_type jacobi -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type jacobi -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 2
-      args: -pc_type jacobi -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol .000001
+      args: -pc_type jacobi -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_rtol .000001
 
    test:
       suffix: 5
       nsize: 2
-      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor draw::draw_lg -ksp_monitor_true_residual draw::draw_lg
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_monitor draw::draw_lg -ksp_monitor_true_residual draw::draw_lg
 
    test:
       suffix: asm

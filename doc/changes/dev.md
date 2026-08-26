@@ -119,6 +119,7 @@
 - Change `KSPConvergedDefault()` to base the relative tolerance on the Frobenius norm of the batch of (preconditioned) right-hand sides during a `KSPMatSolve()` with a nonzero initial guess, matching `KSPSolve()`
 - Change `KSPMatSolve()` and `KSPMatSolveTranspose()` to reset the residual history at the start of each solve, and of each batch when `-ksp_matsolve_batch_size` is used, as `KSPSolve()` does, unless `KSPSetResidualHistory()` was called with `reset` set to `PETSC_FALSE`
 - Change `KSPRichardsonSetSelfScale()` to trigger a `KSPSetUp()` re-run when the flag changes, fixing an out-of-bounds work vector access when it was set after `KSPSetUp()`
+- GMRES orthogonalization routines have been promoted to the main `KSP` level, and GMRES has been dropped from the name. The new names are `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`, `KSPOrthogonalizationModifiedGramSchmidt()`, `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`. Note that the signature of orthogonalization functions has changed, see `KSPOrthogonalizationFn`. The related enumeration is now `KSP_ORTHOGONALIZATION_CGS_REFINE_*` and command-line options are now `-ksp_orthogonalization (cgs|mgs)` and `-ksp_orthogonalization_cgs_refinement_type (refine_never|refine_ifneeded|refine_always)`
 
 ## SNES
 

@@ -107,10 +107,10 @@ PetscErrorCode PCInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-const char *const        KSPCGTypes[]                 = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
-const char *const        KSPGMRESCGSRefinementTypes[] = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPGMRESRefinementType", "KSP_GMRES_CGS_", NULL};
-const char *const        KSPNormTypes_Shifted[]       = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
-const char *const *const KSPNormTypes                 = KSPNormTypes_Shifted + 1;
+const char *const        KSPCGTypes[]                             = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
+const char *const        KSPOrthogonalizationCGSRefinementTypes[] = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPOrthogonalizationCGSRefinementType", "KSP_ORTHOGONALIZATION_CGS_", NULL};
+const char *const        KSPNormTypes_Shifted[]                   = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
+const char *const *const KSPNormTypes                             = KSPNormTypes_Shifted + 1;
 const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_USER", "DIVERGED_PC_FAILED", "DIVERGED_INDEFINITE_MAT", "DIVERGED_NANORINF", "DIVERGED_INDEFINITE_PC", "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG", "DIVERGED_BREAKDOWN", "DIVERGED_DTOL", "DIVERGED_ITS", "DIVERGED_NULL", "", "CONVERGED_ITERATING", "CONVERGED_RTOL_NORMAL_EQUATIONS", "CONVERGED_RTOL", "CONVERGED_ATOL", "CONVERGED_ITS", "CONVERGED_NEG_CURVE", "CONVERGED_STEP_LENGTH", "CONVERGED_HAPPY_BREAKDOWN", "CONVERGED_USER", "CONVERGED_ATOL_NORMAL_EQUATIONS", "KSPConvergedReason", "KSP_", NULL};
 const char *const *KSPConvergedReasons     = KSPConvergedReasons_Shifted + 12;
 const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};

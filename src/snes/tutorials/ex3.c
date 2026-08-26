@@ -691,17 +691,17 @@ PetscErrorCode MatrixFreePreconditioner(PC pc, Vec x, Vec y)
 /*TEST
 
    test:
-      args: -nox -snes_monitor_cancel -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -nox -snes_monitor_cancel -snes_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 3
-      args: -nox -pc_type asm -mat_type mpiaij -snes_monitor_cancel -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -nox -pc_type asm -mat_type mpiaij -snes_monitor_cancel -snes_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 3
       nsize: 2
-      args: -nox -snes_monitor_cancel -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -nox -snes_monitor_cancel -snes_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 4

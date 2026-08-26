@@ -587,6 +587,6 @@ end
 !
 !   test:
 !      nsize: 4
-!      args: -snes_mf -pc_type none -da_processors_x 4 -da_processors_y 1 -snes_monitor -ksp_gmres_cgs_refinement_type refine_always
+!      args: -snes_mf -pc_type none -da_processors_x 4 -da_processors_y 1 -snes_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 !
 !TEST*/

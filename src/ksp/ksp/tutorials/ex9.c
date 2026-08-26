@@ -460,7 +460,7 @@ PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *unused)
 /*TEST
 
    test:
-      args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor
+      args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres -ksp_orthogonalization_cgs_refinement_type refine_always -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor
 
    test:
       requires: hpddm

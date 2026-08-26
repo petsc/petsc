@@ -541,26 +541,26 @@ PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, 
       requires: !single
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2
-      args: -snes_monitor -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
+      args: -snes_monitor -snes_type newtontr -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2_trdeltamax_change
-      args: -snes_monitor -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -pc -test_tr_deltamax
+      args: -snes_monitor -snes_type newtontr -ksp_orthogonalization_cgs_refinement_type refine_always -pc -test_tr_deltamax
 
    test:
       suffix: 2a
       filter: grep -i KSPConvergedDefault > /dev/null && echo "Found KSPConvergedDefault"
-      args: -snes_monitor -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -info
+      args: -snes_monitor -snes_type newtontr -ksp_orthogonalization_cgs_refinement_type refine_always -info
       requires: defined(PETSC_USE_INFO)
 
    test:
       suffix: 2b
       filter: grep -i  "User provided convergence test" > /dev/null  && echo "Found User provided convergence test"
-      args: -snes_monitor -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -use_convergence_test -info
+      args: -snes_monitor -snes_type newtontr -ksp_orthogonalization_cgs_refinement_type refine_always -use_convergence_test -info
       requires: defined(PETSC_USE_INFO)
 
    test:
@@ -569,7 +569,7 @@ PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, 
 
    test:
       suffix: 3
-      args: -snes_monitor -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always
+      args: -snes_monitor -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 4
@@ -577,7 +577,7 @@ PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, 
 
    test:
       suffix: 5
-      args: -snes_monitor -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always -prune_jacobian
+      args: -snes_monitor -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_orthogonalization_cgs_refinement_type refine_always -prune_jacobian
       output_file: output/ex1_3.out
 
    test:

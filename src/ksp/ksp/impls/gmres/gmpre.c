@@ -24,7 +24,7 @@
   Using this function with vectors in GPU memory may waste GPU memory if not all the restart directions are used in solving the system,
   that is the solver converges before the number of iterations reaches the restart value.
 
-.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
+.seealso: [](ch_ksp), `KSPGMRESSetRestart()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
           `VecMDot()`, `VecMAXPY()`
 @*/
 PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp)

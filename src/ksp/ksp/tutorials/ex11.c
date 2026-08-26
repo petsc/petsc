@@ -213,7 +213,7 @@ int main(int argc, char **args)
       requires: complex
 
    test:
-      args: -n 6 -norandom -pc_type none -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -n 6 -norandom -pc_type none -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    testset:
       suffix: deflation

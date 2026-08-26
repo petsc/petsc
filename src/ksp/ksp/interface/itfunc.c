@@ -1564,6 +1564,7 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   PetscCall(PCDestroy(&(*ksp)->pc));
   PetscCall(PetscFree((*ksp)->res_hist_alloc));
   PetscCall(PetscFree((*ksp)->err_hist_alloc));
+  PetscCall(PetscFree((*ksp)->orthogwork));
   if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)(&(*ksp)->cnvP));
   PetscCall(KSPMonitorCancel(*ksp));
   PetscCall(KSPConvergedReasonViewCancel(*ksp));

@@ -315,7 +315,7 @@ PetscErrorCode FormJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
 /*TEST
 
     test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -snes_atol 1.e-7 -ts_pseudo_frtol 1.e-5 -ts_view draw:tikz:fig.tex
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -snes_type newtonls -ts_monitor_pseudo -snes_atol 1.e-7 -ts_pseudo_frtol 1.e-5 -ts_view draw:tikz:fig.tex
 
     test:
       suffix: 2

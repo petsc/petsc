@@ -286,7 +286,7 @@ end
 !/*TEST
 !
 !   test:
-!      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor
+!      args: -ksp_orthogonalization_cgs_refinement_type refine_always -snes_monitor
 !      requires: !single
 !
 !TEST*/

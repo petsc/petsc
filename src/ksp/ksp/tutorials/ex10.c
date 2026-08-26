@@ -270,14 +270,14 @@ int main(int argc, char **args)
       nsize: 4
       output_file: output/ex10_1.out
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -pc_type bjacobi
+      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_orthogonalization cgs -mat_type baij -pc_type bjacobi
 
    test:
       suffix: 2
       nsize: 4
       output_file: output/ex10_2.out
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -pc_type bjacobi -trans
+      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_orthogonalization cgs -mat_type baij -pc_type bjacobi -trans
 
    test:
       suffix: 3

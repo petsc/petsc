@@ -202,30 +202,30 @@ GMRES is the unmodified (classical) Gram-Schmidt method, which can be
 set with
 
 ```
-KSPGMRESSetOrthogonalization(KSP ksp,KSPGMRESClassicalGramSchmidtOrthogonalization);
+KSPOrthogonalizationSet(KSP ksp, KSPOrthogonalizationClassicalGramSchmidt);
 ```
 
-or the options database command `-ksp_gmres_classicalgramschmidt`. By
+or the options database command `-ksp_orthogonalization cgs`. By
 default this will *not* use iterative refinement to improve the
 stability of the orthogonalization. This can be changed with the option
 
 ```
-KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
+KSPOrthogonalizationSetCGSRefinementType(KSP ksp, KSPOrthogonalizationCGSRefinementType type)
 ```
 
 or via the options database with
 
 ```
--ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always)
+-ksp_orthogonalization_cgs_refinement_type (refine_never|refine_ifneeded|refine_always)
 ```
 
-The values for `KSPGMRESCGSRefinementType()` are
-`KSP_GMRES_CGS_REFINE_NEVER`, `KSP_GMRES_CGS_REFINE_IFNEEDED`
-and `KSP_GMRES_CGS_REFINE_ALWAYS`.
+The values for `KSPOrthogonalizationCGSRefinementType()` are
+`KSP_ORTHOGONALIZATION_CGS_REFINE_NEVER`, `KSP_ORTHOGONALIZATION_CGS_REFINE_IFNEEDED`
+and `KSP_ORTHOGONALIZATION_CGS_REFINE_ALWAYS`.
 
 One can also use modified Gram-Schmidt, by using the orthogonalization
-routine `KSPGMRESModifiedGramSchmidtOrthogonalization()` or by using
-the command line option `-ksp_gmres_modifiedgramschmidt`.
+routine `KSPOrthogonalizationModifiedGramSchmidt()` or by using
+the command line option `-ksp_orthogonalization mgs`.
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is

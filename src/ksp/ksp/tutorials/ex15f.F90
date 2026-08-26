@@ -319,6 +319,6 @@ end program
 !
 !   test:
 !      nsize: 2
-!      args: -ksp_view -user_defined_pc -ksp_gmres_cgs_refinement_type refine_always
+!      args: -ksp_view -user_defined_pc -ksp_orthogonalization_cgs_refinement_type refine_always
 !
 !TEST*/

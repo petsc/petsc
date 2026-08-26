@@ -311,7 +311,7 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 /*TEST
 
    test:
-      args: -prefix_push mysolver_ -ksp_gmres_cgs_refinement_type refine_always -snes_monitor -prefix_pop
+      args: -prefix_push mysolver_ -ksp_orthogonalization_cgs_refinement_type refine_always -snes_monitor -prefix_pop
       requires: !single
 
    # test harness puts {{ }} options always at the end, need to specify the prefix explicitly
