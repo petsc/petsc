@@ -103,8 +103,6 @@ class Configure(config.package.Package):
             self.addDefine('USE_MATLAB_SOCKET','1')
             self.addMakeMacro('MATLAB_SOCKET','yes')
           return
-          self.framework.packages.append(self)
         else:
           self.log.write('WARNING:Unable to use MATLAB because cannot locate MATLAB external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
     raise RuntimeError('Could not find a functional MATLAB\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n')
-    return

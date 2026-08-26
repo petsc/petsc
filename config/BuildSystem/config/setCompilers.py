@@ -1402,7 +1402,6 @@ class Configure(config.base.Configure):
         except RuntimeError as e:
           self.logPrint(str(e))
     raise RuntimeError('Cannot find a C preprocessor')
-    return
 
   def generateCUDACompilerGuesses(self):
     '''Determine the CUDA compiler using CUDAC, then --with-cudac

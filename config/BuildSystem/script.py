@@ -1,7 +1,4 @@
 import sys
-if not hasattr(sys, 'version_info'):
-  print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
-  sys.exit(4)
 
 import pickle
 
@@ -96,7 +93,7 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or sys.version_info < (3,6):
+    if sys.version_info < (3,6):
       raise RuntimeError('BuildSystem requires Python version 3.6 or higher. Get Python at https://www.python.org/')
     return
 
