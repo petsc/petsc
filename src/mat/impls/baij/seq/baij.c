@@ -111,7 +111,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **
   PetscFunctionBegin;
   allowzeropivot = PetscNot(A->erroriffailure);
 
-  if (a->idiagvalid) {
+  if (a->idiag && a->idiagState == ((PetscObject)A)->state) {
     if (values) *values = a->idiag;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -214,7 +214,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **
     }
     PetscCall(PetscFree2(v_work, v_pivots));
   }
-  a->idiagvalid = PETSC_TRUE;
+  a->idiagState = ((PetscObject)A)->state;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -236,7 +236,7 @@ static PetscErrorCode MatSOR_SeqBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType 
   PetscCheck(omega == 1.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for non-trivial relaxation factor");
   PetscCheck(!(flag & SOR_APPLY_UPPER) && !(flag & SOR_APPLY_LOWER), PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for applying upper or lower triangular parts");
 
-  if (!a->idiagvalid) PetscCall(MatInvertBlockDiagonal(A, NULL));
+  PetscCall(MatInvertBlockDiagonal(A, NULL)); /* a no-op if the cached inverse is still current */
 
   if (!m) PetscFunctionReturn(PETSC_SUCCESS);
   diag  = a->diag;
@@ -2252,8 +2252,6 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A, MatAssemblyType mode)
   }
   a->nz = ai[mbs];
 
-  /* diagonals may have moved, so kill the diagonal pointers */
-  a->idiagvalid = PETSC_FALSE;
   if (fshift) PetscCheck(a->nounused != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unused space detected in matrix: %" PetscInt_FMT " X %" PetscInt_FMT " block size %" PetscInt_FMT ", %" PetscInt_FMT " unneeded", m, A->cmap->n, A->rmap->bs, fshift * bs2);
   PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT ", block size %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded, %" PetscInt_FMT " used\n", m, A->cmap->n, A->rmap->bs, fshift * bs2, a->nz * bs2));
   PetscCall(PetscInfo(A, "Number of mallocs during MatSetValues is %" PetscInt_FMT "\n", a->reallocs));
@@ -2348,7 +2346,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A, PetscInt is_n, const PetscInt is_idx[]
     row = rows[j];
     PetscCheck(row >= 0 && row <= A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "row %" PetscInt_FMT " out of range", row);
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = PetscSafePointerPlusOffset(baij->a, baij->i[row / bs] * bs2 + (row % bs));
     if (sizes[i] == bs && !baij->keepnonzeropattern) {
       if (diag != (PetscScalar)0.0) {
         if (baij->ilen[row / bs] > 0) {
@@ -2427,7 +2425,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A, PetscInt is_n, const Pet
   for (i = 0; i < is_n; i++) {
     row   = is_idx[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = PetscSafePointerPlusOffset(baij->a, baij->i[row / bs] * bs2 + (row % bs));
     for (k = 0; k < count; k++) {
       aa[0] = zero;
       aa += bs;
@@ -3458,6 +3456,7 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscUseMethod(A, "MatSeqBAIJRestoreArray_C", (Mat, PetscScalar **), (A, array));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

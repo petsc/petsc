@@ -1588,6 +1588,12 @@ static PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat, Vec ll, Vec rr)
   /* right diagonalscale the off-diagonal part */
   PetscCall(VecScatterEnd(baij->Mvctx, rr, baij->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscUseTypeMethod(b, diagonalscale, NULL, baij->lvec);
+  /* MatDiagonalScale() cannot be used on the blocks: they are on PETSC_COMM_SELF while ll and rr
+     are parallel, so the interface's communicator check rejects them. Advance the block states
+     here instead, as the interface would; MatSOR_SeqSBAIJ() caches its inverse diagonal on the
+     diagonal block's state. */
+  PetscCall(PetscObjectStateIncrease((PetscObject)a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)b));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1660,6 +1666,10 @@ static PetscErrorCode MatAXPY_MPISBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure
     yb = (Mat_SeqBAIJ *)yy->B->data;
     PetscCall(PetscBLASIntCast(xb->nz, &bnz));
     PetscCallBLAS("BLASaxpy", BLASaxpy_(&bnz, &alpha, xb->a, &one, yb->a, &one));
+    /* the blocks' values were changed directly, so advance their states as MatAXPY() on each
+       block would; MatSOR_SeqSBAIJ() caches its inverse diagonal on the diagonal block's state */
+    PetscCall(PetscObjectStateIncrease((PetscObject)yy->A));
+    PetscCall(PetscObjectStateIncrease((PetscObject)yy->B));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, PETSC_TRUE));
@@ -1899,7 +1909,7 @@ static PetscErrorCode MatZeroRowsColumns_MPISBAIJ(Mat A, PetscInt N, const Petsc
   for (i = 0; i < len; ++i) {
     row   = lrows[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = PetscSafePointerPlusOffset(baij->a, baij->i[row / bs] * bs2 + (row % bs));
     for (k = 0; k < count; ++k) {
       aa[0] = 0.0;
       aa += bs;

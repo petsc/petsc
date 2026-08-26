@@ -150,10 +150,10 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
   PetscCall(VecGetArray(xx, &x));
   PetscCall(VecGetArrayRead(bb, &b));
 
-  if (!a->idiagvalid) {
+  if (!a->idiag || a->idiagState != ((PetscObject)A)->state) {
     if (!a->idiag) PetscCall(PetscMalloc1(m, &a->idiag));
     for (i = 0; i < a->mbs; i++) a->idiag[i] = 1.0 / a->a[a->i[i]];
-    a->idiagvalid = PETSC_TRUE;
+    a->idiagState = ((PetscObject)A)->state;
   }
 
   if (!a->sor_work) PetscCall(PetscMalloc1(m, &a->sor_work));

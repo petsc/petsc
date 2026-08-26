@@ -7,7 +7,7 @@ int main(int argc, char **args)
 {
   Mat          A, A_inv;
   PetscMPIInt  rank, size;
-  PetscInt     M, m, bs, rstart, rend, j, x, y;
+  PetscInt     M, m, bs, rstart, rend, j, x, y, pass, row;
   PetscInt    *dnnz;
   PetscScalar *v;
   Vec          X, Y;
@@ -38,43 +38,50 @@ int main(int argc, char **args)
 
   PetscCall(PetscMalloc1(bs * bs, &v));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
-  for (j = rstart / bs; j < rend / bs; j++) {
-    for (x = 0; x < bs; x++) {
-      for (y = 0; y < bs; y++) {
-        if (x == y) {
-          v[y + bs * x] = 2 * bs;
-        } else {
-          v[y + bs * x] = -1 * (x < y) - 2 * (x > y);
+  /* pass 2 re-assembles new values into the nonzero pattern of pass 1 and pass 3 changes values
+     through MatZeroRows(); after each the check must run against an inverse that
+     MatInvertBlockDiagonal() recomputed rather than took from its cache */
+  for (pass = 1; pass <= 3; pass++) {
+    if (pass < 3) {
+      for (j = rstart / bs; j < rend / bs; j++) {
+        for (x = 0; x < bs; x++) {
+          for (y = 0; y < bs; y++) {
+            if (x == y) v[y + bs * x] = 2 * bs * pass;
+            else v[y + bs * x] = (-1 * (x < y) - 2 * (x > y)) * pass;
+          }
         }
+        PetscCall(MatSetValuesBlocked(A, 1, &j, 1, &j, v, INSERT_VALUES));
       }
+      PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    } else {
+      row = rstart;
+      PetscCall(MatZeroRows(A, 1, &row, 2 * bs, NULL, NULL));
     }
-    PetscCall(MatSetValuesBlocked(A, 1, &j, 1, &j, v, INSERT_VALUES));
+
+    /* check that A  = inv(inv(A)) */
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &A_inv));
+    PetscCall(MatSetFromOptions(A_inv));
+    PetscCall(MatInvertBlockDiagonalMat(A, A_inv));
+
+    /* Test A_inv * A on a random vector */
+    PetscCall(MatCreateVecs(A, &X, &Y));
+    PetscCall(VecSetRandom(X, NULL));
+    PetscCall(MatMult(A, X, Y));
+    PetscCall(VecScale(X, -1));
+    PetscCall(MatMultAdd(A_inv, Y, X, X));
+    PetscCall(VecNorm(X, NORM_MAX, &norm));
+    if (norm > PETSC_SMALL) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error exceeds tolerance on pass %" PetscInt_FMT ".\nInverse of block diagonal A\n", pass));
+      PetscCall(MatView(A_inv, PETSC_VIEWER_STDOUT_WORLD));
+    }
+
+    PetscCall(MatDestroy(&A_inv));
+    PetscCall(VecDestroy(&X));
+    PetscCall(VecDestroy(&Y));
   }
   PetscCall(PetscFree(v));
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-
-  /* check that A  = inv(inv(A)) */
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &A_inv));
-  PetscCall(MatSetFromOptions(A_inv));
-  PetscCall(MatInvertBlockDiagonalMat(A, A_inv));
-
-  /* Test A_inv * A on a random vector */
-  PetscCall(MatCreateVecs(A, &X, &Y));
-  PetscCall(VecSetRandom(X, NULL));
-  PetscCall(MatMult(A, X, Y));
-  PetscCall(VecScale(X, -1));
-  PetscCall(MatMultAdd(A_inv, Y, X, X));
-  PetscCall(VecNorm(X, NORM_MAX, &norm));
-  if (norm > PETSC_SMALL) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error exceeds tolerance.\nInverse of block diagonal A\n"));
-    PetscCall(MatView(A_inv, PETSC_VIEWER_STDOUT_WORLD));
-  }
-
   PetscCall(MatDestroy(&A));
-  PetscCall(MatDestroy(&A_inv));
-  PetscCall(VecDestroy(&X));
-  PetscCall(VecDestroy(&Y));
 
   PetscCall(PetscFinalize());
   return 0;

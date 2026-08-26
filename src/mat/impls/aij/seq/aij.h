@@ -158,8 +158,9 @@ typedef struct {
   PetscObjectState idiagState;    /* state of the matrix when mdiag and idiag was obtained */
   PetscScalar      fshift, omega; /* last used omega and fshift */
 
-  PetscScalar *ibdiag;      /* inverses of block diagonals */
-  PetscBool    ibdiagvalid; /* inverses of block diagonals are valid. */
+  PetscScalar     *ibdiag;      /* inverses of block diagonals */
+  PetscInt         ibdiagsize;  /* length of ibdiag[], which changes if the block size does */
+  PetscObjectState ibdiagState; /* state of the matrix when ibdiag[] was obtained */
 
   /* MatSetValues() via hash related fields */
   PetscHMapIJV   ht;

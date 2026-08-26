@@ -491,6 +491,7 @@ PetscErrorCode MatRealPart(Mat mat)
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
   PetscUseTypeMethod(mat, realpart);
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -549,6 +550,7 @@ PetscErrorCode MatImaginaryPart(Mat mat)
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
   PetscUseTypeMethod(mat, imaginarypart);
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

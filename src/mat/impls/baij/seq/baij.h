@@ -26,8 +26,8 @@
 \
   Mat sbaijMat; /* mat in sbaij format */ \
 \
-  MatScalar *idiag;      /* inverse of block diagonal  */ \
-  PetscBool  idiagvalid; /* if above has correct/current values */ \
+  MatScalar       *idiag;      /* inverse of block diagonal  */ \
+  PetscObjectState idiagState; /* state of the matrix when idiag[] was obtained */ \
   /* MatSetValues() via hash related fields */ \
   PetscHMapIJV   ht; \
   PetscInt      *dnz; \
