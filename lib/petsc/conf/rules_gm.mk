@@ -22,5 +22,6 @@ endif
 .PHONY: branch-review
 branch-review:
 	@command -v $(PETSC_LLM_CLI) >/dev/null 2>&1 || { echo "$(PETSC_LLM_CLI) not installed"; exit 1; }
+	@command -v python3 >/dev/null 2>&1 || { echo "python3 not installed"; exit 1; }
 	@git diff --quiet HEAD || { echo "Git repository has uncommitted changes"; exit 1; }
 	@$(PETSC_LLM_CLI) $(PETSC_LLM_MODEL_OPTION) $(PETSC_LLM_CLI_OPTS) 'Use the skill review-branch'
