@@ -150,7 +150,6 @@ typedef struct {
   PetscInt  nedfield;
   PetscBool nedglobal;
   Mat       nedcG;
-  IS        nedclocal;
 
   /* local disconnected subdomains */
   PetscBool detect_disconnected;

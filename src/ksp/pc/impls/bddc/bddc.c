@@ -304,6 +304,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   if `PETSC_FALSE`, the ordering should be global for the Nedelec field.
   In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
   and geid the one for the Nedelec field.
+  If `field` is `PETSC_DECIDE`, `global` must be `PETSC_TRUE`; the Nedelec field is inferred from the rows of `G` with more than one nonzero.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
 @*/

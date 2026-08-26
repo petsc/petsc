@@ -8,6 +8,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
   -nearnulldim <0> : number of vectors in the near-null space immediately following matrix\n\n\
+  -assemble_local : assemble repeated local indices after loading a MATIS matrix\n\n\
   -trans  : solve transpose system instead\n\n";
 /*
   This code can be used to test PETSc interface to other packages.\n\
@@ -143,6 +144,9 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatLoad(A, viewer));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-assemble_local", &flg, NULL));
+  if (flg) PetscCall(MatISSetAllowRepeated(A, PETSC_FALSE));
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_convert_type", mtype, sizeof(mtype), &flg));
   if (flg) PetscCall(MatConvert(A, mtype, MAT_INPLACE_MATRIX, &A));
@@ -1005,5 +1009,40 @@ int main(int argc, char **args)
      suffix: matis_bddc_multisub_hcurl_3d_fdm
      nsize: {{1 3 4 8}}
      args: -f ${DATAFILESPATH}/matrices/matis/fdm_hcurl_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_hcurl_multi_deg3_4x4x4.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_3d_fdm_multilevel
+     nsize: {{1 2 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/fdm_hcurl_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_hcurl_multi_deg3_4x4x4.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0 -pc_bddc_levels 2 -pc_bddc_coarsening_ratio 8 -pc_bddc_aggregator_petscpartitioner_type simple -mat_is_load_variableblocksizes
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_h1_3d_fdm
+     nsize: {{1 3}}
+     args: -f ${DATAFILESPATH}/matrices/matis/fdm_h1_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_h1_multi_deg3_4x4x4.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -mat_is_load_variableblocksizes -pc_bddc_use_local_mat_graph 0 -pc_bddc_corner_selection
+
+   testset:
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      nsize: {{1 3}}
+      args: -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -mat_is_load_variableblocksizes -pc_bddc_use_local_mat_graph 0 -test_bddc_save_load -pc_bddc_save bddc_setup.dat
+      temporaries: bddc_setup.dat bddc_setup.dat.info bddc_roundtrip.dat bddc_roundtrip.dat.info
+      test:
+         suffix: bddc_save_load_h1
+         output_file: output/ex72_matis_bddc_multisub_h1_3d_fdm.out
+         args: -f ${DATAFILESPATH}/matrices/matis/fdm_h1_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_h1_multi_deg3_4x4x4.dat -pc_bddc_corner_selection
+      test:
+         suffix: bddc_save_load_hcurl
+         output_file: output/ex72_matis_bddc_multisub_hcurl_3d_fdm_multilevel.out
+         args: -f ${DATAFILESPATH}/matrices/matis/fdm_hcurl_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_hcurl_multi_deg3_4x4x4.dat -pc_bddc_levels 2 -pc_bddc_coarsening_ratio 8 -pc_bddc_aggregator_petscpartitioner_type simple
+      test:
+         suffix: bddc_save_load_fields
+         args: -f ${DATAFILESPATH}/matrices/matis/fdm_h1_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_h1_multi_deg3_4x4x4.dat -pc_bddc_corner_selection -test_bddc_dofs_splitting 2
+
+   test:
+      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+      suffix: bddc_hcurl_restrict
+      nsize: 4
+      args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_inlinehex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_inlinehex_16.dat -pc_bddc_load_version 0 -mat_type is -assemble_local -test_bddc_dofs_splitting 1 -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 2 -pc_bddc_coarse_eqs_limit 0 -pc_bddc_aggregator_mat_partitioning_type average
 
 TEST*/
