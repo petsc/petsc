@@ -284,7 +284,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
   PetscAssert(numClassID > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of classids %" PetscInt_FMT " <= 0", numClassID);
   if (numClassID) PetscAssertPointer(classIDs, 3);
   PetscCall(PetscInfoGetInfo(&enabled, NULL, &exclude, NULL, NULL));
-  PetscCall(PetscOptionsDeprecated_Private(NULL, "-info_exclude", NULL, "3.13", "Use ~ with -info to indicate classes to exclude"));
+  PetscCall(PetscOptionsDeprecatedNoObject(PETSC_COMM_WORLD, NULL, "-info_exclude", NULL, "3.13", "Use ~ with -info to indicate classes to exclude"));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-info_exclude", logList, sizeof(logList), &opt));
   if (opt) {
     PetscBool pkg;

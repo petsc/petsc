@@ -220,17 +220,20 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 }
 
 /*@
-  KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user in the options database
+  KSPMonitorSetFromOptions - Sets a monitor function, viewer, and viewer format based on the viewer specification in the options database
 
   Collective
 
   Input Parameters:
 + ksp  - `KSP` object you wish to monitor
-. opt  - the command line option for this monitor
-. name - the monitor type one is seeking
+. opt  - the command line option for this monitor, for example `-ksp_monitor`
+. name - the monitor type one is seeking, for example, `"preconditioned_residual"`
 - ctx  - An optional application context for the monitor, or `NULL`
 
   Level: developer
+
+  Note:
+  See `PetscOptionsCreateViewer()` for details on the viewer specification, for example, `-ksp_monitor ascii:myfile::append`
 
 .seealso: [](ch_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsCreateViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,
@@ -286,48 +289,72 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . ksp - the Krylov space context
 
   Options Database Keys:
-+ -ksp_rtol rtol                                                          - relative tolerance used in default determination of convergence, i.e.
-                                                                            if residual norm decreases by this factor than convergence is declared
-. -ksp_atol abstol                                                        - absolute tolerance used in default convergence test, i.e. if residual
-                                                                            norm is less than this then convergence is declared
-. -ksp_divtol tol                                                         - if residual norm increases by this factor than divergence is declared
-. -ksp_max_it maxits                                                      - maximum number of linear iterations
-. -ksp_min_it minits                                                      - minimum number of linear iterations to use, defaults to zero
-. -ksp_reuse_preconditioner (true|false)                                  - reuse the previously computed preconditioner
-. -ksp_converged_use_initial_residual_norm                                - see `KSPConvergedDefaultSetUIRNorm()`
-. -ksp_converged_use_min_initial_residual_norm                            - see `KSPConvergedDefaultSetUMIRNorm()`
-. -ksp_converged_maxits                                                   - see `KSPConvergedDefaultSetConvergedMaxits()`
-. -ksp_norm_type (none|preconditioned|unpreconditioned|natural)           - see `KSPSetNormType()`
-. -ksp_check_norm_iteration it                                            - do not compute residual norm until iteration number it (does compute at 0th iteration)
-                                                                            works only for `KSPBCGS`, `KSPIBCGS`, and `KSPCG`
-. -ksp_lag_norm                                                           - compute the norm of the residual for the ith iteration on the i+1 iteration;
-                                                                            this means that one can use the norm of the residual for convergence test WITHOUT
-                                                                            an extra `MPI_Allreduce()` limiting global synchronizations.
-                                                                            This will require 1 more iteration of the solver than usual.
-. -ksp_guess_type                                                         - Type of initial guess generator for repeated linear solves
-. -ksp_fischer_guess model,size                                           - uses the Fischer initial guess generator for repeated linear solves
-. -ksp_constant_null_space                                                - assume the operator (matrix) has the constant vector in its null space
-. -ksp_test_null_space                                                    - tests the null space set with `MatSetNullSpace()` to see if it truly is a null space
-. -ksp_knoll                                                              - compute initial guess by applying the preconditioner to the right-hand side
-. -ksp_monitor_cancel                                                     - cancel all previous convergene monitor routines set
-. -ksp_monitor                                                            - print residual norm at each iteration
-. -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration, see `KSPMonitorResidual()`
-. -ksp_monitor_true_residual                                              - print the true l2 residual norm at each iteration, see `KSPMonitorTrueResidual()`
-. -all_ksp_monitor optional_filename                                      - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
-                                                                            useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and
-                                                                            you wish to track the convergence of all the solvers
-. -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
-. -ksp_monitor_singular_value                                             - monitor extreme singular values at each iteration
-. -ksp_converged_reason                                                   - view the convergence state at the end of the solve
-. -ksp_use_explicittranspose                                              - transpose the system explicitly in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
-. -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS`
-                                                                            is not treated as an error on inner solves
-- -ksp_converged_rate                                                     - view the convergence rate at the end of the solve
++ -ksp_rtol rtol                                                  - relative tolerance used in default determination of convergence, i.e.
+                                                                    if residual norm decreases by this factor than convergence is declared
+. -ksp_atol abstol                                                - absolute tolerance used in default convergence test, i.e. if residual
+                                                                    norm is less than this then convergence is declared
+. -ksp_divtol tol                                                 - if residual norm increases by this factor than divergence is declared
+. -ksp_max_it maxits                                              - maximum number of linear iterations
+. -ksp_min_it minits                                              - minimum number of linear iterations to use, defaults to zero
+. -ksp_reuse_preconditioner (true|false)                          - reuse the previously computed preconditioner
+. -ksp_converged_use_initial_residual_norm (true|false)           - see `KSPConvergedDefaultSetUIRNorm()`
+. -ksp_converged_use_min_initial_residual_norm (true|false)       - see `KSPConvergedDefaultSetUMIRNorm()`
+. -ksp_converged_maxits (true|false)                              - see `KSPConvergedDefaultSetConvergedMaxits()`
+. -ksp_norm_type (none|preconditioned|unpreconditioned|natural)   - see `KSPSetNormType()`
+. -ksp_check_norm_iteration it                                    - do not compute residual norm until iteration number it (does compute at 0th iteration)
+                                                                    works only for `KSPBCGS`, `KSPIBCGS`, and `KSPCG`
+. -ksp_lag_norm (true|false)                                      - compute the norm of the residual for the ith iteration on the i+1 iteration;
+                                                                    this means that one can use the norm of the residual for convergence test WITHOUT
+                                                                    an extra `MPI_Allreduce()` limiting global synchronizations.
+                                                                    This will require 1 more iteration of the solver than usual.
+. -ksp_guess_type (fischer|pod)                                   - type of initial guess generator for repeated linear solves,
+                                                                    see `KSPGuessSetFromOptions()` for additional options to control initial guess generation
+. -ksp_fischer_guess model,size                                   - uses the Fischer initial guess generator for repeated linear solves
+. -ksp_constant_null_space (true|false)                           - assume the operator (matrix) has the constant vector in its null space
+. -ksp_test_null_space (true|false)                               - tests if the null space associated with the linear system operator of the `KSP` is actually a null space of the operator
+. -ksp_knoll (true|false)                                         - compute initial guess by applying the preconditioner to the right-hand side
+. -ksp_use_explicittranspose (true|false)                         - transpose the system explicitly in `KSPSolveTranspose()`
+. -ksp_error_if_not_converged (true|false)                        - stop the program as soon as an error is detected in `KSPSolve()`,
+                                                                    `KSP_DIVERGED_ITS` is not treated as an error on inner solves
+. -ksp_monitor_cancel (true|false)                                - cancel all previous convergence monitor routines set
+. -ksp_monitor viewer_specification                               - monitor the (preconditioned) residual norm
+. -ksp_monitor_true_residual viewer_specification                 - monitor the true l2 residual norm, see `KSPMonitorTrueResidual()`
+. -ksp_monitor_solution viewer_specification                      - monitor the solution
+. -ksp_monitor_singular_value viewer_specification                - monitor the extreme singular values
+. -ksp_monitor_range viewer_specification                         - monitor the range of values in the (preconditioned) residual
+. -ksp_monitor_max viewer_specification                           - monitor the maximum value in the true residual
+. -ksp_monitor_error viewer_specification                         - monitor the error or its l2 norm, see `KSPMonitorError()`, `KSPMonitorErrorDraw()`, and `KSPMonitorErrorDrawLG()`
+. -ksp_monitor_pause_final (true|false)                           - pauses all draw monitors at the final iterate
+. -all_ksp_monitor viewer_specification                           - monitor the (preconditioned) residual norm for all `KSP` solves, regardless of their prefix. This is
+                                                                    useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and
+                                                                    you wish to track the convergence of all the solvers.
+. -ksp_view_pre viewer_specification                              - view the `KSP` object before each `KSPSolve()`
+. -ksp_view viewer_specification                                  - view the `KSP` object after each `KSPSolve()`
+. -ksp_converged_reason viewer_specification                      - view the convergence state at the end of the solve
+. -ksp_converged_rate viewer_specification                        - view the computed convergence rate of the iterative solver
+. -ksp_view_mat viewer_specification                              - view the matrix defining the linear system
+. -ksp_view_pmat viewer_specification                             - view the matrix from which the preconditioner is constructed
+. -ksp_view_rhs viewer_specification                              - view the right hand side of the linear system
+. -ksp_view_solution viewer_specification                         - view the computed solution
+. -ksp_view_mat_explicit viewer_specification                     - view the matrix computed explicitly via `MatComputeOperator()`, useful when the operator is provided matrix-free
+. -ksp_view_eigenvalues viewer_specification                      - view the approximate eigenvalues of the preconditioned operator computed via `KSPComputeEigenvalues()`
+. -ksp_view_singularvalues viewer_specification                   - view the approximate singular values of the preconditioned operator computed via `KSPComputeExtremeSingularValues()`
+. -ksp_view_eigenvalues_explicit viewer_specification             - view the approximate eigenvalues of the preconditioned operator computed with LAPACK
+. -ksp_view_preconditioned_operator_explicit viewer_specification - view the preconditioned operator computed via `KSPComputeOperator()`
+. -ksp_view_diagonal_scale viewer_specification                   - view the diagonal scaling applied via `-ksp_diagonal_scale`
+. -ksp_view_final_residual viewer_specification                   - view the final true residual norm
+- -ksp_view_final_residual_vec viewer_specification               - view the final true residual vector, must also use `-ksp_view_final_residual ascii:`
 
   Level: beginner
 
-  Note:
-  To see all options, run your program with the `-help` option or consult [](ch_ksp)
+  Notes:
+  See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
+
+  The monitors are called at every iteration.
+
+  Except for `-ksp_view_pre` all the `-ksp_view` viewers are called at the end of `KSPSolve()`.
+
+  To see all options, run your program with the `-help` option or consult [](ch_ksp).
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 @*/
@@ -376,40 +403,39 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsBool("-ksp_initial_guess_nonzero", "Use the contents of the solution vector for initial guess", "KSPSetInitialNonzero", ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE, &flag, &flg));
   if (flg) PetscCall(KSPSetInitialGuessNonzero(ksp, flag));
 
+  PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
+  PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
+  PetscCall(KSPSetReusePreconditioner(ksp, reuse));
+  PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, &set));
+  if (set) PetscCall(KSPSetErrorIfNotConverged(ksp, ksp->errorifnotconverged));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pre", &ksp->viewerPre, &ksp->formatPre, &ksp->viewPre));
+  PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
+  if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
+  PetscCall(PetscOptionsDeprecated("-ksp_final_residual", "-ksp_view_final_residual", "3.9", NULL));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
+  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
+  PetscCall(KSPGetDiagonalScale(ksp, &flag));
+  PetscCall(PetscOptionsBool("-ksp_diagonal_scale", "Diagonal scale matrix before building preconditioner", "KSPSetDiagonalScale", flag, &flag, &flg));
+  if (flg) PetscCall(KSPSetDiagonalScale(ksp, flag));
+  PetscCall(KSPGetDiagonalScaleFix(ksp, &flag));
+  PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix", "Fix diagonally scaled matrix after solve", "KSPSetDiagonalScaleFix", flag, &flag, &flg));
+  if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp, flag));
+  nmax = ksp->nmax;
+  PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size", "-ksp_matsolve_batch_size", "3.15", NULL));
+  PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
+  if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPPREONLY, &flg));
-  if (flg) {
-    PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
-    PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
-    PetscCall(KSPSetReusePreconditioner(ksp, reuse));
-    PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, &set));
-    if (set) PetscCall(KSPSetErrorIfNotConverged(ksp, ksp->errorifnotconverged));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
-    PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
-    if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
-    PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
-
-    PetscCall(KSPGetDiagonalScale(ksp, &flag));
-    PetscCall(PetscOptionsBool("-ksp_diagonal_scale", "Diagonal scale matrix before building preconditioner", "KSPSetDiagonalScale", flag, &flag, &flg));
-    if (flg) PetscCall(KSPSetDiagonalScale(ksp, flag));
-    PetscCall(KSPGetDiagonalScaleFix(ksp, &flag));
-    PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix", "Fix diagonally scaled matrix after solve", "KSPSetDiagonalScaleFix", flag, &flag, &flg));
-    if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp, flag));
-    nmax = ksp->nmax;
-    PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size", "-ksp_matsolve_batch_size", "3.15", NULL));
-    PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
-    if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
-    goto skipoptions;
-  }
+  if (flg) goto skipoptions;
 
   rtol   = ksp->rtol;
   abstol = ksp->abstol;
@@ -431,13 +457,8 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(KSPGetConvergedNegativeCurvature(ksp, &flag));
   PetscCall(PetscOptionsBool("-ksp_converged_neg_curve", "Declare convergence if negative curvature is detected", "KSPConvergedNegativeCurvature", flag, &flag, &set));
   if (set) PetscCall(KSPSetConvergedNegativeCurvature(ksp, flag));
-  PetscCall(KSPGetReusePreconditioner(ksp, &reuse));
-  PetscCall(PetscOptionsBool("-ksp_reuse_preconditioner", "Use initial preconditioner and don't ever compute a new one", "KSPReusePreconditioner", reuse, &reuse, NULL));
-  PetscCall(KSPSetReusePreconditioner(ksp, reuse));
 
   PetscCall(PetscOptionsBool("-ksp_knoll", "Use preconditioner applied to b for initial guess", "KSPSetInitialGuessKnoll", ksp->guess_knoll, &ksp->guess_knoll, NULL));
-  PetscCall(PetscOptionsBool("-ksp_error_if_not_converged", "Generate error if solver does not converge", "KSPSetErrorIfNotConverged", ksp->errorifnotconverged, &ksp->errorifnotconverged, &set));
-  if (set) PetscCall(KSPSetErrorIfNotConverged(ksp, ksp->errorifnotconverged));
   PetscCall(PetscOptionsFList("-ksp_guess_type", "Initial guess in Krylov method", NULL, KSPGuessList, NULL, guesstype, 256, &flg));
   if (flg) {
     PetscCall(KSPGetGuess(ksp, &ksp->guess));
@@ -477,13 +498,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   PetscCall(PetscOptionsBool("-ksp_lag_norm", "Lag the calculation of the residual norm", "KSPSetLagNorm", ksp->lagnorm, &flag, &flg));
   if (flg) PetscCall(KSPSetLagNorm(ksp, flag));
-
-  PetscCall(KSPGetDiagonalScale(ksp, &flag));
-  PetscCall(PetscOptionsBool("-ksp_diagonal_scale", "Diagonal scale matrix before building preconditioner", "KSPSetDiagonalScale", flag, &flag, &flg));
-  if (flg) PetscCall(KSPSetDiagonalScale(ksp, flag));
-  PetscCall(KSPGetDiagonalScaleFix(ksp, &flag));
-  PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix", "Fix diagonally scaled matrix after solve", "KSPSetDiagonalScaleFix", flag, &flag, &flg));
-  if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp, flag));
 
   PetscCall(PetscOptionsBool("-ksp_constant_null_space", "Add constant null space to Krylov solver matrix", "MatSetNullSpace", PETSC_FALSE, &flg, &set));
   if (set && flg) {
@@ -543,61 +557,14 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     if (rtype == (PetscEnum)0 || rtype == (PetscEnum)1) PetscCall(KSPSetResidualHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
     if (rtype == (PetscEnum)0 || rtype == (PetscEnum)2) PetscCall(KSPSetErrorHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
   }
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view", &ksp->viewer, &ksp->format, &ksp->view));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pre", &ksp->viewerPre, &ksp->formatPre, &ksp->viewPre));
 
-  PetscCall(PetscViewerDestroy(&ksp->convergedreasonviewer));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_converged_reason", &ksp->convergedreasonviewer, &ksp->convergedreasonformat, NULL));
-  flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-ksp_converged_reason_view_cancel", "Cancel all the converged reason view functions set using KSPConvergedReasonViewSet", "KSPConvergedReasonViewCancel", PETSC_FALSE, &flg, &set));
-  if (set && flg) PetscCall(KSPConvergedReasonViewCancel(ksp));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &ksp->viewerRate, &ksp->formatRate, &ksp->viewRate));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat", &ksp->viewerMat, &ksp->formatMat, &ksp->viewMat));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_pmat", &ksp->viewerPMat, &ksp->formatPMat, &ksp->viewPMat));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_rhs", &ksp->viewerRhs, &ksp->formatRhs, &ksp->viewRhs));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_solution", &ksp->viewerSol, &ksp->formatSol, &ksp->viewSol));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_mat_explicit", &ksp->viewerMatExp, &ksp->formatMatExp, &ksp->viewMatExp));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues", "-ksp_view_eigenvalues", "3.9", NULL));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues", &ksp->viewerEV, &ksp->formatEV, &ksp->viewEV));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_singularvalues", "-ksp_view_singularvalues", "3.9", NULL));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_singularvalues", &ksp->viewerSV, &ksp->formatSV, &ksp->viewSV));
   PetscCall(PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly", "-ksp_view_eigenvalues_explicit", "3.9", NULL));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_eigenvalues_explicit", &ksp->viewerEVExp, &ksp->formatEVExp, &ksp->viewEVExp));
-  PetscCall(PetscOptionsDeprecated("-ksp_final_residual", "-ksp_view_final_residual", "3.9", NULL));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
-
-  /* Deprecated options */
-  if (!ksp->viewEV) {
-    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigenvalues",...) below because the argument handling is different */
-    PetscCall(PetscOptionsDeprecated("-ksp_plot_eigenvalues", NULL, "3.9", "Use -ksp_view_eigenvalues draw"));
-    PetscCall(PetscOptionsName("-ksp_plot_eigenvalues", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw]", "KSPView", &ksp->viewEV));
-    if (ksp->viewEV) {
-      ksp->formatEV = PETSC_VIEWER_DEFAULT;
-      ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
-      PetscCall(PetscObjectReference((PetscObject)ksp->viewerEV));
-    }
-  }
-  if (!ksp->viewEV) {
-    PetscCall(PetscOptionsDeprecated("-ksp_plot_eigenvalues_explicitly", NULL, "3.9", "Use -ksp_view_eigenvalues_explicit draw"));
-    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigencontours",...) below because the argument handling is different */
-    PetscCall(PetscOptionsName("-ksp_plot_eigencontours", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour]", "KSPView", &ksp->viewEV));
-    if (ksp->viewEV) {
-      ksp->formatEV = PETSC_VIEWER_DRAW_CONTOUR;
-      ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
-      PetscCall(PetscObjectReference((PetscObject)ksp->viewerEV));
-    }
-  }
-  if (!ksp->viewEVExp) {
-    /* Cannot remove the what otherwise would be redundant call to PetscOptionsName("-ksp_plot_eigencontours_explicitly",...) below because the argument handling is different */
-    PetscCall(PetscOptionsName("-ksp_plot_eigenvalues_explicitly", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]", "KSPView", &ksp->viewEVExp));
-    if (ksp->viewEVExp) {
-      ksp->formatEVExp = PETSC_VIEWER_DEFAULT;
-      ksp->viewerEVExp = PETSC_VIEWER_DRAW_(comm);
-      PetscCall(PetscObjectReference((PetscObject)ksp->viewerEVExp));
-    }
-  }
 
 #if PetscDefined(HAVE_SAWS)
   /*
@@ -626,11 +593,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     if (set) PetscCall(PetscObjectSAWsSetBlock((PetscObject)ksp, flg));
   }
 #endif
-
-  nmax = ksp->nmax;
-  PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size", "-ksp_matsolve_batch_size", "3.15", NULL));
-  PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
-  if (flg) PetscCall(KSPSetMatSolveBatchSize(ksp, nmax));
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_use_explicittranspose", "Explicitly transpose the system in KSPSolveTranspose() and KSPMatSolveTranspose()", "KSPSetUseExplicitTranspose", ksp->transpose.use_explicittranspose, &flg, &set));

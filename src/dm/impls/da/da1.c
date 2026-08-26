@@ -331,10 +331,10 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
 . da - the resulting distributed array object
 
   Options Database Keys:
-+ -dm_view        - Calls `DMView()` at the conclusion of `DMDACreate1d()`
-. -da_grid_x nx   - number of grid points in the x direction
-. -da_refine_x rx - refinement factor
-- -da_refine n    - refine the `DMDA` `n` times before creating it
++ -dm_view viewer_specification - calls `DMView()` at the conclusion of `DMDACreate1d()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+. -da_grid_x nx                 - number of grid points in the x direction
+. -da_refine_x rx               - refinement factor
+- -da_refine n                  - refine the `DMDA` `n` times before creating it
 
   Level: beginner
 
@@ -351,7 +351,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
 .seealso: [](sec_struct), `DMDA`, `DM`, `DMDestroy()`, `DMView()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDASetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
-          `DMStagCreate1d()`, `DMBoundaryType`
+          `DMStagCreate1d()`, `DMBoundaryType`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {

@@ -1768,15 +1768,19 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
 
   Input Parameters:
 + A    - the `PC` context
-. obj  - Optional object that provides the options prefix
+. obj  - optional object that provides the options prefix, pass `NULL` to use the options prefix of `A`
 - name - command line option name
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: developer
 
-.seealso: [](ch_ksp), `PC`, `PCView`, `PetscObjectViewFromOptions()`, `PCCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_ksp), `PC`, `PCView()`, `PetscObjectViewFromOptions()`, `PCCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 {

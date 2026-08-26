@@ -8,7 +8,7 @@ the server (PETSc) application).
 
 One can simply add `--download-saws` to the arguments for `./configure` when configuring PETSc.
 
-Alternately, a current version of SAWs is available from `https://bitbucket.org/saws/saws`
+Alternately, a current version of SAWs is available from `https://gitlab.com/petsc/saws`
 and one can add the flag `--with-saws-dir=/directorywhereamsisinstalled`.
 
 ## Usage from PETSc

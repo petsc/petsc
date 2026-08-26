@@ -179,6 +179,18 @@ static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, 
 
 static struct _PetscDrawOps DvOps = {NULL, NULL, PetscDrawLine_TikZ, NULL, NULL, NULL, NULL, PetscDrawString_TikZ, PetscDrawStringVertical_TikZ, NULL, PetscDrawStringGetSize_TikZ, NULL, PetscDrawClear_TikZ, PetscDrawRectangle_TikZ, PetscDrawTriangle_TikZ, PetscDrawEllipse_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawDestroy_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawStringBoxed_TikZ, NULL};
 
+/*MC
+  PETSC_DRAW_TIKZ - PETSc graphics device that uses TikZ
+
+  Level: beginner
+
+  Notes:
+  Creates a file based on the title of the `PetscDraw` object, or if no title was provided based on object name
+
+  There is also a `PetscViewerFormat` `ascii_latex` for the `PetscViewer` `PETSCVIEWERASCII` that is used by `DMPLEX` to draw TikZ figures
+
+.seealso: `PetscDraw`, `PetscDrawCreate()`, `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`, `PetscObjectSetName()`
+M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
 {
   PetscDraw_TikZ *win;

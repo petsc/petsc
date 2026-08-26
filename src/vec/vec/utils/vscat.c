@@ -514,15 +514,19 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 
   Input Parameters:
 + sf   - the scatter context
-. obj  - Optional object
+. obj  - optional object that provides the prefix for the option names, pass `NULL` to use the options prefix of `sf`
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](sec_scatter), `VecScatter`, `VecScatterView()`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterView()`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const char name[])
 {
@@ -633,11 +637,9 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   Output Parameter:
 . newsf - location to store the new scatter context
 
-  Options Database Keys:
-+ -vecscatter_view              - Prints detail of communications
-. -vecscatter_view ::ascii_info - Print less details about communication
-- -vecscatter_merge             - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
-                                  eliminates the chance for overlap of computation and communication
+  Options Database Key:
+. -vecscatter_merge - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
+                      eliminates the chance for overlap of computation and communication
 
   Level: intermediate
 
@@ -662,7 +664,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   The implementations of most the `VecScatter` are done using `PetscSF`.
 
 .seealso: [](sec_scatter), `VecScatter`, `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`,
-          `VecScatterType`, `InsertMode`, `ScatterMode`, `VecScatterBegin()`, `VecScatterEnd()`
+          `VecScatterType`, `InsertMode`, `ScatterMode`, `VecScatterBegin()`, `VecScatterEnd()`, `VecScatterViewFromOptions()`, `VecScatterView()`
 @*/
 PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
 {

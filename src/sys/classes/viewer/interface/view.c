@@ -300,15 +300,19 @@ PetscErrorCode PetscViewerSetUp(PetscViewer viewer)
 
   Input Parameters:
 + A    - the `PetscViewer` context
-. obj  - Optional object that provides the prefix for the option names
+. obj  - optional object that provides the prefix for the option names, pass `NULL` to use the options prefix of `A`
 - name - command line option
+
+  Options Database Key:
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
   Note:
-  See `PetscObjectViewFromOptions()` for details on the viewers and formats support via this interface
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerView`, `PetscObjectViewFromOptions()`, `PetscViewerCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerView()`, `PetscObjectViewFromOptions()`, `PetscViewerCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const char name[])
 {

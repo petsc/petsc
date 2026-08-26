@@ -119,7 +119,8 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  PetscCall(VecStashViewFromOptions(vec, NULL, "-vec_view_stash"));
+  PetscCall(PetscOptionsDeprecatedNoObject(PetscObjectComm((PetscObject)vec), ((PetscObject)vec)->prefix, "-vec_view_stash", "-vec_stash_view", "3.26", NULL));
+  PetscCall(VecStashViewFromOptions(vec, NULL, "-vec_stash_view"));
   PetscCall(PetscLogEventBegin(VEC_AssemblyBegin, vec, 0, 0, 0));
   PetscTryTypeMethod(vec, assemblybegin);
   PetscCall(PetscLogEventEnd(VEC_AssemblyBegin, vec, 0, 0, 0));
@@ -136,12 +137,12 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 . vec - the vector
 
   Options Database Keys:
-+ -vec_view [viewertype][:...]      - Display the vector. See `VecViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
-- -vecstash_view [viewertype][:...] - Display the vector stash. See `VecStashViewFromOptions()`/`PetscObjectViewFromOptions()` for the possible arguments
++ -vec_view viewer_specification       - Call `VecView()` at the conclusion of `VecAssemblyEnd()`. See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
+- -vec_stash_view viewer_specification - Call `VecStashView()` during `VecAssemblyBegin()`. See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`, `VecViewFromOptions()`, `VecStashViewFromOptions()`,
+.seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecSetValues()`, `VecView()`, `VecStashView()`, `VecViewFromOptions()`, `VecStashViewFromOptions()`,
           `PetscObjectViewFromOptions()`
 @*/
 PetscErrorCode VecAssemblyEnd(Vec vec)
@@ -768,11 +769,15 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](ch_vectors), `Vec`, `VecView`, `PetscObjectViewFromOptions()`, `VecCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](ch_vectors), `Vec`, `VecView()`, `PetscObjectViewFromOptions()`, `PetscOptionsCreateViewer()`, `VecCreate()`
 @*/
 PetscErrorCode VecViewFromOptions(Vec A, PeOp PetscObject obj, const char name[])
 {
@@ -790,6 +795,9 @@ PetscErrorCode VecViewFromOptions(Vec A, PeOp PetscObject obj, const char name[]
   Input Parameters:
 + vec    - the vector
 - viewer - an optional `PetscViewer` visualization context
+
+  Options Database Key:
+. -vec_view viewer_specification - Call `VecView()` at the conclusion of `VecAssemblyEnd()`. See `PetscOptionsCreateViewer()` for the values of `viewer_specification`.
 
   Level: beginner
 
@@ -818,6 +826,9 @@ PetscErrorCode VecViewFromOptions(Vec A, PeOp PetscObject obj, const char name[]
 .    `PETSC_VIEWER_ASCII_INDEX` - prints vector contents, including indices of vector elements
 -    `PETSC_VIEWER_ASCII_COMMON` - prints vector contents, using a
   format common among all vector types
+
+  `VecViewFromOptions()` provides an alternative to this routine that only views the vector if the requested value
+  is provided in the options database.
 
   You can pass any number of vector objects, or other PETSc objects to the same viewer.
 
@@ -851,7 +862,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PeOp PetscObject obj, const char name[]
 
 .seealso: [](ch_vectors), `Vec`, `VecViewFromOptions()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`, `PetscDrawLGCreate()`,
           `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `VecLoad()`, `PetscViewerCreate()`,
-          `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`, `PetscViewerHDF5SetTimestep()`
+          `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`, `PetscViewerHDF5SetTimestep()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode VecView(Vec vec, PetscViewer viewer)
 {
@@ -1581,6 +1592,9 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec, PetscOptionItems Pe
   Input Parameter:
 . vec - The vector
 
+  Options Database Key:
+. -vec_type type - set the vector type, see `VecType`
+
   Level: beginner
 
   Notes:
@@ -1588,7 +1602,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec, PetscOptionItems Pe
 
   Must be called after `VecCreate()` but before the vector is used.
 
-.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `VecSetOptionsPrefix()`
+.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `VecSetOptionsPrefix()`, `VecType`
 @*/
 PetscErrorCode VecSetFromOptions(Vec vec)
 {
@@ -2013,18 +2027,22 @@ PetscErrorCode VecSwap(Vec x, Vec y)
 
   Input Parameters:
 + obj  - the `Vec` containing a stash
-. bobj - optional other object that provides the prefix
+. bobj - optional other object that provides the options prefix, pass `NULL` to use the options prefix of `obj`
 - name - option to activate viewing
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
+
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
 
   Developer Notes:
   This cannot use `PetscObjectViewFromOptions()` because it takes a `Vec` as an argument but does not use `VecView()`
 
-.seealso: [](ch_vectors), `Vec`, `VecStashSetInitialSize()`
+.seealso: [](ch_vectors), `Vec`, `VecStashView()`, `VecStashSetInitialSize()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char name[])
 {

@@ -1037,28 +1037,10 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 . b   - the right-hand side vector
 - x   - the solution (this may be the same vector as `b`, then `b` will be overwritten with the answer)
 
-  Options Database Keys:
-+ -ksp_view_eigenvalues                      - compute preconditioned operators eigenvalues
-. -ksp_view_eigenvalues_explicit             - compute the eigenvalues by forming the dense operator and using LAPACK
-. -ksp_view_mat binary                       - save matrix to the default binary viewer
-. -ksp_view_pmat binary                      - save matrix used to build preconditioner to the default binary viewer
-. -ksp_view_rhs binary                       - save right-hand side vector to the default binary viewer
-. -ksp_view_solution binary                  - save computed solution vector to the default binary viewer
-                                               (can be read later with src/ksp/tutorials/ex10.c for testing solvers)
-. -ksp_view_mat_explicit                     - for matrix-free operators, computes the matrix entries and views them
-. -ksp_view_preconditioned_operator_explicit - computes the product of the preconditioner and matrix as an explicit matrix and views it
-. -ksp_converged_reason                      - print reason for converged or diverged, also prints number of iterations
-. -ksp_view_final_residual                   - print 2-norm of true linear system residual at the end of the solution process
-. -ksp_view_final_residual_vec               - print true linear system residual vector at the end of the solution process;
-                                               `-ksp_view_final_residual` must to be called first to enable this option
-. -ksp_error_if_not_converged                - stop the program as soon as an error is detected in a `KSPSolve()`
-. -ksp_view_pre                              - print the ksp data structure before the system solution
-- -ksp_view                                  - print the ksp data structure at the end of the system solution
-
   Level: beginner
 
   Notes:
-  See `KSPSetFromOptions()` for additional options database keys that affect `KSPSolve()`
+  See `KSPSetFromOptions()` for options database keys that affect `KSPSolve()`
 
   If one uses `KSPSetDM()` then `x` or `b` need not be passed. Use `KSPGetSolution()` to access the solution in this case.
 

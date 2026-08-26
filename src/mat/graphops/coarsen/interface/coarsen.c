@@ -179,15 +179,19 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
 
   Input Parameters:
 + A    - the coarsen context
-. obj  - Optional object that provides the prefix for the option name
+. obj  - optional object that provides the prefix for the option name, pass `NULL` to use the options prefix of `A`
 - name - command line option (usually `-mat_coarsen_view`)
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: `MatCoarsen`, `MatCoarsenView()`, `PetscObjectViewFromOptions()`, `MatCoarsenCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: `MatCoarsen`, `MatCoarsenView()`, `PetscObjectViewFromOptions()`, `MatCoarsenCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A, PetscObject obj, const char name[])
 {

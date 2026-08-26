@@ -460,7 +460,7 @@ M*/
       if (PetscOptionsObject->count != 1) PetscFunctionReturn(PETSC_SUCCESS); \
     } while (0)
 
-  #define PetscOptionsTail(...)                                                     PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
+  #define PetscOptionsTail(...)                                                         PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadEnd()", ) PetscOptionsHeadEnd(__VA_ARGS__)
 
 /*MC
   PetscOptionsEnum - Gets the enum value for a particular option in the database.
@@ -508,7 +508,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsEnum(opt, text, man, list, currentvalue, value, set)          PetscOptionsEnum_Private(PetscOptionsObject, opt, text, man, list, currentvalue, value, set)
+  #define PetscOptionsEnum(opt, text, man, list, currentvalue, value, set)              PetscOptionsEnum_Private(PetscOptionsObject, opt, text, man, list, currentvalue, value, set)
 
 /*MC
   PetscOptionsInt - Gets the integer value for a particular option in the database.
@@ -553,7 +553,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_INT_MIN, PETSC_INT_MAX)
+  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                     PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_INT_MIN, PETSC_INT_MAX)
 
 /*MC
   PetscOptionsMPIInt - Gets the MPI integer value for a particular option in the database.
@@ -598,7 +598,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsMPIInt(opt, text, man, currentvalue, value, set)              PetscOptionsMPIInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MPI_INT_MIN, PETSC_MPI_INT_MAX)
+  #define PetscOptionsMPIInt(opt, text, man, currentvalue, value, set)                  PetscOptionsMPIInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MPI_INT_MIN, PETSC_MPI_INT_MAX)
 
 /*MC
    PetscOptionsBoundedInt - Gets an integer value greater than or equal to a given bound for a particular option in the database.
@@ -647,7 +647,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_INT_MAX)
+  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)          PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_INT_MAX)
 
 /*MC
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
@@ -697,7 +697,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsRangeInt(opt, text, man, currentvalue, value, set, lb, ub)    PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, ub)
+  #define PetscOptionsRangeInt(opt, text, man, currentvalue, value, set, lb, ub)        PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, ub)
 
 /*MC
   PetscOptionsReal - Gets a `PetscReal` value for a particular option in the database.
@@ -742,7 +742,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsReal(opt, text, man, currentvalue, value, set)                PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MIN_REAL, PETSC_MAX_REAL)
+  #define PetscOptionsReal(opt, text, man, currentvalue, value, set)                    PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MIN_REAL, PETSC_MAX_REAL)
 
 /*MC
    PetscOptionsBoundedReal - Gets a `PetscReal` value greater than or equal to a given bound for a particular option in the database.
@@ -791,7 +791,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedInt()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsBoundedReal(opt, text, man, currentvalue, value, set, lb)     PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_MAX_REAL)
+  #define PetscOptionsBoundedReal(opt, text, man, currentvalue, value, set, lb)         PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_MAX_REAL)
 
 /*MC
    PetscOptionsRangeReal - Gets a `PetscReal` value within a range of values for a particular option in the database.
@@ -841,7 +841,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsRangeInt()`, `PetscOptionsBoundedReal()`
 M*/
-  #define PetscOptionsRangeReal(opt, text, man, currentvalue, value, set, lb, ub)   PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, ub)
+  #define PetscOptionsRangeReal(opt, text, man, currentvalue, value, set, lb, ub)       PetscOptionsReal_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, ub)
 
 /*MC
   PetscOptionsScalar - Gets the `PetscScalar` value for a particular option in the database.
@@ -886,7 +886,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsScalar(opt, text, man, currentvalue, value, set)              PetscOptionsScalar_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+  #define PetscOptionsScalar(opt, text, man, currentvalue, value, set)                  PetscOptionsScalar_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
 
 /*MC
   PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even
@@ -919,7 +919,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsName(opt, text, man, set)                                     PetscOptionsName_Private(PetscOptionsObject, opt, text, man, set)
+  #define PetscOptionsName(opt, text, man, set)                                         PetscOptionsName_Private(PetscOptionsObject, opt, text, man, set)
 
 /*MC
   PetscOptionsString - Gets the string value for a particular option in the database.
@@ -961,7 +961,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsString(opt, text, man, currentvalue, value, len, set)         PetscOptionsString_Private(PetscOptionsObject, opt, text, man, currentvalue, value, len, set)
+  #define PetscOptionsString(opt, text, man, currentvalue, value, len, set)             PetscOptionsString_Private(PetscOptionsObject, opt, text, man, currentvalue, value, len, set)
 
 /*MC
   PetscOptionsBool - Determines if a particular option is in the database with a true or false
@@ -1004,7 +1004,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBool(opt, text, man, currentvalue, value, set)                PetscOptionsBool_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+  #define PetscOptionsBool(opt, text, man, currentvalue, value, set)                    PetscOptionsBool_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
 
 /*MC
   PetscOptionsBool3 - Determines if a particular option is in the database with a true, false, or unknown
@@ -1047,7 +1047,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBool3(opt, text, man, currentvalue, value, set)               PetscOptionsBool3_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
+  #define PetscOptionsBool3(opt, text, man, currentvalue, value, set)                   PetscOptionsBool3_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set)
 
 /*MC
   PetscOptionsBoolGroupBegin - First in a series of logical queries on the options database for
@@ -1081,7 +1081,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBoolGroupBegin(opt, text, man, set)                           PetscOptionsBoolGroupBegin_Private(PetscOptionsObject, opt, text, man, set)
+  #define PetscOptionsBoolGroupBegin(opt, text, man, set)                               PetscOptionsBoolGroupBegin_Private(PetscOptionsObject, opt, text, man, set)
 
 /*MC
   PetscOptionsBoolGroup - One in a series of logical queries on the options database for
@@ -1115,7 +1115,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBoolGroup(opt, text, man, set)                                PetscOptionsBoolGroup_Private(PetscOptionsObject, opt, text, man, set)
+  #define PetscOptionsBoolGroup(opt, text, man, set)                                    PetscOptionsBoolGroup_Private(PetscOptionsObject, opt, text, man, set)
 
 /*MC
   PetscOptionsBoolGroupEnd - Last in a series of logical queries on the options database for
@@ -1149,7 +1149,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBoolGroupEnd(opt, text, man, set)                             PetscOptionsBoolGroupEnd_Private(PetscOptionsObject, opt, text, man, set)
+  #define PetscOptionsBoolGroupEnd(opt, text, man, set)                                 PetscOptionsBoolGroupEnd_Private(PetscOptionsObject, opt, text, man, set)
 
 /*MC
   PetscOptionsFList - Puts a list of option values that a single one may be selected from
@@ -1201,7 +1201,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsEnum()`
 M*/
-  #define PetscOptionsFList(opt, ltext, man, list, currentvalue, value, len, set)   PetscOptionsFList_Private(PetscOptionsObject, opt, ltext, man, list, currentvalue, value, len, set)
+  #define PetscOptionsFList(opt, ltext, man, list, currentvalue, value, len, set)       PetscOptionsFList_Private(PetscOptionsObject, opt, ltext, man, list, currentvalue, value, len, set)
 
 /*MC
   PetscOptionsEList - Puts a list of option values that a single one may be selected from
@@ -1244,7 +1244,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEnum()`
 M*/
-  #define PetscOptionsEList(opt, ltext, man, list, ntext, currentvalue, value, set) PetscOptionsEList_Private(PetscOptionsObject, opt, ltext, man, list, ntext, currentvalue, value, set)
+  #define PetscOptionsEList(opt, ltext, man, list, ntext, currentvalue, value, set)     PetscOptionsEList_Private(PetscOptionsObject, opt, ltext, man, list, ntext, currentvalue, value, set)
 
 /*MC
   PetscOptionsRealArray - Gets an array of double values for a particular
@@ -1280,7 +1280,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsRealArray(opt, text, man, value, n, set)                      PetscOptionsRealArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
+  #define PetscOptionsRealArray(opt, text, man, value, n, set)                          PetscOptionsRealArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
 
 /*MC
   PetscOptionsScalarArray - Gets an array of `PetscScalar` values for a particular
@@ -1316,7 +1316,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsScalarArray(opt, text, man, value, n, set)                    PetscOptionsScalarArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
+  #define PetscOptionsScalarArray(opt, text, man, value, n, set)                        PetscOptionsScalarArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
 
 /*MC
   PetscOptionsIntArray - Gets an array of integers for a particular
@@ -1359,7 +1359,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsIntArray(opt, text, man, value, n, set)                       PetscOptionsIntArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
+  #define PetscOptionsIntArray(opt, text, man, value, n, set)                           PetscOptionsIntArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
 
 /*MC
   PetscOptionsStringArray - Gets an array of string values for a particular
@@ -1401,7 +1401,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsStringArray(opt, text, man, value, n, set)                    PetscOptionsStringArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
+  #define PetscOptionsStringArray(opt, text, man, value, n, set)                        PetscOptionsStringArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
 
 /*MC
   PetscOptionsBoolArray - Gets an array of logical values (true or false) for a particular
@@ -1439,7 +1439,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsBoolArray(opt, text, man, value, n, set)                      PetscOptionsBoolArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
+  #define PetscOptionsBoolArray(opt, text, man, value, n, set)                          PetscOptionsBoolArray_Private(PetscOptionsObject, opt, text, man, value, n, set)
 
 /*MC
   PetscOptionsEnumArray - Gets an array of enum values for a particular
@@ -1479,7 +1479,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 M*/
-  #define PetscOptionsEnumArray(opt, text, man, list, value, n, set)                PetscOptionsEnumArray_Private(PetscOptionsObject, opt, text, man, list, value, n, set)
+  #define PetscOptionsEnumArray(opt, text, man, list, value, n, set)                    PetscOptionsEnumArray_Private(PetscOptionsObject, opt, text, man, list, value, n, set)
 
   /*MC
   PetscOptionsDeprecated - mark an option as deprecated, optionally replacing it with `newname`.
@@ -1517,7 +1517,7 @@ M*/
 
 .seealso: `PetscOptionsDeprecatedNoObject()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 M*/
-  #define PetscOptionsDeprecated(oldname, newname, version, info)                   PetscOptionsDeprecated_Private(PetscOptionsObject, oldname, newname, version, info)
+  #define PetscOptionsDeprecated(oldname, newname, version, info)                       PetscOptionsDeprecated_Private(PetscOptionsObject, PETSC_COMM_SELF, NULL, oldname, newname, version, info)
 
   /*MC
   PetscOptionsDeprecatedNoObject - mark an option as deprecated in the global `PetscOptionsObject`, optionally replacing it with `newname`.
@@ -1525,12 +1525,14 @@ M*/
 
   Synopsis:
   #include <petscoptions.h>
-  PetscErrorCode PetscOptionsDeprecatedNoObject(const char oldname[], const char newname[], const char version[], const char info[])
+  PetscErrorCode PetscOptionsDeprecatedNoObject(MPI_Comm comm, const char prefix[], const char oldname[], const char newname[], const char version[], const char info[])
 
   Logically Collective
 
   Input Parameters:
-+ oldname - the old, deprecated option
++ comm    - communicator on which to print deprecated message
+. prefix  - prefix for the option, generally obtained with `((PetscObject)obj)->prefix`, may be `NULL`
+. oldname - the old, deprecated option
 . newname - the new option, or `NULL` if the option is removed and not simply renamed
 . version - a string describing the version of first deprecation, e.g. `"3.9"`
 - info    - additional information string, or `NULL`. Must be provided if `newname` is `NULL`
@@ -1555,7 +1557,7 @@ M*/
 
 .seealso: `PetscOptionsDeprecated()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsScalar()`, `PetscOptionsBool()`, `PetscOptionsString()`, `PetscOptionsSetValue()`
 M*/
-  #define PetscOptionsDeprecatedNoObject(oldname, newname, version, info)           PetscOptionsDeprecated_Private(NULL, oldname, newname, version, info)
+  #define PetscOptionsDeprecatedNoObject(comm, prefix, oldname, newname, version, info) PetscOptionsDeprecated_Private(NULL, comm, prefix, oldname, newname, version, info)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems, const char[], const char[], const char[], const char *const *, PetscEnum, PetscEnum *, PetscBool *);
@@ -1578,7 +1580,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems, const
 PETSC_EXTERN PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems, const char[], const char[], const char[], char *[], PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems, const char[], const char[], const char[], PetscBool[], PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems, const char[], const char[], const char[], const char *const *, PetscEnum[], PetscInt *, PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems, const char[], const char[], const char[], const char[]);
+PETSC_EXTERN PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems, MPI_Comm, const char[], const char[], const char[], const char[], const char[]);
 
 PETSC_EXTERN PetscErrorCode PetscObjectAddOptionsHandler(PetscObject, PetscErrorCode (*)(PetscObject, PetscOptionItems, void *), PetscErrorCode (*)(PetscObject, void *), void *);
 PETSC_EXTERN PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject, PetscOptionItems);

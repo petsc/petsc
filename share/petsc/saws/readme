@@ -1,11 +1,9 @@
 
-  See https://bitbucket.org/saws/saws/wiki/Home for a short introduction to SAWs.
-
+  See https://gitlab.com/petsc/saws for an introduction to SAWs.
 
   Configure PETSc with the additional options --download-saws
 
   Example usage: after starting each example below go to localhost:8080 in browser
-
 
 cd src/snes/tutorials
 make ex19

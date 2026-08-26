@@ -17,7 +17,8 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 - viewer - viewer used for display
 
   Options Database Key:
-. -ao_view - calls `AOView()` at end of `AOCreate()`
+. -ao_view viewer_specification - calls `AOView()` at end of the various routines for creating an `AO`, including `AOCreateMappingIS()` and `AOCreateMapping()`
+                                  See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: intermediate
 
@@ -32,7 +33,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
   The user can open an alternative visualization context with
   `PetscViewerASCIIOpen()` - output to a specified file.
 
-.seealso: [](sec_ao), `AO`, `PetscViewer`, `PetscViewerASCIIOpen()`, `AOViewFromOptions()`
+.seealso: [](sec_ao), `AO`, `PetscViewer`, `PetscViewerASCIIOpen()`, `AOViewFromOptions()`, `AOCreateMappingIS()`, `AOCreateMapping()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOView(AO ao, PetscViewer viewer)
 {
@@ -57,11 +58,15 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
 - name - command line option
 
   Options Database Key:
-. -name [viewertype][:...] - option name and values. See `PetscObjectViewFromOptions()` for the possible arguments
+. -name viewer_specification - See `PetscOptionsCreateViewer()` for the values of `viewer_specification`
 
   Level: intermediate
 
-.seealso: [](sec_ao), `AO`, `AOView()`, `PetscObjectViewFromOptions()`, `AOCreate()`
+  Note:
+  This checks the options database, creates the viewer on-the-fly, uses it and then destroys it. Hence it should not be called in heavily used routines,
+  rather `PetscOptionsCreateViewer()` should be used to construct the viewer once which can then be utilized in the heavily used routine.
+
+.seealso: [](sec_ao), `AO`, `AOView()`, `PetscObjectViewFromOptions()`, `AOCreate()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
 {
@@ -485,13 +490,15 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
   Output Parameter:
 . ao - the new application ordering
 
-  Options Database Key:
+  Options Database Keys:
 + -ao_type (basic|advanced|mapping|memoryscalable) - Sets the `AO` type; see `AOType`
-- -ao_view                                         - call `AOView()` at the conclusion of `AOCreate()`
+- -ao_view viewer_specification                    - call `AOView()` at the conclusion of the creation of complete `AO`, by, for example, `AOCreateMappingIS()` or `AOCreateMapping()`.
+                                                     See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: beginner
 
-.seealso: [](sec_ao), `AO`, `AOView()`, `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
+.seealso: [](sec_ao), `AO`, `AOView()`, `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`, `AOViewFromOptions()`,
+          `AOCreateMappingIS()`, `AOCreateMapping()`, `AOCreateBasicIS()`, `AOCreateBasic()`, `AOCreateMemoryScalable()`, `AOCreateMemoryScalableIS()`
 @*/
 PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
 {

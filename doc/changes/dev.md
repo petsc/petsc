@@ -16,6 +16,7 @@
 - Change the `make branch-review` rule to `[PETSC_LLM_CLI=command] [PETSC_LLM_MODEL=modelname] make branch-review`. Add support for Gemini, Codex, OpenCode, and other LLM CLIs.
   Replace the use of `CLAUDE_OPTS` with `PETSC_LLM_CLI_OPTS` and `PETSC_LLM_MODEL`
 - Add a CodeGraph skill and repository guidance so LLM coding tools automatically use an existing local PETSc CodeGraph index when navigating or reviewing source
+- Add `comm` and `prefix` as initial arguments to `PetscOptionsDeprecatedNoObject()`
 
 ## Configure/Build
 
@@ -36,6 +37,7 @@
 
 ## Event Logging
 
+- Change `-log` and `-log_all` to only take optional filename arguments. They no longer take optional boolean argument
 
 ## PetscViewer
 
@@ -62,6 +64,7 @@
 - Add `VecCreateSeqWithArrayAndMemType()` and `VecCreateMPIWithArrayAndMemType()` to create array-style standard, CUDA, or HIP vectors from memory of a specified `PetscMemType`
 - Add `VecSetStdBasis()` API to set a vector to the i-th standard basis vector
 - Change the behavior of `VecPointwiseDivide()` implementing w = x / y: if a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one (before it was set to zero).
+- Deprecate `-vec_view_stash` in favor of `-vec_stash_view`
 
 ## PetscSection
 
@@ -103,12 +106,13 @@
 - Add `KSPIDR` — IDR(s) Induced Dimension Reduction Krylov solver (biorthogonal variant)
 - Add `KSPIDRSetS()`, `KSPIDRGetS()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`, `KSPIDRSetCosine()`, and `KSPIDRGetCosine()`
 - Deprecate `KSPMonitorResidualShort()` and `-ksp_monitor_short`, remove the `preconditioned_residual_short` monitor registry name
+- Remove `-ksp_plot_eigenvalues`, `-ksp_plot_eigenvalues_explicitly`, `-ksp_plot_eigencontours` that have been deprecated since version 3.9
 
 ## SNES
 
 - Change `SNESSetUp()` to not overwrite the NPC application context if one has previously been set on the NPC
 - Change `SNESComputeJacobian()` to call the user-provided Jacobian function when a left NPC is active and the solver is not `SNESASPIN`
-- Add support for nonlinear preconditioners with a `DM` different from the parent `SNES` `DM`. Calling `SNESSetNPC()` will no longer enforce default parameters on the npc.
+- Add support for nonlinear preconditioners with a `DM` different from the parent `SNES` `DM`. Calling `SNESSetNPC()` will no longer enforce default parameters on the NPC
 - Change `-snes_mf` to respect an explicitly set `PC` type instead of silently overriding it with `PCNONE`; an explicitly requested `PC` that requires an assembled matrix now errors
 - Deprecate `SNESMonitorDefaultShort()` and `-snes_monitor_short`
 - Add `SNESFASSetUseCoarseCorrectionLineSearch()` and `-snes_fas_use_coarse_correction_linesearch` to implement the algorithm in {cite}`nash2000mgopt`.
@@ -118,6 +122,7 @@
 ## SNESLineSearch
 
 - Deprecate `SNESLINESEARCHBASIC` in favor of `SNESLINESEARCHNONE`
+- Add `SNESLineSearchViewFromOptions()`
 
 ## TS
 

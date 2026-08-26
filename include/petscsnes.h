@@ -867,6 +867,7 @@ PETSC_EXTERN_TYPEDEF typedef SNESLineSearchShellApplyFn *SNESLineSearchUserFunc 
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate(MPI_Comm, SNESLineSearch *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchReset(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchView(SNESLineSearch, PetscViewer);
+PETSC_EXTERN PetscErrorCode SNESLineSearchViewFromOptions(SNESLineSearch, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchGetType(SNESLineSearch, SNESLineSearchType *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetType(SNESLineSearch, SNESLineSearchType);

@@ -472,6 +472,9 @@ PETSC_INTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   Output Parameter:
 . aoout - the new application ordering
 
+  Options Database Key:
+. -ao_view viewer_specification - call `AOView()` at the conclusion of `AOCreateMemoryScalable()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+
   Level: beginner
 
   Note:
@@ -479,7 +482,7 @@ PETSC_INTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
   Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
 
-.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
+.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
 {
@@ -511,6 +514,9 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
   Output Parameter:
 . aoout - the new application ordering
 
+  Options Database Key:
+. -ao_view viewer_specification - call `AOView()` at the conclusion of `AOCreateMemoryScalableIS()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
+
   Level: beginner
 
   Notes:
@@ -519,7 +525,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 
   Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
 
-.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AOCreateMemoryScalable()`, `AODestroy()`
+.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AOCreateMemoryScalable()`, `AODestroy()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode AOCreateMemoryScalableIS(IS isapp, IS ispetsc, AO *aoout)
 {

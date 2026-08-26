@@ -16,22 +16,22 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
   Input Parameters:
 + draw     - the graphics context
-- filename - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
+- filename - name of the file, if `filename` is only an extension `.ext` then uses the name of draw object plus `.ext`. Uses the extension to determine the image type
 
   Options Database Keys:
-+ -draw_save filename filename      - `filename` could be `name.ext` or `.ext` (where .ext determines the type of graphics file to save, for example .png)
-. -draw_save_final_image [filename] - saves the final image displayed in a window
-- -draw_save_single_file            - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
++ -draw_save [filename]               - `filename` could be `name.ext` or `.ext` (where .ext determines the type of graphics file to save, for example `.png`)
+. -draw_save_final_image [filename]   - saves the final image displayed in a window
+- -draw_save_single_file (true|false) - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
 
   Level: intermediate
 
   Note:
   You should call this BEFORE creating your image and calling `PetscDrawSave()`.
-  The supported image types are .png, .gif, .jpg, and .ppm (PETSc chooses the default in that order).
-  Support for .png images requires configure --with-libpng.
-  Support for .gif images requires configure --with-giflib.
-  Support for .jpg images requires configure --with-libjpeg.
-  Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
+  The supported image types are `.png`, `.gif`, `.jpg`, and `.ppm` (PETSc chooses the default in that order).
+  Support for `.png` images requires configure `--with-libpng`.
+  Support for `.gif` images requires configure `--with-giflib`.
+  Support for `.jpg` images requires configure `--with-libjpeg`.
+  Support for `.ppm` images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
 @*/
@@ -86,7 +86,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 - movieext - optional extension defining the movie format
 
   Options Database Key:
-. -draw_save_movie .ext - saves a movie with extension .ext
+. -draw_save_movie [.ext] - saves a movie with extension `.ext`
 
   Level: intermediate
 
@@ -118,23 +118,17 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 
   Input Parameters:
 + draw     - the graphics context
-- filename - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
+- filename - name of the file, if `NULL` or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
 
   Options Database Key:
-. -draw_save_final_image filename - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
+. -draw_save_final_image [filename] - filename could be `name.ext` or `.ext` (`.ext` determines the type of graphics file to save, for example `.png`)
 
   Level: intermediate
 
   Notes:
   You should call this BEFORE creating your image and calling `PetscDrawSave()`.
 
-  The supported image types are .png, .gif, and .ppm (PETSc chooses the default in that order).
-.vb
-   Support for .png images requires configure --with-libpng.
-   Support for .gif images requires configure --with-giflib.
-   Support for .jpg images requires configure --with-libjpeg.
-   Support for .ppm images is built-in. The PPM format has no compression (640x480 pixels ~ 900 KiB).
-.ve
+  See `PetscDrawSetSave()` for details on supported formats
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
@@ -165,10 +159,17 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
   Input Parameter:
 . draw - the drawing context
 
+  Options Database Keys:
++ -draw_save [filename]               - `filename` could be `name.ext` or `.ext` (where `.ext` determines the type of graphics file to save, for example `.png`)
+. -draw_save_final_image [filename]   - saves the final image displayed in a window
+- -draw_save_single_file (true|false) - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
+
   Level: advanced
 
-  Note:
-  this is not normally called by the user.
+  Notes:
+  This is not normally called by the user.
+
+  See `PetscDrawSetSave()` for details on the possible image formats
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`
 @*/

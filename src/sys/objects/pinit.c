@@ -578,7 +578,7 @@ PetscErrorCode PetscGetArgs(int *argc, char ***args)
   Level: intermediate
 
   Note:
-  This does NOT start with the program name and IS `NULL` terminated (the final argument is void)
+  This does NOT start with the program name and IS `NULL` terminated (the final argument is `void`)
 
   Use `PetscFreeArguments()` to return the memory used by the arguments.
 
@@ -704,7 +704,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
     PetscCall(PetscGetVersion(version, sizeof(version)));
     PetscCall(PetscSNPrintf(intro, introlen,
                             "<body>\n"
-                            "<center><h2> <a href=\"https://petsc.org/\">PETSc</a> Application Web server powered by <a href=\"https://bitbucket.org/saws/saws\">SAWs</a> </h2></center>\n"
+                            "<center><h2> <a href=\"https://petsc.org/\">PETSc</a> Application Web server powered by <a href=\"https://gitlab.com/petsc/saws\">SAWs</a> </h2></center>\n"
                             "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
                             "%s",
                             version, petscconfigureoptions, appline));
@@ -1294,10 +1294,10 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 . -malloc_dump                                           - prints a list of all unfreed memory at the end of the run
 . -malloc_test                                           - like `-malloc_dump` `-malloc_debug`, only active for debugging build, ignored in optimized build. Often set in `PETSC_OPTIONS` environmental variable
 . -malloc_view [filename]                                - show a list of all allocated memory during `PetscFinalize()`
-. -malloc_view_threshold t                               - only list memory allocations of size greater than t with `-malloc_view`
-. -malloc_requested_size                                 - malloc logging will record the requested size rather than (possibly large) size after alignment
-. -fp_trap                                               - Stops on floating point exceptions
-. -no_signal_handler                                     - Indicates not to trap error signals
+. -malloc_view_threshold logmin                          - only list memory allocations of size greater than `logmin` with `-malloc_view`
+. -malloc_requested_size (true|false)                    - malloc logging will record the requested size rather than (possibly large) size after alignment
+. -fp_trap (true|false)                                  - Stops on floating point exceptions
+. -no_signal_handler (true|false)                        - Indicates not to trap error signals
 . -python exe                                            - Initializes Python, and optionally takes a Python executable name
 - -mpiuni-allow-multiprocess-launch                      - allow `mpiexec` to launch multiple independent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
 
@@ -1314,27 +1314,27 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 
   Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
-+ -info [filename][:[~]c1,c2,...[:[~]self]]            - Prints verbose information for classes c1, c2, etc. See `PetscInfo()`.
-. -log_sync                                            - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
++ -info [filename][:[~]c1,c2,...[:[~]self]]           - Prints verbose information for classes c1, c2, etc. See `PetscInfo()`.
+. -log_sync                                           - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
                                                          however it slows things down and gives a distorted view of the overall runtime.
-. -log_trace [filename]                                - Print traces of all PETSc calls to the screen (useful to determine where a program
+. -log_trace [filename]                               - Print traces of all PETSc calls to the screen (useful to determine where a program
                                                          hangs without running in the debugger).  See `PetscLogTraceBegin()`.
-. -log_view [:filename:format][,[:filename:format]...] - Prints summary of flop and timing information to screen or file, see `PetscLogView()` (up to 4 viewers)
-. -log_view_memory                                     - Includes in the summary from -log_view the memory used in each event, see `PetscLogView()`.
-. -log_view_gpu_time                                   - Includes in the summary from -log_view the time used in each GPU kernel, see `PetscLogView().
-. -log_view_gpu_energy                                 - Includes in the summary from -log_view the energy (estimated with power*gtime) consumed in each GPU kernel, see `PetscLogView()`.
-. -log_view_gpu_energy_meter                           - Includes in the summary from -log_view the energy (readings from meters) consumed in each GPU kernel, see `PetscLogView()`.
-. -log_exclude: c1,c2,...                              - excludes subset of object classes from logging, for example vec,ksp would exclude the `Vec` and `KSP` classes
-. -log [filename]                                      - Logs profiling information in a dump file, see `PetscLogDump()`.
-. -log_all [filename]                                  - Same as `-log`.
-. -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
-. -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
-. -log_nvtx                                            - Starts an nvtx log handler for use with Nsight
-. -log_roctx                                           - Starts an roctx log handler for use with rocprof on AMD GPUs
-. -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
-. -get_total_flops                                     - Returns total flops done by all processors
-. -memory_view                                         - Print memory usage at end of run
-- -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
+. -log_view viewer_specification,viewer_specification - Prints summary of flop and timing information to up to four viewers, see `PetscLogView()`
+. -log_view_memory (true|false)                       - Includes in the summary from `-log_view` the memory used in each event, see `PetscLogView()`.
+. -log_view_gpu_time                                  - Includes in the summary from `-log_view` the time used in each GPU kernel, see `PetscLogView()`.
+. -log_view_gpu_energy                                - Includes in the summary from `-log_view` the energy (estimated with power*gtime) consumed in each GPU kernel, see `PetscLogView()`.
+. -log_view_gpu_energy_meter                          - Includes in the summary from `-log_view` the energy (readings from meters) consumed in each GPU kernel, see `PetscLogView()`.
+. -log_exclude c1,c2,...                              - excludes subset of object classes from logging, for example `vec,ksp` would exclude the `Vec` and `KSP` classes
+. -log [filename]                                     - Logs profiling information in a dump file, see `PetscLogDump()`.
+. -log_all [filename]                                 - Same as `-log`.
+. -log_mpe [filename]                                 - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
+. -log_perfstubs                                      - Starts a log handler with the perfstubs interface (which is used by TAU)
+. -log_nvtx                                           - Starts an nvtx log handler for use with Nsight
+. -log_roctx                                          - Starts an roctx log handler for use with rocprof on AMD GPUs
+. -viewfromoptions (on|off)                           - Enable or disable `XXXViewFromOptions()` calls, for applications with many small solves turn this off
+. -get_total_flops (true|false)                       - Returns total flops done by all processors
+. -memory_view (true|false)                           - Print memory usage at end of run
+- -check_pointer_intensity 0,1,2                      - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
   Options Database Keys for SAWs:
 + -saws_port portnumber        - port number to publish SAWs data, default is 8080
@@ -1466,13 +1466,13 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char
   Collective on `PETSC_COMM_WORLD`
 
   Options Database Keys:
-+ -options_view           - Calls `PetscOptionsView()` to display all options in the database
-. -options_left           - Prints unused options that remain in the database (default value is `true`)
-. -objects_dump [all]     - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
-. -mpidump                - Calls PetscMPIDump()
-. -malloc_dump [filename] - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
-. -memory_view            - Prints total memory usage
-- -malloc_view [filename] - Prints list of all memory allocated and in what functions
++ -options_view (true|false) - Calls `PetscOptionsView()` to display all options in the database to `PETSC_VIEWER_STDOUT_WORLD`
+. -options_left (true|false) - Prints unused options that remain in the database to `stdout` (default value is `true`)
+. -objects_dump [all]        - Prints list of objects allocated by the user that have not been freed, the option all cause all outstanding objects to be listed
+. -mpidump (true|false)      - Calls PetscMPIDump() and prints to `stdout`
+. -malloc_dump [filename]    - Calls `PetscMallocDump()`, displays all memory allocated that has not been freed
+. -memory_view (true|false)  - Prints total memory usage to `PETSC_VIEWER_STDOUT_WORLD`
+- -malloc_view [filename]    - Prints list of all memory allocated and in what functions
 
   Level: beginner
 

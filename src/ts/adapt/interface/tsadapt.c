@@ -235,7 +235,7 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
 - viewer - visualization context
 
   Options Database Key:
-. -ts_view - calls `TSView()` at end of `TSStep()`
+. -ts_view viewer_specification - calls `TSView()` at end of `TSStep()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 
   Level: advanced
 
@@ -254,7 +254,7 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
 
   In the debugger you can do call `TSAdaptView`(adapt,0) to display the `TSAdapt`. (The same holds for any PETSc object viewer).
 
-.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSView()`, `PetscViewer`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ts), [](sec_ts_error_control), `TSAdapt`, `TSView()`, `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
 {

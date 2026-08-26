@@ -13,8 +13,8 @@
 . bndy         - y boundary type, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_PERIODIC`, or `DM_BOUNDARY_GHOSTED`
 . M            - global number of elements in x direction
 . N            - global number of elements in y direction
-. m            - number of ranks in the x direction (may be `PETSC_DECIDE`)
-. n            - number of ranks in the y direction (may be `PETSC_DECIDE`)
+. m            - number of MPI processes in the x direction (may be `PETSC_DECIDE`)
+. n            - number of MPI processes in the y direction (may be `PETSC_DECIDE`)
 . dof0         - number of degrees of freedom per vertex/0-cell
 . dof1         - number of degrees of freedom per face/1-cell
 . dof2         - number of degrees of freedom per element/2-cell
@@ -27,12 +27,12 @@
 . dm - the new `DMSTAG` object
 
   Options Database Keys:
-+ -dm_view                                      - calls `DMViewFromOptions()` at the conclusion of `DMSetUp()`
++ -dm_view viewer_specification                 - calls `DMView()` at the conclusion of `DMSetUp()`. See `PetscOptionsCreateViewer()` for the format of `viewer_specification`
 . -stag_grid_x nx                               - number of elements in the x direction
 . -stag_grid_y ny                               - number of elements in the y direction
-. -stag_ranks_x rx                              - number of ranks in the x direction
-. -stag_ranks_y ry                              - number of ranks in the y direction
-. -stag_ghost_stencil_width                     - width of ghost region, in elements
+. -stag_ranks_x rx                              - number of MPI processes in the x direction
+. -stag_ranks_y ry                              - number of MPI processes in the y direction
+. -stag_stencil_width width                     - width of ghost region, in elements
 . -stag_boundary_type_x (none|ghosted|periodic) - `DMBoundaryType` value
 - -stag_boundary_type_y (none|ghosted|periodic) - `DMBoundaryType` value
 
@@ -43,7 +43,8 @@
   If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
   `DMSetFromOptions()` after this function but before `DMSetUp()`.
 
-.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`
+.seealso: [](ch_stag), `DMSTAG`, `DMStagCreate1d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`,
+          `DMDACreate2d()`, `PetscOptionsCreateViewer()`
 @*/
 PetscErrorCode DMStagCreate2d(MPI_Comm comm, DMBoundaryType bndx, DMBoundaryType bndy, PetscInt M, PetscInt N, PetscInt m, PetscInt n, PetscInt dof0, PetscInt dof1, PetscInt dof2, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], const PetscInt ly[], DM *dm)
 {
