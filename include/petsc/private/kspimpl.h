@@ -152,9 +152,9 @@ struct _p_KSP {
 
   void *data; /* holder for misc stuff associated with a particular iterative solver */
 
-  PetscBool         view, viewPre, viewRate, viewMat, viewPMat, viewRhs, viewSol, viewMatExp, viewEV, viewSV, viewEVExp, viewFinalRes, viewPOpExp, viewDScale;
-  PetscViewer       viewer, viewerPre, viewerRate, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp, viewerDScale;
-  PetscViewerFormat format, formatPre, formatRate, formatMat, formatPMat, formatRhs, formatSol, formatMatExp, formatEV, formatSV, formatEVExp, formatFinalRes, formatPOpExp, formatDScale;
+  PetscBool         view, viewPre, viewRate, viewMat, viewPMat, viewRhs, viewSol, viewMatExp, viewEV, viewSV, viewEVExp, viewFinalRes, viewPOpExp;
+  PetscViewer       viewer, viewerPre, viewerRate, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp;
+  PetscViewerFormat format, formatPre, formatRate, formatMat, formatPMat, formatRhs, formatSol, formatMatExp, formatEV, formatSV, formatEVExp, formatFinalRes, formatPOpExp;
 
   /* ----------------Default work-area management -------------------- */
   PetscInt nwork;
@@ -180,15 +180,6 @@ struct _p_KSP {
 
   PCSide      pc_side_set;  /* PC type set explicitly by user */
   KSPNormType normtype_set; /* Norm type set explicitly by user */
-
-  /*   Allow diagonally scaling the matrix before computing the preconditioner or using
-       the Krylov method. Note this is NOT just Jacobi preconditioning */
-
-  PetscBool dscale;     /* diagonal scale system; used with KSPSetDiagonalScale() */
-  PetscBool dscalefix;  /* unscale system after solve */
-  PetscBool dscalefix2; /* system has been unscaled */
-  Vec       diagonal;   /* 1/sqrt(diag of matrix) */
-  Vec       truediagonal;
 
   /* Allow declaring convergence when negative curvature is detected */
   PetscBool converged_neg_curve;

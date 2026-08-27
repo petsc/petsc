@@ -289,10 +289,6 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
 
   Level: intermediate
 
-  Note:
-  If you use the `KSPSetDiagonalScaling()` or -ksp_diagonal_scale option then you will
-  likely want to use this routine since it will save you some unneeded flops.
-
 .seealso: [](ch_ksp), `PCEisenstatSetOmega()`, `PCEISENSTAT`
 @*/
 PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
@@ -356,10 +352,6 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
 . -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
   Level: intermediate
-
-  Note:
-  If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
-  likely want to use this routine since it will save you some unneeded flops.
 
 .seealso: `PCEISENSTAT`, `PCEisenstatGetOmega()`
 @*/

@@ -219,11 +219,6 @@ cdef extern from * nogil:
     PetscErrorCode KSPPreSolve(PetscKSP, PetscVec, PetscVec)
     PetscErrorCode KSPPostSolve(PetscKSP, PetscVec, PetscVec)
 
-    PetscErrorCode KSPSetDiagonalScale(PetscKSP, PetscBool)
-    PetscErrorCode KSPGetDiagonalScale(PetscKSP, PetscBool*)
-    PetscErrorCode KSPSetDiagonalScaleFix(PetscKSP, PetscBool)
-    PetscErrorCode KSPGetDiagonalScaleFix(PetscKSP, PetscBool*)
-
     PetscErrorCode KSPComputeExplicitOperator(PetscKSP, PetscMat*)
     PetscErrorCode KSPComputeEigenvalues(PetscKSP, PetscInt, PetscReal[], PetscReal[], PetscInt*)
     PetscErrorCode KSPComputeExtremeSingularValues(PetscKSP, PetscReal*, PetscReal*)

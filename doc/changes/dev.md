@@ -112,6 +112,7 @@
 - Add `KSPIDRSetS()`, `KSPIDRGetS()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`, `KSPIDRSetCosine()`, and `KSPIDRGetCosine()`
 - Deprecate `KSPMonitorResidualShort()` and `-ksp_monitor_short`, remove the `preconditioned_residual_short` monitor registry name
 - Remove `-ksp_plot_eigenvalues`, `-ksp_plot_eigenvalues_explicitly`, `-ksp_plot_eigencontours` that have been deprecated since version 3.9
+- Remove `KSPSetDiagonalScale()`, `KSPGetDiagonalScale()`, `KSPSetDiagonalScaleFix()`, and `KSPGetDiagonalScaleFix()`, along with the `-ksp_diagonal_scale`, `-ksp_diagonal_scale_fix`, and `-ksp_view_diagonal_scale` options
 - Add native support for `KSPMatSolve()` and `KSPMatSolveTranspose()` with `KSPRICHARDSON`, which iterates on batches of or the entire block of right-hand sides instead of solving them one at a time
 - Add delegation of the `KSPRICHARDSON` block iteration to `PCMatApplyRichardson()` when the `PC` provides it, falling back to `PCApplyRichardson()` on one right-hand side at a time so that the result matches `KSPSolve()`
 - Change `KSPConvergedDefault()` to base the relative tolerance on the Frobenius norm of the batch of (preconditioned) right-hand sides during a `KSPMatSolve()` with a nonzero initial guess, matching `KSPSolve()`

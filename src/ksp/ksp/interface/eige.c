@@ -30,8 +30,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
 }
 
 /*@
-  KSPComputeOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
-  space removal if applicable.
+  KSPComputeOperator - Computes the explicit preconditioned operator, including null space removal if applicable.
 
   Collective
 
@@ -51,7 +50,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
   Currently, this routine uses a dense matrix format for the output operator if `mattype` is `NULL`.
   This routine is costly in general, and is recommended for use only with relatively small systems.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `KSPSetDiagonalScale()`, `KSPSetNullSpace()`, `MatType`
+.seealso: [](ch_ksp), `KSP`, `KSPSetOperators()`, `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `MatSetNullSpace()`, `MatType`
 @*/
 PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
