@@ -751,7 +751,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       else:
         argDB.update(child.subst)
         argDB.update(dict(map(lambda k: (k, self.argDB[child.argSubst[k]]), child.argSubst)))
-    self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
+    self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict')
     return
 
   def outputDefine(self, f, name, value = None, condition = None):
