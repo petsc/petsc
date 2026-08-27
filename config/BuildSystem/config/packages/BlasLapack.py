@@ -50,7 +50,6 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.Arg(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
     help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
     help.addArgument('BLAS/LAPACK', '-known-blaslapack-mangling=<string>', nargs.ArgString(None, None, 'Indicate known name mangling for BLAS/LAPACK subroutine names (unchanged, underscore, caps)', regExp='^(unchanged|underscore|caps)$'))
-    help.addArgument('BLAS/LAPACK', '-known-blaslapack-openmp=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses OpenMP'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses 64 bit integers\n       Should be used only when the auto-detection of 64 bit integers in BLAS/LAPACK fails'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
     help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))
