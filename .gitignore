@@ -199,3 +199,4 @@ mr-*-meta.json
 mr-*-diff.txt
 mr-*-findings.json
 /.codegraph/
+/.codex/
