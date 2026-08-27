@@ -1402,7 +1402,6 @@ class Configure(config.base.Configure):
         except RuntimeError as e:
           self.logPrint(str(e))
     raise RuntimeError('Cannot find a C preprocessor')
-    return
 
   def generateCUDACompilerGuesses(self):
     '''Determine the CUDA compiler using CUDAC, then --with-cudac
@@ -2518,13 +2517,10 @@ class Configure(config.base.Configure):
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
-    self.libraries.saveLog()
     if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
       if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
-        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
         return
-    self.logWrite(self.libraries.restoreLog())
     for linker, flags, ext in self.generateDynamicLinkerGuesses():
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):

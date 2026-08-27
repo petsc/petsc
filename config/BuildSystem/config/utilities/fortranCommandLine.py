@@ -29,9 +29,7 @@ class Configure(config.base.Configure):
     # These are for when the routines are called from Fortran
 
     self.libraries.pushLanguage('FC')
-    self.libraries.saveLog()
     if self.libraries.check('','', call = '      integer i\n      character(len=80) arg\n      i = command_argument_count()\n      call get_command_argument(i,arg)'):
-      self.logWrite(self.libraries.restoreLog())
       self.libraries.popLanguage()
       self.have_command_argument = True
     else:

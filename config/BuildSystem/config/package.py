@@ -924,7 +924,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
     retriever = self.retriever
-    retriever.saveLog()
     self.logPrint('Downloading '+self.name)
     # Check for 'NoDefault' URL
     if self.download == 'NoDefault':
@@ -935,19 +934,15 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
         retriever.genericRetrieve(proto, url, self.externalPackagesDir)
-        self.logWrite(retriever.restoreLog())
-        retriever.saveLog()
         pkgdir = self.getDir()
         if not pkgdir:
           raise RuntimeError('Could not locate downloaded package ' +self.PACKAGE +' in '+self.externalPackagesDir)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.PACKAGE+' into '+pkgdir)
-        retriever.restoreLog()
         self.downloaded = 1
         return pkgdir
       except RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
         err += str(e)
-    self.logWrite(retriever.restoreLog())
     raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):
@@ -955,9 +950,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
     self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
-    self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles], {'otherIncludes' : otherIncludes, 'macro' : None, 'timeout': timeout})
-    self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return ret
 
@@ -966,10 +959,8 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       return
     self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     self.logPrint('Checking for macros ' + str(self.macros) + ' in ' + str(self.includes))
-    self.headers.saveLog()
     for macro in self.macros:
       self.executeTest(self.headers.checkInclude, [self.include, self.includes], {'macro' : macro, 'timeout' : timeout})
-    self.logWrite(self.headers.restoreLog())
     self.headers.popLanguage()
     return
 
@@ -1117,12 +1108,10 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         otherlibs.extend(self.compilers.flibs)
       if 'Cxx' in self.buildLanguages:
         otherlibs.extend(self.compilers.cxxlibs)
-      self.libraries.saveLog()
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages}):
         self.lib = lib
         if self.functionsDefine:
           self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages, 'functionDefine': 1})
-        self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
@@ -1138,8 +1127,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
           self.directory = directory
           self.framework.packages.append(self)
           return
-      else:
-        self.logWrite(self.libraries.restoreLog())
     if not self.lookforbydefault or ('with-'+self.package in self.framework.clArgDB and self.argDB['with-'+self.package]):
       raise RuntimeError('Could not find a functional '+self.name+'\n')
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
@@ -1276,7 +1263,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
 
     output = None
     for header in headerList:
-      self.compilers.saveLog()
       try:
         # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
         # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
@@ -1298,7 +1284,6 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
          # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
       except:
         output = None
-      self.logWrite(self.compilers.restoreLog())
       if output:
         break
     self.popLanguage()
@@ -1466,12 +1451,8 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.setup()
-    self.compilerFlags.saveLog()
     self.compilerFlags.configure()
-    self.logWrite(self.compilerFlags.restoreLog())
-    self.compilers.saveLog()
     self.compilers.configure()
-    self.logWrite(self.compilers.restoreLog())
     if self.cuda.found:
       self.cuda.configureLibrary()
     return

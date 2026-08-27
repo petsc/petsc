@@ -113,8 +113,6 @@ class Logger(args.ArgumentProcessor):
   def __getstate__(self):
     '''We do not want to pickle the default log stream'''
     d = args.ArgumentProcessor.__getstate__(self)
-    if 'logBkp' in d:
-        del d['logBkp']
     if 'log' in d:
       if d['log'] is Logger.defaultLog:
         del d['log']
@@ -210,20 +208,6 @@ class Logger(args.ArgumentProcessor):
   def closeLog(self):
     '''Closes the log file'''
     self.log.close()
-
-  def saveLog(self):
-    if self.debugLevel <= 3: return
-    import io
-    self.logBkp = self.log
-    self.log = io.StringIO()
-
-  def restoreLog(self):
-    if self.debugLevel <= 3: return
-    s = self.log.getvalue()
-    self.log.close()
-    self.log = self.logBkp
-    del(self.logBkp)
-    return s
 
   def getLinewidth(self):
     global LineWidth

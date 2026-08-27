@@ -24,8 +24,6 @@ class Configure(config.base.Configure):
 
   def configureFPTrap(self):
     '''Checking the handling of floating point traps'''
-    self.headers.saveLog()
-    self.functions.saveLog()
     if self.headers.check('sigfpe.h'):
       if self.functions.check('handle_sigfpes', libraries = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
@@ -39,8 +37,6 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SOLARIS_STYLE_FPTRAP', 1)
         else:
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
-    self.logWrite(self.headers.restoreLog())
-    self.logWrite(self.functions.restoreLog())
     return
 
   def configure(self):

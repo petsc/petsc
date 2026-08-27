@@ -1,7 +1,4 @@
 import sys
-if not hasattr(sys, 'version_info'):
-  print('*** Python version 1 is not supported. Please get the latest version from www.python.org ***')
-  sys.exit(4)
 
 import pickle
 
@@ -17,33 +14,6 @@ elif useThreads == None or useThreads == 'yes' or useThreads == '1':
   useThreads = 1
 else:
   raise RuntimeError('Unknown option value for --useThreads ',useThreads)
-
-useSelect = nargs.Arg.findArgument('useSelect', sys.argv[1:])
-if useSelect == 'no' or useSelect == '0':
-  useSelect = 0
-elif  useSelect is None or useSelect == 'yes' or useSelect == '1':
-  useSelect = 1
-else:
-  raise RuntimeError('Unknown option value for --useSelect ',useSelect)
-
-#  Run parts of configure in parallel, does not currently work;
-#  see config/BuildSystem/config/framework.parallelQueueEvaluation()
-useParallel = nargs.Arg.findArgument('useParallel', sys.argv[1:])
-if useParallel == 'no' or useParallel == '0':
-  useParallel = 0
-elif  useParallel is None or useParallel == 'yes':
-  useParallel = 5
-else:
-  if useParallel == '1':
-    # handle case with --useParallel was used
-    found = 0
-    for i in sys.argv[1:]:
-      if i.startswith('--useParallel='):
-        found = 1
-        break
-    if found: useParallel = int(useParallel)
-    else: useParallel = 5
-useParallel = 0
 
 import logger
 
@@ -123,26 +93,9 @@ class Script(logger.Logger):
     return
 
   def checkPython(self):
-    if not hasattr(sys, 'version_info') or sys.version_info < (3,6):
+    if sys.version_info < (3,6):
       raise RuntimeError('BuildSystem requires Python version 3.6 or higher. Get Python at https://www.python.org/')
     return
-
-  @staticmethod
-  def getModule(root, name):
-    '''Retrieve a specific module from the directory root, bypassing the usual paths'''
-    if sys.version_info < (3,12):
-      import imp
-      (fp, pathname, description) = imp.find_module(name, [root])
-      try:
-        return imp.load_module(name, fp, pathname, description)
-      finally:
-        if fp: fp.close()
-    else:
-      import importlib.util
-      spec = importlib.util.spec_from_file_location(name, root)
-      module = importlib.util.module_from_spec(spec)
-      sys.modules[name] = module
-      spec.loader.exec_module(module)
 
   @staticmethod
   def importModule(moduleName):
@@ -383,19 +336,16 @@ class LanguageProcessor(args.ArgumentProcessor):
     '''Return the module associated with operations for a given language
        - Giving a moduleName explicitly forces a reimport'''
     if not language in self.languageModule or not moduleName is None:
-      try:
-        if moduleName is None:
-          moduleName = self.modulePath+'.'+language
+      defaultName = self.modulePath+'.'+language
+      if moduleName is None:
+        moduleName = defaultName
         module     = __import__(moduleName)
-      except ImportError as e:
-        if not moduleName is None:
-          self.logPrint('Failure to find language module: '+str(e))
+      else:
         try:
-          moduleName = self.modulePath+'.'+language
-          module     = __import__(moduleName)
+          module = __import__(moduleName)
         except ImportError as e:
           self.logPrint('Failure to find language module: '+str(e))
-          moduleName = 'config.compile.'+language
+          moduleName = defaultName
           module     = __import__(moduleName)
       components = moduleName.split('.')
       for component in components[1:]:

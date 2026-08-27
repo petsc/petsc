@@ -71,9 +71,7 @@ class Configure(config.base.Configure):
       try:
         flagsArg = self.setCompilers.getCompilerFlagsArg()
         oldFlags = getattr(self.setCompilers, flagsArg)
-        self.setCompilers.saveLog()
         self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef dummy\n       fooey\n#endif')
-        self.logWrite(self.setCompilers.restoreLog())
         setattr(self.setCompilers, flagsArg, oldFlags+' '+flag)
         self.fortranPreprocess = 1
         self.setCompilers.popLanguage()
@@ -91,17 +89,14 @@ class Configure(config.base.Configure):
     self.FortranDefineCompilerOption = ''
     if not self.fortranPreprocess:
       return
-    self.setCompilers.saveLog()
     self.setCompilers.pushLanguage('FC')
     for flag in ['-D', '-WF,-D']:
       if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
-        self.logWrite(self.setCompilers.restoreLog())
         self.FortranDefineCompilerOption = flag
         self.framework.addMakeMacro('FC_DEFINE_FLAG',self.FortranDefineCompilerOption)
         self.setCompilers.popLanguage()
         self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
         return
-    self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
     self.logPrint('Fortran does not support defining macro', 3, 'compilers')
     return
@@ -465,7 +460,6 @@ class Configure(config.base.Configure):
     languages = ['FC']
     for language in languages:
       self.generateDependencies[language] = 0
-      self.setCompilers.saveLog()
       self.setCompilers.pushLanguage(language)
       for testFlag in ['-MMD -MP', # GCC, Intel, Clang, Pathscale
                        '-MMD',     # PGI
@@ -492,7 +486,6 @@ class Configure(config.base.Configure):
         except RuntimeError:
           self.logPrint('Rejected '+language+' compiler flag '+testFlag)
       self.setCompilers.popLanguage()
-      self.logWrite(self.setCompilers.restoreLog())
     return
 
   def configure(self):

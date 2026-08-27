@@ -480,7 +480,6 @@ int checkInit(void) {
       if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
       self.setCompilers.LIBS = oldFlags
       raise RuntimeError('Could not complete shared library check')
-      return 0
     if os.path.isfile(configObj.compilerObj): os.remove(configObj.compilerObj)
     os.rename(configObj.linkerObj, lib2Name)
 
