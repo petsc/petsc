@@ -31,6 +31,46 @@ users manual for a discussion of preloading.  Input parameters include\n\
 */
 #include <petscksp.h>
 
+static PetscErrorCode TestBDDCCustomization(PC pc, Vec b)
+{
+  PC           restored;
+  Mat          A, P;
+  Vec          x, y;
+  PetscOptions options;
+  char        *alloptions;
+  PetscReal    norm, error;
+
+  PetscFunctionBeginUser;
+  PetscCall(PCBDDCSaveCustomization(pc, "bddc_roundtrip.dat", PETSC_DECIDE));
+  PetscCall(PetscOptionsCreate(&options));
+  PetscCall(PetscOptionsGetAll(NULL, &alloptions));
+  PetscCall(PetscOptionsInsertString(options, alloptions));
+  PetscCall(PetscFree(alloptions));
+  // Load only the saved customization into a fresh preconditioner.
+  PetscCall(PetscOptionsSetValue(options, "-pc_bddc_load", "bddc_roundtrip.dat"));
+  PetscCall(PetscOptionsClearValue(options, "-pc_bddc_load_version"));
+  PetscCall(PCCreate(PetscObjectComm((PetscObject)pc), &restored));
+  PetscCall(PetscObjectSetOptions((PetscObject)restored, options));
+  PetscCall(PCGetOperators(pc, &A, &P));
+  PetscCall(PCSetOperators(restored, A, P));
+  PetscCall(PCSetType(restored, PCBDDC));
+  PetscCall(PCSetFromOptions(restored));
+  PetscCall(PCSetUp(restored));
+  PetscCall(VecDuplicate(b, &x));
+  PetscCall(VecDuplicate(b, &y));
+  PetscCall(PCApply(pc, b, x));
+  PetscCall(PCApply(restored, b, y));
+  PetscCall(VecNorm(x, NORM_2, &norm));
+  PetscCall(VecAXPY(y, -1.0, x));
+  PetscCall(VecNorm(y, NORM_2, &error));
+  PetscCheck(error <= 1000 * PETSC_MACHINE_EPSILON * PetscMax(1.0, norm), PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Restored BDDC action differs by %g (reference norm %g)", (double)error, (double)norm);
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PCDestroy(&restored));
+  PetscCall(PetscOptionsDestroy(&options));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
   KSP         ksp;                         /* linear solver context */
@@ -302,6 +342,26 @@ int main(int argc, char **args)
       PetscCall(KSPSetOperators(ksp, A, J));
       PetscCall(MatDestroy(&J));
     }
+    if (isbddc) {
+      PetscInt nfields = 0;
+
+      PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_bddc_dofs_splitting", &nfields, NULL));
+      if (nfields) {
+        IS      *fields;
+        PetscInt rstart, rend;
+
+        PetscCall(PetscMalloc1(nfields, &fields));
+        PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
+        for (PetscInt i = 0; i < nfields; i++) {
+          PetscInt start = rstart + (i - rstart % nfields + nfields) % nfields;
+
+          PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), (rend - start + nfields - 1) / nfields, start, nfields, &fields[i]));
+        }
+        PetscCall(PCBDDCSetDofsSplitting(pc, nfields, fields));
+        for (PetscInt i = 0; i < nfields; i++) PetscCall(ISDestroy(&fields[i]));
+        PetscCall(PetscFree(fields));
+      }
+    }
 
     /*
      Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
@@ -311,6 +371,12 @@ int main(int argc, char **args)
     */
     PetscCall(KSPSetUp(ksp));
     PetscCall(KSPSetUpOnBlocks(ksp));
+    if (isbddc) {
+      PetscBool test_save_load = PETSC_FALSE;
+
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_bddc_save_load", &test_save_load, NULL));
+      if (test_save_load) PetscCall(TestBDDCCustomization(pc, b));
+    }
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Solve system
@@ -901,30 +967,36 @@ int main(int argc, char **args)
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_2d
      nsize: {{1 2 3 4 5 6 7 8}}
-     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load_version 0 -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
 
    test:
      requires: datafilespath double mumps !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_2d_adaptive
      nsize: {{1 2 3 4 5 6 7 8}}
-     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2 -pc_bddc_schur_exact {{0 1}}
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load_version 0 -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2 -pc_bddc_schur_exact {{0 1}}
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hdiv_3d
      nsize: {{1 2 3 4 5 6 7 8}}
-     args: -f ${DATAFILESPATH}/matrices/matis/hdiv_mfem_inlinehex2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hdiv_mfem_inlinehex2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
+     args: -f ${DATAFILESPATH}/matrices/matis/hdiv_mfem_inlinehex2_16.dat -pc_bddc_load_version 0 -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hdiv_mfem_inlinehex2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_3d
      nsize: {{1 3 4 8}}
-     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_inlinehex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_inlinehex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_inlinehex_16.dat -pc_bddc_load_version 0 -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_inlinehex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_3d_amr
      nsize: {{1 3 4 8}}
-     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrhex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrhex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrhex_16.dat -pc_bddc_load_version 0 -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrhex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_3d_fdm
+     nsize: {{1 3 4 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/fdm_hcurl_multi_deg3_4x4x4.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_fdm_hcurl_multi_deg3_4x4x4.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
 
 TEST*/

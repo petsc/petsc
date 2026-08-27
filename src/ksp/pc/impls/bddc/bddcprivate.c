@@ -9517,7 +9517,7 @@ PetscErrorCode PCBDDCInitSubSchurs(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCBDDCViewGlobalIS(PC pc, IS is, PetscViewer viewer)
+PetscErrorCode PCBDDCViewGlobalIS(PC pc, IS is, PetscViewer viewer)
 {
   Mat_IS         *matis = (Mat_IS *)pc->pmat->data;
   PetscInt        n     = pc->pmat->rmap->n, ln, ni, st;
@@ -9546,100 +9546,6 @@ static PetscErrorCode PCBDDCViewGlobalIS(PC pc, IS is, PetscViewer viewer)
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), ln, matis->sf_rootdata, PETSC_USE_POINTER, &gis));
   PetscCall(ISView(gis, viewer));
   PetscCall(ISDestroy(&gis));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode PCBDDCLoadOrViewCustomization(PC pc, PetscBool load, const char *outfile)
-{
-  PetscInt    header[11];
-  PC_BDDC    *pcbddc = (PC_BDDC *)pc->data;
-  PetscViewer viewer;
-  MPI_Comm    comm = PetscObjectComm((PetscObject)pc);
-
-  PetscFunctionBegin;
-  PetscCall(PetscViewerBinaryOpen(comm, outfile ? outfile : "bddc_dump.dat", load ? FILE_MODE_READ : FILE_MODE_WRITE, &viewer));
-  if (load) {
-    IS  is;
-    Mat A;
-
-    PetscCall(PetscViewerBinaryRead(viewer, header, PETSC_STATIC_ARRAY_LENGTH(header), NULL, PETSC_INT));
-    PetscCheck(header[0] == 0 || header[0] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[1] == 0 || header[1] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[2] >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[3] == 0 || header[3] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[4] == 0 || header[4] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[5] >= 0, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[7] == 0 || header[7] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[8] == 0 || header[8] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[9] == 0 || header[9] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    PetscCheck(header[10] == 0 || header[10] == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
-    if (header[0]) {
-      PetscCall(ISCreate(comm, &is));
-      PetscCall(ISLoad(is, viewer));
-      PetscCall(PCBDDCSetDirichletBoundaries(pc, is));
-      PetscCall(ISDestroy(&is));
-    }
-    if (header[1]) {
-      PetscCall(ISCreate(comm, &is));
-      PetscCall(ISLoad(is, viewer));
-      PetscCall(PCBDDCSetNeumannBoundaries(pc, is));
-      PetscCall(ISDestroy(&is));
-    }
-    if (header[2]) {
-      IS *isarray;
-
-      PetscCall(PetscMalloc1(header[2], &isarray));
-      for (PetscInt i = 0; i < header[2]; i++) {
-        PetscCall(ISCreate(comm, &isarray[i]));
-        PetscCall(ISLoad(isarray[i], viewer));
-      }
-      PetscCall(PCBDDCSetDofsSplitting(pc, header[2], isarray));
-      for (PetscInt i = 0; i < header[2]; i++) PetscCall(ISDestroy(&isarray[i]));
-      PetscCall(PetscFree(isarray));
-    }
-    if (header[3]) {
-      PetscCall(ISCreate(comm, &is));
-      PetscCall(ISLoad(is, viewer));
-      PetscCall(PCBDDCSetPrimalVerticesIS(pc, is));
-      PetscCall(ISDestroy(&is));
-    }
-    if (header[4]) {
-      PetscCall(MatCreate(comm, &A));
-      PetscCall(MatSetType(A, MATAIJ));
-      PetscCall(MatLoad(A, viewer));
-      PetscCall(PCBDDCSetDiscreteGradient(pc, A, header[5], header[6], (PetscBool)header[7], (PetscBool)header[8]));
-      PetscCall(MatDestroy(&A));
-    }
-    if (header[9]) {
-      PetscCall(MatCreate(comm, &A));
-      PetscCall(MatSetType(A, MATIS));
-      PetscCall(MatLoad(A, viewer));
-      PetscCall(PCBDDCSetDivergenceMat(pc, A, (PetscBool)header[10], NULL));
-      PetscCall(MatDestroy(&A));
-    }
-  } else {
-    header[0]  = (PetscInt)!!pcbddc->DirichletBoundariesLocal;
-    header[1]  = (PetscInt)!!pcbddc->NeumannBoundariesLocal;
-    header[2]  = pcbddc->n_ISForDofsLocal;
-    header[3]  = (PetscInt)!!pcbddc->user_primal_vertices_local;
-    header[4]  = (PetscInt)!!pcbddc->discretegradient;
-    header[5]  = pcbddc->nedorder;
-    header[6]  = pcbddc->nedfield;
-    header[7]  = (PetscInt)pcbddc->nedglobal;
-    header[8]  = (PetscInt)pcbddc->conforming;
-    header[9]  = (PetscInt)!!pcbddc->divudotp;
-    header[10] = (PetscInt)pcbddc->divudotp_trans;
-    if (header[4]) header[3] = 0;
-
-    PetscCall(PetscViewerBinaryWrite(viewer, header, PETSC_STATIC_ARRAY_LENGTH(header), PETSC_INT));
-    PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->DirichletBoundariesLocal, viewer));
-    PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->NeumannBoundariesLocal, viewer));
-    for (PetscInt i = 0; i < header[2]; i++) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->ISForDofsLocal[i], viewer));
-    if (header[3]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->user_primal_vertices_local, viewer));
-    if (header[4]) PetscCall(MatView(pcbddc->discretegradient, viewer));
-    if (header[9]) PetscCall(MatView(pcbddc->divudotp, viewer));
-  }
-  PetscCall(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -38,7 +38,7 @@ static PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
 static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
-  PetscInt  nt, i;
+  PetscInt  nt, i, load_version = PETSC_DECIDE;
   char      load[PETSC_MAX_PATH_LEN] = {'\0'};
   PetscBool flg;
 
@@ -46,11 +46,12 @@ static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems PetscOptions
   PetscOptionsHeadBegin(PetscOptionsObject, "BDDC options");
   /* Load customization from binary file (debugging) */
   PetscCall(PetscOptionsString("-pc_bddc_load", "Load customization from file (intended for debug)", "none", load, load, sizeof(load), &flg));
+  PetscCall(PetscOptionsInt("-pc_bddc_load_version", "Version of the customization file to load", "none", load_version, &load_version, NULL));
   if (flg) {
     size_t len;
 
     PetscCall(PetscStrlen(load, &len));
-    PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_TRUE, len ? load : NULL));
+    PetscCall(PCBDDCLoadCustomization(pc, len ? load : NULL, load_version));
   }
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level", "Verbose output for PCBDDC (intended for debug)", "none", pcbddc->dbg_flag, &pcbddc->dbg_flag, NULL));
@@ -674,6 +675,264 @@ PetscErrorCode PCBDDCSetLevels(PC pc, PetscInt levels)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, levels, 2);
   PetscTryMethod(pc, "PCBDDCSetLevels_C", (PC, PetscInt), (pc, levels));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#define PCBDDC_CUSTOMIZATION_VERSION_LEGACY     0
+#define PCBDDC_CUSTOMIZATION_VERSION_LATEST     1
+#define PCBDDC_CUSTOMIZATION_HEADER_SIZE_LEGACY 11
+#define PCBDDC_CUSTOMIZATION_HEADER_SIZE        32
+
+static PetscErrorCode PCBDDCLoadOrSaveCustomization_Private(PC pc, PetscBool load, const char *outfile, PetscInt version)
+{
+  PetscInt    header_storage[PCBDDC_CUSTOMIZATION_HEADER_SIZE] = {0};
+  PetscInt   *header;
+  PetscInt    nheader;
+  PC_BDDC    *pcbddc = (PC_BDDC *)pc->data;
+  PetscViewer viewer;
+  MPI_Comm    comm = PetscObjectComm((PetscObject)pc);
+
+  PetscFunctionBegin;
+  if (!load && version == PETSC_DECIDE) version = PCBDDC_CUSTOMIZATION_VERSION_LATEST;
+  if (version == PCBDDC_CUSTOMIZATION_VERSION_LEGACY) {
+    header  = header_storage;
+    nheader = PCBDDC_CUSTOMIZATION_HEADER_SIZE_LEGACY;
+  } else {
+    header  = header_storage + 1;
+    nheader = PCBDDC_CUSTOMIZATION_HEADER_SIZE;
+  }
+  PetscCall(PetscViewerBinaryOpen(comm, outfile ? outfile : "bddc_dump.dat", load ? FILE_MODE_READ : FILE_MODE_WRITE, &viewer));
+  if (load) {
+    IS  is;
+    Mat A;
+
+    PetscCall(PetscViewerBinaryRead(viewer, header_storage, nheader, NULL, PETSC_INT));
+    if (version == PETSC_DECIDE) version = header_storage[0];
+    PetscCheck(header[0] == 0 || header[0] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[1] == 0 || header[1] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[2] >= 0, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[3] == 0 || header[3] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[4] == 0 || header[4] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[5] >= 0, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[7] == 0 || header[7] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[8] == 0 || header[8] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[9] == 0 || header[9] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[10] == 0 || header[10] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    if (version >= 1) {
+      PetscCheck(header[11] == 0 || header[11] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+      PetscCheck(header[12] == 0 || header[12] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    }
+    if (header[0]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetDirichletBoundaries(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[1]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetNeumannBoundaries(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[2]) {
+      IS *isarray;
+
+      PetscCall(PetscMalloc1(header[2], &isarray));
+      for (PetscInt i = 0; i < header[2]; i++) {
+        PetscCall(ISCreate(comm, &isarray[i]));
+        PetscCall(ISLoad(isarray[i], viewer));
+      }
+      PetscCall(PCBDDCSetDofsSplitting(pc, header[2], isarray));
+      for (PetscInt i = 0; i < header[2]; i++) PetscCall(ISDestroy(&isarray[i]));
+      PetscCall(PetscFree(isarray));
+    }
+    if (header[3]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetPrimalVerticesIS(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[4]) {
+      PetscCall(MatCreate(comm, &A));
+      PetscCall(MatSetType(A, MATAIJ));
+      PetscCall(MatLoad(A, viewer));
+      PetscCall(PCBDDCSetDiscreteGradient(pc, A, header[5], header[6], (PetscBool)header[7], (PetscBool)header[8]));
+      PetscCall(MatDestroy(&A));
+    }
+    if (header[9]) {
+      PetscCall(MatCreate(comm, &A));
+      PetscCall(MatSetType(A, MATIS));
+      PetscCall(MatLoad(A, viewer));
+      PetscCall(PCBDDCSetDivergenceMat(pc, A, (PetscBool)header[10], NULL));
+      PetscCall(MatDestroy(&A));
+    }
+    if (header[11]) {
+      PetscCheck(pcbddc->discretegradient, comm, PETSC_ERR_ARG_CORRUPT, "Missing discrete gradient");
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PetscObjectCompose((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject)is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[12]) {
+      MatNullSpace nsp;
+
+      PetscCheck(pcbddc->discretegradient, comm, PETSC_ERR_ARG_CORRUPT, "Missing discrete gradient");
+      PetscCall(MatNullSpaceLoad(viewer, &nsp));
+      PetscCall(MatSetNullSpace(pcbddc->discretegradient, nsp));
+      PetscCall(MatNullSpaceDestroy(&nsp));
+    }
+    if (header[13]) {
+      PetscReal *coords;
+      PetscInt   cdim, nl;
+      PetscCount nc;
+
+      PetscCheck(pc->pmat, comm, PETSC_ERR_ORDER, "Need to set the matrix first with PCSetOperators()");
+      PetscCall(PetscLayoutGetLocalSize(pc->pmat->rmap, &nl));
+      cdim = header[13];
+      nc   = (PetscCount)cdim * nl;
+
+      PetscCall(PetscMalloc1(nc, &coords));
+      PetscCall(PetscViewerBinaryReadAll(viewer, coords, nc, PETSC_DECIDE, PETSC_DECIDE, PETSC_REAL));
+      PetscCall(PCSetCoordinates(pc, cdim, nl, coords));
+      PetscCall(PetscFree(coords));
+    }
+  } else {
+    if (version != PCBDDC_CUSTOMIZATION_VERSION_LEGACY) header_storage[0] = version;
+    header[0]  = (PetscInt)!!pcbddc->DirichletBoundariesLocal;
+    header[1]  = (PetscInt)!!pcbddc->NeumannBoundariesLocal;
+    header[2]  = pcbddc->n_ISForDofsLocal;
+    header[3]  = (PetscInt)!!pcbddc->user_primal_vertices_local;
+    header[4]  = (PetscInt)!!pcbddc->discretegradient;
+    header[5]  = pcbddc->nedorder;
+    header[6]  = pcbddc->nedfield;
+    header[7]  = (PetscInt)pcbddc->nedglobal;
+    header[8]  = (PetscInt)pcbddc->conforming;
+    header[9]  = (PetscInt)!!pcbddc->divudotp;
+    header[10] = (PetscInt)pcbddc->divudotp_trans;
+    if (header[4]) header[3] = 0;
+
+    if (version >= 1) {
+      if (pcbddc->discretegradient) {
+        IS           is;
+        MatNullSpace nsp;
+
+        PetscCall(PetscObjectQuery((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject *)&is));
+        header[11] = (PetscBool)!!is;
+        PetscCall(MatGetNullSpace(pcbddc->discretegradient, &nsp));
+        header[12] = (PetscBool)!!nsp;
+      }
+      header[13] = pcbddc->mat_graph->cdim;
+    }
+
+    PetscCall(PetscViewerBinaryWrite(viewer, header_storage, nheader, PETSC_INT));
+    if (header[0]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->DirichletBoundariesLocal, viewer));
+    if (header[1]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->NeumannBoundariesLocal, viewer));
+    for (PetscInt i = 0; i < header[2]; i++) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->ISForDofsLocal[i], viewer));
+    if (header[3]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->user_primal_vertices_local, viewer));
+    if (header[4]) PetscCall(MatView(pcbddc->discretegradient, viewer));
+    if (header[9]) PetscCall(MatView(pcbddc->divudotp, viewer));
+    if (header[11]) {
+      IS is;
+
+      PetscCall(PetscObjectQuery((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject *)&is));
+      PetscCall(ISView(is, viewer));
+    }
+    if (header[12]) {
+      MatNullSpace nsp;
+
+      PetscCall(MatGetNullSpace(pcbddc->discretegradient, &nsp));
+      PetscCall(MatNullSpaceView(nsp, viewer));
+    }
+    if (header[13]) {
+      PetscReal *coords = pcbddc->mat_graph->coords;
+      PetscCount nc     = (PetscCount)pcbddc->mat_graph->cdim * pc->pmat->rmap->n;
+
+      if (pcbddc->mat_graph->cloc) {
+        Mat_IS      *matis = (Mat_IS *)pc->pmat->data;
+        PetscMPIInt  cdimi;
+        MPI_Datatype dimrealtype;
+
+        PetscCall(PetscMalloc1(nc, &coords));
+        PetscCall(PetscMPIIntCast(pcbddc->mat_graph->cdim, &cdimi));
+        PetscCallMPI(MPI_Type_contiguous(cdimi, MPIU_REAL, &dimrealtype));
+        PetscCallMPI(MPI_Type_commit(&dimrealtype));
+        PetscCall(PetscSFReduceBegin(matis->sf, dimrealtype, pcbddc->mat_graph->coords, coords, MPI_REPLACE));
+        PetscCall(PetscSFReduceEnd(matis->sf, dimrealtype, pcbddc->mat_graph->coords, coords, MPI_REPLACE));
+        PetscCallMPI(MPI_Type_free(&dimrealtype));
+      }
+      PetscCall(PetscViewerBinaryWriteAll(viewer, coords, nc, PETSC_DECIDE, PETSC_DECIDE, PETSC_REAL));
+      if (pcbddc->mat_graph->cloc) PetscCall(PetscFree(coords));
+    }
+  }
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCBDDCLoadCustomization_BDDC(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscCall(PCBDDCLoadOrSaveCustomization_Private(pc, PETSC_TRUE, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCBDDCLoadCustomization - Load user-defined customization data for `PCBDDC` from a binary file
+
+  Collective
+
+  Input Parameters:
++ pc       - the preconditioning context
+. filename - path to the binary file, or `NULL` for `bddc_dump.dat`
+- version  - file format version, or `PETSC_DECIDE` to detect the version from the file
+
+  Level: advanced
+
+  Note:
+  This routine is normally called before `PCSetUp()`.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSaveCustomization()`, `PCSetUp()`
+@*/
+PetscErrorCode PCBDDCLoadCustomization(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (filename) PetscAssertPointer(filename, 2);
+  PetscValidLogicalCollectiveInt(pc, version, 3);
+  PetscTryMethod(pc, "PCBDDCLoadCustomization_C", (PC, const char[], PetscInt), (pc, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCBDDCSaveCustomization_BDDC(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscCall(PCBDDCLoadOrSaveCustomization_Private(pc, PETSC_FALSE, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCBDDCSaveCustomization - Save user-defined customization data for `PCBDDC` to a binary file
+
+  Collective
+
+  Input Parameters:
++ pc       - the preconditioning context
+. filename - path to the binary file, or `NULL` for `bddc_dump.dat`
+- version  - file format version, or `PETSC_DECIDE` to use the latest version
+
+  Level: advanced
+
+  Note:
+  Call `PCSetUp()` before this routine so that global customization data has been converted to the local representation stored in the file.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCLoadCustomization()`, `PCSetUp()`
+@*/
+PetscErrorCode PCBDDCSaveCustomization(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (filename) PetscAssertPointer(filename, 2);
+  PetscValidLogicalCollectiveInt(pc, version, 3);
+  PetscTryMethod(pc, "PCBDDCSaveCustomization_C", (PC, const char[], PetscInt), (pc, filename, version));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1677,15 +1936,17 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   { /* Dump customization */
+    PetscInt  save_version = PETSC_DECIDE;
     PetscBool flg;
     char      save[PETSC_MAX_PATH_LEN] = {'\0'};
 
     PetscCall(PetscOptionsGetString(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save", save, sizeof(save), &flg));
+    PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save_version", &save_version, NULL));
     if (flg) {
       size_t len;
 
       PetscCall(PetscStrlen(save, &len));
-      PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_FALSE, len ? save : NULL));
+      PetscCall(PCBDDCSaveCustomization(pc, len ? save : NULL, save_version));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2047,6 +2308,8 @@ static PetscErrorCode PCDestroy_BDDC(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevel_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetUseExactDirichlet_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevels_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCLoadCustomization_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSaveCustomization_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundaries_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundariesLocal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetNeumannBoundaries_C", NULL));
@@ -2838,6 +3101,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevel_C", PCBDDCSetLevel_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetUseExactDirichlet_C", PCBDDCSetUseExactDirichlet_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevels_C", PCBDDCSetLevels_BDDC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCLoadCustomization_C", PCBDDCLoadCustomization_BDDC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSaveCustomization_C", PCBDDCSaveCustomization_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundaries_C", PCBDDCSetDirichletBoundaries_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundariesLocal_C", PCBDDCSetDirichletBoundariesLocal_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetNeumannBoundaries_C", PCBDDCSetNeumannBoundaries_BDDC));

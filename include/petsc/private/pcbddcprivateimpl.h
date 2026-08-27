@@ -7,9 +7,6 @@
 PETSC_INTERN PetscErrorCode PCBDDCAnalyzeInterface(PC);
 PETSC_INTERN PetscErrorCode PCBDDCConstraintsSetUp(PC);
 
-/* load or dump customization */
-PETSC_EXTERN PetscErrorCode PCBDDCLoadOrViewCustomization(PC, PetscBool, const char *);
-
 /* reset functions */
 PETSC_EXTERN PetscErrorCode PCBDDCResetTopography(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCResetSolvers(PC);
@@ -67,6 +64,7 @@ PETSC_INTERN PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm, PetscBool, PetscInt,
 PETSC_INTERN PetscErrorCode PCBDDCNedelecSupport(PC);
 PETSC_INTERN PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC, IS);
 PETSC_INTERN PetscErrorCode PCBDDCComputeFakeChange(PC, PetscBool, PCBDDCGraph, PCBDDCSubSchurs, Mat *, IS *, IS *, PetscBool *);
+PETSC_INTERN PetscErrorCode PCBDDCViewGlobalIS(PC, IS, PetscViewer);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrixUnsorted(Mat, IS, IS, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJCompress(Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatNullSpacePropagateAny_Private(Mat, IS, Mat);

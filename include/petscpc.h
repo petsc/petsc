@@ -385,6 +385,8 @@ PETSC_EXTERN PetscErrorCode PCBDDCGetPrimalVerticesIS(PC, IS *);
 PETSC_EXTERN PetscErrorCode PCBDDCGetPrimalVerticesLocalIS(PC, IS *);
 PETSC_EXTERN PetscErrorCode PCBDDCSetCoarseningRatio(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetLevels(PC, PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCLoadCustomization(PC, const char[], PetscInt);
+PETSC_EXTERN PetscErrorCode PCBDDCSaveCustomization(PC, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundaries(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC, IS);
 PETSC_EXTERN PetscErrorCode PCBDDCGetDirichletBoundaries(PC, IS *);
