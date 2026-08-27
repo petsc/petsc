@@ -52,11 +52,6 @@
         Creates a dictionary in the current directory with a parent, and removes
         the given key. If "parent" is "None", no parent is assigned.
 '''
-try:
-  import project          # This is necessary for us to create Project objects on load
-  import build.buildGraph # This is necessary for us to create BuildGraph objects on load
-except ImportError:
-  pass
 import nargs
 
 import pickle

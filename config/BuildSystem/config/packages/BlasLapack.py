@@ -1,6 +1,5 @@
 import config.base
 import config.package
-from sourceDatabase import SourceDB
 import os
 
 class Configure(config.package.Package):

@@ -1107,66 +1107,6 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       )
 
     return
-    # Disabled for now, since this does not really work. It solves the problem of
-    # "undefined reference to __gcov_flush()" but if we add -lgcov we get:
-    #
-    # duplicate symbol '___gcov_reset' in:
-    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
-    #     /opt/.../libgcov.a(_gcov_reset.o)
-    # duplicate symbol '___gcov_dump' in:
-    #     /opt/.../libgcov.a(_gcov_dump.o)
-    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
-    # duplicate symbol '___gcov_fork' in:
-    #     /opt/.../libgcov.a(_gcov_fork.o)
-    #     /Library/.../libclang_rt.profile_osx.a(GCDAProfiling.c.o)
-    #
-    # I don't know how to solve this.
-
-    log_print('Checking if compilers can cross-link disparate coverage libraries')
-    # At least one of the compilers has coverage enabled. Now need to make sure multiple
-    # code coverage impls work together, specifically when using clang C/C++ compiler with
-    # gfortran.
-    if not hasattr(self.setCompilers, 'FC'):
-      log_print('No fortran compiler detected. No need to check cross-linking!')
-      return
-
-    c_lang = self.languages.clanguage
-    if not self.setCompilers.isClang(self.getCompiler(lang=c_lang), self.log):
-      # must be GCC
-      log_print('C-language ({}) compiler is not clang, assuming it is GCC, so cross-linking with FC ({}) assumed to be OK'.format(c_lang, self.getCompiler(lang='FC')))
-      return
-
-    # If we are here we:
-    #   1. Have both C/C++ compiler and fortran compiler
-    #   2. The C/C++ compiler is *not* the same as the fortran compiler (unless we start
-    #      using flang)
-    #
-    # Now we check if we can cross-link
-    def can_cross_link(**kwargs):
-      f_body = "      subroutine foo()\n      print*,'testing'\n      return\n      end\n"
-      c_body = "int main() { }"
-
-      return self.compilers.checkCrossLink(
-        f_body, c_body, language1='FC', language2=c_lang, extralibs=self.compilers.flibs, **kwargs
-      )
-
-    log_print('Trying to cross-link WITHOUT extra libs')
-    if can_cross_link():
-      log_print('Successfully cross-linked WITHOUT extra libs')
-      # success, we already can cross-link
-      return
-
-    extra_libs = ['-lgcov']
-    log_print('Trying to cross-link with extra libs: {}'.format(extra_libs))
-    if can_cross_link(extraObjs=extra_libs):
-      log_print(
-        'Successfully cross-linked using extra libs: {}, adding them to LIBS'.format(extra_libs)
-      )
-      self.setCompilers.LIBS += ' ' + ' '.join(extra_libs)
-    else:
-      # maybe should be an error?
-      self.logPrintWarning("Could not successfully cross-link covered code between {} and FC. Sometimes this is a false positive. Assuming this does eventually end up working when the full link-line is assembled when building PETSc. If you later encounter linker errors about missing __gcov_exit(), __gcov_init(), __llvm_cov_flush() etc. this is why!".format(c_lang))
-    return
 
   def configureCoverageExecutable(self):
     """

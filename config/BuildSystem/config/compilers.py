@@ -355,17 +355,6 @@ class Configure(config.base.Configure):
         raise e
     return
 
-  def checkCFormatting(self):
-    '''Activate format string checking if using the GNU compilers'''
-    '''No checking because we use additional formatting conventions'''
-    if self.isGCC and 0:
-      self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
-      self.logPrint('Added gcc printf format checking', 4, 'compilers')
-      self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
-    else:
-      self.gccFormatChecking = None
-    return
-
   def checkDynamicLoadFlag(self):
     '''Checks that dlopen() takes RTLD_XXX, and defines PETSC_HAVE_RTLD_XXX if it does'''
     if self.setCompilers.dynamicLibraries:
@@ -1395,7 +1384,6 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.isGCC = config.setCompilers.Configure.isGNU(self.setCompilers.CC, self.log)
       self.executeTest(self.checkLinux)
       self.executeTest(self.checkC99Flag)
-      self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkDynamicLoadFlag)
       self.executeTest(self.checkStdAtomic)
       if self.argDB['with-clib-autodetect']:
