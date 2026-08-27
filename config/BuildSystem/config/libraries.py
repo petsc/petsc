@@ -1,7 +1,6 @@
 import config.base
 
 import os
-import re
 
 class Configure(config.base.Configure):
   def __init__(self, framework, libraries = []):

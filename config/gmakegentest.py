@@ -3,11 +3,9 @@
 import pickle
 import os,shutil, string, re
 import sys
-import logging, time
-import types
+import time
 import shlex
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from collections import defaultdict
 from gmakegen import *
 
 import inspect

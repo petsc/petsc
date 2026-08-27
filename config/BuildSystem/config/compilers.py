@@ -2,7 +2,6 @@ import config.base
 
 import re
 import os
-import shutil
 
 def remove_xcode_verbose(buf):
   retbuf =[]

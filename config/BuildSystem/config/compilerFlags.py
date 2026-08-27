@@ -1,5 +1,4 @@
 import config.base
-import re
 import os
 
 class Configure(config.base.Configure):

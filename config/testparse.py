@@ -35,9 +35,8 @@ TEST*/
 
 """
 
-import os, re, glob, types
+import os, re, glob
 import sys
-import logging
 from gmakegen import *
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 

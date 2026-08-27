@@ -4,7 +4,6 @@ import os
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from collections import defaultdict
 
 SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 

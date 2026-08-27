@@ -1,6 +1,5 @@
 import config.base
 
-import re
 import os
 import shutil
 
