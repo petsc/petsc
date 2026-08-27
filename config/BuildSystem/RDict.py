@@ -129,7 +129,7 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine('__getitem__: Setting local value for '+key)
     return dict.__getitem__(self, key).getValue()
 
-  def setType(self, key, value, forceLocal = 0):
+  def setType(self, key, value):
     '''Sets the type for this key
        - If a value for the key already exists, it is converted to the new type'''
     if not isinstance(value, nargs.Arg):

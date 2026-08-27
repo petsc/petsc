@@ -103,7 +103,7 @@ class Help(Info):
     if not argType.deprecated:
       self.sections[section][1].append(name)
 
-    self.argDB.setType(self.getArgName(name), argType, forceLocal = 1)
+    self.argDB.setType(self.getArgName(name), argType)
     return
 
   def addDownload(self,name,dlist):
