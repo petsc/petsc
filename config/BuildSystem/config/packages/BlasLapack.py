@@ -636,7 +636,6 @@ class Configure(config.package.Package):
       oldLibs = self.compilers.LIBS
       routine___float128 = self.mangleBlasNoPrefix('qdot')
       routine___fp16 = self.mangleBlasNoPrefix('hdot')
-      self.libraries.saveLog()
       if self.defaultPrecision != '__float128':
         found = self.libraries.check(self.blasLibrary, routine___float128, fortranMangle = 0)
         if found:
@@ -645,7 +644,6 @@ class Configure(config.package.Package):
         found = self.libraries.check(self.blasLibrary, routine___fp16, fortranMangle = 0)
         if found:
           self.addDefine('HAVE_F2CBLASLAPACK___FP16_BINDINGS', 1)
-      self.logWrite(self.libraries.restoreLog())
       self.compilers.LIBS = oldLibs
 
     if not self.f2cblaslapack.found and not self.netliblapack.found and not self.fblaslapack.found:
@@ -677,7 +675,6 @@ class Configure(config.package.Package):
 
   def checkMKL(self):
     '''Check for Intel MKL library'''
-    self.libraries.saveLog()
     self.include = []
     self.defaultincludepath = False
     if self.libraries.check(self.dlib, 'mkl_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
@@ -727,12 +724,10 @@ class Configure(config.package.Package):
       if self.include or self.defaultincludepath:
         self.addDefine('HAVE_MKL_INCLUDES',1)
         self.addDefine('HAVE_MKL_SET_NUM_THREADS',1)
-    self.logWrite(self.libraries.restoreLog())
     return
 
   def checkESSL(self):
     '''Check for the IBM ESSL library'''
-    self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'iessl'):
       self.essl = 1
       self.addDefine('HAVE_ESSL',1)
@@ -747,16 +742,12 @@ class Configure(config.package.Package):
       linc = self.include + incl
       if self.checkInclude(linc, ['essl.h']):
         self.include = linc
-    self.logWrite(self.libraries.restoreLog())
     return
 
   def checkPESSL(self):
     '''Check for the IBM PESSL library - and error out - if used instead of ESSL'''
-    self.libraries.saveLog()
     if self.libraries.check(self.dlib, 'ipessl'):
-      self.logWrite(self.libraries.restoreLog())
       raise RuntimeError('Cannot use PESSL instead of ESSL!')
-    self.logWrite(self.libraries.restoreLog())
     return
 
   def mangleBlas(self, baseName, mangling = None):
@@ -803,10 +794,8 @@ class Configure(config.package.Package):
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
-    self.libraries.saveLog()
     mangled_name = self.mangleBlasNoPrefix(routine)
     ret = self.libraries.check(self.dlib,mangled_name,fortranMangle = 0)
-    self.logWrite(self.libraries.restoreLog())
     return ret
 
   def runTimeTest(self,name,includes,body,lib = None,nobatch=0):

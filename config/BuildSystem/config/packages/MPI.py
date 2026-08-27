@@ -393,7 +393,6 @@ Unable to run hostname to check the network')
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    self.framework.saveLog()
     # Check for some of the MPI functions PETSc needs from MPI-2.0/2.1. Generally speaking, PETSc requires MPI-2.1 with exception of MPI multithreading and one-sided.
     if not self.checkLink('#include <mpi.h>\n',
     '''
@@ -443,7 +442,6 @@ Unable to run hostname to check the network')
 
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
-    self.logWrite(self.framework.restoreLog())
     return
 
   def configureMPI3(self):
@@ -452,7 +450,6 @@ Unable to run hostname to check the network')
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    self.framework.saveLog()
     # Skip buggy MPICH versions
     if (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) > 30004300) or not hasattr(self, 'mpich_numversion'):
       if self.checkLink('#include <mpi.h>\n',
@@ -502,7 +499,6 @@ Unable to run hostname to check the network')
       self.addDefine('HAVE_MPI_RGET', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
-    self.logWrite(self.framework.restoreLog())
     return
 
   def configureMPI4(self):
@@ -511,7 +507,6 @@ Unable to run hostname to check the network')
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    self.framework.saveLog()
 
     if self.checkLink('#include <mpi.h>\n',
     '''
@@ -547,7 +542,6 @@ Unable to run hostname to check the network')
 
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
-    self.logWrite(self.framework.restoreLog())
     return
 
   def configureMPIX(self):
@@ -558,7 +552,6 @@ Unable to run hostname to check the network')
       oldLibs  = self.compilers.LIBS
       self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
       self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-      self.framework.saveLog()
       if self.checkLink('#include <mpi.h>\n',
       '''
         MPI_Info    info ;
@@ -593,7 +586,6 @@ Unable to run hostname to check the network')
 
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
-      self.logWrite(self.framework.restoreLog())
     return
 
   def configureMPIGPUAware(self):
@@ -648,8 +640,6 @@ Unable to run hostname to check the network')
     self.mpiexecseq = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
     self.executeTest(self.configureMPIEXEC_TAIL)
-    self.framework.saveLog()
-    self.logWrite(self.framework.restoreLog())
     self.usingMPIUni = 1
     self.found = 1
     self.version = 'PETSc MPIUNI uniprocessor MPI replacement'
