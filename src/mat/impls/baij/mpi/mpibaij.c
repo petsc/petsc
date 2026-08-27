@@ -1588,6 +1588,12 @@ static PetscErrorCode MatDiagonalScale_MPIBAIJ(Mat mat, Vec ll, Vec rr)
     PetscCall(VecScatterEnd(baij->Mvctx, rr, baij->lvec, INSERT_VALUES, SCATTER_FORWARD));
     PetscUseTypeMethod(b, diagonalscale, NULL, baij->lvec);
   }
+  /* MatDiagonalScale() cannot be used on the blocks: they are on PETSC_COMM_SELF while ll and rr
+     are parallel, so the interface's communicator check rejects them. Advance the block states
+     here instead, as the interface would. MatDiagonalScale_MPIAIJ() does not need this because
+     MatSeqAIJRestoreArray() advances the state for it. */
+  PetscCall(PetscObjectStateIncrease((PetscObject)a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)b));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1638,6 +1644,10 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   } else {
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, 0.0, NULL, NULL));
   }
+  /* MatZeroRows() cannot be used on the blocks: it honors -mat_view, which would print each
+     sequential block as well (see mat_tests-ex12_5). Advance the diagonal block's state here
+     instead, as the interface would; MatInvertBlockDiagonal_MPIBAIJ() caches on that state. */
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->A));
   PetscCall(PetscFree(lrows));
 
   /* only change matrix nonzero state if pattern was allowed to be changed */
@@ -1709,7 +1719,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   for (i = 0; i < len; ++i) {
     row   = lrows[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = PetscSafePointerPlusOffset(baij->a, baij->i[row / bs] * bs2 + (row % bs));
     for (k = 0; k < count; ++k) {
       aa[0] = 0.0;
       aa += bs;
@@ -1819,6 +1829,10 @@ static PetscErrorCode MatAXPY_MPIBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure 
     y = (Mat_SeqBAIJ *)yy->B->data;
     PetscCall(PetscBLASIntCast(x->nz * bs2, &bnz));
     PetscCallBLAS("BLASaxpy", BLASaxpy_(&bnz, &alpha, x->a, &one, y->a, &one));
+    /* the blocks' values were changed directly, so advance their states as MatAXPY() on each
+       block would; MatInvertBlockDiagonal_SeqBAIJ() caches on the diagonal block's state */
+    PetscCall(PetscObjectStateIncrease((PetscObject)yy->A));
+    PetscCall(PetscObjectStateIncrease((PetscObject)yy->B));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatAXPY_Basic(Y, a, X, str));
@@ -1849,8 +1863,8 @@ static PetscErrorCode MatConjugate_MPIBAIJ(Mat mat)
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)mat->data;
 
   PetscFunctionBegin;
-  PetscCall(MatConjugate_SeqBAIJ(a->A));
-  PetscCall(MatConjugate_SeqBAIJ(a->B));
+  PetscCall(MatConjugate(a->A));
+  PetscCall(MatConjugate(a->B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
