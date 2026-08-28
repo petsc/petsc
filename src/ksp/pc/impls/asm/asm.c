@@ -290,6 +290,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     scall = MAT_INITIAL_MATRIX;
   }
 
+  /* A subsolver may have factored its submatrix in place, which leaves it
+     flagged as factored and so unfillable by MatCreateSubMatrices() below. */
+  if (scall == MAT_REUSE_MATRIX) {
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatSetUnfactored(osm->pmat[i]));
+  }
+
   /*
      Extract out the submatrices
   */
