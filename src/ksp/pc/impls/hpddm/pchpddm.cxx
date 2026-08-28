@@ -1541,6 +1541,8 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat Q, IS *is, Mat *s
     PetscCall(MatCreateSubMatrices(M[0], 2, irow, icol, MAT_INITIAL_MATRIX, sub));
     PetscCall(ISDestroy(icol + 1));
     PetscCall(PetscFree2(ptr, idx));
+    PetscCall(MatPropagateSymmetryOptions(P, (*sub)[0]));
+    if (flg) PetscCall(MatConvert((*sub)[0], MATSBAIJ, MAT_INPLACE_MATRIX, sub[0]));
     /* IS used to go back and forth between the augmented and the original local linear system, see eq. (3.4) of [2022b] */
     PetscCall(PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Embed", (PetscObject)icol[2]));
     /* Mat used in eq. (3.1) of [2022b] */
@@ -1551,7 +1553,10 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat Q, IS *is, Mat *s
     PetscCall(MatSetOption(M[0], MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
     /* diagonal block of the overlapping rows */
     PetscCall(MatCreateSubMatrices(M[0], 1, irow, is, MAT_INITIAL_MATRIX, sub));
+    PetscCall(MatPropagateSymmetryOptions(P, (*sub)[0]));
+    if (flg && bs == 1) PetscCall(MatConvert((*sub)[0], MATSBAIJ, MAT_INPLACE_MATRIX, sub[0]));
     PetscCall(MatDuplicate((*sub)[0], MAT_COPY_VALUES, &aux));
+    aux->spd = PETSC_BOOL3_UNKNOWN; /* the auxiliary Mat need not be SPD */
     PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
     if (bs == 1) { /* scalar case */
       Vec sum[2];
@@ -1572,6 +1577,9 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat Q, IS *is, Mat *s
       Mat          sum[2], ones;
       PetscScalar *ptr;
 
+      aux->symmetry_eternal = PETSC_FALSE;
+      aux->symmetric        = PETSC_BOOL3_UNKNOWN;
+      aux->hermitian        = PETSC_BOOL3_UNKNOWN;
       PetscCall(PetscCalloc1(M[0]->cmap->n * bs, &ptr));
       PetscCall(MatCreateDense(PETSC_COMM_SELF, M[0]->cmap->n, bs, M[0]->cmap->n, bs, ptr, &ones));
       for (PetscInt n = 0; n < M[0]->cmap->n; n += bs) {
@@ -1600,12 +1608,11 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat Q, IS *is, Mat *s
       PetscCall(MatDestroy(sum));
     }
     PetscCall(MatSetOption(aux, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-    /* left-hand side of GenEO, with the same sparsity pattern as PCASM subdomain solvers  */
+    /* left-hand side of GenEO, with the same sparsity pattern as PCASM subdomain solvers */
     PetscCall(PetscObjectCompose((PetscObject)(*sub)[0], "_PCHPDDM_Neumann_Mat", (PetscObject)aux));
   }
   PetscCall(ISDestroy(irow));
   PetscCall(MatDestroySubMatrices(1, &M));
-  PetscCall(MatPropagateSymmetryOptions(P, (*sub)[0]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
