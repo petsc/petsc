@@ -382,8 +382,6 @@ def petsc_configure(configure_options):
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
   import logger
-  import config.base
-  import config.framework
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
@@ -419,6 +417,11 @@ def petsc_configure(configure_options):
 
   # Check Cray without modules
   check_cray_modules()
+
+  # Import BuildSystem only once sys.argv is final: script.py reads --useThreads when it is
+  # imported, so importing any earlier freezes the value before the options above are added
+  import config.base
+  import config.framework
 
   tbo = None
   framework = None
