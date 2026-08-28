@@ -1,0 +1,4 @@
+[0]PETSC ERROR: Operation done in wrong order
+[0]PETSC ERROR: Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here
+[0]PETSC ERROR: #2 PCASMGetSubKSP() at asm.c:0
+[0]PETSC ERROR: #3 main() at ex12.c:0
