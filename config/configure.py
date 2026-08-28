@@ -295,7 +295,6 @@ def chktmpnoexec():
   return
 
 def check_cray_modules():
-  import script
   '''For Cray systems check if the cc, CC, ftn compiler suite modules have been set'''
   cray = os.getenv('CRAY_SITE_LIST_DIR')
   if not cray: return
