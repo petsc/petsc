@@ -75,6 +75,7 @@ static PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   PetscCall(MatDestroy(&b->AIJ));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqmaij_seqaijcusparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqmaij_seqaijkokkos_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqmaij_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaij_seqmaij_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -120,6 +121,7 @@ static PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   PetscCall(VecDestroy(&b->w));
   PetscCall(PetscFree(A->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpimaij_mpiaijcusparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpimaij_mpiaijkokkos_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpimaij_mpiaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_mpiaij_mpimaij_C", NULL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
@@ -1024,10 +1026,8 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
   PetscInt  n;
   Mat       B;
   PetscBool flg;
-#if PetscDefined(HAVE_CUDA)
-  /* hack to prevent conversion to AIJ format for CUDA when used inside a parallel MAIJ */
+  /* hack to prevent conversion to AIJ format for device types when used inside a parallel MAIJ */
   PetscBool convert = dof < 0 ? PETSC_FALSE : PETSC_TRUE;
-#endif
 
   PetscFunctionBegin;
   dof = PetscAbs(dof);
@@ -1129,6 +1129,9 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
 #if PetscDefined(HAVE_CUDA)
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqmaij_seqaijcusparse_C", MatConvert_SeqMAIJ_SeqAIJ));
 #endif
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+      PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqmaij_seqaijkokkos_C", MatConvert_SeqMAIJ_SeqAIJ));
+#endif
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqmaij_seqaij_C", MatConvert_SeqMAIJ_SeqAIJ));
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqmaij_C", MatProductSetFromOptions_SeqAIJ_SeqMAIJ));
     } else {
@@ -1178,22 +1181,20 @@ PetscErrorCode MatCreateMAIJ(Mat A, PetscInt dof, Mat *maij)
 #if PetscDefined(HAVE_CUDA)
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpimaij_mpiaijcusparse_C", MatConvert_MPIMAIJ_MPIAIJ));
 #endif
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+      PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpimaij_mpiaijkokkos_C", MatConvert_MPIMAIJ_MPIAIJ));
+#endif
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpimaij_mpiaij_C", MatConvert_MPIMAIJ_MPIAIJ));
       PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaij_mpimaij_C", MatProductSetFromOptions_MPIAIJ_MPIMAIJ));
     }
     B->ops->createsubmatrix   = MatCreateSubMatrix_MAIJ;
     B->ops->createsubmatrices = MatCreateSubMatrices_MAIJ;
     PetscCall(MatSetUp(B));
-#if PetscDefined(HAVE_CUDA)
-    /* temporary until we have CUDA implementation of MAIJ */
-    {
-      PetscBool flg;
-      if (convert) {
-        PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJCUSPARSE, ""));
-        if (flg) PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B));
-      }
+    /* temporary until we have device implementations of MAIJ */
+    if (convert) {
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, MATAIJCUSPARSE, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
+      if (flg) PetscCall(MatConvert(B, ((PetscObject)A)->type_name, MAT_INPLACE_MATRIX, &B));
     }
-#endif
     *maij = B;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

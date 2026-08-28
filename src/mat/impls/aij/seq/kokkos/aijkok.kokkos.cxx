@@ -678,6 +678,13 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdense_C", NULL));
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdensecuda_C", NULL));
+#endif
+#if PetscDefined(HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdensehip_C", NULL));
+#endif
 #if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijkokkos_hypre_C", NULL));
 #endif
@@ -984,14 +991,189 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* These are used by the mat-mat operations with dense matrices, which are stored column-major, so their arrays are wrapped in LayoutLeft views.
+   The PetscScalarKokkosView2D types in kokkosimpl.hpp are LayoutRight and thus can not be used here.
+*/
+using MatScalarKokkosDenseView      = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, DefaultMemorySpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>;
+using ConstMatScalarKokkosDenseView = Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft, DefaultMemorySpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>;
+using MatScalarKokkosDenseWorkView  = Kokkos::View<PetscScalar **, Kokkos::LayoutLeft, DefaultMemorySpace>;
+
+/* Context for products with a dense B. Bwork and Cwork are only allocated when B's or C's array is
+   not accessible by Kokkos.
+*/
+struct MatProductCtx_SeqAIJKokkosDense {
+  MatScalarKokkosDenseWorkView Bwork, Cwork;
+};
+
+static PetscErrorCode MatProductCtxDestroy_SeqAIJKokkosDense(PetscCtxRt pdata)
+{
+  PetscFunctionBegin;
+  delete *reinterpret_cast<MatProductCtx_SeqAIJKokkosDense **>(pdata);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* C = op(A) B, with A of type MATSEQAIJKOKKOS and B, C dense. */
+static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqDense(Mat C)
+{
+  Mat_Product                     *product = C->product;
+  Mat                              A, B;
+  Mat_SeqAIJKokkos                *akok;
+  MatProductCtx_SeqAIJKokkosDense *pdata;
+  KokkosCsrMatrix                  csrmat;
+  ConstMatScalarKokkosDenseView    bview, bsub;
+  MatScalarKokkosDenseView         cview, csub;
+  const PetscScalar               *barray;
+  PetscScalar                     *carray;
+  PetscMemType                     bmtype, cmtype;
+  const char                      *mode;
+  PetscInt                         m, n, k, blda, clda;
+  auto                             exec = PetscGetKokkosExecutionSpace();
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  pdata = static_cast<MatProductCtx_SeqAIJKokkosDense *>(product->data);
+  A     = product->A;
+  B     = product->B;
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  akok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  switch (product->type) {
+  case MATPRODUCT_AB:
+    csrmat = akok->csrmat;
+    mode   = "N";
+    m      = A->rmap->n;
+    break;
+  case MATPRODUCT_AtB:
+    if (A->form_explicit_transpose) {
+      PetscCall(MatSeqAIJKokkosGenerateTranspose_Private(A, &csrmat));
+      mode = "N";
+    } else {
+      csrmat = akok->csrmat;
+      mode   = "T";
+    }
+    m = A->cmap->n;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Unsupported product type %s", MatProductTypes[product->type]);
+  }
+  k = B->rmap->n;
+  n = B->cmap->n;
+  if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &barray, &bmtype));
+  PetscCall(MatDenseGetLDA(B, &blda));
+  PetscCall(MatDenseGetArrayWriteAndMemType(C, &carray, &cmtype));
+  PetscCall(MatDenseGetLDA(C, &clda));
+
+  /* An array is directly usable by Kokkos when its memory type is PETSC_MEMTYPE_KOKKOS, which is
+     PETSC_MEMTYPE_HOST in a host-only Kokkos build. Otherwise the array is staged through a device
+     workspace with a single contiguous copy that stops after the active rows of the last column,
+     since the tail of the last column may lie beyond the parent allocation when the matrix is a
+     row-restricted submatrix from MatDenseGetSubMatrix(). C is copied in only when clda > m, to
+     round-trip the padding rows of the leading columns; the spmv overwrites rows [0, m).
+  */
+  if (bmtype == PETSC_MEMTYPE_KOKKOS) {
+    PetscCallCXX(bview = ConstMatScalarKokkosDenseView(barray, blda, n));
+  } else {
+    const PetscInt bcnt = (n - 1) * blda + k;
+
+    if (pdata->Bwork.extent(0) != (size_t)blda || pdata->Bwork.extent(1) != (size_t)n) PetscCallCXX(pdata->Bwork = MatScalarKokkosDenseWorkView(NoInit("Bwork"), blda, n));
+    PetscCallCXX(Kokkos::deep_copy(PetscScalarKokkosView(pdata->Bwork.data(), bcnt), ConstPetscScalarKokkosViewHost(barray, bcnt)));
+    PetscCall(PetscLogCpuToGpu(sizeof(PetscScalar) * bcnt));
+    PetscCallCXX(bview = pdata->Bwork);
+  }
+  if (cmtype == PETSC_MEMTYPE_KOKKOS) {
+    PetscCallCXX(cview = MatScalarKokkosDenseView(carray, clda, n));
+  } else {
+    const PetscInt ccnt = (n - 1) * clda + m;
+
+    if (pdata->Cwork.extent(0) != (size_t)clda || pdata->Cwork.extent(1) != (size_t)n) PetscCallCXX(pdata->Cwork = MatScalarKokkosDenseWorkView(NoInit("Cwork"), clda, n));
+    if (clda > m) {
+      PetscCallCXX(Kokkos::deep_copy(PetscScalarKokkosView(pdata->Cwork.data(), ccnt), ConstPetscScalarKokkosViewHost(carray, ccnt)));
+      PetscCall(PetscLogCpuToGpu(sizeof(PetscScalar) * ccnt));
+    }
+    PetscCallCXX(cview = pdata->Cwork);
+  }
+  PetscCallCXX(bsub = Kokkos::subview(bview, Kokkos::pair<PetscInt, PetscInt>(0, k), Kokkos::ALL()));
+  PetscCallCXX(csub = Kokkos::subview(cview, Kokkos::pair<PetscInt, PetscInt>(0, m), Kokkos::ALL()));
+
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCallCXX(KokkosSparse::spmv(exec, mode, 1.0 /*alpha*/, csrmat, bsub, 0.0 /*beta*/, csub)); /* C = alpha op(A) B + beta C */
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscCall(PetscLogGpuFlops(2.0 * csrmat.nnz() * n));
+
+  if (cmtype != PETSC_MEMTYPE_KOKKOS) { /* bring the result back to C's host array */
+    const PetscInt ccnt = (n - 1) * clda + m;
+
+    PetscCallCXX(Kokkos::deep_copy(PetscScalarKokkosViewHost(carray, ccnt), ConstPetscScalarKokkosView(pdata->Cwork.data(), ccnt))); /* fences, so the host array is complete before it is restored */
+    PetscCall(PetscLogGpuToCpu(sizeof(PetscScalar) * ccnt));
+  }
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &barray));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(C, &carray));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqDense(Mat C)
+{
+  Mat_Product *product = C->product;
+  Mat          A, B;
+  PetscBool    cisdense;
+  PetscInt     m, n;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  PetscCheck(!product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  A = product->A;
+  B = product->B;
+  switch (product->type) {
+  case MATPRODUCT_AB:
+    m = A->rmap->n;
+    n = B->cmap->n;
+    PetscCall(MatSetBlockSizesFromMats(C, A, B));
+    break;
+  case MATPRODUCT_AtB:
+    m = A->cmap->n;
+    n = B->cmap->n;
+    if (A->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, A->cmap->bs));
+    if (B->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, B->cmap->bs));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Unsupported product type %s", MatProductTypes[product->type]);
+  }
+  PetscCall(MatSetSizes(C, m, n, m, n));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATSEQDENSE, &cisdense));
+  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(C));
+
+  PetscCallCXX(product->data = new MatProductCtx_SeqAIJKokkosDense());
+  product->destroy       = MatProductCtxDestroy_SeqAIJKokkosDense;
+  C->ops->productnumeric = MatProductNumeric_SeqAIJKokkos_SeqDense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ_SeqDense(Mat);
+
 /* handles sparse matrix matrix ops */
 static PetscErrorCode MatProductSetFromOptions_SeqAIJKokkos(Mat mat)
 {
-  Mat_Product *product = mat->product;
-  PetscBool    Biskok = PETSC_FALSE, Ciskok = PETSC_TRUE;
+  Mat_Product *product  = mat->product;
+  PetscBool    Bisdense = PETSC_FALSE, Biskok = PETSC_FALSE, Ciskok = PETSC_TRUE;
 
   PetscFunctionBegin;
   MatCheckProduct(mat, 1);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)product->B, MATSEQDENSE, &Bisdense));
+  if (Bisdense) {
+    switch (product->type) {
+    case MATPRODUCT_AB:
+    case MATPRODUCT_AtB:
+      mat->ops->productsymbolic = MatProductSymbolic_SeqAIJKokkos_SeqDense;
+      break;
+    default: /* ABt, PtAP and RARt use the CPU kernels, which sync A's values to host via MatSeqAIJGetArrayRead() */
+      PetscCall(MatProductSetFromOptions_SeqAIJ_SeqDense(mat));
+      break;
+    }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATSEQAIJKOKKOS, &Biskok));
   if (product->type == MATPRODUCT_ABC) PetscCall(PetscObjectTypeCompare((PetscObject)product->C, MATSEQAIJKOKKOS, &Ciskok));
   if (Biskok && Ciskok) {
@@ -1477,6 +1659,13 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_SeqAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", MatSetValuesCOO_SeqAIJKokkos));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdense_C", MatProductSetFromOptions_SeqAIJKokkos));
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdensecuda_C", MatProductSetFromOptions_SeqAIJKokkos));
+#endif
+#if PetscDefined(HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijkokkos_seqdensehip_C", MatProductSetFromOptions_SeqAIJKokkos));
+#endif
 #if PetscDefined(HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijkokkos_hypre_C", MatConvert_AIJ_HYPRE));
 #endif
