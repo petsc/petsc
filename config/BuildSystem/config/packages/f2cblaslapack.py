@@ -53,7 +53,6 @@ class Configure(config.package.Package):
         make_target = 'blas_hlib lapack_hlib'
 
     libdir = self.libDir
-    confdir = self.confDir
 
     with open(os.path.join(self.packageDir,'tmpmakefile'),'w') as g:
       with open(os.path.join(self.packageDir,'makefile'),'r') as f:

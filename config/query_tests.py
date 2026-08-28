@@ -201,7 +201,7 @@ def get_gmakegentest_data(srcdir,testdir,petsc_dir,petsc_arch):
       startdir=os.path.abspath(os.curdir)
       os.chdir(petsc_dir)
       args='--petsc-dir='+petsc_dir+' --petsc-arch='+petsc_arch+' --testdir='+testdir+' --srcdir='+srcdir
-      buf = os.popen('config/gmakegentest.py '+args).read()
+      os.popen('config/gmakegentest.py '+args).read()
       os.chdir(startdir)
 
     fd = open(pkl_file, 'rb')
@@ -215,7 +215,6 @@ def walktree(top):
     """
     verbose = False
     dataDict = {}
-    alldatafiles = []
     for root, dirs, files in os.walk(top, topdown=False):
         if root == 'output': continue
         if '.dSYM' in root: continue

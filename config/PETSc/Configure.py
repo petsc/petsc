@@ -761,7 +761,6 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           break
       self.popLanguage()
       return name
-    langs = []
 
     self.addDefine('FUNCTION_NAME_C', getFunctionName('C'))
     if hasattr(self.compilers, 'CXX'):

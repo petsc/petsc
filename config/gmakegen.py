@@ -182,7 +182,6 @@ class Petsc(object):
               if not allmet:
                 dirs[:] = []
                 continue
-            allsource = []
             if root.find('/ftn/') > -1: nroot = ''.join(root.rsplit(pkg_arch + '/', 1))
             else: nroot = root
             def mkrel(src):

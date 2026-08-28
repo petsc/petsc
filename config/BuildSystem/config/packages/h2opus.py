@@ -67,10 +67,7 @@ class Configure(config.package.Package):
       nvopts = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       self.getExecutable(nvcc,getFullPath=1,resultName='systemNvcc',setMakeMacro=0)
-      if hasattr(self,'systemNvcc'):
-        nvccDir = os.path.dirname(self.systemNvcc)
-        cudaDir = os.path.split(nvccDir)[0]
-      else:
+      if not hasattr(self,'systemNvcc'):
         raise RuntimeError('Unable to locate CUDA NVCC compiler')
       with_gpu=True
 

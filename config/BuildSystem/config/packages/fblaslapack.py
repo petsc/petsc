@@ -26,7 +26,6 @@ class Configure(config.package.Package):
     import os
 
     libdir = self.libDir
-    confdir = self.confDir
     blasDir = self.packageDir
 
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')

@@ -153,7 +153,6 @@ class Installer(script.Script):
 
   def fixExamplesMakefile(self, src):
     '''Change ././${PETSC_ARCH} in makefile in root PETSc directory with ${PETSC_DIR}'''
-    lines   = []
     oldFile = open(src, 'r')
     alllines=oldFile.read()
     oldFile.close()
