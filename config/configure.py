@@ -36,21 +36,21 @@ def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
     if name.find(' ') >= 0:
-      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.');
+      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.')
     if name.find('_') >= 0:
       exception = False
       for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t','scikit_build_core', 'fenics_ffcx']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:
-        raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'));
+        raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'))
     if opt.find('=') >=0:
       optval = opt.split('=')[1]
       if optval == 'ifneeded':
-        raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+        raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'))
     for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist']:
       if name.find(exc.replace('_','-')) > -1:
-        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc));
+        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc))
   return
 
 def check_for_unsupported_combinations(opts):
