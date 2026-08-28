@@ -322,13 +322,17 @@ if __name__ ==  '__main__':
             print(str(key)+' '+str(rdict.getType(key)))
       elif action == 'clear':
         print('Clearing dictionary')
-        RDict().clear()
+        rdict = RDict()
+        rdict.clear()
+        rdict.save()
       elif action == 'insert':
         rdict = RDict()
         rdict[sys.argv[2]] = sys.argv[3]
+        rdict.save()
       elif action == 'remove':
         rdict = RDict()
         del rdict[sys.argv[2]]
+        rdict.save()
       else:
         sys.exit('Unknown action: '+action)
   except Exception as e:
