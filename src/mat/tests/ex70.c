@@ -198,7 +198,7 @@ int main(int argc, char **args)
   char         mattype[256];
   PetscBool    flg, symm = PETSC_FALSE, testtt = PETSC_TRUE, testnest = PETSC_TRUE, testtranspose = PETSC_TRUE, testcircular = PETSC_FALSE, local = PETSC_TRUE;
   PetscBool    testhtranspose = PETSC_FALSE; /* Hermitian transpose is not handled correctly and generates an error */
-  PetscBool    xgpu = PETSC_FALSE, bgpu = PETSC_FALSE, testshellops = PETSC_FALSE, testproj = PETSC_TRUE, testrart = PETSC_TRUE, testmatmatt = PETSC_TRUE, testmattmat = PETSC_TRUE, formt = PETSC_FALSE;
+  PetscBool    xgpu = PETSC_FALSE, bgpu = PETSC_FALSE, testshellops = PETSC_FALSE, testproj = PETSC_TRUE, testrart = PETSC_TRUE, testmatmatt = PETSC_TRUE, testmattmat = PETSC_TRUE, formt = PETSC_FALSE, testreusemodified = PETSC_FALSE;
   PetscScalar *dataX = NULL, *dataB = NULL, *dataR = NULL, *dataBt = NULL;
   PetscScalar *aX, *aB, *aBt;
   PetscReal    err;
@@ -225,6 +225,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-xgpu", &xgpu, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-bgpu", &bgpu, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-A_form_explicit_transpose", &formt, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-testreusemodified", &testreusemodified, NULL));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-magic_number", &MAGIC_NUMBER, NULL));
   if (M != N) testproj = PETSC_FALSE;
 
@@ -426,6 +427,19 @@ int main(int argc, char **args)
       PetscCall(MatView(T, NULL));
       PetscCall(MatDestroy(&T));
     }
+  }
+
+  /* Test that MAT_REUSE_MATRIX computes with the current values of A after they have been changed */
+  if (testreusemodified) {
+    Mat E;
+
+    PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
+    PetscCall(MatScale(A, 2.0));
+    PetscCall(MatTransposeMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &E));
+    PetscCall(MatTransposeMatMultEqual(A, X, E, 10, &flg));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage after MatScale() (MatTransposeMat)\n"));
+    PetscCall(MatScale(A, 0.5));
+    PetscCall(MatDestroy(&E));
   }
 
   /* Test projection operations (PtAP and RARt) */
@@ -800,6 +814,25 @@ int main(int argc, char **args)
     requires: kokkos_kernels
     suffix: 1_par_kokkos
     args: -local {{0 1}} -testmatmatt 0 -A_mat_type aijkokkos -testrart 0
+
+  # MatCreateMAIJ() converts its result to MATAIJKOKKOS or MATAIJCUSPARSE, so the MAIJ matrix
+  # cached by MatTransposeMatMultSymbolic_MPIAIJ_MPIDense() holds a copy of A that goes stale
+  # when A's values change before a MAT_REUSE_MATRIX product
+  test:
+    output_file: output/empty.out
+    nsize: 2
+    requires: kokkos_kernels
+    suffix: 1_par_kokkos_reuse
+    args: -testmatmatt 0 -A_mat_type aijkokkos -testrart 0 -testreusemodified
+    TODO: MATPRODUCT_AtB with MATMPIAIJKOKKOS computes with stale values of A on MAT_REUSE_MATRIX
+
+  test:
+    output_file: output/empty.out
+    nsize: 2
+    requires: cuda
+    suffix: 1_par_cuda_reuse
+    args: -testnest 0 -testmatmatt 0 -matproduct_batch_size 3 -A_mat_type mpiaijcusparse -testreusemodified
+    TODO: MATPRODUCT_AtB with MATMPIAIJCUSPARSE computes with stale values of A on MAT_REUSE_MATRIX
 
   test:
     output_file: output/empty.out
