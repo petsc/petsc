@@ -1,4 +1,5 @@
 import config.package
+from config.utilities.parseVersion import parseVersion
 
 import os
 
@@ -45,7 +46,7 @@ class Configure(config.package.Package):
     '''Find a MATLAB installation and check if it can work with PETSc'''
     import re
 
-    versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
+    versionPattern = re.compile(r'Version ([0-9]+\.[0-9]+)')
     for matlab in self.generateGuesses():
       self.log.write('Testing MATLAB at '+matlab+'\n')
       interpreter = os.path.join(matlab,'bin','matlab')
@@ -60,9 +61,9 @@ class Configure(config.package.Package):
         continue
 
       match  = versionPattern.search(output)
-      r = float(match.group(1))
-      if r < 6.0:
-        self.log.write('WARNING: MATLAB version must be at least 6; yours is '+str(r))
+      r = match.group(1)
+      if parseVersion(r) < parseVersion('6'):
+        self.log.write('WARNING: MATLAB version must be at least 6; yours is '+r)
         continue
       # make sure this is true root of MATLAB
       if not os.path.isdir(os.path.join(matlab,'extern','lib')):

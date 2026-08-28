@@ -1,5 +1,6 @@
 import config.base
 import config
+from config.utilities.parseVersion import parseVersion
 import os
 import contextlib
 from functools import reduce
@@ -356,7 +357,7 @@ class Configure(config.base.Configure):
     if not strmatch:
       if log: log.write('Unable to parse the version of the GNU compiler '+compiler+' from: '+output+'\n')
       return None
-    version = tuple(int(v) for v in strmatch.group(1).split('.'))
+    version = parseVersion(strmatch.group(1)).release
     version = version + (0,)*(3-len(version))
     if log: log.write('Detected GNU compiler version '+'.'.join(map(str,version))+'\n')
     return version
@@ -579,8 +580,7 @@ class Configure(config.base.Configure):
         isDarwin_value = True
         import platform
         try:
-          v = tuple([int(a) for a in platform.mac_ver()[0].split('.')])
-          if v >= (10,15,0):
+          if parseVersion(platform.mac_ver()[0]) >= parseVersion('10.15'):
             if log: log.write('Detected Darwin/macOS Catalina OS\n')
             isDarwinCatalina_value = True
         except:
