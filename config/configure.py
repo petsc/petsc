@@ -213,13 +213,14 @@ def chkwincompilerusinglink():
   return 0
 
 def chkdosfiles():
-  # cygwin - but not a hg clone - so check one of files in bin dir
-  if b"\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
-    print('===============================================================================')
-    print(' *** Scripts are in DOS mode. Was winzip used to extract PETSc sources?    ****')
-    print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
-    print('===============================================================================')
-    sys.exit(3)
+  # Sources extracted on Windows can end up with DOS line endings; sample one of the bin scripts
+  with open(os.path.join('lib','petsc','bin','petscmpiexec'),'rb') as f:
+    if b"\r\n" in f.read():
+      print('===============================================================================')
+      print(' *** Scripts are in DOS mode. Was winzip used to extract PETSc sources?    ****')
+      print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
+      print('===============================================================================')
+      sys.exit(3)
   return
 
 def chkcygwinlink():
