@@ -503,7 +503,6 @@ def petsc_configure(configure_options):
   else:
     print(se)
     traceback.print_tb(tbo)
-  if hasattr(framework,'log'): framework.log.close()
 
 if __name__ == '__main__':
   petsc_configure([])
