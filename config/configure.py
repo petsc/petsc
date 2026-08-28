@@ -16,7 +16,6 @@ if sys.version_info < (3,6):
   print('*'*banner_length)
   sys.exit(4)
 
-extraLogs     = []
 petsc_arch    = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
@@ -254,24 +253,6 @@ def chkusingwindowspython():
     sys.exit(3)
   return 0
 
-def chkcygwinpython():
-  if sys.platform == 'cygwin' :
-    import platform
-    import re
-    r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
-    m=r.match(platform.release())
-    major=int(m.group(1))
-    minor=int(m.group(2))
-    subminor=int(m.group(3))
-    if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor < 34)):
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
-===============================================================================
-** Cygwin version is older than 1.7.34. Python threads do not work correctly. ***
-** Disabling thread usage for this run of ./configure *******
-===============================================================================''')
-  return 0
-
 def chkcygwinwindowscompilers():
   ''' Converts Microsoft and Intel Windows compilers to PETSc script using win32fe'''
   if os.path.exists('/usr/bin/cygcheck.exe'):
@@ -290,24 +271,6 @@ def chkcygwinwindowscompilers():
         if option.endswith('='+i):
           sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win32fe_'+i)
           break
-  return 0
-
-def chkrhl9():
-  if os.path.exists('/etc/redhat-release'):
-    try:
-      file = open('/etc/redhat-release','r')
-      buf = file.read()
-      file.close()
-    except:
-      # can't read file - assume dangerous RHL9
-      buf = 'Shrike'
-    if buf.find('Shrike') > -1:
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
-==============================================================================
-   *** RHL9 detected. Threads do not work correctly with this distribution ***
-   ****** Disabling thread usage for this run of ./configure *********
-===============================================================================''')
   return 0
 
 def chktmpnoexec():
@@ -440,12 +403,8 @@ def petsc_configure(configure_options):
     msg = logger.build_multiline_error_message('ERROR in COMMAND LINE ARGUMENT to ./configure', str(e))
     sys.exit(msg)
   chkbrokencygwin()
-  # Disable threads on RHL9
-  chkrhl9()
   # Make sure cygwin-python is used on windows
   chkusingwindowspython()
-  # Threads don't work for cygwin & python...
-  chkcygwinpython()
   chkcygwinlink()
   chkdosfiles()
   chkcygwinwindowscompilers()
@@ -467,7 +426,6 @@ def petsc_configure(configure_options):
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
     framework.logPrintBox('Configuring PETSc to compile on your system')
-    framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = pickle.dumps(framework)
