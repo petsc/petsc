@@ -29,7 +29,7 @@ def fixLang(lang):
     if enc: lv = lv+'.'+enc
     os.environ[lang] = lv
 
-fixLang('LC_LOCAL')
+fixLang('LC_ALL')
 fixLang('LANG')
 
 def check_for_option_mistakes(opts):
