@@ -888,7 +888,7 @@ static PetscErrorCode PCASMGetSubKSP_ASM(PC pc, PetscInt *n_local, PetscInt *fir
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
-  PetscCheck(osm->n_local_true >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
 
   if (n_local) *n_local = osm->n_local_true;
   if (first_local) {
