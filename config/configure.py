@@ -497,13 +497,13 @@ def petsc_configure(configure_options):
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
         traceback.print_tb(sys.exc_info()[2])
-      sys.exit(1)
     else:
       print(se)
       traceback.print_tb(tbo)
   else:
     print(se)
     traceback.print_tb(tbo)
+  sys.exit(1)
 
 if __name__ == '__main__':
   petsc_configure([])
