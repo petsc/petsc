@@ -375,6 +375,11 @@ int main(int argc, char **args)
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[5-9]/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
         args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_gen_non_hermitian -mat_type {{aij baij sbaij}shared output} -successive_solves -pc_hpddm_levels_1_st_pc_factor_mat_ordering_type rcm
       test:
+        suffix: geneo_block_splitting_cholesky
+        output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-15.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 29/Linear solve converged due to CONVERGED_RTOL iterations 11/g"
+        args: -pc_hpddm_coarse_p 2 -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_block_splitting -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_hermitian -mat_type sbaij -successive_solves -viewer_binary_skip_info
+      test:
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
         args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp -reset {{false true}shared output}
