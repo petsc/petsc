@@ -16,7 +16,6 @@ if sys.version_info < (3,6):
   print('*'*banner_length)
   sys.exit(4)
 
-extraLogs     = []
 petsc_arch    = ''
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
@@ -30,28 +29,28 @@ def fixLang(lang):
     if enc: lv = lv+'.'+enc
     os.environ[lang] = lv
 
-fixLang('LC_LOCAL')
+fixLang('LC_ALL')
 fixLang('LANG')
 
 def check_for_option_mistakes(opts):
   for opt in opts[1:]:
     name = opt.split('=')[0]
     if name.find(' ') >= 0:
-      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.');
+      raise ValueError('The option "'+name+'" has a space character in the name - this is likely incorrect usage.')
     if name.find('_') >= 0:
       exception = False
-      for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t','scikit_build_core', 'fenics_ffcx']:
+      for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist', 'PETSC_ARCH', 'PETSC_DIR', 'CXX_CXXFLAGS', 'LD_SHARED', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CUDAC_LINKER_FLAGS', 'HIPC_LINKER_FLAGS', 'SYCLC_LINKER_FLAGS', 'AR_FLAGS', 'C_VERSION', 'CXX_VERSION', 'FC_VERSION', 'CUDA_VERSION', 'HIP_VERSION', 'SYCL_VERSION', 'size_t', 'MPI_Comm','MPI_Fint','int64_t','scikit_build_core', 'fenics_ffcx']:
         if name.find(exc) >= 0:
           exception = True
       if not exception:
-        raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'));
+        raise ValueError('The option '+name+' should probably be '+name.replace('_', '-'))
     if opt.find('=') >=0:
       optval = opt.split('=')[1]
       if optval == 'ifneeded':
-        raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'));
+        raise ValueError('The option '+opt+' should probably be '+opt.replace('ifneeded', '1'))
     for exc in ['mkl_sparse', 'mkl_sparse_optimize', 'mkl_cpardiso', 'mkl_pardiso', 'superlu_dist']:
       if name.find(exc.replace('_','-')) > -1:
-        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc));
+        raise ValueError('The option '+opt+' should be '+opt.replace(exc.replace('_','-'),exc))
   return
 
 def check_for_unsupported_combinations(opts):
@@ -214,13 +213,14 @@ def chkwincompilerusinglink():
   return 0
 
 def chkdosfiles():
-  # cygwin - but not a hg clone - so check one of files in bin dir
-  if b"\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
-    print('===============================================================================')
-    print(' *** Scripts are in DOS mode. Was winzip used to extract PETSc sources?    ****')
-    print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
-    print('===============================================================================')
-    sys.exit(3)
+  # Sources extracted on Windows can end up with DOS line endings; sample one of the bin scripts
+  with open(os.path.join('lib','petsc','bin','petscmpiexec'),'rb') as f:
+    if b"\r\n" in f.read():
+      print('===============================================================================')
+      print(' *** Scripts are in DOS mode. Was winzip used to extract PETSc sources?    ****')
+      print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
+      print('===============================================================================')
+      sys.exit(3)
   return
 
 def chkcygwinlink():
@@ -254,24 +254,6 @@ def chkusingwindowspython():
     sys.exit(3)
   return 0
 
-def chkcygwinpython():
-  if sys.platform == 'cygwin' :
-    import platform
-    import re
-    r=re.compile("([0-9]+).([0-9]+).([0-9]+)")
-    m=r.match(platform.release())
-    major=int(m.group(1))
-    minor=int(m.group(2))
-    subminor=int(m.group(3))
-    if ((major < 1) or (major == 1 and minor < 7) or (major == 1 and minor == 7 and subminor < 34)):
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
-===============================================================================
-** Cygwin version is older than 1.7.34. Python threads do not work correctly. ***
-** Disabling thread usage for this run of ./configure *******
-===============================================================================''')
-  return 0
-
 def chkcygwinwindowscompilers():
   ''' Converts Microsoft and Intel Windows compilers to PETSc script using win32fe'''
   if os.path.exists('/usr/bin/cygcheck.exe'):
@@ -290,24 +272,6 @@ def chkcygwinwindowscompilers():
         if option.endswith('='+i):
           sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win32fe_'+i)
           break
-  return 0
-
-def chkrhl9():
-  if os.path.exists('/etc/redhat-release'):
-    try:
-      file = open('/etc/redhat-release','r')
-      buf = file.read()
-      file.close()
-    except:
-      # can't read file - assume dangerous RHL9
-      buf = 'Shrike'
-    if buf.find('Shrike') > -1:
-      sys.argv.append('--useThreads=0')
-      extraLogs.append('''\
-==============================================================================
-   *** RHL9 detected. Threads do not work correctly with this distribution ***
-   ****** Disabling thread usage for this run of ./configure *********
-===============================================================================''')
   return 0
 
 def chktmpnoexec():
@@ -332,7 +296,6 @@ def chktmpnoexec():
   return
 
 def check_cray_modules():
-  import script
   '''For Cray systems check if the cc, CC, ftn compiler suite modules have been set'''
   cray = os.getenv('CRAY_SITE_LIST_DIR')
   if not cray: return
@@ -419,8 +382,6 @@ def petsc_configure(configure_options):
   sys.path.insert(0, bsDir)
   sys.path.insert(0, configDir)
   import logger
-  import config.base
-  import config.framework
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
@@ -440,12 +401,8 @@ def petsc_configure(configure_options):
     msg = logger.build_multiline_error_message('ERROR in COMMAND LINE ARGUMENT to ./configure', str(e))
     sys.exit(msg)
   chkbrokencygwin()
-  # Disable threads on RHL9
-  chkrhl9()
   # Make sure cygwin-python is used on windows
   chkusingwindowspython()
-  # Threads don't work for cygwin & python...
-  chkcygwinpython()
   chkcygwinlink()
   chkdosfiles()
   chkcygwinwindowscompilers()
@@ -461,13 +418,17 @@ def petsc_configure(configure_options):
   # Check Cray without modules
   check_cray_modules()
 
+  # Import BuildSystem only once sys.argv is final: script.py reads --useThreads when it is
+  # imported, so importing any earlier freezes the value before the options above are added
+  import config.base
+  import config.framework
+
   tbo = None
   framework = None
   try:
     framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=config.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
     framework.logPrintBox('Configuring PETSc to compile on your system')
-    framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = pickle.dumps(framework)
@@ -536,14 +497,13 @@ def petsc_configure(configure_options):
       except Exception as e:
         print('Error printing error message from exception or printing the traceback:'+str(e))
         traceback.print_tb(sys.exc_info()[2])
-      sys.exit(1)
     else:
       print(se)
       traceback.print_tb(tbo)
   else:
     print(se)
     traceback.print_tb(tbo)
-  if hasattr(framework,'log'): framework.log.close()
+  sys.exit(1)
 
 if __name__ == '__main__':
   petsc_configure([])
