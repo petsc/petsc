@@ -86,12 +86,8 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
   PetscReal    dp = 0.0, nr, nt, rho;
   Vec          X, B, R, V, T;
   Vec         *G = idr->GG, *U = idr->UU, *P = idr->PP;
-  PetscBool    diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;
   R  = idr->r;

@@ -45,8 +45,6 @@ struct _p_PC {
   PetscInt  setfromoptionscalled;
   PetscBool erroriffailure; /* Generate an error if FPE detected (for example a zero pivot) instead of returning*/
   Mat       mat, pmat;
-  Vec       diagonalscaleright, diagonalscaleleft; /* used for time integration scaling */
-  PetscBool diagonalscale;
 
   PetscObjectParameterDeclare(PetscBool, useAmat); /* used by several PC that including applying the operator inside the preconditioner */
 

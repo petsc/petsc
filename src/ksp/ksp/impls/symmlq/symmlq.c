@@ -21,12 +21,8 @@ static PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
   Vec         X, B, R, Z, U, V, W, UOLD, VOLD, Wbar;
   Mat         Amat, Pmat;
   KSP_SYMMLQ *symmlq = (KSP_SYMMLQ *)ksp->data;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X    = ksp->vec_sol;
   B    = ksp->vec_rhs;
   R    = ksp->work[0];

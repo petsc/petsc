@@ -220,7 +220,6 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   KSP_HPDDM              *data = (KSP_HPDDM *)ksp->data;
   KSPConvergedDefaultCtx *ctx  = (KSPConvergedDefaultCtx *)ksp->cnvP;
   const PetscInt          N    = data->op->getDof() * n;
-  PetscBool               flg;
 #if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
@@ -248,8 +247,6 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   std::initializer_list<std::string>::const_iterator it   = std::find(list.begin(), list.end(), std::string(vtype));
   PetscCheck(type != PETSC_MEMTYPE_HOST || it == list.end(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "MatGetVecType() must return a Vec with the same PetscMemType as the right-hand side and solution, PetscMemType(%s) != %s", vtype, PetscMemTypeToString(type));
 #endif
-  PetscCall(PCGetDiagonalScale(ksp->pc, &flg));
-  PetscCheck(!flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (n > 1) {
     if (ksp->converged == KSPConvergedDefault) {
       PetscCheck(!ctx->mininitialrtol, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support KSPConvergedDefaultSetUMIRNorm()", ((PetscObject)ksp)->type_name);

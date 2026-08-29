@@ -353,13 +353,9 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR *)ksp->data;
   Mat            A;
-  PetscBool      diagonalscale;
   const PetscInt nworkstd = 5;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   PetscCall(KSPGetOperators(ksp, &A, NULL));
 
   /* Allocate "standard" work vectors */

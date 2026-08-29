@@ -43,7 +43,7 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
   PetscReal       dp = 0.0;
   Vec             X, B, R, RT, W, WT, P, S, ST, U, UT, PRTST[3];
   Mat             Amat, Pmat;
-  PetscBool       diagonalscale, rc_w_q = prcg->rc_w_q;
+  PetscBool       rc_w_q = prcg->rc_w_q;
 
   /* note that these are pointers to entries of muldelgam, different than nu */
   mu_p    = &mudelgam[0];
@@ -51,9 +51,6 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
   gamma_p = &mudelgam[2];
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;
   R  = ksp->work[0];

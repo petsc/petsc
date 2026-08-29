@@ -33,12 +33,8 @@ static PetscErrorCode KSPSolve_LCD(KSP ksp)
   Vec         X, B, R, Z;
   KSP_LCD    *lcd;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   lcd   = (KSP_LCD *)ksp->data;
   X     = ksp->vec_sol;
   B     = ksp->vec_rhs;

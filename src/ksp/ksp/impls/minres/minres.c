@@ -97,7 +97,6 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   Mat          Amat;
   Vec          X, B, R1, R2, R3, V, W, WL, WL2, XL2, RN;
   PetscReal    alpha, beta, beta1, betan, betal;
-  PetscBool    diagonalscale;
   PetscReal    zero = 0.0, dbar, dltan = 0.0, dlta, cs = -1.0, sn = 0.0, epln, eplnn = 0.0, gbar, dlta_QLP;
   PetscReal    gamal3 = 0.0, gamal2 = 0.0, gamal = 0.0, gama = 0.0, gama_tmp;
   PetscReal    taul2 = 0.0, taul = 0.0, tau = 0.0, phi, phi0, phir;
@@ -114,9 +113,6 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(QLPCitation, &QLPcite));
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   eigs          = ksp->calc_sings;
   stored_max_it = ksp->max_it;
   if (eigs) {
@@ -484,14 +480,10 @@ static PetscErrorCode KSPSolve_MINRES_OLD(KSP ksp)
   Vec               X, B, R, Z, U, V, W, UOLD, VOLD, WOLD, WOOLD;
   Mat               Amat;
   KSP_MINRES       *minres = (KSP_MINRES *)ksp->data;
-  PetscBool         diagonalscale;
   PetscInt          stored_max_it, eigs;
   PetscScalar      *e = NULL, *d = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X     = ksp->vec_sol;
   B     = ksp->vec_rhs;
   R     = ksp->work[0];

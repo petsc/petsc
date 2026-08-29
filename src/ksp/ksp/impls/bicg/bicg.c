@@ -10,16 +10,12 @@ static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 static PetscErrorCode KSPSolve_BiCG(KSP ksp)
 {
   PetscInt    i;
-  PetscBool   diagonalscale;
   PetscScalar dpi, a = 1.0, beta, betaold = 1.0, b, ma;
   PetscReal   dp;
   Vec         X, B, Zl, Zr, Rl, Rr, Pl, Pr;
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;
   Rl = ksp->work[0];

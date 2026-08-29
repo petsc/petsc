@@ -19,15 +19,12 @@ static PetscErrorCode KSPCGSolve_STCG(KSP ksp)
   PetscReal   alpha, beta, kappa, rz, rzm1;
   PetscReal   rr, r2, step;
   PetscInt    max_cg_its;
-  PetscBool   diagonalscale;
 
   /***************************************************************************/
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCheck(cg->radius >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
   /***************************************************************************/

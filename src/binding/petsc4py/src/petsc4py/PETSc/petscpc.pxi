@@ -180,11 +180,6 @@ cdef extern from * nogil:
 
     PetscErrorCode PCComputeExplicitOperator(PetscPC, PetscMat*)
 
-    PetscErrorCode PCDiagonalScale(PetscPC, PetscBool*)
-    PetscErrorCode PCDiagonalScaleLeft(PetscPC, PetscVec, PetscVec)
-    PetscErrorCode PCDiagonalScaleRight(PetscPC, PetscVec, PetscVec)
-    PetscErrorCode PCDiagonalScaleSet(PetscPC, PetscVec)
-
     PetscErrorCode PCBJacobiGetSubKSP(PetscPC, PetscInt*, PetscInt*, PetscKSP*[])
 
     PetscErrorCode PCASMSetType(PetscPC, PetscPCASMType)

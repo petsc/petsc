@@ -24,12 +24,8 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp)
   PetscReal   dp = 0.0;
   Vec         X, B, Z, P, W, Q, U, M, N, R, S;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   X = ksp->vec_sol;
   B = ksp->vec_rhs;
   R = ksp->work[0];

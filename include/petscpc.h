@@ -130,15 +130,6 @@ PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PCComputeOperator()", ) static inline Petsc
 
 PETSC_EXTERN PetscErrorCode PCSetPostSetUp(PC, PetscErrorCode (*)(PC));
 
-/*
-      These are used to provide extra scaling of preconditioned
-   operator for time-stepping schemes like in SUNDIALS
-*/
-PETSC_EXTERN PetscErrorCode PCGetDiagonalScale(PC, PetscBool *);
-PETSC_EXTERN PetscErrorCode PCDiagonalScaleLeft(PC, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PCDiagonalScaleRight(PC, Vec, Vec);
-PETSC_EXTERN PetscErrorCode PCSetDiagonalScale(PC, Vec);
-
 PETSC_EXTERN PetscErrorCode PCSetDM(PC, DM);
 PETSC_EXTERN PetscErrorCode PCGetDM(PC, DM *);
 

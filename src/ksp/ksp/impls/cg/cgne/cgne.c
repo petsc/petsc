@@ -46,11 +46,9 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
   Vec         X, B, Z, R, P, T;
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale, transpose_pc;
+  PetscBool   transpose_pc;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCall(PCApplyTransposeExists(ksp->pc, &transpose_pc));
 
   cg            = (KSP_CG *)ksp->data;

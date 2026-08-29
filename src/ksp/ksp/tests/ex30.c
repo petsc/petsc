@@ -33,7 +33,7 @@ int main(int argc, char **args)
   PetscBool   outputSoln = PETSC_FALSE;
   PetscInt    its, num_numfac;
   PetscReal   rnorm, enorm;
-  PetscBool   preload = PETSC_TRUE, diagonalscale, isSymmetric, ckrnorm = PETSC_TRUE, Test_MatDuplicate = PETSC_FALSE, ckerror = PETSC_FALSE;
+  PetscBool   preload = PETSC_TRUE, isSymmetric, ckrnorm = PETSC_TRUE, Test_MatDuplicate = PETSC_FALSE, ckerror = PETSC_FALSE;
   PetscMPIInt rank;
   PetscScalar sigma;
   PetscInt    m;
@@ -242,29 +242,6 @@ int main(int argc, char **args)
     */
     PetscCall(KSPSetUp(ksp));
     PetscCall(KSPSetUpOnBlocks(ksp));
-
-    /*
-     Tests "diagonal-scaling of preconditioned residual norm" as used
-     by many ODE integrator codes including SUNDIALS. Note this is different
-     than diagonally scaling the matrix before computing the preconditioner
-    */
-    diagonalscale = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-diagonal_scale", &diagonalscale, NULL));
-    if (diagonalscale) {
-      PC       pc;
-      PetscInt j, start, end, n;
-      Vec      scale;
-
-      PetscCall(KSPGetPC(ksp, &pc));
-      PetscCall(VecGetSize(x, &n));
-      PetscCall(VecDuplicate(x, &scale));
-      PetscCall(VecGetOwnershipRange(scale, &start, &end));
-      for (j = start; j < end; j++) PetscCall(VecSetValue(scale, j, ((PetscReal)(j + 1)) / ((PetscReal)n), INSERT_VALUES));
-      PetscCall(VecAssemblyBegin(scale));
-      PetscCall(VecAssemblyEnd(scale));
-      PetscCall(PCSetDiagonalScale(pc, scale));
-      PetscCall(VecDestroy(&scale));
-    }
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Solve system
