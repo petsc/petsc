@@ -4,7 +4,6 @@ import os
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from collections import defaultdict
 
 SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 
@@ -183,7 +182,6 @@ class Petsc(object):
               if not allmet:
                 dirs[:] = []
                 continue
-            allsource = []
             if root.find('/ftn/') > -1: nroot = ''.join(root.rsplit(pkg_arch + '/', 1))
             else: nroot = root
             def mkrel(src):

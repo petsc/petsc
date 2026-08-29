@@ -122,9 +122,7 @@ class Configure(config.package.CMakePackage):
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        carg = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
-       prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
-       prefix = os.path.join(self.petscdir.dir,self.arch)
        carg = ''
 
     self.addPost(os.path.join(self.packageDir,'petsc-build'), [carg + ' ' + self.cmake.cmake + ' .. ' + args, self.make.make_jnp + '  ' + self.makerulename,

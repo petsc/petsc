@@ -1,5 +1,4 @@
 import config.base
-import os
 
 class Configure(config.base.Configure):
   def __init__(self, framework):

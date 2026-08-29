@@ -751,7 +751,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       else:
         argDB.update(child.subst)
         argDB.update(dict(map(lambda k: (k, self.argDB[child.argSubst[k]]), child.argSubst)))
-    self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict with parent '+str(argDB.parentDirectory))
+    self.actions.addArgument('Framework', 'RDict update', 'Substitutions were stored in RDict')
     return
 
   def outputDefine(self, f, name, value = None, condition = None):
@@ -900,14 +900,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Write the make configuration header (bmake file)'''
     if hasattr(name, 'close'):
       f = name
-      filename = 'Unknown'
     else:
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
       f = open(name, 'w')
-      filename = os.path.basename(name)
     self.outputMakeMacros(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeMacros(f, child)
@@ -930,14 +928,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Write the make configuration header (bmake file)'''
     if hasattr(name, 'close'):
       f = name
-      filename = 'Unknown'
     else:
       dir = os.path.dirname(name)
       if dir and not os.path.exists(dir):
         os.makedirs(dir)
       if self.file_create_pause: time.sleep(1)
       f = open(name, 'w')
-      filename = os.path.basename(name)
     self.outputMakeRules(f, self)
     for child in self.childGraph.vertices:
       self.outputMakeRules(f, child)

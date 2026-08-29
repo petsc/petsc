@@ -7,7 +7,7 @@ class DirectedGraph(object):
     self.vertices = []
     self.inEdges  = {}
     self.outEdges = {}
-    map(self.addVertex, vertices)
+    for vertex in vertices: self.addVertex(vertex)
     return
 
   def __len__(self):
@@ -17,8 +17,7 @@ class DirectedGraph(object):
     return 'DirectedGraph with '+str(len(self.vertices))+' vertices and '+str(reduce(lambda k,l: k+l, [len(edgeList) for edgeList in self.inEdges.values()], 0))+' edges'
 
   def addVertex(self, vertex):
-    '''Add a vertex if it does not already exist in the vertex list
-       - Should be able to use Set in Python 2.3'''
+    '''Add a vertex if it does not already exist in the vertex list'''
     if vertex is None: return
     if not vertex in self.vertices:
       self.vertices.append(vertex)
@@ -76,13 +75,13 @@ class DirectedGraph(object):
 
   def addSubgraph(self, graph):
     '''Add the vertices and edges of another graph into this one'''
-    map(self.addVertex, graph.vertices)
-    map(lambda v: self.addEdges(v, *graph.getEdges(v)), graph.vertices)
+    for vertex in graph.vertices: self.addVertex(vertex)
+    for vertex in graph.vertices: self.addEdges(vertex, *graph.getEdges(vertex))
     return
 
   def removeSubgraph(self, graph):
     '''Remove the vertices and edges of a subgraph, and all the edges connected to it'''
-    map(self.removeVertex, graph.vertices)
+    for vertex in list(graph.vertices): self.removeVertex(vertex)
     return
 
   def printIndent(self, indent):
@@ -93,21 +92,22 @@ class DirectedGraph(object):
     print('I am a DirectedGraph with '+str(len(self.vertices))+' vertices')
     for vertex in DirectedGraph.breadthFirstSearch(self):
       self.printIndent(vertex.__level)
-      print('('+str(self.vertices.index(vertex))+') '+str(vertex.__class__.__module__)+' in: '+str(map(self.vertices.index, self.inEdges[vertex]))+' out: '+str(map(self.vertices.index, self.outEdges[vertex])))
+      print('('+str(self.vertices.index(vertex))+') '+str(vertex.__class__.__module__)+' in: '+str(list(map(self.vertices.index, self.inEdges[vertex])))+' out: '+str(list(map(self.vertices.index, self.outEdges[vertex]))))
     return
 
   def appendGraph(self, graph):
     '''Join every leaf of this graph to every root of the input graph, leaving the result in this graph'''
     leaves = DirectedGraph.getLeaves(self)
     self.addSubgraph(graph)
-    map(lambda v: self.addEdges(v, outputs = DirectedGraph.getRoots(graph)), leaves)
+    roots = DirectedGraph.getRoots(graph)
+    for vertex in leaves: self.addEdges(vertex, outputs = roots)
     return self
 
   def prependGraph(self, graph):
     '''Join every leaf of the input graph to every root of this graph, leaving the result in this graph'''
     roots = DirectedGraph.getRoots(self)
     self.addSubgraph(graph)
-    map(lambda v: self.addEdges(v, outputs = roots), DirectedGraph.getLeaves(graph))
+    for vertex in DirectedGraph.getLeaves(graph): self.addEdges(vertex, outputs = roots)
     return self
 
   def getRoots(graph):

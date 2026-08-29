@@ -94,10 +94,7 @@ class Configure(config.package.Package):
       nvccflags = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       self.getExecutable(nvcc,getFullPath=1,resultName='systemNvcc')
-      if hasattr(self,'systemNvcc'):
-        nvccDir = os.path.dirname(self.systemNvcc)
-        cudaDir = os.path.split(nvccDir)[0]
-      else:
+      if not hasattr(self,'systemNvcc'):
         raise RuntimeError('Unable to locate CUDA NVCC compiler')
 
     hipccflags = ''
@@ -107,10 +104,7 @@ class Configure(config.package.Package):
       hipccflags = self.getCompilerFlags()
       self.popLanguage()
       self.getExecutable(hipcc,getFullPath=1,resultName='systemHipc')
-      if hasattr(self,'systemHipc'):
-        hipccDir = os.path.dirname(self.systemHipc)
-        hipDir = os.path.split(hipccDir)[0]
-      else:
+      if not hasattr(self,'systemHipc'):
         raise RuntimeError('Unable to locate HIP compiler')
 
     cflags += ' -DNDEBUG'

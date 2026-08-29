@@ -1,7 +1,6 @@
 import config.base
 import os
 import re
-import nargs
 
 re_win32fe_cl    = re.compile(r'win32fe[\s_]+cl')
 re_win32fe_icl   = re.compile(r'win32fe[\s_]+ic[lx]')

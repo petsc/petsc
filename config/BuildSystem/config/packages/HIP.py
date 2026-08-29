@@ -154,7 +154,6 @@ class Configure(config.package.Package):
     if self.platform in ['nvcc','nvidia']:
       self.pushLanguage('CUDA')
       petscNvcc = self.getCompiler()
-      cudaFlags = self.getCompilerFlags()
       self.popLanguage()
       self.getExecutable(petscNvcc,getFullPath=1,resultName='systemNvcc')
       if hasattr(self,'systemNvcc'):

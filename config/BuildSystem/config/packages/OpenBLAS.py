@@ -105,7 +105,6 @@ class Configure(config.package.Package):
     cmdline += " shared "
 
     self.include = [os.path.join(self.installDir,'include')]
-    libdir = self.libDir
     blasDir = self.packageDir
 
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')

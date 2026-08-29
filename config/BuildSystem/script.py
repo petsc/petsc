@@ -98,16 +98,6 @@ class Script(logger.Logger):
     return
 
   @staticmethod
-  def importModule(moduleName):
-    '''Import the named module, and return the module object
-       - Works properly for fully qualified names'''
-    module     = __import__(moduleName)
-    components = moduleName.split('.')
-    for comp in components[1:]:
-      module = getattr(module, comp)
-    return module
-
-  @staticmethod
   def runShellCommand(command, log=None, cwd=None, env=None):
     return Script.runShellCommandSeq([command], log=log, cwd=cwd, env=env)
 

@@ -1338,7 +1338,7 @@ class Configure(config.base.Configure):
     if os.path.basename(compiler).startswith('mpi'):
       self.logPrint(' MPI compiler wrapper '+compiler+' failed to compile')
       try:
-        output = self.executeShellCommand(compiler + ' -show', log = self.log)[0]
+        self.executeShellCommand(compiler + ' -show', log = self.log)
       except RuntimeError:
         self.logPrint('-show option failed for MPI compiler wrapper '+compiler)
     self.logPrint(' MPI compiler wrapper '+compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
@@ -1950,7 +1950,7 @@ class Configure(config.base.Configure):
       # resulting yield throws some unrelated exception which is meant to be caught
       # outside this ctx manager then the flags and languages are still reset
       if lang:
-        oldLang = self.popLanguage()
+        self.popLanguage()
       setattr(self,flagsArg,oldCompilerFlags)
 
   def checkPragma(self):
@@ -2232,7 +2232,7 @@ class Configure(config.base.Configure):
     os.chdir(self.tmpDir)
     try:
       objName = 'checkRecipeArgfile.o'
-      obj = open(objName, 'a').close()
+      open(objName, 'a').close()
       argsName = 'checkRecipeArgfile.args'
       args = open(argsName, 'a')
       args.write(objName)
@@ -2524,7 +2524,6 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateDynamicLinkerGuesses():
       self.logPrint('Checking dynamic linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'dynamicLinker'):
-        flagsArg = self.getLinkerFlagsArg()
         goodFlags = list(filter(self.checkLinkerFlag, flags))
         self.dynamicLibraryFlags = goodFlags
         self.dynamicLibraryExt = ext

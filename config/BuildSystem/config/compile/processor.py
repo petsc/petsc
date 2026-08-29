@@ -17,16 +17,6 @@ class Processor(logger.Logger):
     self.targetExtension = targetExtension
     return
 
-  def copy(self, other):
-    other.language = self.language
-    other.name = self.name
-    other.flagsName = self.flagsName[:]
-    other.requiredFlags = self.requiredFlags[:]
-    other.outputFlag = self.outputFlag
-    other.sourceExtension = self.sourceExtension
-    other.targetExtension = self.targetExtension
-    return
-
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
     if hasattr(self, 'configCompilers'):

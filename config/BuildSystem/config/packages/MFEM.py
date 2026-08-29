@@ -94,7 +94,6 @@ class Configure(config.package.Package):
       if self.openmp.found:
         ldflags = ldflags.replace(self.openmp.ompflag,'')
 
-    makedepend = ''
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
@@ -158,10 +157,6 @@ class Configure(config.package.Package):
         slepclib = '-L'+prefix+'/lib -lslepc'
         slepcext = ''
         g.write('SLEPC_LIB = '+petscrpt+' '+slepclib+' '+slepcext+' $(PETSC_LIB)\n')
-        if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-          makedepend = 'slepc-install'
-        else:
-          makedepend = 'slepc-build'
       self.writeConfig(g, 'ceed', self.ceed)
       self.writeConfig(g, 'superlu', self.superlu_dist)
       self.writeConfig(g, 'netcdf', self.netcdf)

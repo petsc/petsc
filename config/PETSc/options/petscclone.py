@@ -1,6 +1,5 @@
 import config.base
 import os
-import re
 
 def noCheck(command, status, output, error):
   ''' Do no check result'''

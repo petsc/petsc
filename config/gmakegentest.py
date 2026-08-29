@@ -3,11 +3,9 @@
 import pickle
 import os,shutil, string, re
 import sys
-import logging, time
-import types
+import time
 import shlex
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from collections import defaultdict
 from gmakegen import *
 
 import inspect
@@ -632,7 +630,6 @@ class generateExamples(Petsc):
          convenient way
      All tests are *always* run, but some may be SKIP'd per the TAP standard
     """
-    debug=False
     rpath=self.srcrelpath(root)
     execname=self.getExecname(exfile,rpath)
     isBuilt=self._isBuilt(exfile,srcDict)
@@ -888,7 +885,6 @@ class generateExamples(Petsc):
      Go through and parse the source files in the directory to generate
      the examples based on the metadata contained in the source files
     """
-    debug=False
 
     data = {}
     for exfile in files:
@@ -991,12 +987,11 @@ class generateExamples(Petsc):
      executable which in turn will depend on src file
     """
     # Different options for how to set up the targets
-    compileExecsFirst=False
 
     # Open file
     with open(output, 'w') as fd:
       # Write out the sources
-      gendeps = self.gen_gnumake(fd)
+      self.gen_gnumake(fd)
 
       # Write out the tests and execname targets
       fd.write("\n#Tests and executables\n")    # Delimiter
@@ -1018,7 +1013,6 @@ class generateExamples(Petsc):
             basedir=os.path.dirname(ftest)
             testdir="${TESTDIR}/"+basedir+"/"
             nmtest=nameSpace(test,basedir)
-            rundir=os.path.join(testdir,test)
             script=test+".sh"
 
             # Deps
@@ -1027,7 +1021,6 @@ class generateExamples(Petsc):
             localexec=self.tests[pkg][lang][ftest]['exec']
             execname=os.path.join(testdir,localexec)
             fullscript=os.path.join(testdir,script)
-            tmpfile=os.path.join(testdir,test,test+".tmp")
 
             # *.counts depends on the script and either executable (will
             # be run) or the example source file (SKIP or TODO)

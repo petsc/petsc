@@ -35,9 +35,8 @@ TEST*/
 
 """
 
-import os, re, glob, types
+import os, re, glob
 import sys
-import logging
 from gmakegen import *
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
@@ -69,7 +68,6 @@ def _stripIndent(block,srcfile,entireBlock=False,fileNums=[]):
   Also strip of trailing whitespace
   """
   # The first entry should be test: but it might be indented.
-  ext = getlangext(srcfile)
   stripstr=" "
   if len(fileNums)>0: lineNum=fileNums[0]-1
   for lline in block.split("\n"):
@@ -146,7 +144,6 @@ def _getLoopVars(testDict):
   Given: dictionary that may have
   Return:  Variables that cause a test split
   """
-  vals=None
   loopVars={}
   loopVars['separate']=[]
   loopVars['shared']=[]
@@ -201,7 +198,6 @@ def _getVarVals(findvar,testDict):
     varset=testDict[findvar]
     keynm,save_vals,ftype=parseLoopArgs('nsize '+varset)
   else:
-    varlist=[]
     for varset in re.split('-(?=[a-zA-Z])',testDict['args']):
       if not varset.strip(): continue
       if '{{' not in varset: continue
@@ -486,7 +482,6 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
   if "\nbuild:" in newTestStr:
     testDict['build']={}
     # The file info is already here and need to append
-    Part1=newTestStr.split("build:")[1]
     fileInfo=re.split("\ntest(?:set)?:",newTestStr)[0]
     for bkey in buildkeys:
       if bkey+":" in fileInfo:
@@ -524,7 +519,6 @@ def parseTestFile(srcfile,verbosity):
   Parse single example files and return dictionary of the form:
     testDict[srcfile][test][subtest]
   """
-  debug=False
   basename=os.path.basename(srcfile)
   if basename=='makefile': return {}
 

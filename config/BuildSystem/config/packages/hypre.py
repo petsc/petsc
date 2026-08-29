@@ -95,7 +95,6 @@ class Configure(config.package.GNUPackage):
     devflags = ''
     hipbuild = False
     cudabuild = False
-    syclbuild = False
     hasharch = 'with-gpu-arch' in args
     if self.hip.found:
       stdflag  = '-std=c++17'
@@ -138,7 +137,6 @@ class Configure(config.package.GNUPackage):
       devflags += self.updatePackageCUDAFlags(self.getCompilerFlags()) + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.sycl.found:
-      syclbuild = True
       args.append('--with-sycl')
       # TODO: check if Hypre supports GPU-aware MPI with SYCL
       # args.append('--enable-gpu-aware-mpi')

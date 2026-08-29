@@ -53,12 +53,6 @@ class Linker(config.compile.processor.Processor):
     self.libraries  = sets.Set()
     return
 
-  def copy(self, other):
-    other.compiler = self.compiler
-    other.configLibraries = self.configLibraries
-    other.libraries = sets.Set(self.libraries)
-    return
-
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
     self.compiler.argDB                  = argDB
@@ -114,13 +108,6 @@ class SharedLinker(config.compile.processor.Processor):
     self.configLibraries.framework.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
-
-  def copy(self, other):
-    other.compiler = self.compiler
-    other.configLibraries = self.configLibraries
-    other.outputFlag = self.outputFlag
-    other.libraries = sets.Set(self.libraries)
-    return
 
   def getFlags(self):
     '''Returns a string with the flags specified for running this processor.'''

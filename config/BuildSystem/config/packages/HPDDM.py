@@ -36,18 +36,15 @@ class Configure(config.package.Package):
     import os
     if self.blasLapack.mkl and not self.blasLapack.mkl_spblas_h:
       raise RuntimeError('Cannot use HPDDM with the MKL as \'mkl_spblas.h\' was not found, check for missing --with-blaslapack-include=/opt/intel/mkl/include (or similar)')
-    buildDir = os.path.join(self.packageDir,'petsc-build')
     self.pushLanguage('Cxx')
     cxx = self.getCompiler()
     cxxflags = self.getCompilerFlags()
     self.popLanguage()
     if self.framework.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       PETSC_DIR  = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
-      PETSC_ARCH = ''
       prefix     = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
       PETSC_DIR  = self.petscdir.dir
-      PETSC_ARCH = self.arch
       prefix     = os.path.join(self.petscdir.dir,self.arch)
     incDir = os.path.join(prefix,'include')
     libDir = os.path.join(prefix,self.libDirs[0])

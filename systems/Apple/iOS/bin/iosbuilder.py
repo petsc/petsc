@@ -28,7 +28,7 @@ class PETScMaker(script.Script):
    import RDict
    import os
 
-   argDB = RDict.RDict(None, None, 0, 0, readonly = True)
+   argDB = RDict.RDict(load = 0, autoShutdown = 0, readonly = True)
    argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'lib','petsc','conf', 'RDict.db')
    argDB.load()
    script.Script.__init__(self, argDB = argDB)

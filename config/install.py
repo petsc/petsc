@@ -32,7 +32,7 @@ except NameError:
 class Installer(script.Script):
   def __init__(self, clArgs = None):
     import RDict
-    argDB = RDict.RDict(None, None, 0, 0, readonly = True)
+    argDB = RDict.RDict(load = 0, autoShutdown = 0, readonly = True)
     argDB.saveFilename = os.path.join(PETSC_DIR, PETSC_ARCH, 'lib','petsc','conf', 'RDict.db')
     argDB.load()
     script.Script.__init__(self, argDB = argDB)
@@ -153,7 +153,6 @@ class Installer(script.Script):
 
   def fixExamplesMakefile(self, src):
     '''Change ././${PETSC_ARCH} in makefile in root PETSc directory with ${PETSC_DIR}'''
-    lines   = []
     oldFile = open(src, 'r')
     alllines=oldFile.read()
     oldFile.close()

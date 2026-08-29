@@ -1071,8 +1071,6 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''Find an installation and check if it can work with PETSc'''
     self.log.write('==================================================================================\n')
     self.logPrint('Checking for a functional '+self.name)
-    foundLibrary = 0
-    foundHeader  = 0
 
     for location, directory, lib, incl in self.generateGuesses():
       #  directory is not used in the search, it is used only in logging messages about where the

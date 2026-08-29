@@ -35,7 +35,6 @@ class Configure(config.package.Package):
     libDir         = os.path.join(self.installDir, 'lib')
     includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(self.packageDir, 'make.inc')
-    installmakeinc = os.path.join(self.installDir, 'make.inc')
 
     g = open(makeinc,'w')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
