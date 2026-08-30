@@ -2277,9 +2277,19 @@ static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerSetUp(viewer));
     PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)A)->prefix, "-mat_is_view_variableblocksizes", &vbs, NULL));
     if (vbs) {
+      FILE       *info;
+      PetscMPIInt rank;
+      PetscBool   skipInfo;
+
       PetscCall(MatGetVariableBlockSizes(a->A, &lsize, &vblocks));
       PetscCall(PetscMPIIntCast(lsize, &size));
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &size, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)viewer)));
+      PetscCall(PetscViewerBinaryGetSkipInfo(viewer, &skipInfo));
+      if (!skipInfo) {
+        PetscCall(PetscViewerBinaryGetInfoPointer(viewer, &info));
+        PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+        if (rank == 0 && info) PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-mat_is_load_variableblocksizes\n"));
+      }
     } else {
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
     }
@@ -2408,18 +2418,22 @@ static PetscErrorCode MatLoad_IS(Mat A, PetscViewer viewer)
 {
   ISLocalToGlobalMapping rmap, cmap;
   MPI_Comm               comm = PetscObjectComm((PetscObject)A);
-  PetscBool              isbinary, samel, allow, isbaij;
+  PetscBool              isbinary, samel, allow, isbaij, loadvbs = PETSC_FALSE;
   PetscInt               tr[6], M, N, nr, nc, Asize, isn;
   const PetscInt        *idx;
   PetscMPIInt            size;
   char                   lmattype[64];
   Mat                    dA, lA;
-  IS                     is;
+  IS                     is, vbsis = NULL;
 
   PetscFunctionBegin;
   PetscCheckSameComm(A, 1, viewer, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCheck(isbinary, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Invalid viewer of type %s", ((PetscObject)viewer)->type_name);
+  PetscCall(PetscViewerSetUp(viewer));
+  PetscOptionsBegin(comm, NULL, "Options for loading MATIS matrices", "Mat");
+  PetscCall(PetscOptionsBool("-mat_is_load_variableblocksizes", "Set variable block sizes on the loaded MATIS local matrix", "MatLoad", loadvbs, &loadvbs, NULL));
+  PetscOptionsEnd();
 
   PetscCall(PetscViewerBinaryRead(viewer, tr, PETSC_STATIC_ARRAY_LENGTH(tr), NULL, PETSC_INT));
   PetscCheck(tr[0] == MAT_FILE_CLASSID, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Not a matrix next in file");
@@ -2467,7 +2481,8 @@ static PetscErrorCode MatLoad_IS(Mat A, PetscViewer viewer)
   nr = 0;
   for (PetscInt i = 0; i < isn; i++) nr += idx[i];
   PetscCall(ISRestoreIndices(is, &idx));
-  PetscCall(ISDestroy(&is));
+  if (loadvbs) vbsis = is;
+  else PetscCall(ISDestroy(&is));
   PetscCall(ISCreate(comm, &is));
   PetscCall(ISSetType(is, ISGENERAL));
   PetscCall(ISLoad(is, viewer));
@@ -2491,6 +2506,13 @@ static PetscErrorCode MatLoad_IS(Mat A, PetscViewer viewer)
   PetscCall(PetscStrcmpAny(lmattype, &isbaij, MATSBAIJ, MATSEQSBAIJ, ""));
   if (isbaij) PetscCall(MatSetOption(lA, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatConvert(lA, lmattype, MAT_INPLACE_MATRIX, &lA));
+  if (loadvbs) {
+    PetscCall(ISGetLocalSize(vbsis, &isn));
+    PetscCall(ISGetIndices(vbsis, &idx));
+    PetscCall(MatSetVariableBlockSizes(lA, isn, idx));
+    PetscCall(ISRestoreIndices(vbsis, &idx));
+    PetscCall(ISDestroy(&vbsis));
+  }
 
   /* check if we actually have repeated entries */
   if (allow) {
