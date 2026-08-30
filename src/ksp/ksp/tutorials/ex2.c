@@ -226,25 +226,25 @@ int main(int argc, char **args)
       args: -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebyshev -ksp_ksp_max_it 5 -ksp_ksp_chebyshev_esteig 0.9,0,0,1.1 -ksp_esteig_ksp_type cg -ksp_monitor
 
    test:
-      args: -ksp_monitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -m 5 -n 5 -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2
       nsize: 2
-      args: -ksp_monitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -m 5 -n 5 -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 3
-      args: -pc_type sor -pc_sor_symmetric -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type sor -pc_sor_symmetric -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 4
-      args: -pc_type eisenstat -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -pc_type eisenstat -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 5
       nsize: 2
-      args: -ksp_monitor -m 5 -n 5 -mat_view draw -ksp_gmres_cgs_refinement_type refine_always -nox
+      args: -ksp_monitor -m 5 -n 5 -mat_view draw -ksp_orthogonalization_cgs_refinement_type refine_always -nox
       output_file: output/ex2_2.out
 
    test:
@@ -319,7 +319,7 @@ int main(int argc, char **args)
 
    test:
       suffix: sell
-      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -m 9 -n 9 -mat_type sell
+      args: -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always -m 9 -n 9 -mat_type sell
 
    test:
       requires: mumps

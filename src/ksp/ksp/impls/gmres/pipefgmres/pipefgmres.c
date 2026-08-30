@@ -65,11 +65,14 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
   Q = VEC_Q;
   W = VEC_W;
 
-  /* Allocate memory for orthogonalization work (freed in the GMRES Destroy routine)*/
+  /* Allocate memory for orthogonalization work */
   /* Note that we add an extra value here to allow for a single reduction */
-  if (!pipefgmres->orthogwork) PetscCall(PetscMalloc1(pipefgmres->max_k + 2, &pipefgmres->orthogwork));
-  lhh = pipefgmres->orthogwork;
-
+  if (ksp->lorthogwork < pipefgmres->max_k + 2) {
+    PetscCall(PetscFree(ksp->orthogwork));
+    ksp->lorthogwork = pipefgmres->max_k + 2;
+    PetscCall(PetscMalloc1(ksp->lorthogwork, &ksp->orthogwork));
+  }
+  lhh = ksp->orthogwork;
   /* Number of pseudo iterations since last restart is the number
      of prestart directions */
   loc_it = 0;
@@ -578,13 +581,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->haptol         = 1.0e-30;
   pipefgmres->q_preallocate  = PETSC_FALSE;
   pipefgmres->delta_allocate = PIPEFGMRES_DELTA_DIRECTIONS;
-  pipefgmres->orthog         = NULL;
   pipefgmres->nrs            = NULL;
   pipefgmres->sol_temp       = NULL;
   pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
   pipefgmres->Rsvd           = NULL;
-  pipefgmres->orthogwork     = NULL;
-  pipefgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
   pipefgmres->shift          = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

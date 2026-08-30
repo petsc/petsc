@@ -375,7 +375,7 @@ test:
   suffix: 1
   nsize: 2
   args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres
-  args: -ksp_gmres_cgs_refinement_type refine_always -s2_ksp_type bcgs
+  args: -ksp_orthogonalization_cgs_refinement_type refine_always -s2_ksp_type bcgs
   args: -s2_pc_type jacobi -s2_ksp_monitor
   requires: x
 ```

@@ -209,6 +209,8 @@ Viewer (-ksp_view_preconditioned_operator_explicit) options:
   -ksp_check_norm_iteration: <now -1 : formerly -1>: First iteration to compute residual norm (KSPSetCheckNormIteration)
   -ksp_lag_norm: <now FALSE : formerly FALSE> Lag the calculation of the residual norm (KSPSetLagNorm)
   -ksp_constant_null_space: <now FALSE : formerly FALSE> Add constant null space to Krylov solver matrix (MatSetNullSpace)
+  -ksp_orthogonalization: <now cgs : formerly cgs> Orthogonalization method (choose one of) cgs mgs (KSPOrthogonalizationSet)
+  -ksp_orthogonalization_cgs_refinement_type: <now REFINE_NEVER : formerly REFINE_NEVER> Type of iterative refinement for classical (unmodified) Gram-Schmidt (choose one of) REFINE_NEVER REFINE_IFNEEDED REFINE_ALWAYS (KSPOrthogonalizationSetCGSRefinementType)
   -ksp_monitor_python: <now (null) : formerly (null)>: Use Python function (KSPMonitorSet)
   -ksp_monitor_lg_range: <now FALSE : formerly FALSE> Monitor graphically range of preconditioned residual norm (KSPMonitorSet)
 Viewer (-ksp_converged_rate) options:
@@ -242,10 +244,6 @@ Viewer (-ksp_view_eigenvalues_explicit) options:
   -ksp_gmres_haptol: <now 1e-30 : formerly 1e-30>: Tolerance for exact convergence (happy breakdown) (KSPGMRESSetHapTol)
   -ksp_gmres_breakdown_tolerance: <now 0.1 : formerly 0.1>: Divergence breakdown tolerance during GMRES restart (KSPGMRESSetBreakdownTolerance)
   -ksp_gmres_preallocate: <now FALSE : formerly FALSE> Preallocate Krylov vectors (KSPGMRESSetPreAllocateVectors)
-  Pick at most one of -------------
-    -ksp_gmres_classicalgramschmidt: classical (unmodified) Gram-Schmidt (fast) (KSPGMRESSetOrthogonalization)
-    -ksp_gmres_modifiedgramschmidt: modified Gram-Schmidt (slow, more stable) (KSPGMRESSetOrthogonalization)
-  -ksp_gmres_cgs_refinement_type: <now REFINE_NEVER : formerly REFINE_NEVER> Type of iterative refinement for classical (unmodified) Gram-Schmidt (choose one of) REFINE_NEVER REFINE_IFNEEDED REFINE_ALWAYS (KSPGMRESSetCGSRefinementType)
   -ksp_gmres_krylov_monitor: <now FALSE : formerly FALSE> Plot the Krylov directions (KSPMonitorSet)
 Preconditioner (PC) options:
   -pc_type <now icc : formerly icc>: Preconditioner (one of) nn tfs hmg bddc composite ksp lu icc patch bjacobi eisenstat deflation vpbjacobi redistribute sor mg pbjacobi cholesky mat qr svd fieldsplit mpi kaczmarz jacobi telescope redundant cp shell galerkin ilu exotic gasm gamg none lmvm asm lsc (PCSetType)

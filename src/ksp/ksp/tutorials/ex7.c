@@ -248,7 +248,7 @@ int main(int argc, char **args)
    test:
       suffix: 1
       nsize: 2
-      args: -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+      args: -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 
    test:
       suffix: 2

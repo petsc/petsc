@@ -187,11 +187,11 @@ program main
 
   PetscCallA(KSPSetUp(ksp, ierr))
 
-  ! Do not do this in application code, use -ksp_gmres_modifiedgramschmidt or -ksp_gmres_modifiedgramschmidt
+  ! Do not do this in application code, use -ksp_orthogonalization (mgs|cgs)
   if (orthog == 1) then
-    PetscCallA(KSPGMRESSetOrthogonalization(ksp, KSPGMRESModifiedGramSchmidtOrthogonalization, ierr))
+    PetscCallA(KSPOrthogonalizationSet(ksp, KSPOrthogonalizationModifiedGramSchmidt, ierr))
   else if (orthog == 2) then
-    PetscCallA(KSPGMRESSetOrthogonalization(ksp, KSPGMRESClassicalGramSchmidtOrthogonalization, ierr))
+    PetscCallA(KSPOrthogonalizationSet(ksp, KSPOrthogonalizationClassicalGramSchmidt, ierr))
   end if
 
   PetscCallA(KSPSolve(ksp, b, x, ierr))
@@ -359,17 +359,17 @@ end program main
 !/*TEST
 !
 !   test:
-!      args: -pc_type jacobi -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+!      args: -pc_type jacobi -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
-!      args: -pc_type jacobi -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol .000001
+!      args: -pc_type jacobi -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_rtol .000001
 !
 !   test:
 !      suffix: 5
 !      nsize: 2
-!      args: -ksp_gmres_cgs_refinement_type refine_always -ksp_monitor draw::draw_lg -ksp_monitor_true_residual draw::draw_lg
+!      args: -ksp_orthogonalization_cgs_refinement_type refine_always -ksp_monitor draw::draw_lg -ksp_monitor_true_residual draw::draw_lg
 !      output_file: output/ex5f_5.out
 !
 !   test:

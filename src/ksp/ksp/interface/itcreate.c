@@ -7,7 +7,7 @@
 PetscClassId  KSP_CLASSID;
 PetscClassId  DMKSP_CLASSID;
 PetscClassId  KSPGUESS_CLASSID;
-PetscLogEvent KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve, KSP_SolveTranspose, KSP_MatSolve, KSP_MatSolveTranspose;
+PetscLogEvent KSP_Orthogonalization, KSP_SetUp, KSP_Solve, KSP_SolveTranspose, KSP_MatSolve, KSP_MatSolveTranspose;
 
 /*
    Contains the list of registered KSP routines
@@ -836,6 +836,8 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   ksp->numberreasonviews            = 0;
   ksp->setfromoptionscalled         = 0;
   ksp->nmax                         = PETSC_DECIDE;
+  ksp->orthog                       = KSPOrthogonalizationClassicalGramSchmidt;
+  ksp->cgstype                      = KSP_ORTHOGONALIZATION_CGS_REFINE_NEVER;
 
   PetscCall(KSPConvergedDefaultCreate(&ctx));
   PetscCall(KSPSetConvergenceTest(ksp, KSPConvergedDefault, ctx, KSPConvergedDefaultDestroy));

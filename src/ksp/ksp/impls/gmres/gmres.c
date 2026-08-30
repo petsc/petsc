@@ -133,7 +133,8 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     PetscCall(KSP_PCApplyBAorAB(ksp, VEC_VV(it), VEC_VV(1 + it), VEC_TEMP_MATOP));
 
     /* update Hessenberg matrix and do Gram-Schmidt */
-    PetscCall((*gmres->orthog)(ksp, it));
+    PetscCall((*ksp->orthog)(ksp, &VEC_VV(0), it + 1, NULL, HH(0, it)));
+    PetscCall(PetscArraycpy(HES(0, it), HH(0, it), it + 1));
     if (ksp->reason) break;
 
     /* vv(i+1) . vv(i+1) */
@@ -258,7 +259,6 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   PetscCall(VecDestroy(&gmres->sol_temp));
   PetscCall(PetscFree(gmres->Rsvd));
   PetscCall(PetscFree(gmres->Dsvd));
-  PetscCall(PetscFree(gmres->orthogwork));
 
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
@@ -273,14 +273,10 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   PetscCall(PetscFree(ksp->data));
   /* clear composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetOrthogonalization_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetOrthogonalization_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetBreakdownTolerance_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
@@ -446,21 +442,21 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
-    switch (gmres->cgstype) {
-    case KSP_GMRES_CGS_REFINE_NEVER:
+  if (ksp->orthog == KSPOrthogonalizationClassicalGramSchmidt) {
+    switch (ksp->cgstype) {
+    case KSP_ORTHOGONALIZATION_CGS_REFINE_NEVER:
       cstr = "classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement";
       break;
-    case KSP_GMRES_CGS_REFINE_ALWAYS:
+    case KSP_ORTHOGONALIZATION_CGS_REFINE_ALWAYS:
       cstr = "classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement";
       break;
-    case KSP_GMRES_CGS_REFINE_IFNEEDED:
+    case KSP_ORTHOGONALIZATION_CGS_REFINE_IFNEEDED:
       cstr = "classical (unmodified) Gram-Schmidt orthogonalization with one step of iterative refinement when needed";
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Unknown orthogonalization");
     }
-  } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
+  } else if (ksp->orthog == KSPOrthogonalizationModifiedGramSchmidt) {
     cstr = "modified Gram-Schmidt orthogonalization";
   } else {
     cstr = "unknown orthogonalization";
@@ -534,11 +530,6 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObj
   PetscCall(PetscOptionsBool("-ksp_gmres_preallocate", "Preallocate Krylov vectors", "KSPGMRESSetPreAllocateVectors", gmres->q_preallocate, &flg, &set));
   PetscCheck(!set || flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Cannot turn off preallocation with -ksp_gmres_preallocate false");
   if (set) PetscCall(KSPGMRESSetPreAllocateVectors(ksp));
-  PetscCall(PetscOptionsBoolGroupBegin("-ksp_gmres_classicalgramschmidt", "classical (unmodified) Gram-Schmidt (fast)", "KSPGMRESSetOrthogonalization", &flg));
-  if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp, KSPGMRESClassicalGramSchmidtOrthogonalization));
-  PetscCall(PetscOptionsBoolGroupEnd("-ksp_gmres_modifiedgramschmidt", "modified Gram-Schmidt (slow, more stable)", "KSPGMRESSetOrthogonalization", &flg));
-  if (flg) PetscCall(KSPGMRESSetOrthogonalization(ksp, KSPGMRESModifiedGramSchmidtOrthogonalization));
-  PetscCall(PetscOptionsEnum("-ksp_gmres_cgs_refinement_type", "Type of iterative refinement for classical (unmodified) Gram-Schmidt", "KSPGMRESSetCGSRefinementType", KSPGMRESCGSRefinementTypes, (PetscEnum)gmres->cgstype, (PetscEnum *)&gmres->cgstype, &flg));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ksp_gmres_krylov_monitor", "Plot the Krylov directions", "KSPMonitorSet", flg, &flg, NULL));
   if (flg) {
@@ -601,20 +592,6 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP ksp, FCN fcn)
-{
-  PetscFunctionBegin;
-  ((KSP_GMRES *)ksp->data)->orthog = fcn;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP ksp, FCN *fcn)
-{
-  PetscFunctionBegin;
-  *fcn = ((KSP_GMRES *)ksp->data)->orthog;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
@@ -622,87 +599,6 @@ PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
   PetscFunctionBegin;
   gmres                = (KSP_GMRES *)ksp->data;
   gmres->q_preallocate = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType type)
-{
-  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-
-  PetscFunctionBegin;
-  gmres->cgstype = type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType *type)
-{
-  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-
-  PetscFunctionBegin;
-  *type = gmres->cgstype;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
-  in the classical Gram-Schmidt orthogonalization used by `KSPGMRES` and other PETSc GMRES implementations.
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp  - the Krylov space solver context
-- type - the type of refinement
-.vb
-  KSP_GMRES_CGS_REFINE_NEVER
-  KSP_GMRES_CGS_REFINE_IFNEEDED
-  KSP_GMRES_CGS_REFINE_ALWAYS
-.ve
-
-  Options Database Key:
-. -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - refinement type
-
-  Level: intermediate
-
-  Notes:
-  The default is `KSP_GMRES_CGS_REFINE_NEVER`
-
-  For a very small set of problems not using refinement, that is `KSP_GMRES_CGS_REFINE_NEVER` may be unstable, thus causing `KSPSolve()`
-  to not converge.
-
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
-          `KSPGMRESGetOrthogonalization()`
-@*/
-PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType type)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidLogicalCollectiveEnum(ksp, type, 2);
-  PetscTryMethod(ksp, "KSPGMRESSetCGSRefinementType_C", (KSP, KSPGMRESCGSRefinementType), (ksp, type));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
-  in the classical Gram-Schmidt orthogonalization used by `KSPGMRES` and other PETSc GMRES implementations.
-
-  Not Collective
-
-  Input Parameter:
-. ksp - the Krylov space solver context
-
-  Output Parameter:
-. type - the type of refinement
-
-  Level: intermediate
-
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
-          `KSPGMRESGetOrthogonalization()`
-@*/
-PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *type)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscUseMethod(ksp, "KSPGMRESGetCGSRefinementType_C", (KSP, KSPGMRESCGSRefinementType *), (ksp, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -736,7 +632,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
   `KSPBCGS` has the advantage over `KSPGMRES` in that it does not explicitly store the Krylov space and thus does not require as much memory
   as GMRES might need.
 
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPOrthogonalizationSet()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`,
           `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
@@ -762,7 +658,7 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`,
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPOrthogonalizationSet()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`,
           `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
@@ -849,11 +745,6 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for happy breakdown (exact convergence) of `KSPGMRES`
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
                                                                                   vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
-.   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
-                                                                                  the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
-                                                                                  stability of the classical Gram-Schmidt  orthogonalization.
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    Level: beginner
@@ -864,9 +755,9 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
    Using `KSPGMRESSetPreAllocateVectors()` or `-ksp_gmres_preallocate` can improve the efficiency of the orthogonalization step with certain vector implementations.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
-          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
-          `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
-          `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
+          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
+          `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
+          `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
@@ -894,25 +785,18 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
   ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetOrthogonalization_C", KSPGMRESSetOrthogonalization_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetOrthogonalization_C", KSPGMRESGetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetBreakdownTolerance_C", KSPGMRESSetBreakdownTolerance_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", KSPGMRESGetCGSRefinementType_GMRES));
 
   gmres->haptol         = 1.0e-30;
   gmres->breakdowntol   = 0.1;
   gmres->q_preallocate  = PETSC_FALSE;
   gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   gmres->nrs            = NULL;
   gmres->sol_temp       = NULL;
   gmres->max_k          = GMRES_DEFAULT_MAXK;
   gmres->Rsvd           = NULL;
-  gmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  gmres->orthogwork     = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

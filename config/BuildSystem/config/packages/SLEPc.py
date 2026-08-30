@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '54592871c92e4caf807bfc079a7222f1d69b5791' # stefanozampini/hpddmconfig-remove-diagscale
+    self.gitcommit              = 'f114e18f5c469cd612a599b9b0d045539241d600' # jose/update-hpddm
     #self.gitcommit             = 'v'+self.version
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []

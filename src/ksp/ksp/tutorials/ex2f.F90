@@ -392,13 +392,13 @@ end
 !   test:
 !      nsize: 2
 !      filter: sort -b
-!      args: -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always
+!      args: -pc_type jacobi -ksp_orthogonalization_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
 !      filter: sort -b
-!      args: -pc_type jacobi -my_ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+!      args: -pc_type jacobi -my_ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 !   test:
 !      suffix: 3
 !      nsize: 2

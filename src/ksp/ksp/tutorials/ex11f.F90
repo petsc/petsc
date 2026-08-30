@@ -215,7 +215,7 @@ end
 !      requires: complex
 !
 !   test:
-!      args: -n 6 -norandom -pc_type none -ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
+!      args: -n 6 -norandom -pc_type none -ksp_monitor -ksp_orthogonalization_cgs_refinement_type refine_always
 !      output_file: output/ex11f_1.out
 !
 !TEST*/

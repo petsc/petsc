@@ -288,14 +288,14 @@ PetscErrorCode FormTestMatrix(Mat A, PetscInt n, TestType type)
       requires: complex
 
     test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
       requires: complex
 
     test:
       suffix: 2
       nsize: 3
       requires: complex
-      args: -ksp_gmres_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -n 6 -ksp_monitor -p 5 -norandom -ksp_type gmres -pc_type jacobi -ksp_max_it 15
       output_file: output/ex17_1.out
 
     test:

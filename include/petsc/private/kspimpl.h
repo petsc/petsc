@@ -198,6 +198,12 @@ struct _p_KSP {
   void *prectx_ew, *postctx_ew;
 
   PetscInt nestlevel; /* how many levels of nesting does the KSP have */
+
+  /* orthogonalization */
+  KSPOrthogonalizationFn               *orthog;      /* orthogonalization function */
+  KSPOrthogonalizationCGSRefinementType cgstype;     /* refinement in case of CGS */
+  PetscScalar                          *orthogwork;  /* holds dot products computed in orthogonalization */
+  PetscInt                              lorthogwork; /* length of orthogwork */
 };
 
 typedef struct { /* dummy data structure used in KSPMonitorDynamicTolerance() */
@@ -512,7 +518,7 @@ static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp, Vec x, Vec y, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscLogEvent KSP_GMRESOrthogonalization;
+PETSC_EXTERN PetscLogEvent KSP_Orthogonalization;
 PETSC_EXTERN PetscLogEvent KSP_SetUp;
 PETSC_EXTERN PetscLogEvent KSP_Solve;
 PETSC_EXTERN PetscLogEvent KSP_Solve_FS_0;

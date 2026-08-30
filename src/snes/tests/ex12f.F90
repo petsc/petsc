@@ -282,7 +282,7 @@ end
 !
 !   test:
 !      nsize: 2
-!      args: -ksp_gmres_cgs_refinement_type refine_always -n 10 -snes_monitor
+!      args: -ksp_orthogonalization_cgs_refinement_type refine_always -n 10 -snes_monitor
 !      output_file: output/ex12_1.out
 !
 !TEST*/

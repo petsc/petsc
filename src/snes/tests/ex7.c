@@ -245,11 +245,11 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
 /*TEST
 
    test:
-      args: -ksp_gmres_cgs_refinement_type refine_always -snes_monitor
+      args: -ksp_orthogonalization_cgs_refinement_type refine_always -snes_monitor
 
    test:
       suffix: 2
-      args: -variant -ksp_gmres_cgs_refinement_type refine_always -snes_monitor
+      args: -variant -ksp_orthogonalization_cgs_refinement_type refine_always -snes_monitor
       output_file: output/ex7_1.out
 
    # uses AIJ matrix to define diagonal matrix for Jacobian preconditioning

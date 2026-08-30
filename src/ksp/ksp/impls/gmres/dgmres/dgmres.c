@@ -157,7 +157,8 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
     }
     dgmres->matvecs += 1;
     /* update Hessenberg matrix and do Gram-Schmidt */
-    PetscCall((*dgmres->orthog)(ksp, it));
+    PetscCall((*ksp->orthog)(ksp, &VEC_VV(0), it + 1, NULL, HH(0, it)));
+    PetscCall(PetscArraycpy(HES(0, it), HH(0, it), it + 1));
 
     /* vv(i+1) . vv(i+1) */
     PetscCall(VecNormalize(VEC_VV(it + 1), &tt));
@@ -959,11 +960,6 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt (true|false)                                - use classical (unmodified) Gram-Schmidt to orthogonalize against
-                                                                                  the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt (true|false)                                 - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
-.   -ksp_gmres_cgs_refinement_type (refine_never|refine_ifneeded|refine_always) - determine if iterative refinement is used to increase the
-                                                                                  stability of the classical Gram-Schmidt orthogonalization.
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    DGMRES Options Database Keys:
@@ -991,9 +987,9 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
    Desire NUENTSA WAKAM, INRIA
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
-           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
-           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
-           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
+           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
+           `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
+           `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
  M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
@@ -1018,10 +1014,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetOrthogonalization_C", KSPGMRESSetOrthogonalization_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
   /* -- New functions defined in DGMRES -- */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetEigen_C", KSPDGMRESSetEigen_DGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPDGMRESSetMaxEigen_C", KSPDGMRESSetMaxEigen_DGMRES));
@@ -1038,13 +1032,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->haptol         = 1.0e-30;
   dgmres->q_preallocate  = PETSC_FALSE;
   dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  dgmres->orthog         = KSPGMRESClassicalGramSchmidtOrthogonalization;
   dgmres->nrs            = NULL;
   dgmres->sol_temp       = NULL;
   dgmres->max_k          = GMRES_DEFAULT_MAXK;
   dgmres->Rsvd           = NULL;
-  dgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  dgmres->orthogwork     = NULL;
 
   /* Default values for the deflation */
   dgmres->r           = 0;

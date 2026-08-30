@@ -511,7 +511,7 @@ end
 !/*TEST
 !
 !   test:
-!      args: -no_output -ksp_gmres_cgs_refinement_type refine_always
+!      args: -no_output -ksp_orthogonalization_cgs_refinement_type refine_always
 !      output_file: output/ex14_1.out
 !      requires: !single
 !

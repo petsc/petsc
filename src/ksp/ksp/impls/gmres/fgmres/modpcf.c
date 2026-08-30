@@ -86,7 +86,7 @@ PetscErrorCode KSPFlexibleModifyPCKSP(KSP ksp, PetscInt total_its, PetscInt loc_
     /* note that at this point you could check the type of KSP with KSPGetType() */
 
     /* Now we can use functions such as KSPGMRESSetRestart() or
-      KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
+      KSPOrthogonalizationSet() or KSPSetTolerances() */
 
     PetscCall(KSPGetTolerances(sub_ksp, &rtol, &abstol, &dtol, &maxits));
     if (!loc_its) rtol = .1;

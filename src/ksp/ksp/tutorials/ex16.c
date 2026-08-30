@@ -206,6 +206,6 @@ int main(int argc, char **args)
 
    test:
       nsize: 2
-      args: -ntimes 4 -ksp_gmres_cgs_refinement_type refine_always
+      args: -ntimes 4 -ksp_orthogonalization_cgs_refinement_type refine_always
 
 TEST*/

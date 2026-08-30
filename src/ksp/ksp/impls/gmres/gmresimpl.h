@@ -8,15 +8,13 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 #define KSPGMRESHEADER \
-  /* Hessenberg matrix and orthogonalization information. */ \
+  /* Hessenberg matrix information. */ \
   PetscScalar *hh_origin;  /* holds Hessenberg matrix that has been multiplied by plane rotations (upper tri) */ \
   PetscScalar *hes_origin; /* holds the original (unmodified) Hessenberg matrix which may be used to estimate the Singular Values of the matrix */ \
   PetscScalar *hes_ritz;   /* holds the last full Hessenberg matrix to compute (harmonic) Ritz pairs */ \
   PetscScalar *cc_origin;  /* holds cosines for rotation matrices */ \
   PetscScalar *ss_origin;  /* holds sines for rotation matrices */ \
   PetscScalar *rs_origin;  /* holds the right-hand side of the Hessenberg system */ \
-\
-  PetscScalar *orthogwork; /* holds dot products computed in orthogonalization */ \
 \
   /* Work space for computing eigenvalues/singular values */ \
   PetscReal   *Dsvd; \
@@ -25,9 +23,6 @@
   PetscReal haptol;      /* tolerance for happy breakdown */ \
   PetscInt  max_k;       /* number of vectors in Krylov space, restart size */ \
   PetscInt  nextra_vecs; /* number of extra vecs needed, e.g. for a pipeline */ \
-\
-  PetscErrorCode (*orthog)(KSP, PetscInt); \
-  KSPGMRESCGSRefinementType cgstype; \
 \
   Vec      *vecs;           /* the work vectors */ \
   Vec      *vecb;           /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
@@ -62,16 +57,10 @@ PETSC_INTERN PetscErrorCode KSPReset_GMRES(KSP);
 PETSC_INTERN PetscErrorCode KSPDestroy_GMRES(KSP);
 PETSC_INTERN PetscErrorCode KSPGMRESGetNewVectors(KSP, PetscInt);
 
-typedef PetscErrorCode (*FCN)(KSP, PetscInt); /* force argument to next function to not be extern C*/
-
 PETSC_INTERN PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP, PetscReal);
 PETSC_INTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 PETSC_INTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP, PetscInt);
 PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP, PetscInt *);
-PETSC_INTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP, FCN);
-PETSC_INTERN PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP, FCN *);
-PETSC_INTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP, KSPGMRESCGSRefinementType);
-PETSC_INTERN PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP, KSPGMRESCGSRefinementType *);
 
 /* These macros are guarded because they are redefined by derived implementations */
 #if !defined(KSPGMRES_NO_MACROS)

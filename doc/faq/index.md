@@ -1603,7 +1603,7 @@ Common reasons for KSP not converging are:
   that the Jacobian is better conditioned. See [Buckingham pi theorem](https://en.wikipedia.org/wiki/Buckingham_%CF%80_theorem) and [Dimensional and
   Scaling Analysis](https://epubs.siam.org/doi/pdf/10.1137/16M1107127).
 
-- Classical Gram-Schmidt is becoming unstable, try `-ksp_gmres_modifiedgramschmidt` or
+- Classical Gram-Schmidt is becoming unstable, try `-ksp_orthogonalization mgs` or
   use a method that orthogonalizes differently, e.g. `-ksp_type gcr`.
 
 ### I get the error message: Actual argument at (1) to assumed-type dummy is of derived type with type-bound or FINAL procedures
