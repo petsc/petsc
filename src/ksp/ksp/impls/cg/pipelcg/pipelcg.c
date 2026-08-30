@@ -362,13 +362,10 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
   PetscInt       max_it = ksp->max_it, l = plcg->l;
   PetscInt       i = 0, outer_it = 0, curr_guess_zero = 0;
   PetscReal      lmin = plcg->lmin, lmax = plcg->lmax;
-  PetscBool      diagonalscale = PETSC_FALSE;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)ksp);
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, comm, PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
 
   x = ksp->vec_sol;
   b = ksp->vec_rhs;

@@ -341,7 +341,6 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_view_singularvalues viewer_specification                   - view the approximate singular values of the preconditioned operator computed via `KSPComputeExtremeSingularValues()`
 . -ksp_view_eigenvalues_explicit viewer_specification             - view the approximate eigenvalues of the preconditioned operator computed with LAPACK
 . -ksp_view_preconditioned_operator_explicit viewer_specification - view the preconditioned operator computed via `KSPComputeOperator()`
-. -ksp_view_diagonal_scale viewer_specification                   - view the diagonal scaling applied via `-ksp_diagonal_scale`
 . -ksp_view_final_residual viewer_specification                   - view the final true residual norm
 - -ksp_view_final_residual_vec viewer_specification               - view the final true residual vector, must also use `-ksp_view_final_residual ascii:`
 
@@ -423,13 +422,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   PetscCall(PetscOptionsDeprecated("-ksp_final_residual", "-ksp_view_final_residual", "3.9", NULL));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_final_residual", &ksp->viewerFinalRes, &ksp->formatFinalRes, &ksp->viewFinalRes));
   PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_preconditioned_operator_explicit", &ksp->viewerPOpExp, &ksp->formatPOpExp, &ksp->viewPOpExp));
-  PetscCall(PetscOptionsCreateViewer(comm, ((PetscObject)ksp)->options, prefix, "-ksp_view_diagonal_scale", &ksp->viewerDScale, &ksp->formatDScale, &ksp->viewDScale));
-  PetscCall(KSPGetDiagonalScale(ksp, &flag));
-  PetscCall(PetscOptionsBool("-ksp_diagonal_scale", "Diagonal scale matrix before building preconditioner", "KSPSetDiagonalScale", flag, &flag, &flg));
-  if (flg) PetscCall(KSPSetDiagonalScale(ksp, flag));
-  PetscCall(KSPGetDiagonalScaleFix(ksp, &flag));
-  PetscCall(PetscOptionsBool("-ksp_diagonal_scale_fix", "Fix diagonally scaled matrix after solve", "KSPSetDiagonalScaleFix", flag, &flag, &flg));
-  if (flg) PetscCall(KSPSetDiagonalScaleFix(ksp, flag));
   nmax = ksp->nmax;
   PetscCall(PetscOptionsDeprecated("-ksp_matsolve_block_size", "-ksp_matsolve_batch_size", "3.15", NULL));
   PetscCall(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));

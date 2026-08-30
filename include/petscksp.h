@@ -649,11 +649,6 @@ PETSC_EXTERN PetscErrorCode KSPSetOptionsPrefix(KSP, const char[]);
 PETSC_EXTERN PetscErrorCode KSPAppendOptionsPrefix(KSP, const char[]);
 PETSC_EXTERN PetscErrorCode KSPGetOptionsPrefix(KSP, const char *[]);
 
-PETSC_EXTERN PetscErrorCode KSPSetDiagonalScale(KSP, PetscBool);
-PETSC_EXTERN PetscErrorCode KSPGetDiagonalScale(KSP, PetscBool *);
-PETSC_EXTERN PetscErrorCode KSPSetDiagonalScaleFix(KSP, PetscBool);
-PETSC_EXTERN PetscErrorCode KSPGetDiagonalScaleFix(KSP, PetscBool *);
-
 /*S
   KSPConvergedReasonViewFn - A prototype of a function used with `KSPConvergedReasonViewSet()`
 

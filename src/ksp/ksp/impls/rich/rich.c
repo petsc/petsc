@@ -24,13 +24,10 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
   PetscInt        i, maxit, xs, ws;
   Mat             Amat, Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
-  PetscBool       exists, diagonalscale;
+  PetscBool       exists;
   MatNullSpace    nullsp;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   ksp->its = 0;
 
   PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
@@ -208,15 +205,12 @@ static PetscErrorCode KSPMatSolve_Richardson(KSP ksp, Mat B, Mat X)
   Vec              cb, cx;
   PetscInt         i, maxit, m, mn, n, nn, N, NN;
   KSP_Richardson  *richardsonP = (KSP_Richardson *)ksp->data;
-  PetscBool        diagonalscale, exists, matexists, match = PETSC_FALSE, reuse = PETSC_FALSE;
+  PetscBool        exists, matexists, match = PETSC_FALSE, reuse = PETSC_FALSE;
   PetscObjectId    id;
   PetscObjectState state;
   MatNullSpace     nullsp;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   ksp->its    = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   maxit       = ksp->max_it;

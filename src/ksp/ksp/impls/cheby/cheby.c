@@ -393,12 +393,8 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
   PetscReal   rnorm = 0.0, emax, emin;
   Vec         sol_orig, b, p[3], r;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;
@@ -562,13 +558,9 @@ static PetscErrorCode KSPSolve_Chebyshev_FourthKind(KSP ksp)
   PetscReal      rnorm = 0.0, emax, emin;
   Vec            x, b, d, r, Br;
   Mat            Amat, Pmat;
-  PetscBool      diagonalscale;
   PetscReal     *betas = cheb->betas;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;

@@ -133,14 +133,10 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
 
 static PetscErrorCode KSPSetUp_GCR(KSP ksp)
 {
-  KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
-  Mat       A;
-  PetscBool diagonalscale;
+  KSP_GCR *ctx = (KSP_GCR *)ksp->data;
+  Mat      A;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(MatCreateVecs(A, &ctx->R, NULL));
   PetscCall(VecDuplicateVecs(ctx->R, ctx->restart, &ctx->VV));

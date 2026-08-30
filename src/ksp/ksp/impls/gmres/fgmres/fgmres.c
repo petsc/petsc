@@ -210,12 +210,8 @@ static PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 {
   PetscInt    cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
   KSP_FGMRES *fgmres    = (KSP_FGMRES *)ksp->data;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));

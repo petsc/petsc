@@ -332,7 +332,7 @@ PetscErrorCode KSPSetSkipPCSetFromOptions(KSP ksp, PetscBool flag)
 PetscErrorCode KSPSetUp(KSP ksp)
 {
   Mat            A, B;
-  Mat            mat, pmat;
+  Mat            mat;
   MatNullSpace   nullsp;
   PCFailedReason pcreason;
   PC             pc;
@@ -417,40 +417,14 @@ PetscErrorCode KSPSetUp(KSP ksp)
     break;
   }
 
-  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-  PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
-  /* scale the matrix if requested */
-  if (ksp->dscale) {
-    PetscScalar *xx;
-    PetscInt     n;
-    PetscBool    zeroflag = PETSC_FALSE;
-
-    if (!ksp->diagonal) { /* allocate vector to hold diagonal */
-      PetscCall(MatCreateVecs(pmat, &ksp->diagonal, NULL));
-    }
-    PetscCall(MatGetDiagonal(pmat, ksp->diagonal));
-    PetscCall(VecGetLocalSize(ksp->diagonal, &n));
-    PetscCall(VecGetArray(ksp->diagonal, &xx));
-    for (PetscInt i = 0; i < n; i++) {
-      if (xx[i] != 0.0) xx[i] = 1.0 / PetscSqrtReal(PetscAbsScalar(xx[i]));
-      else {
-        xx[i]    = 1.0;
-        zeroflag = PETSC_TRUE;
-      }
-    }
-    PetscCall(VecRestoreArray(ksp->diagonal, &xx));
-    if (zeroflag) PetscCall(PetscInfo(ksp, "Zero detected in diagonal of matrix, using 1 at those locations\n"));
-    PetscCall(MatDiagonalScale(pmat, ksp->diagonal, ksp->diagonal));
-    if (mat != pmat) PetscCall(MatDiagonalScale(mat, ksp->diagonal, ksp->diagonal));
-    ksp->dscalefix2 = PETSC_FALSE;
-  }
   PetscCall(PetscLogEventEnd(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
-  PetscCall(PCSetErrorIfFailure(ksp->pc, ksp->errorifnotconverged));
-  PetscCall(PCSetUp(ksp->pc));
-  PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
+  PetscCall(PCSetErrorIfFailure(pc, ksp->errorifnotconverged));
+  PetscCall(PCSetUp(pc));
+  PetscCall(PCGetFailedReason(pc, &pcreason));
   /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
 
+  PetscCall(PCGetOperators(pc, &mat, NULL));
   PetscCall(MatGetNullSpace(mat, &nullsp));
   if (nullsp) {
     PetscBool test = PETSC_FALSE;
@@ -771,7 +745,6 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  PetscCheck(!ksp->dscale || ksp->dscalefix, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Cannot compute final scale with -ksp_diagonal_scale except also with -ksp_diagonal_scale_fix");
   if (isascii) {
     Mat       A;
     Vec       t;
@@ -858,7 +831,6 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
   if (ksp->err_hist_reset) ksp->err_hist_len = 0;
 
-  /* KSPSetUp() scales the matrix if needed */
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
 
@@ -882,29 +854,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   PetscCall(VecSetErrorIfLocked(ksp->vec_sol, 3));
 
   PetscCall(PetscLogEventBegin(!ksp->transpose.solve_requested ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
-  PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
-  /* diagonal scale RHS if called for */
-  if (ksp->dscale) {
-    PetscCall(VecPointwiseMult(ksp->vec_rhs, ksp->vec_rhs, ksp->diagonal));
-    /* second time in, but matrix was scaled back to original */
-    if (ksp->dscalefix && ksp->dscalefix2) {
-      Mat mat, pmat;
-
-      PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
-      PetscCall(MatDiagonalScale(pmat, ksp->diagonal, ksp->diagonal));
-      if (mat != pmat) PetscCall(MatDiagonalScale(mat, ksp->diagonal, ksp->diagonal));
-    }
-
-    /* scale initial guess */
-    if (!ksp->guess_zero) {
-      if (!ksp->truediagonal) {
-        PetscCall(VecDuplicate(ksp->diagonal, &ksp->truediagonal));
-        PetscCall(VecCopy(ksp->diagonal, ksp->truediagonal));
-        PetscCall(VecReciprocal(ksp->truediagonal));
-      }
-      PetscCall(VecPointwiseMult(ksp->vec_sol, ksp->vec_sol, ksp->truediagonal));
-    }
-  }
+  PetscCall(PCGetOperators(ksp->pc, &mat, NULL));
   PetscCall(PCPreSolve(ksp->pc, ksp));
 
   if (ksp->guess_zero && !ksp->guess_not_read) PetscCall(VecSet(ksp->vec_sol, 0.0));
@@ -958,22 +908,6 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   }
   PetscCall(PCPostSolve(ksp->pc, ksp));
 
-  /* diagonal scale solution if called for */
-  if (ksp->dscale) {
-    PetscCall(VecPointwiseMult(ksp->vec_sol, ksp->vec_sol, ksp->diagonal));
-    /* unscale right-hand side and matrix */
-    if (ksp->dscalefix) {
-      Mat mat, pmat;
-
-      PetscCall(VecReciprocal(ksp->diagonal));
-      PetscCall(VecPointwiseMult(ksp->vec_rhs, ksp->vec_rhs, ksp->diagonal));
-      PetscCall(PCGetOperators(ksp->pc, &mat, &pmat));
-      PetscCall(MatDiagonalScale(pmat, ksp->diagonal, ksp->diagonal));
-      if (mat != pmat) PetscCall(MatDiagonalScale(mat, ksp->diagonal, ksp->diagonal));
-      PetscCall(VecReciprocal(ksp->diagonal));
-      ksp->dscalefix2 = PETSC_TRUE;
-    }
-  }
   PetscCall(PetscLogEventEnd(!ksp->transpose.solve_requested ? KSP_Solve : KSP_SolveTranspose, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   if (ksp->guess) PetscCall(KSPGuessUpdate(ksp->guess, ksp->vec_rhs, ksp->vec_sol));
   PetscCall(KSPPostSolve(ksp, ksp->vec_rhs, ksp->vec_sol));
@@ -988,19 +922,17 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   if (ksp->viewRhs) PetscCall(ObjectView((PetscObject)ksp->vec_rhs, ksp->viewerRhs, ksp->formatRhs));
   if (ksp->viewSol) PetscCall(ObjectView((PetscObject)ksp->vec_sol, ksp->viewerSol, ksp->formatSol));
   if (ksp->view) PetscCall(ObjectView((PetscObject)ksp, ksp->viewer, ksp->format));
-  if (ksp->viewDScale) PetscCall(ObjectView((PetscObject)ksp->diagonal, ksp->viewerDScale, ksp->formatDScale));
   if (ksp->viewMatExp) {
-    Mat A, B;
+    Mat B;
 
-    PetscCall(PCGetOperators(ksp->pc, &A, NULL));
     if (ksp->transpose_solve) {
       Mat AT;
 
-      PetscCall(MatCreateTranspose(A, &AT));
+      PetscCall(MatCreateTranspose(mat, &AT));
       PetscCall(MatComputeOperator(AT, MATAIJ, &B));
       PetscCall(MatDestroy(&AT));
     } else {
-      PetscCall(MatComputeOperator(A, MATAIJ, &B));
+      PetscCall(MatComputeOperator(mat, MATAIJ, &B));
     }
     PetscCall(ObjectView((PetscObject)B, ksp->viewerMatExp, ksp->formatMatExp));
     PetscCall(MatDestroy(&B));
@@ -1535,7 +1467,6 @@ PetscErrorCode KSPResetViewers(KSP ksp)
   PetscCall(PetscViewerDestroy(&ksp->viewerEVExp));
   PetscCall(PetscViewerDestroy(&ksp->viewerFinalRes));
   PetscCall(PetscViewerDestroy(&ksp->viewerPOpExp));
-  PetscCall(PetscViewerDestroy(&ksp->viewerDScale));
   ksp->view         = PETSC_FALSE;
   ksp->viewPre      = PETSC_FALSE;
   ksp->viewMat      = PETSC_FALSE;
@@ -1548,7 +1479,6 @@ PetscErrorCode KSPResetViewers(KSP ksp)
   ksp->viewEVExp    = PETSC_FALSE;
   ksp->viewFinalRes = PETSC_FALSE;
   ksp->viewPOpExp   = PETSC_FALSE;
-  ksp->viewDScale   = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1583,8 +1513,6 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
   PetscCall(VecDestroy(&ksp->vec_rhs));
   PetscCall(VecDestroy(&ksp->vec_sol));
-  PetscCall(VecDestroy(&ksp->diagonal));
-  PetscCall(VecDestroy(&ksp->truediagonal));
   PetscCall(KSPResetExplicitTranspose_Private(ksp));
 
   ksp->mat_rhs    = NULL;
@@ -2981,128 +2909,6 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
   }
   PetscUseTypeMethod(ksp, buildresidual, tt, w, V);
   if (flag) PetscCall(VecDestroy(&tt));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPSetDiagonalScale - Tells `KSP` to symmetrically diagonally scale the system
-  before solving. This actually CHANGES the matrix (and right-hand side).
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp   - the `KSP` context
-- scale - `PETSC_TRUE` or `PETSC_FALSE`
-
-  Options Database Keys:
-+ -ksp_diagonal_scale     - perform a diagonal scaling before the solve
-- -ksp_diagonal_scale_fix - scale the matrix back AFTER the solve
-
-  Level: advanced
-
-  Notes:
-  Scales the matrix by  $D^{-1/2}  A  D^{-1/2}  [D^{1/2} x ] = D^{-1/2} b $
-  where $D_{ii}$ is $1/abs(A_{ii}) $ unless $A_{ii}$ is zero and then it is 1.
-
-  BE CAREFUL with this routine: it actually scales the matrix and right
-  hand side that define the system. After the system is solved the matrix
-  and right-hand side remain scaled unless you use `KSPSetDiagonalScaleFix()`
-
-  This should NOT be used within the `SNES` solves if you are using a line
-  search.
-
-  If you use this with the `PCType` `PCEISENSTAT` preconditioner than you can
-  use the `PCEisenstatSetNoDiagonalScaling()` option, or `-pc_eisenstat_no_diagonal_scaling`
-  to save some unneeded, redundant flops.
-
-.seealso: [](ch_ksp), `KSPGetDiagonalScale()`, `KSPSetDiagonalScaleFix()`, `KSP`
-@*/
-PetscErrorCode KSPSetDiagonalScale(KSP ksp, PetscBool scale)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(ksp, scale, 2);
-  ksp->dscale = scale;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPGetDiagonalScale - Checks if `KSP` solver scales the matrix and right-hand side, that is if `KSPSetDiagonalScale()` has been called
-
-  Not Collective
-
-  Input Parameter:
-. ksp - the `KSP` context
-
-  Output Parameter:
-. scale - `PETSC_TRUE` or `PETSC_FALSE`
-
-  Level: intermediate
-
-.seealso: [](ch_ksp), `KSP`, `KSPSetDiagonalScale()`, `KSPSetDiagonalScaleFix()`
-@*/
-PetscErrorCode KSPGetDiagonalScale(KSP ksp, PetscBool *scale)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscAssertPointer(scale, 2);
-  *scale = ksp->dscale;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPSetDiagonalScaleFix - Tells `KSP` to diagonally scale the system back after solving.
-
-  Logically Collective
-
-  Input Parameters:
-+ ksp - the `KSP` context
-- fix - `PETSC_TRUE` to scale back after the system solve, `PETSC_FALSE` to not
-         rescale (default)
-
-  Level: intermediate
-
-  Notes:
-  Must be called after `KSPSetDiagonalScale()`
-
-  Using this will slow things down, because it rescales the matrix before and
-  after each linear solve. This is intended mainly for testing to allow one
-  to easily get back the original system to make sure the solution computed is
-  accurate enough.
-
-.seealso: [](ch_ksp), `KSPGetDiagonalScale()`, `KSPSetDiagonalScale()`, `KSPGetDiagonalScaleFix()`, `KSP`
-@*/
-PetscErrorCode KSPSetDiagonalScaleFix(KSP ksp, PetscBool fix)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscValidLogicalCollectiveBool(ksp, fix, 2);
-  ksp->dscalefix = fix;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  KSPGetDiagonalScaleFix - Determines if `KSP` diagonally scales the system back after solving. That is `KSPSetDiagonalScaleFix()` has been called
-
-  Not Collective
-
-  Input Parameter:
-. ksp - the `KSP` context
-
-  Output Parameter:
-. fix - `PETSC_TRUE` to scale back after the system solve, `PETSC_FALSE` to not
-         rescale (default)
-
-  Level: intermediate
-
-.seealso: [](ch_ksp), `KSPGetDiagonalScale()`, `KSPSetDiagonalScale()`, `KSPSetDiagonalScaleFix()`, `KSP`
-@*/
-PetscErrorCode KSPGetDiagonalScaleFix(KSP ksp, PetscBool *fix)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscAssertPointer(fix, 2);
-  *fix = ksp->dscalefix;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

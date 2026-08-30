@@ -125,12 +125,9 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   Vec         X, B, Z, R, P, W;
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale, testobj;
+  PetscBool   testobj;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   cg            = (KSP_CG *)ksp->data;
   eigs          = ksp->calc_sings;
   stored_max_it = ksp->max_it;
@@ -369,12 +366,8 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
   Vec         X, B, Z, R, P, S, W, tmpvecs[2];
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   diagonalscale;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
-
   cg            = (KSP_CG *)ksp->data;
   eigs          = ksp->calc_sings;
   stored_max_it = ksp->max_it;

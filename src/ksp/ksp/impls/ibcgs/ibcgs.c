@@ -3,11 +3,7 @@
 
 static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 {
-  PetscBool diagonalscale;
-
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCall(KSPSetWorkVecs(ksp, 9));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

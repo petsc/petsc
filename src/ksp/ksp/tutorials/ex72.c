@@ -498,12 +498,6 @@ int main(int argc, char **args)
       args: -ksp_type preonly -pc_type lu
 
    testset:
-      suffix: 8
-      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium
-      args: -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor -ksp_diagonal_scale_fix -ksp_gmres_cgs_refinement_type refine_always -mat_no_inode
-
-   testset:
       TODO: Matrix row/column sizes are not compatible with block size
       suffix: 9
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)

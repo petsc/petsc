@@ -1596,7 +1596,6 @@ Common reasons for KSP not converging are:
 - The matrix is very ill-conditioned. Check the {ref}`condition number <doc_faq_usage_condnum>`.
 
   - Try to improve it by choosing the relative scaling of components/boundary conditions.
-  - Try `-ksp_diagonal_scale -ksp_diagonal_scale_fix`.
   - Perhaps change the formulation of the problem to produce more friendly algebraic
     equations.
 
