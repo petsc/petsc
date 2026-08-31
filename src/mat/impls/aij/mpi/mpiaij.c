@@ -7744,25 +7744,6 @@ static inline PetscErrorCode MatCollapseRows(Mat Amat, PetscInt start, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-sowing-chars
-/*
-  MatCreateGraph_Simple_AIJ - create simple scalar matrix (graph) from potentially blocked matrix
-
-  Input Parameters:
-+ Amat       - matrix
-. symmetrize - make the result symmetric
-. scale      - scale with diagonal
-. filter     - threshold for filter
-. index_size - length of `index`
-- index      - indices of unknown purpose
-
-  Output Parameter:
-. a_Gmat - output scalar graph >= 0
-
-  Level: developer
-
-.seealso: `MATAIJ`
-*/
 PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmetrize, PetscBool scale, PetscReal filter, PetscInt index_size, PetscInt index[], Mat *a_Gmat)
 {
   PetscInt  Istart, Iend, Ii, jj, kk, ncols, nloc, NN, MM, bs;
