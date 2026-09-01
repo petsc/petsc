@@ -248,7 +248,7 @@ int main(int argc, char **args)
        suffix: 2_par_kokkos_no_gpu_aware
        args: -use_gpu_aware_mpi 0
      test:
-       requires: defined(HAVE_MPI_GPU_AWARE)
+       requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
        suffix: 2_par_kokkos_gpu_aware
        args: -use_gpu_aware_mpi 1
 
