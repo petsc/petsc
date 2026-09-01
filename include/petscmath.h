@@ -2150,7 +2150,8 @@ typedef PetscReal MatReal;
 struct petsc_mpiu_2scalar {
   PetscScalar a, b;
 };
-PETSC_EXTERN MPI_Datatype MPIU_2SCALAR PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_2scalar);
+/* See comments below for clang and MPIU_2INT */
+PETSC_EXTERN MPI_Datatype MPIU_2SCALAR /* PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_2scalar) */;
 
 /* MPI Datatypes for composite reductions */
 struct petsc_mpiu_real_int {
