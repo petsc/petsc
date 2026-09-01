@@ -70,28 +70,28 @@ PETSC_EXTERN PetscErrorCode PetscDrawViewFromOptions(PetscDraw, PetscObject, con
 #define PETSC_DRAW_MAXCOLOR        256
 
 /*MC
-   PetscDrawRealToColor - Maps a real value within an interval to a color.
-   The color is an integer value in the range [`PETSC_DRAW_BASIC_COLORS` to 255]
-   that can be passed to various drawing routines.
+  PetscDrawRealToColor - Maps a real value within an interval to a color.
+  The color is an integer value in the range [`PETSC_DRAW_BASIC_COLORS` to 255]
+  that can be passed to various drawing routines.
 
-   Synopsis:
-   #include <petscdraw.h>
-   int PetscDrawRealToColor(PetscReal value, PetscReal min, PetscReal max)
+  Synopsis:
+  #include <petscdraw.h>
+  int PetscDrawRealToColor(PetscReal value, PetscReal min, PetscReal max)
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  value - value to map within the interval [`min`, `max`]
-.  min   - lower end of interval
--  max   - upper end of interval
+  Input Parameters:
++ value - value to map within the interval [`min`, `max`]
+. min   - lower end of interval
+- max   - upper end of interval
 
-   Returns:
-   The result as integer
+  Returns:
+  The result as integer
 
-   Level: intermediate
+  Level: intermediate
 
-   Note:
-   Values outside the interval [`min`, `max`] are clipped.
+  Note:
+  Values outside the interval [`min`, `max`] are clipped.
 
 .seealso: `PetscDraw`, `PetscDrawPointPixel()`, `PetscDrawPoint()`, `PetscDrawLine()`, `PetscDrawTriangle()`, `PetscDrawRectangle()`
 M*/

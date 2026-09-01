@@ -183,15 +183,17 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt, PetscInt, PetscI
 #endif
 
 /*MC
-   PetscDTFactorial - Approximate n! as a real number
+  PetscDTFactorial - Approximate n! as a real number
 
-   Input Parameter:
-.  n - a non-negative integer
+  Not Collective
 
-   Output Parameter:
-.  factorial - n!
+  Input Parameter:
+. n - a non-negative integer
 
-   Level: beginner
+  Output Parameter:
+. factorial - n!
+
+  Level: beginner
 
 .seealso: `PetscDTFactorialInt()`, `PetscDTBinomialInt()`, `PetscDTBinomial()`
 M*/
@@ -208,18 +210,20 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
 }
 
 /*MC
-   PetscDTFactorialInt - Compute n! as an integer
+  PetscDTFactorialInt - Compute n! as an integer
 
-   Input Parameter:
-.  n - a non-negative integer
+  Not Collective
 
-   Output Parameter:
-.  factorial - n!
+  Input Parameter:
+. n - a non-negative integer
 
-   Level: beginner
+  Output Parameter:
+. factorial - n!
 
-   Note:
-   This is limited to `n` such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+  Level: beginner
+
+  Note:
+  This is limited to `n` such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
 .seealso: `PetscDTFactorial()`, `PetscDTBinomialInt()`, `PetscDTBinomial()`
 M*/
@@ -243,16 +247,18 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
 }
 
 /*MC
-   PetscDTBinomial - Approximate the binomial coefficient `n` choose `k`
+  PetscDTBinomial - Approximate the binomial coefficient `n` choose `k`
 
-   Input Parameters:
-+  n - a non-negative integer
--  k - an integer between 0 and `n`, inclusive
+  Not Collective
 
-   Output Parameter:
-.  binomial - approximation of the binomial coefficient `n` choose `k`
+  Input Parameters:
++ n - a non-negative integer
+- k - an integer between 0 and `n`, inclusive
 
-   Level: beginner
+  Output Parameter:
+. binomial - approximation of the binomial coefficient `n` choose `k`
+
+  Level: beginner
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`
 M*/
@@ -281,21 +287,23 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
 }
 
 /*MC
-   PetscDTBinomialInt - Compute the binomial coefficient `n` choose `k`
+  PetscDTBinomialInt - Compute the binomial coefficient `n` choose `k`
 
-   Input Parameters:
-+  n - a non-negative integer
--  k - an integer between 0 and `n`, inclusive
+  Not Collective
 
-   Output Parameter:
-.  binomial - the binomial coefficient `n` choose `k`
+  Input Parameters:
++ n - a non-negative integer
+- k - an integer between 0 and `n`, inclusive
 
-   Level: beginner
+  Output Parameter:
+. binomial - the binomial coefficient `n` choose `k`
 
-   Note:
-   This is limited by integers that can be represented by `PetscInt`.
+  Level: beginner
 
-   Use `PetscDTBinomial()` for real number approximations of larger values
+  Note:
+  This is limited by integers that can be represented by `PetscInt`.
+
+  Use `PetscDTBinomial()` for real number approximations of larger values
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTEnumPerm()`
 M*/
@@ -331,26 +339,28 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 #define PeOp
 
 /*MC
-   PetscDTEnumPerm - Get a permutation of `n` integers from its encoding into the integers [0, n!) as a sequence of swaps.
+  PetscDTEnumPerm - Get a permutation of `n` integers from its encoding into the integers [0, n!) as a sequence of swaps.
 
-   Input Parameters:
-+  n - a non-negative integer (see note about limits below)
--  k - an integer in [0, n!)
+  Not Collective
 
-   Output Parameters:
-+  perm  - the permuted list of the integers [0, ..., n-1]
--  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
+  Input Parameters:
++ n - a non-negative integer (see note about limits below)
+- k - an integer in [0, n!)
 
-   Level: intermediate
+  Output Parameters:
++ perm  - the permuted list of the integers [0, ..., n-1]
+- isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
-   Notes:
-   A permutation can be described by the operations that convert the lists [0, 1, ..., n-1] into the permutation,
-   by a sequence of swaps, where the ith step swaps whatever number is in ith position with a number that is in
-   some position j >= i.  This swap is encoded as the difference (j - i).  The difference d_i at step i is less than
-   (n - i).  This sequence of n-1 differences [d_0, ..., d_{n-2}] is encoded as the number
-   (n-1)! * d_0 + (n-2)! * d_1 + ... + 1! * d_{n-2}.
+  Level: intermediate
 
-   Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+  Notes:
+  A permutation can be described by the operations that convert the lists [0, 1, ..., n-1] into the permutation,
+  by a sequence of swaps, where the ith step swaps whatever number is in ith position with a number that is in
+  some position j >= i.  This swap is encoded as the difference (j - i).  The difference d_i at step i is less than
+  (n - i).  This sequence of n-1 differences [d_0, ..., d_{n-2}] is encoded as the number
+  (n-1)! * d_0 + (n-2)! * d_1 + ... + 1! * d_{n-2}.
+
+  Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTPermIndex()`
 M*/
@@ -385,20 +395,22 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 }
 
 /*MC
-   PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm()`.
+  PetscDTPermIndex - Encode a permutation of n into an integer in [0, n!).  This inverts `PetscDTEnumPerm()`.
 
-   Input Parameters:
-+  n    - a non-negative integer (see note about limits below)
--  perm - the permuted list of the integers [0, ..., n-1]
+  Not Collective
 
-   Output Parameters:
-+  k     - an integer in [0, n!)
--  isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
+  Input Parameters:
++ n    - a non-negative integer (see note about limits below)
+- perm - the permuted list of the integers [0, ..., n-1]
 
-   Level: beginner
+  Output Parameters:
++ k     - an integer in [0, n!)
+- isOdd - if not `NULL`, returns whether the permutation used an even or odd number of swaps.
 
-   Note:
-   Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
+  Level: beginner
+
+  Note:
+  Limited to `n` such that `n`! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`
 M*/
@@ -435,21 +447,23 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
 }
 
 /*MC
-   PetscDTEnumSubset - Get an ordered subset of the integers [0, ..., n - 1] from its encoding as an integers in [0, n choose k).
-   The encoding is in lexicographic order.
+  PetscDTEnumSubset - Get an ordered subset of the integers [0, ..., n - 1] from its encoding as an integers in [0, n choose k).
+  The encoding is in lexicographic order.
 
-   Input Parameters:
-+  n - a non-negative integer (see note about limits below)
-.  k - an integer in [0, n]
--  j - an index in [0, n choose k)
+  Not Collective
 
-   Output Parameter:
-.  subset - the jth subset of size k of the integers [0, ..., n - 1]
+  Input Parameters:
++ n - a non-negative integer (see note about limits below)
+. k - an integer in [0, n]
+- j - an index in [0, n choose k)
 
-   Level: beginner
+  Output Parameter:
+. subset - the jth subset of size k of the integers [0, ..., n - 1]
 
-   Note:
-   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+  Level: beginner
+
+  Note:
+  Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
 
 .seealso: `PetscDTSubsetIndex()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`, `PetscDTPermIndex()`
 M*/
@@ -475,21 +489,23 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
 }
 
 /*MC
-   PetscDTSubsetIndex - Convert an ordered subset of k integers from the set [0, ..., n - 1] to its encoding as an integers in [0, n choose k) in lexicographic order.
-   This is the inverse of `PetscDTEnumSubset`.
+  PetscDTSubsetIndex - Convert an ordered subset of k integers from the set [0, ..., n - 1] to its encoding as an integers in [0, n choose k) in lexicographic order.
+  This is the inverse of `PetscDTEnumSubset`.
 
-   Input Parameters:
-+  n      - a non-negative integer (see note about limits below)
-.  k      - an integer in [0, n]
--  subset - an ordered subset of the integers [0, ..., n - 1]
+  Not Collective
 
-   Output Parameter:
-.  index - the rank of the subset in lexicographic order
+  Input Parameters:
++ n      - a non-negative integer (see note about limits below)
+. k      - an integer in [0, n]
+- subset - an ordered subset of the integers [0, ..., n - 1]
 
-   Level: beginner
+  Output Parameter:
+. index - the rank of the subset in lexicographic order
 
-   Note:
-   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+  Level: beginner
+
+  Note:
+  Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
 
 .seealso: `PetscDTEnumSubset()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`, `PetscDTPermIndex()`
 M*/
@@ -517,24 +533,26 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 }
 
 /*MC
-   PetscDTEnumSplit - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first subset of size k and being the jth subset of that size in lexicographic order.
+  PetscDTEnumSplit - Split the integers [0, ..., n - 1] into two complementary ordered subsets, the first subset of size k and being the jth subset of that size in lexicographic order.
 
-   Input Parameters:
-+  n - a non-negative integer (see note about limits below)
-.  k - an integer in [0, n]
--  j - an index in [0, n choose k)
+  Not Collective
 
-   Output Parameters:
-+  perm  - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
--  isOdd - if not `NULL`, return whether perm is an even or odd permutation.
+  Input Parameters:
++ n - a non-negative integer (see note about limits below)
+. k - an integer in [0, n]
+- j - an index in [0, n choose k)
 
-   Level: beginner
+  Output Parameters:
++ perm  - the jth subset of size k of the integers [0, ..., n - 1], followed by its complementary set.
+- isOdd - if not `NULL`, return whether perm is an even or odd permutation.
 
-   Note:
-   Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
+  Level: beginner
+
+  Note:
+  Limited by arguments such that `n` choose `k` can be represented by `PetscInt`
 
 .seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`,
-          `PetscDTPermIndex()`
+  `PetscDTPermIndex()`
 M*/
 static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PeOp PetscBool *isOdd)
 {
