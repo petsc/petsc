@@ -591,26 +591,26 @@ static inline PetscErrorCode PetscStrbeginswith(const char a[], const char b[], 
 #undef PetscAssertPointer_Private
 
 /*@
-   PetscMemmove - Copies `n` bytes, beginning at location `b`, to the space
-   beginning at location `a`. Copying  between regions that overlap will
-   take place correctly. Use `PetscMemcpy()` if the locations do not overlap
+  PetscMemmove - Copies `n` bytes, beginning at location `b`, to the space
+  beginning at location `a`. Copying  between regions that overlap will
+  take place correctly. Use `PetscMemcpy()` if the locations do not overlap
 
-   Not Collective, No Fortran Support
+  Not Collective, No Fortran Support
 
-   Input Parameters:
-+  b - pointer to initial memory space
-.  a - pointer to copy space
--  n - length (in bytes) of space to copy
+  Input Parameters:
++ b - pointer to initial memory space
+. a - pointer to copy space
+- n - length (in bytes) of space to copy
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   `PetscArraymove()` is preferred
+  Notes:
+  `PetscArraymove()` is preferred
 
-   This routine is analogous to `memmove()`.
+  This routine is analogous to `memmove()`.
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
-          `PetscArraymove()`
+  `PetscArraymove()`
 @*/
 static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
 {
@@ -645,30 +645,30 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
 }
 
 /*@
-   PetscMemcpy - Copies `n` bytes, beginning at location `b`, to the space
-   beginning at location `a`. The two memory regions CANNOT overlap, use
-   `PetscMemmove()` in that case.
+  PetscMemcpy - Copies `n` bytes, beginning at location `b`, to the space
+  beginning at location `a`. The two memory regions CANNOT overlap, use
+  `PetscMemmove()` in that case.
 
-   Not Collective, No Fortran Support
+  Not Collective, No Fortran Support
 
-   Input Parameters:
-+  b - pointer to initial memory space
--  n - length (in bytes) of space to copy
+  Input Parameters:
++ b - pointer to initial memory space
+- n - length (in bytes) of space to copy
 
-   Output Parameter:
-.  a - pointer to copy space
+  Output Parameter:
+. a - pointer to copy space
 
-   Level: intermediate
+  Level: intermediate
 
-   Compile Options\:
+  Compile Options\:
 +  `PETSC_PREFER_DCOPY_FOR_MEMCPY` - cause the BLAS `dcopy()` routine to be used for memory copies on double precision values.
 .  `PETSC_PREFER_COPY_FOR_MEMCPY` - cause C code to be used for memory copies on double precision values.
 -  `PETSC_PREFER_FORTRAN_FORMEMCPY` - cause Fortran code to be used for memory copies on double precision values.
 
-   Notes:
-   Prefer `PetscArraycpy()`
+  Notes:
+  Prefer `PetscArraycpy()`
 
-   This routine is analogous to `memcpy()`.
+  This routine is analogous to `memcpy()`.
 
 .seealso: `PetscMemzero()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`
 @*/
@@ -709,22 +709,22 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
 }
 
 /*@
-   PetscMemzero - Zeros the specified memory.
+  PetscMemzero - Zeros the specified memory.
 
-   Not Collective, No Fortran Support
+  Not Collective, No Fortran Support
 
-   Input Parameters:
-+  a - pointer to beginning memory location
--  n - length (in bytes) of memory to initialize
+  Input Parameters:
++ a - pointer to beginning memory location
+- n - length (in bytes) of memory to initialize
 
-   Level: intermediate
+  Level: intermediate
 
-   Compile Option:
-   `PETSC_PREFER_BZERO` - on certain machines (the IBM RS6000) the bzero() routine happens
-   to be faster than the memset() routine. This flag causes the bzero() routine to be used.
+  Compile Option:
+  `PETSC_PREFER_BZERO` - on certain machines (the IBM RS6000) the bzero() routine happens
+  to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
-   Note:
-   Prefer `PetscArrayzero()`
+  Note:
+  Prefer `PetscArrayzero()`
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscMemmove()`, `PetscStrallocpy()`
 @*/

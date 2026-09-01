@@ -392,26 +392,26 @@ PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec, PetscCount, PetscIn
 PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode);
 
 /*@
-   VecSetValue - Set a single entry into a PETSc vector, `Vec`.
+  VecSetValue - Set a single entry into a PETSc vector, `Vec`.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  v     - the vector
-.  row   - the row location of the entry
-.  value - the value to insert
--  mode  - either `INSERT_VALUES` or `ADD_VALUES`
+  Input Parameters:
++ v     - the vector
+. row   - the row location of the entry
+. value - the value to insert
+- mode  - either `INSERT_VALUES` or `ADD_VALUES`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   For efficiency one should use `VecSetValues()` and set several or
-   many values simultaneously if possible.
+  Notes:
+  For efficiency one should use `VecSetValues()` and set several or
+  many values simultaneously if possible.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValue()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValue()` have been completed.
 
-   `VecSetValue()` uses 0-based indices in Python, C, and Fortran
+  `VecSetValue()` uses 0-based indices in Python, C, and Fortran
 
 .seealso: [](ch_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 @*/
@@ -498,31 +498,31 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
 /*@
-   VecSetValueLocal - Set a single entry into a vector using the local numbering of the vector, see `VecSetValuesLocal()`
+  VecSetValueLocal - Set a single entry into a vector using the local numbering of the vector, see `VecSetValuesLocal()`
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  v     - the vector
-.  row   - the local row location of the entry
-.  value - the value to insert
--  mode  - either `INSERT_VALUES` or `ADD_VALUES`
+  Input Parameters:
++ v     - the vector
+. row   - the local row location of the entry
+. value - the value to insert
+- mode  - either `INSERT_VALUES` or `ADD_VALUES`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   For efficiency one should use `VecSetValuesLocal()` and set several or
-   many values simultaneously if possible.
+  Notes:
+  For efficiency one should use `VecSetValuesLocal()` and set several or
+  many values simultaneously if possible.
 
-   These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
-   MUST be called after all calls to `VecSetValueLocal()` have been completed.
+  These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
+  MUST be called after all calls to `VecSetValueLocal()` have been completed.
 
-   See `VecSetLocalToGlobalMapping()` for how the local numbering is defined
+  See `VecSetLocalToGlobalMapping()` for how the local numbering is defined
 
-   `VecSetValueLocal()` uses 0-based indices in Fortran as well as in C.
+  `VecSetValueLocal()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`,
-          `VecSetLocalToGlobalMapping()`
+  `VecSetLocalToGlobalMapping()`
 @*/
 static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
@@ -627,19 +627,19 @@ PETSC_EXTERN PetscErrorCode VecGetArrayWriteAndMemType(Vec, PetscScalar *[], Pet
 PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar *[]);
 
 /*@
-   VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When the vectors are not the same the first pointer is read only
+  VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When the vectors are not the same the first pointer is read only
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameters:
-+  x - the vector
--  y - the second vector
+  Input Parameters:
++ x - the vector
+- y - the second vector
 
-   Output Parameters:
-+  xv - location to put pointer to the first array
--  yv - location to put pointer to the second array
+  Output Parameters:
++ xv - location to put pointer to the first array
+- yv - location to put pointer to the second array
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 @*/
@@ -653,17 +653,17 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar *xv[], Pe
 }
 
 /*@
-   VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common obtained with `VecGetArrayPair()`
+  VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common obtained with `VecGetArrayPair()`
 
-   Logically Collective; No Fortran Support
+  Logically Collective; No Fortran Support
 
-   Input Parameters:
-+  x  - the vector
-.  y  - the second vector
-.  xv - location to put pointer to the first array
--  yv - location to put pointer to the second array
+  Input Parameters:
++ x  - the vector
+. y  - the second vector
+. xv - location to put pointer to the first array
+- yv - location to put pointer to the second array
 
-   Level: developer
+  Level: developer
 
 .seealso: [](ch_vectors), `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 @*/

@@ -24,7 +24,7 @@ static inline PetscByte PetscBTMask_Internal(PetscCount index)
   Not Collective; No Fortran Support
 
   Input Parameter:
-. m  - the number of bits in `array`
+. m - the number of bits in `array`
 
   Level: developer
 

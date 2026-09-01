@@ -575,16 +575,18 @@ static inline PetscErrorCode PetscLogObjectDestroy(PetscObject o)
   #endif
 
 /*@
-   PetscLogFlops - Log how many flops are performed in a calculation
+  PetscLogFlops - Log how many flops are performed in a calculation
 
-   Input Parameter:
-.  n - the number of flops
+  Not Collective
 
-   Level: intermediate
+  Input Parameter:
+. n - the number of flops
 
-   Note:
-   To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-   not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+  Level: intermediate
+
+  Note:
+  To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+  not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
@@ -947,19 +949,21 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeterBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeterEnd(void);
 
 /*@
-   PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
+  PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
 
-   Input Parameter:
-.  n - the number of flops
+  Not Collective
 
-   Level: intermediate
+  Input Parameter:
+. n - the number of flops
 
-   Notes:
-   To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-   not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+  Level: intermediate
 
-   The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
-   just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
+  Notes:
+  To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+  not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+
+  The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
+  just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/

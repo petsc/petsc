@@ -994,27 +994,27 @@ PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, Pets
 
 PETSC_EXTERN PetscErrorCode MatCopyHashToXAIJ(Mat A, Mat B);
 /*@
-   MatSetValue - Set a single entry into a matrix.
+  MatSetValue - Set a single entry into a matrix.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat  - the matrix
-.  i    - the row location of the entry
-.  j    - the column location of the entry
-.  va   - the value to insert
--  mode - either `INSERT_VALUES` or `ADD_VALUES`
+  Input Parameters:
++ mat  - the matrix
+. i    - the row location of the entry
+. j    - the column location of the entry
+. va   - the value to insert
+- mode - either `INSERT_VALUES` or `ADD_VALUES`
 
-   Level: beginner
+  Level: beginner
 
-   Notes:
-   This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
-   MUST be called after all calls to `MatSetValue()` have been completed.
+  Notes:
+  This value may be cached, so `MatAssemblyBegin()` and `MatAssemblyEnd()`
+  MUST be called after all calls to `MatSetValue()` have been completed.
 
-   For efficiency one should use `MatSetValues()` and set several values simultaneously.
+  For efficiency one should use `MatSetValues()` and set several values simultaneously.
 
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `InsertMode`, `MatGetValue()`, `MatSetValues()`,
-          `MatSetValueLocal()`, `MatSetValuesLocal()`
+  `MatSetValueLocal()`, `MatSetValuesLocal()`
 @*/
 static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscScalar va, InsertMode mode)
 {
@@ -1022,26 +1022,26 @@ static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscS
 }
 
 /*@
-   MatGetValue - Gets a single value from a matrix
+  MatGetValue - Gets a single value from a matrix
 
-   Not Collective; can only return a value owned by the given process
+  Not Collective; can only return a value owned by the given process
 
-   Input Parameters:
-+  mat - the matrix
-.  row - the row location of the entry
--  col - the column location of the entry
+  Input Parameters:
++ mat - the matrix
+. row - the row location of the entry
+- col - the column location of the entry
 
-   Output Parameter:
-.  va - the value
+  Output Parameter:
+. va - the value
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   The matrix must have been assembled with `MatAssemblyBegin()` and `MatAssemblyEnd()` before this call
+  Notes:
+  The matrix must have been assembled with `MatAssemblyBegin()` and `MatAssemblyEnd()` before this call
 
-   For efficiency one should use `MatGetValues()` and get several values simultaneously.
+  For efficiency one should use `MatGetValues()` and get several values simultaneously.
 
-   See notes for `MatGetValues()`.
+  See notes for `MatGetValues()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValue()`, `MatGetValuesLocal()`, `MatGetValues()`
 @*/
@@ -1051,23 +1051,23 @@ static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, Pe
 }
 
 /*@
-   MatSetValueLocal - Inserts or adds a single value into a matrix, using a local numbering of the nodes.
+  MatSetValueLocal - Inserts or adds a single value into a matrix, using a local numbering of the nodes.
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+  mat  - the matrix
-.  i    - the row location of the entry
-.  j    - the column location of the entry
-.  va   - the value to insert
--  mode - either `INSERT_VALUES` or `ADD_VALUES`
+  Input Parameters:
++ mat  - the matrix
+. i    - the row location of the entry
+. j    - the column location of the entry
+. va   - the value to insert
+- mode - either `INSERT_VALUES` or `ADD_VALUES`
 
-   Level: intermediate
+  Level: intermediate
 
-   Notes:
-   For efficiency one should use `MatSetValuesLocal()` and set several values simultaneously.
+  Notes:
+  For efficiency one should use `MatSetValuesLocal()` and set several values simultaneously.
 
-   See notes for `MatSetValuesLocal()` for additional information on when and how this function can be used.
+  See notes for `MatSetValuesLocal()` for additional information on when and how this function can be used.
 
 .seealso: [](ch_matrices), `MatSetValue()`, `MatSetValuesLocal()`
 @*/
