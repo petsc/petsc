@@ -585,9 +585,9 @@ program.
 You should run with `-ksp_type richardson` to have PETSc run several V or W
 cycles. `-ksp_type preonly` causes boomerAMG to use only one V/W cycle. You can control
 how many cycles are used in a single application of the boomerAMG preconditioner with
-`-pc_hypre_boomeramg_max_iter <it>` (the default is 1). You can also control the
+`-pc_hypre_boomeramg_max_iter it` (the default is 1). You can also control the
 tolerance boomerAMG uses to decide if to stop before `max_iter` with
-`-pc_hypre_boomeramg_tol <tol>` (the default is 1.e-7). Run with `-ksp_view` to see
+`-pc_hypre_boomeramg_tol tol` (the default is 1.e-7). Run with `-ksp_view` to see
 all the hypre options used and `-help | grep boomeramg` to see all the command line
 options.
 
@@ -595,8 +595,8 @@ options.
 
 PETSc includes Additive Schwarz methods in the suite of preconditioners under the umbrella
 of `PCASM`. These may be activated with the runtime option `-pc_type asm`. Various
-other options may be set, including the degree of overlap `-pc_asm_overlap <number>` the
-type of restriction/extension `-pc_asm_type [basic,restrict,interpolate,none]` sets ASM
+other options may be set, including the degree of overlap `-pc_asm_overlap number` the
+type of restriction/extension `-pc_asm_type (basic|restrict|interpolate|none)` sets ASM
 type and several others. You may see the available ASM options by using `-pc_type asm
 -help`. See the procedural interfaces in the manual pages, for example `PCASMType()`
 and check the index of the users manual for `PCASMCreateSubdomains()`.

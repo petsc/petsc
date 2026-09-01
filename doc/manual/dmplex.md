@@ -413,7 +413,7 @@ DMPlexVecSetClosure(dm, section, residual, cell, &r, ADD_VALUES);
 ```
 
 A simple example of this kind of calculation is in
-`DMPlexComputeL2Diff_Plex()` (<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex">source</a>).
+`DMComputeL2Diff_Plex()` (<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/plex/plexfem.c.html#DMComputeL2Diff_Plex">source</a>).
 Note that there is no restriction on the type of cell or dimension of
 the mesh in the code above, so it will work for polyhedral cells, hybrid
 meshes, and meshes of any dimension, without change. We can also reverse

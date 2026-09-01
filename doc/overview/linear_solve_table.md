@@ -33,7 +33,7 @@
      - X
    * -
      - Variable Point Block Jacobi
-     - ``PCPBJACOBI``
+     - ``PCVPBJACOBI``
      - ``MATAIJ``, ``MATBAIJ``, ``MATSBAIJ``
      - ---
      - X

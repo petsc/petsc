@@ -156,8 +156,9 @@ customize their PETSc installation. Common configuration options are:
 
 - {ref}`Specifying different compilers. <doc_config_compilers>`
 - {ref}`Specifying different MPI implementations. <doc_config_mpi>`
-- Enabling [CUDA](https://developer.nvidia.com/cuda-toolkit)/[OpenCL](https://www.khronos.org/opencl/)/[ViennaCL](http://viennacl.sourceforge.net/)
-  {ref}`support. <doc_config_accel>`
+- Enabling [CUDA](https://developer.nvidia.com/cuda-toolkit), [HIP](https://rocm.docs.amd.com/),
+  [Kokkos](https://github.com/kokkos/kokkos), [SYCL](https://www.khronos.org/sycl/), or OpenMP
+  {ref}`support <doc_config_accel>`.
 - {ref}`Specifying options <doc_config_blaslapack>` for [BLAS/LAPACK](https://www.netlib.org/lapack/lug/node11.html).
 - {ref}`Specifying external packages <doc_config_externalpack>` to use or download
   automatically. PETSc can automatically download and install a wide range of other
@@ -299,9 +300,9 @@ gmake[1]: Leaving directory '/your/petsc/dir'
 =========================================
 Running test examples to verify correct installation
 Using PETSC_DIR=/your/petsc/dir and PETSC_ARCH=your-petsc-arch
-C/C++ example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process
-C/C++ example src/snes/examples/tutorials/ex19 run successfully with 2 MPI processes
-Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process
+C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process
+C/C++ example src/snes/tutorials/ex19 run successfully with 2 MPI processes
+Fortran example src/snes/tutorials/ex5f run successfully with 1 MPI process
 Completed test examples
 ```
 

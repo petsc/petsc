@@ -815,7 +815,7 @@ computations.
 
 Convergence of the nonlinear solvers can be detected in a variety of
 ways; the user can even specify a customized test, as discussed below.
-Most of the nonlinear solvers use `SNESConvergenceTestDefault()`,
+Most of the nonlinear solvers use `SNESConvergedDefault()`,
 however, `SNESNEWTONTR` uses a method-specific additional convergence
 test as well. The convergence tests involves several parameters, which
 are set by default to values that should be reasonable for a wide range

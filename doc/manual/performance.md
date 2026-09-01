@@ -659,7 +659,7 @@ various applications. Recall that one can specify the `KSP` methods
 and preconditioners at runtime via the options:
 
 ```none
--ksp_type <ksp_name> -pc_type <pc_name>
+-ksp_type ksp_name -pc_type pc_name
 ```
 
 One can also specify a variety of runtime customizations for the
@@ -667,7 +667,7 @@ solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is 30,
 which may be too small for some large-scale problems. One can alter this
-parameter with the option `-ksp_gmres_restart <restart>` or by calling
+parameter with the option `-ksp_gmres_restart restart` or by calling
 `KSPGMRESSetRestart()`. {any}`sec_ksp` gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.

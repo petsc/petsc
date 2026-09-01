@@ -26,7 +26,7 @@ important. We use several conventions
 
     - have an appended `_Private` (for example, `StashValues_Private`)
       or
-    - have an appended `_Subtype` (for example, `MatMultSeq_AIJ`).
+    - have an appended `_Subtype` (for example, `MatMult_SeqAIJ`).
 
     In addition, functions that are not intended for use outside of a
     particular file are declared `static`. Also, see the item
@@ -510,7 +510,7 @@ Even with the use of `clang-format` there are still many decisions about code fo
     #if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
       PetscCallMPI(MPI_Reduce_local(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM));
     #else
-      PetscCallMPI(MPI_Reduce(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM, 0, PETSC_COMM_SELF);
+      PetscCallMPI(MPI_Reduce(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM, 0, PETSC_COMM_SELF));
     #endif
     ```
 
@@ -527,8 +527,8 @@ Even with the use of `clang-format` there are still many decisions about code fo
     local contribution.
 
 13. Never use a local variable counter such as `PetscInt flops = 0;` to
-    accumulate flops and then call `PetscLogFlops();` *always* just
-    call `PetscLogFlops()` directly when needed.
+    accumulate flops and later pass the total to `PetscLogFlops()`.
+    Use `PetscCall(PetscLogFlops(n));` directly where the flops occur.
 
 14. Library symbols meant to be directly usable by the user should be declared
     `PETSC_EXTERN` in their respective public header file. Symbols intended for internal use should instead be declared `PETSC_INTERN`. Note that doing so is
@@ -590,10 +590,10 @@ Even with the use of `clang-format` there are still many decisions about code fo
     not a `%d`.
 
 18. All arguments of type `PetscReal` to PETSc ASCII output routines,
-    such as `PetscPrintf`, must be cast to `double`, for example,
+    such as `PetscPrintf()`, must be cast to `double`, for example,
 
     ```
-    PetscPrintf(PETSC_COMM_WORLD, "Norm %g\n", (double)norm);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm %g\n", (double)norm));
     ```
 
 19. When appropriate, ensure that each `XXXSetYYY()` function has a corresponding `XXXGetYYY()` function for obtaining
@@ -630,7 +630,7 @@ which Sphinx later processes.
 
 The Fortran interface files supplied manually by the developer go into the 
 directory `ftn-custom`, while those automatically generated
-go into directories in the \$PETSC_ARCH/ftn\`\` directory tree.
+go into directories in the `$PETSC_ARCH/ftn` directory tree.
 
 Each include file that contains formatted comments needs to have a line of the form
 
@@ -668,7 +668,7 @@ where noted, add a newline after the section headings.
     - `Not Collective` if the function need not be called on multiple (or possibly all) MPI
       processes
     - `Collective` if the function is a collective operation.
-    - `Logically Collective; yyy must contain common value]`
+    - `Logically Collective; yyy must contain a common value`
       if the function is collective but does not require any actual
       synchronization (e.g., setting class parameters uniformly). Any
       argument yyy, which must have the same value on all ranks of the

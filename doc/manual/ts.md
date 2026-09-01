@@ -965,7 +965,7 @@ scheme, `TSRK3` - $3$rd-order, $3$-stage RK scheme,
   and can output one solution every 10 time steps by adding
   `-ts_monitor_solution_interval 10`. Use `-ts_monitor_solution_interval -1`
   to output data only at then end of a time loop.
-- `-ts_monitor_solution_vtk <filename-%03D.vts>` - saves the solution
+- `-ts_monitor_solution_vtk filename-%03D.vts` - saves the solution
   at each iteration to a file in vtk format,
   `TSMonitorSolutionVTK()`.
 
@@ -1285,7 +1285,7 @@ corresponding Jacobian $F_y + \sigma F_{\dot y}$ (set by
 `TSSetIJacobian()`). Note that the solution state $y$ is
 $[ \phi \;  \omega ]^T$ here. For sensitivity analysis, we need to
 provide a routine to compute $\mathrm{f}_p=[0 \; 1]^T$ using
-`TSASetRHSJacobianP()`, and three routines corresponding to the
+`TSSetRHSJacobianP()`, and three routines corresponding to the
 integrand $r=c \left( \max(0, \phi - \phi_S ) \right)^2$,
 $r_p = [0 \; 0]^T$ and
 $r_y= [ 2 c \left( \max(0, \phi - \phi_S ) \right) \; 0]^T$ using
@@ -1394,7 +1394,7 @@ and BDF (backward differentiation formula). One can select these with
 TSSundialsSetType(TS ts,TSSundialsLmmType [SUNDIALS_ADAMS,SUNDIALS_BDF]);
 ```
 
-or the command line option `-ts_sundials_type <adams,bdf>`. BDF is the
+or the command line option `-ts_sundials_type (adams|bdf)`. BDF is the
 default.
 
 Sundials does not use the `SNES` library within PETSc for its
@@ -1425,8 +1425,8 @@ TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type);
 ```
 
 where `type` is either `SUNDIALS_MODIFIED_GS` or
-`SUNDIALS_UNMODIFIED_GS`. This may be set via the options data base
-with `-ts_sundials_gramschmidt_type <modifed,unmodified>`.
+`SUNDIALS_CLASSICAL_GS`. This may be set via the options database
+with `-ts_sundials_gramschmidt_type (modified|classical)`.
 
 The routine
 
@@ -1578,7 +1578,7 @@ a constant timestep over the entire grid, or it varies with location.
   TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc);
   ```
 
-  or the option `-ts_pseudo_increment <inc>`.
+  or the option `-ts_pseudo_increment inc`.
 
 - For location-dependent pseudo-timestepping, the interface function
   has not yet been created.

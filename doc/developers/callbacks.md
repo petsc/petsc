@@ -42,7 +42,7 @@ functions (or their contexts) without affecting the original DMKSP, call
 DM    dm_2;
 DMKSP dmksp;
 KSPGetDM(ksp_2,&dm_2);
-DMGetDMKSPWrite(dm_2,&dmksp_2);
+DMGetDMKSPWrite(dm_2,&dmksp);
 ```
 
 This results in the object organization as indicated in the following figure

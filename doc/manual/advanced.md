@@ -220,7 +220,7 @@ diagonal are smaller than `tol` in a absolute value. If small values
 are detected and corrected for, a nonsymmetric permutation of the rows
 and columns will result. This is not guaranteed to work, but may help if
 one was simply unlucky in the original ordering. When using the `KSP`
-solver interface the option `-pc_factor_nonzeros_along_diagonal <tol>`
+solver interface the option `-pc_factor_nonzeros_along_diagonal tol`
 may be used. Here, `tol` is an optional tolerance to decide if a value
 is nonzero; by default it is `1.e-10`.
 

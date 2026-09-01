@@ -2122,7 +2122,7 @@ have zeros on the diagonals and the rest.
 
     - `-pc_fieldsplit_default (true|false)` Automatically add any fields needed that have not been supplied explicitly by `-pc_fieldsplit_%d_fields`.
 
-  - `DMFieldsplitSetIS()` Provide the `IS` that defines a particular field.
+  - `PCFieldSplitSetIS()` Provide the `IS` that defines a particular field.
 
 - Control the type of the block preconditioner
 
@@ -2132,7 +2132,7 @@ have zeros on the diagonals and the rest.
     Schur complement, but when it works well can be extremely effective. See `PCFieldSplitSetType()`. `gkb` is for symmetric saddle-point problems (the lower-right
     the block is zero).
 
-  - `-pc_fieldsplit_diag_use_amat (true|false)` Use the first matrix that is passed to `KSPSetJacobian()` to construct the block-diagonal sub-matrices used in the algorithms,
+  - `-pc_fieldsplit_diag_use_amat (true|false)` Use the first matrix that is passed to `KSPSetOperators()` to construct the block-diagonal sub-matrices used in the algorithms,
     by default, the second matrix is used.
 
   - Options for Schur preconditioner: `-pc_fieldsplit_type`

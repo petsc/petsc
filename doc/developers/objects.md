@@ -59,10 +59,10 @@ object. Essentially, these routines do some error checking of arguments
 and logging of profiling information and then call the function
 appropriate for the particular implementation of the object. The name of
 the abstract function is `<class>Operation`, for instance,
-`MatMult()` or `PCCreate(`), while the name of a particular
+`MatMult()` or `PCCreate()`, while the name of a particular
 implementation is `<class>Operation_<implementation>`, for instance,
 `MatMult_SeqAIJ()` or `PCCreate_ILU()`. These naming conventions are
-used to simplify code maintenance (also see Section [sec:stylenames]).
+used to simplify code maintenance (also see {ref}`style`).
 
 One or more actual implementations of the class (for example, sparse
 uniprocessor and parallel matrices implemented with the AIJ storage
@@ -115,13 +115,13 @@ include the following.
 :start-at: struct _p_Vec {
 ```
 
-Each PETSc object begins with a `PetscClassId`, which is used for
-error checking. Each different class of objects has its value for
-`classid`; these are used to distinguish between classes. When a new
+Each PETSc object contains a `PetscClassId`, which is used for
+error checking. Each class has a unique `classid`; these values distinguish
+between classes. When a new
 class is created you need to call
 
 ```
-PetscClassIdRegister(const char *classname,PetscClassId *classid);
+PetscErrorCode PetscClassIdRegister(const char[], PetscClassId *);
 ```
 
 For example,
@@ -175,53 +175,30 @@ See also, `PetscUseMethod()`, and `PetscTryMethod()`.
 
 ## Common Object Functions
 
-Several routines are provided for manipulating data within the header.
-These include the specific functions in the PETSc common function table.
-The function pointers are not called directly; rather you should call
-`PetscObjectFunctionName()`, where `FunctionName` is one of the
-functions listed below with the first letter of each word capitalized.
+Several routines manipulate data stored in the common object header.
+Application code calls these routines instead of accessing the header
+directly.
 
-`PetscObjectGetComm()` calls the `getcomm(PetscObject,MPI_Comm*)` function point which obtains the MPI communicator
-associated with this object.
+`PetscObjectGetComm()` returns the communicator stored in the object.
 
-`PetscObjectView()` calls the `view(PetscObject,PetscViewer)` function point which allows you to store or visualize the
-data inside an object. If the `PetscViewer` is `NULL`, then it should cause the
-object to print information on the object to `stdout`.
+`PetscObjectView()` dispatches through the common `view` operation to
+display or store information about the object. If the `PetscViewer` is
+`NULL`, PETSc uses an ASCII viewer for `stdout`.
 
-`PetscObjectDestroy()` calls the  `destroy(PetscObject)` function pointer which causes the reference count of the object to be
-decreased by one or the object to be destroyed and all memory used by
-the object to be freed when the reference count drops to zero. If the
-object has any other objects composed with it, the `PetscObjectDestroy()` function is called on them.
+`PetscObjectDestroy()` dispatches through the common `destroy` operation.
+The class-specific implementation manages reference counting and releases
+the object when its reference count reaches zero.
 
-`PetscObjectCompose()` calls the `compose(PetscObject,const char *name,PetscObject)` function pointer  which associates the
-second object with the first object and increases the reference count of
-the second object. If an object with the same name was previously
-composed, that object is dereferenced and replaced with the new object.
-If the second object is `NULL` and an object with the same name has
-already been composed, that object is dereferenced (the `PetscObjectDestroy()`
-function is called on it, and that object is removed from the first
-object). This is a way to remove, by name, an object that was previously
-composed.
+`PetscObjectCompose()` associates another PETSc object with a name in the
+object's composed-object list. It replaces an existing association with the
+same name and removes the association when the supplied object is `NULL`.
+`PetscObjectQuery()` retrieves an object from this list without increasing
+its reference count and returns `NULL` when the name is not present.
 
-`PetscObjectQuery()` calls the `query(PetscObject,const char *name,PetscObject*)` function pointer which retrieves an object
-that was previously composed with the first object via
-`PetscObjectCompose()`. It retrieves a `NULL` if no object with that
-name was previously composed.
-
-`PetscObjectComposeFunction()` calls the `composefunction(PetscObject,const char *name,void *func)` function pointer which associates
-a function pointer with an object. If the object already had a composed
-function with the same name, the old one is replaced. If `func` is
-`NULL`, the existing function is removed from the object. The string
-`name` is the character string name of the function.
-
-For example, `fname` may be `PCCreate_LU`.
-
-`PetscObjectQueryFunction()` calls the `queryfunction(PetscObject,const char *name,void **func)` function pointer which retrieves a
-function pointer that was associated with the object via
-`PetscObjectComposeFunction()`. If dynamic libraries are used, the
-function is loaded into memory at this time (if it has not been
-previously loaded), not when the `PetscObjectComposeFunction()` routine was
-called.
+`PetscObjectComposeFunction()` associates a function pointer with a name in
+the object's composed-function list. It replaces an existing association
+and removes the association when the function pointer is `NULL`.
+`PetscObjectQueryFunction()` retrieves a function pointer from this list.
 
 Since the object composition allows one to compose PETSc objects
 with PETSc objects, PETSc provides the
@@ -242,9 +219,8 @@ that the library writer does not have to “reinvent the wheel.”
 
 ### Compose and Query Objects
 
-In
-<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/sys/objects/olist.c.html">src/sys/objects/olist.c</a>
-PETSc defines a C `struct`
+PETSc defines the composed-object list in
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petsc/private/petscimpl.h.html">include/petsc/private/petscimpl.h</a>
 
 ```{literalinclude} /../include/petsc/private/petscimpl.h
 :end-at: };
@@ -256,10 +232,10 @@ from which linked lists of composed objects may be constructed. The
 routines to manipulate these elementary objects are
 
 ```
-int PetscObjectListAdd(PetscObjectList *fl,const char *name,PetscObject obj);
-int PetscObjectListDestroy(PetscObjectList *fl);
-int PetscObjectListFind(PetscObjectList fl,const char *name,PetscObject *obj)
-int PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl);
+PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscObject obj);
+PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl);
+PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscObject *obj);
+PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl);
 ```
 
 The function `PetscObjectListAdd()` will create the initial
