@@ -102,10 +102,10 @@ The error-handling function `PetscError()` calls the “current” error
 handler with the code
 
 ```{literalinclude} /../src/sys/error/err.c
-:append: '}'
-:end-at: PetscFunctionReturn
-:language: c
 :start-at: PetscErrorCode PetscError(
+:end-at: return ierr;
+:append: '}'
+:language: c
 ```
 
 You can set a new error handler with the command

@@ -55,7 +55,7 @@ Refer to Sphinx's [own documentation](https://www.sphinx-doc.org) for general in
   ```rst
   .. literalinclude:: /../src/sys/error/err.c
      :start-at: PetscErrorCode PetscError(
-     :end-at: PetscFunctionReturn(PETSC_SUCCESS)
+     :end-at: return ierr;
      :append: }
   ```
 
