@@ -404,7 +404,8 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, cons
   PetscFunctionBegin;
   /* Set options to F */
   PetscOptionsBegin(PetscObjectComm((PetscObject)F), ((PetscObject)F)->prefix, "SuperLU Options", "Mat");
-  PetscCall(PetscOptionsBool("-mat_superlu_equil", "Equil", "None", (PetscBool)lu->options.Equil, (PetscBool *)&lu->options.Equil, NULL));
+  PetscCall(PetscOptionsBool("-mat_superlu_equil", "Equil", "None", lu->options.Equil != NO ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
+  if (set) lu->options.Equil = flg ? YES : NO;
   PetscCall(PetscOptionsEList("-mat_superlu_colperm", "ColPerm", "None", colperm, 4, colperm[3], &indx, &flg));
   if (flg) lu->options.ColPerm = (colperm_t)indx;
   PetscCall(PetscOptionsEList("-mat_superlu_iterrefine", "IterRefine", "None", iterrefine, 4, iterrefine[0], &indx, &flg));

@@ -38,7 +38,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype, MPI_Datatype *mty
   else if (ptype == PETSC_LONG) *mtype = MPI_LONG;
   else if (ptype == PETSC_SHORT) *mtype = MPI_SHORT;
   else if (ptype == PETSC_ENUM) *mtype = MPI_INT;
-  else if (ptype == PETSC_BOOL) *mtype = MPI_INT;
+  else if (ptype == PETSC_BOOL) *mtype = MPI_C_BOOL;
   else if (ptype == PETSC_INT64) *mtype = MPIU_INT64;
   else if (ptype == PETSC_COUNT) *mtype = MPIU_COUNT;
   else if (ptype == PETSC_INT32) *mtype = MPIU_INT32;
@@ -91,6 +91,7 @@ PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype, PetscDataType
 #endif
   else if (mtype == MPI_LONG) *ptype = PETSC_LONG;
   else if (mtype == MPI_SHORT) *ptype = PETSC_SHORT;
+  else if (mtype == MPI_C_BOOL) *ptype = PETSC_BOOL;
   else if (mtype == MPI_FLOAT) *ptype = PETSC_FLOAT;
   else if (mtype == MPI_CHAR) *ptype = PETSC_CHAR;
 #if defined(PETSC_USE_REAL___FLOAT128)

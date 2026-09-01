@@ -99,6 +99,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscBagItem item;
   char         nname[PETSC_BAG_NAME_LENGTH + 1];
   PetscBool    printhelp;
+  PetscInt    *values = (PetscInt *)addr;
   PetscInt     i, tmp = msize;
 
   PetscFunctionBegin;
@@ -112,10 +113,10 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i));
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", values[i]));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
-  PetscCall(PetscOptionsGetIntArray(NULL, bag->bagprefix, nname, (PetscInt *)addr, &tmp, NULL));
+  PetscCall(PetscOptionsGetIntArray(NULL, bag->bagprefix, nname, values, &tmp, NULL));
 
   PetscCall(PetscNew(&item));
   item->dtype  = PETSC_INT;
@@ -149,6 +150,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
 {
   PetscBagItem item;
   char         nname[PETSC_BAG_NAME_LENGTH + 1];
+  PetscReal   *values = (PetscReal *)addr;
   PetscBool    printhelp;
   PetscInt     i, tmp = msize;
 
@@ -163,10 +165,10 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%g ", (double)(*((PetscReal *)addr) + i)));
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%g ", (double)values[i]));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
-  PetscCall(PetscOptionsGetRealArray(NULL, bag->bagprefix, nname, (PetscReal *)addr, &tmp, NULL));
+  PetscCall(PetscOptionsGetRealArray(NULL, bag->bagprefix, nname, values, &tmp, NULL));
 
   PetscCall(PetscNew(&item));
   item->dtype  = PETSC_REAL;
@@ -295,6 +297,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
 {
   PetscBagItem item;
   char         nname[PETSC_BAG_NAME_LENGTH + 1];
+  PetscBool   *values = (PetscBool *)addr;
   PetscBool    printhelp;
   PetscInt     i, tmp = msize;
 
@@ -309,10 +312,10 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) {
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <", bag->bagprefix ? bag->bagprefix : "", name));
-    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", *((PetscInt *)addr) + i));
+    for (i = 0; i < msize; i++) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "%" PetscInt_FMT " ", (PetscInt)values[i]));
     PetscCall((*PetscHelpPrintf)(bag->bagcomm, ">: %s \n", help));
   }
-  PetscCall(PetscOptionsGetBoolArray(NULL, bag->bagprefix, nname, (PetscBool *)addr, &tmp, NULL));
+  PetscCall(PetscOptionsGetBoolArray(NULL, bag->bagprefix, nname, values, &tmp, NULL));
 
   PetscCall(PetscNew(&item));
   item->dtype  = PETSC_BOOL;
