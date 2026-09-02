@@ -1560,9 +1560,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) noexcept
 {
-  PetscBool          iscupm;
   PetscDeviceContext dctx;
   cupmBlasHandle_t   handle;
+  const PetscScalar *dlr;
+  PetscMemType       mtype;
   auto               m = A->rmap->n, n = A->cmap->n;
 
   PetscFunctionBegin;
@@ -1577,44 +1578,51 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) n
     if (l) {
       PetscCall(VecGetSize(l, &m));
       PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling Vec of wrong size");
-      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(l), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
-      if (!iscupm || l->boundtocpu) {
+      PetscCall(VecGetArrayReadAndMemType(l, &dlr, &mtype));
+      /* the array must live in memory this backend's BLAS can dereference, so test against this backend's
+         memory type rather than with PetscMemTypeDevice(), which would also accept the other backend's
+         device memory when PETSc is configured with both CUDA and HIP */
+      if (!(T == device::cupm::DeviceType::CUDA ? PetscMemTypeCUDA(mtype) : PetscMemTypeHIP(mtype))) {
+        PetscCall(VecRestoreArrayReadAndMemType(l, &dlr));
         PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(l)), &lr));
         PetscCall(VecSetLayout(lr, l->map));
         PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
         PetscCall(VecCopy(l, lr));
+        PetscCall(VecGetArrayReadAndMemType(lr, &dlr, nullptr));
       } else lr = l;
       {
-        const auto     dlr  = VecSeq_CUPM::DeviceArrayRead(dctx, lr);
         constexpr auto side = CUPMBLAS_SIDE_LEFT;
 
         PetscCall(PetscLogGpuTimeBegin());
-        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, dlr.cupmdata(), 1, da.cupmdata(), lda));
+        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, cupmScalarPtrCast(dlr), 1, da.cupmdata(), lda));
         PetscCall(PetscLogGpuTimeEnd());
         PetscCall(PetscLogGpuFlops(1.0 * n * m));
       }
-      if (!iscupm || l->boundtocpu) PetscCall(VecDestroy(&lr));
+      PetscCall(VecRestoreArrayReadAndMemType(lr, &dlr));
+      if (lr != l) PetscCall(VecDestroy(&lr));
     }
     if (r) {
       PetscCall(VecGetSize(r, &n));
       PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling Vec of wrong size");
-      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(r), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
-      if (!iscupm || r->boundtocpu) {
+      PetscCall(VecGetArrayReadAndMemType(r, &dlr, &mtype));
+      if (!(T == device::cupm::DeviceType::CUDA ? PetscMemTypeCUDA(mtype) : PetscMemTypeHIP(mtype))) {
+        PetscCall(VecRestoreArrayReadAndMemType(r, &dlr));
         PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(r)), &lr));
         PetscCall(VecSetLayout(lr, r->map));
         PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
         PetscCall(VecCopy(r, lr));
+        PetscCall(VecGetArrayReadAndMemType(lr, &dlr, nullptr));
       } else lr = r;
       {
-        const auto     dlr  = VecSeq_CUPM::DeviceArrayRead(dctx, lr);
         constexpr auto side = CUPMBLAS_SIDE_RIGHT;
 
         PetscCall(PetscLogGpuTimeBegin());
-        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, dlr.cupmdata(), 1, da.cupmdata(), lda));
+        PetscCallCUPMBLAS(cupmBlasXdgmm(handle, side, m, n, da.cupmdata(), lda, cupmScalarPtrCast(dlr), 1, da.cupmdata(), lda));
         PetscCall(PetscLogGpuTimeEnd());
         PetscCall(PetscLogGpuFlops(1.0 * n * m));
       }
-      if (!iscupm || r->boundtocpu) PetscCall(VecDestroy(&lr));
+      PetscCall(VecRestoreArrayReadAndMemType(lr, &dlr));
+      if (lr != r) PetscCall(VecDestroy(&lr));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

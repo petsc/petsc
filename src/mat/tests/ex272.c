@@ -5,7 +5,12 @@ static const char help[] = "Test MatPtAP with MATDIAGONAL and MATCONSTANTDIAGONA
 /* KOKKOS: Following two cases will fail, as MatDiagonalScale_{Seq,MPI}AIJKOKKOS does
    not support CPU diagonal vector against AIJ KOKKOS.
    -a_mat_type diagonal -p_mat_type aijkokkos -a_mat_vec_type standard
-   -a_mat_type aijkokkos -p_mat_type diagonal -p_mat_vec_type standard */
+   -a_mat_type aijkokkos -p_mat_type diagonal -p_mat_vec_type standard
+   Pairing a MATDIAGONAL holding a KOKKOS Vec with MATDENSECUDA/MATDENSEHIP also fails,
+   as the MatPtAPMultEqual() verification requires VecCopy() from a CUDA/HIP Vec into a
+   KOKKOS Vec, which is not supported.
+   -a_mat_type diagonal -p_mat_type densecuda -a_mat_vec_type kokkos
+   -a_mat_type densecuda -p_mat_type diagonal -p_mat_vec_type kokkos */
 static PetscErrorCode CreateTestMatrix(MPI_Comm comm, const char prefix[], PetscInt m, PetscInt n, Mat *M)
 {
   PetscFunctionBeginUser;
@@ -167,6 +172,20 @@ int main(int argc, char **argv)
     output_file: output/empty.out
 
   test:
+    suffix: diag_standard_densecuda
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type diagonal -p_mat_type densecuda -a_mat_vec_type standard
+    output_file: output/empty.out
+
+  test:
+    suffix: densecuda_diag_standard
+    nsize: {{1 2}}
+    requires: cuda
+    args: -a_mat_type densecuda -p_mat_type diagonal -p_mat_vec_type standard -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
     suffix: diag_diag_hip
     nsize: {{1 2}}
     requires: hip
@@ -192,6 +211,20 @@ int main(int argc, char **argv)
     nsize: {{1 2}}
     requires: hip
     args: -a_mat_type {{aijhipsparse densehip}} -p_mat_type diagonal -p_mat_vec_type hip -n 10 -m 10
+    output_file: output/empty.out
+
+  test:
+    suffix: diag_standard_densehip
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type diagonal -p_mat_type densehip -a_mat_vec_type standard
+    output_file: output/empty.out
+
+  test:
+    suffix: densehip_diag_standard
+    nsize: {{1 2}}
+    requires: hip
+    args: -a_mat_type densehip -p_mat_type diagonal -p_mat_vec_type standard -n 10 -m 10
     output_file: output/empty.out
 
   test:
