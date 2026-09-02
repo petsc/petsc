@@ -389,6 +389,8 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *c
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&contents->workB));
+  PetscCall(PetscSFDestroy(&contents->sf[0]));
+  PetscCall(PetscSFDestroy(&contents->sf[1]));
   for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
   for (PetscInt i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
   PetscCall(PetscFree4(contents->stype, contents->rtype, contents->rwaits, contents->swaits));
@@ -407,18 +409,17 @@ static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, PetscInt Am, Mat B, Mat C, MPIAIJ_MPIDense *contents, PetscInt *batchSize, PetscInt *numBatches)
 {
-  PetscInt        Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbs, numBb;
+  PetscInt        Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbs, numBb, ncols;
   MPI_Comm        comm;
   MPI_Datatype    type1;
   const PetscInt *sindices, *sstarts, *rstarts;
   PetscMPIInt    *disp;
   PetscMPIInt     nsends, nrecvs, nrows_to, nrows_from, bs_mpi;
+  PetscBool       flg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
   PetscCall(MatDenseGetLDA(B, &contents->blda));
-  PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
-  PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE, &nrecvs, &rstarts, NULL, NULL, NULL));
 
   /* Create column block of B and C for memory scalability when BN is too large */
   /* Estimate Bbn, column size of Bb */
@@ -441,38 +442,59 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
   if (Bbn > 0 && Bbn < BN) numBb = BN / Bbn;
   else numBb = 0;
   if (numBb) PetscCall(PetscInfo(C, "Using column batches of size %" PetscInt_FMT " for %" PetscInt_FMT " dense columns\n", Bbn, BN));
-  /* Create work matrix used to store off processor rows of B needed for local product */
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, nrows, Bbn ? Bbn : BN, NULL, &contents->workB));
+  ncols = Bbn ? Bbn : BN;
 
-  /* Use MPI derived data type to reduce memory required by the send/recv buffers */
-  PetscCall(PetscMalloc4(nsends, &contents->stype, nrecvs, &contents->rtype, nrecvs, &contents->rwaits, nsends, &contents->swaits));
-  contents->nsends = nsends;
-  contents->nrecvs = nrecvs;
+  /* Create work matrix used to store off processor rows of B needed for local product, with the same type as the local block of B */
+  PetscCall(MatCreate(PETSC_COMM_SELF, &contents->workB));
+  PetscCall(MatSetSizes(contents->workB, nrows, ncols, nrows, ncols));
+  PetscCall(MatSetType(contents->workB, ((PetscObject)((Mat_MPIDense *)B->data)->A)->type_name));
+  PetscCall(MatSetUp(contents->workB));
 
-  PetscCall(PetscMalloc1(PetscMax(Bm, 1), &disp));
-  PetscCall(PetscMPIIntCast(bs, &bs_mpi));
-  for (PetscMPIInt i = 0; i < nsends; i++) {
-    PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
-    for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
-    PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
-    PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
-    PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
-    PetscCallMPI(MPI_Type_free(&type1));
+  PetscCall(PetscObjectTypeCompare((PetscObject)((Mat_MPIDense *)B->data)->A, MATSEQDENSE, &flg));
+  contents->ondevice = (PetscBool)!flg;
+  if (contents->ondevice) {
+    /* Use strided PetscSFs, which support device memory, instead of the MPI derived data types below */
+    PetscCheck(ctx->vscat.bs <= 1 || contents->blda % ctx->vscat.bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Leading dimension %" PetscInt_FMT " of the dense matrix must be a multiple of the block size %" PetscInt_FMT, contents->blda, ctx->vscat.bs);
+    contents->ncols[0] = ncols;
+    PetscCall(PetscSFCreateStridedSF(ctx, ncols, contents->blda, nrows, &contents->sf[0]));
+    if (numBb && BN % Bbn) {
+      contents->ncols[1] = BN % Bbn;
+      PetscCall(PetscSFCreateStridedSF(ctx, BN % Bbn, contents->blda, nrows, &contents->sf[1]));
+    }
+  } else {
+    PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE, &nrecvs, &rstarts, NULL, NULL, NULL));
+
+    /* Use MPI derived data type to reduce memory required by the send/recv buffers */
+    PetscCall(PetscMalloc4(nsends, &contents->stype, nrecvs, &contents->rtype, nrecvs, &contents->rwaits, nsends, &contents->swaits));
+    contents->nsends = nsends;
+    contents->nrecvs = nrecvs;
+
+    PetscCall(PetscMalloc1(PetscMax(Bm, 1), &disp));
+    PetscCall(PetscMPIIntCast(bs, &bs_mpi));
+    for (PetscMPIInt i = 0; i < nsends; i++) {
+      PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
+      for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
+      PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
+      PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
+      PetscCallMPI(MPI_Type_free(&type1));
+    }
+
+    for (PetscMPIInt i = 0; i < nrecvs; i++) {
+      /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
+      PetscCall(PetscMPIIntCast((rstarts[i + 1] - rstarts[i]) * bs, &nrows_from));
+      disp[0] = 0;
+      PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_resized(type1, 0, nrows * sizeof(PetscScalar), &contents->rtype[i]));
+      PetscCallMPI(MPI_Type_commit(&contents->rtype[i]));
+      PetscCallMPI(MPI_Type_free(&type1));
+    }
+
+    PetscCall(PetscFree(disp));
+    PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, NULL, NULL));
   }
-
-  for (PetscMPIInt i = 0; i < nrecvs; i++) {
-    /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
-    PetscCall(PetscMPIIntCast((rstarts[i + 1] - rstarts[i]) * bs, &nrows_from));
-    disp[0] = 0;
-    PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
-    PetscCallMPI(MPI_Type_create_resized(type1, 0, nrows * sizeof(PetscScalar), &contents->rtype[i]));
-    PetscCallMPI(MPI_Type_commit(&contents->rtype[i]));
-    PetscCallMPI(MPI_Type_free(&type1));
-  }
-
-  PetscCall(PetscFree(disp));
-  PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, NULL, NULL));
-  PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, NULL, NULL));
   if (batchSize) *batchSize = Bbn;
   if (numBatches) *numBatches = numBb;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -519,8 +541,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, 
     Performs an efficient scatter on the rows of B needed by this process; this is
     a modification of the VecScatterBegin_() routines.
 */
-
-PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+static PetscErrorCode MatMPIDenseScatterHost_Private(VecScatter ctx, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
 {
   const PetscScalar *b;
   PetscScalar       *rvalues;
@@ -529,21 +550,15 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt 
   PetscMPIInt        nsends, nrecvs;
   MPI_Comm           comm;
   PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols, nsends_mpi, nrecvs_mpi;
-  PetscInt           blda;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 7);
-  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   PetscCall(PetscMPIIntCast(B->cmap->N, &ncols));
   PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL /*bs*/));
   PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL /*bs*/));
   PetscCall(PetscMPIIntCast(nsends, &nsends_mpi));
   PetscCall(PetscMPIIntCast(nrecvs, &nrecvs_mpi));
-  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
 
   PetscCall(MatDenseGetArrayRead(B, &b));
-  PetscCall(MatDenseGetLDA(B, &blda));
-  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
   PetscCall(MatDenseGetArray(workB, &rvalues));
 
   /* Post recv, use MPI derived data type to save memory */
@@ -558,6 +573,47 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt 
   PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL));
   PetscCall(MatDenseRestoreArrayRead(B, &b));
   PetscCall(MatDenseRestoreArray(workB, &rvalues));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   Same as MatMPIDenseScatterHost_Private(), but using the strided PetscSFs set up in
+   MatMPIDenseScatterSetUp_Private() so that the data never leaves the device
+*/
+static PetscErrorCode MatMPIDenseScatterDevice_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
+{
+  const PetscScalar *b;
+  PetscScalar       *w;
+  PetscSF            sf;
+  PetscInt           k = 0;
+  PetscMemType       bmtype, wmtype;
+
+  PetscFunctionBegin;
+  if (B->cmap->N != contents->ncols[0]) k = 1;
+  PetscCheck(contents->sf[k] && contents->ncols[k] == B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter set up for %" PetscInt_FMT " columns", B->cmap->N);
+  sf = contents->sf[k];
+  /* every entry of workB is overwritten, so write-only access is enough */
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &b, &bmtype));
+  PetscCall(MatDenseGetArrayWriteAndMemType(workB, &w, &wmtype));
+  PetscCall(PetscSFBcastWithMemTypeBegin(sf, sf->vscat.unit, bmtype, b, wmtype, w, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, sf->vscat.unit, b, w, MPI_REPLACE));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(workB, &w));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+{
+  PetscInt blda;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 7);
+  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
+  PetscCall(MatDenseGetLDA(B, &blda));
+  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
+  if (contents->ondevice) PetscCall(MatMPIDenseScatterDevice_Private(workB, contents, B));
+  else PetscCall(MatMPIDenseScatterHost_Private(ctx, bs, workB, contents, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
