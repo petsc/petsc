@@ -612,53 +612,92 @@ static PetscErrorCode MatMPIDenseScatterHost_Private(VecScatter ctx, PetscInt bs
 
 /*
    Same as MatMPIDenseScatterHost_Private(), but using the strided PetscSFs set up in
-   MatMPIDenseScatterSetUp_Private() so that the data never leaves the device
+   MatMPIDenseScatterSetUp_Private() so that the data never leaves the device. The scatter is split in two
+   halves so that a caller can run other work while the off-process rows of B are in flight
 */
-static PetscErrorCode MatMPIDenseScatterDevice_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
+static PetscErrorCode MatMPIDenseScatterDeviceBegin_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
 {
-  const PetscScalar *b;
-  PetscScalar       *w;
-  PetscSF            sf;
-  PetscInt           k = 0;
-  PetscMemType       bmtype, wmtype;
+  PetscSF      sf;
+  PetscInt     k = 0;
+  PetscMemType bmtype, wmtype;
 
   PetscFunctionBegin;
+  PetscCheck(!contents->sfinuse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A scatter is already in flight");
   if (B->cmap->N != contents->ncols[0]) k = 1;
   PetscCheck(contents->sf[k] && contents->ncols[k] == B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter set up for %" PetscInt_FMT " columns", B->cmap->N);
   sf = contents->sf[k];
   /* every entry of workB is overwritten, so write-only access is enough */
-  PetscCall(MatDenseGetArrayReadAndMemType(B, &b, &bmtype));
-  PetscCall(MatDenseGetArrayWriteAndMemType(workB, &w, &wmtype));
-  PetscCall(PetscSFBcastWithMemTypeBegin(sf, sf->vscat.unit, bmtype, b, wmtype, w, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf, sf->vscat.unit, b, w, MPI_REPLACE));
-  PetscCall(MatDenseRestoreArrayWriteAndMemType(workB, &w));
-  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &contents->barray, &bmtype));
+  PetscCall(MatDenseGetArrayWriteAndMemType(workB, &contents->warray, &wmtype));
+  PetscCall(PetscSFBcastWithMemTypeBegin(sf, sf->vscat.unit, bmtype, contents->barray, wmtype, contents->warray, MPI_REPLACE));
+  contents->sfinuse = sf;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
+{
+  PetscSF sf = contents->sfinuse;
+
+  PetscFunctionBegin;
+  PetscCheck(sf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter in flight");
+  PetscCall(PetscSFBcastEnd(sf, sf->vscat.unit, contents->barray, contents->warray, MPI_REPLACE));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(workB, &contents->warray));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &contents->barray));
+  contents->sfinuse = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   The checks the host and device scatters share; on the device route they are done by the begin half
+*/
+static PetscErrorCode MatMPIDenseScatterCheck_Private(PetscInt nrows, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+{
+  PetscInt blda;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 5);
+  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
+  PetscCall(MatDenseGetLDA(B, &blda));
+  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
 {
-  PetscInt blda;
-
   PetscFunctionBegin;
-  MatCheckProduct(C, 7);
-  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
-  PetscCall(MatDenseGetLDA(B, &blda));
-  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
-  if (contents->ondevice) PetscCall(MatMPIDenseScatterDevice_Private(workB, contents, B));
-  else PetscCall(MatMPIDenseScatterHost_Private(ctx, bs, workB, contents, B, C));
+  PetscCall(MatMPIDenseScatterCheck_Private(nrows, workB, contents, B, C));
+  if (contents->ondevice) {
+    PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
+    PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
+  } else PetscCall(MatMPIDenseScatterHost_Private(ctx, bs, workB, contents, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, Mat workB, Mat C)
+/*
+   Starts the scatter of the off-process rows of B into workB. On the device route only the begin half of the
+   PetscSF broadcast is posted, so the caller must complete it with MatMPIDenseScatterEnd(); the host scatter
+   is blocking and is done entirely here
+*/
+static PetscErrorCode MatMPIDenseScatterBegin(Mat A, Mat B, Mat workB, Mat C)
 {
-  Mat_MPIAIJ      *aij = (Mat_MPIAIJ *)A->data;
-  MPIAIJ_MPIDense *contents;
+  Mat_MPIAIJ      *aij      = (Mat_MPIAIJ *)A->data;
+  MPIAIJ_MPIDense *contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
 
   PetscFunctionBegin;
-  contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
-  PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
+  if (contents->ondevice) {
+    PetscCall(MatMPIDenseScatterCheck_Private(aij->B->cmap->n, workB, contents, B, C));
+    PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
+  } else PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMPIDenseScatterEnd(Mat B, Mat workB, Mat C)
+{
+  MPIAIJ_MPIDense *contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
+
+  PetscFunctionBegin;
+  if (contents->ondevice) PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -688,7 +727,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
   Mat                 workB;
   MPIAIJ_MPIDense    *contents;
   MPIAIJ_MPIDense_AB *data;
-  PetscBool           clear = PETSC_FALSE, flg;
+  PetscBool           clear = PETSC_FALSE, flg, overlap;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
@@ -700,12 +739,18 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
     if (flg) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
     clear = (PetscBool)!flg; /* if either A or C is a device Mat, make sure MatProductClear() is called */
   }
+  /* The device scatter is non-blocking, so when there are no column batches start it before the product of the
+     diagonal block below to overlap the communication with that product, as MatMult_MPIAIJ() does. The host
+     scatter is blocking, so it is left where it is */
+  overlap = (PetscBool)(contents->ondevice && contents->workB->cmap->n == B->cmap->N);
+  if (overlap) PetscCall(MatMPIDenseScatterBegin(A, B, contents->workB, C));
   /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
   PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->A, bdense->A, cdense->A, clear));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     workB = contents->workB;
-    PetscCall(MatMPIDenseScatter(A, B, workB, C));
+    if (!overlap) PetscCall(MatMPIDenseScatterBegin(A, B, workB, C));
+    PetscCall(MatMPIDenseScatterEnd(B, workB, C));
 
     /* off-diagonal block of A times nonlocal rows of B */
     if (data->workC) {
@@ -736,7 +781,8 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
       PetscCall(MatDenseGetSubMatrix(C, PETSC_DECIDE, PETSC_DECIDE, i, i + cols, &Cb));
 
       /* get off processor parts of B needed to complete C=A*B */
-      PetscCall(MatMPIDenseScatter(A, Bb, workB, C));
+      PetscCall(MatMPIDenseScatterBegin(A, Bb, workB, C));
+      PetscCall(MatMPIDenseScatterEnd(Bb, workB, C));
 
       /* off-diagonal block of A times nonlocal rows of B */
       if (workC) {
