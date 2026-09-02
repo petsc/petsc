@@ -337,6 +337,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PCFailedReason pcreason;
   PC             pc;
   PetscBool      pcmpi, Aopset, Bopset;
+  MatState       amatstate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -357,6 +358,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
 
   PetscCall(KSPGetOperatorsSet(ksp, &Aopset, &Bopset));
   PetscCheck(Aopset == Bopset, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "Operators set inconsistency: Amat %d, Pmat %d", (int)Aopset, (int)Bopset);
+
   if ((ksp->dmActive & KSP_DMACTIVE_OPERATOR) && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
     if (!ksp->vec_rhs) PetscCall(DMCreateGlobalVector(ksp->dm, &ksp->vec_rhs));
@@ -393,31 +395,39 @@ PetscErrorCode KSPSetUp(KSP ksp)
       PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
     }
     if (kdm->ops->computerhs && (ksp->dmActive & KSP_DMACTIVE_RHS)) PetscCallBack("KSP callback rhs", (*kdm->ops->computerhs)(ksp, ksp->vec_rhs, kdm->rhsctx));
-    if ((ksp->setupstage != KSP_SETUP_NEWRHS) && (ksp->dmActive & KSP_DMACTIVE_OPERATOR)) {
+    if (ksp->setupstage != KSP_SETUP_NEWRHS && (ksp->dmActive & KSP_DMACTIVE_OPERATOR)) {
       PetscCheck(kdm->ops->computeoperators, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp, KSP_DMACTIVE_ALL, PETSC_FALSE);");
       PetscCall(KSPGetOperators(ksp, &A, &B));
       PetscCallBack("KSP callback operators", (*kdm->ops->computeoperators)(ksp, A, B, kdm->operatorsctx));
     }
   }
 
+  /* Final decision if a KSP_SETUP_NEWMATRIX stage is needed */
+  PetscCall(KSPGetOperators(ksp, &A, NULL));
+  PetscCall(MatGetState(A, &amatstate));
   if (ksp->setupstage == KSP_SETUP_NEWRHS) {
-    level--;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCall(PetscLogEventBegin(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+    PetscBool same;
 
-  switch (ksp->setupstage) {
-  case KSP_SETUP_NEW:
-    PetscUseTypeMethod(ksp, setup);
-    break;
-  case KSP_SETUP_NEWMATRIX: /* This should be replaced with a more general mechanism */
-    if (ksp->setupnewmatrix) PetscUseTypeMethod(ksp, setup);
-    break;
-  default:
-    break;
+    PetscCall(MatStateCompare(amatstate, ksp->amatstate, &same));
+    if (!same) ksp->setupstage = KSP_SETUP_NEWMATRIX;
   }
 
-  PetscCall(PetscLogEventEnd(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  if (ksp->setupstage != KSP_SETUP_NEWRHS) {
+    PetscCall(PetscLogEventBegin(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+    switch (ksp->setupstage) {
+    case KSP_SETUP_NEW:
+      PetscUseTypeMethod(ksp, setup);
+      break;
+    case KSP_SETUP_NEWMATRIX: /* This should be replaced with a more general mechanism */
+      if (ksp->setupnewmatrix) PetscUseTypeMethod(ksp, setup);
+      break;
+    default:
+      break;
+    }
+    PetscCall(PetscLogEventEnd(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
+  }
+
+  /* setup PC if needed */
   PetscCall(PCSetErrorIfFailure(pc, ksp->errorifnotconverged));
   PetscCall(PCSetUp(pc));
   PetscCall(PCGetFailedReason(pc, &pcreason));
@@ -425,12 +435,16 @@ PetscErrorCode KSPSetUp(KSP ksp)
   if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
 
   PetscCall(PCGetOperators(pc, &mat, NULL));
-  PetscCall(MatGetNullSpace(mat, &nullsp));
-  if (nullsp) {
-    PetscBool test = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_test_null_space", &test, NULL));
-    if (test) PetscCall(MatNullSpaceTest(nullsp, mat, NULL));
+  if (ksp->setupstage != KSP_SETUP_NEWRHS) {
+    PetscCall(MatGetNullSpace(mat, &nullsp));
+    if (nullsp) {
+      PetscBool test = PETSC_FALSE;
+      PetscCall(PetscOptionsGetBool(((PetscObject)ksp)->options, ((PetscObject)ksp)->prefix, "-ksp_test_null_space", &test, NULL));
+      if (test) PetscCall(MatNullSpaceTest(nullsp, mat, NULL));
+    }
   }
+
+  PetscCall(MatGetState(mat, &ksp->amatstate));
   ksp->setupstage = KSP_SETUP_NEWRHS;
   level--;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1514,6 +1528,7 @@ PetscErrorCode KSPReset(KSP ksp)
   PetscCall(VecDestroy(&ksp->vec_rhs));
   PetscCall(VecDestroy(&ksp->vec_sol));
   PetscCall(KSPResetExplicitTranspose_Private(ksp));
+  PetscCall(MatStateInvalidate(ksp->amatstate));
 
   ksp->mat_rhs    = NULL;
   ksp->setupstage = KSP_SETUP_NEW;

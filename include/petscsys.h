@@ -1362,8 +1362,6 @@ PETSC_EXTERN int         PetscCILinenumber(int);
 PETSC_EXTERN PetscClassId   PETSC_LARGEST_CLASSID;
 PETSC_EXTERN PetscClassId   PETSC_OBJECT_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[], PetscClassId *);
-PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject, PetscObjectId *);
-PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject, PetscObjectId, PetscBool *);
 
 /*
    Routines that get memory usage information from the OS
@@ -1426,6 +1424,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm, PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscObjectGetId(PetscObject, PetscObjectId *);
+PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject, PetscObjectId, PetscBool *);
 
 /*MC
    PetscObjectParameterSetDefault - sets a parameter default value in a `PetscObject` to a new default value.
