@@ -130,6 +130,7 @@
 - Fix the symbolic phase of a `MatProduct` with a dense result to propagate the `VecType` of the dense operand to the `Mat` it creates
 - Fix `MatDenseGetSubMatrix()` to propagate the `VecType` to the submatrix
 - Add `MatCreateNestFromMultipleShifts()` to create a `MATNEST` that represents a family of shifted matrices, and `MatCreateVecNestFromMultipleShifts()` to create a compatible `VECNEST` vector
+- Change `MatMatSolve()`, `MatMatSolveTranspose()` and `MatMatTransposeSolve()` to flag every entry of `X` with `MatFlag()` and skip the solve when the factorization failed, as `MatSolve()` already did for `x`
 
 ## MatCoarsen
 
