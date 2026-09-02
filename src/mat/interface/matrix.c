@@ -3000,7 +3000,7 @@ PetscErrorCode MatMultHermitianTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatADot_Default(Mat mat, Vec x, Vec y, PetscScalar *val)
+static PetscErrorCode MatADot_Default(Mat mat, Vec x, Vec y, PetscScalar *val)
 {
   PetscFunctionBegin;
   if (!mat->dot_vec) PetscCall(MatCreateVecs(mat, NULL, &mat->dot_vec));
@@ -3009,7 +3009,7 @@ PetscErrorCode MatADot_Default(Mat mat, Vec x, Vec y, PetscScalar *val)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatANorm_Default(Mat mat, Vec x, PetscReal *val)
+static PetscErrorCode MatANorm_Default(Mat mat, Vec x, PetscReal *val)
 {
   PetscScalar sval;
 
@@ -3072,7 +3072,8 @@ PetscErrorCode MatADot(Mat mat, Vec x, Vec y, PetscScalar *val)
   PetscCall(VecLockReadPush(x));
   PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(MAT_ADot, mat, x, y, 0));
-  PetscUseTypeMethod(mat, adot, x, y, val);
+  if (mat->ops->adot) PetscUseTypeMethod(mat, adot, x, y, val);
+  else PetscCall(MatADot_Default(mat, x, y, val));
   PetscCall(PetscLogEventEnd(MAT_ADot, mat, x, y, 0));
   PetscCall(VecLockReadPop(y));
   PetscCall(VecLockReadPop(x));
@@ -3123,7 +3124,8 @@ PetscErrorCode MatANorm(Mat mat, Vec x, PetscReal *val)
 
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(MAT_ANorm, mat, x, 0, 0));
-  PetscUseTypeMethod(mat, anorm, x, val);
+  if (mat->ops->anorm) PetscUseTypeMethod(mat, anorm, x, val);
+  else PetscCall(MatANorm_Default(mat, x, val));
   PetscCall(PetscLogEventEnd(MAT_ANorm, mat, x, 0, 0));
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -11742,6 +11744,12 @@ PetscErrorCode MatHasOperation(Mat mat, MatOperation op, PetscBool *has)
   else if (op == MATOP_MULT_HERMITIAN_TRANS_ADD) op = MATOP_MULT_TRANSPOSE_ADD;
   else if (op == MATOP_HERMITIAN_TRANSPOSE) op = MATOP_TRANSPOSE;
 #endif
+  if (op == MATOP_ADOT || op == MATOP_ANORM) {
+    /* MatADot() and MatANorm() fall back to MatMult() when the type has no method */
+    if (((void **)mat->ops)[op]) *has = PETSC_TRUE;
+    else PetscCall(MatHasOperation(mat, MATOP_MULT, has));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   if (mat->ops->hasoperation) {
     PetscUseTypeMethod(mat, hasoperation, op, has);
   } else {
