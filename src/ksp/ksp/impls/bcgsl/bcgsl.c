@@ -24,7 +24,7 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   PetscReal    max_s, pinv_tol;
 
   PetscFunctionBegin;
-  /* set up temporary vectors */
+  PetscCheck(ksp->nwork == 6 + 2 * bcgsl->ell, PetscObjectComm((PetscObject)ksp), PETSC_ERR_COR, "Unexpected number of work vectors %" PetscInt_FMT " != %" PetscInt_FMT, ksp->nwork, 6 + 2 * bcgsl->ell);
   vi        = 0;
   ell       = bcgsl->ell;
   bcgsl->vB = ksp->work[vi];
@@ -297,6 +297,20 @@ static PetscErrorCode KSPSolve_BCGSL(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPReset_BCGSL_Private(KSP ksp)
+{
+  KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
+
+  PetscFunctionBegin;
+  PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
+  PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
+  PetscCall(PetscFree5(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v, bcgsl->realwork));
+
+  ksp->setupstage = KSP_SETUP_NEW;
+  ksp->nwork      = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   KSPBCGSLSetXRes - Sets the parameter governing when
   exact residuals will be used instead of computed residuals for `KSPCBGSL`.
@@ -320,14 +334,7 @@ PetscErrorCode KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, delta, 2);
-  if (ksp->setupstage) {
-    if ((delta <= 0 && bcgsl->delta > 0) || (delta > 0 && bcgsl->delta <= 0)) {
-      PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
-      PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
-      PetscCall(PetscFree4(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v));
-      ksp->setupstage = KSP_SETUP_NEW;
-    }
-  }
+  if (ksp->setupstage && ((delta <= 0 && bcgsl->delta > 0) || (delta > 0 && bcgsl->delta <= 0))) PetscCall(KSPReset_BCGSL_Private(ksp));
   bcgsl->delta = delta;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -381,19 +388,8 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(ksp, uMROR, 2);
-
-  if (!ksp->setupstage) bcgsl->bConvex = uMROR;
-  else if (bcgsl->bConvex != uMROR) {
-    /* free the data structures,
-       then create them again
-     */
-    PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
-    PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
-    PetscCall(PetscFree4(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v));
-
-    bcgsl->bConvex  = uMROR;
-    ksp->setupstage = KSP_SETUP_NEW;
-  }
+  if (ksp->setupstage && bcgsl->bConvex != uMROR) PetscCall(KSPReset_BCGSL_Private(ksp));
+  bcgsl->bConvex = uMROR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -423,19 +419,10 @@ PetscErrorCode KSPBCGSLSetEll(KSP ksp, PetscInt ell)
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(ell >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll: second argument must be positive");
   PetscValidLogicalCollectiveInt(ksp, ell, 2);
-
-  if (!ksp->setupstage) bcgsl->ell = ell;
-  else if (bcgsl->ell != ell) {
-    /* free the data structures, then create them again */
-    PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
-    PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
-    PetscCall(PetscFree4(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v));
-
-    bcgsl->ell      = ell;
-    ksp->setupstage = KSP_SETUP_NEW;
-  }
+  PetscCheck(ell > 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPBCGSLSetEll(): second argument must be positive");
+  if (ksp->setupstage && bcgsl->ell != ell) PetscCall(KSPReset_BCGSL_Private(ksp));
+  bcgsl->ell = ell;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -504,20 +491,8 @@ static PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 
 static PetscErrorCode KSPReset_BCGSL(KSP ksp)
 {
-  KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
-
   PetscFunctionBegin;
-  PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
-  PetscCall(PetscFree5(AY0c, AYlc, AYtc, MZa, MZb));
-  PetscCall(PetscFree5(bcgsl->work, bcgsl->s, bcgsl->u, bcgsl->v, bcgsl->realwork));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
-{
-  PetscFunctionBegin;
-  PetscCall(KSPReset_BCGSL(ksp));
-  PetscCall(KSPDestroyDefault(ksp));
+  PetscCall(KSPReset_BCGSL_Private(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -568,7 +543,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BCGSL(KSP ksp)
   ksp->ops->setup          = KSPSetUp_BCGSL;
   ksp->ops->solve          = KSPSolve_BCGSL;
   ksp->ops->reset          = KSPReset_BCGSL;
-  ksp->ops->destroy        = KSPDestroy_BCGSL;
+  ksp->ops->destroy        = KSPDestroyDefault;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGSL;
