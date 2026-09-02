@@ -603,7 +603,7 @@ PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
 }
 
 /*@
-  KSPGMRESSetRestart - Sets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
+  KSPGMRESSetRestart - Sets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
   and `KSPLGMRES`) restarts.
 
   Logically Collective
@@ -633,7 +633,7 @@ PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
   as GMRES might need.
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPOrthogonalizationSet()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`,
-          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
+          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
@@ -645,7 +645,7 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 }
 
 /*@
-  KSPGMRESGetRestart - Gets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
+  KSPGMRESGetRestart - Gets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
   and `KSPLGMRES`) restarts.
 
   Not Collective
@@ -659,7 +659,7 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   Level: intermediate
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPOrthogonalizationSet()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`,
-          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
+          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -754,7 +754,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 
    Using `KSPGMRESSetPreAllocateVectors()` or `-ksp_gmres_preallocate` can improve the efficiency of the orthogonalization step with certain vector implementations.
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
           `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
           `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
