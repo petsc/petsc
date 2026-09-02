@@ -1306,7 +1306,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems P
   PetscCheck(!jac->Rtype || !jac->agg_nl, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "-pc_hypre_boomeramg_restriction_type (%" PetscInt_FMT ") and -pc_hypre_boomeramg_agg_nl (%" PetscInt_FMT ")", jac->Rtype, jac->agg_nl);
 #endif
 
-  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_interp_type", "Interpolation type", "None", HYPREBoomerAMGInterpType, PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGInterpType), jac->interptype < 0 ? "unknown" : HYPREBoomerAMGInterpType[jac->interptype], &indx, &flg));
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_interp_type", "Interpolation type", "None", HYPREBoomerAMGInterpType, PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGInterpType),
+                              jac->interptype == 100 ? "1pt" : (jac->interptype < 0 ? "unknown" : HYPREBoomerAMGInterpType[jac->interptype]), &indx, &flg));
   if (flg) jac->interptype = indx;
 
   PetscCall(PetscOptionsName("-pc_hypre_boomeramg_print_statistics", "Print statistics", "None", &flg));
