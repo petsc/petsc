@@ -506,7 +506,8 @@ PetscErrorCode PCGAMGSquareGraph_GAMG(PC a_pc, Mat Gmat1, Mat *Gmat2)
 
   PetscFunctionBegin;
   PetscCall(PCGetOptionsPrefix(a_pc, &prefix));
-  PetscCall(PetscInfo(a_pc, "%s: Square Graph on level %" PetscInt_FMT "\n", ((PetscObject)a_pc)->prefix, pc_gamg->current_level + 1));
+  PetscCall(PetscInfo(a_pc, "%s%sSquare Graph on level %" PetscInt_FMT ": high memory mark, if OOM try -%spc_gamg_aggressive_square_graph false; see \"Reducing memory usage for PCGAMG\" in the users manual\n", prefix ? prefix : "", prefix ? ": " : "",
+                      pc_gamg->current_level + 1, prefix ? prefix : ""));
   PetscCall(MatProductCreate(Gmat1, Gmat1, NULL, Gmat2));
   PetscCall(MatSetOptionsPrefix(*Gmat2, prefix));
   PetscCall(PetscSNPrintf(addp, sizeof(addp), "pc_gamg_square_%" PetscInt_FMT "_", pc_gamg->current_level));
