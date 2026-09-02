@@ -2070,21 +2070,21 @@ typedef PetscInt64 MPIU_Count;
 #endif
 
 /*@
-   PetscIntCast - casts a `MPI_Count`, `PetscInt64`, `PetscCount`, or `size_t` to a `PetscInt` (which may be 32-bits in size), generates an
-   error if the `PetscInt` is not large enough to hold the number.
+  PetscIntCast - casts a `MPI_Count`, `PetscInt64`, `PetscCount`, or `size_t` to a `PetscInt` (which may be 32-bits in size), generates an
+  error if the `PetscInt` is not large enough to hold the number.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt64` value
+  Input Parameter:
+. a - the `PetscInt64` value
 
-   Output Parameter:
-.  b - the resulting `PetscInt` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `PetscInt` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   If integers needed for the applications are too large to fit in 32-bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
+  Note:
+  If integers needed for the applications are too large to fit in 32-bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscCIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
@@ -2098,21 +2098,21 @@ static inline PetscErrorCode PetscIntCast(MPIU_Count a, PetscInt *b)
 }
 
 /*@
-   PetscBLASIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount` or `PetscInt64` to a `PetscBLASInt` (which may be 32-bits in size), generates an
-   error if the `PetscBLASInt` is not large enough to hold the number.
+  PetscBLASIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount` or `PetscInt64` to a `PetscBLASInt` (which may be 32-bits in size), generates an
+  error if the `PetscBLASInt` is not large enough to hold the number.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt` value
+  Input Parameter:
+. a - the `PetscInt` value
 
-   Output Parameter:
-.  b - the resulting `PetscBLASInt` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `PetscBLASInt` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
+  Note:
+  Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
@@ -2127,20 +2127,20 @@ static inline PetscErrorCode PetscBLASIntCast(MPIU_Count a, PetscBLASInt *b)
 }
 
 /*@
-   PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
+  PetscCuBLASIntCast - like `PetscBLASIntCast()`, but for `PetscCuBLASInt`.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt` value
+  Input Parameter:
+. a - the `PetscInt` value
 
-   Output Parameter:
-.  b - the resulting `PetscCuBLASInt` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `PetscCuBLASInt` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
+  Note:
+  Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
@@ -2155,20 +2155,20 @@ static inline PetscErrorCode PetscCuBLASIntCast(MPIU_Count a, PetscCuBLASInt *b)
 }
 
 /*@
-   PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
+  PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt` value
+  Input Parameter:
+. a - the `PetscInt` value
 
-   Output Parameter:
-.  b - the resulting `PetscHipBLASInt` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `PetscHipBLASInt` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
+  Note:
+  Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
 
 .seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
@@ -2183,18 +2183,18 @@ static inline PetscErrorCode PetscHipBLASIntCast(MPIU_Count a, PetscHipBLASInt *
 }
 
 /*@
-   PetscMPIIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `PetscMPIInt` (which is always 32-bits in size), generates an
-   error if the `PetscMPIInt` is not large enough to hold the number.
+  PetscMPIIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `PetscMPIInt` (which is always 32-bits in size), generates an
+  error if the `PetscMPIInt` is not large enough to hold the number.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt` value
+  Input Parameter:
+. a - the `PetscInt` value
 
-   Output Parameter:
-.  b - the resulting `PetscMPIInt` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `PetscMPIInt` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](stylePetscCount), `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntCast()`
 @*/
@@ -2208,17 +2208,17 @@ static inline PetscErrorCode PetscMPIIntCast(MPIU_Count a, PetscMPIInt *b)
 }
 
 /*@
-   PetscCIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `int`, generates an error if the `int` is not large enough to hold the number.
+  PetscCIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `int`, generates an error if the `int` is not large enough to hold the number.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscInt` value
+  Input Parameter:
+. a - the `PetscInt` value
 
-   Output Parameter:
-.  b - the resulting `int` value, or `NULL` if the result is not needed
+  Output Parameter:
+. b - the resulting `int` value, or `NULL` if the result is not needed
 
-   Level: advanced
+  Level: advanced
 
 .seealso: [](stylePetscCount), `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntCast()`
 @*/
@@ -2294,33 +2294,33 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 }
 
 /*@
-   PetscIntMultTruncate - Computes the product of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
+  PetscIntMultTruncate - Computes the product of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  a - the `PetscInt` value
--  b - the second value
+  Input Parameters:
++ a - the `PetscInt` value
+- b - the second value
 
-   Returns:
-   The result as a `PetscInt` value
+  Returns:
+  The result as a `PetscInt` value
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
+  Notes:
+  Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
 
-   Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
+  Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
 
-   Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
+  Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developer Notes:
-   We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but requires many more checks.
+  Developer Notes:
+  We currently assume that `PetscInt` addition can never overflow, this is obviously wrong but requires many more checks.
 
-   This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
+  This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`, `PetscIntSumError()`,
-          `PetscIntSumTruncate()`
+  `PetscIntSumTruncate()`
 @*/
 static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
@@ -2334,28 +2334,28 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 }
 
 /*@
-   PetscIntSumTruncate - Computes the sum of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
+  PetscIntSumTruncate - Computes the sum of two positive `PetscInt` and truncates the value to slightly less than the maximal possible value
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  a - the `PetscInt` value
--  b - the second value
+  Input Parameters:
++ a - the `PetscInt` value
+- b - the second value
 
-   Returns:
-   The result as a `PetscInt` value
+  Returns:
+  The result as a `PetscInt` value
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
+  Notes:
+  Use `PetscInt64Mult()` to compute the product of two `PetscInt` as a `PetscInt64`
 
-   Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
+  Use `PetscRealIntMultTruncate()` to compute the product of a `PetscReal` and a `PetscInt` and truncate to fit a `PetscInt`
 
-   Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
+  Use `PetscIntMultError()` to compute the product of two `PetscInt` if you wish to generate an error if the result will not fit in a `PetscInt`
 
-   Developer Note:
-   This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
+  Developer Note:
+  This is used where we compute approximate sizes for workspace and need to insure the workspace is index-able.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
 @*/
@@ -2373,27 +2373,27 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 }
 
 /*@
-   PetscIntMultError - Computes the product of two positive `PetscInt` and generates an error with overflow.
+  PetscIntMultError - Computes the product of two positive `PetscInt` and generates an error with overflow.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  a - the `PetscInt` value
--  b - the second value
+  Input Parameters:
++ a - the `PetscInt` value
+- b - the second value
 
-   Output Parameter:
-.  result - the result as a `PetscInt` value, or `NULL` if you do not want the result, you just want to check if it overflows
+  Output Parameter:
+. result - the result as a `PetscInt` value, or `NULL` if you do not want the result, you just want to check if it overflows
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use `PetscInt64Mult()` to compute the product of two `PetscInt` and store in a `PetscInt64`
+  Notes:
+  Use `PetscInt64Mult()` to compute the product of two `PetscInt` and store in a `PetscInt64`
 
-   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
+  Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
-   Developer Note:
-   In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
-   `PetscIntSumError()` can be used to check for this situation.
+  Developer Note:
+  In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
+  `PetscIntSumError()` can be used to check for this situation.
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntSumError()`
 @*/
@@ -2414,23 +2414,23 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
 }
 
 /*@
-   PetscIntSumError - Computes the sum of two positive `PetscInt` and generates an error with overflow.
+  PetscIntSumError - Computes the sum of two positive `PetscInt` and generates an error with overflow.
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameters:
-+  a - the `PetscInt` value
--  b - the second value
+  Input Parameters:
++ a - the `PetscInt` value
+- b - the second value
 
-   Output Parameter:
-.  c - the result as a `PetscInt` value,  or `NULL` if you do not want the result, you just want to check if it overflows
+  Output Parameter:
+. c - the result as a `PetscInt` value,  or `NULL` if you do not want the result, you just want to check if it overflows
 
-   Level: advanced
+  Level: advanced
 
-   Notes:
-   Use `PetscInt64Mult()` to compute the product of two 32-bit `PetscInt` and store in a `PetscInt64`
+  Notes:
+  Use `PetscInt64Mult()` to compute the product of two 32-bit `PetscInt` and store in a `PetscInt64`
 
-   Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
+  Use `PetscIntMultTruncate()` to compute the product of two `PetscInt` and truncate it to fit in a `PetscInt`
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntMultError()`
 @*/
@@ -2619,15 +2619,15 @@ PETSC_EXTERN PetscErrorCode PetscMkdtemp(char[]);
 PETSC_EXTERN PetscErrorCode PetscRMTree(const char[]);
 
 /*MC
-   PetscBinaryBigEndian - indicates if values in memory are stored with big endian format
+  PetscBinaryBigEndian - indicates if values in memory are stored with big endian format
 
-   Synopsis:
-   #include <petscsys.h>
-   PetscBool PetscBinaryBigEndian(void);
+  Synopsis:
+  #include <petscsys.h>
+  PetscBool PetscBinaryBigEndian(void);
 
-   No Fortran Support
+  Not Collective; No Fortran Support
 
-   Level: developer
+  Level: developer
 
 .seealso: `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
 M*/
@@ -2794,18 +2794,18 @@ PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
 /*@
-     PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+  PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
 
-     Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-     Input Parameters:
-+    cite - the bibtex item, formatted to displayed on multiple lines nicely
--    set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
+  Input Parameters:
++ cite - the bibtex item, formatted to displayed on multiple lines nicely
+- set  - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
-     Options Database Key:
-.    -citations [filename] - print out the bibtex entries for the given computation
+  Options Database Key:
+. -citations [filename] - print out the bibtex entries for the given computation
 
-     Level: intermediate
+  Level: intermediate
 
 .seealso: `PetscFinalize()`
 @*/

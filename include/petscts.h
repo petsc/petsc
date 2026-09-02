@@ -463,6 +463,8 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "TSGetEvaluationTimes()", ) static inline Pe
 /*@
   TSGetTimeSpanSolutions - Get the number of solutions and the solutions at the time points specified by the time span.
 
+  Not Collective
+
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
 

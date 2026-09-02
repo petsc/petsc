@@ -266,21 +266,21 @@ typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValue *, PetscInt *, ISColoringValue *[]);
 
 /*@
-   ISColoringValueCast - casts an integer a `ISColoringValue` (which may be 1-bits in size), generates an
-   error if the value is too large
+  ISColoringValueCast - casts an integer a `ISColoringValue` (which may be 1-bits in size), generates an
+  error if the value is too large
 
-   Not Collective; No Fortran Support
+  Not Collective; No Fortran Support
 
-   Input Parameter:
-.  a - the `PetscCount` value
+  Input Parameter:
+. a - the `PetscCount` value
 
-   Output Parameter:
-.  b - the resulting `ISColoringValue` value, optional, pass `NULL` if not needed
+  Output Parameter:
+. b - the resulting `ISColoringValue` value, optional, pass `NULL` if not needed
 
-   Level: advanced
+  Level: advanced
 
-   Note:
-   Errors if the integer is negative
+  Note:
+  Errors if the integer is negative
 
 .seealso: `ISColoringValue`, `ISColoringCreate()`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/

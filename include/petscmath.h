@@ -2095,6 +2095,8 @@ PETSC_EXTERN PetscBool PetscEqualScalar(PetscScalar, PetscScalar);
 /*@
   PetscIsCloseAtTolScalar - Like `PetscIsCloseAtTol()` but for `PetscScalar`
 
+  Not Collective
+
   Input Parameters:
 + lhs  - The first number
 . rhs  - The second number
@@ -2319,15 +2321,15 @@ M*/
 #define PetscApproximateGTE(x, b) ((x) >= (PetscRealConstant(b) - PETSC_SMALL))
 
 /*@
-   PetscCeilInt - Returns the ceiling of the quotation of two positive integers
+  PetscCeilInt - Returns the ceiling of the quotation of two positive integers
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   x - the numerator
--   y - the denominator
+  Input Parameters:
++ x - the numerator
+- y - the denominator
 
-   Level: advanced
+  Level: advanced
 
   Example\:
 .vb
@@ -2342,15 +2344,15 @@ static inline PetscInt PetscCeilInt(PetscInt x, PetscInt y)
 }
 
 /*@
-   PetscCeilInt64 - Returns the ceiling of the quotation of two positive integers
+  PetscCeilInt64 - Returns the ceiling of the quotation of two positive integers
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   x - the numerator
--   y - the denominator
+  Input Parameters:
++ x - the numerator
+- y - the denominator
 
-   Level: advanced
+  Level: advanced
 
   Example\:
 .vb
@@ -2365,15 +2367,15 @@ static inline PetscInt64 PetscCeilInt64(PetscInt64 x, PetscInt64 y)
 }
 
 /*@
-   PetscGCD - Returns the greatest common divisor of two integers
+  PetscGCD - Returns the greatest common divisor of two integers
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   a - first number
--   b - second number
+  Input Parameters:
++ a - first number
+- b - second number
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscLCM()`
 @*/
@@ -2391,15 +2393,15 @@ static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
 }
 
 /*@
-   PetscLCM - Returns the least common multiple of two integers
+  PetscLCM - Returns the least common multiple of two integers
 
-   Not Collective
+  Not Collective
 
-   Input Parameters:
-+   a - first number
--   b - second number
+  Input Parameters:
++ a - first number
+- b - second number
 
-   Level: advanced
+  Level: advanced
 
 .seealso: `PetscGCD()`
 @*/
