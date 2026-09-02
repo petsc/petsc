@@ -116,7 +116,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
 
     ((PC_Factor *)ilu)->fact = pc->pmat;
     /* must update the pc record of the matrix state or the PC will attempt to run PCSetUp() yet again */
-    PetscCall(PetscObjectStateGet((PetscObject)pc->pmat, &pc->matstate));
+    PetscCall(MatGetState(pc->pmat, &pc->matstate));
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */

@@ -36,11 +36,11 @@ struct _PCOps {
 */
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
-  DM               dm;
-  PetscBool        setupcalled;
-  PetscObjectState matstate, matnonzerostate; /* last known nonzero state of the pmat associated with this PC */
-  PetscBool        reusepreconditioner;
-  MatStructure     flag; /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */
+  DM           dm;
+  PetscBool    setupcalled;
+  MatState     matstate; /* last known state of the pmat associated with this PC */
+  PetscBool    reusepreconditioner;
+  MatStructure flag; /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */
 
   PetscInt  setfromoptionscalled;
   PetscBool erroriffailure; /* Generate an error if FPE detected (for example a zero pivot) instead of returning*/
