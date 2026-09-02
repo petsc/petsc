@@ -1602,7 +1602,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
   if (!skipallocation) {
     if (!b->imax) {
       PetscCall(PetscMalloc2(mbs, &b->imax, mbs, &b->ilen));
-
       b->free_imax_ilen = PETSC_TRUE;
     }
     if (!nnz) {
@@ -1628,8 +1627,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
     PetscCall(PetscShmgetAllocateArray(bs2 * nz, sizeof(PetscScalar), (void **)&b->a));
     PetscCall(PetscShmgetAllocateArray(nz, sizeof(PetscInt), (void **)&b->j));
     PetscCall(PetscShmgetAllocateArray(B->rmap->n + 1, sizeof(PetscInt), (void **)&b->i));
-    b->free_a  = PETSC_TRUE;
-    b->free_ij = PETSC_TRUE;
     PetscCall(PetscArrayzero(b->a, nz * bs2));
     PetscCall(PetscArrayzero(b->j, nz));
     b->free_a  = PETSC_TRUE;
@@ -1638,7 +1635,6 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
     /* pointer to beginning of each row */
     b->i[0] = 0;
     for (i = 1; i < mbs + 1; i++) b->i[i] = b->i[i - 1] + b->imax[i - 1];
-
   } else {
     b->free_a  = PETSC_FALSE;
     b->free_ij = PETSC_FALSE;

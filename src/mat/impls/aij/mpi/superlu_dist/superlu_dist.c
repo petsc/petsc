@@ -708,11 +708,13 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   if (PetscLogPrintInfo) lu->options.PrintStat = YES;
   else lu->options.PrintStat = NO;
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", lu->options.PrintStat != NO ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
+  if (set) lu->options.PrintStat = flg ? YES : NO;
 
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(8, 0, 0)
   lu->options.superlu_acc_offload = 1;
-  PetscCall(PetscOptionsBool("-mat_superlu_dist_gpuoffload", "Offload factorization onto the GPUs", "None", (PetscBool)lu->options.superlu_acc_offload, (PetscBool *)&lu->options.superlu_acc_offload, NULL));
+  PetscCall(PetscOptionsBool("-mat_superlu_dist_gpuoffload", "Offload factorization onto the GPUs", "None", lu->options.superlu_acc_offload ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
+  if (set) lu->options.superlu_acc_offload = flg ? 1 : 0;
 #endif
 
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &iflg));

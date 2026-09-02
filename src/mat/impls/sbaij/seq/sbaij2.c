@@ -335,13 +335,14 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 2, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[2 * i] += v[0] * x1 + v[2] * x2;
       z[2 * i + 1] += v[2] * x1 + v[3] * x2;
@@ -360,8 +361,6 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A, Vec xx, Vec zz)
       z[2 * i + 1] += v[1] * x[cval] + v[3] * x[cval + 1];
       v += 4;
     }
-    xb += 2;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -389,14 +388,15 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 3, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[3 * i] += v[0] * x1 + v[3] * x2 + v[6] * x3;
       z[3 * i + 1] += v[3] * x1 + v[4] * x2 + v[7] * x3;
@@ -418,8 +418,6 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A, Vec xx, Vec zz)
       z[3 * i + 2] += v[2] * x[cval] + v[5] * x[cval + 1] + v[8] * x[cval + 2];
       v += 9;
     }
-    xb += 3;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -447,15 +445,16 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 4, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
     x4   = xb[3];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[4 * i] += v[0] * x1 + v[4] * x2 + v[8] * x3 + v[12] * x4;
       z[4 * i + 1] += v[4] * x1 + v[5] * x2 + v[9] * x3 + v[13] * x4;
@@ -480,8 +479,6 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A, Vec xx, Vec zz)
       z[4 * i + 3] += v[3] * x[cval] + v[7] * x[cval + 1] + v[11] * x[cval + 2] + v[15] * x[cval + 3];
       v += 16;
     }
-    xb += 4;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -509,8 +506,9 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 5, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -518,7 +516,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
     x5   = xb[4];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[5 * i] += v[0] * x1 + v[5] * x2 + v[10] * x3 + v[15] * x4 + v[20] * x5;
       z[5 * i + 1] += v[5] * x1 + v[6] * x2 + v[11] * x3 + v[16] * x4 + v[21] * x5;
@@ -546,8 +544,6 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
       z[5 * i + 4] += v[4] * x[cval] + v[9] * x[cval + 1] + v[14] * x[cval + 2] + v[19] * x[cval + 3] + v[24] * x[cval + 4];
       v += 25;
     }
-    xb += 5;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -575,8 +571,9 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 6, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -585,7 +582,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
     x6   = xb[5];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[6 * i] += v[0] * x1 + v[6] * x2 + v[12] * x3 + v[18] * x4 + v[24] * x5 + v[30] * x6;
       z[6 * i + 1] += v[6] * x1 + v[7] * x2 + v[13] * x3 + v[19] * x4 + v[25] * x5 + v[31] * x6;
@@ -616,8 +613,6 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
       z[6 * i + 5] += v[5] * x[cval] + v[11] * x[cval + 1] + v[17] * x[cval + 2] + v[23] * x[cval + 3] + v[29] * x[cval + 4] + v[35] * x[cval + 5];
       v += 36;
     }
-    xb += 6;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -645,8 +640,9 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 7, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -656,7 +652,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
     x7   = xb[6];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
+    nonzerorow++;
     if (*ib == i) { /* (diag of A)*x */
       z[7 * i] += v[0] * x1 + v[7] * x2 + v[14] * x3 + v[21] * x4 + v[28] * x5 + v[35] * x6 + v[42] * x7;
       z[7 * i + 1] += v[7] * x1 + v[8] * x2 + v[15] * x3 + v[22] * x4 + v[29] * x5 + v[36] * x6 + v[43] * x7;
@@ -690,8 +686,6 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
       z[7 * i + 6] += v[6] * x[cval] + v[13] * x[cval + 1] + v[20] * x[cval + 2] + v[27] * x[cval + 3] + v[34] * x[cval + 4] + v[41] * x[cval + 5] + v[48] * x[cval + 6];
       v += 49;
     }
-    xb += 7;
-    ai++;
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
@@ -794,13 +788,14 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th row of A */
+  for (i = 0; i < mbs; i++, xb++, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th row of A */
+    if (!n) continue;
     x1   = xb[0];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[i] += *v++ * x[*ib++];
       jmin++;
     }
@@ -817,8 +812,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz)
         z[i] += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
       }
     }
-    xb++;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -847,14 +840,15 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 2, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[2 * i] += v[0] * x1 + v[2] * x2;
       z[2 * i + 1] += v[2] * x1 + v[3] * x2;
       v += 4;
@@ -872,8 +866,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
       z[2 * i + 1] += v[1] * x[cval] + v[3] * x[cval + 1];
       v += 4;
     }
-    xb += 2;
-    ai++;
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
@@ -901,15 +893,16 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 3, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[3 * i] += v[0] * x1 + v[3] * x2 + v[6] * x3;
       z[3 * i + 1] += v[3] * x1 + v[4] * x2 + v[7] * x3;
       z[3 * i + 2] += v[6] * x1 + v[7] * x2 + v[8] * x3;
@@ -930,8 +923,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz)
       z[3 * i + 2] += v[2] * x[cval] + v[5] * x[cval + 1] + v[8] * x[cval + 2];
       v += 9;
     }
-    xb += 3;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -960,16 +951,17 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 4, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
     x4   = xb[3];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[4 * i] += v[0] * x1 + v[4] * x2 + v[8] * x3 + v[12] * x4;
       z[4 * i + 1] += v[4] * x1 + v[5] * x2 + v[9] * x3 + v[13] * x4;
       z[4 * i + 2] += v[8] * x1 + v[9] * x2 + v[10] * x3 + v[14] * x4;
@@ -993,8 +985,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz)
       z[4 * i + 3] += v[3] * x[cval] + v[7] * x[cval + 1] + v[11] * x[cval + 2] + v[15] * x[cval + 3];
       v += 16;
     }
-    xb += 4;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -1023,8 +1013,9 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 5, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -1032,8 +1023,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
     x5   = xb[4];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[5 * i] += v[0] * x1 + v[5] * x2 + v[10] * x3 + v[15] * x4 + v[20] * x5;
       z[5 * i + 1] += v[5] * x1 + v[6] * x2 + v[11] * x3 + v[16] * x4 + v[21] * x5;
       z[5 * i + 2] += v[10] * x1 + v[11] * x2 + v[12] * x3 + v[17] * x4 + v[22] * x5;
@@ -1060,8 +1051,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
       z[5 * i + 4] += v[4] * x[cval] + v[9] * x[cval + 1] + v[14] * x[cval + 2] + v[19] * x[cval + 3] + v[24] * x[cval + 4];
       v += 25;
     }
-    xb += 5;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -1090,8 +1079,9 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 6, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -1100,8 +1090,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
     x6   = xb[5];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[6 * i] += v[0] * x1 + v[6] * x2 + v[12] * x3 + v[18] * x4 + v[24] * x5 + v[30] * x6;
       z[6 * i + 1] += v[6] * x1 + v[7] * x2 + v[13] * x3 + v[19] * x4 + v[25] * x5 + v[31] * x6;
       z[6 * i + 2] += v[12] * x1 + v[13] * x2 + v[14] * x3 + v[20] * x4 + v[26] * x5 + v[32] * x6;
@@ -1131,8 +1121,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
       z[6 * i + 5] += v[5] * x[cval] + v[11] * x[cval + 1] + v[17] * x[cval + 2] + v[23] * x[cval + 3] + v[29] * x[cval + 4] + v[35] * x[cval + 5];
       v += 36;
     }
-    xb += 6;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -1161,8 +1149,9 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
   v  = a->a;
   xb = x;
 
-  for (i = 0; i < mbs; i++) {
-    n    = ai[1] - ai[0]; /* length of i_th block row of A */
+  for (i = 0; i < mbs; i++, xb += 7, ai++) {
+    n = ai[1] - ai[0]; /* length of i_th block row of A */
+    if (!n) continue;
     x1   = xb[0];
     x2   = xb[1];
     x3   = xb[2];
@@ -1172,8 +1161,8 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
     x7   = xb[6];
     ib   = aj + *ai;
     jmin = 0;
-    nonzerorow += (n > 0);
-    if (n && *ib == i) { /* (diag of A)*x */
+    nonzerorow++;
+    if (*ib == i) { /* (diag of A)*x */
       z[7 * i] += v[0] * x1 + v[7] * x2 + v[14] * x3 + v[21] * x4 + v[28] * x5 + v[35] * x6 + v[42] * x7;
       z[7 * i + 1] += v[7] * x1 + v[8] * x2 + v[15] * x3 + v[22] * x4 + v[29] * x5 + v[36] * x6 + v[43] * x7;
       z[7 * i + 2] += v[14] * x1 + v[15] * x2 + v[16] * x3 + v[23] * x4 + v[30] * x5 + v[37] * x6 + v[44] * x7;
@@ -1206,8 +1195,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
       z[7 * i + 6] += v[6] * x[cval] + v[13] * x[cval + 1] + v[20] * x[cval + 2] + v[27] * x[cval + 3] + v[34] * x[cval + 4] + v[41] * x[cval + 5] + v[48] * x[cval + 6];
       v += 49;
     }
-    xb += 7;
-    ai++;
   }
 
   PetscCall(VecRestoreArrayRead(xx, &x));

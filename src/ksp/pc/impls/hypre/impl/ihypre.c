@@ -1495,7 +1495,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc, PetscOptionItems P
 {
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    indx;
-  PetscBool   flag;
+  PetscBool   flag, value;
   const char *symtlist[] = {"nonsymmetric", "SPD", "nonsymmetric,SPD"};
 
   PetscFunctionBegin;
@@ -1510,11 +1510,17 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc, PetscOptionItems P
   PetscCall(PetscOptionsReal("-pc_hypre_parasails_loadbal", "Load balance", "None", jac->loadbal, &jac->loadbal, &flag));
   if (flag) PetscCallHYPRE(HYPRE_ParaSailsSetLoadbal(jac->hsolver, (HYPRE_Int)jac->loadbal));
 
-  PetscCall(PetscOptionsBool("-pc_hypre_parasails_logging", "Print info to screen", "None", (PetscBool)jac->logging, (PetscBool *)&jac->logging, &flag));
-  if (flag) PetscCallHYPRE(HYPRE_ParaSailsSetLogging(jac->hsolver, (HYPRE_Int)jac->logging));
+  PetscCall(PetscOptionsBool("-pc_hypre_parasails_logging", "Print info to screen", "None", (PetscBool)jac->logging, &value, &flag));
+  if (flag) {
+    jac->logging = value ? 1 : 0;
+    PetscCallHYPRE(HYPRE_ParaSailsSetLogging(jac->hsolver, (HYPRE_Int)jac->logging));
+  }
 
-  PetscCall(PetscOptionsBool("-pc_hypre_parasails_reuse", "Reuse nonzero pattern in preconditioner", "None", (PetscBool)jac->ruse, (PetscBool *)&jac->ruse, &flag));
-  if (flag) PetscCallHYPRE(HYPRE_ParaSailsSetReuse(jac->hsolver, (HYPRE_Int)jac->ruse));
+  PetscCall(PetscOptionsBool("-pc_hypre_parasails_reuse", "Reuse nonzero pattern in preconditioner", "None", (PetscBool)jac->ruse, &value, &flag));
+  if (flag) {
+    jac->ruse = value ? 1 : 0;
+    PetscCallHYPRE(HYPRE_ParaSailsSetReuse(jac->hsolver, (HYPRE_Int)jac->ruse));
+  }
 
   PetscCall(PetscOptionsEList("-pc_hypre_parasails_sym", "Symmetry of matrix and preconditioner", "None", symtlist, PETSC_STATIC_ARRAY_LENGTH(symtlist), symtlist[0], &indx, &flag));
   if (flag) {
