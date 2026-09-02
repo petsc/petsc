@@ -50,13 +50,13 @@ class BaseTestMatAnyDense:
         self._chk_array(self.A, r, c, v)
 
     def testGetDiagonalBlock(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
         M, N = self.A.getSize()
         # only for square matrices
         if M != N:
             return
-        self._preallocate()
-        self._set_values()
-        self.A.assemble()
         B = self.A.getDiagonalBlock()
         self.assertEqual(self.A.getLocalSize(), B.getSize())
         B.destroy()
@@ -149,6 +149,38 @@ class BaseTestMatAnyDense:
         #
         underlyingA = AT.getTransposeMat()
         self.assertTrue(underlyingA.equal(A))
+
+    def testADot(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        x, y = self.A.createVecs()
+        x.setRandom()
+        y.setRandom()
+        adot = self.A.aDot(x, y)
+        expected = (self.A @ x).dot(y)
+        self.assertAlmostEqual(adot, expected)
+        x.destroy()
+        y.destroy()
+
+    def testANorm(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        M, N = self.A.getSize()
+        # only for square matrices
+        if M != N:
+            return
+        # A = A^H A + I (ensures hermitian positive definite)
+        self.A = self.A.hermitianTranspose(PETSc.Mat()) @ self.A
+        self.A.shift(1.0)
+        self.A.setOption(PETSc.Mat.Option.HERMITIAN, True)
+        x, _ = self.A.createVecs()
+        x.setRandom()
+        norm = self.A.aNorm(x)
+        expected = np.sqrt((self.A @ x).dot(x))
+        self.assertAlmostEqual(norm, expected, places=2)
+        x.destroy()
 
     def _preallocate(self):
         self.A.setPreallocationDense(None)

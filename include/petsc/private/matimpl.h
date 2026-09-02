@@ -873,9 +873,6 @@ static inline PetscErrorCode MatPivotCheck(Mat fact, Mat mat, const MatFactorInf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatADot_Default(Mat, Vec, Vec, PetscScalar *);
-PETSC_INTERN PetscErrorCode MatANorm_Default(Mat, Vec, PetscReal *);
-
 #include <petscbt.h>
 /*
   Create and initialize a linked list
