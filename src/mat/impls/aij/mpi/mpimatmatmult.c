@@ -397,13 +397,19 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  MPIAIJ_MPIDense scatter;
+  Mat             workC; /* off-diagonal contribution A_o * workB on the device route, NULL otherwise */
+} MPIAIJ_MPIDense_AB;
+
 static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
 {
-  MPIAIJ_MPIDense *contents = *(MPIAIJ_MPIDense **)ctx;
+  MPIAIJ_MPIDense_AB *data = *(MPIAIJ_MPIDense_AB **)ctx;
 
   PetscFunctionBegin;
-  PetscCall(MatMPIDenseScatterDestroy_Private(contents));
-  PetscCall(PetscFree(contents));
+  PetscCall(MatDestroy(&data->workC));
+  PetscCall(MatMPIDenseScatterDestroy_Private(&data->scatter));
+  PetscCall(PetscFree(data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -502,12 +508,14 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
 
 static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  Mat_MPIAIJ      *aij = (Mat_MPIAIJ *)A->data;
-  MPIAIJ_MPIDense *contents;
-  PetscInt         nz  = aij->B->cmap->n;
-  VecScatter       ctx = aij->Mvctx;
-  PetscInt         Am = A->rmap->n, BN = B->cmap->N;
-  PetscBool        cisdense;
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ *)A->data;
+  MPIAIJ_MPIDense_AB *data;
+  PetscInt            nz  = aij->B->cmap->n;
+  VecScatter          ctx = aij->Mvctx;
+  PetscInt            Am = A->rmap->n, BN = B->cmap->N, Bbn, numBb;
+  Mat                 workB1, workC1;
+  const char         *ctype;
+  PetscBool           cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -517,19 +525,45 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatSetUp(C));
-  PetscCall(PetscNew(&contents));
-  PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, 1, Am, B, C, contents, NULL, NULL));
+  /* The cuSPARSE and hipSPARSE symbolic below re-types a host local block of C in place, so capture the type
+     of the local block of C now to give the work matrix the type the numeric will add it to */
+  ctype = ((PetscObject)((Mat_MPIDense *)C->data)->A)->type_name;
+  PetscCall(PetscNew(&data));
+  PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, 1, Am, B, C, &data->scatter, &Bbn, &numBb));
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatProductClear(aij->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)B->data)->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)C->data)->A));
+  if (data->scatter.ondevice && nz) {
+    /* On the device route the off-diagonal contribution is computed into a work matrix and added to the local
+       block of C, rather than accumulated in place by a host kernel */
+    PetscCall(MatCreate(PETSC_COMM_SELF, &data->workC));
+    PetscCall(MatSetSizes(data->workC, Am, Bbn ? Bbn : BN, Am, Bbn ? Bbn : BN));
+    PetscCall(MatSetType(data->workC, ctype));
+    PetscCall(MatSetUp(data->workC));
+    PetscCall(MatProductCreateWithMat(aij->B, data->scatter.workB, NULL, data->workC));
+    PetscCall(MatProductSetType(data->workC, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(data->workC));
+    PetscCall(MatProductSymbolic(data->workC));
+    if (numBb && BN % Bbn) {
+      /* the last column batch is smaller, set up the product on the sub-matrices the numeric will use for it */
+      PetscCall(MatDenseGetSubMatrix(data->scatter.workB, PETSC_DECIDE, PETSC_DECIDE, 0, BN % Bbn, &workB1));
+      PetscCall(MatDenseGetSubMatrix(data->workC, PETSC_DECIDE, PETSC_DECIDE, 0, BN % Bbn, &workC1));
+      PetscCall(MatProductCreateWithMat(aij->B, workB1, NULL, workC1));
+      PetscCall(MatProductSetType(workC1, MATPRODUCT_AB));
+      PetscCall(MatProductSetFromOptions(workC1));
+      PetscCall(MatProductSymbolic(workC1));
+      PetscCall(MatDenseRestoreSubMatrix(data->workC, &workC1));
+      PetscCall(MatDenseRestoreSubMatrix(data->scatter.workB, &workB1));
+    }
+  }
   PetscCall(MatProductCreateWithMat(aij->A, ((Mat_MPIDense *)B->data)->A, NULL, ((Mat_MPIDense *)C->data)->A));
   PetscCall(MatProductSetType(((Mat_MPIDense *)C->data)->A, MATPRODUCT_AB));
   PetscCall(MatProductSetFromOptions(((Mat_MPIDense *)C->data)->A));
   PetscCall(MatProductSymbolic(((Mat_MPIDense *)C->data)->A));
-  C->product->data       = contents;
+  C->product->data       = data;
   C->product->destroy    = MatMPIAIJ_MPIDenseDestroy;
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -623,60 +657,81 @@ static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, Mat workB, Mat C)
   MPIAIJ_MPIDense *contents;
 
   PetscFunctionBegin;
-  contents = (MPIAIJ_MPIDense *)C->product->data;
+  contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
   PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   Computes C = A * B, creating the nested product and its symbolic the first time. When clear is true the
+   product is cleared by the numeric, so that the symbolic is redone on the next call
+*/
+static PetscErrorCode MatMPIAIJ_MPIDenseProductNumeric_Private(Mat A, Mat B, Mat C, PetscBool clear)
+{
+  PetscFunctionBegin;
+  if (!C->product) {
+    PetscCall(MatProductCreateWithMat(A, B, NULL, C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+  } else PetscCall(MatProductReplaceMats(A, B, NULL, C));
+  if (clear && !C->product->clear) C->product->clear = PETSC_TRUE;
+  PetscCall(MatProductNumeric(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 {
-  Mat_MPIAIJ      *aij    = (Mat_MPIAIJ *)A->data;
-  Mat_MPIDense    *bdense = (Mat_MPIDense *)B->data;
-  Mat_MPIDense    *cdense = (Mat_MPIDense *)C->data;
-  Mat              workB;
-  MPIAIJ_MPIDense *contents;
+  Mat_MPIAIJ         *aij    = (Mat_MPIAIJ *)A->data;
+  Mat_MPIDense       *bdense = (Mat_MPIDense *)B->data;
+  Mat_MPIDense       *cdense = (Mat_MPIDense *)C->data;
+  Mat                 workB;
+  MPIAIJ_MPIDense    *contents;
+  MPIAIJ_MPIDense_AB *data;
+  PetscBool           clear = PETSC_FALSE, flg;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  contents = (MPIAIJ_MPIDense *)C->product->data;
-  /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
-  if (!cdense->A->product) {
-    PetscCall(MatProductCreateWithMat(aij->A, bdense->A, NULL, cdense->A));
-    PetscCall(MatProductSetType(cdense->A, MATPRODUCT_AB));
-    PetscCall(MatProductSetFromOptions(cdense->A));
-    PetscCall(MatProductSymbolic(cdense->A));
-  } else PetscCall(MatProductReplaceMats(aij->A, bdense->A, NULL, cdense->A));
-  if (PetscDefined(HAVE_CUPM) && !cdense->A->product->clear) {
-    PetscBool flg;
-
+  data     = (MPIAIJ_MPIDense_AB *)C->product->data;
+  contents = &data->scatter;
+  if (PetscDefined(HAVE_CUPM)) {
     PetscCall(PetscObjectTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
     if (flg) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
-    if (!flg) cdense->A->product->clear = PETSC_TRUE; /* if either A or C is a device Mat, make sure MatProductClear() is called */
+    clear = (PetscBool)!flg; /* if either A or C is a device Mat, make sure MatProductClear() is called */
   }
-  PetscCall(MatProductNumeric(cdense->A));
+  /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
+  PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->A, bdense->A, cdense->A, clear));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     workB = contents->workB;
     PetscCall(MatMPIDenseScatter(A, B, workB, C));
 
     /* off-diagonal block of A times nonlocal rows of B */
-    PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE));
+    if (data->workC) {
+      PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, data->workC, clear));
+      PetscCall(MatAXPY(cdense->A, 1.0, data->workC, SAME_NONZERO_PATTERN));
+    } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE)); /* the device route has no work matrix only when the off-diagonal block has no columns */
   } else {
-    Mat       Bb, Cb;
+    Mat       Bb, Cb, workC;
     PetscInt  BN = B->cmap->N, n = contents->workB->cmap->n, cols;
-    PetscBool ccpu;
+    PetscBool ccpu = PETSC_FALSE;
 
     PetscCheck(n > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column block size %" PetscInt_FMT " must be positive", n);
-    /* Prevent from unneeded copies back and forth from the GPU
-       when getting and restoring the submatrix
-       We need a proper GPU code for AIJ * dense in parallel */
-    PetscCall(MatBoundToCPU(C, &ccpu));
-    PetscCall(MatBindToCPU(C, PETSC_TRUE));
+    /* The host route accumulates into the local block of C on the host, bind C to the CPU to avoid copies back
+       and forth from the device when getting and restoring the sub-matrices */
+    if (!contents->ondevice) {
+      PetscCall(MatBoundToCPU(C, &ccpu));
+      PetscCall(MatBindToCPU(C, PETSC_TRUE));
+    }
     for (PetscInt i = 0; i < BN; i += n) {
       cols  = PetscMin(n, BN - i);
       workB = contents->workB;
-      if (cols != n) PetscCall(MatDenseGetSubMatrix(contents->workB, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workB));
+      workC = data->workC;
+      if (cols != n) {
+        PetscCall(MatDenseGetSubMatrix(contents->workB, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workB));
+        if (workC) PetscCall(MatDenseGetSubMatrix(data->workC, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workC));
+      }
       PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, i, i + cols, &Bb));
       PetscCall(MatDenseGetSubMatrix(C, PETSC_DECIDE, PETSC_DECIDE, i, i + cols, &Cb));
 
@@ -684,13 +739,18 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
       PetscCall(MatMPIDenseScatter(A, Bb, workB, C));
 
       /* off-diagonal block of A times nonlocal rows of B */
-      cdense = (Mat_MPIDense *)Cb->data;
-      PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE));
-      if (cols != n) PetscCall(MatDenseRestoreSubMatrix(contents->workB, &workB));
+      if (workC) {
+        PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, workC, clear));
+        PetscCall(MatAXPY(((Mat_MPIDense *)Cb->data)->A, 1.0, workC, SAME_NONZERO_PATTERN));
+      } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, ((Mat_MPIDense *)Cb->data)->A, PETSC_TRUE));
+      if (cols != n) {
+        if (workC) PetscCall(MatDenseRestoreSubMatrix(data->workC, &workC));
+        PetscCall(MatDenseRestoreSubMatrix(contents->workB, &workB));
+      }
       PetscCall(MatDenseRestoreSubMatrix(B, &Bb));
       PetscCall(MatDenseRestoreSubMatrix(C, &Cb));
     }
-    PetscCall(MatBindToCPU(C, ccpu));
+    if (!contents->ondevice) PetscCall(MatBindToCPU(C, ccpu));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

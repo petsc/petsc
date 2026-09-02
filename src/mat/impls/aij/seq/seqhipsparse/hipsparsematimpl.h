@@ -246,17 +246,21 @@ struct Mat_HipsparseSpMV {
 
 /* This is struct holding the relevant data needed to a MatMult */
 struct Mat_SeqAIJHIPSPARSEMultStruct {
-  void                 *mat;          /* opaque pointer to a matrix. This could be either a hipsparseHybMat_t or a CsrMatrix */
-  hipsparseMatDescr_t   descr;        /* Data needed to describe the matrix for a multiply */
-  THRUSTINTARRAY       *cprowIndices; /* compressed row indices used in the parallel SpMV */
-  PetscScalar          *alpha_one;    /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
-  PetscScalar          *beta_zero;    /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
-  PetscScalar          *beta_one;     /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
-  hipsparseSpMatDescr_t matDescr;     /* descriptor for the matrix, used by SpMM */
-  Mat_HipsparseSpMV     hipSpMV[3];   /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
+  void                 *mat;              /* opaque pointer to a matrix. This could be either a hipsparseHybMat_t or a CsrMatrix */
+  hipsparseMatDescr_t   descr;            /* Data needed to describe the matrix for a multiply */
+  THRUSTINTARRAY       *cprowIndices;     /* compressed row indices used in the parallel SpMV */
+  PetscScalar          *alpha_one;        /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
+  PetscScalar          *beta_zero;        /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
+  PetscScalar          *beta_one;         /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
+  hipsparseSpMatDescr_t matDescr;         /* descriptor for the matrix, used by SpMM */
+  hipsparseSpMatDescr_t matDescr_SpMM[3]; /* descriptors used by SpMM when the rows of the matrix are compressed, one per operation */
+  Mat_HipsparseSpMV     hipSpMV[3];       /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
   Mat_SeqAIJHIPSPARSEMultStruct() : matDescr(NULL)
   {
-    for (int i = 0; i < 3; i++) hipSpMV[i].initialized = PETSC_FALSE;
+    for (int i = 0; i < 3; i++) {
+      hipSpMV[i].initialized = PETSC_FALSE;
+      matDescr_SpMM[i]       = NULL;
+    }
   }
 };
 
