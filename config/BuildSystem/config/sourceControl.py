@@ -24,7 +24,7 @@ class Configure(config.base.Configure):
     self.getExecutable(self.argDB['with-git'], resultName = 'git', setMakeMacro = 0)
     if hasattr(self,'git'):
       try:
-        self.gitversion = self.executeShellCommand(self.git + ' --version', log = self.log)
+        self.gitversion = self.executeShellCommand(self.git + ' --version', log = self.log)[0].strip()
       except: pass
     return
 
