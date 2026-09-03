@@ -5,10 +5,19 @@ import os
 import re
 import subprocess
 import pathlib
+import concurrent.futures
+import multiprocessing
 from itertools import chain
 
+C2HTML_BATCH_SIZE = 32
+
+if __package__:
+  from . import build_c2html_file
+else:
+  import build_c2html_file
+
 def compute_make_np(i):
-  '''Number of cores to run make c2html on'''
+  '''Number of worker processes to run c2html on'''
   f16 = .80
   f32 = .65
   f64 = .50
@@ -34,13 +43,13 @@ def main(petsc_dir,build_dir,loc,c2html,mapnames):
   SKIPDIRS.add(os.environ.get('PETSC_ARCH', 'arch-docs'))
   SKIPDIRSPREFIX = set('arch- venv- .git'.split())
   SUFFIXES = set('.F90 .F .c .cxx .cpp .h .cu .hpp'.split())
-  allfiles = []
+  sourcefiles = []
   for root, dirs, files in chain.from_iterable(os.walk(path) for path in [petsc_dir]):
     dirs[:] = [d for d in dirs if d not in SKIPDIRS and not any([s for s in SKIPDIRSPREFIX if d.startswith(s)])]
     root = root[len(petsc_dir)+1:]
     if not root: continue
     if not os.path.isdir(os.path.join(loc,root)): os.makedirs(os.path.join(loc,root))
-    allfiles.extend([os.path.join(loc,root,f+'.html') for f in files if any([s for s in SUFFIXES if f.endswith(s)])])
+    sourcefiles.extend([os.path.join(root,f) for f in files if any([s for s in SUFFIXES if f.endswith(s)])])
 
     # create index.html file for each directory
     with open(os.path.join(loc,root,'index.html'),'w') as fdw:
@@ -88,21 +97,14 @@ def main(petsc_dir,build_dir,loc,c2html,mapnames):
       for d in dirs:
         fdw.write('<a href="' + os.path.join(d,'index.html') + '">' + d + '</a><br>\n')
 
-  # create makefile that will run c2html on all source files in parallel
   git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).rstrip()
-  with open(os.path.join(petsc_dir,'c2html.mk'),'w') as fd:
-    fd.write('files = ')
-    fd.write(' '.join(allfiles))
-    fd.write('\n')
-    fd.write('\n')
-    fd.write(os.path.join(loc,'%.html')+' : %\n')
-    fd.write('	@' + str(os.path.join(str(petsc_dir),'doc','build_c2html_file.py')) + ' ' + str(petsc_dir) + ' ' + str(loc) + ' '+ git_sha + ' ' + c2html + ' ' + mapnames + ' $< $@\n')
-    fd.write('\n')
-    fd.write('all: $(files)\n')
+  # Reuse a fixed set of Python interpreters instead of starting one for every source file.
+  with concurrent.futures.ProcessPoolExecutor(max_workers=compute_make_np(multiprocessing.cpu_count())) as executor:
+    futures = [
+      executor.submit(build_c2html_file.main_batch,petsc_dir,loc,git_sha,c2html,mapnames,sourcefiles[i:i + C2HTML_BATCH_SIZE])
+      for i in range(0,len(sourcefiles),C2HTML_BATCH_SIZE)
+    ]
+    for future in concurrent.futures.as_completed(futures):
+      future.result()
 
-  import multiprocessing
-  command = ['make', '-j', str(compute_make_np(multiprocessing.cpu_count())), '-f', 'c2html.mk', 'all']
-  subprocess.run(command, cwd=petsc_dir, check=True)
-
-  os.unlink('c2html.mk')
   os.unlink('htmlmap.tmp')
