@@ -190,19 +190,19 @@ Unable to download package %s from: %s
       shutil.copyfile(url, localFile)
     else:
       # fetch remote file
+      from urllib.request import Request, urlopen
+      sav_timeout = socket.getdefaulttimeout()
+      socket.setdefaulttimeout(30)
       try:
-        from urllib.request import Request, urlopen
-        sav_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(30)
         req = Request(url)
         req.headers['User-Agent'] = 'PetscConfigure/'+self.ver
         with open(localFile, 'wb') as f:
           f.write(urlopen(req).read())
-        socket.setdefaulttimeout(sav_timeout)
       except Exception as e:
-        socket.setdefaulttimeout(sav_timeout)
         failureMessage = self.getDownloadFailureMessage(self.packagename, url, filename)
         raise RuntimeError(str(e)+'\n'+failureMessage)
+      finally:
+        socket.setdefaulttimeout(sav_timeout)
 
     self.logPrint('Extracting '+localFile)
     if ext in ['.zip','.ZIP']:
