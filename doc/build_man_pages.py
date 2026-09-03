@@ -29,41 +29,43 @@ def findlmansec(file):
         return mansec
     return None
 
-def processdir(petsc_dir, build_dir, dir, doctext):
-  '''Runs doctext on each source file in the directory'''
-  #print('Processing '+dir)
-  doctext_path = os.path.join(build_dir,'manualpages','doctext')
+def processdir_batched(petsc_dir, build_dir, dir, doctext):
+  '''Runs doctext on batches of source files in the directory'''
   lmansec = None
   if os.path.isfile(os.path.join(dir,'makefile')):
     lmansec = findlmansec(os.path.join(dir,'makefile'))
 
-  numberErrors = 0
+  batches = []
   for file in os.listdir(dir):
     llmansec = lmansec
     if os.path.isfile(os.path.join(dir,file)) and pathlib.Path(file).suffix in ['.c', '.cxx', '.h', '.cu', '.cpp', '.hpp']:
-      #print('Processing '+file)
       if not llmansec:
         llmansec = findlmansec(os.path.join(dir,file))
         if not llmansec: continue
       if not os.path.isdir(os.path.join(build_dir,'manualpages',llmansec)): os.mkdir(os.path.join(build_dir,'manualpages',llmansec))
+      if batches and batches[-1][0] == llmansec:
+        batches[-1][1].append(file)
+      else:
+        batches.append((llmansec,[file]))
 
-      command = [doctext,
-                 '-myst',
-                 '-mpath',    os.path.join(build_dir,'manualpages',llmansec),
-                 '-heading',  'PETSc',
-                 '-defn',     os.path.join(build_dir,'manualpages','doctext','myst.def'),
-                 '-indexdir', '../'+llmansec,
-                 '-index',    os.path.join(build_dir,'manualpages','manualpages.cit'),
-                 '-locdir',   dir[len(petsc_dir)+1:]+'/',
-                 '-Wargdesc', os.path.join(build_dir,'manualpages','doctext','doctextcommon.txt'),
-                 file]
-      sp = subprocess.run(command, cwd=dir, capture_output=True, encoding='UTF-8', check=True)
-      if sp.stdout and sp.stdout.find('WARNING') > -1:
-        print(sp.stdout)
-        numberErrors = numberErrors + 1
-      if sp.stderr and sp.stderr.find('WARNING') > -1:
-        print(sp.stderr)
-        numberErrors = numberErrors + 1
+  numberErrors = 0
+  for llmansec,files in batches:
+    command = [doctext,
+               '-myst',
+               '-mpath',    os.path.join(build_dir,'manualpages',llmansec),
+               '-heading',  'PETSc',
+               '-defn',     os.path.join(build_dir,'manualpages','doctext','myst.def'),
+               '-indexdir', '../'+llmansec,
+               '-index',    os.path.join(build_dir,'manualpages','manualpages.cit'),
+               '-locdir',   dir[len(petsc_dir)+1:]+'/',
+               '-Wargdesc', os.path.join(build_dir,'manualpages','doctext','doctextcommon.txt')]
+    sp = subprocess.run(command + files, cwd=dir, capture_output=True, encoding='UTF-8', check=True)
+    if sp.stdout and sp.stdout.find('WARNING') > -1:
+      print(sp.stdout)
+      numberErrors = numberErrors + 1
+    if sp.stderr and sp.stderr.find('WARNING') > -1:
+      print(sp.stderr)
+      numberErrors = numberErrors + 1
   return numberErrors
 
 
@@ -96,7 +98,7 @@ def main(petsc_dir, build_dir, doctext, extra_roots=None):
   skip_dirs = _SKIP_DIRS + [os.environ.get('PETSC_ARCH', 'arch-docs')]
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
     dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith('arch')]
-    numberErrors = numberErrors + processdir(petsc_dir,build_dir,dirpath,doctext)
+    numberErrors = numberErrors + processdir_batched(petsc_dir,build_dir,dirpath,doctext)
 
   # generate the .md files for the manual pages from the sources of cloned providesDocs packages
   # (e.g. PFLARE); each entry is (repo_root, docs_dir) and repo_root is passed as petsc_dir so the
@@ -104,7 +106,7 @@ def main(petsc_dir, build_dir, doctext, extra_roots=None):
   for base, walk_root in (extra_roots or []):
     for dirpath, dirnames, filenames in os.walk(walk_root,topdown=True):
       dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith('arch')]
-      numberErrors = numberErrors + processdir(base,build_dir,dirpath,doctext)
+      numberErrors = numberErrors + processdir_batched(base,build_dir,dirpath,doctext)
   if numberErrors:
     raise RuntimeError('Stopping document build since errors were detected in generating manual pages')
 
