@@ -205,8 +205,8 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
   PetscCall(KSPInitializePackage());
 
   PetscCall(PetscHeaderCreate(tguess, KSPGUESS_CLASSID, "KSPGuess", "Initial guess for Krylov Method", "KSPGuess", comm, KSPGuessDestroy, KSPGuessView));
-  tguess->omatstate = -1;
-  *guess            = tguess;
+  PetscCall(MatStateInvalidate(tguess->omatstate));
+  *guess = tguess;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -335,11 +335,11 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 @*/
 PetscErrorCode KSPGuessSetUp(KSPGuess guess)
 {
-  PetscObjectState matstate;
-  PetscInt         oM = 0, oN = 0, M, N;
-  Mat              omat = NULL;
-  PC               pc;
-  PetscBool        reuse;
+  PetscInt  oM = 0, oN = 0, M, N;
+  Mat       omat = NULL;
+  PC        pc;
+  PetscBool reuse, same;
+  MatState  matstate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
@@ -352,11 +352,12 @@ PetscErrorCode KSPGuessSetUp(KSPGuess guess)
   PetscCall(PCGetReusePreconditioner(pc, &reuse));
   PetscCall(PetscObjectReference((PetscObject)guess->A));
   PetscCall(MatGetSize(guess->A, &M, &N));
-  PetscCall(PetscObjectStateGet((PetscObject)guess->A, &matstate));
+  PetscCall(MatGetState(guess->A, &matstate));
+  PetscCall(MatStateCompare(matstate, guess->omatstate, &same));
   if (M != oM || N != oN) {
     PetscCall(PetscInfo(guess, "Resetting KSPGuess since matrix sizes have changed (%" PetscInt_FMT " != %" PetscInt_FMT ", %" PetscInt_FMT " != %" PetscInt_FMT ")\n", oM, M, oN, N));
-  } else if (!reuse && (omat != guess->A || guess->omatstate != matstate)) {
-    PetscCall(PetscInfo(guess, "Resetting KSPGuess since %s has changed\n", omat != guess->A ? "matrix" : "matrix state"));
+  } else if (!reuse && !same) {
+    PetscCall(PetscInfo(guess, "Resetting KSPGuess since %s has changed\n", matstate.id != guess->omatstate.id ? "matrix" : "matrix state"));
     PetscTryTypeMethod(guess, reset);
   } else if (reuse) {
     PetscCall(PetscInfo(guess, "Not resettting KSPGuess since reuse preconditioner has been specified\n"));
