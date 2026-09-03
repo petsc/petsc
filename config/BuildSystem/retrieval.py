@@ -199,6 +199,7 @@ Unable to download package %s from: %s
         with open(localFile, 'wb') as f:
           f.write(urlopen(req).read())
       except Exception as e:
+        self.removeTarget(localFile)
         failureMessage = self.getDownloadFailureMessage(self.packagename, url, filename)
         raise RuntimeError(str(e)+'\n'+failureMessage)
       finally:
