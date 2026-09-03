@@ -236,6 +236,8 @@ Downloaded package %s from: %s is not a tarball.
         dirname = firstmember.name
       else:
         dirname = os.path.dirname(firstmember.name)
+      # Python 3.14 defaults to filter='data', which rejects absolute symlinks and strips permissions
+      if hasattr(tarfile, 'tar_filter'): tf.extraction_filter = tarfile.tar_filter
       tf.extractall(root)
       tf.close()
 
