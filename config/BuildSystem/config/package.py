@@ -24,6 +24,7 @@ def sliding_window(seq, n=2):
 class FakePETScDir:
   def __init__(self):
     self.dir = 'UNKNOWN'
+    self.version = 'UNKNOWN'
 
 class Package(config.base.Configure):
   def __init__(self, framework):
@@ -919,8 +920,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     import retrieval
     self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     self.retriever.setup()
-    self.retriever.ver = self.petscdir.version
-    self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
+    # self.download is a list of urls, except for the PythonPackage 'PyPi' sentinel, which names nothing to retrieve
+    urls = [] if isinstance(self.download,str) else self.download
+    self.retriever.setupURLs(self.package,urls,self.gitsubmodules,self.gitPreReqCheck(),self.petscdir.version)
 
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
@@ -943,7 +945,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         return pkgdir
       except RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
-        err += str(e)
+        err += str(e)+'\n'
     raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):

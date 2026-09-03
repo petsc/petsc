@@ -5,11 +5,14 @@ from urllib import parse as urlparse_local
 import config.base
 import socket
 import shutil
+import shlex
 
 # Fix parsing for nonstandard schemes
 urlparse_local.uses_netloc.extend(['bk', 'ssh', 'svn'])
 
 class Retriever(logger.Logger):
+  '''Downloads an external package into the externalpackages directory
+     Call setupURLs() first, then genericRetrieve() on each pair generateURLs() yields'''
   def __init__(self, sourceControl, clArgs = None, argDB = None):
     logger.Logger.__init__(self, clArgs, argDB)
     self.sourceControl = sourceControl
@@ -20,7 +23,6 @@ class Retriever(logger.Logger):
     self.dir_urls = []
     self.link_urls = []
     self.tarball_urls = []
-    self.stamp = None
     self.ver = 'unknown'
     return
 
@@ -32,15 +34,18 @@ class Retriever(logger.Logger):
       return True
     return False
 
-  def setupURLs(self,packagename,urls,gitsubmodules,gitprereq):
+  def setupURLs(self,packagename,urls,gitsubmodules,gitprereq,ver):
+    '''Sort urls into the per-protocol lists and record the settings the retrieve methods need
+       Must be called before generateURLs() or genericRetrieve()'''
     self.packagename = packagename
     self.gitsubmodules = gitsubmodules
     self.gitprereq = gitprereq
+    self.ver = ver
     for url in urls:
       parsed = urlparse_local.urlparse(url)
       if self.isGitURL(url):
         self.git_urls.append(self.removePrefix(url,'git://'))
-      elif parsed[0] == 'hg'or (parsed[0] == 'ssh' and parsed[1].startswith('hg@')):
+      elif parsed[0] == 'hg' or (parsed[0] == 'ssh' and parsed[1].startswith('hg@')):
         self.hg_urls.append(self.removePrefix(url,'hg://'))
       elif parsed[0] == 'dir' or os.path.isdir(url):
         self.dir_urls.append(self.removePrefix(url,'dir://'))
@@ -50,6 +55,7 @@ class Retriever(logger.Logger):
         self.tarball_urls.extend([url])
 
   def isDirectoryGitRepo(self, directory):
+    '''Return whether directory is a git repository, or False when git is not available'''
     if not hasattr(self.sourceControl, 'git'):
       self.logPrint('git not found in self.sourceControl - cannot evaluate isDirectoryGitRepo(): '+directory)
       return False
@@ -90,6 +96,8 @@ Unable to download package %s from: %s
     return url
 
   def generateURLs(self):
+    '''Yield the (protocol, url) pairs to try, in order: git, hg, dir, link, tarball
+       git urls are skipped without git or on a failed gitprereq, hg urls without hg'''
     if hasattr(self.sourceControl, 'git') and self.gitprereq:
       for url in self.git_urls:
         yield('git',url)
@@ -108,13 +116,14 @@ Unable to download package %s from: %s
       yield('tarball',url)
 
   def genericRetrieve(self,proto,url,root):
-    '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
+    '''Fetch the package indicated by url into root
+       git and hg are cloned, dir is copied, link is symlinked, tarball is downloaded and extracted'''
     if proto == 'git':
-      return self.gitRetrieve(url,root)
+      self.gitRetrieve(url,root)
     elif proto == 'hg':
-      return self.hgRetrieve(url,root)
+      self.hgRetrieve(url,root)
     elif proto == 'dir':
-      return self.dirRetrieve(url,root)
+      self.dirRetrieve(url,root)
     elif proto == 'link':
       self.linkRetrieve(url,root)
     elif proto == 'tarball':
@@ -124,7 +133,7 @@ Unable to download package %s from: %s
     self.logPrint('Retrieving %s as directory' % url, 3, 'install')
     if not os.path.isdir(url): raise RuntimeError('URL %s is not a directory' % url)
 
-    t = os.path.join(root,os.path.basename(url))
+    t = os.path.join(root,os.path.basename(os.path.normpath(url)))
     self.removeTarget(t)
     shutil.copytree(url,t)
 
@@ -132,7 +141,7 @@ Unable to download package %s from: %s
     self.logPrint('Retrieving %s as link' % url, 3, 'install')
     if not os.path.isdir(url): raise RuntimeError('URL %s is not pointing to a directory' % url)
 
-    t = os.path.join(root,os.path.basename(url))
+    t = os.path.join(root,os.path.basename(os.path.normpath(url)))
     self.removeTarget(t)
     os.symlink(os.path.abspath(url),t)
 
@@ -190,24 +199,25 @@ Unable to download package %s from: %s
       shutil.copyfile(url, localFile)
     else:
       # fetch remote file
+      from urllib.request import Request, urlopen
+      sav_timeout = socket.getdefaulttimeout()
+      socket.setdefaulttimeout(30)
       try:
-        from urllib.request import Request, urlopen
-        sav_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(30)
         req = Request(url)
         req.headers['User-Agent'] = 'PetscConfigure/'+self.ver
         with open(localFile, 'wb') as f:
           f.write(urlopen(req).read())
-        socket.setdefaulttimeout(sav_timeout)
       except Exception as e:
-        socket.setdefaulttimeout(sav_timeout)
+        self.removeTarget(localFile)
         failureMessage = self.getDownloadFailureMessage(self.packagename, url, filename)
         raise RuntimeError(str(e)+'\n'+failureMessage)
+      finally:
+        socket.setdefaulttimeout(sav_timeout)
 
     self.logPrint('Extracting '+localFile)
     if ext in ['.zip','.ZIP']:
-      config.base.Configure.executeShellCommand('cd '+root+'; unzip '+localFile, log = self.log)
-      output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+localFile+' | head -n 1', log = self.log)
+      config.base.Configure.executeShellCommand('unzip -o '+shlex.quote(localFile), cwd = root, log = self.log)
+      output = config.base.Configure.executeShellCommand('zipinfo -1 '+shlex.quote(localFile)+' | head -n 1', cwd = root, log = self.log)
       dirname = os.path.normpath(output[0].strip())
     else:
       failureMessage = '''\
@@ -222,7 +232,7 @@ Downloaded package %s from: %s is not a tarball.
 ''' % (self.packagename.upper(), url, filename, self.packagename, filename)
       import tarfile
       try:
-        tf  = tarfile.open(os.path.join(root, localFile))
+        tf  = tarfile.open(localFile)
       except tarfile.ReadError as e:
         raise RuntimeError(str(e)+'\n'+failureMessage)
       if not tf: raise RuntimeError(failureMessage)
@@ -237,6 +247,8 @@ Downloaded package %s from: %s is not a tarball.
         dirname = firstmember.name
       else:
         dirname = os.path.dirname(firstmember.name)
+      # Python 3.14 defaults to filter='data', which rejects absolute symlinks and strips permissions
+      if hasattr(tarfile, 'tar_filter'): tf.extraction_filter = tarfile.tar_filter
       tf.extractall(root)
       tf.close()
 
@@ -244,7 +256,8 @@ Downloaded package %s from: %s is not a tarball.
     try:
       # check if 'dirname' is set'
       if dirname:
-        config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + r' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
+        quoted = shlex.quote(dirname)
+        config.base.Configure.executeShellCommand('chmod -R a+r '+quoted+';find  '+quoted + r' -type d -name "*" -exec chmod a+rx {} \;', cwd = root, log = self.log)
       else:
         self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
     except RuntimeError as e:
