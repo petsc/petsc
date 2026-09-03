@@ -946,7 +946,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
         return pkgdir
       except RuntimeError as e:
         self.logPrint('ERROR: '+str(e))
-        err += str(e)
+        err += str(e)+'\n'
     raise RuntimeError('Error during download/extract/detection of '+self.PACKAGE+':\n'+err)
 
   def Install(self):
