@@ -19,8 +19,7 @@ typedef struct {
   PetscBool        usenoisy; /* use noisy right-hand side vector to estimate eigenvalues */
   KSPChebyshevKind chebykind;
   /* For tracking when to update the eigenvalue estimates */
-  PetscObjectId    amatid, pmatid;
-  PetscObjectState amatstate, pmatstate;
+  MatState amatstate, pmatstate;
 } KSP_Chebyshev;
 
 /* given the polynomial order, return tabulated beta coefficients for use in opt. 4th-kind Chebyshev smoother */

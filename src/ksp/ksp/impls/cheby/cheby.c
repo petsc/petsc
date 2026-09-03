@@ -102,10 +102,8 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, Pets
     if (b >= 0) cheb->tform[1] = b;
     if (c >= 0) cheb->tform[2] = c;
     if (d >= 0) cheb->tform[3] = d;
-    cheb->amatid    = 0;
-    cheb->pmatid    = 0;
-    cheb->amatstate = -1;
-    cheb->pmatstate = -1;
+    PetscCall(MatStateInvalidate(cheb->amatstate));
+    PetscCall(MatStateInvalidate(cheb->pmatstate));
   } else {
     PetscCall(KSPDestroy(&cheb->kspest));
   }
@@ -739,11 +737,8 @@ static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
 
 static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
 {
-  KSP_Chebyshev   *cheb = (KSP_Chebyshev *)ksp->data;
-  PetscBool        isset, flg;
-  Mat              Pmat, Amat;
-  PetscObjectId    amatid, pmatid;
-  PetscObjectState amatstate, pmatstate;
+  KSP_Chebyshev *cheb = (KSP_Chebyshev *)ksp->data;
+  PetscBool      isset, flg;
 
   PetscFunctionBegin;
   switch (cheb->chebykind) {
@@ -782,6 +777,10 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
     if (!cheb->kspest) PetscCall(KSPChebyshevEstEigSet(ksp, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
   }
   if (cheb->kspest) {
+    Mat       Pmat, Amat;
+    PetscBool amatsame, pmatsame;
+    MatState  amatstate, pmatstate;
+
     PetscCall(KSPGetOperators(ksp, &Amat, &Pmat));
     PetscCall(MatIsSPDKnown(Pmat, &isset, &flg));
     if (isset && flg) {
@@ -791,11 +790,11 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       PetscCall(PetscOptionsHasName(NULL, prefix, "-ksp_type", &flg));
       if (!flg) PetscCall(KSPSetType(cheb->kspest, KSPCG));
     }
-    PetscCall(PetscObjectGetId((PetscObject)Amat, &amatid));
-    PetscCall(PetscObjectGetId((PetscObject)Pmat, &pmatid));
-    PetscCall(PetscObjectStateGet((PetscObject)Amat, &amatstate));
-    PetscCall(PetscObjectStateGet((PetscObject)Pmat, &pmatstate));
-    if (amatid != cheb->amatid || pmatid != cheb->pmatid || amatstate != cheb->amatstate || pmatstate != cheb->pmatstate) {
+    PetscCall(MatGetState(Amat, &amatstate));
+    PetscCall(MatGetState(Pmat, &pmatstate));
+    PetscCall(MatStateCompare(amatstate, cheb->amatstate, &amatsame));
+    PetscCall(MatStateCompare(pmatstate, cheb->pmatstate, &pmatsame));
+    if (!amatsame || !pmatsame) {
       PetscReal          max = 0.0, min = 0.0;
       Vec                B;
       KSPConvergedReason reason;
@@ -841,8 +840,6 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       cheb->emin_computed = min;
       cheb->emax_computed = max;
 
-      cheb->amatid    = amatid;
-      cheb->pmatid    = pmatid;
       cheb->amatstate = amatstate;
       cheb->pmatstate = pmatstate;
     }
