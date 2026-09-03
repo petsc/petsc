@@ -1,24 +1,26 @@
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/
 
 typedef struct {
-  PetscInt     s;     /* shadow space dimension; default 4 */
-  Vec         *GG;    /* s direction vectors G[0..s-1] */
-  Vec         *UU;    /* s update vectors   U[0..s-1] */
-  Vec         *PP;    /* s shadow vectors   P[0..s-1] (fixed, random orthonormal) */
-  Vec          r;     /* current residual */
-  Vec          v;     /* work vector */
-  Vec          t;     /* work vector (preconditioned operator result) */
-  Vec          guess; /* saved initial guess, used with right preconditioning */
-  PetscScalar *M;     /* s*s matrix M[j,k] = <G[k],P[j]>, column-major */
-  PetscScalar *f;     /* length s: P^T r */
-  PetscScalar *c;     /* length s: solution of M c = f */
-  PetscReal    cth;   /* omega stabilization threshold (0 = off, default 0.7) */
-  PetscRandom  rand;  /* random context to initialize shadow vectors */
+  PetscInt      s;      /* shadow space dimension; default 4 */
+  PetscObjectId workid; /* id of the work vectors used to initialize the shadow space */
+  Vec          *GG;     /* s direction vectors G[0..s-1] */
+  Vec          *UU;     /* s update vectors   U[0..s-1] */
+  Vec          *PP;     /* s shadow vectors   P[0..s-1] (fixed, random orthonormal) */
+  Vec           r;      /* current residual */
+  Vec           v;      /* work vector */
+  Vec           t;      /* work vector (preconditioned operator result) */
+  Vec           guess;  /* saved initial guess, used with right preconditioning */
+  PetscScalar  *M;      /* s*s matrix M[j,k] = <G[k],P[j]>, column-major */
+  PetscScalar  *f;      /* length s: P^T r */
+  PetscScalar  *c;      /* length s: solution of M c = f */
+  PetscReal     cth;    /* omega stabilization threshold (0 = off, default 0.7) */
+  PetscRandom   rand;   /* random context to initialize shadow vectors */
 } KSP_IDR;
 
 /*
    KSPIDRInitShadowSpace_IDR - Fill shadow space P[0..s-1] with random
-   orthonormal vectors (Gram-Schmidt). Called from KSPSetUp_IDR().
+   orthonormal vectors (Gram-Schmidt). Called when the work vectors are
+   created or recreated.
 */
 static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 {
@@ -40,7 +42,7 @@ static PetscErrorCode KSPIDRInitShadowSpace_IDR(KSP ksp)
 }
 
 /*
-   KSPSetUp_IDR - Allocate the (3s+3) work vectors and the s*s+2s scalar
+   KSPSetUp_IDR - Allocate the (3s+4) work vectors and the s*s+2s scalar
    arrays, then initialize the shadow space P.
 */
 static PetscErrorCode KSPSetUp_IDR(KSP ksp)
@@ -48,16 +50,18 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(KSPSetWorkVecs(ksp, 3 + 3 * idr->s));
-  idr->r  = ksp->work[0];
-  idr->v  = ksp->work[1];
-  idr->t  = ksp->work[2];
-  idr->GG = ksp->work + 3;
-  idr->UU = ksp->work + 3 + idr->s;
-  idr->PP = ksp->work + 3 + 2 * idr->s;
+  PetscCall(KSPSetWorkVecs(ksp, 4 + 3 * idr->s));
+  idr->r     = ksp->work[0];
+  idr->v     = ksp->work[1];
+  idr->t     = ksp->work[2];
+  idr->GG    = ksp->work + 3;
+  idr->UU    = ksp->work + 3 + idr->s;
+  idr->PP    = ksp->work + 3 + 2 * idr->s;
+  idr->guess = ksp->work[3 + 3 * idr->s];
   if (idr->M) PetscCall(PetscFree3(idr->M, idr->f, idr->c));
   PetscCall(PetscMalloc3(idr->s * idr->s, &idr->M, idr->s, &idr->f, idr->s, &idr->c));
   PetscCall(KSPIDRInitShadowSpace_IDR(ksp));
+  PetscCall(PetscObjectGetId((PetscObject)ksp->work[0], &idr->workid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -78,27 +82,43 @@ static PetscErrorCode KSPSetUp_IDR(KSP ksp)
 */
 static PetscErrorCode KSPSolve_IDR(KSP ksp)
 {
-  KSP_IDR     *idr = (KSP_IDR *)ksp->data;
-  PetscInt     s   = idr->s, i, j, k;
-  PetscScalar *M = idr->M, *f = idr->f, *c = idr->c;
-  PetscScalar  alpha, beta, om, tr, sum;
-  PetscReal    dp = 0.0, nr, nt, rho;
-  Vec          X, B, R, V, T;
-  Vec         *G = idr->GG, *U = idr->UU, *P = idr->PP;
+  KSP_IDR      *idr = (KSP_IDR *)ksp->data;
+  PetscInt      s   = idr->s, i, j, k;
+  PetscScalar  *M = idr->M, *f = idr->f, *c = idr->c;
+  PetscScalar   alpha, beta, om, tr, sum;
+  PetscReal     dp = 0.0, nr, nt, rho;
+  PetscObjectId workid;
+  Vec           X, B, R, V, T;
+  Vec          *G, *U, *P;
 
   PetscFunctionBegin;
+  PetscCheck(ksp->nwork == 4 + 3 * s, PetscObjectComm((PetscObject)ksp), PETSC_ERR_COR, "Unexpected number of work vectors %" PetscInt_FMT " != %" PetscInt_FMT, ksp->nwork, 4 + 3 * s);
+  idr->r     = ksp->work[0];
+  idr->v     = ksp->work[1];
+  idr->t     = ksp->work[2];
+  idr->GG    = ksp->work + 3;
+  idr->UU    = ksp->work + 3 + s;
+  idr->PP    = ksp->work + 3 + 2 * s;
+  idr->guess = ksp->work[3 + 3 * s];
+  PetscCall(PetscObjectGetId((PetscObject)ksp->work[0], &workid));
+  if (workid != idr->workid) {
+    PetscCall(KSPIDRInitShadowSpace_IDR(ksp));
+    idr->workid = workid;
+  }
   X  = ksp->vec_sol;
   B  = ksp->vec_rhs;
   R  = idr->r;
   V  = idr->v;
   T  = idr->t;
+  G  = idr->GG;
+  U  = idr->UU;
+  P  = idr->PP;
   nr = 1.0;
 
   /* Compute initial (preconditioned for left PC) residual R */
   PetscCall(KSPInitialResidual(ksp, X, V, T, R, B));
 
   if (ksp->pc_side == PC_RIGHT && !ksp->guess_zero) {
-    if (!idr->guess) PetscCall(VecDuplicate(X, &idr->guess));
     PetscCall(VecCopy(X, idr->guess));
     PetscCall(VecSet(X, 0.0));
   }
@@ -238,21 +258,11 @@ static PetscErrorCode KSPSolve_IDR(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPReset_IDR(KSP ksp)
-{
-  KSP_IDR *idr = (KSP_IDR *)ksp->data;
-
-  PetscFunctionBegin;
-  PetscCall(VecDestroy(&idr->guess));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode KSPDestroy_IDR(KSP ksp)
 {
   KSP_IDR *idr = (KSP_IDR *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(KSPReset_IDR(ksp));
   PetscCall(PetscRandomDestroy(&idr->rand));
   PetscCall(PetscFree3(idr->M, idr->f, idr->c));
   PetscCall(KSPDestroyDefault(ksp));
@@ -582,7 +592,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IDR(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_IDR;
   ksp->ops->solve          = KSPSolve_IDR;
-  ksp->ops->reset          = KSPReset_IDR;
   ksp->ops->destroy        = KSPDestroy_IDR;
   ksp->ops->view           = KSPView_IDR;
   ksp->ops->setfromoptions = KSPSetFromOptions_IDR;
