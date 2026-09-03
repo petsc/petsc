@@ -20,7 +20,6 @@ class Retriever(logger.Logger):
     self.dir_urls = []
     self.link_urls = []
     self.tarball_urls = []
-    self.stamp = None
     self.ver = 'unknown'
     return
 
@@ -40,7 +39,7 @@ class Retriever(logger.Logger):
       parsed = urlparse_local.urlparse(url)
       if self.isGitURL(url):
         self.git_urls.append(self.removePrefix(url,'git://'))
-      elif parsed[0] == 'hg'or (parsed[0] == 'ssh' and parsed[1].startswith('hg@')):
+      elif parsed[0] == 'hg' or (parsed[0] == 'ssh' and parsed[1].startswith('hg@')):
         self.hg_urls.append(self.removePrefix(url,'hg://'))
       elif parsed[0] == 'dir' or os.path.isdir(url):
         self.dir_urls.append(self.removePrefix(url,'dir://'))
@@ -110,11 +109,11 @@ Unable to download package %s from: %s
   def genericRetrieve(self,proto,url,root):
     '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
     if proto == 'git':
-      return self.gitRetrieve(url,root)
+      self.gitRetrieve(url,root)
     elif proto == 'hg':
-      return self.hgRetrieve(url,root)
+      self.hgRetrieve(url,root)
     elif proto == 'dir':
-      return self.dirRetrieve(url,root)
+      self.dirRetrieve(url,root)
     elif proto == 'link':
       self.linkRetrieve(url,root)
     elif proto == 'tarball':
