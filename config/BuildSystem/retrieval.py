@@ -223,7 +223,7 @@ Downloaded package %s from: %s is not a tarball.
 ''' % (self.packagename.upper(), url, filename, self.packagename, filename)
       import tarfile
       try:
-        tf  = tarfile.open(os.path.join(root, localFile))
+        tf  = tarfile.open(localFile)
       except tarfile.ReadError as e:
         raise RuntimeError(str(e)+'\n'+failureMessage)
       if not tf: raise RuntimeError(failureMessage)

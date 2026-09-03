@@ -16,7 +16,7 @@ class Configure(config.base.Configure):
     if self.framework.externalPackagesDir is None:
       self.dir = os.path.join(os.path.abspath(os.path.join(self.arch.arch)), 'externalpackages')
     else:
-      self.dir = os.path.join(self.framework.externalPackagesDir,self.arch.arch)
+      self.dir = os.path.join(os.path.abspath(self.framework.externalPackagesDir),self.arch.arch)
     return
 
   def cleanExternalpackagesDir(self):
