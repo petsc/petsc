@@ -5,6 +5,7 @@ from urllib import parse as urlparse_local
 import config.base
 import socket
 import shutil
+import shlex
 
 # Fix parsing for nonstandard schemes
 urlparse_local.uses_netloc.extend(['bk', 'ssh', 'svn'])
@@ -205,8 +206,8 @@ Unable to download package %s from: %s
 
     self.logPrint('Extracting '+localFile)
     if ext in ['.zip','.ZIP']:
-      config.base.Configure.executeShellCommand('cd '+root+'; unzip '+localFile, log = self.log)
-      output = config.base.Configure.executeShellCommand('cd '+root+'; zipinfo -1 '+localFile+' | head -n 1', log = self.log)
+      config.base.Configure.executeShellCommand('unzip -o '+shlex.quote(localFile), cwd = root, log = self.log)
+      output = config.base.Configure.executeShellCommand('zipinfo -1 '+shlex.quote(localFile)+' | head -n 1', cwd = root, log = self.log)
       dirname = os.path.normpath(output[0].strip())
     else:
       failureMessage = '''\
@@ -245,7 +246,8 @@ Downloaded package %s from: %s is not a tarball.
     try:
       # check if 'dirname' is set'
       if dirname:
-        config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + r' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
+        quoted = shlex.quote(dirname)
+        config.base.Configure.executeShellCommand('chmod -R a+r '+quoted+';find  '+quoted + r' -type d -name "*" -exec chmod a+rx {} \;', cwd = root, log = self.log)
       else:
         self.logPrintBox('WARNING: Could not determine dirname extracted by '+localFile+' to fix file permissions')
     except RuntimeError as e:
