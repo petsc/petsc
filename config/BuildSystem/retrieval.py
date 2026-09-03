@@ -11,6 +11,8 @@ import shlex
 urlparse_local.uses_netloc.extend(['bk', 'ssh', 'svn'])
 
 class Retriever(logger.Logger):
+  '''Downloads an external package into the externalpackages directory
+     Call setupURLs() first, then genericRetrieve() on each pair generateURLs() yields'''
   def __init__(self, sourceControl, clArgs = None, argDB = None):
     logger.Logger.__init__(self, clArgs, argDB)
     self.sourceControl = sourceControl
@@ -33,6 +35,8 @@ class Retriever(logger.Logger):
     return False
 
   def setupURLs(self,packagename,urls,gitsubmodules,gitprereq,ver):
+    '''Sort urls into the per-protocol lists and record the settings the retrieve methods need
+       Must be called before generateURLs() or genericRetrieve()'''
     self.packagename = packagename
     self.gitsubmodules = gitsubmodules
     self.gitprereq = gitprereq
@@ -51,6 +55,7 @@ class Retriever(logger.Logger):
         self.tarball_urls.extend([url])
 
   def isDirectoryGitRepo(self, directory):
+    '''Return whether directory is a git repository, or False when git is not available'''
     if not hasattr(self.sourceControl, 'git'):
       self.logPrint('git not found in self.sourceControl - cannot evaluate isDirectoryGitRepo(): '+directory)
       return False
@@ -91,6 +96,8 @@ Unable to download package %s from: %s
     return url
 
   def generateURLs(self):
+    '''Yield the (protocol, url) pairs to try, in order: git, hg, dir, link, tarball
+       git urls are skipped without git or on a failed gitprereq, hg urls without hg'''
     if hasattr(self.sourceControl, 'git') and self.gitprereq:
       for url in self.git_urls:
         yield('git',url)
@@ -109,7 +116,8 @@ Unable to download package %s from: %s
       yield('tarball',url)
 
   def genericRetrieve(self,proto,url,root):
-    '''Fetch package from version control repository or tarfile indicated by URL and extract it into root'''
+    '''Fetch the package indicated by url into root
+       git and hg are cloned, dir is copied, link is symlinked, tarball is downloaded and extracted'''
     if proto == 'git':
       self.gitRetrieve(url,root)
     elif proto == 'hg':
