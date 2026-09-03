@@ -24,6 +24,7 @@ def sliding_window(seq, n=2):
 class FakePETScDir:
   def __init__(self):
     self.dir = 'UNKNOWN'
+    self.version = 'UNKNOWN'
 
 class Package(config.base.Configure):
   def __init__(self, framework):
