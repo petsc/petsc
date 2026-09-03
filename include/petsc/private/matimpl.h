@@ -778,15 +778,6 @@ typedef struct {
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat, Mat);
 
-/*
- Used by MatTranspose() and potentially other functions to track the matrix used in the generation of another matrix
-*/
-typedef struct {
-  PetscObjectId    id;
-  PetscObjectState state;
-  PetscObjectState nonzerostate;
-} MatParentState;
-
 PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat, PetscInt, PetscInt);
 

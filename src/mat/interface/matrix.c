@@ -910,33 +910,87 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 }
 
 /*@
-  MatGetState - Gets the state of a `Mat`. Same value as returned by `PetscObjectStateGet()`
+  MatGetState - Gets a snapshot of the state of a `Mat`
 
-  Not Collective
+  Not Collective, No Fortran Support
 
   Input Parameter:
 . A - the matrix
 
   Output Parameter:
-. state - the object state
+. state - the matrix state
 
-  Level: advanced
+  Level: developer
 
-  Note:
-  Object state is an integer which gets increased every time
-  the object is changed. By saving and later querying the object state
-  one can determine whether information about the object is still current.
+  Notes:
+  The snapshot includes the matrix identity, object state, and nonzero state. Use `MatStateCompare()` to determine whether two snapshots are the same, or `MatStateCompareUpdate()` to compare and update a saved snapshot.
 
-  See `MatGetNonzeroState()` to determine if the nonzero structure of the matrix has changed.
-
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `PetscObjectStateGet()`, `MatGetNonzeroState()`
+.seealso: [](ch_matrices), `Mat`, `MatState`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectStateGet()`, `MatGetNonzeroState()`
 @*/
-PetscErrorCode MatGetState(Mat A, PetscObjectState *state)
+PetscErrorCode MatGetState(Mat A, MatState *state)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(state, 2);
-  PetscCall(PetscObjectStateGet((PetscObject)A, state));
+  state->id           = ((PetscObject)A)->id;
+  state->state        = ((PetscObject)A)->state;
+  state->nonzerostate = A->nonzerostate;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatStateCompare - Compares two matrix state snapshots
+
+  Not Collective, No Fortran Support
+
+  Input Parameters:
++ state1 - the first matrix state
+- state2 - the second matrix state
+
+  Output Parameter:
+. same - `PETSC_TRUE` if the matrix identity, object state, and nonzero state are the same, `PETSC_FALSE` otherwise
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `MatState`, `MatGetState()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`
+@*/
+PetscErrorCode MatStateCompare(MatState state1, MatState state2, PetscBool *same)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(same, 3);
+  *same = (PetscBool)(state1.id == state2.id && state1.state == state2.state && state1.nonzerostate == state2.nonzerostate);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatStateCompareUpdate - Compares a matrix with a state snapshot, then updates the snapshot
+
+  Not Collective, No Fortran Support
+
+  Input Parameter:
+. A - the matrix
+
+  Input/Output Parameter:
+. state - the matrix state snapshot to compare with and update
+
+  Output Parameter:
+. same - `PETSC_TRUE` if the matrix state matched the snapshot before it was updated, `PETSC_FALSE` otherwise
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `MatState`, `MatGetState()`, `MatStateCompare()`, `MatStateInvalidate()`
+@*/
+PetscErrorCode MatStateCompareUpdate(Mat A, MatState *state, PetscBool *same)
+{
+  MatState current;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(state, 2);
+  PetscAssertPointer(same, 3);
+  PetscCall(MatGetState(A, &current));
+  PetscCall(MatStateCompare(current, *state, same));
+  *state = current;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5500,7 +5554,7 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 @*/
 PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 {
-  MatParentState *rb = NULL;
+  MatState *rb = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&rb));
@@ -5513,8 +5567,8 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 
 static PetscErrorCode MatTranspose_Private(Mat mat, MatReuse reuse, Mat *B, PetscBool conjugate)
 {
-  PetscContainer  rB                        = NULL;
-  MatParentState *rb                        = NULL;
+  PetscContainer rB                         = NULL;
+  MatState      *rb                         = NULL;
   PetscErrorCode (*f)(Mat, MatReuse, Mat *) = NULL;
 
   PetscFunctionBegin;
@@ -5632,8 +5686,8 @@ PetscErrorCode MatTransposeSymbolic(Mat A, Mat *B)
 
 PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat A, Mat B)
 {
-  PetscContainer  rB;
-  MatParentState *rb;
+  PetscContainer rB;
+  MatState      *rb;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
