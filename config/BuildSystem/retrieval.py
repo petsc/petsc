@@ -32,10 +32,11 @@ class Retriever(logger.Logger):
       return True
     return False
 
-  def setupURLs(self,packagename,urls,gitsubmodules,gitprereq):
+  def setupURLs(self,packagename,urls,gitsubmodules,gitprereq,ver):
     self.packagename = packagename
     self.gitsubmodules = gitsubmodules
     self.gitprereq = gitprereq
+    self.ver = ver
     for url in urls:
       parsed = urlparse_local.urlparse(url)
       if self.isGitURL(url):
