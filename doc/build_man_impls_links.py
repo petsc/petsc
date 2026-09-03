@@ -20,6 +20,7 @@ def processfile(petsc_dir,build_dir,dir,file,implsClassAll,subimplsClassAll,impl
       f.write(text[text.find('## See Also'):])
 
   itemName = file[0:-3]
+  # TODO: Group implementation records by symbol once, rather than scan every record for each manual page.
   if isclass:
     iclass = list(filter(lambda x: x.find('_p_'+itemName+' ') > -1, implsClassAll))
     func = None

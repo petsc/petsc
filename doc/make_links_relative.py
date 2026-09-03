@@ -19,6 +19,7 @@ def make_links_relative(root, placeholder=PETSC_DOC_OUT_ROOT_PLACEHOLDER):
         for filename in filenames:
             if filename.endswith(".html"):
                 filename_from_root = os.path.join(dirpath, filename)
+                # TODO: Replace all placeholders at once, and write the file only when a replacement is needed.
                 with fileinput.FileInput(filename_from_root, inplace=True) as file:
                     for line in file:
                         print(line.replace(placeholder, relpath), end='')  # prints to file
