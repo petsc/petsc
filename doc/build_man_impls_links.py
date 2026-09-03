@@ -28,18 +28,20 @@ def processfile(petsc_dir,build_dir,dir,file,implsClassAll,subimplsClassAll,impl
     iclass = None
     isubclass = None
     func = list(filter(lambda x: x.find(' '+itemName+'_') > -1, implsFuncAll))
-  if func or iclass:
+  if func or iclass or isubclass:
     with open(os.path.join(dir,file),'a') as f:
-      f.write('\n## Implementations\n')
-      if func:
-        for str in func:
-          f.write(re.sub(r'(.*\.[ch]x*u*).*('+itemName+r'.*)(\(.*\))','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2() in \\1</A><BR>',str,count=1)+'\n')
       if iclass:
+        f.write('\n## Object Header\n')
         for str in iclass:
           f.write(re.sub(r'(.*\.[ch]x*u*):.*struct.*(_p_'+itemName+').*{','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2 in \\1</A><BR>',str,count=1)+'\n')
-      if isubclass:
-        for str in isubclass:
-          f.write(re.sub(r'(.*\.[ch]x*u*):} ('+itemName+'_.*);','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2 in \\1</A><BR>',str,count=1)+'\n')
+      if func or isubclass:
+        f.write('\n## Implementations\n')
+        if func:
+          for str in func:
+            f.write(re.sub(r'(.*\.[ch]x*u*).*('+itemName+r'.*)(\(.*\))','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2() in \\1</A><BR>',str,count=1)+'\n')
+        if isubclass:
+          for str in isubclass:
+            f.write(re.sub(r'(.*\.[ch]x*u*):} ('+itemName+'_.*);','<A HREF=\"PETSC_DOC_OUT_ROOT_PLACEHOLDER/\\1.html#\\2\">\\2 in \\1</A><BR>',str,count=1)+'\n')
 
 def loadstructfunctions(petsc_dir):
   '''Creates the list of structs and class functions'''
