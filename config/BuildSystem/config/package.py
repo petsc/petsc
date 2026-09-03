@@ -921,7 +921,9 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     self.retriever = retrieval.Retriever(self.sourceControl, argDB = self.argDB)
     self.retriever.setup()
     self.retriever.ver = self.petscdir.version
-    self.retriever.setupURLs(self.package,self.download,self.gitsubmodules,self.gitPreReqCheck())
+    # self.download is a list of urls, except for the PythonPackage 'PyPi' sentinel, which names nothing to retrieve
+    urls = [] if isinstance(self.download,str) else self.download
+    self.retriever.setupURLs(self.package,urls,self.gitsubmodules,self.gitPreReqCheck())
 
   def downLoad(self):
     '''Downloads a package; using hg or ftp; opens it in the with-packages-build-dir directory'''
