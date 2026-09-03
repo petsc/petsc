@@ -123,7 +123,7 @@ Unable to download package %s from: %s
     self.logPrint('Retrieving %s as directory' % url, 3, 'install')
     if not os.path.isdir(url): raise RuntimeError('URL %s is not a directory' % url)
 
-    t = os.path.join(root,os.path.basename(url))
+    t = os.path.join(root,os.path.basename(os.path.normpath(url)))
     self.removeTarget(t)
     shutil.copytree(url,t)
 
@@ -131,7 +131,7 @@ Unable to download package %s from: %s
     self.logPrint('Retrieving %s as link' % url, 3, 'install')
     if not os.path.isdir(url): raise RuntimeError('URL %s is not pointing to a directory' % url)
 
-    t = os.path.join(root,os.path.basename(url))
+    t = os.path.join(root,os.path.basename(os.path.normpath(url)))
     self.removeTarget(t)
     os.symlink(os.path.abspath(url),t)
 
