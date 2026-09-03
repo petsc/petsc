@@ -49,7 +49,6 @@ static PetscErrorCode MatDestroy_Composite(Mat mat)
   if (shell->Mvctx) {
     for (i = 0; i < shell->nmat; i++) PetscCall(VecDestroy(&shell->lvecs[i]));
     PetscCall(PetscFree3(shell->location, shell->larray, shell->lvecs));
-    PetscCall(PetscFree(shell->larray));
     PetscCall(VecDestroy(&shell->gvec));
     PetscCall(VecScatterDestroy(&shell->Mvctx));
   }

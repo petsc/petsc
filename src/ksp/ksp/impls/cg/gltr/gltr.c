@@ -619,8 +619,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   if (t_size > cg->alloced) {
     if (cg->alloced) {
-      PetscCall(PetscFree(cg->rwork));
-      PetscCall(PetscFree(cg->iwork));
+      PetscCall(PetscFree2(cg->rwork, cg->iwork));
       cg->alloced += cg->init_alloc;
     } else {
       cg->alloced = cg->init_alloc;
