@@ -28,7 +28,7 @@ static PetscErrorCode KSPDGMRESComputeSchurForm(KSP ksp, PetscInt *neig)
   PetscUseMethod(ksp, "KSPDGMRESComputeSchurForm_C", (KSP, PetscInt *), (ksp, neig));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode KSPDGMRESComputeDeflationData(KSP ksp, PetscInt *curneigh)
+static PetscErrorCode KSPDGMRESComputeDeflationData(KSP ksp, PetscInt *curneigh)
 {
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPDGMRESComputeDeflationData_C", (KSP, PetscInt *), (ksp, curneigh));
@@ -48,7 +48,7 @@ static PetscErrorCode KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetUp_DGMRES(KSP ksp)
+static PetscErrorCode KSPSetUp_DGMRES(KSP ksp)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
   PetscInt    neig   = dgmres->neig + EIG_OFFSET;
@@ -220,7 +220,7 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSolve_DGMRES(KSP ksp)
+static PetscErrorCode KSPSolve_DGMRES(KSP ksp)
 {
   PetscInt    i, its = 0, itcount;
   KSP_DGMRES *dgmres     = (KSP_DGMRES *)ksp->data;
@@ -259,7 +259,7 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
+static PetscErrorCode KSPDestroy_DGMRES(KSP ksp)
 {
   KSP_DGMRES *dgmres   = (KSP_DGMRES *)ksp->data;
   PetscInt    neig1    = dgmres->neig + EIG_OFFSET;
@@ -437,7 +437,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp, Vec ptr, Vec *result)
+static PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp, Vec ptr, Vec *result)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
 
@@ -479,7 +479,7 @@ static PetscErrorCode KSPView_DGMRES(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP ksp, PetscInt neig)
+static PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP ksp, PetscInt neig)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
 
@@ -518,7 +518,7 @@ static PetscErrorCode KSPDGMRESForce_DGMRES(KSP ksp, PetscBool force)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    neig;
   PetscInt    max_neig;
@@ -539,7 +539,7 @@ PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp, PetscOptionItems PetscOptionsOb
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
+static PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
 {
   KSP_DGMRES  *dgmres = (KSP_DGMRES *)ksp->data;
   PetscInt     i, j, k;
@@ -640,7 +640,7 @@ PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *ExtrNeig)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
+static PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 {
   KSP_DGMRES   *dgmres = (KSP_DGMRES *)ksp->data;
   PetscInt      N = dgmres->max_k + 1, n = dgmres->it + 1;
@@ -762,7 +762,7 @@ PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
+static PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP ksp, Vec x, Vec y)
 {
   KSP_DGMRES  *dgmres = (KSP_DGMRES *)ksp->data;
   PetscInt     i, r = dgmres->r;

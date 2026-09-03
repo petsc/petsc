@@ -45,8 +45,6 @@ typedef struct {
   KSPDGMRESHEADER
 } KSP_DGMRES;
 
-PETSC_INTERN PetscErrorCode KSPDGMRESComputeDeflationData(KSP, PetscInt *);
-
 PETSC_EXTERN PetscLogEvent KSP_DGMRESComputeDeflationData;
 PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 
