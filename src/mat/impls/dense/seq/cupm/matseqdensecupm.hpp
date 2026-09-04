@@ -1745,7 +1745,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) n
     const auto lda = MatIMPLCast(A)->lda;
 
     if (l) {
-      PetscCall(VecGetSize(l, &m));
+      PetscCall(VecGetLocalSize(l, &m));
       PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling Vec of wrong size");
       PetscCall(VecGetArrayReadAndMemType(l, &dlr, &mtype));
       /* the array must live in memory this backend's BLAS can dereference, so test against this backend's
@@ -1753,9 +1753,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) n
          device memory when PETSc is configured with both CUDA and HIP */
       if (!(T == device::cupm::DeviceType::CUDA ? PetscMemTypeCUDA(mtype) : PetscMemTypeHIP(mtype))) {
         PetscCall(VecRestoreArrayReadAndMemType(l, &dlr));
-        PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(l)), &lr));
-        PetscCall(VecSetLayout(lr, l->map));
-        PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
+        /* l may be the parallel scaling Vec of a MATMPIDENSE, so the temporary is local and holds the local part */
+        PetscCall(VecCreate(PETSC_COMM_SELF, &lr));
+        PetscCall(VecSetSizes(lr, m, m));
+        PetscCall(VecSetType(lr, VecSeq_CUPM::VECSEQCUPM()));
         PetscCall(VecCopy(l, lr));
         PetscCall(VecGetArrayReadAndMemType(lr, &dlr, nullptr));
       } else lr = l;
@@ -1771,14 +1772,14 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) n
       if (lr != l) PetscCall(VecDestroy(&lr));
     }
     if (r) {
-      PetscCall(VecGetSize(r, &n));
+      PetscCall(VecGetLocalSize(r, &n));
       PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling Vec of wrong size");
       PetscCall(VecGetArrayReadAndMemType(r, &dlr, &mtype));
       if (!(T == device::cupm::DeviceType::CUDA ? PetscMemTypeCUDA(mtype) : PetscMemTypeHIP(mtype))) {
         PetscCall(VecRestoreArrayReadAndMemType(r, &dlr));
-        PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(r)), &lr));
-        PetscCall(VecSetLayout(lr, r->map));
-        PetscCall(VecSetType(lr, VecSeq_CUPM::VECCUPM()));
+        PetscCall(VecCreate(PETSC_COMM_SELF, &lr));
+        PetscCall(VecSetSizes(lr, n, n));
+        PetscCall(VecSetType(lr, VecSeq_CUPM::VECSEQCUPM()));
         PetscCall(VecCopy(r, lr));
         PetscCall(VecGetArrayReadAndMemType(lr, &dlr, nullptr));
       } else lr = r;

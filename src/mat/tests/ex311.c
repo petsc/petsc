@@ -11,15 +11,19 @@ static const char help[] = "Test MatDiagonalScale() on dense matrices with scali
    needed */
 int main(int argc, char **args)
 {
-  Mat       A, B;
-  Vec       l, r, lstd, rstd;
-  PetscInt  m = 5, n = 4, mloc, nloc, rstart, rend;
-  PetscBool equal = PETSC_FALSE;
+  Mat           A, B;
+  Vec           l, r, lstd, rstd;
+  PetscInt      m = 5, n = 4, mloc, nloc, rstart, rend;
+  PetscBool     equal = PETSC_FALSE, check_copies = PETSC_FALSE;
+  PetscLogEvent event;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_copies", &check_copies, NULL));
+  if (check_copies) PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscLogEventRegister("ScaleCheck", MAT_CLASSID, &event));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m, n));
@@ -75,11 +79,29 @@ int main(int argc, char **args)
   PetscCall(MatEqual(A, B, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Right scaling gives the wrong result");
 
-  // both sides in one call
+  // both sides in one call; l and r were already consumed by the calls above, so any copy logged here is the matrix
+  PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
   PetscCall(MatDiagonalScale(A, l, r));
+  PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
   PetscCall(MatDiagonalScale(B, lstd, rstd));
   PetscCall(MatEqual(A, B, &equal));
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Two-sided scaling gives the wrong result");
+
+#if PetscDefined(HAVE_DEVICE)
+  /* a device matrix must never come back to the host to be scaled, and a device-resident scaling Vec must be
+     consumed in place; a host scaling Vec is copied to the device by design, so only the first check applies then */
+  if (check_copies) {
+    PetscEventPerfInfo info;
+    const PetscScalar *array;
+    PetscMemType       mtype;
+
+    PetscCall(VecGetArrayReadAndMemType(l, &array, &mtype));
+    PetscCall(VecRestoreArrayReadAndMemType(l, &array));
+    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
+    PetscCheck(info.GpuToCpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected GPU to CPU copies (%g bytes) in MatDiagonalScale()", info.GpuToCpuCount, info.GpuToCpuSize);
+    PetscCheck(!PetscMemTypeDevice(mtype) || info.CpuToGpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected CPU to GPU copies (%g bytes) in MatDiagonalScale() with device scaling Vecs", info.CpuToGpuCount, info.CpuToGpuSize);
+  }
+#endif
 
   PetscCall(VecDestroy(&l));
   PetscCall(VecDestroy(&lstd));
@@ -105,32 +127,63 @@ int main(int argc, char **args)
     args: -vec_type kokkos
     output_file: output/empty.out
 
-  test:
-    suffix: cuda
+  # -check_copies requires GPU-aware MPI: without it PetscSF stages the device buffers of the
+  # right scaling through the host, and those copies are logged inside MatDiagonalScale()
+
+  testset:
     nsize: {{1 2}}
     requires: cuda
     args: -mat_type densecuda -vec_type {{cuda standard}}
     output_file: output/empty.out
 
-  test:
-    suffix: densecuda_vec_kokkos
+    test:
+      suffix: cuda
+
+    test:
+      suffix: cuda_copies
+      requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
+      args: -check_copies
+
+  testset:
     nsize: {{1 2}}
     requires: cuda kokkos_kernels
     args: -mat_type densecuda -vec_type kokkos
     output_file: output/empty.out
 
-  test:
-    suffix: hip
+    test:
+      suffix: densecuda_vec_kokkos
+
+    test:
+      suffix: densecuda_vec_kokkos_copies
+      requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
+      args: -check_copies
+
+  testset:
     nsize: {{1 2}}
     requires: hip
     args: -mat_type densehip -vec_type {{hip standard}}
     output_file: output/empty.out
 
-  test:
-    suffix: densehip_vec_kokkos
+    test:
+      suffix: hip
+
+    test:
+      suffix: hip_copies
+      requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
+      args: -check_copies
+
+  testset:
     nsize: {{1 2}}
     requires: hip kokkos_kernels
     args: -mat_type densehip -vec_type kokkos
     output_file: output/empty.out
+
+    test:
+      suffix: densehip_vec_kokkos
+
+    test:
+      suffix: densehip_vec_kokkos_copies
+      requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
+      args: -check_copies
 
 TEST*/

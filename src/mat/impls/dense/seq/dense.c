@@ -1885,7 +1885,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A, Vec ll, Vec rr)
   PetscFunctionBegin;
   PetscCall(MatDenseGetArray(A, &vv));
   if (ll) {
-    PetscCall(VecGetSize(ll, &m));
+    PetscCall(VecGetLocalSize(ll, &m));
     PetscCall(VecGetArrayRead(ll, &l));
     PetscCheck(m == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vec wrong size");
     for (i = 0; i < m; i++) {
@@ -1900,7 +1900,7 @@ PetscErrorCode MatDiagonalScale_SeqDense(Mat A, Vec ll, Vec rr)
     PetscCall(PetscLogFlops(1.0 * n * m));
   }
   if (rr) {
-    PetscCall(VecGetSize(rr, &n));
+    PetscCall(VecGetLocalSize(rr, &n));
     PetscCall(VecGetArrayRead(rr, &r));
     PetscCheck(n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling vec wrong size");
     for (i = 0; i < n; i++) {
