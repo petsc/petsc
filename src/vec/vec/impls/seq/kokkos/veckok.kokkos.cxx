@@ -1296,6 +1296,13 @@ PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
+  // An array-less vector (see VecCreateSeqKokkosWithArray()) has no host mirror yet. Allocate it now, as
+  // VecCreate{Seq,MPI}KokkosWithArray() would have done at creation with a non-NULL darray
+  if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value && !vecseq->array && v->map->n) {
+    PetscCall(PetscMalloc1(v->map->n, &vecseq->array_allocated));
+    vecseq->array = vecseq->array_allocated;
+    PetscCallCXX(veckok->v_dual = PetscScalarKokkosDualView(veckok->v_dual.view_device(), PetscScalarKokkosViewHost(vecseq->array, v->map->n)));
+  }
   // Sync the old device view before replacing it; so that when it is put back, it has the saved value.
   PetscCall(KokkosDualViewSyncDevice(veckok->v_dual, PetscGetKokkosExecutionSpace()));
   PetscCallCXX(veckok->unplaced_d = veckok->v_dual.view_device());
@@ -1787,6 +1794,10 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
   same type as an existing vector.
 
+  If `darray` is NULL, the vector is created without any array, on host or device;
+  `VecKokkosPlaceArray()` (with a device array) or `VecPlaceArray()` (with a host array)
+  must then be called before the vector is used.
+
   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
   The user should not free the array until the vector is destroyed.
 
@@ -1794,7 +1805,7 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
 
 .seealso: `VecCreateMPICUDAWithArray()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `VecCreateGhost()`, `VecCreateSeq()`, `VecCreateSeqWithArray()`,
-          `VecCreateMPIWithArray()`
+          `VecCreateMPIWithArray()`, `VecKokkosPlaceArray()`, `VecPlaceArray()`
 @*/
 PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar darray[], Vec *v)
 {
@@ -1811,24 +1822,20 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscCall(VecCreate(comm, &w));
   PetscCall(VecSetSizes(w, n, n));
   PetscCall(VecSetBlockSize(w, bs));
-  if (!darray) { /* Allocate memory ourself if user provided NULL */
-    PetscCall(VecSetType(w, VECSEQKOKKOS));
+  /* Build a VECSEQ, get its harray, and then build Vec_Kokkos along with darray */
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value || !darray) {
+    harray = const_cast<PetscScalar *>(darray);  /* With a NULL darray, the vector is array-less until an array is placed */
+    PetscCall(VecCreate_Seq_Private(w, harray)); /* Build a sequential vector with harray */
   } else {
-    /* Build a VECSEQ, get its harray, and then build Vec_Kokkos along with darray */
-    if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) {
-      harray = const_cast<PetscScalar *>(darray);
-      PetscCall(VecCreate_Seq_Private(w, harray)); /* Build a sequential vector with harray */
-    } else {
-      PetscCall(VecSetType(w, VECSEQ));
-      harray = static_cast<Vec_Seq *>(w->data)->array;
-    }
-    PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECSEQKOKKOS)); /* Change it to Kokkos */
-    PetscCall(VecCreate_SeqKokkos_Common(w));
-    PetscCallCXX(veckok = new Vec_Kokkos{n, harray, const_cast<PetscScalar *>(darray)});
-    PetscCallCXX(veckok->v_dual.modify_device()); /* Mark the device is modified */
-    w->spptr = static_cast<void *>(veckok);
+    PetscCall(VecSetType(w, VECSEQ));
+    harray = static_cast<Vec_Seq *>(w->data)->array;
   }
-  *v = w;
+  PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECSEQKOKKOS)); /* Change it to Kokkos */
+  PetscCall(VecCreate_SeqKokkos_Common(w));
+  PetscCallCXX(veckok = new Vec_Kokkos{n, harray, const_cast<PetscScalar *>(darray)});
+  if (darray) PetscCallCXX(veckok->v_dual.modify_device()); /* Mark the device is modified */
+  w->spptr = static_cast<void *>(veckok);
+  *v       = w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

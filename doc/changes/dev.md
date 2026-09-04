@@ -68,6 +68,7 @@
 - Change the behavior of `VecPointwiseDivide()` implementing w = x / y: if a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one (before it was set to zero).
 - Deprecate `-vec_view_stash` in favor of `-vec_stash_view`
 - Fix `VecKokkosPlaceArray()` and `VecKokkosResetArray()` so that `VecGetArray()` returns the placed array when the Kokkos host and device memory spaces are the same
+- Change `VecCreateSeqKokkosWithArray()` and `VecCreateMPIKokkosWithArray()` to create an array-less vector when passed a NULL array, as documented and as `VecCreateSeqWithArrayAndMemType()` does; previously the sequential variant allocated its own array and the parallel variant aborted on GPU backends
 
 ## PetscSection
 
