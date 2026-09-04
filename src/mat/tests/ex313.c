@@ -126,4 +126,19 @@ int main(int argc, char **argv)
     test:
       suffix: cpu
 
+    test:
+      suffix: cuda
+      requires: cuda
+      args: -mat_type densecuda
+
+    test:
+      suffix: hip
+      requires: hip
+      args: -mat_type densehip
+
+    test:
+      suffix: from_vec_kokkos
+      requires: kokkos_kernels !sycl
+      args: -from_vec_type kokkos
+
 TEST*/
