@@ -1292,6 +1292,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
 PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  Vec_Seq    *vecseq = static_cast<Vec_Seq *>(v->data);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
@@ -1300,6 +1301,8 @@ PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
   PetscCallCXX(veckok->unplaced_d = veckok->v_dual.view_device());
   // We assume a[] contains the latest data and discard the vector's old sync state
   PetscCall(veckok->UpdateArray<DefaultMemorySpace>(a));
+  // When host and device share the array, keep the host array in Vec_Seq consistent with the placed one for VecGetArray()
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecseq->array = veckok->v_dual.view_host().data();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1325,6 +1328,7 @@ PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
 PetscErrorCode VecKokkosResetArray(Vec v)
 {
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+  Vec_Seq    *vecseq = static_cast<Vec_Seq *>(v->data);
 
   PetscFunctionBegin;
   VecErrorIfNotKokkos(v);
@@ -1332,6 +1336,8 @@ PetscErrorCode VecKokkosResetArray(Vec v)
   PetscCall(KokkosDualViewSyncDevice(veckok->v_dual, PetscGetKokkosExecutionSpace()));
   // Put the unplaced device array back, and set an appropriate modify flag
   PetscCall(veckok->UpdateArray<DefaultMemorySpace>(veckok->unplaced_d.data()));
+  // Keep the host array in Vec_Seq consistent with the one put back, see VecKokkosPlaceArray()
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecseq->array = veckok->v_dual.view_host().data();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

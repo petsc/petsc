@@ -67,6 +67,7 @@
 - Add `VecSetStdBasis()` API to set a vector to the i-th standard basis vector
 - Change the behavior of `VecPointwiseDivide()` implementing w = x / y: if a particular `y[i]` is zero and `x[i]` is also zero, `w[i]` is set to one (before it was set to zero).
 - Deprecate `-vec_view_stash` in favor of `-vec_stash_view`
+- Fix `VecKokkosPlaceArray()` and `VecKokkosResetArray()` so that `VecGetArray()` returns the placed array when the Kokkos host and device memory spaces are the same
 
 ## PetscSection
 

@@ -5,9 +5,10 @@ static char help[] = "Tests VecKokkosPlaceArray().\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt  n = 10;
-  Vec       x, y;
-  PetscReal norm;
+  PetscInt     n = 10;
+  Vec          x, y;
+  PetscReal    norm;
+  PetscScalar *array;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -25,7 +26,10 @@ int main(int argc, char **argv)
     // Use kv's array to replace the device array in x
     PetscCall(VecKokkosPlaceArray(x, kv.data())); // x = {2.0, 2.0, ...}
     PetscCall(VecScale(x, 0.5));                  // x = {1.0, 1.0, ...}
-    PetscCall(VecKokkosResetArray(x));            // x = {4.0, 4.0, ...}, kv = {1,0, 1.0, ...}
+    PetscCall(VecGetArray(x, &array));            // must see the placed array, not the original one
+    PetscCheck(array[0] == 1.0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "VecGetArray() did not return the array placed with VecKokkosPlaceArray()");
+    PetscCall(VecRestoreArray(x, &array));
+    PetscCall(VecKokkosResetArray(x)); // x = {4.0, 4.0, ...}, kv = {1,0, 1.0, ...}
 
     // Create a vector y with kv
     PetscCall(VecCreateMPIKokkosWithArray(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, kv.data(), &y));
