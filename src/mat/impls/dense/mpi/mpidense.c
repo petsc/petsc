@@ -1045,22 +1045,21 @@ static PetscErrorCode MatDiagonalScale_MPIDense(Mat A, Vec ll, Vec rr)
 static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense *)A->data;
-  PetscInt           i, j;
+  PetscInt           i, j, lda;
   PetscMPIInt        size;
-  const PetscScalar *av, *v;
+  const PetscScalar *av;
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetArrayRead(mdn->A, &av));
-  v = av;
+  PetscCall(MatDenseGetLDA(mdn->A, &lda));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   if (size == 1) {
     PetscCall(MatNorm(mdn->A, type, nrm));
   } else {
     if (type == NORM_FROBENIUS) {
       *nrm = 0.0;
-      for (i = 0; i < mdn->A->cmap->n * mdn->A->rmap->n; i++) {
-        *nrm += PetscRealPart(PetscConj(*v) * (*v));
-        v++;
+      for (j = 0; j < mdn->A->cmap->n; j++) {
+        for (i = 0; i < mdn->A->rmap->n; i++) *nrm += PetscRealPart(PetscConj(av[i + j * lda]) * av[i + j * lda]);
       }
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       *nrm = PetscSqrtReal(*nrm);
@@ -1070,12 +1069,8 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
 
       PetscCall(PetscCalloc1(A->cmap->N, &tmp));
       *nrm = 0.0;
-      v    = av;
       for (j = 0; j < mdn->A->cmap->n; j++) {
-        for (i = 0; i < mdn->A->rmap->n; i++) {
-          tmp[j] += PetscAbsScalar(*v);
-          v++;
-        }
+        for (i = 0; i < mdn->A->rmap->n; i++) tmp[j] += PetscAbsScalar(av[i + j * lda]);
       }
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, A->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       for (j = 0; j < A->cmap->N; j++) {
