@@ -313,8 +313,13 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   KSPConvergedReason   kspreason;
   KSP                  ksp;
   PC                   pc;
+  PetscBool            isnleqerr;
 
   PetscFunctionBegin;
+  /* SNESLINESEARCHNLEQERR solves with the KSP on the full space, but the KSP below is set up for the reduced (inactive set) space */
+  PetscCall(PetscObjectTypeCompare((PetscObject)snes->linesearch, SNESLINESEARCHNLEQERR, &isnleqerr));
+  PetscCheck(!isnleqerr, PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "SNESLINESEARCHNLEQERR cannot be used with SNESVINEWTONRSLS since the line search solves with the KSP on the full space while SNESVINEWTONRSLS uses the KSP on the reduced (inactive set) space; use another line search, for example SNESLINESEARCHBT, or use SNESVINEWTONSSLS");
+
   /* Multigrid must use Galerkin for coarse grids with active set/reduced space methods; cannot rediscretize on coarser grids*/
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPGetPC(ksp, &pc));
