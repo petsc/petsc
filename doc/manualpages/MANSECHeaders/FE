@@ -8,7 +8,7 @@ in the classic Ciarlet triple representation (<a href="https://finite-element.gi
   <li><a href="http://arxiv.org/abs/1607.04245">Finite Element Integration with Quadrature on the GPU</a>, Matthew G. Knepley, Karl Rupp, Andy R. Terrel, 2016.</li>
 </ul>
 
-There are many <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html">SNES Examples</A> using `PetscFE`, such ex12, ex17, and ex62.
+There are many <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html">SNES Examples</A> using `PetscFE`, such as ex12, ex17, and ex62.
 
 Developer Note:
 Using an entire `DMPLEX` object to provide the cell information seems unnecessary and complicated. Why not have a simple `PetscCell` object that could encapsulate this information. It could then be used by a variety of `DM` etc.
