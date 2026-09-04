@@ -93,6 +93,7 @@
 - Add `MatDenseUpdateColumnLayout()` to change the layout of input vectors of the matrix vector product
 - Change `MatGetState()` to return a `MatState` and add `MatStateCompare()`, `MatStateCompareUpdate()`, and `MatStateInvalidate()`
 - Fix `MatNorm()` for `MATMPIDENSE` to respect the leading dimension of the local matrix, which was previously ignored in parallel for `NORM_1` and `NORM_FROBENIUS` and gave wrong results, for example on matrices obtained with `MatDenseGetSubMatrix()`
+- Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATDENSECUDA` and `MATDENSEHIP`; previously all norms copied the matrix to the host
 
 ## MatCoarsen
 

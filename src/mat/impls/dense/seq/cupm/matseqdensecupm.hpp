@@ -14,6 +14,11 @@
 
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> // for VecSeq_CUPM
 
+#include <thrust/functional.h>                // thrust::plus, thrust::maximum
+#include <thrust/reduce.h>                    // thrust::reduce, thrust::reduce_by_key
+#include <thrust/transform_reduce.h>          // thrust::transform_reduce
+#include <thrust/iterator/discard_iterator.h> // thrust::make_discard_iterator
+
 namespace Petsc
 {
 
@@ -158,6 +163,7 @@ public:
   static PetscErrorCode ZeroEntries(Mat) noexcept;
   static PetscErrorCode Conjugate(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
+  static PetscErrorCode Norm(Mat, NormType, PetscReal *) noexcept;
   static PetscErrorCode DiagonalScale(Mat, Vec, Vec) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
@@ -1123,6 +1129,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, getcolumnvector, MatGetColumnVector_SeqDense, GetColumnVector);
   MatSetOp_CUPM(to_host, A, conjugate, MatConjugate_SeqDense, Conjugate);
   MatSetOp_CUPM(to_host, A, scale, MatScale_SeqDense, Scale);
+  MatSetOp_CUPM(to_host, A, norm, MatNorm_SeqDense, Norm);
   MatSetOp_CUPM(to_host, A, diagonalscale, MatDiagonalScale_SeqDense, DiagonalScale);
   MatSetOp_CUPM(to_host, A, shift, MatShift_SeqDense, Shift);
   MatSetOp_CUPM(to_host, A, copy, MatCopy_SeqDense, Copy);
@@ -1458,6 +1465,44 @@ struct conjugate {
   PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &x) const noexcept { return PetscConj(x); }
 };
 
+struct real_abs {
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(const PetscScalar &x) const noexcept { return PetscAbsScalar(x); }
+};
+
+struct real_abs_squared {
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(const PetscScalar &x) const noexcept { return PetscRealPart(PetscConj(x) * x); }
+};
+
+// ==========================================================================================
+// RowMajorIndexFunctor
+//
+// Iterator which permutes a linear row-major index range into the memory offsets of a matrix
+// with ncols columns which is stored column-major with leading dimension lda. Essentially
+// RowMajorIndexFunctor(k) returns the index of the k'th entry of the matrix when it is
+// traversed one row at a time.
+// ==========================================================================================
+template <typename T>
+struct RowMajorIndexFunctor {
+  PETSC_HOSTDEVICE_INLINE_DECL T operator()(T x) const noexcept { return ((x % ncols) * lda) + (x / ncols); }
+
+  PetscInt ncols;
+  PetscInt lda;
+};
+
+// ==========================================================================================
+// GroupIndexFunctor
+//
+// Maps a linear index range onto the index of the group of group_size consecutive entries
+// that each index belongs to. Used to generate the keys of a segmented reduction, where each
+// group is one column (or one row) of the matrix.
+// ==========================================================================================
+template <typename T>
+struct GroupIndexFunctor {
+  PETSC_HOSTDEVICE_INLINE_DECL T operator()(T x) const noexcept { return x / group_size; }
+
+  PetscInt group_size;
+};
+
 } // namespace detail
 
 template <device::cupm::DeviceType T>
@@ -1554,6 +1599,130 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noex
     }
   }
   PetscCall(PetscLogGpuFlops(N));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::Norm(Mat A, NormType type, PetscReal *nrm) noexcept
+{
+#if PetscDefined(USING_NVCC) && CCCL_VERSION >= 3001000
+  using max_functor = cuda::maximum<PetscReal>;
+#else
+  using max_functor = thrust::maximum<PetscReal>;
+#endif
+  const auto         m = A->rmap->n;
+  const auto         n = A->cmap->n;
+  const auto         N = m * n;
+  PetscDeviceContext dctx;
+  cupmStream_t       stream;
+
+  PetscFunctionBegin;
+  PetscCheck(type == NORM_FROBENIUS || type == NORM_1 || type == NORM_INFINITY || type == NORM_2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported norm type %s", NormTypes[type]);
+  // NORM_2 is the largest singular value, which requires an SVD. There is no device gesvd()
+  // wrapper available, so defer to MatNorm_SeqDense(), which copies the matrix to the host
+  if (type == NORM_2) {
+    PetscCall(MatNorm_SeqDense(A, type, nrm));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (!N) {
+    *nrm = 0.0;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscInfo(A, "Performing Norm %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m, n));
+  PetscCall(GetHandles_(&dctx, &stream));
+  {
+    const auto da  = DeviceArrayRead(dctx, A);
+    const auto lda = static_cast<PetscInt>(MatIMPLCast(A)->lda);
+
+    if (type == NORM_FROBENIUS) {
+      if (lda > m) {
+        PetscReal sum = 0.0;
+
+        // clang-format off
+        PetscCallThrust(
+          const auto sub_mat = detail::make_submat_iterator(0, m, 0, n, lda, da.data());
+
+          sum = THRUST_CALL(
+            thrust::transform_reduce,
+            stream,
+            sub_mat.begin(), sub_mat.end(),
+            detail::real_abs_squared{},
+            PetscReal{0.0},
+            thrust::plus<PetscReal>{}
+          );
+        );
+        // clang-format on
+        *nrm = PetscSqrtReal(sum);
+      } else {
+        cupmBlasHandle_t handle;
+
+        PetscCall(GetHandlesFrom_(dctx, &handle));
+        PetscCall(PetscLogGpuTimeBegin());
+        PetscCallCUPMBLAS(cupmBlasXnrm2(handle, N, da.cupmdata(), 1, cupmRealPtrCast(nrm)));
+        PetscCall(PetscLogGpuTimeEnd());
+      }
+      PetscCall(PetscLogGpuFlops(2.0 * N));
+    } else {
+      const auto ngroups    = (type == NORM_1) ? n : m;
+      const auto group_size = (type == NORM_1) ? m : n;
+      const auto keys       = thrust::make_transform_iterator(thrust::make_counting_iterator(PetscInt{0}), detail::GroupIndexFunctor<PetscInt>{group_size});
+      PetscReal *sums       = nullptr;
+
+      PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), ngroups, &sums));
+      if (type == NORM_1) {
+        // the sub-matrix iterator enumerates the entries column-major, so each run of m
+        // consecutive keys is exactly one column, for any lda
+        // clang-format off
+        PetscCallThrust(
+          const auto sub_mat = detail::make_submat_iterator(0, m, 0, n, lda, da.data());
+
+          THRUST_CALL(
+            thrust::reduce_by_key,
+            stream,
+            keys, keys + N,
+            thrust::make_transform_iterator(sub_mat.begin(), detail::real_abs{}),
+            thrust::make_discard_iterator(),
+            thrust::device_pointer_cast(sums)
+          );
+        );
+        // clang-format on
+      } else {
+        // enumerate the entries row-major, so each run of n consecutive keys is exactly one row
+        // clang-format off
+        PetscCallThrust(
+          const auto row_major = thrust::make_permutation_iterator(
+            thrust::device_pointer_cast(da.data()),
+            thrust::make_transform_iterator(thrust::make_counting_iterator(PetscInt{0}), detail::RowMajorIndexFunctor<PetscInt>{n, lda})
+          );
+
+          THRUST_CALL(
+            thrust::reduce_by_key,
+            stream,
+            keys, keys + N,
+            thrust::make_transform_iterator(row_major, detail::real_abs{}),
+            thrust::make_discard_iterator(),
+            thrust::device_pointer_cast(sums)
+          );
+        );
+        // clang-format on
+      }
+      // clang-format off
+      PetscCallThrust(
+        const auto dsums = thrust::device_pointer_cast(sums);
+
+        *nrm = THRUST_CALL(
+          thrust::reduce,
+          stream,
+          dsums, dsums + ngroups,
+          PetscReal{0.0},
+          max_functor{}
+        );
+      );
+      // clang-format on
+      PetscCall(PetscDeviceFree(dctx, sums));
+      PetscCall(PetscLogGpuFlops(1.0 * N));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
