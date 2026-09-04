@@ -329,7 +329,7 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
 
   PetscCall(MatDenseGetLDA(mimpl_A, &lda));
   PetscCall(MatDenseCUPMGetArray_Private<T, access>(mimpl_A, const_cast<PetscScalar **>(&mimpl->ptrinuse)));
-  PetscCall(VecCUPMPlaceArrayAsync<T>(mimpl->cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(lda)));
+  PetscCall(MatDense_Seq_CUPM<T>::PlaceColumnVecArray(mimpl->cvec, const_cast<PetscScalar *>(mimpl->ptrinuse) + static_cast<std::size_t>(col) * static_cast<std::size_t>(lda)));
 
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(mimpl->cvec));
   *v = mimpl->cvec;
@@ -352,7 +352,7 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::RestoreColumnVec(Mat A, PetscInt, Ve
 
   PetscCall(MatDenseCUPMRestoreArray_Private<T, access>(mimpl->A, const_cast<PetscScalar **>(&mimpl->ptrinuse)));
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPop(cvec));
-  PetscCall(VecCUPMResetArrayAsync<T>(cvec));
+  PetscCall(MatDense_Seq_CUPM<T>::ResetColumnVecArray(cvec));
 
   if (v) *v = nullptr;
   PetscFunctionReturn(PETSC_SUCCESS);
