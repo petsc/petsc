@@ -3547,22 +3547,22 @@ PetscErrorCode MatSetHashTableFactor_MPIBAIJ(Mat mat, PetscReal fact)
 }
 
 /*@
-  MatMPIBAIJGetSeqBAIJ - Get the on-process (diagonal block) and off-process (off-diagonal block) `MATSEQBAIJ`
-  matrices that make up an `MATMPIBAIJ` matrix, together with the local-to-global column map for the off-diagonal block.
+  MatMPIBAIJGetSeqBAIJ - Get the on-process (diagonal block) and off-process (off-diagonal block) sequential matrices
+  that make up a `MATMPIBAIJ` or `MATMPISBAIJ` matrix, together with the local-to-global column map for the off-diagonal block.
 
   Not Collective
 
   Input Parameter:
-. A - the `MATMPIBAIJ` matrix
+. A - the `MATMPIBAIJ` or `MATMPISBAIJ` matrix
 
   Output Parameters:
-+ Ad     - the diagonal block `MATSEQBAIJ`, or `NULL` if not needed
++ Ad     - the diagonal block (`MATSEQBAIJ` or `MATSEQSBAIJ`), or `NULL` if not needed
 . Ao     - the off-diagonal block `MATSEQBAIJ`, or `NULL` if not needed
 - colmap - the local-to-global column index map for `Ao`, or `NULL` if not needed
 
   Level: advanced
 
-.seealso: `Mat`, `MATMPIBAIJ`, `MATSEQBAIJ`, `MatMPIAIJGetSeqAIJ()`
+.seealso: `Mat`, `MATMPIBAIJ`, `MATMPISBAIJ`, `MATSEQBAIJ`, `MATSEQSBAIJ`, `MatMPIAIJGetSeqAIJ()`
 @*/
 PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
 {
@@ -3570,8 +3570,8 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
   PetscBool    flg;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIBAIJ, &flg));
-  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "This function requires a MATMPIBAIJ matrix as input");
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATMPIBAIJ, MATMPISBAIJ, ""));
+  PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "This function requires a MATMPIBAIJ or MATMPISBAIJ matrix as input");
   if (Ad) *Ad = a->A;
   if (Ao) *Ao = a->B;
   if (colmap) *colmap = a->garray;
