@@ -188,12 +188,31 @@ typedef struct {
     } \
     (void)0
 
+#define MatSeqSBAIJGetOptions_Private(A) \
+  { \
+    PetscBool ignore_ltriangular = PETSC_FALSE, getrow_utriangular = PETSC_FALSE; \
+    MatSeqXAIJGetOptions_Private(A); \
+    if (oldvalues) { \
+      ignore_ltriangular = ((Mat_SeqSBAIJ *)A->data)->ignore_ltriangular; \
+      getrow_utriangular = ((Mat_SeqSBAIJ *)A->data)->getrow_utriangular; \
+    } \
+    (void)0
+
 #define MatSeqXAIJRestoreOptions_Private(A) \
   if (oldvalues) { \
     ((Mat_SeqAIJ *)A->data)->nonew       = nonew; \
     ((Mat_SeqAIJ *)A->data)->nounused    = nounused; \
     ((Mat_SeqAIJ *)A->data)->roworiented = roworiented; \
   } \
+  } \
+  (void)0
+
+#define MatSeqSBAIJRestoreOptions_Private(A) \
+  if (oldvalues) { \
+    ((Mat_SeqSBAIJ *)A->data)->ignore_ltriangular = ignore_ltriangular; \
+    ((Mat_SeqSBAIJ *)A->data)->getrow_utriangular = getrow_utriangular; \
+  } \
+  MatSeqXAIJRestoreOptions_Private(A); \
   } \
   (void)0
 

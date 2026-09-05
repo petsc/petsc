@@ -1481,8 +1481,7 @@ static PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin, MatInfoType flag, MatInfo *
 
 static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
 {
-  Mat_MPISBAIJ *a  = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ *aA = (Mat_SeqSBAIJ *)a->A->data;
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
 
   PetscFunctionBegin;
   switch (op) {
@@ -1531,10 +1530,9 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
   case MAT_ERROR_LOWER_TRIANGULAR:
-    aA->ignore_ltriangular = flg;
-    break;
   case MAT_GETROW_UPPERTRIANGULAR:
-    aA->getrow_utriangular = flg;
+    MatCheckPreallocated(A, 1);
+    PetscCall(MatSetOption(a->A, op, flg));
     break;
   default:
     break;
@@ -2172,12 +2170,12 @@ static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, P
   PetscCall(MatSetType(b->B, MATSEQBAIJ));
   MatSeqXAIJRestoreOptions_Private(b->B);
 
-  MatSeqXAIJGetOptions_Private(b->A);
+  MatSeqSBAIJGetOptions_Private(b->A);
   PetscCall(MatDestroy(&b->A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
   PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
   PetscCall(MatSetType(b->A, MATSEQSBAIJ));
-  MatSeqXAIJRestoreOptions_Private(b->A);
+  MatSeqSBAIJRestoreOptions_Private(b->A);
 
   PetscCall(MatSeqSBAIJSetPreallocation(b->A, bs, d_nz, d_nnz));
   PetscCall(MatSeqBAIJSetPreallocation(b->B, bs, o_nz, o_nnz));
