@@ -118,31 +118,37 @@ static PetscErrorCode MatPreallocateWithMats_Private(Mat B, PetscInt nm, Mat X[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatSBAIJCreateSymmetricStructure_Private(Mat A, MatType newtype, PetscBool structure_only, Mat *B)
+{
+  PetscBool symm = PETSC_TRUE, isdense;
+  PetscInt  bs;
+
+  PetscFunctionBegin;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
+  PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
+  PetscCall(MatSetType(*B, newtype));
+  PetscCall(MatSetOption(*B, MAT_STRUCTURE_ONLY, structure_only));
+  PetscCall(MatGetBlockSize(A, &bs));
+  PetscCall(MatSetBlockSize(*B, bs));
+  PetscCall(PetscLayoutSetUp((*B)->rmap));
+  PetscCall(PetscLayoutSetUp((*B)->cmap));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)*B, &isdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, ""));
+  if (!isdense) {
+    /* create the complete symmetric nonzero structure */
+    PetscCall(MatGetRowUpperTriangular(A));
+    PetscCall(MatPreallocateWithMats_Private(*B, 1, &A, &symm, PETSC_TRUE));
+    PetscCall(MatRestoreRowUpperTriangular(A));
+  } else PetscCall(MatSetUp(*B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat B;
 
   PetscFunctionBegin;
-  if (reuse != MAT_REUSE_MATRIX) {
-    PetscBool symm = PETSC_TRUE, isdense;
-    PetscInt  bs;
-
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
-    PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
-    PetscCall(MatSetType(B, newtype));
-    PetscCall(MatGetBlockSize(A, &bs));
-    PetscCall(MatSetBlockSize(B, bs));
-    PetscCall(PetscLayoutSetUp(B->rmap));
-    PetscCall(PetscLayoutSetUp(B->cmap));
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &isdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, ""));
-    if (!isdense) {
-      PetscCall(MatGetRowUpperTriangular(A));
-      PetscCall(MatPreallocateWithMats_Private(B, 1, &A, &symm, PETSC_TRUE));
-      PetscCall(MatRestoreRowUpperTriangular(A));
-    } else {
-      PetscCall(MatSetUp(B));
-    }
-  } else {
+  if (reuse != MAT_REUSE_MATRIX) PetscCall(MatSBAIJCreateSymmetricStructure_Private(A, newtype, PETSC_FALSE, &B));
+  else {
     B = *newmat;
     PetscCall(MatZeroEntries(B));
   }
@@ -2345,9 +2351,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
-
-  /* stuff for MatCreateSubMatrices_MPIBAIJ_local() */
-  b->ijonly = PETSC_FALSE;
 
   b->in_loc = NULL;
   b->v_loc  = NULL;

@@ -3062,9 +3062,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
-  /* stuff for MatCreateSubMatrices_MPIBAIJ_local() */
-  b->ijonly = PETSC_FALSE;
-
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpiadj_C", MatConvert_MPIBAIJ_MPIAdj));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpiaij_C", MatConvert_MPIBAIJ_MPIAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpibaij_mpisbaij_C", MatConvert_MPIBAIJ_MPISBAIJ));

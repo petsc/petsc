@@ -30,7 +30,6 @@
   PetscInt   setvalueslen;  /* only used for single precision computations */ \
   MatScalar *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied*/ \
                             /* before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */ \
-  PetscBool      ijonly;    /* used in  MatCreateSubMatrices_MPIBAIJ_local() for getting ij structure only */ \
   struct _MatOps cops
 
 typedef struct {
