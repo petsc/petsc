@@ -3469,10 +3469,12 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
       PetscCall(PetscBTMemzero(nbs, bt));
       PetscCall(PetscHSetIClear(ht));
       for (k = 0; k < bs; k++) {
-        PetscInt row = bs * i + k;
+        const PetscInt row = bs * i + k;
+
         for (j = rowidxs[row]; j < rowidxs[row + 1]; j++) {
-          PetscInt col = colidxs[j];
-          if (!sbaij || col >= row) {
+          const PetscInt col = colidxs[j];
+
+          if (!sbaij || col / bs >= rs / bs + i) {
             if (col >= cs && col < ce) {
               if (!PetscBTLookupSet(bt, (col - cs) / bs)) d_nnz[i]++;
             } else {
