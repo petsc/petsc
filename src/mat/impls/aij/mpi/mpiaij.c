@@ -133,27 +133,6 @@ static PetscErrorCode MatRestoreRowIJ_MPIAIJ(Mat A, PetscInt oshift, PetscBool s
 }
 
 /*MC
-   MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
-
-   This matrix type is identical to` MATSEQAIJ` when constructed with a single process communicator,
-   and `MATMPIAIJ` otherwise.  As a result, for single process communicators,
-  `MatSeqAIJSetPreallocation()` is supported, and similarly `MatMPIAIJSetPreallocation()` is supported
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.
-
-   Options Database Key:
-. -mat_type aij - sets the matrix type to `MATAIJ` during a call to `MatSetFromOptions()`
-
-  Developer Note:
-  Level: beginner
-
-    Subclasses include `MATAIJCUSPARSE`, `MATAIJPERM`, `MATAIJSELL`, `MATAIJMKL`, `MATAIJCRL`, `MATAIJKOKKOS`,and also automatically switches over to use inodes when
-   enough exist.
-
-.seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MATBAIJ`
-M*/
-
-/*MC
    MATAIJCRL - MATAIJCRL = "aijcrl" - A matrix type to be used for sparse matrices.
 
    This matrix type is identical to `MATSEQAIJCRL` when constructed with a single process communicator,
@@ -565,7 +544,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
 
       for (j = 0; j < n; j++) {
         if (v) value = roworiented ? v[i * n + j] : v[i + j * m];
-        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && im[i] != in[j]) continue;
+        if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && im[i] != in[j]) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col   = in[j] - cstart;
           nonew = a->nonew;
@@ -615,9 +594,9 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
       if (!aij->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
-          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i * n), (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i * n), (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         } else {
-          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i), m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, PetscSafePointerPlusOffset(v, i), m, (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         }
       }
     }
@@ -744,7 +723,7 @@ static PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt id
 #else
         col = aij->colmap[idxn[j]] - 1;
 #endif
-        if ((col < 0) || (aij->garray[col] != idxn[j])) *value = 0.0;
+        if (col < 0 || aij->garray[col] != idxn[j]) *value = 0.0;
         else PetscCall(MatGetValues(aij->B, 1, &row, 1, &col, value));
       }
     }
@@ -1667,14 +1646,9 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_USE_INODES:
   case MAT_IGNORE_ZERO_ENTRIES:
   case MAT_FORM_EXPLICIT_TRANSPOSE:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
-    PetscCall(MatSetOption(a->B, op, flg));
-    break;
   case MAT_ROW_ORIENTED:
     MatCheckPreallocated(A, 1);
-    a->roworiented = flg;
-
+    if (op == MAT_ROW_ORIENTED) a->roworiented = flg;
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;
@@ -2028,7 +2002,7 @@ static PetscErrorCode MatCopy_MPIAIJ(Mat A, Mat B, MatStructure str)
 
   PetscFunctionBegin;
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
-  if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
+  if (str != SAME_NONZERO_PATTERN || A->ops->copy != B->ops->copy) {
     /* because of the column compression in the off-processor part of the matrix a->B,
        the number of columns in a->B and b->B may be different, hence we cannot call
        the MatCopy() directly on the two parts. If need be, we can provide a more
@@ -5224,11 +5198,10 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc)
       ncols_o = bi[i + 1] - bi[i];
       ncols_d = ai[i + 1] - ai[i];
       /* off-diagonal portion of A */
-      for (jo = 0; jo < ncols_o; jo++) {
+      for (jo = 0; jo < ncols_o; jo++, bj++) {
         col = cmap[*bj];
         if (col >= cstart) break;
-        cj[k] = col;
-        bj++;
+        cj[k]   = col;
         ca[k++] = *ba++;
       }
       /* diagonal portion of A */
@@ -5258,20 +5231,16 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A, MatReuse scall, Mat *A_loc)
     for (i = 0; i < am; i++) {
       /* off-diagonal portion of A */
       ncols_o = bi[i + 1] - bi[i];
-      for (jo = 0; jo < ncols_o; jo++) {
+      for (jo = 0; jo < ncols_o; jo++, bj++) {
         col = cmap[*bj];
         if (col >= cstart) break;
         *cam++ = *ba++;
-        bj++;
       }
       /* diagonal portion of A */
       ncols_d = ai[i + 1] - ai[i];
       for (j = 0; j < ncols_d; j++) *cam++ = *aa++;
       /* off-diagonal portion of A */
-      for (j = jo; j < ncols_o; j++) {
-        *cam++ = *ba++;
-        bj++;
-      }
+      for (j = jo; j < ncols_o; j++, bj++) *cam++ = *ba++;
     }
     PetscCall(MatSeqAIJRestoreArrayWrite(*A_loc, &cam));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid MatReuse %d", (int)scall);
@@ -5451,9 +5420,7 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS 
     for (i = 0; i < nzA; i++) idx[ncols++] = start + i;
     for (i = imark; i < nzB; i++) idx[ncols++] = cmap[i];
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncols, idx, PETSC_OWN_POINTER, &iscola));
-  } else {
-    iscola = *col;
-  }
+  } else iscola = *col;
   if (scall != MAT_INITIAL_MATRIX) {
     PetscCall(PetscMalloc1(1, &aloc));
     aloc[0] = *A_loc;
@@ -8121,7 +8088,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
     Mat_SeqAIJ *a     = (Mat_SeqAIJ *)A->data;
     PetscInt   *aimax = a->imax, *ai = a->i, *ailen = a->ilen, *aj = a->j;
     MatScalar  *aa;
-    PetscBool   ignorezeroentries = ((a->ignorezeroentries && (addv == ADD_VALUES)) ? PETSC_TRUE : PETSC_FALSE);
+    PetscBool   ignorezeroentries = (a->ignorezeroentries && addv == ADD_VALUES) ? PETSC_TRUE : PETSC_FALSE;
     Mat         B                 = aij->B;
     Mat_SeqAIJ *b                 = (Mat_SeqAIJ *)B->data;
     PetscInt   *bimax = b->imax, *bi = b->i, *bilen = b->ilen, *bj = b->j, bm = aij->B->rmap->n, am = aij->A->rmap->n;
@@ -8160,7 +8127,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
         for (j = 0; j < n; j++) {
           if (roworiented) value = v[i * n + j];
           else value = v[i + j * m];
-          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && im[i] != in[j]) continue;
+          if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && im[i] != in[j]) continue;
           if (in[j] >= cstart && in[j] < cend) {
             col = in[j] - cstart;
             MatSetValues_SeqAIJ_A_Private(row, col, value, addv, im[i], in[j]);
@@ -8202,9 +8169,9 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
         }
       } else if (!aij->donotstash) {
         if (roworiented) {
-          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, v + i * n, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesRow_Private(&mat->stash, im[i], n, in, v + i * n, (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         } else {
-          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, v + i, m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesCol_Private(&mat->stash, im[i], n, in, v + i, m, (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         }
       }
     }

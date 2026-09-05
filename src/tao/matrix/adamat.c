@@ -69,12 +69,6 @@ static PetscErrorCode MatDestroy_ADA(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatView_ADA(Mat mat, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
 {
   TaoMatADACtx ctx;
@@ -384,7 +378,6 @@ static PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
   PetscCall(MatShellSetManageScalingShifts(*J));
   PetscCall(MatShellSetOperation(*J, MATOP_MULT, (PetscErrorCodeFn *)MatMult_ADA));
   PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (PetscErrorCodeFn *)MatView_ADA));
   PetscCall(MatShellSetOperation(*J, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_ADA));
   PetscCall(MatShellSetOperation(*J, MATOP_DIAGONAL_SET, (PetscErrorCodeFn *)MatDiagonalSet_ADA));
   PetscCall(MatShellSetOperation(*J, MATOP_SHIFT, (PetscErrorCodeFn *)MatShift_ADA));

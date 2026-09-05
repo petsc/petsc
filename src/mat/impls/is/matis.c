@@ -3511,7 +3511,6 @@ static PetscErrorCode MatISRestoreAssembled_Private(Mat A, Mat *tA)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(tA));
-  *tA = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -42,7 +42,7 @@ typedef struct {
 } Mat_SeqAIJOps;
 
 /*
-    Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
+    Struct header shared by SeqAIJ, SeqBAIJ, and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype) \
   PetscBool         roworiented; /* if true, row-oriented input, default */ \

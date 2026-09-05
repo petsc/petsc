@@ -574,11 +574,8 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
     baij->barray = barray;
   }
 
-  if (roworiented) {
-    stepval = (n - 1) * bs;
-  } else {
-    stepval = (m - 1) * bs;
-  }
+  if (roworiented) stepval = (n - 1) * bs;
+  else stepval = (m - 1) * bs;
   for (i = 0; i < m; i++) {
     if (im[i] < 0) continue;
     PetscCheck(im[i] < baij->Mbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Block indexed row too large %" PetscInt_FMT " max %" PetscInt_FMT, im[i], baij->Mbs - 1);
@@ -772,8 +769,8 @@ static PetscErrorCode MatAssemblyBegin_MPISBAIJ(Mat mat, MatAssemblyType mode)
   PetscCall(MatStashScatterBegin_Private(mat, &mat->stash, mat->rmap->range));
   PetscCall(MatStashScatterBegin_Private(mat, &mat->bstash, baij->rangebs));
   PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
-  PetscCall(PetscInfo(mat, "Stash has %" PetscInt_FMT " entries,uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
-  PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
+  PetscCall(PetscInfo(mat, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
+  PetscCall(MatStashGetInfo_Private(&mat->bstash, &nstash, &reallocs));
   PetscCall(PetscInfo(mat, "Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1494,14 +1491,9 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
-    PetscCall(MatSetOption(a->B, op, flg));
-    break;
   case MAT_ROW_ORIENTED:
     MatCheckPreallocated(A, 1);
-    a->roworiented = flg;
-
+    if (op == MAT_ROW_ORIENTED) a->roworiented = flg;
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;

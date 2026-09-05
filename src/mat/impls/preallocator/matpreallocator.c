@@ -123,18 +123,6 @@ static PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatView_Preallocator(Mat A, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode MatSetOption_Preallocator(Mat A, MatOption op, PetscBool flg)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool fill, Mat A)
 {
   Mat_Preallocator *p = (Mat_Preallocator *)mat->data;
@@ -275,8 +263,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Preallocator(Mat A)
   A->ops->setvalues     = MatSetValues_Preallocator;
   A->ops->assemblybegin = MatAssemblyBegin_Preallocator;
   A->ops->assemblyend   = MatAssemblyEnd_Preallocator;
-  A->ops->view          = MatView_Preallocator;
-  A->ops->setoption     = MatSetOption_Preallocator;
   A->ops->setblocksizes = MatSetBlockSizes_Default; /* once set, user is not allowed to change the block sizes */
 
   /* special MATPREALLOCATOR functions */
