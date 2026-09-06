@@ -20,10 +20,10 @@ static PetscErrorCode CheckAB(Mat X, Mat Y, const char *what)
 
 int main(int argc, char **args)
 {
-  Mat         A, D, D2, CD, CD2, result, ref, Cr;
+  Mat         A, B, D, D2, CD, CD2, result, ref, Cr;
   Vec         dvec, rdiag, dg;
   MatType     atype;
-  PetscInt    n    = 6, m, rstart, rend;
+  PetscInt    n = 6, m, ncols = 3, rstart, rend;
   PetscScalar cval = 1.5, cval2 = 2.5;
   PetscBool   equal = PETSC_FALSE, issame = PETSC_FALSE;
 
@@ -46,6 +46,15 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatGetType(A, &atype));
   PetscCall(MatGetLocalSize(A, &m, NULL));
+
+  // A dense matrix
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+  PetscCall(MatSetType(B, MATDENSE));
+  PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, n, ncols));
+  PetscCall(MatSetOptionsPrefix(B, "dense_"));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatSetUp(B));
+  PetscCall(MatSetRandom(B, NULL));
 
   // Two MATDIAGONAL matrices from Vecs matching A's layout and VecType (so on a
   // device build with a device A everything stays on device).
@@ -70,6 +79,12 @@ int main(int argc, char **args)
   // MATCONSTANTDIAGONAL against a general (sparse) matrix, both orientations.
   PetscCall(CheckAB(A, CD, "A * CD (aij * MATCONSTANTDIAGONAL)"));
   PetscCall(CheckAB(CD, A, "CD * A (MATCONSTANTDIAGONAL * aij)"));
+
+  // MATDIAGONAL against a dense matrix
+  PetscCall(CheckAB(D, B, "D * B (MATDIAGONAL * dense)"));
+
+  // MATCONSTANTDIAGONAL against a dense matrix
+  PetscCall(CheckAB(CD, B, "CD * B (MATCONSTANTDIAGONAL * dense)"));
 
   // MATDIAGONAL/MATCONSTANTDIAGONAL against each other.
   PetscCall(CheckAB(D, D2, "D * D (MATDIAGONAL * MATDIAGONAL)"));
@@ -161,6 +176,7 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&Cr));
 
   PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&D));
   PetscCall(MatDestroy(&D2));
   PetscCall(MatDestroy(&CD));
@@ -187,13 +203,13 @@ int main(int argc, char **args)
     requires: cuda
     suffix: cuda
     nsize: {{1 2}}
-    args: -mat_type aijcusparse
+    args: -mat_type aijcusparse -dense_mat_type densecuda
     output_file: output/empty.out
 
   test:
     requires: hip
     suffix: hip
     nsize: {{1 2}}
-    args: -mat_type aijhipsparse
+    args: -mat_type aijhipsparse -dense_mat_type densehip
     output_file: output/empty.out
 TEST*/
