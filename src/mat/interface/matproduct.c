@@ -432,6 +432,23 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   PetscCheck(!Cm || Cm == Bn, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Matrix dimensions of B and C are incompatible for MatProductType %s: B %" PetscInt_FMT "x%" PetscInt_FMT ", C %" PetscInt_FMT "x%" PetscInt_FMT,
              MatProductTypes[product->type], B->rmap->N, B->cmap->N, Cm, Cn);
 
+  /* graph products use the host CSR structure, including for AIJ device types */
+  if (mat->structure_only && (product->type == MATPRODUCT_AB || product->type == MATPRODUCT_AtB)) {
+    PetscBool aseq, bseq, ampi, bmpi;
+
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &aseq));
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATSEQAIJ, &bseq));
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ampi));
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATMPIAIJ, &bmpi));
+    if (aseq && bseq) {
+      PetscCall(MatProductSetFromOptions_SeqAIJ(mat));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    } else if (ampi && bmpi) {
+      PetscCall(MatProductSetFromOptions_MPIAIJ(mat));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+
   fA = A->ops->productsetfromoptions;
   fB = B->ops->productsetfromoptions;
   fC = C ? C->ops->productsetfromoptions : fA;
@@ -666,6 +683,7 @@ PetscErrorCode MatProductNumeric(Mat mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
+  PetscCheck(!mat->structure_only, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot compute numerical values of a MAT_STRUCTURE_ONLY product");
   switch (mat->product->type) {
   case MATPRODUCT_AB:
     eventtype = MAT_MatMultNumeric;
@@ -767,8 +785,13 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
 
   Level: intermediate
 
-  Note:
-  `MatProductSetFromOptions()` must have been called on `mat` before calling this function
+  Notes:
+  `MatProductSetFromOptions()` must have been called on `mat` before calling this function.
+  For `MATPRODUCT_AB` and `MATPRODUCT_AtB` with AIJ inputs, setting `MAT_STRUCTURE_ONLY` on `mat` before
+  `MatProductSetFromOptions()` requests an assembled graph without numerical values. These products use the
+  native CPU symbolic algorithms (`sorted` for sequential AB, `outerproduct` for sequential AtB, and `scalable`
+  for MPI products), overriding the selected algorithm, and return `MATSEQAIJ` or `MATMPIAIJ`, including for device AIJ inputs.
+  Call `MatProductClear()` when the product context is no longer needed. `MatProductNumeric()` cannot be used on a structure-only result.
 
 .seealso: [](ch_matrices), `MatProduct`, `Mat`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/

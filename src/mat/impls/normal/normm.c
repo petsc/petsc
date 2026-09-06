@@ -15,9 +15,12 @@ static PetscErrorCode MatIncreaseOverlap_Normal(Mat A, PetscInt is_max, IS is[],
   PetscCheck(ov >= 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_OUTOFRANGE, "Negative overlap specified");
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(MatProductCreate(a->A, a->A, NULL, &pattern));
+  PetscCall(MatSetOption(pattern, MAT_STRUCTURE_ONLY, PETSC_TRUE));
   PetscCall(MatProductSetType(pattern, MATPRODUCT_AtB));
   PetscCall(MatProductSetFromOptions(pattern));
   PetscCall(MatProductSymbolic(pattern));
+  /* release symbolic product workspace before increasing overlap */
+  PetscCall(MatProductClear(pattern));
   PetscCall(MatIncreaseOverlap(pattern, is_max, is, ov));
   PetscCall(MatDestroy(&pattern));
   PetscFunctionReturn(PETSC_SUCCESS);

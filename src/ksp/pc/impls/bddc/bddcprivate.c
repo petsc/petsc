@@ -841,6 +841,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* Symbolic conn = lG*lGt */
   if (!elements_corners) { /* if present, we assume we are in the element-by-element case and the CSR graph is not needed */
     PetscCall(MatProductCreate(lG, lGt, NULL, &conn));
+    PetscCall(MatSetOption(conn, MAT_STRUCTURE_ONLY, PETSC_TRUE));
     PetscCall(MatProductSetType(conn, MATPRODUCT_AB));
     PetscCall(MatProductSetAlgorithm(conn, "default"));
     PetscCall(MatProductSetFill(conn, PETSC_DEFAULT));
@@ -7523,13 +7524,12 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
         Mat AtA;
 
         PetscCall(MatProductCreate(A, A, NULL, &AtA));
+        PetscCall(MatSetOption(AtA, MAT_STRUCTURE_ONLY, PETSC_TRUE));
         PetscCall(MatSetOptionsPrefix(AtA, "pc_bddc_graph_"));
         PetscCall(MatProductSetType(AtA, MATPRODUCT_AtB));
         PetscCall(MatProductSetFromOptions(AtA));
         PetscCall(MatProductSymbolic(AtA));
         PetscCall(MatProductClear(AtA));
-        /* we only need the sparsity, cheat and tell PETSc the matrix has been assembled */
-        AtA->assembled = PETSC_TRUE;
         PetscCall(MatDestroy(&A));
         A = AtA;
       }
