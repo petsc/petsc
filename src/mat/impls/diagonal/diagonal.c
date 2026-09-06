@@ -779,15 +779,11 @@ static PetscErrorCode MatProductSymbolic_Diagonal_Dense(Mat C)
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A = C->product->A;
   B = C->product->B;
-  PetscCall(MatGetLocalSize(C, &m, &n));
-  PetscCall(MatGetSize(C, &M, &N));
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {
-    PetscCall(MatGetLocalSize(B, NULL, &n));
-    PetscCall(MatGetSize(B, NULL, &N));
-    PetscCall(MatGetLocalSize(A, &m, NULL));
-    PetscCall(MatGetSize(A, &M, NULL));
-    PetscCall(MatSetSizes(C, m, n, M, N));
-  }
+  PetscCall(MatGetLocalSize(B, NULL, &n));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatGetSize(A, &M, NULL));
+  PetscCall(MatSetSizes(C, m, n, M, N));
   PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
   C->ops->productnumeric = MatProductNumeric_Diagonal_Dense;

@@ -2939,7 +2939,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIBAIJ_MPIDense(Mat A, Mat B, PetscRea
   Mat_MPIBAIJ      *baij = (Mat_MPIBAIJ *)A->data;
   MPIBAIJ_MPIDense *data;
   VecScatter        ctx = baij->Mvctx;
-  PetscInt          nz  = baij->B->cmap->n, m, M, n, N, bs;
+  PetscInt          nz  = baij->B->cmap->n, bs;
   PetscInt          Am = A->rmap->n, BN = B->cmap->N, Bbn, numBb;
   Mat               workB1, workC1;
   PetscBool         cisdense;
@@ -2949,9 +2949,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIBAIJ_MPIDense(Mat A, Mat B, PetscRea
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &cisdense));
   if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-  PetscCall(MatGetLocalSize(C, &m, &n));
-  PetscCall(MatGetSize(C, &M, &N));
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
+  PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatSetUp(C));
   PetscCall(MatGetBlockSize(A, &bs));

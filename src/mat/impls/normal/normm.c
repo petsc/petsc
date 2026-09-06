@@ -327,15 +327,11 @@ static PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
   B = C->product->B;
   PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
-  PetscCall(MatGetLocalSize(C, &m, &n));
-  PetscCall(MatGetSize(C, &M, &N));
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE || M == PETSC_DECIDE || N == PETSC_DECIDE) {
-    PetscCall(MatGetLocalSize(B, NULL, &n));
-    PetscCall(MatGetSize(B, NULL, &N));
-    PetscCall(MatGetLocalSize(A, &m, NULL));
-    PetscCall(MatGetSize(A, &M, NULL));
-    PetscCall(MatSetSizes(C, m, n, M, N));
-  }
+  PetscCall(MatGetLocalSize(B, NULL, &n));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatGetSize(A, &M, NULL));
+  PetscCall(MatSetSizes(C, m, n, M, N));
   PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
   PetscCall(MatSetUp(C));
   PetscCall(PetscNew(&contents));

@@ -327,6 +327,29 @@ PetscErrorCode PetscLayoutReference(PetscLayout in, PetscLayout *out)
 }
 
 /*@
+  PetscLayoutGetComm - Gets the MPI communicator associated with the layout.
+
+  Not Collective
+
+  Input Parameter:
+. map - pointer to the map
+
+  Output Parameter:
+. comm - the communicator
+
+  Level: developer
+
+.seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`,
+          `PetscLayoutGetRange()`, `PetscLayoutGetRanges()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetBlockSize()`
+@*/
+PetscErrorCode PetscLayoutGetComm(PetscLayout map, MPI_Comm *comm)
+{
+  PetscFunctionBegin;
+  *comm = map->comm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscLayoutSetISLocalToGlobalMapping - sets a `ISLocalGlobalMapping` into a `PetscLayout`
 
   Collective

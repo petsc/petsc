@@ -340,6 +340,7 @@ PETSC_EXTERN PetscErrorCode PetscLayoutSetUp(PetscLayout);
 PETSC_EXTERN PetscErrorCode PetscLayoutDestroy(PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscLayoutDuplicate(PetscLayout, PetscLayout *);
 PETSC_EXTERN PetscErrorCode PetscLayoutReference(PetscLayout, PetscLayout *);
+PETSC_EXTERN PetscErrorCode PetscLayoutGetComm(PetscLayout, MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetLocalSize(PetscLayout, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscLayoutGetLocalSize(PetscLayout, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetSize(PetscLayout, PetscInt);
