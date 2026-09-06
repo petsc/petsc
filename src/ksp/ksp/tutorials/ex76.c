@@ -572,7 +572,7 @@ int main(int argc, char **args)
       args: -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 20 -rhs 4 -ksp_max_it 20 -ksp_type hpddm -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_define_subdomains -ksp_error_if_not_converged
       test:
         suffix: reuse_symbolic
-        args: -pc_hpddm_coarse_correction {{additive deflated balanced}shared output} -ksp_pc_side {{left right}shared output} -transpose {{true false}shared output}
+        args: -pc_hpddm_coarse_correction {{additive deflated balanced deflated_reversed}shared output} -ksp_pc_side {{left right}shared output} -transpose {{true false}shared output}
       test:
         requires: cuda
         suffix: reuse_symbolic_cuda

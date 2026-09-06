@@ -143,6 +143,7 @@ class PCHPDDMCoarseCorrectionType(object):
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
     BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
     NONE                     = PC_HPDDM_COARSE_CORRECTION_NONE
+    DEFLATED_REVERSED        = PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED
 
 
 class PCDeflationSpaceType(object):

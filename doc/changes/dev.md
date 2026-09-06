@@ -99,6 +99,7 @@
 - Add `PCGAMGSetProlongatorFilterScale()` and `PCGAMGGetProlongatorFilterScale()` to set/get the per-level scaling of the prolongator filter threshold in `PCGAMG`; the scale must be in [0,1]
 - `PCGAMGSetThresholdScale()` now requires its argument to be in [0,1]
 - `PCGAMGSetThreshold()` now requires each threshold value to be less than 1; negative values still mean keeping even zero entries in the graph. It is also now `Logically Collective` (checked in debug builds), matching `PCGAMGSetThresholdScale()`
+- Add `PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED` for applying the coarse correction after the fine correction in `PCHPDDM`
 - Add `PCAIR` and `PCPFLAREINV` manual pages, generated from the PFLARE sources when the documentation is built
 - Add `PCParametersInitialize`
 - Fix `PCMG` to honor `PCSetUseAmat(pc, PETSC_FALSE)` at all levels
