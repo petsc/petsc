@@ -4,7 +4,7 @@ if __name__ == '__main__':
     import sys
     import petsc4py
 
-    petsc4py.init(sys.argv + ['-log_view'])
+    petsc4py.init([*sys.argv, '-log_view'])
 
 # --------------------------------------------------------------------
 

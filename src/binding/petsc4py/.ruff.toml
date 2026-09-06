@@ -1,41 +1,93 @@
 include = ["*.py", "src/*.py"]
-exclude = ["demo/legacy", "*env"]
+exclude = ["demo/legacy/kspsolve"] # very old demo
 
 [lint]
-select = [
-  "A",
-  "B",
-  "C",
-  # "D",
-  "E",
-  "F",
-  "G",
-  # "I",
-  "S",
-  "W",
-  "UP",
-  # "ARG",
-  # "ISC",
-  "PIE",
-  # "PTH",
-  "PYI",
-  "RET",
-  # "RUF",
-  # "TRY",
-  "YTT",
-]
+select = ["ALL"]
 
 ignore = [
-  "E501",  # Line too long
-  "E731",  # Do not assign a `lambda` expression, use a `def`
-  "G004",  # Logging statement uses f-string
-  "S110",  # `try`-`except`-`pass` detected, consider logging the exception
-  "UP015", # [*] Unnecessary open mode parameters
-  "C901",  # `function` is too complex
+    "ANN",
+    "I",
+    "N",
+    "PTH",
+    "TRY",
+    "D203",    # Warning: `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible. Ignoring `incorrect-blank-line-before-class`.
+    "D213",    # Warning: `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible. Ignoring `multi-line-summary-second-line`.
+    "BLE001",  # Do not catch blind exception
+    "ERA",     # Eradicate
+    "RUF005",  # Consider `...` instead of concatenation
+    "RUF012",  # Mutable default value for class attribute
+    "RUF022",  # `__all__` is not sorted
+    "PLR0912", # Too many branches
+    "PLR0913", # Too many arguments in function definition
+    "PLR0915", # Too many statements
+    "PLR1704", # Redefining argument with the local name `...`
+    "PLR2004", # Magic value used in comparison, consider replacing ... with a constant variable
+    "COM812",  # Trailing commas, not always correct
+    "TD",      # TODO stuff
+    "FIX",     # TODO stuff
+    "E501",    # Line too long
+    "E731",    # Do not assign a `lambda` expression, use a `def`
+    "S110",    # `try`-`except`-`pass` detected, consider logging the exception
+    "C901",    # `function` is too complex
+    "B905",    # `zip()` without an explicit `strict=` parameter
+    "SIM105",  # Use `contextlib.suppress(Exception)` instead of `try`-`except`-`pass`
+    "SIM117",  # Use a single `with` statement with multiple contexts instead of nested `with` statements
+    "PLW2901", # `for` loop variable `...` overwritten by assignment target
+    "SLF001",  # Private member accessed: `...`
+    "FBT002",  # Boolean default positional argument in function definition
+    "FBT003",  # Boolean positional value in function call
+    "INP001",  # File ... is part of an implicit namespace package. Add an `__init__.py`
+    "FURB171", # Membership test against single-item container
+    "FURB188", # Prefer `str.removeprefix()` over conditionally replacing with slice.
+    "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
 ]
 
 [format]
 quote-style = "single"
 
+[lint.flake8-quotes]
+inline-quotes = "single"
+
 [lint.per-file-ignores]
-"demo/*" = ["E402", "PIE790",]
+"!src/petsc4py/**" = ["D"]
+"conf/*" = [
+    "ARG005",  # Unused lambda argument
+    "PLC0415", # `import` should be at the top-level of a file
+]
+"demo/*" = [
+    "E402",
+    "PIE790",
+    "ARG001",  # Unused function argument
+    "ARG002",  # Unused method argument
+    "EM101",   # Exception must not use a string literal, assign to variable first
+]
+"demo/legacy/*" = [
+    "E722",    # Do not use bare `except`
+    "S101",    # Use of `assert` detected
+    "NPY002",  # Replace legacy `np.random.xxx` calls
+    "PLC0415", # `import` should be at the top-level of a file
+    "UP031",   # Use format specifiers instead of percent format
+]
+"docs/source/*" = [
+    "G004",    # Logging statement uses f-string
+    "T201",    # `print` found
+    "PLC0415", # `import` should be at the top-level of a file
+]
+"setup.py" = [
+    "PLC0415", # `import` should be at the top-level of a file
+]
+"src/petsc4py/*" = [
+    "PLC0415", # `import` should be at the top-level of a file
+]
+"test/runtests.py" = [
+    "PLC0415", # `import` should be at the top-level of a file
+]
+"test/*" = [
+    "PT",      # pytest linter
+    "ARG001",  # Unused function argument
+    "ARG002",  # Unused method argument
+    "ARG005",  # Unused lambda argument
+    "PERF203", # `try`-`except` within a loop incurs performance overhead
+    "PERF401", # Use `list.extend` to create a transformed list
+    "EM101",   # Exception must not use a string literal, assign to variable first
+]

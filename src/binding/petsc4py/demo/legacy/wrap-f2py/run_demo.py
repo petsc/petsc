@@ -1,39 +1,45 @@
-import sys, petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
-import Bratu2D as Bratu2D
+import Bratu2D
 
-class App(object):
 
+class App:
     def __init__(self, da, lambda_):
         assert da.getDim() == 2
         self.da = da
         self.lambda_ = lambda_
 
     def formInitGuess(self, snes, X):
-        X.zeroEntries() # just in case
+        X.zeroEntries()  # just in case
         da = self.da.fortran
         vec_X = X.fortran
         ierr = Bratu2D.FormInitGuess(da, vec_X, self.lambda_)
-        if ierr: raise PETSc.Error(ierr)
+        if ierr:
+            raise PETSc.Error(ierr)
 
     def formFunction(self, snes, X, F):
-        F.zeroEntries() # just in case
+        F.zeroEntries()  # just in case
         da = self.da.fortran
         vec_X = X.fortran
         vec_F = F.fortran
         ierr = Bratu2D.FormFunction(da, vec_X, vec_F, self.lambda_)
-        if ierr: raise PETSc.Error(ierr)
+        if ierr:
+            raise PETSc.Error(ierr)
 
     def formJacobian(self, snes, X, J, P):
-        P.zeroEntries() # just in case
+        P.zeroEntries()  # just in case
         da = self.da.fortran
         vec_X = X.fortran
         mat_P = P.fortran
         ierr = Bratu2D.FormJacobian(da, vec_X, mat_P, self.lambda_)
-        if ierr: raise PETSc.Error(ierr)
-        if J != P: J.assemble() # matrix-free operator
+        if ierr:
+            raise PETSc.Error(ierr)
+        if J != P:
+            J.assemble()  # matrix-free operator
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
 
@@ -61,6 +67,7 @@ snes.solve(None, X)
 U = da.createNaturalVec()
 da.globalToNatural(X, U)
 
+
 def plot(da, U):
     comm = da.getComm()
     scatter, U0 = PETSc.Scatter.toZero(U)
@@ -70,17 +77,20 @@ def plot(da, U):
         solution = U0[...]
         solution = solution.reshape(da.sizes, order='f').copy()
         try:
-            from matplotlib import pyplot
-            pyplot.contourf(solution)
-            pyplot.axis('equal')
-            pyplot.show()
+            from matplotlib import pyplot as plt
+
+            plt.contourf(solution)
+            plt.axis('equal')
+            plt.show()
         except:
             pass
     comm.barrier()
     scatter.destroy()
     U0.destroy()
 
-if do_plot: plot(da, U)
+
+if do_plot:
+    plot(da, U)
 
 
 U.destroy()

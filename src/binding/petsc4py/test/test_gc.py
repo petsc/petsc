@@ -12,7 +12,7 @@ import weakref
 
 # --------------------------------------------------------------------
 
-PYSABI = os.path.basename(PETSc.__file__).split(".")[1] == "abi3"
+PYSABI = os.path.basename(PETSc.__file__).split('.')[1] == 'abi3'
 
 
 class BaseTestGC:

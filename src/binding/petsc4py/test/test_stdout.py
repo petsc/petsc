@@ -1,22 +1,20 @@
 import unittest
+from io import StringIO
+import sys
+import numpy as np
+from petsc4py import PETSc
 
 # --------------------------------------------------------------------
 
 
 class TestStdout(unittest.TestCase):
     def testStdoutRedirect(self):
-        from io import StringIO
-        import sys
-
         prevstdout = sys.stdout
         prevstderr = sys.stderr
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
-        import numpy as np
-        from petsc4py import PETSc
-
-        if not (__name__ == '__main__'):
+        if __name__ != '__main__':
             PETSc._push_python_vfprintf()
 
         a = np.array([0.0, 0.0, 0.0], dtype=PETSc.ScalarType)
@@ -32,7 +30,7 @@ class TestStdout(unittest.TestCase):
 
         output = newstdout.getvalue()
         error = newstderr.getvalue()
-        if not (__name__ == '__main__'):
+        if __name__ != '__main__':
             PETSc._pop_python_vfprintf()
         stdoutshouldbe = """Vec Object: 1 MPI process
   type: seq

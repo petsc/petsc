@@ -46,7 +46,7 @@ class MyPCNone(BaseMyPC):
 
 class MyPCJacobi(BaseMyPC):
     def setup(self, pc):
-        A, P = pc.getOperators()
+        _A, P = pc.getOperators()
         self.diag = P.getDiagonal()
         self.diag.reciprocal()
 
@@ -175,14 +175,14 @@ class TestPCPYTHON(unittest.TestCase):
         X.assemble()
         Y = PETSc.Mat().createDense([3, 5], comm=PETSc.COMM_SELF).setUp()
         Y.assemble()
-        self.assertTrue((A, A) == self.pc.getOperators())
+        self.assertTrue(self.pc.getOperators() == (A, A))
         return A, x, y, X, Y
 
     def _getCtx(self):
         return self.pc.getPythonContext()
 
     def _applyMeth(self, meth):
-        A, x, y, X, Y = self._prepare()
+        _A, x, y, X, Y = self._prepare()
         if meth == 'matApply':
             getattr(self.pc, meth)(X, Y)
             x.copy(y)
@@ -242,7 +242,7 @@ class TestPCPYTHON(unittest.TestCase):
         self.pc.reset()
 
     def testKSPSolve(self):
-        A, x, y, _, _ = self._prepare()
+        _A, x, y, _, _ = self._prepare()
         ksp = PETSc.KSP().create(self.pc.comm)
         ksp.setType(PETSc.KSP.Type.PREONLY)
         self.assertTrue(self.pc.getRefCount() == 1)

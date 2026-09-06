@@ -1,8 +1,7 @@
 from petsc4py import PETSc
 import unittest
-
-import numpy as N
 import numpy as np
+import sys
 
 
 def mkgraph(comm, m, n):
@@ -28,14 +27,11 @@ def mkgraph(comm, m, n):
         if i < m - 1:
             gridJ = gridI + n
             adj.append(gridJ)
-    nods = N.array(range(start, end), dtype=idt)
-    xadj = N.array([0] * (len(rows) + 1), dtype=idt)
+    nods = np.array(range(start, end), dtype=idt)
+    xadj = np.array([0] * (len(rows) + 1), dtype=idt)
     xadj[0] = 0
-    xadj[1:] = N.cumsum([len(r) for r in rows], dtype=idt)
-    if not rows:
-        adjy = N.array([], dtype=idt)
-    else:
-        adjy = N.concatenate(rows).astype(idt)
+    xadj[1:] = np.cumsum([len(r) for r in rows], dtype=idt)
+    adjy = np.array([], dtype=idt) if not rows else np.concatenate(rows).astype(idt)
     return nods, xadj, adjy
 
 
@@ -49,7 +45,7 @@ class BaseTestMatAnyAIJ:
         COMM = self.COMM
         GM, GN = self.GRID
         BS = self.BSIZE
-        #
+
         try:
             rbs, cbs = BS
             rbs = rbs or 1
@@ -58,9 +54,9 @@ class BaseTestMatAnyAIJ:
             rbs = cbs = BS or 1
         sdt = PETSc.ScalarType
         self.rows, self.xadj, self.adjy = mkgraph(COMM, GM, GN)
-        self.vals = N.array(range(1, 1 + len(self.adjy) * rbs * cbs), dtype=sdt)
+        self.vals = np.array(range(1, 1 + len(self.adjy) * rbs * cbs), dtype=sdt)
         self.vals.shape = (-1, rbs, cbs)
-        #
+
         m, n = GM, GN
         rowsz = (m * n * rbs, None)
         colsz = (m * n * cbs, None)
@@ -79,29 +75,29 @@ class BaseTestMatAnyAIJ:
         self._chk_bs(self.A, self.BSIZE)
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
     def testSetPreallocNNZ_2(self):
         _, ai, _, _ = self._get_aijv()
-        d_nnz = N.diff(ai)
+        d_nnz = np.diff(ai)
         nnz = [d_nnz, 3]
         self.A.setPreallocationNNZ(nnz)
         self._chk_bs(self.A, self.BSIZE)
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -143,12 +139,12 @@ class BaseTestMatAnyAIJ:
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -156,12 +152,12 @@ class BaseTestMatAnyAIJ:
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -180,8 +176,8 @@ class BaseTestMatAnyAIJ:
         for row in range(rstart, rend):
             cols, vals = A.getRow(row)
             i = row - rstart
-            self.assertTrue(N.allclose(aj[ai[i] : ai[i + 1]], cols))
-            self.assertTrue(N.allclose(av[ai[i] : ai[i + 1]], vals))
+            self.assertTrue(np.allclose(aj[ai[i] : ai[i + 1]], cols))
+            self.assertTrue(np.allclose(av[ai[i] : ai[i + 1]], vals))
 
     def testConvertToSAME(self):
         self._preallocate()
@@ -263,14 +259,14 @@ class BaseTestMatAnyAIJ:
         bs = self.A.getBlockSize()
         m, _ = self.A.getLocalSize()
         self.assertEqual(ibdiag.shape, (m // bs, bs, bs))
-        tmp = N.empty((m // bs, bs, bs), dtype=PETSc.ScalarType)
+        tmp = np.empty((m // bs, bs, bs), dtype=PETSc.ScalarType)
         rstart, rend = self.A.getOwnershipRange()
         s, e = rstart // bs, rend // bs
         for i in range(s, e):
-            rows = cols = N.arange(i * bs, (i + 1) * bs, dtype=PETSc.IntType)
+            rows = cols = np.arange(i * bs, (i + 1) * bs, dtype=PETSc.IntType)
             vals = self.A.getValues(rows, cols)
-            tmp[i - s, :, :] = N.linalg.inv(vals)
-        self.assertTrue(N.allclose(ibdiag, tmp))
+            tmp[i - s, :, :] = np.linalg.inv(vals)
+        self.assertTrue(np.allclose(ibdiag, tmp))
 
     def testCreateSubMatrix(self):
         if 'baij' in self.A.getType():
@@ -278,19 +274,19 @@ class BaseTestMatAnyAIJ:
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
-        #
+
         rs, re = self.A.getOwnershipRange()
         cs, ce = self.A.getOwnershipRangeColumn()
-        rows = N.array(range(rs, re), dtype=PETSc.IntType)
-        cols = N.array(range(cs, ce), dtype=PETSc.IntType)
+        rows = np.array(range(rs, re), dtype=PETSc.IntType)
+        cols = np.array(range(cs, ce), dtype=PETSc.IntType)
         rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
         cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
-        #
+
         S = self.A.createSubMatrix(rows, None)
         S.zeroEntries()
         self.A.createSubMatrix(rows, None, S)
         S.destroy()
-        #
+
         S = self.A.createSubMatrix(rows, cols)
         S.zeroEntries()
         self.A.createSubMatrix(rows, cols, S)
@@ -304,19 +300,19 @@ class BaseTestMatAnyAIJ:
         self._preallocate()
         self._set_values_ijv()
         self.A.assemble()
-        #
+
         rs, re = self.A.getOwnershipRange()
         cs, ce = self.A.getOwnershipRangeColumn()
-        rows = N.array(range(rs, re), dtype=PETSc.IntType)
-        cols = N.array(range(cs, ce), dtype=PETSc.IntType)
+        rows = np.array(range(rs, re), dtype=PETSc.IntType)
+        cols = np.array(range(cs, ce), dtype=PETSc.IntType)
         rows = PETSc.IS().createGeneral(rows, comm=self.A.getComm())
         cols = PETSc.IS().createGeneral(cols, comm=self.A.getComm())
-        #
+
         (S,) = self.A.createSubMatrices(rows, cols)
         S.zeroEntries()
         self.A.createSubMatrices(rows, cols, submats=[S])
         S.destroy()
-        #
+
         (S1,) = self.A.createSubMatrices([rows], [cols])
         (S2,) = self.A.createSubMatrices([rows], [cols])
         self.assertTrue(S1.equal(S2))
@@ -325,7 +321,7 @@ class BaseTestMatAnyAIJ:
         self.assertTrue(S1.equal(S2))
         S1.destroy()
         S2.destroy()
-        #
+
         if 'seq' not in self.A.getType():
             return  # XXX
         S1, S2 = self.A.createSubMatrices([rows, rows], [cols, cols])
@@ -362,13 +358,13 @@ class BaseTestMatAnyAIJ:
         AT = PETSc.Mat().createTranspose(A)
         x, y = A.createVecs()
         xt, yt = AT.createVecs()
-        #
+
         y.setRandom()
         A.multTranspose(y, x)
         y.copy(xt)
         AT.mult(xt, yt)
         self.assertTrue(yt.equal(x))
-        #
+
         x.setRandom()
         A.mult(x, y)
         x.copy(yt)
@@ -387,16 +383,11 @@ class BaseTestMatAnyAIJ:
         self.A.setPreallocationNNZ([5, 2])
 
     def _set_values(self):
-        import sys
-
         if hasattr(sys, 'gettotalrefcount'):
             return self._set_values_ijv()
         # XXX Why the code below leak refs as a beast ???
         row, ai, aj, av = self._get_aijv()
-        if not self.BSIZE:
-            setvalues = self.A.setValues
-        else:
-            setvalues = self.A.setValuesBlocked
+        setvalues = self.A.setValues if not self.BSIZE else self.A.setValuesBlocked
         for i, r in enumerate(row):
             s, e = ai[i], ai[i + 1]
             setvalues(r, aj[s:e], av[s:e])
@@ -426,12 +417,12 @@ class BaseTestMatAnyAIJ:
         compressed = bool(self.BSIZE)
         ai, aj = A.getRowIJ(compressed=compressed)
         if ai is not None and aj is not None:
-            self.assertTrue(N.all(i == ai))
-            self.assertTrue(N.all(j == aj))
+            self.assertTrue(np.all(i == ai))
+            self.assertTrue(np.all(j == aj))
         ai, aj = A.getColumnIJ(compressed=compressed)
         if ai is not None and aj is not None:
-            self.assertTrue(N.all(i == ai))
-            self.assertTrue(N.all(j == aj))
+            self.assertTrue(np.all(i == ai))
+            self.assertTrue(np.all(j == aj))
 
 
 # -- AIJ ---------------------
@@ -654,15 +645,13 @@ class BaseTestMatSBAIJ(BaseTestMatAnyAIJ, unittest.TestCase):
 
     def _chk_aij(self, A, i, j):
         ai, aj = A.getRowIJ(compressed=True)
-        if ai is not None and aj is not None:
-            if 0:  # XXX Implement
-                self.assertTrue(N.all(i == ai))
-                self.assertTrue(N.all(j == aj))
+        if False:  # XXX Implement
+            self.assertTrue(np.all(i == ai))
+            self.assertTrue(np.all(j == aj))
         ai, aj = A.getColumnIJ(compressed=True)
-        if ai is not None and aj is not None:
-            if 0:  # XXX Implement
-                self.assertTrue(N.all(i == ai))
-                self.assertTrue(N.all(j == aj))
+        if False:  # XXX Implement
+            self.assertTrue(np.all(i == ai))
+            self.assertTrue(np.all(j == aj))
 
 
 # -- Seq SymmBlock AIJ --
@@ -836,12 +825,12 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -849,12 +838,12 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -865,13 +854,13 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
     def _chk_aij(self, A, i, j):
         ai, aj = A.getRowIJ()
         if ai is not None and aj is not None:  ## XXX map and check !!
-            # self.assertTrue(N.all(i==ai))
-            # self.assertTrue(N.all(j==aj))
+            # self.assertTrue(np.all(i==ai))
+            # self.assertTrue(np.all(j==aj))
             pass
         ai, aj = A.getColumnIJ(compressed=bool(self.BSIZE))
         if ai is not None and aj is not None:  ## XXX map and check !!
-            # self.assertTrue(N.all(i==ai))
-            # self.assertTrue(N.all(j==aj))
+            # self.assertTrue(np.all(i==ai))
+            # self.assertTrue(np.all(j==aj))
             pass
 
 
@@ -1052,12 +1041,12 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values()
+        ai, aj, _av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -1065,25 +1054,25 @@ class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_ijv()
+        ai, aj, _av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
     def _chk_aij(self, A, i, j):
         ai, aj = A.getRowIJ()
         if ai is not None and aj is not None:  ## XXX map and check !!
-            # self.assertTrue(N.all(i==ai))
-            # self.assertTrue(N.all(j==aj))
+            # self.assertTrue(np.all(i==ai))
+            # self.assertTrue(np.all(j==aj))
             pass
         ai, aj = A.getColumnIJ()
         if ai is not None and aj is not None:  ## XXX map and check !!
-            # self.assertTrue(N.all(i==ai))
-            # self.assertTrue(N.all(j==aj))
+            # self.assertTrue(np.all(i==ai))
+            # self.assertTrue(np.all(j==aj))
             pass
 
 

@@ -6,6 +6,7 @@
 
 import sys
 import petsc4py
+
 # Initialize PETSc with command-line arguments
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
@@ -14,17 +15,22 @@ from petsc4py import PETSc
 rank = PETSc.COMM_WORLD.getRank()
 # Ensure that the script is run with exactly 4 processes
 if PETSc.COMM_WORLD.getSize() != 4:
-  if rank == 0:
-    print("This example requires 4 processes")
-  quit()
+    PETSc.Sys.Print('This example requires 4 processes')
+    sys.exit()
 
 # Load directory for input data
-load_dir = PETSc.Options().getString("load_dir", "${DATAFILESPATH}/matrices/hpddm/GENEO")
+load_dir = PETSc.Options().getString(
+    'load_dir', '${DATAFILESPATH}/matrices/hpddm/GENEO'
+)
 
 # Load an index set (IS) from binary file
-sizes = PETSc.IS().load(PETSc.Viewer().createBinary(f"{load_dir}/sizes_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
+sizes = PETSc.IS().load(
+    PETSc.Viewer().createBinary(
+        f'{load_dir}/sizes_{rank}_4.dat', 'r', comm=PETSc.COMM_SELF
+    )
+)
 # Get indices from the loaded IS
-idx   = sizes.getIndices()
+idx = sizes.getIndices()
 
 # Create a PETSc matrix object
 A = PETSc.Mat().create()
@@ -33,14 +39,22 @@ A.setSizes([[idx[0], idx[2]], [idx[1], idx[3]]])
 # Configure matrix using runtime options
 A.setFromOptions()
 # Load matrix A from binary file
-A = A.load(PETSc.Viewer().createBinary(f"{load_dir}/A.dat", "r", comm = PETSc.COMM_WORLD))
+A = A.load(PETSc.Viewer().createBinary(f'{load_dir}/A.dat', 'r', comm=PETSc.COMM_WORLD))
 
 # Load an index set (IS) from binary file
-aux_IS  = PETSc.IS().load(PETSc.Viewer().createBinary(f"{load_dir}/is_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
+aux_IS = PETSc.IS().load(
+    PETSc.Viewer().createBinary(
+        f'{load_dir}/is_{rank}_4.dat', 'r', comm=PETSc.COMM_SELF
+    )
+)
 # Set the block size of the index set
 aux_IS.setBlockSize(A.getBlockSize())
 # Load the Neumann matrix of the current process
-aux_Mat = PETSc.Mat().load(PETSc.Viewer().createBinary(f"{load_dir}/Neumann_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
+aux_Mat = PETSc.Mat().load(
+    PETSc.Viewer().createBinary(
+        f'{load_dir}/Neumann_{rank}_4.dat', 'r', comm=PETSc.COMM_SELF
+    )
+)
 
 # Create and configure the linear solver (KSP) and preconditioner (PC)
 ksp = PETSc.KSP(PETSc.COMM_WORLD).create()
@@ -63,5 +77,4 @@ ksp.solve(b, x)
 
 # Output grid and operator complexities on rank 0
 gc, oc = pc.getHPDDMComplexities()
-if rank == 0:
-  print("grid complexity = ", gc, ", operator complexity = ", oc, sep = "")
+PETSc.Sys.Print('grid complexity = ', gc, ', operator complexity = ', oc, sep='')

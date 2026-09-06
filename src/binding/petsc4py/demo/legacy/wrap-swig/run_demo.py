@@ -1,11 +1,13 @@
-import sys, petsc4py
+import sys
+import petsc4py
+
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
-import Bratu3D as Bratu3D
+import Bratu3D
 
-class App(object):
 
+class App:
     def __init__(self, da, lambda_):
         assert da.getDim() == 3
         self.da = da
@@ -13,17 +15,18 @@ class App(object):
         self.params.lambda_ = lambda_
 
     def formInitGuess(self, X):
-        X.zeroEntries() # just in case
+        X.zeroEntries()  # just in case
         Bratu3D.FormInitGuess(self.da, X, self.params)
 
     def formFunction(self, snes, X, F):
-        F.zeroEntries() # just in case
+        F.zeroEntries()  # just in case
         Bratu3D.FormFunction(self.da, X, F, self.params)
 
     def formJacobian(self, snes, X, J, P):
-        P.zeroEntries() # just in case
+        P.zeroEntries()  # just in case
         Bratu3D.FormJacobian(self.da, X, P, self.params)
-        if J != P: J.assemble() # matrix-free operator
+        if J != P:
+            J.assemble()  # matrix-free operator
         return PETSc.Mat.Structure.SAME_NONZERO_PATTERN
 
 
@@ -59,10 +62,11 @@ def plot(da, U):
     if rank == 0:
         solution = U0[...].reshape(da.sizes, order='f').copy()
         try:
-            from matplotlib import pyplot
-            pyplot.contourf(solution[:, :, N//2])
-            pyplot.axis('equal')
-            pyplot.show()
+            from matplotlib import pyplot as plt
+
+            plt.contourf(solution[:, :, N // 2])
+            plt.axis('equal')
+            plt.show()
         except:
             pass
     PETSc.COMM_WORLD.barrier()
@@ -70,7 +74,8 @@ def plot(da, U):
     U0.destroy()
 
 
-if do_plot: plot(da, U)
+if do_plot:
+    plot(da, U)
 
 
 U.destroy()

@@ -17,54 +17,57 @@
 #
 # ------------------------------------------------------------------------
 
-try: range = xrange
-except: pass
+import sys
+import petsc4py
 
-import sys, petsc4py
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
 
-class Poisson2D(object):
 
+class Poisson2D:
     def __init__(self, da):
         assert da.getDim() == 2
         self.da = da
-        self.localX  = da.createLocalVec()
+        self.localX = da.createLocalVec()
 
     def formRHS(self, B):
         b = self.da.getVecArray(B)
         mx, my = self.da.getSizes()
-        hx, hy = [1.0/m for m in [mx, my]]
+        hx, hy = [1.0 / m for m in [mx, my]]
         (xs, xe), (ys, ye) = self.da.getRanges()
         for j in range(ys, ye):
             for i in range(xs, xe):
-                b[i, j] = 1*hx*hy
+                b[i, j] = 1 * hx * hy
 
     def mult(self, mat, X, Y):
-        #
         self.da.globalToLocal(X, self.localX)
         x = self.da.getVecArray(self.localX)
         y = self.da.getVecArray(Y)
-        #
+
         mx, my = self.da.getSizes()
-        hx, hy = [1.0/m for m in [mx, my]]
+        hx, hy = [1.0 / m for m in [mx, my]]
         (xs, xe), (ys, ye) = self.da.getRanges()
         for j in range(ys, ye):
             for i in range(xs, xe):
-                u = x[i, j] # center
+                u = x[i, j]  # center
                 u_e = u_w = u_n = u_s = 0
-                if i > 0:    u_w = x[i-1, j] # west
-                if i < mx-1: u_e = x[i+1, j] # east
-                if j > 0:    u_s = x[i, j-1] # south
-                if j < ny-1: u_n = x[i, j+1] # north
-                u_xx = (-u_e + 2*u - u_w)*hy/hx
-                u_yy = (-u_n + 2*u - u_s)*hx/hy
+                if i > 0:
+                    u_w = x[i - 1, j]  # west
+                if i < mx - 1:
+                    u_e = x[i + 1, j]  # east
+                if j > 0:
+                    u_s = x[i, j - 1]  # south
+                if j < ny - 1:
+                    u_n = x[i, j + 1]  # north
+                u_xx = (-u_e + 2 * u - u_w) * hy / hx
+                u_yy = (-u_n + 2 * u - u_s) * hx / hy
                 y[i, j] = u_xx + u_yy
+
 
 OptDB = PETSc.Options()
 
-n  = OptDB.getInt('n', 16)
+n = OptDB.getInt('n', 16)
 nx = OptDB.getInt('nx', n)
 ny = OptDB.getInt('ny', n)
 
@@ -76,8 +79,7 @@ pde = Poisson2D(da)
 x = da.createGlobalVec()
 b = da.createGlobalVec()
 # A = da.createMat('python')
-A = PETSc.Mat().createPython(
-    [x.getSizes(), b.getSizes()], comm=da.comm)
+A = PETSc.Mat().createPython([x.getSizes(), b.getSizes()], comm=da.comm)
 A.setPythonContext(pde)
 A.setUp()
 

@@ -6,44 +6,62 @@
 
 import sys
 import petsc4py
+
 # Initialize PETSc with command-line arguments
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
 
+
 # Function to load matrices and index sets from binary files
 def mat_and_is_load(prefix, identifier, A, aux_IS, aux_Mat, rank, size):
-# Load an index set (IS) from binary file
-  sizes = PETSc.IS().load(PETSc.Viewer().createBinary(f"{prefix}{identifier}_sizes_{rank}_{size}.dat", "r", comm = PETSc.COMM_SELF))
-# Get indices from the loaded IS
-  idx   = sizes.getIndices()
-# Set the local and global sizes of the matrix
-  A.setSizes([[idx[0], idx[2]], [idx[1], idx[3]]])
-# Configure matrix using runtime options
-  A.setFromOptions()
-# Load matrix A from binary file
-  A = A.load(PETSc.Viewer().createBinary(f"{prefix}{identifier}.dat", "r", comm = PETSc.COMM_WORLD))
+    # Load an index set (IS) from binary file
+    sizes = PETSc.IS().load(
+        PETSc.Viewer().createBinary(
+            f'{prefix}{identifier}_sizes_{rank}_{size}.dat', 'r', comm=PETSc.COMM_SELF
+        )
+    )
+    # Get indices from the loaded IS
+    idx = sizes.getIndices()
+    # Set the local and global sizes of the matrix
+    A.setSizes([[idx[0], idx[2]], [idx[1], idx[3]]])
+    # Configure matrix using runtime options
+    A.setFromOptions()
+    # Load matrix A from binary file
+    A = A.load(
+        PETSc.Viewer().createBinary(
+            f'{prefix}{identifier}.dat', 'r', comm=PETSc.COMM_WORLD
+        )
+    )
 
-# Load an index set (IS) from binary file
-  aux_IS.load(PETSc.Viewer().createBinary(f"{prefix}{identifier}_is_{rank}_{size}.dat", "r", comm = PETSc.COMM_SELF))
-# Load the Neumann matrix of the current process
-  aux_Mat.load(PETSc.Viewer().createBinary(f"{prefix}{identifier}_aux_{rank}_{size}.dat", "r", comm = PETSc.COMM_SELF))
+    # Load an index set (IS) from binary file
+    aux_IS.load(
+        PETSc.Viewer().createBinary(
+            f'{prefix}{identifier}_is_{rank}_{size}.dat', 'r', comm=PETSc.COMM_SELF
+        )
+    )
+    # Load the Neumann matrix of the current process
+    aux_Mat.load(
+        PETSc.Viewer().createBinary(
+            f'{prefix}{identifier}_aux_{rank}_{size}.dat', 'r', comm=PETSc.COMM_SELF
+        )
+    )
+
 
 # Get the size of the communicator
 size = PETSc.COMM_WORLD.getSize()
 # Get the rank of the current process
 rank = PETSc.COMM_WORLD.getRank()
 if size != 4:
-  if rank == 0:
-    print("This example requires 4 processes")
-  quit()
+    PETSc.Sys.Print('This example requires 4 processes')
+    sys.exit()
 
 # Problem type (either 'elasticity' or 'stokes')
-system_str = PETSc.Options().getString("system", "elasticity")
-id_sys = 0 if system_str == "elasticity" else 1
+system_str = PETSc.Options().getString('system', 'elasticity')
+id_sys = 0 if system_str == 'elasticity' else 1
 empty_A11 = False
 # Lower-left (1,1) block is never zero when problem type is 'elasticity'
 if id_sys == 1:
-  empty_A11 = PETSc.Options().getBool("empty_A11", False)
+    empty_A11 = PETSc.Options().getBool('empty_A11', False)
 
 # 2-by-2 block structure
 A = [None, None, None, None]
@@ -52,26 +70,28 @@ aux_Mat = [None, None]
 aux_IS = [None, None]
 
 # Create placeholder objects for the diagonal blocks
-A[0] = PETSc.Mat().create(comm = PETSc.COMM_WORLD)
+A[0] = PETSc.Mat().create(comm=PETSc.COMM_WORLD)
 A[0].setFromOptions()
-aux_IS[0] = PETSc.IS().create(comm = PETSc.COMM_SELF)
-aux_Mat[0] = PETSc.Mat().create(comm = PETSc.COMM_SELF)
-A[3] = PETSc.Mat().create(comm = PETSc.COMM_WORLD)
+aux_IS[0] = PETSc.IS().create(comm=PETSc.COMM_SELF)
+aux_Mat[0] = PETSc.Mat().create(comm=PETSc.COMM_SELF)
+A[3] = PETSc.Mat().create(comm=PETSc.COMM_WORLD)
 A[3].setFromOptions()
-aux_IS[1] = PETSc.IS().create(comm = PETSc.COMM_SELF)
-aux_Mat[1] = PETSc.Mat().create(comm = PETSc.COMM_SELF)
+aux_IS[1] = PETSc.IS().create(comm=PETSc.COMM_SELF)
+aux_Mat[1] = PETSc.Mat().create(comm=PETSc.COMM_SELF)
 
 # Load directory for input data
-load_dir = PETSc.Options().getString("load_dir", "${DATAFILESPATH}/matrices/hpddm/GENEO")
+load_dir = PETSc.Options().getString(
+    'load_dir', '${DATAFILESPATH}/matrices/hpddm/GENEO'
+)
 # Specific prefix for each problem
-prefix = f"{load_dir}/{ 'B' if id_sys == 1 else 'A' }"
+prefix = f'{load_dir}/{"B" if id_sys == 1 else "A"}'
 
 # Diagonal blocks and auxiliary data for PCHPDDM
-mat_and_is_load(prefix, "00", A[0], aux_IS[0], aux_Mat[0], rank, size)
-mat_and_is_load(prefix, "11", A[3], aux_IS[1], aux_Mat[1], rank, size)
+mat_and_is_load(prefix, '00', A[0], aux_IS[0], aux_Mat[0], rank, size)
+mat_and_is_load(prefix, '11', A[3], aux_IS[1], aux_Mat[1], rank, size)
 
 # Coherent off-diagonal (0,1) block
-A[2] = PETSc.Mat().create(comm = PETSc.COMM_WORLD)
+A[2] = PETSc.Mat().create(comm=PETSc.COMM_WORLD)
 n, _ = A[0].getLocalSize()
 N, _ = A[0].getSize()
 m, _ = A[3].getLocalSize()
@@ -79,14 +99,18 @@ M, _ = A[3].getSize()
 # Set matrix sizes based on the sizes of (0,0) and (1,1) blocks
 A[2].setSizes([[m, M], [n, N]])
 A[2].setFromOptions()
-A[2].load(PETSc.Viewer().createBinary(f"{load_dir}/{ 'B' if id_sys == 1 else 'A' }10.dat", "r", comm = PETSc.COMM_WORLD))
+A[2].load(
+    PETSc.Viewer().createBinary(
+        f'{load_dir}/{"B" if id_sys == 1 else "A"}10.dat', 'r', comm=PETSc.COMM_WORLD
+    )
+)
 # Create a matrix that behaves likes A[1]' without explicitly assembling it
 A[1] = PETSc.Mat().createTranspose(A[2])
 
 # Global MatNest
 S = PETSc.Mat().createNest([[A[0], A[1]], [A[2], A[3] if not empty_A11 else None]])
 
-ksp = PETSc.KSP().create(comm = PETSc.COMM_WORLD)
+ksp = PETSc.KSP().create(comm=PETSc.COMM_WORLD)
 ksp.setOperators(S)
 pc = ksp.getPC()
 
@@ -117,13 +141,17 @@ pc1 = ksp1.getPC()
 # Use HPDDM as the preconditioner
 pc1.setType(PETSc.PC.Type.HPDDM)
 if not empty_A11:
-# Set the index set (local-to-global numbering) and auxiliary matrix (second diagonal block)
-# If there is no block (-empty_A11), then these are computed automatically by HPDDM
-  pc1.setHPDDMAuxiliaryMat(aux_IS[1], aux_Mat[1])
+    # Set the index set (local-to-global numbering) and auxiliary matrix (second diagonal block)
+    # If there is no block (-empty_A11), then these are computed automatically by HPDDM
+    pc1.setHPDDMAuxiliaryMat(aux_IS[1], aux_Mat[1])
 pc1.setFromOptions()
 
 # Create RHS (b) and solution (x) vectors, load b from file, and solve the system
 b, x = S.createVecs()
-b.load(PETSc.Viewer().createBinary(f"{load_dir}/rhs_{ 'B' if id_sys == 1 else 'A' }.dat", "r", comm = PETSc.COMM_WORLD))
+b.load(
+    PETSc.Viewer().createBinary(
+        f'{load_dir}/rhs_{"B" if id_sys == 1 else "A"}.dat', 'r', comm=PETSc.COMM_WORLD
+    )
+)
 ksp.setFromOptions()
 ksp.solve(b, x)

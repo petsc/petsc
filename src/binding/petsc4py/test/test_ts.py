@@ -5,11 +5,6 @@ from petsc4py import PETSc
 
 
 class MyODE:
-    """
-    du/dt + u**2 = 0;
-    u0,u1,u2 = 1,2,3
-    """
-
     def __init__(self):
         self.rhsfunction_calls = 0
         self.rhsjacobian_calls = 0

@@ -13,10 +13,7 @@ from Cython.Compiler.Main import main as cython_main  # noqa: E402
 
 def cythonize(args=None):
     """Run `cython --3str --cleanup 3 <args>...`."""
-    if args is None:
-        argv = sys.argv[:]
-    else:
-        argv = [os.path.abspath(__file__)] + list(args)
+    argv = sys.argv[:] if args is None else [os.path.abspath(__file__)] + list(args)
 
     if '--cleanup' not in argv:
         argv[1:1] = ['--cleanup', '3']

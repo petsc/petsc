@@ -39,33 +39,33 @@ class BaseTestKSP:
 
     def testProperties(self):
         ksp = self.ksp
-        #
+
         ksp.appctx = (1, 2, 3)
         self.assertEqual(ksp.appctx, (1, 2, 3))
         ksp.appctx = None
         self.assertEqual(ksp.appctx, None)
-        #
+
         side = ksp.pc_side
         ksp.pc_side = side
         self.assertEqual(ksp.pc_side, side)
-        #
+
         nt = ksp.norm_type
         ksp.norm_type = nt
         self.assertEqual(ksp.norm_type, nt)
-        #
+
         ksp.its = 1
         self.assertEqual(ksp.its, 1)
         ksp.its = 0
         self.assertEqual(ksp.its, 0)
-        #
+
         ksp.norm = 1
         self.assertEqual(ksp.norm, 1)
         ksp.norm = 0
         self.assertEqual(ksp.norm, 0)
-        #
+
         rh = ksp.history
         self.assertTrue(len(rh) == 0)
-        #
+
         reason = PETSc.KSP.ConvergedReason.CONVERGED_ITS
         ksp.reason = reason
         self.assertEqual(ksp.reason, reason)
@@ -146,6 +146,7 @@ class BaseTestKSP:
                 reshist[its] = {'r': rnorm, 'o': ksp.getCGObjectiveValue()}
             else:
                 reshist[its] = rnorm
+
         refcnt = getrefcount(monitor)
         self.ksp.setMonitor(monitor)
         self.assertEqual(getrefcount(monitor), refcnt + 1)
@@ -163,9 +164,7 @@ class BaseTestKSP:
 
     def testSetConvergenceTest(self):
         def converged(ksp, its, rnorm):
-            if its > 10:
-                return True
-            return False
+            return its > 10
 
         refcnt = getrefcount(converged)
         self.ksp.setConvergenceTest(converged)

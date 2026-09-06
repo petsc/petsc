@@ -1,32 +1,39 @@
-try: range = xrange
-except NameError: pass
+import sys
+import petsc4py
 
-import sys, petsc4py
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
 
-m, n  = 16, 32
+m, n = 16, 32
 
 A = PETSc.Mat().create(PETSc.COMM_WORLD)
-A.setSizes([m*n, m*n])
+A.setSizes([m * n, m * n])
 A.setFromOptions()
 A.setUp()
 Istart, Iend = A.getOwnershipRange()
-for I in range(Istart, Iend):
-    A[I,I] = 4
-    i = I//n
-    if i>0  : J = I-n; A[I,J] = -1
-    if i<m-1: J = I+n; A[I,J] = -1
-    j = I-i*n
-    if j>0  : J = I-1; A[I,J] = -1
-    if j<n-1: J = I+1; A[I,J] = -1
+for I in range(Istart, Iend):  # noqa: E741
+    A[I, I] = 4
+    i = I // n
+    if i > 0:
+        J = I - n
+        A[I, J] = -1
+    if i < m - 1:
+        J = I + n
+        A[I, J] = -1
+    j = I - i * n
+    if j > 0:
+        J = I - 1
+        A[I, J] = -1
+    if j < n - 1:
+        J = I + 1
+        A[I, J] = -1
 A.assemblyBegin()
 A.assemblyEnd()
 
 x, y = A.createVecs()
 x.set(1)
-A.mult(x,y)
+A.mult(x, y)
 
 # save
 viewer = PETSc.Viewer().createBinary('matrix-A.dat', 'w')

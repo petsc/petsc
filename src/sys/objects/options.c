@@ -2475,8 +2475,9 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
   Level: beginner
 
   Notes:
-  TRUE, true, YES, yes, ON, on, nostring, and 1 all translate to `PETSC_TRUE`
-  FALSE, false, NO, no, OFF, off and 0 all translate to `PETSC_FALSE`
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_FALSE`
 
   If the option is given, but no value is provided, then `ivalue` and `set` are both given the value `PETSC_TRUE`. That is `-requested_bool`
   is equivalent to `-requested_bool true`
@@ -2528,9 +2529,11 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
   Level: beginner
 
   Notes:
-  TRUE, true, YES, yes, ON, on, nostring and 1 all translate to `PETSC_BOOL3_TRUE`
-  FALSE, false, NO, no, OFF, off and 0 all translate to `PETSC_BOOL3_FALSE`
-  UNKNOWN, unknown, AUTO and auto all translate to `PETSC_BOOL3_UNKNOWN`
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_BOOL3_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_BOOL3_FALSE`
+
+  The option values UNKNOWN and AUTO (case-insensitive) all translate to `PETSC_BOOL3_UNKNOWN`
 
   If the option is given, but no value is provided, then `ivalue` will be set to `PETSC_BOOL3_TRUE` and `set` will be set to `PETSC_TRUE`. That is `-requested_bool3`
   is equivalent to `-requested_bool3 true`
@@ -2974,8 +2977,10 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options, const char pre[], con
 
   Level: beginner
 
-  Note:
-  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`. FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+  Notes:
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_FALSE`
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsHasName()`,
           `PetscOptionsGetString()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,

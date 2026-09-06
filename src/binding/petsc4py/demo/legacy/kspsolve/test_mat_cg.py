@@ -1,12 +1,18 @@
 try:
     execfile
 except NameError:
-    def execfile(file, globals=globals(), locals=locals()):
-        fh = open(file, "r")
-        try: exec(fh.read()+"\n", globals, locals)
-        finally: fh.close()
 
-import petsc4py, sys
+    def execfile(file, globals=globals(), locals=locals()):
+        fh = open(file)
+        try:
+            exec(fh.read() + '\n', globals, locals)
+        finally:
+            fh.close()
+
+
+import petsc4py
+import sys
+
 petsc4py.init(sys.argv)
 
 from petsc4py import PETSc
@@ -27,18 +33,18 @@ ksp.rtol = 1e-5
 ksp.atol = 0
 x.set(0)
 b.set(1)
-ksp.solve(b,x)
-print("iterations: %d residual norm: %g" % (ksp.its, ksp.norm)) 
+ksp.solve(b, x)
+PETSc.Sys.Print('iterations: %d residual norm: %g' % (ksp.its, ksp.norm))
 
 x.set(0)
 b.set(1)
-its, norm = cg(A,b,x,100,1e-5)
-print("iterations: %d residual norm: %g" % (its, norm)) 
+its, norm = cg(A, b, x, 100, 1e-5)
+PETSc.Sys.Print('iterations: %d residual norm: %g' % (its, norm))
 
 OptDB = PETSc.Options()
 
 if OptDB.getBool('plot', True):
-    da = PETSc.DMDA().create([m,n])
+    da = PETSc.DMDA().create([m, n])
     u = da.createGlobalVec()
     x.copy(u)
     draw = PETSc.Viewer.DRAW()
@@ -49,14 +55,15 @@ if OptDB.getBool('plot_mpl', False):
     try:
         from matplotlib import pylab
     except ImportError:
-        print("matplotlib not available")
+        PETSc.Sys.Print('matplotlib not available')
     else:
         from numpy import mgrid
-        X, Y =  mgrid[0:1:1j*m,0:1:1j*n]
-        Z = x[...].reshape(m,n)
+
+        X, Y = mgrid[0 : 1 : 1j * m, 0 : 1 : 1j * n]
+        Z = x[...].reshape(m, n)
         pylab.figure()
-        pylab.contourf(X,Y,Z)
-        pylab.plot(X.ravel(),Y.ravel(),'.k')
+        pylab.contourf(X, Y, Z)
+        pylab.plot(X.ravel(), Y.ravel(), '.k')
         pylab.axis('equal')
         pylab.colorbar()
         pylab.show()

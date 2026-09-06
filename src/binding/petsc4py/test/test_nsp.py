@@ -5,10 +5,7 @@ from petsc4py import PETSc
 
 
 def allclose(seq1, seq2):
-    for v1, v2 in zip(seq1, seq2):
-        if abs(v1 - v2) > 1e-5:
-            return False
-    return True
+    return all(abs(v1 - v2) <= 1e-05 for v1, v2 in zip(seq1, seq2))
 
 
 class TestNullSpace(unittest.TestCase):
@@ -68,7 +65,7 @@ class TestNullSpace(unittest.TestCase):
         self.nullsp.setFunction(rem)
         dct = self.nullsp.getDict()
         self.assertTrue(dct is not None)
-        fun, a, kw = dct['__function__']
+        fun, _a, _kw = dct['__function__']
         self.assertTrue(fun is rem)
         self.nullsp.setFunction(None)
         fun = dct.get('__function__')

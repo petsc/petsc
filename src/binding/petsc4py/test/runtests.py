@@ -4,6 +4,7 @@ import os
 import sys
 import optparse
 import unittest
+import time
 
 __unittest = True
 
@@ -110,6 +111,15 @@ def getoptionparser():
         default=True,
         help='Do not use PETSc memory debugging',
     )
+    parser.add_option(
+        '-t',
+        '--timings',
+        type='int',
+        dest='timings',
+        default=0,
+        help='report the TIMINGS slowest tests',
+    )
+
     return parser
 
 
@@ -148,17 +158,14 @@ def getlibraryinfo(name):
     module = __import__(modname, fromlist=[name])
     (major, minor, micro), devel = module.Sys.getVersion(devel=True)
     r = not devel
-    if r:
-        release = 'release'
-    else:
-        release = 'development'
+    release = 'release' if r else 'development'
     arch = module.__arch__
-    return "%s %d.%d.%d %s (conf: '%s')" % (name, major, minor, micro, release, arch)
+    return f"{name} {major}.{minor}.{micro} {release} (conf: '{arch}')"
 
 
 def getpythoninfo():
     x, y, z = sys.version_info[:3]
-    return 'Python %d.%d.%d (%s)' % (x, y, z, sys.executable)
+    return f'Python {x}.{y}.{z} ({sys.executable})'
 
 
 def getpackageinfo(pkg):
@@ -191,7 +198,7 @@ def setup_unittest(options):
         from unittest.runner import _WritelnDecorator
     except ImportError:
         from unittest import _WritelnDecorator
-    #
+
     writeln_orig = _WritelnDecorator.writeln
 
     def writeln(self, message=''):
@@ -221,7 +228,7 @@ def import_package(options, pkgname):
 
 def print_banner(options):
     r, n = getprocessorinfo()
-    prefix = '[%d@%s]' % (r, n)
+    prefix = f'[{r}@{n}]'
 
     def writeln(message='', endl='\n'):
         if message is None:
@@ -236,7 +243,7 @@ def print_banner(options):
         writeln(getpackageinfo('numpy'))
         for entry in components:
             writeln(getlibraryinfo(entry))
-            writeln(getpackageinfo('%s4py' % entry.lower()))
+            writeln(getpackageinfo(f'{entry.lower()}4py'))
 
 
 def load_tests(options, args):
@@ -252,8 +259,8 @@ def load_tests(options, args):
     testsuite = unittest.TestSuite()
     testloader = unittest.TestLoader()
     if options.patterns:
-        testloader.testNamePatterns = [ # novermin
-            ('*%s*' % p) if ('*' not in p) else p for p in options.patterns
+        testloader.testNamePatterns = [  # novermin
+            (f'*{p}*') if ('*' not in p) else p for p in options.patterns
         ]
     include = exclude = None
     if options.include:
@@ -278,11 +285,47 @@ def load_tests(options, args):
     return testsuite
 
 
+class PETScTestResult(unittest.TextTestResult):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timings = []
+        self.names = []
+
+    def startTest(self, test):
+        self._tic = time.perf_counter()
+        super().startTest(test)
+
+    def addSuccess(self, test):
+        elapsed = time.perf_counter() - self._tic
+        self.timings.append(elapsed)
+        self.names.append(self.getDescription(test))
+        super().addSuccess(test)
+
+    def getTimings(self):
+        return self.names, self.timings
+
+
 def run_tests(options, testsuite, runner=None):
     if runner is None:
-        runner = unittest.TextTestRunner(verbosity=options.verbose)
+        resultclass = (
+            PETScTestResult if options.timings > 0 else unittest.TextTestResult
+        )
+        runner = unittest.TextTestRunner(
+            verbosity=options.verbose, resultclass=resultclass
+        )
         runner.failfast = options.failfast
     result = runner.run(testsuite)
+    if hasattr(result, 'getTimings') and options.timings > 0:
+        from petsc4py.PETSc import Sys
+        import numpy as np
+
+        Sys.Print(f'\n{options.timings} slowest tests\n')
+        names, timings = result.getTimings()
+        sorti = np.argsort(timings)[::-1]
+        for i in range(min(options.timings, len(sorti))):
+            n = names[sorti[i]]
+            t = timings[sorti[i]]
+            Sys.Print(n, t)
     return result.wasSuccessful()
 
 
@@ -295,7 +338,7 @@ def shutdown(success):
 
 
 def main(args=None):
-    pkgname = '%s4py' % components[-1].lower()
+    pkgname = f'{components[-1].lower()}4py'
     parser = getoptionparser()
     (options, args) = parser.parse_args(args)
     setup_python(options)

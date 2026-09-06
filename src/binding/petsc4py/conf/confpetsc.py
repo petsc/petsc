@@ -8,6 +8,8 @@ import sys
 import glob
 import copy
 import warnings
+from os.path import join, isdir, exists
+
 from distutils import log
 from distutils import sysconfig
 from distutils.util import execute
@@ -87,13 +89,12 @@ def cython_req():
 
 
 def cython_chk(VERSION, verbose=True):
-    #
     def warn(message):
         if not verbose:
             return
         ruler, ws, nl = '*' * 80, ' ', '\n'
         pyexe = sys.executable
-        advise = '$ %s -m pip install --upgrade cython' % pyexe
+        advise = f'$ {pyexe} -m pip install --upgrade cython'
 
         def printer(*s):
             sys.stderr.write(' '.join(s) + '\n')
@@ -103,13 +104,12 @@ def cython_chk(VERSION, verbose=True):
         printer(ws, ws, advise, nl)
         printer(ruler)
 
-    #
     try:
         import Cython
     except ImportError:
         warn('You need Cython to generate C source files.')
         return False
-    #
+
     CYTHON_VERSION = Cython.__version__
     m = re.match(r'(\d+\.\d+(?:\.\d+)?).*', CYTHON_VERSION)
     if not m:
@@ -120,9 +120,9 @@ def cython_chk(VERSION, verbose=True):
     if PROVIDED < REQUIRED:
         warn(f'You need Cython >= {VERSION} (you have version {CYTHON_VERSION})')
         return False
-    #
+
     if verbose:
-        log.info('using Cython %s' % CYTHON_VERSION)
+        log.info(f'using Cython {CYTHON_VERSION}')
     return True
 
 
@@ -130,7 +130,7 @@ def cython_run(
     source,
     target=None,
     depends=(),
-    includes=(),
+    includes=(),  # noqa: ARG001
     workdir=None,
     force=False,
     VERSION='0.0',
@@ -149,11 +149,11 @@ def cython_run(
             return
     finally:
         os.chdir(cwd)
-    require = 'Cython >= %s' % VERSION
+    require = f'Cython >= {VERSION}'
     if setuptools and not cython_chk(VERSION, verbose=False):
         if sys.modules.get('Cython'):
             removed = getattr(sys.modules['Cython'], '__version__', '')
-            log.info('removing Cython %s from sys.modules' % removed)
+            log.info(f'removing Cython {removed} from sys.modules')
             pkgname = re.compile(r'cython(\.|$)', re.IGNORECASE)
             for modname in list(sys.modules.keys()):
                 if pkgname.match(modname):
@@ -164,13 +164,14 @@ def cython_run(
                 if hasattr(setuptools, 'SetuptoolsDeprecationWarning'):
                     category = setuptools.SetuptoolsDeprecationWarning
                     warnings.simplefilter('ignore', category)
-                log.info("fetching build requirement '%s'" % require)
+                log.info(f"fetching build requirement '{require}'")
                 install_setup_requires({'setup_requires': [require]})
         except Exception:
-            log.info("failed to fetch build requirement '%s'" % require)
+            log.info(f"failed to fetch build requirement '{require}'")
     if not cython_chk(VERSION):
-        raise DistutilsError("unsatisfied build requirement '%s'" % require)
-    #
+        msg = f"unsatisfied build requirement '{require}'"
+        raise DistutilsError(msg)
+
     log.info("cythonizing '%s' -> '%s'", source, target)
     from cythonize import cythonize
 
@@ -182,13 +183,14 @@ def cython_run(
         args += ['--output-file', target]
     err = cythonize(args)
     if err:
-        raise DistutilsError(f"Cython failure: '{source}' -> '{target}'")
+        msg = f"Cython failure: '{source}' -> '{target}'"
+        raise DistutilsError(msg)
 
 
 # --------------------------------------------------------------------
 
 
-def fix_config_vars(names, values):
+def fix_config_vars(_names, values):
     values = list(values)
     if 'CONDA_BUILD' in os.environ:
         return values
@@ -226,9 +228,11 @@ class PetscConfig:
             dest_dir = os.environ.get('DESTDIR')
         self.configdict = {}
         if not petsc_dir:
-            raise DistutilsError('PETSc not found')
+            msg = 'PETSc not found'
+            raise DistutilsError(msg)
         if not os.path.isdir(petsc_dir):
-            raise DistutilsError('invalid PETSC_DIR: %s' % petsc_dir)
+            msg = f'invalid PETSC_DIR: {petsc_dir}'
+            raise DistutilsError(msg)
         self.version = self._get_petsc_version(petsc_dir)
         self.configdict = self._get_petsc_config(petsc_dir, petsc_arch)
         self.PETSC_DIR = self['PETSC_DIR']
@@ -249,8 +253,6 @@ class PetscConfig:
             self.configure_compiler(compiler)
 
     def _get_petsc_version(self, petsc_dir):
-        import re
-
         version_re = {
             'major': re.compile(r'#define\s+PETSC_VERSION_MAJOR\s+(\d+)'),
             'minor': re.compile(r'#define\s+PETSC_VERSION_MINOR\s+(\d+)'),
@@ -258,7 +260,7 @@ class PetscConfig:
             'release': re.compile(r'#define\s+PETSC_VERSION_RELEASE\s+(-*\d+)'),
         }
         petscversion_h = os.path.join(petsc_dir, 'include', 'petscversion.h')
-        with open(petscversion_h, 'rt') as f:
+        with open(petscversion_h) as f:
             data = f.read()
         major = int(version_re['major'].search(data).groups()[0])
         minor = int(version_re['minor'].search(data).groups()[0])
@@ -267,30 +269,29 @@ class PetscConfig:
         return (major, minor, micro), (release == 1)
 
     def _get_petsc_config(self, petsc_dir, petsc_arch):
-        from os.path import join, isdir, exists
-
         PETSC_DIR = petsc_dir
         PETSC_ARCH = petsc_arch
-        #
+
         confdir = join('lib', 'petsc', 'conf')
         if not (PETSC_ARCH and isdir(join(PETSC_DIR, PETSC_ARCH))):
             petscvars = join(PETSC_DIR, confdir, 'petscvariables')
-            PETSC_ARCH = makefile(open(petscvars, 'rt')).get('PETSC_ARCH')
+            with open(petscvars) as f:
+                PETSC_ARCH = makefile(f).get('PETSC_ARCH')
         if not (PETSC_ARCH and isdir(join(PETSC_DIR, PETSC_ARCH))):
             PETSC_ARCH = ''
-        #
+
         variables = join(PETSC_DIR, confdir, 'variables')
         if not exists(variables):
             variables = join(PETSC_DIR, PETSC_ARCH, confdir, 'variables')
         petscvariables = join(PETSC_DIR, PETSC_ARCH, confdir, 'petscvariables')
-        #
+
         with open(variables) as f:
             contents = f.read()
         with open(petscvariables) as f:
             contents += f.read()
-        #
-        confstr = 'PETSC_DIR  = %s\n' % PETSC_DIR
-        confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
+
+        confstr = f'PETSC_DIR  = {PETSC_DIR}\n'
+        confstr += f'PETSC_ARCH = {PETSC_ARCH}\n'
         confstr += contents
         return makefile(StringIO(confstr))
 
@@ -352,11 +353,12 @@ class PetscConfig:
         ldshared = [
             flg
             for flg in split_quoted(ldshared)
-            if flg not in ldcmd and (flg.find('/lib/spack/env') < 0) and (flg.find('/libexec/spack/') < 0)
+            if flg not in ldcmd
+            and (flg.find('/lib/spack/env') < 0)
+            and (flg.find('/libexec/spack/') < 0)
         ]
         ldshared = str.join(' ', ldshared)
 
-        #
         def get_flags(cmd):
             if not cmd:
                 return ''
@@ -389,7 +391,7 @@ class PetscConfig:
         PLD_FLAGS = PLD_FLAGS.replace('-fvisibility=hidden', '')
         PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
         PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))
-        #
+
         compiler.set_executables(
             compiler=PCC,
             compiler_cxx=PCXX,
@@ -405,21 +407,21 @@ class PetscConfig:
         version = '.'.join([str(i) for i in self.version[0]])
         release = ('development', 'release')[self.version[1]]
         version_info = version + ' ' + release
-        integer_size = '%s-bit' % self['PETSC_INDEX_SIZE']
+        integer_size = '{}-bit'.format(self['PETSC_INDEX_SIZE'])
         scalar_type = self['PETSC_SCALAR']
         precision = self['PETSC_PRECISION']
         language = self['PETSC_LANGUAGE']
         compiler = self['PCC']
         linker = self['PCC_LINKER']
-        log.info('PETSC_DIR:    %s' % PETSC_DIR)
-        log.info('PETSC_ARCH:   %s' % PETSC_ARCH)
-        log.info('version:      %s' % version_info)
-        log.info('integer-size: %s' % integer_size)
-        log.info('scalar-type:  %s' % scalar_type)
-        log.info('precision:    %s' % precision)
-        log.info('language:     %s' % language)
-        log.info('compiler:     %s' % compiler)
-        log.info('linker:       %s' % linker)
+        log.info(f'PETSC_DIR:    {PETSC_DIR}')
+        log.info(f'PETSC_ARCH:   {PETSC_ARCH}')
+        log.info(f'version:      {version_info}')
+        log.info(f'integer-size: {integer_size}')
+        log.info(f'scalar-type:  {scalar_type}')
+        log.info(f'precision:    {precision}')
+        log.info(f'language:     {language}')
+        log.info(f'compiler:     {compiler}')
+        log.info(f'linker:       {linker}')
 
 
 # --------------------------------------------------------------------
@@ -457,7 +459,7 @@ class config(_config):
             return
         petsc_arch = config.get_petsc_arch(self.petsc_dir, self.petsc_arch)
         log.info('-' * 70)
-        log.info('PETSC_DIR:   %s' % self.petsc_dir)
+        log.info(f'PETSC_DIR:   {self.petsc_dir}')
         arch_list = petsc_arch
         if not arch_list:
             arch_list = [None]
@@ -470,12 +472,12 @@ class config(_config):
             compiler = conf['PCC']
             linker = conf['PCC_LINKER']
             log.info('-' * 70)
-            log.info('PETSC_ARCH:  %s' % archname)
-            log.info(' * scalar-type: %s' % scalar_type)
-            log.info(' * precision:   %s' % precision)
-            log.info(' * language:    %s' % language)
-            log.info(' * compiler:    %s' % compiler)
-            log.info(' * linker:      %s' % linker)
+            log.info(f'PETSC_ARCH:  {archname}')
+            log.info(f' * scalar-type: {scalar_type}')
+            log.info(f' * precision:   {precision}')
+            log.info(f' * language:    {language}')
+            log.info(f' * compiler:    {compiler}')
+            log.info(f' * linker:      {linker}')
         log.info('-' * 70)
 
     # @staticmethod
@@ -500,7 +502,7 @@ class config(_config):
     # @staticmethod
     def chk_petsc_dir(petsc_dir):
         if not os.path.isdir(petsc_dir):
-            log.error('invalid PETSC_DIR: %s (ignored)' % petsc_dir)
+            log.error(f'invalid PETSC_DIR: {petsc_dir} (ignored)')
             return None
         return petsc_dir
 
@@ -517,8 +519,9 @@ class config(_config):
             if os.path.isdir(petsc_conf):
                 petscvariables = os.path.join(petsc_conf, 'petscvariables')
                 if os.path.exists(petscvariables):
-                    conf = makefile(open(petscvariables, 'rt'))
-                    petsc_arch = conf.get('PETSC_ARCH', '')
+                    with open(petscvariables) as f:
+                        conf = makefile(f)
+                        petsc_arch = conf.get('PETSC_ARCH', '')
         petsc_arch = petsc_arch.split(os.pathsep)
         petsc_arch = unique(petsc_arch)
         petsc_arch = [arch for arch in petsc_arch if arch]
@@ -534,7 +537,7 @@ class config(_config):
             if os.path.isdir(arch_path):
                 valid_archs.append(arch)
             else:
-                log.warn('invalid PETSC_ARCH: %s (ignored)' % arch)
+                log.warn(f'invalid PETSC_ARCH: {arch} (ignored)')
         return valid_archs
 
     chk_petsc_arch = staticmethod(chk_petsc_arch)
@@ -671,28 +674,28 @@ class build_ext(_build_ext):
 
     def build_stubs(self):
         pkgname = self.distribution.get_name()
-        modname = self.extensions[0].name.split(".")[-1]
+        modname = self.extensions[0].name.split('.')[-1]
         srcdir = Path(__file__).parent.parent / 'src' / pkgname
         blddir = Path(self.build_lib) / pkgname
 
         alldeps = glob.glob(str(blddir / 'lib' / '*' / f'{modname}.*'))
-        target =  srcdir / f'{modname}.pyi'
+        target = srcdir / f'{modname}.pyi'
         if not (self.force or modified.newer_group(alldeps, target)):
             log.debug(f"skipping '{modname}.*.so' -> '{target}' (up-to-date)")
             return
 
         env = os.environ.copy()
-        python_path = env.get('PYTHONPATH', "")
-        if python_path != "":
-            python_path += ":"
+        python_path = env.get('PYTHONPATH', '')
+        if python_path != '':
+            python_path += ':'
         python_path += self.build_lib
         env['PYTHONPATH'] = python_path
         env.pop('PETSC_ARCH', None)
 
         stubgen = Path(__file__).parent / 'stubgen.py'
-        rc = subprocess.call([sys.executable, stubgen], env=env) # noqa S603
+        rc = subprocess.call([sys.executable, stubgen], env=env)  # noqa: S603
         if rc != 0:
-            log.warn("Stubs could not be generated.")
+            log.warn('Stubs could not be generated.')
             return
 
         self.copy_file(
@@ -709,39 +712,29 @@ class build_ext(_build_ext):
         self.build_configuration(self.PETSC_ARCH_LIST)
 
     def build_configuration(self, arch_list):
-        #
         template, variables = self.get_config_data(arch_list)
         config_data = template % variables
-        #
+
         build_lib = self.build_lib
         dist_name = self.distribution.get_name()
         config_file = os.path.join(
             build_lib, dist_name, 'lib', dist_name.replace('4py', '') + '.cfg'
         )
 
-        #
-        def write_file(filename, data):
+        def write_file(filename, config_data):
             with open(filename, 'w') as fh:
                 fh.write(config_data)
 
         execute(
             write_file,
             (config_file, config_data),
-            msg='writing %s' % config_file,
+            msg=f'writing {config_file}',
             verbose=self.verbose,
         )
 
     def get_config_data(self, arch_list):
         DESTDIR = self.DESTDIR
-        template = (
-            '\n'.join(
-                [
-                    'PETSC_DIR  = %(PETSC_DIR)s',
-                    'PETSC_ARCH = %(PETSC_ARCH)s',
-                ]
-            )
-            + '\n'
-        )
+        template = 'PETSC_DIR  = %(PETSC_DIR)s\nPETSC_ARCH = %(PETSC_ARCH)s\n'
         variables = {
             'PETSC_DIR': strip_prefix(DESTDIR, self.petsc_dir),
             'PETSC_ARCH': os.path.pathsep.join(arch_list),
@@ -787,8 +780,8 @@ class build_ext(_build_ext):
                 outputs.append(outfile)
 
         pkgname = self.distribution.get_name()
-        modname = self.extensions[0].name.split(".")[-1]
-        outputs.append(os.path.join(self.build_lib, pkgname, f"{modname}.pyi"))
+        modname = self.extensions[0].name.split('.')[-1]
+        outputs.append(os.path.join(self.build_lib, pkgname, f'{modname}.pyi'))
         return list(set(outputs))
 
     def get_source_files(self):
@@ -802,10 +795,9 @@ class build_ext(_build_ext):
 class install(_install):
     def initialize_options(self):
         with warnings.catch_warnings():
-            if setuptools:
-                if hasattr(setuptools, 'SetuptoolsDeprecationWarning'):
-                    category = setuptools.SetuptoolsDeprecationWarning
-                    warnings.simplefilter('ignore', category)
+            if setuptools and hasattr(setuptools, 'SetuptoolsDeprecationWarning'):
+                category = setuptools.SetuptoolsDeprecationWarning
+                warnings.simplefilter('ignore', category)
             _install.initialize_options(self)
         self.old_and_unmanageable = True
 
@@ -948,7 +940,7 @@ def flaglist(flags):
 
 
 def prepend_to_flags(path, flags):
-    """Prepend a path to compiler flags with absolute paths"""
+    """Prepend a path to compiler flags with absolute paths."""
     if not path:
         return flags
 

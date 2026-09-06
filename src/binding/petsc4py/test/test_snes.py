@@ -89,26 +89,26 @@ class BaseTestSNES:
 
     def testProperties(self):
         snes = self.snes
-        #
+
         snes.appctx = (1, 2, 3)
         self.assertEqual(snes.appctx, (1, 2, 3))
         snes.appctx = None
         self.assertEqual(snes.appctx, None)
-        #
+
         snes.its = 1
         self.assertEqual(snes.its, 1)
         snes.its = 0
         self.assertEqual(snes.its, 0)
-        #
+
         snes.norm = 1
         self.assertEqual(snes.norm, 1)
         snes.norm = 0
         self.assertEqual(snes.norm, 0)
-        #
+
         rh, ih = snes.history
         self.assertTrue(len(rh) == 0)
         self.assertTrue(len(ih) == 0)
-        #
+
         reason = PETSc.SNES.ConvergedReason.CONVERGED_ITS
         snes.reason = reason
         self.assertEqual(snes.reason, reason)
@@ -127,7 +127,7 @@ class BaseTestSNES:
         self.assertFalse(snes.is_converged)
         self.assertFalse(snes.is_diverged)
         self.assertTrue(snes.is_iterating)
-        #
+
         self.assertFalse(snes.use_ew)
         self.assertFalse(snes.use_mf)
         self.assertFalse(snes.use_fd)
@@ -270,9 +270,10 @@ class BaseTestSNES:
         self.snes.setJacobian(Jacobian(), J)
 
         def _update(snes, it, cnt):
-             cnt += 1
+            cnt += 1
+
         cnt_up = np.array(0)
-        self.snes.setUpdate(_update, (cnt_up,) )
+        self.snes.setUpdate(_update, (cnt_up,))
 
         x.setArray([2, 3])
         b.set(0)
@@ -460,14 +461,14 @@ class BaseTestSNES:
         npc.computeJacobian(x, J2)
         self.assertEqual(f1[0], f2[0])
         self.assertEqual(f1[1], f2[1])
-        self.assertEqual(J1[0,0], J2[0,0])
-        self.assertEqual(J1[0,1], J2[0,1])
-        self.assertEqual(J1[1,0], J2[1,0])
-        self.assertEqual(J1[1,1], J2[1,1])
+        self.assertEqual(J1[0, 0], J2[0, 0])
+        self.assertEqual(J1[0, 1], J2[0, 1])
+        self.assertEqual(J1[1, 0], J2[1, 0])
+        self.assertEqual(J1[1, 1], J2[1, 1])
 
     def testTRAPI(self):
-        newreg = (1,2,3)
-        newup = (1,2,3,4,5)
+        newreg = (1, 2, 3)
+        newup = (1, 2, 3, 4, 5)
         if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
             defreg = self.snes.getTRTolerances()
             defup = self.snes.getTRUpdateParameters()
@@ -481,11 +482,12 @@ class BaseTestSNES:
         if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
             self.assertEqual(newreg, self.snes.getTRTolerances())
             self.assertEqual(newup, self.snes.getTRUpdateParameters())
-        self.snes.setTRTolerances(*(PETSc.DETERMINE,)*3)
-        self.snes.setTRUpdateParameters(*(PETSc.DETERMINE,)*5)
+        self.snes.setTRTolerances(*(PETSc.DETERMINE,) * 3)
+        self.snes.setTRUpdateParameters(*(PETSc.DETERMINE,) * 5)
         if self.snes.getType() == PETSc.SNES.Type.NEWTONTR:
             self.assertEqual(defreg, self.snes.getTRTolerances())
             self.assertEqual(defup, self.snes.getTRUpdateParameters())
+
 
 # --------------------------------------------------------------------
 

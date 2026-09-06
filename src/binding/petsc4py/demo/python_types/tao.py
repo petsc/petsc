@@ -1,6 +1,7 @@
 # The user-defined Python class implementing the gradient descent.
 from petsc4py import PETSc
 
+
 class myGradientDescent:
     def create(self, tao):
         # Create a line search type with constant step size.
@@ -29,7 +30,7 @@ class myGradientDescent:
 
             # Apply line search:
             #   x += .2 search_direction
-            f, s, reason = self._ls.apply(x, gradient, search_direction)
+            f, _, reason = self._ls.apply(x, gradient, search_direction)
 
             if reason < 0:
                 raise RuntimeError('LS failed.')

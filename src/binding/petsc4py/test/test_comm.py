@@ -59,7 +59,7 @@ class TestComm(unittest.TestCase):
 
     def testCompatMPI4PY(self):
         try:
-            from mpi4py import MPI
+            from mpi4py import MPI  # noqa: PLC0415
         except ImportError:
             return
         # mpi4py -> petsc4py

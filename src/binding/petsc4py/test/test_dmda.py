@@ -74,20 +74,20 @@ class BaseTestDA:
 
     def testFieldName(self):
         for i in range(self.da.getDof()):
-            self.da.setFieldName(i, 'field%d' % i)
+            self.da.setFieldName(i, f'field{i}')
         for i in range(self.da.getDof()):
             name = self.da.getFieldName(i)
-            self.assertEqual(name, 'field%d' % i)
+            self.assertEqual(name, f'field{i}')
 
     def testCoordinates(self):
         self.da.setUniformCoordinates(0, 1, 0, 1, 0, 1)
-        #
+
         c = self.da.getCoordinates()
         self.da.setCoordinates(c)
         c.destroy()
         cda = self.da.getCoordinateDM()
         cda.destroy()
-        #
+
         c = self.da.getCoordinates()
         self.da.setCoordinates(c)
         c.destroy()
@@ -301,7 +301,7 @@ class BaseTestDA:
             for j in range(jstart, jend):
                 row = PETSc.Mat.Stencil()
                 row.index = (i, j)
-                zeroidx = zeroidx + [row]
+                zeroidx = [*zeroidx, row]
         diag2 = x.duplicate()
         diag2.set(1.0)
         A.zeroRowsColumnsStencil(zeroidx, 1.0, x, diag2)
@@ -324,9 +324,10 @@ class TestDMKSPCreateOperators(unittest.TestCase):
             mat.setValue(row, row, value)
         mat.assemble()
 
-    def _create_ksp(self, createops, args = None, kargs = None):
+    def _create_ksp(self, createops, args=None, kargs=None):
         cargs = ('a', 3)
         ckargs = {'c': 1}
+
         def computeops(ksp, A, P, a1, a2, c=0):
             self.assertTrue(a1 == 'a')
             self.assertTrue(a2 == 3)
@@ -346,6 +347,7 @@ class TestDMKSPCreateOperators(unittest.TestCase):
     def testCreateOperatorsReturnsPair(self):
         args = ('n', 2)
         kargs = {'b': 3}
+
         def createops(ksp, a1, a2, b=0, retlist=False):
             self.assertTrue(a1 == 'n')
             self.assertTrue(a2 == 2)
@@ -356,7 +358,7 @@ class TestDMKSPCreateOperators(unittest.TestCase):
                 return [A, P]
             return A, P
 
-        for retlist in [False,True]:
+        for retlist in [False, True]:
             tkargs = kargs.copy()
             tkargs.update({'retlist': retlist})
             ksp = self._create_ksp(createops, args=args, kargs=tkargs)
@@ -368,10 +370,10 @@ class TestDMKSPCreateOperators(unittest.TestCase):
             ksp.destroy()
 
     def testCreateOperatorsCanBeRemoved(self):
-        called = {"n": 0}
+        called = {'n': 0}
 
         def createops(ksp):
-            called["n"] += 1
+            called['n'] += 1
             A = self.da.createMat()
             P = self.da.createMat()
             return A, P
@@ -379,7 +381,7 @@ class TestDMKSPCreateOperators(unittest.TestCase):
         ksp = self._create_ksp(createops)
         self.da.setKSPCreateOperators(None)
         ksp.setUp()
-        self.assertEqual(called["n"], 0)
+        self.assertEqual(called['n'], 0)
         ksp.destroy()
 
     def testComputeOperatorsCanBeRemoved(self):
@@ -399,7 +401,7 @@ class TestDMKSPCreateOperators(unittest.TestCase):
             A = self.da.createMat()
             if rettuple:
                 if rettuple > 0:
-                   return A, None
+                    return A, None
                 return A, A
             return A
 
@@ -611,7 +613,7 @@ for dim in DIM:
                         da = PETSc.DMDA().create(**kargs)
                         da.destroy()
 
-                    setattr(TestDACreate, 'testCreate%04d' % counter, testCreate)
+                    setattr(TestDACreate, f'testCreate{counter:04d}', testCreate)
                     del testCreate, kargs
                     counter += 1
 del counter, dim, dof, boundary, stencil, width
@@ -685,7 +687,7 @@ for dim in DIM:
                         da.destroy()
 
                     setattr(
-                        TestDADuplicate, 'testDuplicate%04d' % counter, testDuplicate
+                        TestDADuplicate, f'testDuplicate{counter:04d}', testDuplicate
                     )
                     del testDuplicate, kargs
                     counter += 1

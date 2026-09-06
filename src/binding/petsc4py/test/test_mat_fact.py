@@ -103,7 +103,7 @@ class BaseTestMatFactorILU(BaseTestMatFactor):
 ##
 class BaseTestMatFactorChol(BaseTestMatFactor):
     def testFactorChol(self):
-        r, c = self.A.getOrdering('natural')
+        r, _c = self.A.getOrdering('natural')
         self.A.factorCholesky(r)
         x = self.x.duplicate()
         self.A.solve(self.b, x)
@@ -113,7 +113,7 @@ class BaseTestMatFactorChol(BaseTestMatFactor):
 
 class BaseTestMatFactorICC(BaseTestMatFactor):
     def testFactorICC(self):
-        r, c = self.A.getOrdering('natural')
+        r, _c = self.A.getOrdering('natural')
         self.A.factorICC(r)
         x = self.x.duplicate()
         self.A.solve(self.b, x)

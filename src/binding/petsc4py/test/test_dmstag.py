@@ -134,17 +134,17 @@ class BaseTestDMStag:
         dofs = self.da.getDof()
         vec = self.da.createGlobalVec()
         if dim == 1:
-            da, davec = self.da.VecSplitToDMDA(vec, 'left', -dofs[0])
-            da, davec = self.da.VecSplitToDMDA(vec, 'element', -dofs[1])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'left', -dofs[0])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'element', -dofs[1])
         if dim == 2:
-            da, davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[0])
-            da, davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[1])
-            da, davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[2])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[0])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[1])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[2])
         if dim == 3:
-            da, davec = self.da.VecSplitToDMDA(vec, 'back_down_right', -dofs[0])
-            da, davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[1])
-            da, davec = self.da.VecSplitToDMDA(vec, 'left', -dofs[2])
-            da, davec = self.da.VecSplitToDMDA(vec, 'element', -dofs[3])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'back_down_right', -dofs[0])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'down_left', -dofs[1])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'left', -dofs[2])
+            _da, _davec = self.da.VecSplitToDMDA(vec, 'element', -dofs[3])
 
 
 GHOSTED = PETSc.DM.BoundaryType.GHOSTED
@@ -474,7 +474,7 @@ for dim in DIM:
 
                                 setattr(
                                     TestDMStagCreate,
-                                    'testCreate%05d' % counter,
+                                    f'testCreate{counter:05d}',
                                     testCreate,
                                 )
 

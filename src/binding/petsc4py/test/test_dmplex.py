@@ -32,7 +32,7 @@ class BaseTestPlex:
     def testTopology(self):
         rank = self.COMM.rank
         dim = self.plex.getDimension()
-        pStart, pEnd = self.plex.getChart()
+        _pStart, _pEnd = self.plex.getChart()
         cStart, cEnd = self.plex.getHeightStratum(0)
         vStart, vEnd = self.plex.getDepthStratum(0)
         numDepths = self.plex.getLabelSize('depth')
@@ -106,8 +106,8 @@ class BaseTestPlex:
         for p in range(pStart, pEnd):
             point_closure = self.plex.getTransitiveClosure(p)[0]
             dof_closure = self.plex.vecGetClosure(section, vec, p)
-            for p in dof_closure:
-                self.assertIn(p, point_closure)
+            for pp in dof_closure:
+                self.assertIn(pp, point_closure)
 
     def testBoundaryLabel(self):
         pStart, pEnd = self.plex.getChart()
@@ -120,7 +120,7 @@ class BaseTestPlex:
 
         faces = self.plex.getStratumIS('boundary', 1)
         for f in faces.getIndices():
-            points, orient = self.plex.getTransitiveClosure(f, useCone=True)
+            points, _orient = self.plex.getTransitiveClosure(f, useCone=True)
             for p in points:
                 self.plex.setLabelValue('boundary', p, 1)
 
@@ -269,6 +269,7 @@ class BaseTestPlex:
         self.plex.globalToNaturalEnd(gv, nv)
         self.plex.naturalToGlobalBegin(nv, gv)
         self.plex.naturalToGlobalEnd(nv, gv)
+
 
 # --------------------------------------------------------------------
 
@@ -474,7 +475,7 @@ class BaseTestPlexHDF5:
         )
 
     def outfile(self):
-        return os.path.join('./temp_test_dmplex_%s.h5' % self._name())
+        return os.path.join(f'./temp_test_dmplex_{self._name()}.h5')
 
     def informat(self):
         return PETSc.Viewer.Format.HDF5_XDMF
@@ -498,11 +499,11 @@ class BaseTestPlexHDF5:
         return os.path.join(
             PETSC_DIR,
             'src/dm/impls/plex/tutorials/',
-            'output/ex5_%s.out' % self._name(),
+            f'output/ex5_{self._name()}.out',
         )
 
     def tmp_output_file(self):
-        return os.path.join('./temp_test_dmplex_%s.out' % self._name())
+        return os.path.join(f'./temp_test_dmplex_{self._name()}.out')
 
     def outputText(self, msg, comm):
         if not comm.rank:
@@ -530,14 +531,11 @@ class BaseTestPlexHDF5:
             else:
                 infname = self.outfile()
                 informt = self.outformat()
-            if self.HETEROGENEOUS:
-                mycolor = grank > self.NTIMES - i
-            else:
-                mycolor = 0
+            mycolor = grank > self.NTIMES - i if self.HETEROGENEOUS else 0
             mpicomm = PETSc.COMM_WORLD.tompi4py()
             comm = PETSc.Comm(comm=mpicomm.Split(color=mycolor, key=grank))
             if mycolor == 0:
-                self.outputText('Begin cycle %d\n' % i, comm)
+                self.outputText(f'Begin cycle {i}\n', comm)
                 plex = PETSc.DMPlex()
                 vwr = PETSc.ViewerHDF5()
                 # Create plex
@@ -555,9 +553,7 @@ class BaseTestPlexHDF5:
                 self.outputPlex(plex)
                 # Test DM is indeed distributed
                 flg = plex.isDistributed()
-                self.outputText(
-                    'Loaded mesh distributed? %s\n' % str(flg).upper(), comm
-                )
+                self.outputText(f'Loaded mesh distributed? {str(flg).upper()}\n', comm)
                 # Interpolate
                 plex.interpolate()
                 plex.setOptionsPrefix('interpolated_')
@@ -583,7 +579,7 @@ class BaseTestPlexHDF5:
                 vwr.destroy()
                 # Destroy plex
                 plex.destroy()
-                self.outputText('End   cycle %d\n--------\n' % i, comm)
+                self.outputText(f'End   cycle {i}\n--------\n', comm)
             comm.tompi4py().Free()
             PETSc.COMM_WORLD.Barrier()
         # Check that the output is identical to that of plex/tutorial/ex5.c.

@@ -985,8 +985,9 @@ M*/
   Level: beginner
 
   Notes:
-  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
-  FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_FALSE`
 
   If the option is given, but no value is provided, then `flg` and `set` are both given the value `PETSC_TRUE`. That is `-requested_bool`
   is equivalent to `-requested_bool true`
@@ -1028,8 +1029,11 @@ M*/
   Level: beginner
 
   Notes:
-  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
-  FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_BOOL3_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_BOOL3_FALSE`
+
+  The option values UNKNOWN and AUTO (case-insensitive) all translate to `PETSC_BOOL3_UNKNOWN`
 
   If the option is given, but no value is provided, then `flg` and `set` are both given the value `PETSC_BOOL3_TRUE`. That is `-requested_bool`
   is equivalent to `-requested_bool true`
@@ -1428,7 +1432,9 @@ M*/
   Level: beginner
 
   Notes:
-  The user should pass in an array of `PetscBool`
+  The option values TRUE, YES, ON (case-insensitive) and 1 all translate to `PETSC_TRUE`
+
+  The option values FALSE, NO, OFF (case-insensitive) and 0 all translate to `PETSC_FALSE`
 
   Must be used between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 

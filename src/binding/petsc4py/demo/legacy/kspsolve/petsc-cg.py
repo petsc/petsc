@@ -16,8 +16,7 @@ def cg(A, b, x, imax=50, eps=1e-6):
     delta_0 = r.dot(r)
     delta = delta_0
     # enter iteration loop
-    while i < imax and \
-          delta > delta_0 * eps**2:
+    while i < imax and delta > delta_0 * eps**2:
         A.mult(d, q)
         alpha = delta / d.dot(q)
         x.axpy(+alpha, d)

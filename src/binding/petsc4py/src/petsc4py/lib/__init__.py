@@ -3,8 +3,7 @@
 
 # --------------------------------------------------------------------
 
-"""
-Extension modules for different PETSc configurations.
+"""Extension modules for different PETSc configurations.
 
 PETSc can be configured with different options (eg. debug/optimized,
 single/double precisionm, C/C++ compilers, external packages). Each
@@ -26,17 +25,13 @@ exposed in submodules here.
 
 
 def ImportPETSc(arch=None):
-    """
-    Import the PETSc extension module for a given configuration name.
-    """
+    """Import the PETSc extension module for a given configuration name."""
     path, arch = getPathArchPETSc(arch)
     return Import('petsc4py', 'PETSc', path, arch)
 
 
 def getPathArchPETSc(arch=None):
-    """
-    Undocumented.
-    """
+    """Undocumented."""
     import os
 
     path = os.path.abspath(os.path.dirname(__file__))
@@ -49,9 +44,7 @@ def getPathArchPETSc(arch=None):
 
 
 def Import(pkg, name, path, arch):
-    """
-    Import helper for PETSc-based extension modules.
-    """
+    """Import helper for PETSc-based extension modules."""
     import os
     import sys
     import warnings
@@ -90,7 +83,8 @@ def Import(pkg, name, path, arch):
         # call may be invalid if extension module for
         # other 'arch' has been already imported.
         if arch is not None and arch != module.__arch__:
-            raise ImportError('%s already imported' % module)
+            msg = f'{module} already imported'
+            raise ImportError(msg)
         return module
 
     # silence annoying Cython warning
@@ -104,9 +98,7 @@ def Import(pkg, name, path, arch):
 
 
 def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
-    """
-    Undocumented.
-    """
+    """Undocumented."""
     import os
     import warnings
 
@@ -116,13 +108,16 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     elif os.path.isfile(path):
         path = os.path.dirname(path)
     elif not os.path.isdir(path):
-        raise ValueError("invalid path: '%s'" % path)
+        msg = f"invalid path: '{path}'"
+        raise ValueError(msg)
     # arch
     if arch is not None:
         if not isinstance(arch, str):
-            raise TypeError('arch argument must be string')
+            msg = 'arch argument must be string'
+            raise TypeError(msg)
         if not os.path.isdir(os.path.join(path, arch)):
-            raise TypeError("invalid arch value: '%s'" % arch)
+            msg = f"invalid arch value: '{arch}'"
+            raise TypeError(msg)
         return (path, arch)
 
     # helper function
@@ -171,9 +166,7 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
 
 
 def getInitArgs(args):
-    """
-    Undocumented.
-    """
+    """Undocumented."""
     import shlex
     import sys
 
