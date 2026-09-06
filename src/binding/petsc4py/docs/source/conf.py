@@ -90,6 +90,7 @@ nitpick_ignore = [
     ('envvar', 'NUMPY_INCLUDE'),
     ('py:class', 'ndarray'),  # FIXME
     ('py:class', 'numpy._typing._array_like.NDArray'),  # FIXME
+    ('py:obj', 'numpy._typing._array_like.NDArray'),  # NumPy >= 2.5
     ('py:class', 'typing_extensions.Self'),
 ]
 nitpick_ignore_regex = [
