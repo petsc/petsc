@@ -59,7 +59,7 @@ PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* do not log solves, setup and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+/* do not log solves, setup, and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
 PETSC_EXTERN PetscLogEvent KSP_Solve, KSP_SetUp;
 
 static PetscErrorCode PCLogEventsDeactivatePush(void)

@@ -265,8 +265,6 @@ static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
     }
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
-    a->ignore_ltriangular = flg;
-    break;
   case MAT_ERROR_LOWER_TRIANGULAR:
     a->ignore_ltriangular = flg;
     break;

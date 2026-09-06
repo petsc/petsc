@@ -118,31 +118,37 @@ static PetscErrorCode MatPreallocateWithMats_Private(Mat B, PetscInt nm, Mat X[]
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatSBAIJCreateSymmetricStructure_Private(Mat A, MatType newtype, PetscBool structure_only, Mat *B)
+{
+  PetscBool symm = PETSC_TRUE, isdense;
+  PetscInt  bs;
+
+  PetscFunctionBegin;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
+  PetscCall(MatSetSizes(*B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
+  PetscCall(MatSetType(*B, newtype));
+  PetscCall(MatSetOption(*B, MAT_STRUCTURE_ONLY, structure_only));
+  PetscCall(MatGetBlockSize(A, &bs));
+  PetscCall(MatSetBlockSize(*B, bs));
+  PetscCall(PetscLayoutSetUp((*B)->rmap));
+  PetscCall(PetscLayoutSetUp((*B)->cmap));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)*B, &isdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, ""));
+  if (!isdense) {
+    /* create the complete symmetric nonzero structure */
+    PetscCall(MatGetRowUpperTriangular(A));
+    PetscCall(MatPreallocateWithMats_Private(*B, 1, &A, &symm, PETSC_TRUE));
+    PetscCall(MatRestoreRowUpperTriangular(A));
+  } else PetscCall(MatSetUp(*B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Basic(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat B;
 
   PetscFunctionBegin;
-  if (reuse != MAT_REUSE_MATRIX) {
-    PetscBool symm = PETSC_TRUE, isdense;
-    PetscInt  bs;
-
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
-    PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
-    PetscCall(MatSetType(B, newtype));
-    PetscCall(MatGetBlockSize(A, &bs));
-    PetscCall(MatSetBlockSize(B, bs));
-    PetscCall(PetscLayoutSetUp(B->rmap));
-    PetscCall(PetscLayoutSetUp(B->cmap));
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &isdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, ""));
-    if (!isdense) {
-      PetscCall(MatGetRowUpperTriangular(A));
-      PetscCall(MatPreallocateWithMats_Private(B, 1, &A, &symm, PETSC_TRUE));
-      PetscCall(MatRestoreRowUpperTriangular(A));
-    } else {
-      PetscCall(MatSetUp(B));
-    }
-  } else {
+  if (reuse != MAT_REUSE_MATRIX) PetscCall(MatSBAIJCreateSymmetricStructure_Private(A, newtype, PETSC_FALSE, &B));
+  else {
     B = *newmat;
     PetscCall(MatZeroEntries(B));
   }
@@ -574,11 +580,8 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
     baij->barray = barray;
   }
 
-  if (roworiented) {
-    stepval = (n - 1) * bs;
-  } else {
-    stepval = (m - 1) * bs;
-  }
+  if (roworiented) stepval = (n - 1) * bs;
+  else stepval = (m - 1) * bs;
   for (i = 0; i < m; i++) {
     if (im[i] < 0) continue;
     PetscCheck(im[i] < baij->Mbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Block indexed row too large %" PetscInt_FMT " max %" PetscInt_FMT, im[i], baij->Mbs - 1);
@@ -772,8 +775,8 @@ static PetscErrorCode MatAssemblyBegin_MPISBAIJ(Mat mat, MatAssemblyType mode)
   PetscCall(MatStashScatterBegin_Private(mat, &mat->stash, mat->rmap->range));
   PetscCall(MatStashScatterBegin_Private(mat, &mat->bstash, baij->rangebs));
   PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
-  PetscCall(PetscInfo(mat, "Stash has %" PetscInt_FMT " entries,uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
-  PetscCall(MatStashGetInfo_Private(&mat->stash, &nstash, &reallocs));
+  PetscCall(PetscInfo(mat, "Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
+  PetscCall(MatStashGetInfo_Private(&mat->bstash, &nstash, &reallocs));
   PetscCall(PetscInfo(mat, "Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1484,8 +1487,7 @@ static PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin, MatInfoType flag, MatInfo *
 
 static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
 {
-  Mat_MPISBAIJ *a  = (Mat_MPISBAIJ *)A->data;
-  Mat_SeqSBAIJ *aA = (Mat_SeqSBAIJ *)a->A->data;
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
 
   PetscFunctionBegin;
   switch (op) {
@@ -1494,14 +1496,9 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
-    PetscCall(MatSetOption(a->B, op, flg));
-    break;
   case MAT_ROW_ORIENTED:
     MatCheckPreallocated(A, 1);
-    a->roworiented = flg;
-
+    if (op == MAT_ROW_ORIENTED) a->roworiented = flg;
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;
@@ -1539,10 +1536,9 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
   case MAT_ERROR_LOWER_TRIANGULAR:
-    aA->ignore_ltriangular = flg;
-    break;
   case MAT_GETROW_UPPERTRIANGULAR:
-    aA->getrow_utriangular = flg;
+    MatCheckPreallocated(A, 1);
+    PetscCall(MatSetOption(a->A, op, flg));
     break;
   default:
     break;
@@ -2180,12 +2176,12 @@ static PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B, PetscInt bs, P
   PetscCall(MatSetType(b->B, MATSEQBAIJ));
   MatSeqXAIJRestoreOptions_Private(b->B);
 
-  MatSeqXAIJGetOptions_Private(b->A);
+  MatSeqSBAIJGetOptions_Private(b->A);
   PetscCall(MatDestroy(&b->A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
   PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
   PetscCall(MatSetType(b->A, MATSEQSBAIJ));
-  MatSeqXAIJRestoreOptions_Private(b->A);
+  MatSeqSBAIJRestoreOptions_Private(b->A);
 
   PetscCall(MatSeqSBAIJSetPreallocation(b->A, bs, d_nz, d_nnz));
   PetscCall(MatSeqBAIJSetPreallocation(b->B, bs, o_nz, o_nnz));
@@ -2355,9 +2351,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
   b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
-
-  /* stuff for MatCreateSubMatrices_MPIBAIJ_local() */
-  b->ijonly = PETSC_FALSE;
 
   b->in_loc = NULL;
   b->v_loc  = NULL;

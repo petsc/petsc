@@ -5,7 +5,7 @@ from config.utilities.parseVersion import parseVersion
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version            = '4.4.2'
+    self.version            = '4.4.3'
     self.download           = ['https://github.com/Kitware/CMake/releases/download/v'+self.version+'/cmake-'+self.version+'.tar.gz',
                                'https://gitlab.kitware.com/cmake/cmake/-/archive/v'+self.version+'/cmake-v'+self.version+'.tar.gz']
     self.downloadonWindows  = 1
