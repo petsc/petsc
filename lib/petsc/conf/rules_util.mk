@@ -78,7 +78,9 @@ GITCFSRCEXCL = \
 
 # Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:
-	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
+	@base="${CHECKBADFILECHANGE_BASE}"; \
+	 if [ -z "$$base" ]; then base=$$(lib/petsc/bin/maint/check-merge-branch.sh); fi; \
+	 git diff --stat --exit-code "$$base..HEAD" -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/khash
 
 vermin:
 	@vermin --violations -t=3.6- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
@@ -109,7 +111,7 @@ checkbadSource:
 	-@echo "----- DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\r' -- ${GITSRC} ${GITMAKE} 'config/*' >> checkbadSource.out;true
 	-@echo "----- { before SETERRQ ---------------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '\{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- PetscCall following SETERRQ ----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";PetscCall" >> checkbadSource.out;true
 	-@echo "----- SETERRQ() without defined error code -------------------------" >> checkbadSource.out
@@ -117,7 +119,9 @@ checkbadSource:
 	-@echo "----- SETERRQ() with trailing newline ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Define keyword used in test definition -----------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '^\s*!?\s*requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
+	-@echo "----- Missing PETSC_ prefix in test definition ---------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -e '^\s*!?\s*requires:.*defined\((HAVE|USE)_' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Using if (condition) SETERRQ(...) instead of PetscCheck() ----" >> checkbadSource.out
 	-@git --no-pager grep -n -P ' if +(.*) *SETERRQ' -- ${GITSRC} | grep -v 'PetscUnlikelyDebug' | grep -v 'petscerror.h' | grep -v "then;" | grep -v "__VA_ARGS__" >> checkbadSource.out;true
 	-@echo "----- Using if (PetscUnlikelyDebug(condition)) SETERRQ(...) instead of PetscAssert()" >> checkbadSource.out
@@ -147,7 +151,7 @@ checkbadSource:
 	-@echo "----- First blank line ---------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P \^\$$ -- ${GITSRC} ${GITMAKE} 'config/*' | grep ':1:' >> checkbadSource.out;true
 	-@echo "----- Last blank line ----------------------------------------------" >> checkbadSource.out
-	-@git ls-files ${GITFSRC} ${GITMAKE} 'config/*' ':!*petscdm.h90' ':!*petscts.h90' ':!*/__init__.py' | xargs -I{} sh -c 'tail -n1 "{}" | grep -q . || echo "{}"' >> checkbadSource.out;true
+	-@git ls-files -z ${GITFSRC} ${GITMAKE} 'config/*' ':!*petscdm.h90' ':!*petscts.h90' ':!*/__init__.py' | xargs -0 awk 'BEGIN { for (i = 1; i < ARGC; i++) { last = ""; while ((getline last < ARGV[i]) > 0) {} close(ARGV[i]); if (last == "") print ARGV[i] } exit }' >> checkbadSource.out;true
 	-@echo "----- Blank line after PetscFunctionBegin and derivatives ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -E -A 1 '  PetscFunctionBegin(User|Hot){0,1};' -- ${GITSRC} | grep -E '\-[0-9]+-$$' | grep -v '^--$$' >> checkbadSource.out;true
 	-@echo "----- Blank line before PetscFunctionReturn ------------------------" >> checkbadSource.out
@@ -196,7 +200,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P "[a-zA-Z0-9_:]*PetscOption.+\"[a-zA-Z0-9_]+\(\)\"" -- ${GITCFSRC} | grep -v PETSC_DEPRECATED >> checkbadSource.out;true
 	-@echo "----- Missing space after comma in Synopsis ------------------------" >> checkbadSource.out
 	-@git ls-files -z ${GITCFSRC} | xargs -0 awk 'FNR==1 { insyn=0; p1="" } { if ($$0 ~ /^[ \t]*#include[ \t]*<[^>]+>/ && p1 ~ /^[ \t]*Synopsis:/) insyn=1; else if (insyn && $$0 ~ /^[ \t]*$$/) insyn=0; else if (insyn && ($$0 ~ /,[^ ]/ || $$0 ~ /,  +/)) print FILENAME ":" FNR " " $$0; p1=$$0 }' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 51` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 52` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
