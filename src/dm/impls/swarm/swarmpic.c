@@ -1118,12 +1118,11 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 {
   DMSwarmCellDM       celldm;
   PetscSimplePointFn *coordFunc;
-  PetscScalar        *weight;
   PetscReal          *x;
   PetscInt           *species;
-  void               *ctx;
+  void               *ctx, *weight;
   PetscBool           removePoints = PETSC_TRUE;
-  PetscDataType       dtype;
+  PetscDataType       wtype;
   PetscInt            Nfc, Np, p, Ns, dim, d, bs;
   const char        **coordFields;
 
@@ -1137,8 +1136,11 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
   PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
   PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
 
-  PetscCall(DMSwarmGetField(sw, coordFields[0], &bs, &dtype, (void **)&x));
-  PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&weight));
+  PetscCall(DMSwarmGetFieldInfo(sw, "w_q", &bs, &wtype));
+  PetscCheck(bs == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "Weight field w_q must have block size 1, not %" PetscInt_FMT, bs);
+  PetscCheck(wtype == PETSC_REAL || wtype == PETSC_SCALAR, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Weight field w_q must have type PETSC_REAL or PETSC_SCALAR, not %s", PetscDataTypes[wtype]);
+  PetscCall(DMSwarmGetField(sw, coordFields[0], &bs, NULL, (void **)&x));
+  PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, &weight));
   PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
   if (coordFunc) {
     PetscCall(DMGetApplicationContext(sw, &ctx));
@@ -1147,7 +1149,8 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
       PetscCall((*coordFunc)(dim, 0., NULL, p, X, ctx));
       for (d = 0; d < dim; ++d) x[p * dim + d] = PetscRealPart(X[d]);
-      weight[p]  = 1.0;
+      if (wtype == PETSC_REAL) ((PetscReal *)weight)[p] = 1.0;
+      else ((PetscScalar *)weight)[p] = 1.0;
       species[p] = p % Ns;
     }
   } else {
@@ -1179,7 +1182,8 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
         for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
         CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p * dim]);
 
-        weight[p]  = 1.0 / Np;
+        if (wtype == PETSC_REAL) ((PetscReal *)weight)[p] = 1.0 / Np;
+        else ((PetscScalar *)weight)[p] = 1.0 / Np;
         species[p] = p % Ns;
       }
       PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Npc, &pidx));
@@ -1188,7 +1192,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
     PetscCall(DMSwarmSortRestoreAccess(sw));
   }
   PetscCall(DMSwarmRestoreField(sw, coordFields[0], NULL, NULL, (void **)&x));
-  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, &weight));
   PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
 
   PetscCall(DMSwarmMigrate(sw, removePoints));
@@ -1313,7 +1317,9 @@ PetscErrorCode DMProjectFieldLocal_Swarm(DM dm, PetscReal time, Vec U, PetscPoin
   PetscReal       *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
   PetscInt         dim, dE, Np, n, Nf, Nfc, Nfu, cStart, cEnd, maxC = 0, totbs = 0;
   const char     **coordFields, **fields;
-  PetscReal      **coordVals, **vals;
+  PetscReal      **coordVals;
+  void           **vals;
+  PetscDataType   *types;
   PetscInt        *cbs, *bs, *uOff, *uOff_x;
 
   PetscFunctionBegin;
@@ -1345,13 +1351,15 @@ PetscErrorCode DMProjectFieldLocal_Swarm(DM dm, PetscReal time, Vec U, PetscPoin
   PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
   PetscCall(DMSwarmCellDMGetFields(celldm, &Nf, &fields));
 
-  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &cbs));
-  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(dm, coordFields[i], &cbs[i], NULL, (void **)&coordVals[i]));
-  PetscCall(PetscMalloc2(Nf, &vals, Nfc, &bs));
+  PetscCall(PetscMalloc3(Nf, &vals, Nf, &types, Nf, &bs));
   for (PetscInt i = 0; i < Nf; ++i) {
-    PetscCall(DMSwarmGetField(dm, fields[i], &bs[i], NULL, (void **)&vals[i]));
+    PetscCall(DMSwarmGetFieldInfo(dm, fields[i], &bs[i], &types[i]));
+    PetscCheck(types[i] == PETSC_REAL || types[i] == PETSC_SCALAR, comm, PETSC_ERR_SUP, "Field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", fields[i], PetscDataTypes[types[i]]);
     totbs += bs[i];
   }
+  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &cbs));
+  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(dm, coordFields[i], &cbs[i], NULL, (void **)&coordVals[i]));
+  for (PetscInt i = 0; i < Nf; ++i) PetscCall(DMSwarmGetField(dm, fields[i], NULL, NULL, &vals[i]));
 
   PetscCall(DMSwarmSortGetAccess(dm));
   for (PetscInt cell = cStart; cell < cEnd; ++cell) {
@@ -1387,7 +1395,15 @@ PetscErrorCode DMProjectFieldLocal_Swarm(DM dm, PetscReal time, Vec U, PetscPoin
         CoordinatesRealToRef(dE, dim, fegeom.xi, fegeom.v, fegeom.invJ, xr, &xi[p * dim]);
         off = 0;
         for (PetscInt i = 0; i < Nf; ++i) {
-          for (PetscInt b = 0; b < bs[i]; ++b, ++off) val[p * totbs + off] = vals[i][pindices[p] * bs[i] + b];
+          if (types[i] == PETSC_REAL) {
+            const PetscReal *rvals = (const PetscReal *)vals[i];
+
+            for (PetscInt b = 0; b < bs[i]; ++b, ++off) val[p * totbs + off] = rvals[pindices[p] * bs[i] + b];
+          } else {
+            const PetscScalar *svals = (const PetscScalar *)vals[i];
+
+            for (PetscInt b = 0; b < bs[i]; ++b, ++off) val[p * totbs + off] = svals[pindices[p] * bs[i] + b];
+          }
         }
         PetscCheck(off == totbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The total block size of swarm fields is %" PetscInt_FMT " != %" PetscInt_FMT " the computed total block size", off, totbs);
       }
@@ -1409,12 +1425,12 @@ PetscErrorCode DMProjectFieldLocal_Swarm(DM dm, PetscReal time, Vec U, PetscPoin
     }
   }
   for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmRestoreField(dm, coordFields[i], &cbs[i], NULL, (void **)&coordVals[i]));
-  for (PetscInt i = 0; i < Nf; ++i) PetscCall(DMSwarmRestoreField(dm, fields[i], &bs[i], NULL, (void **)&vals[i]));
+  for (PetscInt i = 0; i < Nf; ++i) PetscCall(DMSwarmRestoreField(dm, fields[i], &bs[i], NULL, &vals[i]));
   PetscCall(VecRestoreArray(X, &a));
   PetscCall(DMSwarmSortRestoreAccess(dm));
   PetscCall(PetscFree3(xi, val, T));
   PetscCall(PetscFree3(v0, J, invJ));
   PetscCall(PetscFree2(coordVals, cbs));
-  PetscCall(PetscFree2(vals, bs));
+  PetscCall(PetscFree3(vals, types, bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
