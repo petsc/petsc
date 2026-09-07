@@ -232,15 +232,14 @@ int main(int argc, char **args)
     PetscCall(SolveAndCompare(ksp, A, nsp, nrhs, set_initial_guess, compare, PETSC_FALSE));
   }
 
-  /* a second operator of a different size only bumps the setup stage to KSP_SETUP_NEWMATRIX, so the KSP implementation, and not KSPSetUp(), must revalidate the size of any work vector it uses,
-     -resize_uneven grows the operator by a single row so that the local size changes on the first process only, which the revalidation must not decide process by process */
+  /* KSPReset() allows a second operator of a different size to be set on the KSP and ensures that its implementation and PC rebuild their work space,
+     -resize_uneven grows the operator by a single row so that the local size changes on the first process only */
   if (resize || resize_uneven) {
     PetscCall(MatNullSpaceDestroy(&nsp));
     PetscCall(MatDestroy(&A));
     PetscCall(CreateOperator(resize_uneven ? n + 1 : 2 * n, nullspace, transpose, &A, &nsp));
     if (nsp && !nullspace_attach) PetscCall(MatSetNullSpace(A, NULL)); /* the second operator is built the same way, so it follows the same choice */
-    PetscCall(KSPGetPC(ksp, &pc));
-    PetscCall(PCReset(pc)); /* PCSetOperators() does not accept an operator of a different size otherwise */
+    PetscCall(KSPReset(ksp));
     PetscCall(KSPSetOperators(ksp, A, A));
     if (shell) { /* the context of the PCSHELL is the reciprocal of the diagonal of the operator, so it must be rebuilt as well */
       PetscCall(VecDestroy(&dinv));
@@ -295,8 +294,7 @@ int main(int argc, char **args)
          suffix: nullspace
          args: -nullspace -pc_type jacobi
 
-   # a second system of a different size solved with the same KSP, the work space cached by KSPMatSolve_Richardson() must be rebuilt, the two preconditioners
-   # below provide PCApplyRichardson() so they exercise the work vector of the fallback, while the third one exercises the work blocks of the block iteration
+   # a second system of a different size solved after KSPReset(), which must rebuild the KSP and PC work space for the new operator
    testset:
       output_file: output/ex90_resize.out
       nsize: {{1 2}}
@@ -347,7 +345,7 @@ int main(int argc, char **args)
       nsize: 3
       args: -ksp_type richardson -ksp_max_it 5 -ksp_norm_type none -pc_type jacobi -nrhs 6 -ksp_matsolve_batch_size 3
 
-   # the local row count of the second operator changes on the first process only, so the decision to rebuild the work vector of the PCApplyRichardson() fallback must be reduced over the processes
+   # the local row count of the second operator changes on the first process only, so KSPReset() must allow setup with the new layout
    test:
       suffix: resize_uneven_sor
       nsize: 2

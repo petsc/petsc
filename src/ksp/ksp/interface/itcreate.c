@@ -816,42 +816,24 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   ksp->default_abstol = ksp->abstol = PetscDefined(USE_REAL_SINGLE) ? 1.e-25 : 1.e-50;
   ksp->default_divtol = ksp->divtol = 1.e4;
 
-  ksp->chknorm  = -1;
   ksp->normtype = ksp->normtype_set = KSP_NORM_DEFAULT;
-  ksp->rnorm                        = 0.0;
-  ksp->its                          = 0;
-  ksp->guess_zero                   = PETSC_TRUE;
-  ksp->calc_sings                   = PETSC_FALSE;
-  ksp->res_hist                     = NULL;
-  ksp->res_hist_alloc               = NULL;
-  ksp->res_hist_len                 = 0;
-  ksp->res_hist_max                 = 0;
-  ksp->res_hist_reset               = PETSC_TRUE;
-  ksp->err_hist                     = NULL;
-  ksp->err_hist_alloc               = NULL;
-  ksp->err_hist_len                 = 0;
-  ksp->err_hist_max                 = 0;
-  ksp->err_hist_reset               = PETSC_TRUE;
-  ksp->numbermonitors               = 0;
-  ksp->numberreasonviews            = 0;
-  ksp->setfromoptionscalled         = 0;
-  ksp->nmax                         = PETSC_DECIDE;
-  ksp->orthog                       = KSPOrthogonalizationClassicalGramSchmidt;
-  ksp->cgstype                      = KSP_ORTHOGONALIZATION_CGS_REFINE_NEVER;
+
+  ksp->chknorm        = -1;
+  ksp->guess_zero     = PETSC_TRUE;
+  ksp->res_hist_reset = PETSC_TRUE;
+  ksp->err_hist_reset = PETSC_TRUE;
+  ksp->nmax           = PETSC_DECIDE;
+  ksp->orthog         = KSPOrthogonalizationClassicalGramSchmidt;
+  ksp->cgstype        = KSP_ORTHOGONALIZATION_CGS_REFINE_NEVER;
+  ksp->reason         = KSP_CONVERGED_ITERATING;
+  ksp->setupstage     = KSP_SETUP_NEW;
+
+  PetscCall(MatStateInvalidate(ksp->amatstate));
 
   PetscCall(KSPConvergedDefaultCreate(&ctx));
   PetscCall(KSPSetConvergenceTest(ksp, KSPConvergedDefault, ctx, KSPConvergedDefaultDestroy));
   ksp->ops->buildsolution = KSPBuildSolutionDefault;
   ksp->ops->buildresidual = KSPBuildResidualDefault;
-
-  ksp->vec_sol    = NULL;
-  ksp->vec_rhs    = NULL;
-  ksp->pc         = NULL;
-  ksp->data       = NULL;
-  ksp->nwork      = 0;
-  ksp->work       = NULL;
-  ksp->reason     = KSP_CONVERGED_ITERATING;
-  ksp->setupstage = KSP_SETUP_NEW;
 
   PetscCall(KSPNormSupportTableReset_Private(ksp));
 

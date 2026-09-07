@@ -62,7 +62,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
   MatScalar       *ata;
   const MatScalar *aa, *av;
   PetscContainer   rB;
-  MatParentState  *rb;
+  MatState        *rb;
   PetscBool        nonzerochange = PETSC_FALSE;
 
   PetscFunctionBegin;

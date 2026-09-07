@@ -47,19 +47,18 @@ typedef struct {
 } KSP_FETIDPMon;
 
 typedef struct {
-  KSP              innerksp;        /* the KSP for the Lagrange multipliers */
-  PC               innerbddc;       /* the inner BDDC object */
-  PetscBool        fully_redundant; /* true for using a fully redundant set of multipliers */
-  PetscBool        userbddc;        /* true if the user provided the PCBDDC object */
-  PetscBool        saddlepoint;     /* support for saddle point problems */
-  IS               pP;              /* index set for pressure variables */
-  Vec              rhs_flip;        /* see KSPFETIDPSetUpOperators */
-  KSP_FETIDPMon   *monctx;          /* monitor context, used to pass user defined monitors
+  KSP            innerksp;        /* the KSP for the Lagrange multipliers */
+  PC             innerbddc;       /* the inner BDDC object */
+  PetscBool      fully_redundant; /* true for using a fully redundant set of multipliers */
+  PetscBool      userbddc;        /* true if the user provided the PCBDDC object */
+  PetscBool      saddlepoint;     /* support for saddle point problems */
+  IS             pP;              /* index set for pressure variables */
+  Vec            rhs_flip;        /* see KSPFETIDPSetUpOperators */
+  KSP_FETIDPMon *monctx;          /* monitor context, used to pass user defined monitors
                                         in the physical space */
-  PetscObjectState matstate;        /* these are needed just in the saddle point case */
-  PetscObjectState matnnzstate;     /* where we are going to use MatZeroRows on pmat */
-  PetscBool        statechanged;
-  PetscBool        check;
+  MatState       matstate;        /* needed just in the saddle point case where we are going to use MatZeroRows() on pmat */
+  PetscBool      statechanged;
+  PetscBool      check;
 } KSP_FETIDP;
 
 static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
@@ -506,20 +505,20 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
 
 static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 {
-  KSP_FETIDP      *fetidp = (KSP_FETIDP *)ksp->data;
-  PC_BDDC         *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
-  Mat              A, Ap;
-  PetscInt         fidp[8] = {-1}, nfp = 8;
-  PetscMPIInt      size;
-  PetscBool        ismatis, pisz = PETSC_FALSE, allp = PETSC_FALSE, schp = PETSC_FALSE;
-  PetscBool        flip = PETSC_FALSE; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
+  KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
+  PC_BDDC    *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
+  Mat         A, Ap;
+  PetscInt    fidp[8] = {-1}, nfp = 8;
+  PetscMPIInt size;
+  PetscBool   ismatis, pisz = PETSC_FALSE, allp = PETSC_FALSE, schp = PETSC_FALSE;
+  PetscBool   flip = PETSC_FALSE; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
                            | A B'| | v | = | f |
                            | B 0 | | p | = | g |
                             If -ksp_fetidp_saddlepoint_flip is true, the code assumes it is written as
                            | A B'| | v | = | f |
                            |-B 0 | | p | = |-g |
                          */
-  PetscObjectState matstate, matnnzstate;
+  PetscBool   same;
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->prefix, "FETI-DP options", "PC");
@@ -540,11 +539,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   /* Quiet return if the matrix states are unchanged.
      Needed only for the saddle point case since it uses MatZeroRows
      on a matrix that may not have changed */
-  PetscCall(PetscObjectStateGet((PetscObject)A, &matstate));
-  PetscCall(MatGetNonzeroState(A, &matnnzstate));
-  if (matstate == fetidp->matstate && matnnzstate == fetidp->matnnzstate) PetscFunctionReturn(PETSC_SUCCESS);
-  fetidp->matstate     = matstate;
-  fetidp->matnnzstate  = matnnzstate;
+  PetscCall(MatStateCompareUpdate(A, &fetidp->matstate, &same));
+  if (same) PetscFunctionReturn(PETSC_SUCCESS);
   fetidp->statechanged = fetidp->saddlepoint;
 
   /* see if we have some fields attached */
@@ -1225,9 +1221,8 @@ static PetscErrorCode KSPReset_FETIDP(KSP ksp)
   pcbddc                   = (PC_BDDC *)fetidp->innerbddc->data;
   pcbddc->symmetric_primal = PETSC_FALSE;
   PetscCall(KSPDestroy(&fetidp->innerksp));
-  fetidp->saddlepoint  = PETSC_FALSE;
-  fetidp->matstate     = -1;
-  fetidp->matnnzstate  = -1;
+  fetidp->saddlepoint = PETSC_FALSE;
+  PetscCall(MatStateInvalidate(fetidp->matstate));
   fetidp->statechanged = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1367,8 +1362,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
 
   PetscCall(PetscNew(&fetidp));
-  fetidp->matstate     = -1;
-  fetidp->matnnzstate  = -1;
   fetidp->statechanged = PETSC_TRUE;
 
   ksp->data                              = (void *)fetidp;

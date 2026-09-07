@@ -1001,36 +1001,33 @@ PetscErrorCode PCReduceFailedReason(PC pc)
 @*/
 PetscErrorCode PCSetUp(PC pc)
 {
-  const char      *def;
-  PetscObjectState matstate, matnonzerostate;
+  const char *def;
+  MatState    matstate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing A matrix");
-  PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Missing P matrix");
+  PetscCheck(pc->mat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Missing A matrix. Use PCSetOperators()");
+  PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Missing P matrix. Use PCSetOperators()");
 
   if (pc->setupcalled && pc->reusepreconditioner) {
     PetscCall(PetscInfo(pc, "Leaving PC with identical preconditioner since reuse preconditioner is set\n"));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(PetscObjectStateGet((PetscObject)pc->pmat, &matstate));
-  PetscCall(MatGetNonzeroState(pc->pmat, &matnonzerostate));
-  if (!pc->setupcalled) {
-    //PetscCall(PetscInfo(pc, "Setting up PC for first time\n"));
-    pc->flag = DIFFERENT_NONZERO_PATTERN;
-  } else if (matstate == pc->matstate) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatGetState(pc->pmat, &matstate));
+  if (!pc->setupcalled) pc->flag = DIFFERENT_NONZERO_PATTERN;
   else {
-    if (matnonzerostate != pc->matnonzerostate) {
+    PetscBool same;
+
+    PetscCall(MatStateCompare(matstate, pc->matstate, &same));
+    if (same) PetscFunctionReturn(PETSC_SUCCESS);
+    pc->flag = SAME_NONZERO_PATTERN;
+    if (matstate.nonzerostate != pc->matstate.nonzerostate) {
       PetscCall(PetscInfo(pc, "Setting up PC with different nonzero pattern\n"));
       pc->flag = DIFFERENT_NONZERO_PATTERN;
-    } else {
-      //PetscCall(PetscInfo(pc, "Setting up PC with same nonzero pattern\n"));
-      pc->flag = SAME_NONZERO_PATTERN;
     }
   }
-  pc->matstate        = matstate;
-  pc->matnonzerostate = matnonzerostate;
+  pc->matstate = matstate;
 
   if (!((PetscObject)pc)->type_name) {
     PetscCall(PCGetDefaultType_Private(pc, &def));
@@ -1047,7 +1044,7 @@ PetscErrorCode PCSetUp(PC pc)
   }
   PetscCall(PetscLogEventEnd(PC_SetUp, pc, 0, 0, 0));
   if (pc->postsetup) PetscCall((*pc->postsetup)(pc));
-  if (!pc->setupcalled) pc->setupcalled = PETSC_TRUE;
+  pc->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1212,8 +1209,7 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
 
   if (Pmat != pc->pmat) {
     /* changing the operator that defines the preconditioner thus reneed to clear current states so new preconditioner is built */
-    pc->matnonzerostate = -1;
-    pc->matstate        = -1;
+    PetscCall(MatStateInvalidate(pc->matstate));
   }
 
   /* reference first in case the matrices are the same */

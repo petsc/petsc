@@ -8,11 +8,8 @@ static PetscErrorCode KSPSetUp_Richardson(KSP ksp)
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
 
   PetscFunctionBegin;
-  if (richardsonP->selfscale) {
-    PetscCall(KSPSetWorkVecs(ksp, 4));
-  } else {
-    PetscCall(KSPSetWorkVecs(ksp, 2));
-  }
+  if (richardsonP->selfscale) PetscCall(KSPSetWorkVecs(ksp, 4));
+  else PetscCall(KSPSetWorkVecs(ksp, 2));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -21,7 +18,7 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
   PetscReal       rnorm = 0.0, abr;
   PetscScalar     scale, rdot;
   Vec             x, b, r, z, w = NULL, y = NULL;
-  PetscInt        i, maxit, xs, ws;
+  PetscInt        i, maxit;
   Mat             Amat, Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
   PetscBool       exists;
@@ -29,19 +26,11 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   ksp->its = 0;
+  PetscCheck(ksp->nwork == (richardsonP->selfscale ? 4 : 2), PetscObjectComm((PetscObject)ksp), PETSC_ERR_COR, "Unexpected number of work vectors %" PetscInt_FMT " != %d", ksp->nwork, richardsonP->selfscale ? 4 : 2);
 
   PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
   x = ksp->vec_sol;
   b = ksp->vec_rhs;
-  PetscCall(VecGetSize(x, &xs));
-  PetscCall(VecGetSize(ksp->work[0], &ws));
-  if (xs != ws) {
-    if (richardsonP->selfscale) {
-      PetscCall(KSPSetWorkVecs(ksp, 4));
-    } else {
-      PetscCall(KSPSetWorkVecs(ksp, 2));
-    }
-  }
   r = ksp->work[0];
   z = ksp->work[1];
   if (richardsonP->selfscale) {

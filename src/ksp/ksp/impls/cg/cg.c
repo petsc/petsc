@@ -368,6 +368,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
+  PetscCheck(ksp->nwork == 5, PetscObjectComm((PetscObject)ksp), PETSC_ERR_COR, "Unexpected number of work vectors %" PetscInt_FMT " != 5", ksp->nwork);
   cg            = (KSP_CG *)ksp->data;
   eigs          = ksp->calc_sings;
   stored_max_it = ksp->max_it;
@@ -573,13 +574,13 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
 PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_CG   *cg = (KSP_CG *)ksp->data;
-  PetscBool flg;
+  PetscBool flg, flg2;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP CG and CGNE options");
   if (PetscDefined(USE_COMPLEX)) PetscCall(PetscOptionsEnum("-ksp_cg_type", "Matrix is Hermitian or complex symmetric", "KSPCGSetType", KSPCGTypes, (PetscEnum)cg->type, (PetscEnum *)&cg->type, NULL));
-  PetscCall(PetscOptionsBool("-ksp_cg_single_reduction", "Merge inner products into single MPI_Allreduce()", "KSPCGUseSingleReduction", cg->singlereduction, &cg->singlereduction, &flg));
-  if (flg) PetscCall(KSPCGUseSingleReduction(ksp, cg->singlereduction));
+  PetscCall(PetscOptionsBool("-ksp_cg_single_reduction", "Merge inner products into single MPI_Allreduce()", "KSPCGUseSingleReduction", cg->singlereduction, &flg2, &flg));
+  if (flg) PetscCall(KSPCGUseSingleReduction(ksp, flg2));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -610,6 +611,7 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
   KSP_CG *cg = (KSP_CG *)ksp->data;
 
   PetscFunctionBegin;
+  if (cg->singlereduction != flg) ksp->setupstage = KSP_SETUP_NEW;
   cg->singlereduction = flg;
   if (cg->singlereduction) {
     ksp->ops->solve = KSPSolve_CG_SingleReduction;

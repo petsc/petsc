@@ -21,6 +21,22 @@
 S*/
 typedef struct _p_Mat *Mat;
 
+/*S
+   MatState - Snapshot of the state of a `Mat`
+
+   Level: developer
+
+   Note:
+   A `MatState` records the object id, state, and nonzero state of a `Mat`.
+
+.seealso: [](ch_matrices), `Mat`, `MatGetState()`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectGetId()`
+S*/
+typedef struct {
+  PetscObjectId    id;
+  PetscObjectState state;
+  PetscObjectState nonzerostate;
+} MatState;
+
 /*J
    MatType - String with the name of a PETSc matrix type. These are all the matrix formats that PETSc provides.
 
@@ -393,7 +409,26 @@ PETSC_EXTERN PetscErrorCode MatSetOptionsPrefixFactor(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefixFactor(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat, const char *[]);
-PETSC_EXTERN PetscErrorCode MatGetState(Mat, PetscObjectState *);
+PETSC_EXTERN PetscErrorCode MatGetState(Mat, MatState *);
+PETSC_EXTERN PetscErrorCode MatStateCompare(MatState, MatState, PetscBool *);
+PETSC_EXTERN PetscErrorCode MatStateCompareUpdate(Mat, MatState *, PetscBool *);
+/*MC
+  MatStateInvalidate - Invalidates a matrix state snapshot
+
+  Synopsis:
+  #include <petscmat.h>
+  PetscErrorCode MatStateInvalidate(MatState state)
+
+  Not Collective
+
+  Input/Output Parameter:
+. state - the matrix state
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `MatState`, `MatGetState()`, `MatStateCompare()`, `MatStateCompareUpdate()`
+M*/
+#define MatStateInvalidate(s) ((s).id = 0, (s).state = -1, (s).nonzerostate = -1, PETSC_SUCCESS)
 PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat, PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
