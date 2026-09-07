@@ -294,8 +294,8 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   PetscValidHeaderSpecific(s, VEC_CLASSID, 5);
   PetscAssertPointer(reason, 7);
   PetscCheckSameComm(ls, 1, x, 2);
-  PetscCheckSameTypeAndComm(x, 2, g, 4);
-  PetscCheckSameTypeAndComm(x, 2, s, 5);
+  PetscCheckSameComm(x, 2, g, 4);
+  PetscCheckSameComm(x, 2, s, 5);
   PetscCall(VecGetOwnershipRange(x, &low1, &high1));
   PetscCall(VecGetOwnershipRange(g, &low2, &high2));
   PetscCall(VecGetOwnershipRange(s, &low3, &high3));

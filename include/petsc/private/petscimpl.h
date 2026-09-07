@@ -689,29 +689,12 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 
   #else
 
-    /*
-  This macro currently does nothing, the plan is for each PetscObject to have a PetscInt "type"
-  member associated with the string type_name that can be quickly compared.
-
-  **Do not swap this macro to compare string type_name!**
-
-  This macro is used incorrectly in the code. Many places that do not need identity of the
-  types incorrectly call this check and would need to be fixed if this macro is enabled.
-*/
-    #if 0
-      #define PetscCheckSameType(a, arga, b, argb) \
-        do { \
-          PetscBool pcst_type_eq_ = PETSC_TRUE; \
-          PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name, &pcst_type_eq_)); \
-          PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type : Argument # % d and % d, % s != % s ", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
-        } while (0)
-    #else
-      #define PetscCheckSameType(a, arga, b, argb) \
-        do { \
-          (void)(a); \
-          (void)(b); \
-        } while (0)
-    #endif
+    #define PetscCheckSameType(a, arga, b, argb) \
+      do { \
+        PetscBool pcst_type_eq_ = PETSC_TRUE; \
+        PetscCall(PetscStrcmp(((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name, &pcst_type_eq_)); \
+        PetscCheck(pcst_type_eq_, PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Objects not of same type: Argument # %d and %d, %s != %s", arga, argb, ((PetscObject)(a))->type_name, ((PetscObject)(b))->type_name); \
+      } while (0)
 
     /*
     Check type_name

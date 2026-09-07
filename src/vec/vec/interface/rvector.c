@@ -62,7 +62,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
   PetscAssertPointer(max, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
-  PetscCheckSameTypeAndComm(x, 1, y, 2);
+  PetscCheckSameComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -113,7 +113,7 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
   PetscAssertPointer(val, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
-  PetscCheckSameTypeAndComm(x, 1, y, 2);
+  PetscCheckSameComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -426,7 +426,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
   PetscAssertPointer(val, 3);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
-  PetscCheckSameTypeAndComm(x, 1, y, 2);
+  PetscCheckSameComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -612,7 +612,7 @@ PetscErrorCode VecAXPYAsync_Private(Vec y, PetscScalar alpha, Vec x, PetscDevice
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidType(x, 3);
   PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 3, y, 1);
+  PetscCheckSameComm(x, 3, y, 1);
   VecCheckSameSize(x, 3, y, 1);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -674,7 +674,7 @@ PetscErrorCode VecAYPXAsync_Private(Vec y, PetscScalar beta, Vec x, PetscDeviceC
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidType(x, 3);
   PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 3, y, 1);
+  PetscCheckSameComm(x, 3, y, 1);
   VecCheckSameSize(x, 1, y, 3);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -731,7 +731,7 @@ PetscErrorCode VecAXPBYAsync_Private(Vec y, PetscScalar alpha, PetscScalar beta,
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidType(x, 4);
   PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 4, y, 1);
+  PetscCheckSameComm(x, 4, y, 1);
   VecCheckSameSize(y, 1, x, 4);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
@@ -790,8 +790,8 @@ PetscErrorCode VecAXPBYPCZAsync_Private(Vec z, PetscScalar alpha, PetscScalar be
   PetscValidType(z, 1);
   PetscValidType(x, 5);
   PetscValidType(y, 6);
-  PetscCheckSameTypeAndComm(x, 5, y, 6);
-  PetscCheckSameTypeAndComm(x, 5, z, 1);
+  PetscCheckSameComm(x, 5, y, 6);
+  PetscCheckSameComm(x, 5, z, 1);
   VecCheckSameSize(x, 5, y, 6);
   VecCheckSameSize(x, 5, z, 1);
   PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
@@ -857,8 +857,8 @@ PetscErrorCode VecWAXPYAsync_Private(Vec w, PetscScalar alpha, Vec x, Vec y, Pet
   PetscValidType(w, 1);
   PetscValidType(x, 3);
   PetscValidType(y, 4);
-  PetscCheckSameTypeAndComm(x, 3, y, 4);
-  PetscCheckSameTypeAndComm(y, 4, w, 1);
+  PetscCheckSameComm(x, 3, y, 4);
+  PetscCheckSameComm(y, 4, w, 1);
   VecCheckSameSize(x, 3, y, 4);
   VecCheckSameSize(x, 3, w, 1);
   PetscCheck(w != y, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector y, suggest VecAXPY()");
@@ -1208,7 +1208,7 @@ static PetscErrorCode VecMXDot_Private(Vec x, PetscInt nv, const Vec y[], PetscS
   for (PetscInt i = 0; i < nv; ++i) {
     PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
     PetscValidType(y[i], 3);
-    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    PetscCheckSameComm(x, 1, y[i], 3);
     VecCheckSameSize(x, 1, y[i], 3);
     VecCheckAssembled(y[i]);
     PetscCall(VecLockReadPush(y[i]));
@@ -1322,7 +1322,7 @@ PetscErrorCode VecMAXPYAsync_Private(Vec y, PetscInt nv, const PetscScalar alpha
       PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
       PetscValidHeaderSpecific(x[i], VEC_CLASSID, 4);
       PetscValidType(x[i], 4);
-      PetscCheckSameTypeAndComm(y, 1, x[i], 4);
+      PetscCheckSameComm(y, 1, x[i], 4);
       VecCheckSameSize(y, 1, x[i], 4);
       PetscCheck(y != x[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array of vectors 'x' cannot contain y, found x[%" PetscInt_FMT "] == y", i);
       VecCheckAssembled(x[i]);
@@ -1413,7 +1413,7 @@ PetscErrorCode VecMAXPBY(Vec y, PetscInt nv, const PetscScalar alpha[], PetscSca
       PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
       PetscValidHeaderSpecific(x[i], VEC_CLASSID, 5);
       PetscValidType(x[i], 5);
-      PetscCheckSameTypeAndComm(y, 1, x[i], 5);
+      PetscCheckSameComm(y, 1, x[i], 5);
       VecCheckSameSize(y, 1, x[i], 5);
       PetscCheck(y != x[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array of vectors 'x' cannot contain y, found x[%" PetscInt_FMT "] == y", i);
       VecCheckAssembled(x[i]);

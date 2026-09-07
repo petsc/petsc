@@ -1222,7 +1222,6 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
   PetscFunctionBegin;
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
-  PetscCheckSameType(B, 2, X, 3);
   ksp->mat_rhs = NULL; /* it is set around the ksp->ops->matsolve calls below, an erroring type method must not leave it dangling */
   PetscCheck(B->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(X, 3);

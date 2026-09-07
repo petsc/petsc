@@ -378,8 +378,8 @@ static PetscErrorCode MatADot_Diagonal_Local(Mat A, Vec x, Vec y, PetscScalar *v
   PetscScalar        sum = 0;
 
   PetscFunctionBegin;
-  PetscCheckSameTypeAndComm(x, 2, ctx->diag, 1);
-  PetscCheckSameTypeAndComm(y, 3, ctx->diag, 1);
+  PetscCheckSameComm(x, 2, ctx->diag, 1);
+  PetscCheckSameComm(y, 3, ctx->diag, 1);
   PetscCall(VecGetArrayRead(x, &xa));
   PetscCall(VecGetArrayRead(y, &ya));
   PetscCall(VecGetArrayRead(ctx->diag, &wa));
@@ -411,7 +411,7 @@ static PetscErrorCode MatANorm_Diagonal_Local(Mat A, Vec x, PetscReal *val)
   PetscScalar        sum = 0;
 
   PetscFunctionBegin;
-  PetscCheckSameTypeAndComm(x, 2, ctx->diag, 1);
+  PetscCheckSameComm(x, 2, ctx->diag, 1);
   PetscCall(VecGetArrayRead(x, &xa));
   PetscCall(VecGetArrayRead(ctx->diag, &wa));
   for (PetscInt i = 0; i < n; i++) {
