@@ -458,10 +458,10 @@ int main(int argc, char **argv)
     PetscCall(DMNetworkCreate(PETSC_COMM_WORLD, &networkdm));
 
     /* Register the components in the network */
-    PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _p_EDGE_Power), &componentkey[0]));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _p_VERTEX_Power), &componentkey[1]));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _p_GEN), &componentkey[2]));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _p_LOAD), &componentkey[3]));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _n_EDGE_Power), &componentkey[0]));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _n_VERTEX_Power), &componentkey[1]));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _n_GEN), &componentkey[2]));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _n_LOAD), &componentkey[3]));
 
     PetscCall(PetscLogStageRegister("Read Data", &stage1));
     PetscCall(PetscLogStagePush(stage1));

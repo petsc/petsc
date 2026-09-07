@@ -8,9 +8,9 @@ typedef struct {
   Vec VR; /* Work vector in the row space */
   IS  Rows, Cols;
 
-} _p_MatSubMatFreeCtx;
+} _n_MatSubMatFreeCtx;
 
-typedef _p_MatSubMatFreeCtx *MatSubMatFreeCtx;
+typedef _n_MatSubMatFreeCtx *MatSubMatFreeCtx;
 
 PetscErrorCode MatCreateSubMatrixFree(Mat, IS, IS, Mat *);
 PetscErrorCode MatSMFResetRowColumn(Mat, IS, IS);

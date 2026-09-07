@@ -12,8 +12,8 @@ PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_CreateLabels;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetCoordinates;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_Check;
 
-typedef struct _p_DMPlexTransformOps *DMPlexTransformOps;
-struct _p_DMPlexTransformOps {
+typedef struct _n_DMPlexTransformOps *DMPlexTransformOps;
+struct _n_DMPlexTransformOps {
   PetscErrorCode (*view)(DMPlexTransform, PetscViewer);
   PetscErrorCode (*setfromoptions)(DMPlexTransform, PetscOptionItems);
   PetscErrorCode (*setup)(DMPlexTransform);
@@ -27,7 +27,7 @@ struct _p_DMPlexTransformOps {
 };
 
 struct _p_DMPlexTransform {
-  PETSCHEADER(struct _p_DMPlexTransformOps);
+  PETSCHEADER(struct _n_DMPlexTransformOps);
   void *data;
 
   DM            dm;            /* This is the DM for which the transform has been computed */

@@ -16,7 +16,7 @@
 
 .seealso: `DMSWARM`, `DMSwarmDataBucket`, `DMSwarmDataBucketGetDMSwarmDataFieldByName()`, `DMSwarmDataFieldGetEntries()`
 S*/
-typedef struct _p_DMSwarmDataField *DMSwarmDataField;
+typedef struct _n_DMSwarmDataField *DMSwarmDataField;
 
 /*S
   DMSwarmDataBucket - Opaque internal container that groups all of a `DMSWARM`'s per-particle fields (`DMSwarmDataField`) and the current particle count
@@ -29,7 +29,7 @@ typedef struct _p_DMSwarmDataField *DMSwarmDataField;
 
 .seealso: `DMSWARM`, `DMSwarmDataField`, `DMSwarmRegisterPetscDatatypeField()`
 S*/
-typedef struct _p_DMSwarmDataBucket *DMSwarmDataBucket;
+typedef struct _n_DMSwarmDataBucket *DMSwarmDataBucket;
 
 /*S
   DMSwarmSort - PETSc object for sorting `DMSWARM` particles into `DM` cells. Sort particles by their background cell index for fast cell-to-particle lookups.

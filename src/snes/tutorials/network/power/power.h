@@ -11,7 +11,7 @@
 #define NGEN_AT_BUS_MAX  15
 #define NLOAD_AT_BUS_MAX 1
 
-struct _p_UserCtx_Power {
+struct _n_UserCtx_Power {
   PetscScalar Sbase;
   PetscBool   jac_error; /* introduce error in the jacobian */
   PetscInt    compkey_branch;
@@ -20,11 +20,11 @@ struct _p_UserCtx_Power {
   PetscInt    compkey_load;
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_UserCtx_Power UserCtx_Power;
+typedef struct _n_UserCtx_Power UserCtx_Power;
 
 /* 2. Bus data */
 /* 11 columns */
-struct _p_VERTEX_Power {
+struct _n_VERTEX_Power {
   PetscInt    bus_i;                 /* Integer bus number .. used by some formats like Matpower */
   char        i[20];                 /* Bus Number */
   char        name[20];              /* Bus Name */
@@ -44,11 +44,11 @@ struct _p_VERTEX_Power {
   PetscInt    lidx[NLOAD_AT_BUS_MAX];
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_VERTEX_Power *VERTEX_Power;
+typedef struct _n_VERTEX_Power *VERTEX_Power;
 
 /* 3. Load data */
 /* 12 columns */
-struct _p_LOAD {
+struct _n_LOAD {
   PetscInt    bus_i;  /* Bus number */
   char        i[20];  /* Bus Number or extended bus name*/
   char        id[20]; /* Load identifier, in case of multiple loads. 1 by default */
@@ -66,12 +66,12 @@ struct _p_LOAD {
   PetscInt    internal_i; /* Internal Bus Number */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_LOAD *LOAD;
+typedef struct _n_LOAD *LOAD;
 
 /* 4. Generator data */
 /* 20+ columns */
 /******* 20, USING ONLY 1 OWNER's WORTH OF DATA. COME BACK TO THIS LATER, if necessary ******/
-struct _p_GEN {
+struct _n_GEN {
   PetscInt    bus_i;
   char        i[20];  /* Bus Number or extended bus name*/
   char        id[20]; /* Generator identifier, in case of multiple generators at same bus. 1 by default */
@@ -97,10 +97,10 @@ struct _p_GEN {
   PetscInt    internal_i; /* Internal Bus Number */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_GEN *GEN;
+typedef struct _n_GEN *GEN;
 
 /* 17+ columns */
-struct _p_EDGE_Power {
+struct _n_EDGE_Power {
   PetscInt    fbus;
   PetscInt    tbus;
   char        i[20];   /* Bus Number or extended bus name*/
@@ -127,7 +127,7 @@ struct _p_EDGE_Power {
   PetscInt    internal_j;                     /* Internal To Bus Number */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_EDGE_Power *EDGE_Power;
+typedef struct _n_EDGE_Power *EDGE_Power;
 
 /* PTI format data structure */
 typedef struct {

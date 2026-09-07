@@ -14,9 +14,9 @@ static PetscErrorCode SetUpNetworkHeaderComponentValue(DM dm, DMNetworkComponent
   PetscCall(PetscCalloc5(header->maxcomps, &header->size, header->maxcomps, &header->key, header->maxcomps, &header->offset, header->maxcomps, &header->nvar, header->maxcomps, &header->offsetvarrel));
   PetscCall(PetscCalloc1(header->maxcomps, &cvalue->data));
 
-  /* The size of the header is the size of struct _p_DMNetworkComponentHeader. Since the struct contains PetscInt pointers we cannot use sizeof(struct). So, we need to explicitly calculate the size.
+  /* The size of the header is the size of struct _n_DMNetworkComponentHeader. Since the struct contains PetscInt pointers we cannot use sizeof(struct). So, we need to explicitly calculate the size.
    If the data header struct changes then this header size calculation needs to be updated. */
-  header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
+  header->hsize = sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
   header->hsize /= sizeof(DMNetworkComponentGenericDataType);
 #if defined(__NEC__)
   /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
@@ -1385,7 +1385,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
     PetscCall(PetscMalloc1(header->maxcomps, &compdata));
 
     /* Recalculate header size */
-    header->hsize = sizeof(struct _p_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
+    header->hsize = sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
     header->hsize /= sizeof(DMNetworkComponentGenericDataType);
 #if defined(__NEC__)
     /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
@@ -1509,7 +1509,7 @@ static PetscErrorCode DMNetworkComponentSetUp(DM dm)
     /* Copy header */
     header     = &network->header[p];
     headerinfo = (DMNetworkComponentHeader)(componentdataarray + offsetp);
-    PetscCall(PetscMemcpy(headerinfo, header, sizeof(struct _p_DMNetworkComponentHeader)));
+    PetscCall(PetscMemcpy(headerinfo, header, sizeof(struct _n_DMNetworkComponentHeader)));
     headerarr = (PetscInt *)(headerinfo + 1);
     PetscCall(PetscMemcpy(headerarr, header->size, header->maxcomps * sizeof(PetscInt)));
     headerinfo->size = headerarr;

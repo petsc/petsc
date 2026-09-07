@@ -222,8 +222,8 @@ struct _MatOps {
 
 #include <petscsys.h>
 
-typedef struct _p_MatRootName *MatRootName;
-struct _p_MatRootName {
+typedef struct _n_MatRootName *MatRootName;
+struct _n_MatRootName {
   char       *rname, *sname, *mname;
   MatRootName next;
 };

@@ -9,8 +9,8 @@ typedef enum {
   DEOBJECT_STATE_UNKNOWN
 } DMSwarmDEObjectState;
 
-typedef struct _p_DMSwarmDataEx *DMSwarmDataEx;
-struct _p_DMSwarmDataEx {
+typedef struct _n_DMSwarmDataEx *DMSwarmDataEx;
+struct _n_DMSwarmDataEx {
   PetscInt             instance;
   MPI_Comm             comm;
   PetscMPIInt          rank;

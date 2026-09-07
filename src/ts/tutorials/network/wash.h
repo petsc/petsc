@@ -28,7 +28,7 @@ typedef struct {
 
 /* junction              */
 /*-----------------------*/
-struct _p_Junction {
+struct _n_Junction {
   PetscInt   id;  /* global index */
   PetscInt   tag; /* external id */
   VertexType type;
@@ -41,14 +41,14 @@ struct _p_Junction {
   Reservoir reservoir;
   Valve     valve;
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
-typedef struct _p_Junction *Junction;
+typedef struct _n_Junction *Junction;
 
 extern PetscErrorCode JunctionCreateJacobian(DM, PetscInt, Mat *, Mat *[]);
 extern PetscErrorCode JunctionDestroyJacobian(DM, PetscInt, Junction);
 
 /* wash                   */
 /*------------------------*/
-struct _p_Wash {
+struct _n_Wash {
   MPI_Comm  comm;
   PetscInt  nedge, nvertex;    /* local number of components */
   PetscInt  Nedge, Nvertex;    /* global number of components */
@@ -67,7 +67,7 @@ struct _p_Wash {
   /* Events */
   PetscInt close_valve;
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
-typedef struct _p_Wash *Wash;
+typedef struct _n_Wash *Wash;
 
 extern PetscErrorCode WashNetworkCreate(MPI_Comm, PetscInt, Wash *);
 extern PetscErrorCode WashNetworkCleanUp(Wash);

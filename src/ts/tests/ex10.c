@@ -6,8 +6,8 @@ static char help[] = "Simple wrapper object to solve DAE of the form:\n\
 
 /* ----------------------------------------------------------------------------*/
 
-typedef struct _p_TSDAESimple *TSDAESimple;
-struct _p_TSDAESimple {
+typedef struct _n_TSDAESimple *TSDAESimple;
+struct _n_TSDAESimple {
   MPI_Comm comm;
   PetscErrorCode (*setfromoptions)(TSDAESimple, PetscOptionItems);
   PetscErrorCode (*solve)(TSDAESimple, Vec);

@@ -10,8 +10,8 @@ typedef struct {
   Vec      W2;
   Vec      ADADiag;
   PetscInt GotDiag;
-} _p_TaoMatADACtx;
-typedef _p_TaoMatADACtx *TaoMatADACtx;
+} _n_TaoMatADACtx;
+typedef _n_TaoMatADACtx *TaoMatADACtx;
 
 static PetscErrorCode MatMult_ADA(Mat mat, Vec a, Vec y)
 {

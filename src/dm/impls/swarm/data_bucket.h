@@ -15,7 +15,7 @@ typedef enum {
   DATABUCKET_VIEW_HDF5
 } DMSwarmDataBucketViewType;
 
-struct _p_DMSwarmDataField {
+struct _n_DMSwarmDataField {
   char         *registration_function;
   PetscInt      L, bs;
   PetscBool     active;
@@ -25,7 +25,7 @@ struct _p_DMSwarmDataField {
   PetscDataType petsc_type;
 };
 
-struct _p_DMSwarmDataBucket {
+struct _n_DMSwarmDataBucket {
   PetscInt          L;         /* number in use */
   PetscInt          buffer;    /* memory buffer used for re-allocation */
   PetscInt          allocated; /* number allocated, this will equal datafield->L */

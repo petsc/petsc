@@ -29,8 +29,8 @@ int main(int argc, char **argv)
   PetscCall(DMNetworkCreate(PETSC_COMM_WORLD, &networkdm));
 
   /* Register the components in the network */
-  PetscCall(DMNetworkRegisterComponent(networkdm, "edgestruct", sizeof(struct _p_EDGE_Water), &appctx.compkey_edge));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _p_VERTEX_Water), &appctx.compkey_vtx));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "edgestruct", sizeof(struct _n_EDGE_Water), &appctx.compkey_edge));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _n_VERTEX_Water), &appctx.compkey_vtx));
 
   PetscCall(PetscLogStageRegister("Read Data", &stage1));
   PetscCall(PetscLogStagePush(stage1));

@@ -645,8 +645,8 @@ int main(int argc, char **argv)
   if (size == 1 && monipipes) PetscCall(DMNetworkMonitorCreate(networkdm, &monitor));
 
   /* Register the components in the network */
-  PetscCall(DMNetworkRegisterComponent(networkdm, "junctionstruct", sizeof(struct _p_Junction), &KeyJunction));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "pipestruct", sizeof(struct _p_Pipe), &KeyPipe));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "junctionstruct", sizeof(struct _n_Junction), &KeyJunction));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "pipestruct", sizeof(struct _n_Pipe), &KeyPipe));
 
   /* Create a distributed wash network (user-specific) */
   PetscCall(WashNetworkCreate(comm, pipesCase, &wash));

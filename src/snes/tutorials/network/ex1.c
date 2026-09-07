@@ -545,13 +545,13 @@ int main(int argc, char **argv)
   PetscCall(DMNetworkCreate(PETSC_COMM_WORLD, &networkdm));
 
   /* Register the components in the network */
-  PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _p_EDGE_Power), &appctx_power->compkey_branch));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _p_VERTEX_Power), &appctx_power->compkey_bus));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _p_GEN), &appctx_power->compkey_gen));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _p_LOAD), &appctx_power->compkey_load));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _n_EDGE_Power), &appctx_power->compkey_branch));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _n_VERTEX_Power), &appctx_power->compkey_bus));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _n_GEN), &appctx_power->compkey_gen));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _n_LOAD), &appctx_power->compkey_load));
 
-  PetscCall(DMNetworkRegisterComponent(networkdm, "edge_water", sizeof(struct _p_EDGE_Water), &appctx_water->compkey_edge));
-  PetscCall(DMNetworkRegisterComponent(networkdm, "vertex_water", sizeof(struct _p_VERTEX_Water), &appctx_water->compkey_vtx));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "edge_water", sizeof(struct _n_EDGE_Water), &appctx_water->compkey_edge));
+  PetscCall(DMNetworkRegisterComponent(networkdm, "vertex_water", sizeof(struct _n_VERTEX_Water), &appctx_water->compkey_vtx));
 
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] Total local nvertices %" PetscInt_FMT " + %" PetscInt_FMT " = %" PetscInt_FMT ", nedges %" PetscInt_FMT " + %" PetscInt_FMT " = %" PetscInt_FMT "\n", rank, numVertices[0], numVertices[1], numVertices[0] + numVertices[1], numEdges[0], numEdges[1], numEdges[0] + numEdges[1]));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));

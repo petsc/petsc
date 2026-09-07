@@ -6,8 +6,8 @@
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashseti.h>
 
-typedef struct _p_DMLabelOps *DMLabelOps;
-struct _p_DMLabelOps {
+typedef struct _n_DMLabelOps *DMLabelOps;
+struct _n_DMLabelOps {
   PetscErrorCode (*view)(DMLabel, PetscViewer);
   PetscErrorCode (*setup)(DMLabel);
   PetscErrorCode (*destroy)(DMLabel);
@@ -22,7 +22,7 @@ struct _p_DMLabelOps {
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
 struct _p_DMLabel {
-  PETSCHEADER(struct _p_DMLabelOps);
+  PETSCHEADER(struct _n_DMLabelOps);
   PetscBool readonly;      /* Flag for labels which cannot be modified after creation */
   PetscInt  numStrata;     /* Number of integer values */
   PetscInt  defaultValue;  /* Background value when no value explicitly given */
