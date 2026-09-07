@@ -648,28 +648,28 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
       char sawslog[PETSC_MAX_PATH_LEN];
 
       PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_log", sawslog, sizeof(sawslog), NULL));
-      if (sawslog[0]) PetscCallSAWs(SAWs_Set_Use_Logfile, (sawslog));
-      else PetscCallSAWs(SAWs_Set_Use_Logfile, (NULL));
+      if (sawslog[0]) PetscCallSAWs(SAWs_Set_Use_Logfile, sawslog);
+      else PetscCallSAWs(SAWs_Set_Use_Logfile, NULL);
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_https", cert, sizeof(cert), &flg));
-    if (flg) PetscCallSAWs(SAWs_Set_Use_HTTPS, (cert));
+    if (flg) PetscCallSAWs(SAWs_Set_Use_HTTPS, cert);
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_port_auto_select", &selectport, NULL));
     if (selectport) {
-      PetscCallSAWs(SAWs_Get_Available_Port, (&port));
-      PetscCallSAWs(SAWs_Set_Port, (port));
+      PetscCallSAWs(SAWs_Get_Available_Port, &port);
+      PetscCallSAWs(SAWs_Set_Port, port);
     } else {
       PetscCall(PetscOptionsGetInt(NULL, NULL, "-saws_port", &port, &flg));
-      if (flg) PetscCallSAWs(SAWs_Set_Port, (port));
+      if (flg) PetscCallSAWs(SAWs_Set_Port, port);
     }
     PetscCall(PetscOptionsGetString(NULL, NULL, "-saws_root", root, sizeof(root), &flg));
     if (flg) {
-      PetscCallSAWs(SAWs_Set_Document_Root, (root));
+      PetscCallSAWs(SAWs_Set_Document_Root, root);
       PetscCall(PetscStrcmp(root, ".", &rootlocal));
     } else {
       PetscCall(PetscOptionsHasName(NULL, NULL, "-saws_options", &flg));
       if (flg) {
         PetscCall(PetscStrreplace(PETSC_COMM_WORLD, "${PETSC_DIR}/share/petsc/saws", root, sizeof(root)));
-        PetscCallSAWs(SAWs_Set_Document_Root, (root));
+        PetscCallSAWs(SAWs_Set_Document_Root, root);
       }
     }
     PetscCall(PetscOptionsHasName(NULL, NULL, "-saws_local", &flg2));
@@ -679,7 +679,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
       PetscCall(PetscSNPrintf(jsdir, sizeof(jsdir), "%s/js", root));
       PetscCall(PetscTestDirectory(jsdir, 'r', &flg));
       PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "-saws_local option requires js directory in root directory");
-      PetscCallSAWs(SAWs_Push_Local_Header, ());
+      PetscCallSAWs(SAWs_Push_Local_Header, );
     }
     PetscCall(PetscGetProgramName(programname, sizeof(programname)));
     PetscCall(PetscStrlen(help, &applinelen));
@@ -708,7 +708,7 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
                             "<center>This is the default PETSc application dashboard, from it you can access any published PETSc objects or logging data</center><br><center>%s configured with %s</center><br>\n"
                             "%s",
                             version, petscconfigureoptions, appline));
-    PetscCallSAWs(SAWs_Push_Body, ("index.html", 0, intro));
+    PetscCallSAWs(SAWs_Push_Body, "index.html", 0, intro);
     PetscCall(PetscFree(intro));
     PetscCall(PetscFree(appline));
     if (selectport) {
@@ -716,17 +716,17 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
 
       /* another process may have grabbed the port so keep trying */
       while (SAWs_Initialize()) {
-        PetscCallSAWs(SAWs_Get_Available_Port, (&port));
-        PetscCallSAWs(SAWs_Set_Port, (port));
+        PetscCallSAWs(SAWs_Get_Available_Port, &port);
+        PetscCallSAWs(SAWs_Set_Port, port);
       }
 
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-saws_port_auto_select_silent", &silent, NULL));
       if (!silent) {
-        PetscCallSAWs(SAWs_Get_FullURL, (sizeof(sawsurl), sawsurl));
+        PetscCallSAWs(SAWs_Get_FullURL, sizeof(sawsurl), sawsurl);
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Point your browser to %s for SAWs\n", sawsurl));
       }
     } else {
-      PetscCallSAWs(SAWs_Initialize, ());
+      PetscCallSAWs(SAWs_Initialize, );
     }
     PetscCall(PetscCitationsRegister("@TechReport{ saws,\n"
                                      "  Author = {Matt Otten and Jed Brown and Barry Smith},\n"
@@ -1646,7 +1646,7 @@ PetscErrorCode PetscFinalize(void)
 #if PetscDefined(HAVE_SAWS)
   if (!PetscGlobalRank) {
     PetscCall(PetscStackSAWsViewOff());
-    PetscCallSAWs(SAWs_Finalize, ());
+    PetscCallSAWs(SAWs_Finalize, );
   }
 #endif
 

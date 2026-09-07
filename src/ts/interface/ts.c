@@ -2045,9 +2045,9 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)ts, viewer));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/time_step", name));
-      PetscCallSAWs(SAWs_Register, (dir, &ts->steps, 1, SAWs_READ, SAWs_INT));
+      PetscCallSAWs(SAWs_Register, dir, &ts->steps, 1, SAWs_READ, SAWs_INT);
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/time", name));
-      PetscCallSAWs(SAWs_Register, (dir, &ts->ptime, 1, SAWs_READ, SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register, dir, &ts->ptime, 1, SAWs_READ, SAWs_DOUBLE);
     }
     PetscTryTypeMethod(ts, view, viewer);
 #endif

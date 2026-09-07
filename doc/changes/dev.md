@@ -17,6 +17,9 @@
   Replace the use of `CLAUDE_OPTS` with `PETSC_LLM_CLI_OPTS` and `PETSC_LLM_MODEL`
 - Add a CodeGraph skill and repository guidance so LLM coding tools automatically use an existing local PETSc CodeGraph index when navigating or reviewing source
 - Add `comm` and `prefix` as initial arguments to `PetscOptionsDeprecatedNoObject()`
+- Change the macros `PetscCallHDF5()`, `PetscCallHDF5ReturnNoCheck()`, `PetscCallHDF5Return()`, `PetscCallEGADS()`, `PetscCallSAWs()`, `PetscCallP4est()`, and
+  `PetscCallP4estReturn()` to be variadic and take the function arguments directly without requiring the parentheses that previously wrapped the function
+  arguments. For functions that take no arguments, a trailing comma after the function name is required per previous C standards
 
 ## Configure/Build
 

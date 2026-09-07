@@ -17,13 +17,13 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_SAWS_(MPI_Comm);
 
   Synopsis:
   #include <petscviewersaws.h>
-  void PetscCallSAWs(func, args)
+  void PetscCallSAWs(func, ...)
 
   Not Collective
 
   Input Parameters:
 + func - any SAWs function that returns an error code
-- args - the arguments to the function
+- ...  - the arguments to the function
 
   Level: beginner
 
@@ -31,11 +31,11 @@ PETSC_EXTERN PetscViewer    PETSC_VIEWER_SAWS_(MPI_Comm);
           `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`,
           `CHKERRMPI()`, `PetscCallBack()`, `PetscCallAbort()`, `PetscCallVoid()`, `PetscCallNull()`
 M*/
-#define PetscCallSAWs(func, args) \
+#define PetscCallSAWs(func, ...) \
   do { \
     int _ierr; \
     PetscStackPushExternal(#func); \
-    _ierr = func args; \
+    _ierr = func(__VA_ARGS__); \
     PetscStackPop; \
     PetscCheck(!_ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s() %d", #func, _ierr); \
   } while (0)

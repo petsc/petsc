@@ -11,16 +11,16 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
 
 #if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
   #include <mkl.h>
-  #define PetscCallMKLSparse(func, args) \
+  #define PetscCallMKLSparse(func, ...) \
     do { \
       sparse_status_t __ierr; \
       PetscStackPushExternal(#func); \
-      __ierr = func args; \
+      __ierr = func(__VA_ARGS__); \
       PetscStackPop; \
       PetscCheck(__ierr == SPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
     } while (0)
 #else
-  #define PetscCallMKLSparse(func, args) \
+  #define PetscCallMKLSparse(func, ...) \
     do { \
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No MKL support"); \
     } while (0)
@@ -172,21 +172,21 @@ int main(int argc, char **argv)
           for (k = 0; k < An + 1; ++k) ia_ptr[k] = Ai[k];
           for (k = 0; k < Ai[An]; ++k) ja_ptr[k] = Aj[k];
           PetscCall(MatSeqAIJGetArray(A, &a_ptr));
-          PetscCallMKLSparse(mkl_sparse_d_create_csr, (&spr, SPARSE_INDEX_BASE_ZERO, An, An, ia_ptr, ia_ptr + 1, ja_ptr, a_ptr));
+          PetscCallMKLSparse(mkl_sparse_d_create_csr, &spr, SPARSE_INDEX_BASE_ZERO, An, An, ia_ptr, ia_ptr + 1, ja_ptr, a_ptr);
         } else {
           PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQBAIJ, &flg));
           if (flg) {
             for (k = 0; k < An + 1; ++k) ia_ptr[k] = Ai[k] + 1; /* Fortran indexing to maximize cases covered by _mm routines */
             for (k = 0; k < Ai[An]; ++k) ja_ptr[k] = Aj[k] + 1; /* Fortran indexing to maximize cases covered by _mm routines */
             PetscCall(MatSeqBAIJGetArray(A, &a_ptr));
-            PetscCallMKLSparse(mkl_sparse_d_create_bsr, (&spr, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, An, An, bs[j], ia_ptr, ia_ptr + 1, ja_ptr, a_ptr));
+            PetscCallMKLSparse(mkl_sparse_d_create_bsr, &spr, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, An, An, bs[j], ia_ptr, ia_ptr + 1, ja_ptr, a_ptr);
           } else {
             PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQSBAIJ, &flg));
             if (flg) {
               for (k = 0; k < An + 1; ++k) ia_ptr[k] = Ai[k] + 1; /* Fortran indexing to maximize cases covered by _mm routines */
               for (k = 0; k < Ai[An]; ++k) ja_ptr[k] = Aj[k] + 1; /* Fortran indexing to maximize cases covered by _mm routines */
               PetscCall(MatSeqSBAIJGetArray(A, &a_ptr));
-              PetscCallMKLSparse(mkl_sparse_d_create_bsr, (&spr, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, An, An, bs[j], ia_ptr, ia_ptr + 1, ja_ptr, a_ptr));
+              PetscCallMKLSparse(mkl_sparse_d_create_bsr, &spr, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, An, An, bs[j], ia_ptr, ia_ptr + 1, ja_ptr, a_ptr);
 #if PetscDefined(HAVE_MKL_SPARSE_OPTIMIZE)
               descr.type = SPARSE_MATRIX_TYPE_SYMMETRIC;
               descr.mode = SPARSE_FILL_MODE_UPPER;
@@ -216,10 +216,10 @@ int main(int argc, char **argv)
           PetscCall(MatConvert(D, MATDENSECUDA, MAT_INPLACE_MATRIX, &D));
         }
         if (mkl) {
-          if (N[k] > 1) PetscCallMKLSparse(mkl_sparse_set_mm_hint, (spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, SPARSE_LAYOUT_COLUMN_MAJOR, N[k], 1 + trial));
-          else PetscCallMKLSparse(mkl_sparse_set_mv_hint, (spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, 1 + trial));
-          PetscCallMKLSparse(mkl_sparse_set_memory_hint, (spr, SPARSE_MEMORY_AGGRESSIVE));
-          PetscCallMKLSparse(mkl_sparse_optimize, (spr));
+          if (N[k] > 1) PetscCallMKLSparse(mkl_sparse_set_mm_hint, spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, SPARSE_LAYOUT_COLUMN_MAJOR, N[k], 1 + trial);
+          else PetscCallMKLSparse(mkl_sparse_set_mv_hint, spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, 1 + trial);
+          PetscCallMKLSparse(mkl_sparse_set_memory_hint, spr, SPARSE_MEMORY_AGGRESSIVE);
+          PetscCallMKLSparse(mkl_sparse_optimize, spr);
         }
         PetscCall(MatGetType(A, &Atype));
         PetscCall(MatGetType(C, &Ctype));
@@ -287,10 +287,10 @@ int main(int argc, char **argv)
 
             PetscCall(MatDenseGetArrayRead(C, &c_ptr));
             PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
-            PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
+            PetscCallMKLSparse(mkl_sparse_d_mm, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM);
             PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (COLUMN_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
             PetscCall(PetscLogStagePush(ab_stage));
-            for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
+            for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_COLUMN_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM);
             PetscCall(PetscLogStagePop());
             PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
             PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));
@@ -318,9 +318,9 @@ int main(int argc, char **argv)
           PetscCall(MatDenseGetArrayRead(C, &c_ptr));
           PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mv: with A %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN));
-          PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
+          PetscCallMKLSparse(mkl_sparse_d_mv, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr);
           PetscCall(PetscLogStagePush(ab_stage));
-          for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mv, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr));
+          for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mv, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, c_ptr, 0.0, d_ptr);
           PetscCall(PetscLogStagePop());
           PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
           PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));
@@ -357,14 +357,14 @@ int main(int argc, char **argv)
               const PetscScalar *c_ptr;
               PetscScalar       *d_ptr;
 
-              PetscCallMKLSparse(mkl_sparse_set_mm_hint, (spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, SPARSE_LAYOUT_ROW_MAJOR, N[k], 1 + trial));
-              PetscCallMKLSparse(mkl_sparse_optimize, (spr));
+              PetscCallMKLSparse(mkl_sparse_set_mm_hint, spr, SPARSE_OPERATION_NON_TRANSPOSE, descr, SPARSE_LAYOUT_ROW_MAJOR, N[k], 1 + trial);
+              PetscCallMKLSparse(mkl_sparse_optimize, spr);
               PetscCall(MatDenseGetArrayRead(C, &c_ptr));
               PetscCall(MatDenseGetArrayWrite(D, &d_ptr));
               PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Benchmarking mkl_sparse_d_mm (ROW_MAJOR): with A %s %" PetscInt_FMT "x%" PetscInt_FMT " and B %s %" PetscInt_FMT "x%" PetscInt_FMT "\n", Atype, AM, AN, Ctype, CM, CN));
-              PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
+              PetscCallMKLSparse(mkl_sparse_d_mm, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM);
               PetscCall(PetscLogStagePush(ab_stage));
-              for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, (SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM));
+              for (t = 0; t < trial; ++t) PetscCallMKLSparse(mkl_sparse_d_mm, SPARSE_OPERATION_NON_TRANSPOSE, 1.0, spr, descr, SPARSE_LAYOUT_ROW_MAJOR, c_ptr, CN, CM, 0.0, d_ptr, CM);
               PetscCall(PetscLogStagePop());
               PetscCall(MatDenseRestoreArrayWrite(D, &d_ptr));
               PetscCall(MatDenseRestoreArrayRead(C, &c_ptr));
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
         PetscCall(MatDestroy(&D));
       }
       if (mkl) {
-        PetscCallMKLSparse(mkl_sparse_destroy, (spr));
+        PetscCallMKLSparse(mkl_sparse_destroy, spr);
         PetscCall(PetscFree(ia_ptr));
         PetscCall(PetscFree(ja_ptr));
       }

@@ -521,10 +521,10 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)snes, viewer));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/its", name));
-      PetscCallSAWs(SAWs_Register, (dir, &snes->iter, 1, SAWs_READ, SAWs_INT));
+      PetscCallSAWs(SAWs_Register, dir, &snes->iter, 1, SAWs_READ, SAWs_INT);
       if (!snes->conv_hist) PetscCall(SNESSetConvergenceHistory(snes, NULL, NULL, PETSC_DECIDE, PETSC_TRUE));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/conv_hist", name));
-      PetscCallSAWs(SAWs_Register, (dir, snes->conv_hist, 10, SAWs_READ, SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register, dir, snes->conv_hist, 10, SAWs_READ, SAWs_DOUBLE);
     }
 #endif
   }

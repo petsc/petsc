@@ -12,37 +12,37 @@
   #include <setjmp.h>
 PETSC_INTERN jmp_buf PetscScJumpBuf;
 
-  #define PetscCallP4est(func, args) \
+  #define PetscCallP4est(func, ...) \
     do { \
       if (setjmp(PetscScJumpBuf)) { \
         return PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_LIB, PETSC_ERROR_REPEAT, "Error in p4est/libsc call %s()", #func); \
       } else { \
         PetscStackPushExternal(#func); \
-        func args; \
+        func(__VA_ARGS__); \
         PetscStackPop; \
       } \
     } while (0)
-  #define PetscCallP4estReturn(ret, func, args) \
+  #define PetscCallP4estReturn(ret, func, ...) \
     do { \
       if (setjmp(PetscScJumpBuf)) { \
         return PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_LIB, PETSC_ERROR_REPEAT, "Error in p4est/libsc call %s()", #func); \
       } else { \
         PetscStackPushExternal(#func); \
-        ret = func args; \
+        ret = func(__VA_ARGS__); \
         PetscStackPop; \
       } \
     } while (0)
 #else
-  #define PetscCallP4est(func, args) \
+  #define PetscCallP4est(func, ...) \
     do { \
       PetscStackPushExternal(#func); \
-      func args; \
+      func(__VA_ARGS__); \
       PetscStackPop; \
     } while (0)
-  #define PetscCallP4estReturn(ret, func, args) \
+  #define PetscCallP4estReturn(ret, func, ...) \
     do { \
       PetscStackPushExternal(#func); \
-      ret = func args; \
+      ret = func(__VA_ARGS__); \
       PetscStackPop; \
     } while (0)
 #endif
