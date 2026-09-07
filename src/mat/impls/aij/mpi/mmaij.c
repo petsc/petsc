@@ -150,8 +150,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
 
   if (B) {
     Mat_SeqAIJ        *Baij = (Mat_SeqAIJ *)B->data;
-    PetscInt           i, j, m = B->rmap->n, n = A->cmap->N, col, ct = 0, *garray = aij->garray, *nz;
-    PetscScalar        v;
+    PetscInt           i, j, m = B->rmap->n, n = A->cmap->N, col, *garray = aij->garray, *nz;
     const PetscScalar *ba;
 
     /* make sure that B is assembled so we can access its values */
@@ -159,7 +158,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
     /* invent new B and copy stuff over */
-    PetscCall(PetscMalloc1(m + 1, &nz));
+    PetscCall(PetscMalloc1(m, &nz));
     if (use_preallocation)
       for (i = 0; i < m; i++) nz[i] = Baij->ipre[i];
     else
@@ -168,6 +167,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
     PetscCall(MatSetSizes(Bnew, m, n, m, n)); /* Bnew now uses A->cmap->N as its col size */
     PetscCall(MatSetBlockSizesFromMats(Bnew, A, A));
     PetscCall(MatSetType(Bnew, ((PetscObject)B)->type_name));
+    PetscCall(MatSetOption(Bnew, MAT_STRUCTURE_ONLY, B->structure_only));
     PetscCall(MatSeqAIJSetPreallocation(Bnew, 0, nz));
 
     if (Baij->nonew >= 0) { /* Inherit insertion error options (if positive). */
@@ -184,9 +184,8 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
     PetscCall(MatSeqAIJGetArrayRead(B, &ba));
     for (i = 0; i < m; i++) {
       for (j = Baij->i[i]; j < Baij->i[i + 1]; j++) {
-        col = garray[Baij->j[ct]];
-        v   = ba[ct++];
-        PetscCall(MatSetValues(Bnew, 1, &i, 1, &col, &v, B->insertmode));
+        col = garray[Baij->j[j]];
+        PetscCall(MatSetValues(Bnew, 1, &i, 1, &col, PetscSafePointerPlusOffset(ba, j), B->insertmode));
       }
     }
     PetscCall(MatSeqAIJRestoreArrayRead(B, &ba));

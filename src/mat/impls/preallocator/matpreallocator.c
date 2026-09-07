@@ -140,7 +140,7 @@ static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
     PetscHashIter  hi;
     PetscHashIJKey key;
-    PetscScalar   *zeros;
+    PetscScalar   *zeros = NULL;
     PetscInt       n, maxrow = 1, *cols, rStart, rEnd, *rowstarts;
 
     PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
@@ -166,7 +166,7 @@ static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool
     }
     PetscCall(PetscHSetIJDestroy(&p->ht));
 
-    PetscCall(PetscCalloc1(maxrow * bs * bs, &zeros));
+    if (!A->structure_only) PetscCall(PetscCalloc1(maxrow * bs * bs, &zeros));
     for (PetscInt i = 0; i < rEnd - rStart; i++) {
       PetscInt grow = rStart + i;
       PetscInt end = rowstarts[i], start = end - p->dnz[i] - p->onz[i];

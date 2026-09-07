@@ -582,7 +582,8 @@ PetscErrorCode MatImaginaryPart(Mat mat)
   whether the internal representation is 0-based (default) or 1-based.
 
   For better efficiency, set `cols` and/or `vals` to `NULL` if you do
-  not wish to extract these quantities.
+  not wish to extract these quantities. `vals` must be `NULL` for a matrix with
+  the `MAT_STRUCTURE_ONLY` option set to true, since no numerical values are stored.
 
   The user can only examine the values extracted with `MatGetRow()`;
   the values CANNOT be altered. To change the matrix entries, one
@@ -616,6 +617,7 @@ PetscErrorCode MatGetRow(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt 
   PetscValidType(mat, 1);
   PetscCheck(mat->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
+  PetscCheck(!mat->structure_only || vals == NULL, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for matrix with MAT_STRUCTURE_ONLY");
   MatCheckPreallocated(mat, 1);
   PetscCheck(row >= mat->rmap->rstart && row < mat->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Only for local rows, %" PetscInt_FMT " not in [%" PetscInt_FMT ",%" PetscInt_FMT ")", row, mat->rmap->rstart, mat->rmap->rend);
   PetscCall(PetscLogEventBegin(MAT_GetRow, mat, 0, 0, 0));
@@ -6715,6 +6717,7 @@ PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
   Note:
   If the matrix was not preallocated then a default, likely poor preallocation will be set in the matrix, so this should be called after the preallocation phase.
   See the Performance chapter of the users manual for information on preallocating matrices.
+  For matrices with the `MAT_STRUCTURE_ONLY` option set to true, this routine leaves the structure and object state unchanged because no numerical values are stored.
 
 .seealso: [](ch_matrices), `Mat`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
@@ -6727,10 +6730,12 @@ PetscErrorCode MatZeroEntries(Mat mat)
   PetscCheck(mat->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for matrices where you have set values but not yet assembled");
   MatCheckPreallocated(mat, 1);
 
-  PetscCall(PetscLogEventBegin(MAT_ZeroEntries, mat, 0, 0, 0));
-  PetscUseTypeMethod(mat, zeroentries);
-  PetscCall(PetscLogEventEnd(MAT_ZeroEntries, mat, 0, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  if (mat->structure_only == PETSC_FALSE) {
+    PetscCall(PetscLogEventBegin(MAT_ZeroEntries, mat, 0, 0, 0));
+    PetscUseTypeMethod(mat, zeroentries);
+    PetscCall(PetscLogEventEnd(MAT_ZeroEntries, mat, 0, 0, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

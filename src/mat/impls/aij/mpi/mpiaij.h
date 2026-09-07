@@ -156,6 +156,8 @@ PETSC_INTERN PetscErrorCode MatProductCtxDestroy_MPIAIJ_PtAP(PetscCtxRt);
 PETSC_INTERN PetscErrorCode MatProductCtxDestroy_MPIAIJ_MatMatMult(PetscCtxRt);
 
 PETSC_INTERN PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat, Mat, MatReuse, PetscInt **, PetscInt **, MatScalar **, Mat *);
+PETSC_INTERN PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ_Private(Mat, Mat, MatReuse, PetscBool, PetscInt **, PetscInt **, MatScalar **, Mat *);
+PETSC_INTERN PetscErrorCode MatMPIAIJGetLocalMat_Private(Mat, MatReuse, PetscBool, Mat *);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat(Mat, const PetscInt[], const PetscInt[], const PetscScalar[]);
 PETSC_INTERN PetscErrorCode MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(Mat, const PetscInt[], const PetscInt[]);

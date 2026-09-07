@@ -39,6 +39,9 @@
 
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ(Mat);
+
 const char *const MatProductTypes[] = {"UNSPECIFIED", "AB", "AtB", "ABt", "PtAP", "RARt", "ABC"};
 
 /* these are basic implementations relying on the old function pointers

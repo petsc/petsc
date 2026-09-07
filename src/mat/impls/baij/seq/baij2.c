@@ -111,6 +111,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
     PetscCall(MatSetSizes(C, nrows * bs, ncols * bs, PETSC_DETERMINE, PETSC_DETERMINE));
     PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
+    PetscCall(MatSetOption(C, MAT_STRUCTURE_ONLY, A->structure_only));
     PetscCall(MatSeqBAIJSetPreallocation(C, bs, 0, lens));
   }
   c = (Mat_SeqBAIJ *)C->data;
@@ -125,23 +126,27 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
     for (k = kstart; k < kend; k++) {
       if ((tcol = ssmap[a->j[k]])) {
         *mat_j++ = tcol - 1;
-        PetscCall(PetscArraycpy(mat_a, a->a + k * bs2, bs2));
-        mat_a += bs2;
+        if (!A->structure_only) {
+          PetscCall(PetscArraycpy(mat_a, a->a + k * bs2, bs2));
+          mat_a += bs2;
+        }
         (*mat_ilen)++;
       }
     }
   }
   /* sort */
-  if (c->j && c->a) {
-    MatScalar *work;
-    PetscCall(PetscMalloc1(bs2, &work));
+  if (c->j) {
+    MatScalar *work = NULL;
+
+    if (!A->structure_only) PetscCall(PetscMalloc1(bs2, &work));
     for (i = 0; i < nrows; i++) {
       PetscInt ilen;
       mat_i = c->i[i];
       mat_j = c->j + mat_i;
-      mat_a = c->a + mat_i * bs2;
+      mat_a = PetscSafePointerPlusOffset(c->a, mat_i * bs2);
       ilen  = c->ilen[i];
-      PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));
+      if (A->structure_only) PetscCall(PetscSortInt(ilen, mat_j));
+      else PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));
     }
     PetscCall(PetscFree(work));
   }

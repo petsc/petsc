@@ -32,16 +32,19 @@ static PetscErrorCode MatCopyHashToXAIJ_Seq_Hash(Mat A, Mat B)
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscHMapIJVGetSize(a->ht, &n));
   /* do not need PetscShmgetAllocateArray() since arrays are temporary */
-  PetscCall(PetscMalloc3(n, &cols, m + 1, &rowstarts, n, &values));
+  PetscCall(PetscMalloc3(n, &cols, m + 1, &rowstarts, B->structure_only ? 0 : n, &values));
   rowstarts[0] = 0;
   for (PetscInt i = 0; i < m; i++) rowstarts[i + 1] = rowstarts[i] + a->dnz[i];
 
   PetscHashIterBegin(a->ht, hi);
   while (!PetscHashIterAtEnd(a->ht, hi)) {
     PetscHashIterGetKey(a->ht, hi, key);
-    PetscHashIterGetVal(a->ht, hi, value);
-    cols[rowstarts[key.i]]     = key.j;
-    values[rowstarts[key.i]++] = value;
+    cols[rowstarts[key.i]] = key.j;
+    if (!B->structure_only) {
+      PetscHashIterGetVal(a->ht, hi, value);
+      values[rowstarts[key.i]] = value;
+    }
+    rowstarts[key.i]++;
     PetscHashIterNext(a->ht, hi);
   }
   if (A == B) PetscCall(PetscHMapIJVDestroy(&a->ht));

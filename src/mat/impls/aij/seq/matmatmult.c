@@ -28,7 +28,8 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
   PetscCheck(m <= 0 || !i[0], PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "i (row indices) must start with 0");
   PetscCall(MatSetSizes(mat, m, n, m, n));
 
-  if (!mtype) {
+  if (mat->structure_only) PetscCall(MatSetType(mat, MATSEQAIJ));
+  else if (!mtype) {
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)mat, MATSEQAIJ, &isseqaij));
     if (!isseqaij) PetscCall(MatSetType(mat, MATSEQAIJ));
   } else PetscCall(MatSetType(mat, mtype));
@@ -63,6 +64,10 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
   aij->free_a  = PETSC_FALSE;
   aij->free_ij = PETSC_FALSE;
   PetscCall(MatCheckCompressedRow(mat, aij->nonzerorowcnt, &aij->compressedrow, aij->i, m, 0.6));
+  if (mat->structure_only) {
+    PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  }
   // Always build the diag info when i, j are set
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -81,7 +86,8 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal fill, Ma
   }
   /* sorted */
   PetscCall(PetscStrcmp(alg, "sorted", &flg));
-  if (flg) {
+  if (flg || C->structure_only) {
+    if (C->structure_only && product) PetscCall(MatProductSetAlgorithm(C, "sorted"));
     PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(A, B, fill, C));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -1377,12 +1383,18 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal
   square = (PetscBool)(A == B && A->symmetric == PETSC_BOOL3_TRUE);
   /* outerproduct */
   PetscCall(PetscStrcmp(product->alg, "outerproduct", &flg));
-  if (flg) {
+  if (flg || C->structure_only) {
     /* create symbolic At */
     if (!square) {
-      PetscCall(MatTransposeSymbolic(A, &At));
+      if (C->structure_only) {
+        PetscInt *ati, *atj;
+
+        PetscCall(MatGetSymbolicTranspose_SeqAIJ(A, &ati, &atj));
+        PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, A->cmap->n, A->rmap->n, ati, atj, NULL, &At));
+        ((Mat_SeqAIJ *)At->data)->free_ij = PETSC_TRUE;
+      } else PetscCall(MatTransposeSymbolic(A, &At));
       PetscCall(MatSetBlockSizes(At, A->cmap->bs, B->cmap->bs));
-      PetscCall(MatSetType(At, ((PetscObject)A)->type_name));
+      if (!C->structure_only) PetscCall(MatSetType(At, ((PetscObject)A)->type_name));
     }
     /* get symbolic C=At*B */
     PetscCall(MatProductSetAlgorithm(C, "sorted"));

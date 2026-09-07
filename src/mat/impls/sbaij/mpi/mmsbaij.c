@@ -187,8 +187,6 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   PetscInt      k, bs = A->rmap->bs, bs2 = baij->bs2, *rvals, *nz, m = A->rmap->n;
   MatScalar    *a = Bbaij->a;
   PetscScalar  *atmp;
-#if PetscDefined(USE_REAL_MAT_SINGLE)
-#endif
 
   PetscFunctionBegin;
 #if PetscDefined(USE_REAL_MAT_SINGLE)
@@ -222,6 +220,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   PetscCall(MatCreate(PETSC_COMM_SELF, &Bnew));
   PetscCall(MatSetSizes(Bnew, m, n, m, n));
   PetscCall(MatSetType(Bnew, ((PetscObject)B)->type_name));
+  PetscCall(MatSetOption(Bnew, MAT_STRUCTURE_ONLY, B->structure_only));
   PetscCall(MatSeqBAIJSetPreallocation(Bnew, B->rmap->bs, 0, nz));
   PetscCall(PetscFree(nz));
 
@@ -239,7 +238,12 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
     rvals[0] = bs * i;
     for (j = 1; j < bs; j++) rvals[j] = rvals[j - 1] + 1;
     for (j = Bbaij->i[i]; j < Bbaij->i[i + 1]; j++) {
-      col = garray[Bbaij->j[j]] * bs;
+      col = garray[Bbaij->j[j]];
+      if (B->structure_only) {
+        PetscCall(MatSetValuesBlocked(Bnew, 1, &i, 1, &col, NULL, INSERT_VALUES));
+        continue;
+      }
+      col *= bs;
       for (k = 0; k < bs; k++) {
 #if PetscDefined(USE_REAL_MAT_SINGLE)
         for (PetscInt l = 0; l < bs; l++) atmp[l] = a[j * bs2 + l];

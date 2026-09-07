@@ -37,7 +37,8 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_AB_MPIAIJ_MPIAIJ(Mat C)
   PetscFunctionBegin;
   /* scalable */
   PetscCall(PetscStrcmp(alg, "scalable", &flg));
-  if (flg) {
+  if (flg || C->structure_only) {
+    if (C->structure_only) PetscCall(MatProductSetAlgorithm(C, "scalable"));
     PetscCall(MatMatMultSymbolic_MPIAIJ_MPIAIJ(A, B, fill, C));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -971,10 +972,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   PetscCall(PetscNew(&ptap));
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  PetscCall(MatGetBrowsOfAoCols_MPIAIJ(A, P, MAT_INITIAL_MATRIX, &ptap->startsj_s, &ptap->startsj_r, &ptap->bufa, &ptap->P_oth));
+  PetscCall(MatGetBrowsOfAoCols_MPIAIJ_Private(A, P, MAT_INITIAL_MATRIX, C->structure_only, &ptap->startsj_s, &ptap->startsj_r, &ptap->bufa, &ptap->P_oth));
 
   /* get P_loc by taking all local rows of P */
-  PetscCall(MatMPIAIJGetLocalMat(P, MAT_INITIAL_MATRIX, &ptap->P_loc));
+  PetscCall(MatMPIAIJGetLocalMat_Private(P, MAT_INITIAL_MATRIX, C->structure_only, &ptap->P_loc));
 
   p_loc  = (Mat_SeqAIJ *)ptap->P_loc->data;
   pi_loc = p_loc->i;
@@ -1072,12 +1073,12 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   PetscCall(MatSetSizes(C, am, pn, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSizesFromMats(C, A, P));
   PetscCall(MatGetType(A, &mtype));
-  PetscCall(MatSetType(C, mtype));
+  PetscCall(MatSetType(C, C->structure_only ? MATMPIAIJ : mtype));
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
 
   /* malloc apa for assembly C */
-  PetscCall(PetscCalloc1(apnz_max, &ptap->apa));
+  if (!C->structure_only) PetscCall(PetscCalloc1(apnz_max, &ptap->apa));
 
   PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(C, apj, api));
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
@@ -1939,7 +1940,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscCall(PetscNew(&ap));
 
   /* get A_loc by taking all local rows of A */
-  PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, &A_loc));
+  PetscCall(MatMPIAIJGetLocalMat_Private(A, MAT_INITIAL_MATRIX, C->structure_only, &A_loc));
 
   ap->A_loc = A_loc;
   a_loc     = (Mat_SeqAIJ *)A_loc->data;
@@ -2194,7 +2195,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscCall(MatSetSizes(C, pn, A->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSizes(C, P->cmap->bs, A->cmap->bs));
   PetscCall(MatGetType(A, &mtype));
-  PetscCall(MatSetType(C, mtype));
+  PetscCall(MatSetType(C, C->structure_only ? MATMPIAIJ : mtype));
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
   PetscCall(MatSetBlockSize(C, 1));
@@ -2242,7 +2243,8 @@ static PetscErrorCode MatProductSymbolic_AtB_MPIAIJ_MPIAIJ(Mat C)
   PetscFunctionBegin;
   /* scalable */
   PetscCall(PetscStrcmp(product->alg, "scalable", &flg));
-  if (flg) {
+  if (flg || C->structure_only) {
+    if (C->structure_only) PetscCall(MatProductSetAlgorithm(C, "scalable"));
     PetscCall(MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(A, B, fill, C));
     goto next;
   }

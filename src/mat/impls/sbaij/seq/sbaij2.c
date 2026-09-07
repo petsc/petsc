@@ -110,12 +110,14 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   PetscInt        row, mat_i, *mat_j, tcol, *mat_ilen;
   const PetscInt *irow, *icol;
   PetscInt        nrows, ncols, *ssmap, bs = A->rmap->bs, bs2 = a->bs2;
-  PetscInt       *aj = a->j, *ai = a->i;
+  const PetscInt *aj = a->j, *ai = a->i;
   MatScalar      *mat_a;
   Mat             C;
-  PetscBool       flag;
+  PetscBool       flag, done, symmetric = (PetscBool)(A->structure_only && A->rmap->N == A->cmap->N && (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE));
 
   PetscFunctionBegin;
+  /* include implicit lower blocks without numerical permutations, transposes, or additions */
+  if (symmetric) PetscCall(MatGetRowIJ(A, 0, PETSC_TRUE, PETSC_TRUE, &oldcols, &ai, &aj, &done));
   PetscCall(ISGetIndices(isrow, &irow));
   PetscCall(ISGetIndices(iscol, &icol));
   PetscCall(ISGetLocalSize(isrow, &nrows));
@@ -128,10 +130,10 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   /* determine lens of each row */
   for (i = 0; i < nrows; i++) {
     kstart  = ai[irow[i]];
-    kend    = kstart + a->ilen[irow[i]];
+    kend    = ai[irow[i] + 1];
     lens[i] = 0;
     for (k = kstart; k < kend; k++) {
-      if (ssmap[aj[k]]) lens[i]++;
+      if (ssmap[aj[k]] && (!A->structure_only || !sym || ssmap[aj[k]] > i)) lens[i]++;
     }
   }
   /* Create and fill new matrix */
@@ -155,6 +157,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   } else {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
     PetscCall(MatSetSizes(C, nrows * bs, ncols * bs, PETSC_DETERMINE, PETSC_DETERMINE));
+    PetscCall(MatSetOption(C, MAT_STRUCTURE_ONLY, A->structure_only));
     if (sym) {
       PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
       PetscCall(MatSeqSBAIJSetPreallocation(C, bs, 0, lens));
@@ -168,7 +171,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   for (i = 0; i < nrows; i++) {
     row    = irow[i];
     kstart = ai[row];
-    kend   = kstart + a->ilen[row];
+    kend   = ai[row + 1];
     if (sym) {
       mat_i    = c->i[i];
       mat_j    = PetscSafePointerPlusOffset(c->j, mat_i);
@@ -181,19 +184,21 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
       mat_ilen = d->ilen + i;
     }
     for (k = kstart; k < kend; k++) {
-      if ((tcol = ssmap[a->j[k]])) {
+      if ((tcol = ssmap[aj[k]]) && (!A->structure_only || !sym || tcol > i)) {
         *mat_j++ = tcol - 1;
-        PetscCall(PetscArraycpy(mat_a, a->a + k * bs2, bs2));
-        mat_a += bs2;
+        if (!A->structure_only) {
+          PetscCall(PetscArraycpy(mat_a, a->a + k * bs2, bs2));
+          mat_a += bs2;
+        }
         (*mat_ilen)++;
       }
     }
   }
   /* sort */
   {
-    MatScalar *work;
+    MatScalar *work = NULL;
 
-    PetscCall(PetscMalloc1(bs2, &work));
+    if (!A->structure_only) PetscCall(PetscMalloc1(bs2, &work));
     for (i = 0; i < nrows; i++) {
       PetscInt ilen;
       if (sym) {
@@ -207,10 +212,13 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
         mat_a = PetscSafePointerPlusOffset(d->a, mat_i * bs2);
         ilen  = d->ilen[i];
       }
-      PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));
+      if (A->structure_only) PetscCall(PetscSortInt(ilen, mat_j));
+      else PetscCall(PetscSortIntWithDataArray(ilen, mat_j, mat_a, bs2 * sizeof(MatScalar), work));
     }
     PetscCall(PetscFree(work));
   }
+
+  if (symmetric) PetscCall(MatRestoreRowIJ(A, 0, PETSC_TRUE, PETSC_TRUE, &oldcols, &ai, &aj, &done));
 
   /* Free work space */
   PetscCall(ISRestoreIndices(iscol, &icol));
@@ -258,7 +266,8 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
     if (sameorder == PETSC_TRUE) PetscCall(ISSorted(is1, &issorted));
   }
   // keep the extracted matrix in upper-triangular storage before restoring the requested block order
-  if (sym == PETSC_TRUE && sameorder == PETSC_TRUE && issorted == PETSC_FALSE) {
+  if (A->structure_only) PetscCall(MatCreateSubMatrix_SeqSBAIJ_Private(A, is1, is2, scall, B, (PetscBool)(sym && sameorder)));
+  else if (sym == PETSC_TRUE && sameorder == PETSC_TRUE && issorted == PETSC_FALSE) {
     PetscCheck(scall != MAT_INPLACE_MATRIX, PETSC_COMM_SELF, PETSC_ERR_SUP, "MAT_INPLACE_MATRIX not supported");
     PetscCall(ISDuplicate(is1, &sorted));
     PetscCall(ISSort(sorted));
@@ -296,7 +305,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
   PetscCall(ISDestroy(&is1));
   PetscCall(ISDestroy(&is2));
 
-  if (implicit == PETSC_TRUE && sym == PETSC_TRUE && isrow != iscol) {
+  if (!A->structure_only && implicit == PETSC_TRUE && sym == PETSC_TRUE && isrow != iscol) {
     PetscBool isequal;
     PetscCall(ISEqual(isrow, iscol, &isequal));
     if (isequal == PETSC_FALSE) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
