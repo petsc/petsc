@@ -130,10 +130,13 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
-            } else {
-              PetscCheck(col >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+            } else if (col < 0 && !(ignorezeroentries && value == 0.0)) {
+              PetscCheck(b->nonew == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+              PetscCall(PetscInfo(mat, "Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%" PetscInt_FMT ",%" PetscInt_FMT ")\n", (double)PetscRealPart(value), im[i], in[j]));
             }
           } else col = in[j];
+          /* a suppressed new off-diagonal location; there is nothing to insert */
+          if (col < 0) continue;
           /* no diagonal exception here: a zero stored by the off-diagonal block does nothing for the
              diagonal that MatInvertDiagonalForSOR_SeqSELL() needs, which lives in the diagonal block.
              A global (i,i) reaches this block only when the row and column layouts differ, and dropping
