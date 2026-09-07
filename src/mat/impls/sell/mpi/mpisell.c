@@ -104,7 +104,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
         if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && im[i] != in[j]) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
-          MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
+          MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], im[i] != in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
           wroteA = (PetscBool)(wroteA || found);
         } else if (in[j] < 0) {
           continue;
@@ -134,7 +134,11 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
               PetscCheck(col >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
             }
           } else col = in[j];
-          MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], cp2, vp2, lastcol2, low2, high2); /* set one value */
+          /* no diagonal exception here: a zero stored by the off-diagonal block does nothing for the
+             diagonal that MatInvertDiagonalForSOR_SeqSELL() needs, which lives in the diagonal block.
+             A global (i,i) reaches this block only when the row and column layouts differ, and dropping
+             it is what MatSetValues_SeqAIJ_B_Private() does. */
+          MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], PETSC_TRUE, cp2, vp2, lastcol2, low2, high2); /* set one value */
           wroteB = (PetscBool)(wroteB || found);
         }
       }

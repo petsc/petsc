@@ -97,6 +97,7 @@
 - Change `MatNorm()` for `MATMPIDENSE` to compute `NORM_FROBENIUS` and `NORM_INFINITY` via the local matrix norm, so `MATMPIDENSECUDA` and `MATMPIDENSEHIP` no longer copy to the host for those norms
 - Change `MatDiagonalScale()` for `MATMPIDENSE` to delegate to the local matrix, so `MATMPIDENSECUDA` and `MATMPIDENSEHIP` scale on the device instead of copying the local block through the host
 - Change `MATSELL` to honor `MatSetOption(mat, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE)`; the option was previously accepted but silently ignored, so a matrix that sets it now gets a sparser nonzero structure
+- Fix `MatSetValues()` for `MATMPISELL` to ignore a new nonzero location when `MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE)` was called; the value was previously inserted anyway, and written past the end of the row when its slice had no spare slot
 
 ## MatCoarsen
 
