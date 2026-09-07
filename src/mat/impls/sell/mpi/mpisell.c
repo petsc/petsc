@@ -101,7 +101,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
       for (j = 0; j < n; j++) {
         if (roworiented) value = v[i * n + j];
         else value = v[i + j * m];
-        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
+        if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && im[i] != in[j]) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */

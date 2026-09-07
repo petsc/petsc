@@ -96,6 +96,7 @@
 - Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATDENSECUDA` and `MATDENSEHIP`; previously all norms copied the matrix to the host
 - Change `MatNorm()` for `MATMPIDENSE` to compute `NORM_FROBENIUS` and `NORM_INFINITY` via the local matrix norm, so `MATMPIDENSECUDA` and `MATMPIDENSEHIP` no longer copy to the host for those norms
 - Change `MatDiagonalScale()` for `MATMPIDENSE` to delegate to the local matrix, so `MATMPIDENSECUDA` and `MATMPIDENSEHIP` scale on the device instead of copying the local block through the host
+- Change `MATSELL` to honor `MatSetOption(mat, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE)`; the option was previously accepted but silently ignored, so a matrix that sets it now gets a sparser nonzero structure
 
 ## MatCoarsen
 

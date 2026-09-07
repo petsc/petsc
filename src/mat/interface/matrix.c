@@ -6520,8 +6520,13 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   `MAT_KEEP_NONZERO_PATTERN` indicates when `MatZeroRows()` is called the zeroed entries
   are kept in the nonzero structure. This flag is not used for `MatZeroRowsColumns()`
 
-  `MAT_IGNORE_ZERO_ENTRIES` - for `MATAIJ` and `MATIS` matrices this will stop zero values from creating
-  a zero location in the matrix
+  `MAT_IGNORE_ZERO_ENTRIES` - for `MATAIJ`, `MATSELL`, and `MATIS` matrices this will stop zero values
+  from creating a zero location in the matrix. A zero on the diagonal is exempt and still creates its
+  location, so that operations needing a full diagonal, such as `MatSOR()`, keep working. The exemption
+  covers the diagonal portion of the owning process's rows; a zero added with `ADD_VALUES` to a row owned
+  by another process is dropped as it is stashed and never reaches that test. A matrix assembled without
+  preallocation, through `MatSetUp()`, decides the exemption from process-local indices, so it does not
+  hold there when the row and column layouts differ
 
   `MAT_USE_INODES` - indicates using inode version of the code - works with `MATAIJ` matrix types
 
