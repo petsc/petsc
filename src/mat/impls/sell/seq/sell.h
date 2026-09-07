@@ -191,6 +191,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       A->nonzerostate++; \
       low = _i + 1; \
       high++; \
+      found = PETSC_TRUE; \
     } \
   } while (0)
 

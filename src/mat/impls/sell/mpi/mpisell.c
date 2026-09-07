@@ -71,8 +71,9 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
   Mat          A                 = sell->A;
   Mat_SeqSELL *a                 = (Mat_SeqSELL *)A->data;
   PetscBool    ignorezeroentries = a->ignorezeroentries, found;
-  Mat          B                 = sell->B;
-  Mat_SeqSELL *b                 = (Mat_SeqSELL *)B->data;
+  PetscBool    wroteA = PETSC_FALSE, wroteB = PETSC_FALSE;
+  Mat          B = sell->B;
+  Mat_SeqSELL *b = (Mat_SeqSELL *)B->data;
   PetscInt    *cp1, *cp2, ii, _i, nrow1, nrow2, low1, high1, low2, high2, t, lastcol1, lastcol2, sliceheight = a->sliceheight;
   MatScalar   *vp1, *vp2;
 
@@ -104,9 +105,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
           MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
-#if PetscDefined(HAVE_CUDA)
-          if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) A->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+          wroteA = (PetscBool)(wroteA || found);
         } else if (in[j] < 0) {
           continue;
         } else {
@@ -136,9 +135,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
             }
           } else col = in[j];
           MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], cp2, vp2, lastcol2, low2, high2); /* set one value */
-#if PetscDefined(HAVE_CUDA)
-          if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) B->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+          wroteB = (PetscBool)(wroteB || found);
         }
       }
     } else {
@@ -153,6 +150,10 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
       }
     }
   }
+#if PetscDefined(HAVE_CUPM)
+  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && wroteA) A->offloadmask = PETSC_OFFLOAD_CPU;
+  if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && wroteB) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
