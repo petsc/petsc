@@ -229,7 +229,13 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
   }
-#if PetscDefined(HAVE_CUDA)
+  /*
+    This check and its counterpart below mirror MatAssemblyEnd_MPIAIJ(). They fire when a producer
+    fills the host submatrices behind assembly's back and marks the outer mask CPU first, as
+    MatSetPreallocationCOO() and the host matrix products do for MPIAIJ. SELL has neither, so they
+    are dormant here.
+  */
+#if PetscDefined(HAVE_CUPM)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU) sell->A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->A, mode));
@@ -248,7 +254,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISELL(mat));
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_CUPM)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU && sell->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) sell->B->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->B, mode));
@@ -262,7 +268,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     mat->nonzerostate = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_CUPM)
   mat->offloadmask = PETSC_OFFLOAD_BOTH;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
