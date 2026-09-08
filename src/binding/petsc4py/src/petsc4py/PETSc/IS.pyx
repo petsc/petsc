@@ -1662,7 +1662,7 @@ cdef class LGMap(Object):
         indices = iarray_i(indices, &n, &idx)
         cdef PetscInt nout = n, *idxout = NULL
         if cmode != PETSC_IS_GTOLM_MASK:
-            CHKERR(ISGlobalToLocalMappingApply(
+            CHKERR(ISGlobalToLocalMappingApplyBlock(
                     self.lgm, cmode, n, idx, &nout, NULL))
         result = oarray_i(empty_i(nout), &nout, &idxout)
         CHKERR(ISGlobalToLocalMappingApplyBlock(

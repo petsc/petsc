@@ -139,6 +139,14 @@ class TestLGMapBlock(unittest.TestCase):
             self.assertTrue(len(info) > 1)
             self.assertTrue(len(info) < 4)
 
+    def testApplyBlockInverseDrop(self):
+        missing = max(self.idx) + 1000
+        global_indices = [self.idx[0], missing, self.idx[-1]]
+        local_indices = self.lgmap.applyBlockInverse(
+            global_indices, PETSc.LGMap.MapMode.DROP
+        )
+        self.assertEqual(local_indices.tolist(), [0, len(self.idx) - 1])
+
     def testGetInfo(self):
         info = self.lgmap.getInfo()
         self.assertEqual(type(info), dict)
