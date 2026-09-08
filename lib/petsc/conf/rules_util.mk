@@ -87,6 +87,7 @@ vermin:
 	@vermin --violations -t=3.6- --exclude-regex '\.pyi$$' --exclude-regex '-env' --exclude-regex 'docs/source/reference/' ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
 
 # Check that source code does not violate basic PETSc coding standards
+.PHONY: checkbadsource
 checkbadsource: checkbadSource
 
 checkbadSource:

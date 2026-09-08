@@ -533,4 +533,10 @@ updatedatafiles:
 
 .PHONY: info info_h all deletelibs allclean update\
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages\
-        start_configure configure_petsc configure_clean matlabbin install
+        start_configure configure_petsc configure_clean matlabbin install\
+        ALL all-local check check_install clean stream streams\
+        petsc4pytest
+
+# redirects for gmakefile targets from older version of gmake
+% :
+	+@$(OMAKE) -f gmakefile --no-print-directory $@
