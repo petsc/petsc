@@ -2074,43 +2074,29 @@ cdef class TAO(Object):
 
     # --- tolerances ---
 
-    # FIXME: tolerances all broken
-    property ftol:
-        """Broken."""
-        def __get__(self) -> Any:
-            return self.getFunctionTolerances()
-
-        def __set__(self, value):
-            if isinstance(value, (tuple, list)):
-                self.setFunctionTolerances(*value)
-            elif isinstance(value, dict):
-                self.setFunctionTolerances(**value)
-            else:
-                raise TypeError("expecting tuple/list or dict")
-
     property gtol:
-        """Broken."""
+        """Gradient tolerances."""
         def __get__(self) -> Any:
-            return self.getGradientTolerances()
+            return self.getTolerances()
 
         def __set__(self, value):
             if isinstance(value, (tuple, list)):
-                self.getGradientTolerances(*value)
+                self.setTolerances(*value)
             elif isinstance(value, dict):
-                self.getGradientTolerances(**value)
+                self.setTolerances(**value)
             else:
                 raise TypeError("expecting tuple/list or dict")
 
     property ctol:
-        """Broken."""
+        """Constraint tolerances."""
         def __get__(self) -> Any:
             return self.getConstraintTolerances()
 
         def __set__(self, value):
             if isinstance(value, (tuple, list)):
-                self.getConstraintTolerances(*value)
+                self.setConstraintTolerances(*value)
             elif isinstance(value, dict):
-                self.getConstraintTolerances(**value)
+                self.setConstraintTolerances(**value)
             else:
                 raise TypeError("expecting tuple/list or dict")
 
