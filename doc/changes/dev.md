@@ -92,6 +92,9 @@
 - Change `MatDiagonalScale()` for `MATSEQDENSECUDA` and `MATSEQDENSEHIP` to check the memory type of the scaling `Vec` instead of its `VecType`, so device-resident vectors such as `VECKOKKOS` are consumed directly on the GPU instead of being copied through the host
 - Add `MatDenseUpdateColumnLayout()` to change the layout of input vectors of the matrix vector product
 - Change `MatGetState()` to return a `MatState` and add `MatStateCompare()`, `MatStateCompareUpdate()`, and `MatStateInvalidate()`
+- Fix `MatNorm()` for `MATMPIDENSE` to respect the leading dimension of the local matrix, which was previously ignored in parallel for `NORM_1` and `NORM_FROBENIUS` and gave wrong results, for example on matrices obtained with `MatDenseGetSubMatrix()`
+- Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATDENSECUDA` and `MATDENSEHIP`; previously all norms copied the matrix to the host
+- Change `MatNorm()` for `MATMPIDENSE` to compute `NORM_FROBENIUS` and `NORM_INFINITY` via the local matrix norm, so `MATMPIDENSECUDA` and `MATMPIDENSEHIP` no longer copy to the host for those norms
 
 ## MatCoarsen
 

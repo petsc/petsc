@@ -1045,38 +1045,31 @@ static PetscErrorCode MatDiagonalScale_MPIDense(Mat A, Vec ll, Vec rr)
 static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense *)A->data;
-  PetscInt           i, j;
+  PetscInt           i, j, lda;
   PetscMPIInt        size;
-  const PetscScalar *av, *v;
+  const PetscScalar *av;
 
   PetscFunctionBegin;
-  PetscCall(MatDenseGetArrayRead(mdn->A, &av));
-  v = av;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   if (size == 1) {
     PetscCall(MatNorm(mdn->A, type, nrm));
   } else {
     if (type == NORM_FROBENIUS) {
-      *nrm = 0.0;
-      for (i = 0; i < mdn->A->cmap->n * mdn->A->rmap->n; i++) {
-        *nrm += PetscRealPart(PetscConj(*v) * (*v));
-        v++;
-      }
+      PetscCall(MatNorm(mdn->A, NORM_FROBENIUS, nrm));
+      *nrm *= *nrm;
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       *nrm = PetscSqrtReal(*nrm);
-      PetscCall(PetscLogFlops(2.0 * mdn->A->cmap->n * mdn->A->rmap->n));
     } else if (type == NORM_1) {
       PetscReal *tmp;
 
       PetscCall(PetscCalloc1(A->cmap->N, &tmp));
       *nrm = 0.0;
-      v    = av;
+      PetscCall(MatDenseGetArrayRead(mdn->A, &av));
+      PetscCall(MatDenseGetLDA(mdn->A, &lda));
       for (j = 0; j < mdn->A->cmap->n; j++) {
-        for (i = 0; i < mdn->A->rmap->n; i++) {
-          tmp[j] += PetscAbsScalar(*v);
-          v++;
-        }
+        for (i = 0; i < mdn->A->rmap->n; i++) tmp[j] += PetscAbsScalar(av[i + j * lda]);
       }
+      PetscCall(MatDenseRestoreArrayRead(mdn->A, &av));
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, A->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       for (j = 0; j < A->cmap->N; j++) {
         if (tmp[j] > *nrm) *nrm = tmp[j];
@@ -1088,7 +1081,6 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
       PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
     } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Unsupported norm type %s", NormTypes[type]);
   }
-  PetscCall(MatDenseRestoreArrayRead(mdn->A, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
