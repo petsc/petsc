@@ -14,6 +14,7 @@ cdef extern from "<petsc4py/numpy.h>":
 
     void* PyArray_DATA(ndarray)
     npy_intp PyArray_SIZE(ndarray)
+    npy_intp PyArray_NBYTES(ndarray)
     int PyArray_NDIM(ndarray)
     npy_intp* PyArray_DIMS(ndarray)
     npy_intp PyArray_DIM(ndarray, int)
@@ -42,6 +43,7 @@ cdef extern from "<petsc4py/numpy.h>":
 
     bint PyArray_ISCONTIGUOUS(ndarray)
     bint PyArray_ISFORTRAN(ndarray)
+    bint PyArray_ISWRITEABLE(ndarray)
     ctypedef enum NPY_ORDER:
         NPY_ANYORDER
         NPY_CORDER
