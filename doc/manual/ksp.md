@@ -1397,6 +1397,88 @@ Using algebraic multigrid as a "standalone" solver is possible but not recommend
 Use a `KSPType` of `KSPRICHARDSON`
 (or equivalently `-ksp_type richardson`) to achieve this. Using `KSPPREONLY` will not work since it only applies a single multigrid cycle.
 
+(sec_gamg_memory)=
+
+#### Reducing memory usage for PCGAMG
+
+`PCGAMG`'s high-water mark is in `PCSetUp()`, not in the solve, and it is
+usually several times the memory of the fine grid matrix itself. This matters
+most on GPUs, where device memory is the binding constraint: an out-of-memory
+failure normally surfaces as an allocation failure inside a `MatProduct` with
+no indication of which part of the algorithm asked for the memory.
+
+**Where the memory goes.** Roughly in decreasing order of size:
+
+> - *The squared graph.* With aggressive coarsening (the default on the finest
+>   level) `PCGAMG` forms $G^T G$ of the strength graph $G$ before running the
+>   maximal independent set algorithm. This increases the number of nonzeros
+>   per row by a factor of about three to five, so this single object is
+>   normally the peak of the entire solve. $G$ is a scalar graph (one vertex
+>   per node, not per degree of freedom), which keeps the square much smaller
+>   than squaring the operator would be, but on a 3D problem it is still the
+>   largest matrix PETSc allocates.
+> - *The strength graph and its threshold filter.* By default the graph is
+>   built without filtering and the threshold is then applied into a second
+>   matrix, so two copies of the graph exist at once.
+> - *The smoothed prolongator.* Each smoothing step forms `MatMatMult()` of the
+>   operator with the current $P$, so the previous and the new, denser, $P$ are
+>   both resident at the peak.
+> - *The Galerkin coarse operators* $P^T A P$: the coarse operators themselves,
+>   summarized by the operator complexity that `-info :pc` reports, plus the
+>   workspace of the matrix triple product.
+> - *Everything on the coarse levels*: fill in the coarsest-level direct
+>   solver, any factors stored by the level smoothers, and the temporaries of
+>   `-pc_gamg_repartition`.
+
+Note that on GPUs, PETSc's logging counts host `PetscMalloc()` calls and does
+not track device allocations, so neither `-log_view_memory` nor `-memory_view`
+reports device memory. Use `nvidia-smi`, `rocm-smi` or the vendor profiler to
+sample the device high-water mark. The quantities that do carry over are the
+per-level `nnz/row (ave)` and the operator complexity from `-info :pc`, since
+the device copies of the operators, prolongators and graphs are the same size
+as the host ones.
+
+**What to change.** In roughly decreasing order of what they save:
+
+> - `-pc_gamg_aggressive_square_graph false` Coarsen with MIS-2 instead of
+>   squaring the graph, which removes the peak object entirely. This is the
+>   single largest saving available. Coarsening is somewhat faster, so the
+>   coarse grids are smaller as well, at some cost in convergence rate. See
+>   `PCGAMGSetAggressiveSquareGraph()`. Note that turning aggressive coarsening
+>   off altogether with `-pc_gamg_aggressive_coarsening 0` also removes the
+>   square, but it coarsens more slowly and so adds levels and coarse-operator
+>   memory; MIS-2 is the better trade.
+> - `-pc_gamg_prolongator_filter thr` Drop weak couplings from the smoothed
+>   prolongator, which shrinks $P$, the Galerkin products and every coarse
+>   operator. See the discussion below.
+> - `-pc_gamg_low_memory_threshold_filter true` Apply the strength threshold
+>   while the graph is being built rather than copying the graph through a
+>   filter, avoiding the second copy. See `PCGAMGSetLowMemoryFilter()`.
+> - `-pc_gamg_threshold tol` Raising the threshold drops more edges, making
+>   both the graph and its square sparser, but it coarsens more slowly and so
+>   adds levels and coarse-operator memory. The two effects work against each
+>   other; measure rather than assume.
+
+**Prolongator filtering.** Smoothing densifies the prolongator, and that fill
+is squared through the Galerkin product, so the nonzeros of $P$ drive both the
+cost of forming $P^T A P$ and the size of every coarse operator.
+`-pc_gamg_prolongator_filter thr` drops the couplings between a fine node and a
+coarse node whose block Frobenius norm is below `thr` times the largest such
+block in that fine node's rows, then corrects each row to restore $P B_c = B$
+exactly, so the near-null space, including the rotational modes for elasticity,
+is preserved. Filtering is off by default. On a 3D elasticity problem the trade
+is strongly favorable: thresholds up to 0.05 left the iteration count unchanged
+while cutting the nonzeros of the fine level $P$ roughly in half and the
+Galerkin product time by a factor of three, but this is problem specific. Too
+large a threshold degrades convergence. A value of 0.03 is a reasonable first
+try, or start with 0 and ramp up. Note also that the reduction in complexity is
+not realized on every matrix type: the dropped entries are zeroed and removed
+from the sparsity pattern with `MatEliminateZeros()`, and on types that do not
+implement it, and on HIPSPARSE where it is bypassed because of a known issue,
+the zeros remain in the pattern, so the solve is unchanged but the memory and
+the Galerkin work are not reduced. `-info :pc` reports when the elimination is
+skipped.
+
 #### Adaptive Interpolation
 
 **Interpolation** transfers a function from the coarse space to the fine space. We would like this process to be accurate for the functions resolved by the coarse grid, in particular the approximate solution computed there. By default, we create these matrices using local interpolation of the fine grid dual basis functions in the coarse basis. However, an adaptive procedure can optimize the coefficients of the interpolator to reproduce pairs of coarse/fine functions which should approximate the lowest modes of the generalized eigenproblem
