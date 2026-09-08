@@ -104,6 +104,24 @@ class BaseTestKSP:
         self.assertFalse(bool(newpc))
         self.assertEqual(pc.getRefCount(), 2)
 
+    def testGetWorkVecs(self):
+        A = PETSc.Mat().create(PETSc.COMM_SELF)
+        A.setSizes([3, 2])
+        A.setType(PETSc.Mat.Type.SEQAIJ)
+        A.setPreallocationNNZ(1)
+        A.setUp()
+        self.ksp.setOperators(A)
+        right, left = self.ksp.getWorkVecs(right=2, left=3)
+        self.assertEqual(len(right), 2)
+        self.assertEqual(len(left), 3)
+        for vec in right:
+            self.assertEqual(vec.getSize(), 2)
+            vec.destroy()
+        for vec in left:
+            self.assertEqual(vec.getSize(), 3)
+            vec.destroy()
+        A.destroy()
+
     def testSolve(self, solve_only=False):
         A = PETSc.Mat().create(PETSc.COMM_SELF)
         A.setSizes([3, 3])
