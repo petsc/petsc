@@ -1296,6 +1296,18 @@ class TestMatIS_G89(TestMatIS):
     GRID = 8, 9
 
 
+class TestMatStencilStarts(unittest.TestCase):
+    def testSetStencilStarts(self):
+        A = PETSc.Mat().createAIJ([2, 2], nnz=1, comm=PETSc.COMM_SELF)
+        A.setStencil((2,), starts=(5,))
+        row = PETSc.Mat.Stencil()
+        row.index = (5,)
+        A.setValueStencil(row, row, 7.0)
+        A.assemble()
+        self.assertEqual(A[0, 0], 7.0)
+        A.destroy()
+
+
 # -----
 
 
