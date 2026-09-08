@@ -1126,9 +1126,7 @@ cdef class Mat(Object):
         cdef PetscInt nj=0, noj=0, *j=NULL, *oj=NULL
         pi = iarray_i(pi, &ni, &i) # Row pointers (diagonal)
         pj = iarray_i(pj, &nj, &j) # Column indices (diagonal)
-        if ni != m+1:  raise ValueError(
-            "A matrix with %d rows requires a row pointer of length %d (given: %d)" %
-            (toInt(m), toInt(m+1), toInt(ni)))
+        Mat_ValidateCSR(m, ni, i, nj)
         if poi is not None and poj is not None:
             poi = iarray_i(poi, &noi, &oi) # Row pointers (off-diagonal)
             poj = iarray_i(poj, &noj, &oj) # Column indices (off-diagonal)
@@ -1150,6 +1148,10 @@ cdef class Mat(Object):
             # if off-diagonal components are provided then SplitArrays can be
             # used (and not cause a copy).
             if oi != NULL and oj != NULL and ov != NULL:
+                Mat_ValidateCSR(m, noi, oi, noj)
+                if noj != nov: raise ValueError(
+                    "Given %d off-diagonal column indices but %d non-zero values" %
+                    (toInt(noj), toInt(nov)))
                 CHKERR(MatCreateMPIAIJWithSplitArrays(
                     ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat))
                 csr = ((pi, pj, pv), (poi, poj, pov))

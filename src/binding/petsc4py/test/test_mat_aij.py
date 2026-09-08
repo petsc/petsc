@@ -35,6 +35,70 @@ def mkgraph(comm, m, n):
     return nods, xadj, adjy
 
 
+class TestMatCSRValidation(unittest.TestCase):
+    def setUp(self):
+        self.A = PETSc.Mat().create(PETSc.COMM_SELF)
+        self.A.setType(PETSc.Mat.Type.SEQAIJ)
+        self.A.setSizes([2, 2])
+
+    def tearDown(self):
+        self.A.destroy()
+
+    def testCreateAIJWithArrays(self):
+        rowptr = [0, 2, 3]
+        colidx = [0, 1, 1]
+        values = [1, 2, 3]
+        A = PETSc.Mat().createAIJWithArrays(
+            [2, 2], (rowptr, colidx, values), comm=PETSc.COMM_SELF
+        )
+        result = A.getValues([0, 1], [0, 1])
+        self.assertTrue(np.array_equal(result, [[1, 2], [0, 3]]))
+        A.destroy()
+
+    def testSetPreallocationCSRRejectsInvalidRowPointers(self):
+        invalid = [
+            ([], []),
+            ([0, 2, 1], [0]),
+            ([0, 1, 2], [0]),
+        ]
+        for rowptr, colidx in invalid:
+            with self.subTest(rowptr=rowptr, colidx=colidx):
+                with self.assertRaises(ValueError):
+                    self.A.setPreallocationCSR((rowptr, colidx))
+
+    def testSetPreallocationCSRRejectsEmptyUndecidedLayout(self):
+        A = PETSc.Mat().create(PETSc.COMM_SELF)
+        A.setType(PETSc.Mat.Type.SEQAIJ)
+        A.setSizes([(PETSc.DECIDE, 2), (PETSc.DECIDE, 2)])
+        with self.assertRaises(ValueError):
+            A.setPreallocationCSR(([], []))
+        A.destroy()
+
+    def testCreateAIJWithArraysRejectsInvalidRowPointers(self):
+        invalid = [
+            ([], [], []),
+            ([0, 2, 1], [0], [1]),
+            ([0, 1, 2], [0], [1]),
+        ]
+        for rowptr, colidx, values in invalid:
+            with self.subTest(rowptr=rowptr, colidx=colidx):
+                with self.assertRaises(ValueError):
+                    PETSc.Mat().createAIJWithArrays(
+                        [2, 2], (rowptr, colidx, values), comm=PETSc.COMM_SELF
+                    )
+
+    @unittest.skipIf(PETSc.COMM_WORLD.size == 1, 'requires multiple processes')
+    def testCreateAIJWithSplitArraysRejectsInvalidRowPointers(self):
+        diag = ([0, 0], [], [])
+        offdiag = ([0, 2], [0], [1])
+        with self.assertRaises(ValueError):
+            PETSc.Mat().createAIJWithArrays(
+                ((1, None), (1, None)),
+                (diag, offdiag),
+                comm=PETSc.COMM_WORLD,
+            )
+
+
 class BaseTestMatAnyAIJ:
     COMM = PETSc.COMM_NULL
     TYPE = None
