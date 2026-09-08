@@ -79,13 +79,37 @@ The protocol for the `petsc4py.PETSc.KSP.Type.PYTHON` Krylov solver is:
 
 .. _petsc_python_snes:
 
-PETSc Python nonlinear solver type (TODO)
------------------------------------------
+PETSc Python nonlinear solver type
+----------------------------------
+
+The protocol for the `petsc4py.PETSc.SNES.Type.PYTHON` nonlinear solver is:
+
+.. literalinclude:: ../../demo/python_types/snespython_protocol.py
+
+The following example implements the complete nonlinear solve with
+``scipy.optimize.root``. It solves :math:`x^2 - 2 = 0` on one process.
+
+.. literalinclude:: ../../demo/python_types/snes.py
 
 .. _petsc_python_ts:
 
-PETSc Python ode-integrator type (TODO)
----------------------------------------
+PETSc Python ODE integrator type
+--------------------------------
+
+The protocol for the `petsc4py.PETSc.TS.Type.PYTHON` ODE integrator is:
+
+.. literalinclude:: ../../demo/python_types/tspython_protocol.py
+
+The following example implements each time step with
+``scipy.integrate.odeint``. It solves
+
+.. math::
+
+  \frac{du}{dt} = -u, \qquad u(0) = 1
+
+on one process.
+
+.. literalinclude:: ../../demo/python_types/ts.py
 
 .. _petsc_python_tao:
 
