@@ -79,4 +79,12 @@ def get_config():
     parser = ConfigParser()
     parser.optionxform = str
     parser.read_file(stream, filename)
-    return dict(parser.items('petsc'))
+    conf = dict(parser.items('petsc'))
+    if not os.path.isdir(conf.get('PETSC_DIR', '')):
+        # a wheel records the PETSC_DIR of the machine it was built on
+        try:
+            import petsc
+        except ImportError:
+            return conf
+        conf['PETSC_DIR'] = petsc.get_petsc_dir()
+    return conf
