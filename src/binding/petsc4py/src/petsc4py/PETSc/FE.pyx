@@ -161,7 +161,7 @@ cdef class FE(Object):
         cdef const char *cprefix = NULL
         if prefix:
             prefix = str2bytes(prefix, &cprefix)
-        CHKERR(PetscFECreateDefault(ccomm, cdim, cnc, cCellType, cprefix, cqorder, &newfe))
+        CHKERR(PetscFECreateByCell(ccomm, cdim, cnc, cCellType, cprefix, cqorder, &newfe))
         CHKERR(PetscCLEAR(self.obj)); self.fe = newfe
         return self
 
@@ -298,10 +298,14 @@ cdef class FE(Object):
 
         """
         cdef const PetscInt *numDof = NULL
-        cdef PetscInt cdim = 0
-        CHKERR(PetscFEGetDimension(self.fe, &cdim))
+        cdef PetscDualSpace dualspace = NULL
+        cdef PetscDM dm = NULL
+        cdef PetscInt depth = 0
+        CHKERR(PetscFEGetDualSpace(self.fe, &dualspace))
+        CHKERR(PetscDualSpaceGetDM(dualspace, &dm))
+        CHKERR(DMPlexGetDepth(dm, &depth))
         CHKERR(PetscFEGetNumDof(self.fe, &numDof))
-        return array_i(cdim, numDof)
+        return array_i(depth + 1, numDof)
 
     def getTileSizes(self) -> tuple[int, int, int, int]:
         """Return the tile sizes for evaluation.

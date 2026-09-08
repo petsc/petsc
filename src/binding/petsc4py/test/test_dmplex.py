@@ -11,6 +11,37 @@ import importlib
 ERR_ARG_OUTOFRANGE = 63
 
 
+def polytope_type_simple_shape(dim, simplex):
+    polytope_type = PETSc.DM.PolytopeType
+    if dim == 0:
+        return polytope_type.POINT
+    if dim == 1:
+        return polytope_type.SEGMENT
+    if dim == 2:
+        return polytope_type.TRIANGLE if simplex else polytope_type.QUADRILATERAL
+    if dim == 3:
+        return polytope_type.TETRAHEDRON if simplex else polytope_type.HEXAHEDRON
+    return polytope_type.UNKNOWN
+
+
+class TestPartitioner(unittest.TestCase):
+    def setUp(self):
+        self.partitioner = PETSc.Partitioner().create(PETSc.COMM_SELF)
+        self.partitioner.setType(PETSc.Partitioner.Type.SHELL)
+
+    def tearDown(self):
+        self.partitioner.destroy()
+        self.partitioner = None
+        PETSc.garbage_cleanup()
+
+    def testShellPartitionPointExtent(self):
+        self.partitioner.setShellPartition(2, [1, 2], [2, 0, 1])
+        with self.assertRaisesRegex(
+            ValueError, 'points array should have at least 3 entries'
+        ):
+            self.partitioner.setShellPartition(2, [1, 2], [0, 1])
+
+
 class BaseTestPlex:
     COMM = PETSc.COMM_WORLD
     DIM = 1
@@ -45,6 +76,22 @@ class BaseTestPlex:
         if rank == 0 and self.COORDS is not None:
             self.assertEqual(vEnd - vStart, len(self.COORDS))
             self.assertTrue((coords == self.COORDS).all())
+
+    def testCellCoordinates(self):
+        cStart, cEnd = self.plex.getHeightStratum(0)
+        if cStart == cEnd:
+            return
+        for _ in range(2):
+            _is_dg, coordinates = self.plex.getPlexCellCoordinates(cStart)
+            self.assertEqual(coordinates.shape[1], self.DIM)
+
+    def testDistributeOverlapNoChange(self):
+        if self.COMM.getSize() != 1:
+            return
+        sf = self.plex.distributeOverlap(1)
+        self.assertIsNone(sf)
+        self.assertTrue(self.plex)
+        self.assertEqual(self.plex.getDimension(), self.DIM)
 
     def testClosure(self):
         pStart, pEnd = self.plex.getChart()
@@ -115,10 +162,12 @@ class BaseTestPlex:
             return
 
         self.assertFalse(self.plex.hasLabel('boundary'))
-        self.plex.markBoundaryFaces('boundary')
+        boundary = self.plex.markBoundaryFaces('boundary')
+        self.assertIsInstance(boundary, PETSc.DMLabel)
+        self.assertEqual(boundary, self.plex.getLabel('boundary'))
         self.assertTrue(self.plex.hasLabel('boundary'))
 
-        faces = self.plex.getStratumIS('boundary', 1)
+        faces = boundary.getStratumIS(1)
         for f in faces.getIndices():
             points, _orient = self.plex.getTransitiveClosure(f, useCone=True)
             for p in points:
@@ -258,7 +307,16 @@ class BaseTestPlex:
     def testNatural(self):
         dim = self.plex.getDimension()
         ct = self.plex.getCellType(0)
+        if ct == PETSc.DM.PolytopeType.UNKNOWN:
+            ct = polytope_type_simple_shape(dim, self.plex.isSimplex())
         fe = PETSc.FE().createByCell(dim, 1, ct)
+        self.assertEqual(len(fe.getNumDof()), dim + 1)
+        dualspace = fe.getDualSpace()
+        self.assertEqual(len(dualspace.getNumDof()), dim + 1)
+        duplicate = dualspace.duplicate()
+        self.assertTrue(duplicate)
+        duplicate.destroy()
+        dualspace.destroy()
         self.plex.setField(0, fe)
         self.plex.createDS()
         self.plex.setUseNatural(True)
@@ -269,6 +327,72 @@ class BaseTestPlex:
         self.plex.globalToNaturalEnd(gv, nv)
         self.plex.naturalToGlobalBegin(nv, gv)
         self.plex.naturalToGlobalEnd(nv, gv)
+
+    def testLabeledField(self):
+        dim = self.plex.getDimension()
+        ct = self.plex.getCellType(0)
+        if ct == PETSc.DM.PolytopeType.UNKNOWN:
+            ct = polytope_type_simple_shape(dim, self.plex.isSimplex())
+        fe = PETSc.FE().createByCell(dim, 1, ct)
+        self.plex.createLabel('field_support')
+        label = self.plex.getLabel('field_support')
+        self.plex.setField(0, fe, 'field_support')
+        field, field_label = self.plex.getField(0)
+        self.assertEqual(field, fe)
+        self.assertEqual(field_label, label)
+        field.destroy()
+        field_label.destroy()
+        self.plex.clearFields()
+        self.plex.addField(fe, 'field_support')
+        field, field_label = self.plex.getField(0)
+        self.assertEqual(field, fe)
+        self.assertEqual(field_label, label)
+        field.destroy()
+        field_label.destroy()
+        label.destroy()
+        fe.destroy()
+
+    def testAuxiliaryVecReference(self):
+        aux = self.plex.createLocalVec()
+        self.plex.setAuxiliaryVec(aux, None)
+        retrieved = self.plex.getAuxiliaryVec()
+        retrieved.destroy()
+        self.assertTrue(aux)
+        retrieved = self.plex.getAuxiliaryVec()
+        self.assertTrue(retrieved)
+        retrieved.destroy()
+        self.plex.setAuxiliaryVec(PETSc.Vec(), None)
+        aux.destroy()
+
+    def testSpaceSubspaceReferences(self):
+        subspace = PETSc.Space().create(PETSc.COMM_SELF)
+        subspace.setType(PETSc.Space.Type.POLYNOMIAL)
+        subspace.setNumVariables(1)
+        subspace.setNumComponents(1)
+        subspace.setDegree(1, None)
+
+        space = PETSc.Space().create(PETSc.COMM_SELF)
+        space.setType(PETSc.Space.Type.SUM)
+        space.setSumNumSubspaces(1)
+        space.setSumSubspace(0, subspace)
+        borrowed = space.getSumSubspace(0)
+        borrowed.destroy()
+        borrowed = space.getSumSubspace(0)
+        self.assertEqual(borrowed, subspace)
+        borrowed.destroy()
+        space.destroy()
+
+        space = PETSc.Space().create(PETSc.COMM_SELF)
+        space.setType(PETSc.Space.Type.TENSOR)
+        space.setTensorNumSubspaces(1)
+        space.setTensorSubspace(0, subspace)
+        borrowed = space.getTensorSubspace(0)
+        borrowed.destroy()
+        borrowed = space.getTensorSubspace(0)
+        self.assertEqual(borrowed, subspace)
+        borrowed.destroy()
+        space.destroy()
+        subspace.destroy()
 
 
 # --------------------------------------------------------------------
@@ -327,7 +451,12 @@ class BaseTestPlex_3D(BaseTestPlex):
 
 
 class TestPlex_1D(BaseTestPlex, unittest.TestCase):
-    pass
+    def testColoring(self):
+        isets = self.plex.createColoring()
+        pStart, pEnd = self.plex.getDepthStratum(0)
+        self.assertEqual(sum(iset.getLocalSize() for iset in isets), pEnd - pStart)
+        for iset in isets:
+            iset.destroy()
 
 
 class TestPlex_2D(BaseTestPlex_2D, unittest.TestCase):

@@ -333,6 +333,7 @@ cdef class Space(Object):
         cdef Space subsp = Space()
         cdef PetscInt cs = asInt(s)
         CHKERR(PetscSpaceSumGetSubspace(self.space, cs, &subsp.space))
+        CHKERR(PetscINCREF(subsp.obj))
         return subsp
 
     def setSumSubspace(self, s: int, Space subsp) -> None:
@@ -425,6 +426,7 @@ cdef class Space(Object):
         cdef PetscInt cs = asInt(s)
         cdef Space subsp = Space()
         CHKERR(PetscSpaceTensorGetSubspace(self.space, cs, &subsp.space))
+        CHKERR(PetscINCREF(subsp.obj))
         return subsp
 
     def setTensorNumSubspaces(self, numTensSpaces: int) -> None:
@@ -658,6 +660,7 @@ cdef class DualSpace(Object):
         """
         cdef DualSpace spNew = DualSpace()
         CHKERR(PetscDualSpaceDuplicate(self.dualspace, &spNew.dualspace))
+        return spNew
 
     def getDM(self) -> DM:
         """Return the `DM` representing the reference cell of a `DualSpace`.
@@ -818,10 +821,12 @@ cdef class DualSpace(Object):
 
         """
         cdef const PetscInt *cndof = NULL
-        cdef PetscInt cdim = 0
-        CHKERR(PetscDualSpaceGetDimension(self.dualspace, &cdim))
+        cdef PetscDM dm = NULL
+        cdef PetscInt depth = 0
+        CHKERR(PetscDualSpaceGetDM(self.dualspace, &dm))
+        CHKERR(DMPlexGetDepth(dm, &depth))
         CHKERR(PetscDualSpaceGetNumDof(self.dualspace, &cndof))
-        return array_i(cdim + 1, cndof)
+        return array_i(depth + 1, cndof)
 
     def getFunctional(self, i: int) -> Quad:
         """Return the i-th basis functional in the dual space.

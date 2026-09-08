@@ -174,15 +174,24 @@ cdef class Partitioner(Object):
         cdef PetscInt *csizes = NULL
         cdef PetscInt *cpoints = NULL
         cdef PetscInt nsize = 0
+        cdef PetscInt npoint = 0
+        cdef PetscInt i = 0
+        cdef PetscInt64 nrequired = 0
         if sizes is not None:
             sizes = iarray_i(sizes, &nsize, &csizes)
             if nsize != cnumProcs:
                 raise ValueError("sizes array should have %d entries (has %d)" %
-                                 numProcs, toInt(nsize))
+                                 (toInt(cnumProcs), toInt(nsize)))
             if points is None:
                 raise ValueError("Must provide both sizes and points arrays")
         if points is not None:
-            points = iarray_i(points, NULL, &cpoints)
+            points = iarray_i(points, &npoint, &cpoints)
+            for i from 0 <= i < nsize:
+                if csizes[i] > 0: nrequired += csizes[i]
+            if npoint < nrequired:
+                raise ValueError(
+                    "points array should have at least %d entries (has %d)" %
+                    (nrequired, toInt(npoint)))
         CHKERR(PetscPartitionerShellSetPartition(self.part, cnumProcs,
                                                  csizes, cpoints))
 
