@@ -54,6 +54,14 @@ class MyTS:
     def reset(self, ts, *args):
         self._log('reset', ts, *args)
 
+    def formSNESFunction(self, snes, x, f, ts):
+        self._log('formSNESFunction', snes, x, f, ts)
+        xdot = x.duplicate()
+        xdot.waxpy(-1.0, ts.getSolution(), x)
+        xdot.scale(1.0 / ts.getTimeStep())
+        ts.computeIFunction(ts.getTime() + ts.getTimeStep(), x, xdot, f)
+        xdot.destroy()
+
     def solveStep(self, ts, t, u, *args):
         self._log('solveStep', ts, t, u, *args)
         ts.snes.solve(None, u)
@@ -61,6 +69,30 @@ class MyTS:
     def adaptStep(self, ts, t, u, *args):
         self._log('adaptStep', ts, t, u, *args)
         return (ts.getTimeStep(), True)
+
+
+class RejectOnceTS(MyTS):
+    def __init__(self):
+        super().__init__()
+        self.prestep_times = []
+        self.solve_times = []
+        self.adapt_times = []
+        self.poststep_times = []
+
+    def preStep(self, ts):
+        self.prestep_times.append(ts.getTime())
+
+    def solveStep(self, ts, t, u, *args):
+        self._log('solveStep', ts, t, u, *args)
+        self.solve_times.append((ts.getTime(), t))
+
+    def adaptStep(self, ts, t, u, *args):
+        self._log('adaptStep', ts, t, u, *args)
+        self.adapt_times.append((ts.getTime(), t))
+        return (ts.getTimeStep(), self.log['adaptStep'] > 1)
+
+    def postStep(self, ts):
+        self.poststep_times.append(ts.getTime())
 
 
 class TestTSPython(unittest.TestCase):
@@ -120,6 +152,7 @@ class TestTSPython(unittest.TestCase):
         ncalls = self.nsolve * ts.step_number
         self.assertTrue(ctx.log['solveStep'] == ncalls)
         self.assertTrue(ctx.log['adaptStep'] == ncalls)
+        self.assertTrue(ctx.log['formSNESFunction'] > 0)
         del ctx
 
         dct = self.ts.getDict()
@@ -174,6 +207,31 @@ class TestTSPython(unittest.TestCase):
         hmin, hmax = self.ts.getStepLimits()
         self.assertEqual(1.0, hmin)
         self.assertEqual(2.0, hmax)
+
+    def testOneRejectedAttemptIsAllowed(self):
+        ts = PETSc.TS().createPython(RejectOnceTS(), comm=PETSc.COMM_SELF)
+        ts.setExactFinalTime(PETSc.TS.ExactFinalTime.STEPOVER)
+        ts.setTime(0.0)
+        ts.setTimeStep(1.0)
+        ts.setMaxTime(1.0)
+        ts.setMaxSteps(1)
+        ts.setMaxStepRejections(1)
+        ctx = ts.getPythonContext()
+        ts.setPreStep(ctx.preStep)
+        ts.setPostStep(ctx.postStep)
+        solution = PETSc.Vec().createSeq(1)
+        solution.set(1.0)
+        ts.solve(solution)
+        self.assertEqual(ctx.log['solveStep'], 2)
+        self.assertEqual(ctx.log['adaptStep'], 2)
+        self.assertEqual(ctx.prestep_times, [0.0])
+        self.assertEqual(ctx.solve_times, [(0.0, 1.0), (0.0, 1.0)])
+        self.assertEqual(ctx.adapt_times, [(0.0, 1.0), (0.0, 1.0)])
+        self.assertEqual(ctx.poststep_times, [1.0])
+        self.assertEqual(ts.getStepRejections(), 1)
+        self.assertGreater(ts.getConvergedReason(), 0)
+        solution.destroy()
+        ts.destroy()
 
     def _getCtx(self):
         return self.ts.getPythonContext()
