@@ -411,7 +411,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:  raise ValueError(
+        if cpuarray is not None and na < n:  raise ValueError(
             "array size %d and vector local size %d block size %d" %
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
@@ -469,7 +469,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:  raise ValueError(
+        if cpuarray is not None and na < n:  raise ValueError(
             "array size %d and vector local size %d block size %d" %
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
@@ -528,7 +528,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:
+        if cpuarray is not None and na < n:
             raise ValueError("array size %d and vector local size %d block size %d" % (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
@@ -2161,7 +2161,7 @@ cdef class Vec(Object):
         cdef PetscScalar sval = 0
         cdef PetscReal rval = 0
         CHKERR(VecDotNorm2(self.vec, vec.vec, &sval, &rval))
-        return toScalar(sval), toReal(float)
+        return toScalar(sval), toReal(rval)
 
     def sum(self) -> Scalar:
         """Return the sum of all the entries of the vector.
