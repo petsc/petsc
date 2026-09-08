@@ -752,7 +752,7 @@ cdef class TAO(Object):
         CHKERR(TaoSetEqualityConstraintsRoutine(self.tao, c.vec,
                                                 TAO_EqualityConstraints, <void*>context))
 
-    def getEqualityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+    def getEqualityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None] | None]:
         """Return tuple holding vector and callback of equality constraints.
 
         Not collective.
@@ -790,7 +790,7 @@ cdef class TAO(Object):
                                              TAO_JacobianEquality, <void*>context))
 
     def getJacobianEquality(self) -> tuple[Mat, Mat, tuple[TAOConstraintsJacobianFunction, tuple[Any, ...] | None,
-                                           dict[str, Any] | None]]:
+                                           dict[str, Any] | None] | None]:
         """Return matrix, precon matrix and callback of equality constraints Jacobian.
 
         Not collective.
@@ -825,7 +825,7 @@ cdef class TAO(Object):
         CHKERR(TaoSetInequalityConstraintsRoutine(self.tao, c.vec,
                                                   TAO_InequalityConstraints, <void*>context))
 
-    def getInequalityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+    def getInequalityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None] | None]:
         """Return tuple holding vector and callback of inequality constraints.
 
         Not collective.
@@ -862,7 +862,7 @@ cdef class TAO(Object):
         CHKERR(TaoSetJacobianInequalityRoutine(self.tao, Jmat, Pmat,
                                                TAO_JacobianInequality, <void*>context))
 
-    def getJacobianInequality(self) -> tuple[Mat, Mat, tuple[TAOConstraintsJacobianFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+    def getJacobianInequality(self) -> tuple[Mat, Mat, tuple[TAOConstraintsJacobianFunction, tuple[Any, ...] | None, dict[str, Any] | None] | None]:
         """Return matrix, precon matrix and callback of ineq. constraints Jacobian.
 
         Not collective.
