@@ -392,7 +392,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
         goto a_noinsert; \
       } \
     } \
-    if (value == 0.0 && ignorezeroentries && row != col) { \
+    if (value == 0.0 && ignorezeroentries && orow != ocol) { \
       low1  = 0; \
       high1 = nrow1; \
       goto a_noinsert; \

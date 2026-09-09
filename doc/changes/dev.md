@@ -99,6 +99,7 @@
 - Change `MATSELL` to honor `MatSetOption(mat, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE)`; the option was previously accepted but silently ignored, so a matrix that sets it now gets a sparser nonzero structure
 - Fix `MatSetValues()` for `MATMPISELL` to ignore a new nonzero location when `MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE)` was called; the value was previously inserted anyway, and written past the end of the row when its slice had no spare slot
 - Change `MatSetValues()` for `MATMPISELL` to skip, rather than error on, a new off-diagonal location when `MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE)` was called, matching `MATMPIAIJ`
+- Fix `MatSetValues()` for `MATMPIAIJ` to decide the `MAT_IGNORE_ZERO_ENTRIES` diagonal exemption from the global row and column, not from the indices local to the diagonal block. The two differ only when the row and column layouts differ, where a zero off the diagonal could wrongly create a location and a zero on the diagonal could wrongly be dropped
 
 ## MatCoarsen
 

@@ -26,6 +26,10 @@ static char help[] = "Tests that MATSELL honors MAT_NEW_NONZERO_LOCATIONS and MA
   diagonal block, so only that block exempts it. A matrix whose row and column layouts differ can
   place a global (i,i) in the off-diagonal block instead, where it must be dropped like any other
   zero, and dropped the same way whether or not garray already knows the column.
+
+  CheckOffDiagonalInDiagonalBlock() covers the reverse, which the same layout produces on the other
+  rank: a global (i,j) with i != j that lands at a block-local (r,r) of the diagonal block. Whether
+  the exemption applies is a question about the global indices, so this zero must be dropped too.
 */
 
 #include <petscmat.h>
@@ -69,43 +73,57 @@ static PetscErrorCode SetOnOwnerAndAssemble(Mat A, Mat B, PetscBool owner, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* An 8 by 8 MATSELL and MATAIJ pair over two ranks whose row and column layouts differ: rank 0 owns
+   rows 0-3 but only columns 0-1, and rank 1 owns rows 4-7 and columns 2-7. A global (2,2) therefore
+   belongs to rank 0's off-diagonal block, while a global (4,2) reaches rank 1 as block-local (0,0)
+   of its diagonal block. Neither location is filled here, so both are free for the probes below. */
+static PetscErrorCode CreateMismatchedLayoutPair(Mat *A, Mat *B)
+{
+  PetscInt    i, rstart, rend, ncol, col;
+  PetscMPIInt rank;
+  PetscScalar value = 1.0;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  ncol = rank ? 6 : 2;
+
+  PetscCall(MatCreate(PETSC_COMM_WORLD, A));
+  PetscCall(MatSetSizes(*A, 4, ncol, 8, 8));
+  PetscCall(MatSetType(*A, MATSELL));
+  PetscCall(MatSetFromOptions(*A));
+  PetscCall(MatSeqSELLSetPreallocation(*A, 8, NULL));
+  PetscCall(MatMPISELLSetPreallocation(*A, 8, NULL, 8, NULL));
+
+  PetscCall(MatCreate(PETSC_COMM_WORLD, B));
+  PetscCall(MatSetSizes(*B, 4, ncol, 8, 8));
+  PetscCall(MatSetType(*B, MATAIJ));
+  PetscCall(MatSeqAIJSetPreallocation(*B, 8, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(*B, 8, NULL, 8, NULL));
+
+  PetscCall(MatGetOwnershipRange(*A, &rstart, &rend));
+  for (i = rstart; i < rend; i++) {
+    col = (i + 4) % 8;
+    PetscCall(MatSetValues(*A, 1, &i, 1, &col, &value, INSERT_VALUES));
+    PetscCall(MatSetValues(*B, 1, &i, 1, &col, &value, INSERT_VALUES));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* A zero at a global (i,i) that the column layout puts in the off-diagonal block must be dropped,
    not exempted. ingarray selects which of the two suppression paths in MatSetValues_MPISELL() the
    probe reaches; both must reach the same answer, and it must be the MATAIJ answer. */
 static PetscErrorCode CheckDiagonalInOffDiagonalBlock(PetscBool ingarray)
 {
   Mat         A, B;
-  PetscInt    i, rstart, rend, ncol, col, probe = 2;
+  PetscInt    i, probe = 2;
   PetscMPIInt rank;
   PetscBool   owner;
   PetscScalar value = 1.0;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  /* 8 by 8 over two ranks, but rank 0 owns rows 0-3 and only columns 0-1, so the diagonal entry
-     (2,2) belongs to rank 0's off-diagonal block */
-  ncol  = rank ? 6 : 2;
   owner = (PetscBool)(rank == 0);
-
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
-  PetscCall(MatSetSizes(A, 4, ncol, 8, 8));
-  PetscCall(MatSetType(A, MATSELL));
-  PetscCall(MatSetFromOptions(A));
-  PetscCall(MatSeqSELLSetPreallocation(A, 8, NULL));
-  PetscCall(MatMPISELLSetPreallocation(A, 8, NULL, 8, NULL));
-
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
-  PetscCall(MatSetSizes(B, 4, ncol, 8, 8));
-  PetscCall(MatSetType(B, MATAIJ));
-  PetscCall(MatSeqAIJSetPreallocation(B, 8, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(B, 8, NULL, 8, NULL));
-
-  PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
-  for (i = rstart; i < rend; i++) {
-    col = (i + 4) % 8;
-    PetscCall(MatSetValues(A, 1, &i, 1, &col, &value, INSERT_VALUES));
-    PetscCall(MatSetValues(B, 1, &i, 1, &col, &value, INSERT_VALUES));
-  }
+  PetscCall(CreateMismatchedLayoutPair(&A, &B));
   if (ingarray && owner) {
     i = 0;
     PetscCall(MatSetValues(A, 1, &i, 1, &probe, &value, INSERT_VALUES));
@@ -126,6 +144,42 @@ static PetscErrorCode CheckDiagonalInOffDiagonalBlock(PetscBool ingarray)
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE));
   PetscCall(SetOnOwnerAndAssemble(A, B, owner, probe, probe, 5.0));
   if (owner) PetscCall(CheckEntry(A, B, probe, probe, ingarray ? "global diagonal in the off-diagonal block, column in garray" : "global diagonal in the off-diagonal block, column not in garray"));
+
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* The mirror case. A global (4,2) is not on the diagonal, but rank 1 owns rows from 4 and columns
+   from 2, so it arrives at block-local (0,0) of the diagonal block. The exemption belongs to the
+   global diagonal, the one MatInvertDiagonalForSOR_SeqAIJ() and MatInvertDiagonalForSOR_SeqSELL()
+   read, so a zero here must be dropped like any other. */
+static PetscErrorCode CheckOffDiagonalInDiagonalBlock(void)
+{
+  Mat         A, B;
+  PetscInt    prow = 4, pcol = 2;
+  PetscMPIInt rank;
+  PetscBool   owner;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  owner = (PetscBool)(rank == 1);
+  PetscCall(CreateMismatchedLayoutPair(&A, &B));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+
+  /* new locations stay allowed, or nonew would suppress the insert before the zero test is reached */
+  PetscCall(MatSetOption(A, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
+  PetscCall(MatSetOption(B, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
+  PetscCall(SetOnOwnerAndAssemble(A, B, owner, prow, pcol, 0.0));
+  PetscCall(MatSetOption(A, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
+  PetscCall(MatSetOption(B, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE));
+  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE));
+  PetscCall(SetOnOwnerAndAssemble(A, B, owner, prow, pcol, 5.0));
+  if (owner) PetscCall(CheckEntry(A, B, prow, pcol, "global off-diagonal at a block-local diagonal position"));
 
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));
@@ -243,6 +297,7 @@ int main(int argc, char **args)
   if (size > 1) {
     PetscCall(CheckDiagonalInOffDiagonalBlock(PETSC_TRUE));
     PetscCall(CheckDiagonalInOffDiagonalBlock(PETSC_FALSE));
+    PetscCall(CheckOffDiagonalInDiagonalBlock());
   }
   PetscCall(PetscFinalize());
   return 0;
