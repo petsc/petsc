@@ -1419,7 +1419,7 @@ cdef class KSP(Object):
         CHKERR(KSPGetNormType(self.ksp, &normtype))
         return normtype
 
-    def setComputeEigenvalues(self, flag: bool) -> None:
+    def setComputeEigenvalues(self, flag: bool = True) -> None:
         """Set a flag to compute eigenvalues.
 
         Logically collective.
@@ -1463,7 +1463,7 @@ cdef class KSP(Object):
         CHKERR(KSPGetComputeEigenvalues(self.ksp, &flag))
         return toBool(flag)
 
-    def setComputeSingularValues(self, flag: bool) -> None:
+    def setComputeSingularValues(self, flag: bool = True) -> None:
         """Set flag to calculate singular values.
 
         Logically collective.
@@ -1509,7 +1509,7 @@ cdef class KSP(Object):
 
     # --- initial guess ---
 
-    def setInitialGuessNonzero(self, flag: bool) -> None:
+    def setInitialGuessNonzero(self, flag: bool = True) -> None:
         """Tell the iterative solver that the initial guess is nonzero.
 
         Logically collective.
@@ -1545,7 +1545,7 @@ cdef class KSP(Object):
         CHKERR(KSPGetInitialGuessNonzero(self.ksp, &flag))
         return toBool(flag)
 
-    def setInitialGuessKnoll(self, flag: bool) -> None:
+    def setInitialGuessKnoll(self, flag: bool = True) -> None:
         """Tell solver to use `PC.apply` to compute the initial guess.
 
         Logically collective.

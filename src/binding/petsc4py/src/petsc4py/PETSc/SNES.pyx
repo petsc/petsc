@@ -622,7 +622,7 @@ cdef class SNES(Object):
         CHKERR(PetscINCREF(smooth.obj))
         return smooth
 
-    def setFASUseCoarseCorrectionLineSearch(self, use: bool) -> None:
+    def setFASUseCoarseCorrectionLineSearch(self, use: bool = True) -> None:
         """Set if to use a line search for the coarse corrections in FAS.
 
         Logically collective.
@@ -1856,7 +1856,7 @@ cdef class SNES(Object):
         CHKERR(SNESGetIterationNumber(self.snes, &ival))
         return toInt(ival)
 
-    def setForceIteration(self, force: bool) -> None:
+    def setForceIteration(self, force: bool = True) -> None:
         """Force solve to take at least one iteration.
 
         Collective.

@@ -434,7 +434,7 @@ cdef class PC(Object):
         CHKERR(PetscINCREF(P.obj))
         return (A, P)
 
-    def setUseAmat(self, flag: bool) -> None:
+    def setUseAmat(self, flag: bool = True) -> None:
         """Set to indicate to apply `PC` to ``A`` and not ``P``.
 
         Logically collective.
@@ -479,7 +479,7 @@ cdef class PC(Object):
         CHKERR(PCGetUseAmat(self.pc, &cflag))
         return toBool(cflag)
 
-    def setReusePreconditioner(self, flag: bool) -> None:
+    def setReusePreconditioner(self, flag: bool = True) -> None:
         """Set to indicate the preconditioner is to be reused.
 
         Logically collective.
@@ -1041,7 +1041,7 @@ cdef class PC(Object):
         CHKERR(PCASMGetSubKSP(self.pc, &n, NULL, &p))
         return [ref_KSP(p[i]) for i from 0 <= i <n]
 
-    def setASMSortIndices(self, dosort: bool) -> None:
+    def setASMSortIndices(self, dosort: bool = True) -> None:
         """Set to sort subdomain indices.
 
         Logically collective.
@@ -2858,7 +2858,7 @@ cdef class PC(Object):
 
     # --- DEFLATION ---
 
-    def setDeflationInitOnly(self, flg: bool) -> None:
+    def setDeflationInitOnly(self, flg: bool = True) -> None:
         """Set to only perform the initialization.
 
         Logically collective.

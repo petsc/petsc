@@ -4909,7 +4909,7 @@ cdef class Mat(Object):
         CHKERR(MatSeqAIJKron(self.mat, mat.mat, reuse, &result.mat))
         return result
 
-    def bindToCPU(self, flg: bool) -> None:
+    def bindToCPU(self, flg: bool = True) -> None:
         """Mark a matrix to temporarily stay on the CPU.
 
         Collective.
@@ -5466,7 +5466,7 @@ cdef class Mat(Object):
         CHKERR(MatHtoolGetPermutationTarget(self.mat, &iset.iset))
         return iset
 
-    def useHtoolPermutation(self, use: bool) -> Self:
+    def useHtoolPermutation(self, use: bool = True) -> Self:
         """Set whether to use the permutation computed by Htool.
 
         Logically collective.
@@ -5485,7 +5485,7 @@ cdef class Mat(Object):
         CHKERR(MatHtoolUsePermutation(self.mat, _use))
         return self
 
-    def useHtoolRecompression(self, use: bool) -> Self:
+    def useHtoolRecompression(self, use: bool = True) -> Self:
         """Set whether to recompress the matrix after assembly.
 
         Logically collective.
@@ -5713,7 +5713,7 @@ cdef class Mat(Object):
         CHKERR(MatHtoolGetBlockTreeConsistency(self.mat, &block_tree_consistency))
         return toBool(block_tree_consistency)
 
-    def setHtoolBlockTreeConsistency(self, block_tree_consistency: bool) -> Self:
+    def setHtoolBlockTreeConsistency(self, block_tree_consistency: bool = True) -> Self:
         """Set whether the matrix should enforce block tree consistency.
 
         Logically collective.

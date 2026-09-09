@@ -365,7 +365,7 @@ cdef class DM(Object):
         CHKERR(DMGetUseNatural(self.dm, &uN))
         return toBool(uN)
 
-    def setUseNatural(self, useNatural : bool) -> None:
+    def setUseNatural(self, useNatural: bool = True) -> None:
         """Set the flag for constructing a global-to-natural map.
 
         Not collective.
@@ -1387,7 +1387,7 @@ cdef class DM(Object):
         CHKERR(DMGetSparseLocalize(self.dm, &flag))
         return toBool(flag)
 
-    def setSparseLocalize(self, flag: bool) -> None:
+    def setSparseLocalize(self, flag: bool = True) -> None:
         """Set if coordinates should be only localized at the boundary.
 
         Collective.

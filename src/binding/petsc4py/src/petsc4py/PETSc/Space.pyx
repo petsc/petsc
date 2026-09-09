@@ -277,7 +277,7 @@ cdef class Space(Object):
         CHKERR(PetscSpaceSumGetConcatenate(self.space, &concatenate))
         return toBool(concatenate)
 
-    def setSumConcatenate(self, concatenate: bool) -> None:
+    def setSumConcatenate(self, concatenate: bool = True) -> None:
         """Set the concatenate flag for this space.
 
         Logically collective.
@@ -467,7 +467,7 @@ cdef class Space(Object):
         CHKERR(PetscSpacePolynomialGetTensor(self.space, &ctensor))
         return toBool(ctensor)
 
-    def setPolynomialTensor(self, tensor: bool) -> None:
+    def setPolynomialTensor(self, tensor: bool = True) -> None:
         """Set whether a function space is a space of tensor polynomials.
 
         Logically collective.
@@ -880,7 +880,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetContinuity(self.dualspace, &ccontinuous))
         return toBool(ccontinuous)
 
-    def setLagrangeContinuity(self, continuous: bool) -> None:
+    def setLagrangeContinuity(self, continuous: bool = True) -> None:
         """Indicate whether the element is continuous.
 
         Not collective.
@@ -912,7 +912,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetTensor(self.dualspace, &ctensor))
         return toBool(ctensor)
 
-    def setLagrangeTensor(self, tensor: bool) -> None:
+    def setLagrangeTensor(self, tensor: bool = True) -> None:
         """Set the tensor nature of the dual space.
 
         Not collective.
@@ -944,7 +944,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetTrimmed(self.dualspace, &ctrimmed))
         return toBool(ctrimmed)
 
-    def setLagrangeTrimmed(self, trimmed: bool) -> None:
+    def setLagrangeTrimmed(self, trimmed: bool = True) -> None:
         """Set the trimmed nature of the dual space.
 
         Not collective.

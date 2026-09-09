@@ -226,7 +226,7 @@ cdef class SF(Object):
             nleaves = nremote // 2
         CHKERR(PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES))
 
-    def setRankOrder(self, flag: bool) -> None:
+    def setRankOrder(self, flag: bool = True) -> None:
         """Sort multi-points for gathers and scatters by rank order.
 
         Logically collective.
