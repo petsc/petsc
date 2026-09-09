@@ -280,9 +280,11 @@ cdef class SF(Object):
         remote = iarray_i(remote, &nremote, <PetscInt**>&iremote)
         if local is not None:
             local = iarray_i(local, &nleaves, &ilocal)
-            assert 2*nleaves == nremote
+            if 2*nleaves != nremote:
+                raise ValueError("remote array must contain one rank-index pair per local leaf")
         else:
-            assert nremote % 2 == 0
+            if nremote % 2 != 0:
+                raise ValueError("remote array length must be even")
             nleaves = nremote // 2
         CHKERR(PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES))
 

@@ -280,6 +280,29 @@ STENCIL_TYPE = ('none', 'star', 'box')
 STENCIL_WIDTH = (0, 1, 2, 3)
 
 
+class TestDMStagOwnershipRanges(unittest.TestCase):
+    def testSetOwnershipRanges(self):
+        comm = PETSc.COMM_WORLD
+        for dim in (1, 2, 3):
+            ranges = [list(range(2, comm.size + 2))] + [[3], [4]][: dim - 1]
+            sizes = [sum(r) for r in ranges]
+            for sequence in (list, tuple):
+                with self.subTest(dim=dim, sequence=sequence.__name__):
+                    da = PETSc.DMStag().create(
+                        dim,
+                        sizes=sizes,
+                        proc_sizes=[comm.size] + [1] * (dim - 1),
+                        comm=comm,
+                    )
+                    try:
+                        da.setOwnershipRanges([sequence(r) for r in ranges])
+                        da.setUp()
+                        actual = [r.tolist() for r in da.getOwnershipRanges()]
+                        self.assertEqual(actual, ranges)
+                    finally:
+                        da.destroy()
+
+
 class TestDMStagCreate(unittest.TestCase):
     pass
 

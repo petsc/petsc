@@ -53,7 +53,6 @@ cdef class Random(Object):
         petsc.PetscRandomView
 
         """
-        assert self.obj != NULL
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
         CHKERR(PetscRandomView(self.rnd, vwr))

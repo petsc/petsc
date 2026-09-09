@@ -2307,7 +2307,8 @@ cdef class TS(Object):
         cdef PetscInt   nterm = 0
         cdef PetscBool *iterm = NULL
         terminate = iarray_b(terminate, &nterm, &iterm)
-        assert nterm == ndirs
+        if nterm != ndirs:
+            raise ValueError("terminate and direction arrays must have equal length")
 
         cdef PetscInt nevents = ndirs
         if indicator is not None:
@@ -2356,7 +2357,8 @@ cdef class TS(Object):
         if vtol is not None:
             CHKERR(TSGetNumEvents(self.ts, &nevents))
             vtol = iarray_r(vtol, &ntolr,  &vtolr)
-            assert ntolr == nevents
+            if ntolr != nevents:
+                raise ValueError("event tolerance array length must match number of events")
         CHKERR(TSSetEventTolerances(self.ts, tolr, vtolr))
 
     def getNumEvents(self) -> int:
@@ -2687,17 +2689,17 @@ cdef class TS(Object):
         cdef mem1 = None, mem2 = None
         if isinstance(vl, Vec): vl = [vl]
         if isinstance(vm, Vec): vm = [vm]
+        if vl is not None and vm is not None and len(vl) != len(vm):
+            raise ValueError("cost gradient arrays must have equal length")
         if vl is not None:
             n = <PetscInt>len(vl)
         elif vm is not None:
             n = <PetscInt>len(vm)
         if vl is not None:
-            assert len(vl) == <Py_ssize_t>n
             mem1 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&vecl)
             for i from 0 <= i < n:
                 vecl[i] = (<Vec?>vl[i]).vec
         if vm is not None:
-            assert len(vm) == <Py_ssize_t>n
             mem2 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&vecm)
             for i from 0 <= i < n:
                 vecm[i] = (<Vec?>vm[i]).vec

@@ -115,7 +115,8 @@ cdef class DMDA(DM):
         if psizes is not None:
             pdim = asDims(psizes, &m, &n, &p)
         if gdim>=0 and pdim>=0:
-            assert gdim == pdim
+            if gdim != pdim:
+                raise ValueError("sizes and proc_sizes must have equal dimensions")
         # dim and dof
         if dim is not None: ndim = asInt(dim)
         if dof is not None: ndof = asInt(dof)

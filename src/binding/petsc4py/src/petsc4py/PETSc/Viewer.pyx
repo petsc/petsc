@@ -130,7 +130,6 @@ cdef class Viewer(Object):
 
     def __call__(self, Object obj) -> None:
         """View a generic object."""
-        assert obj.obj != NULL
         CHKERR(PetscObjectView(obj.obj[0], self.vwr))
 
     #
@@ -160,7 +159,6 @@ cdef class Viewer(Object):
         elif isinstance(obj, Viewer):
             CHKERR(PetscViewerView(self.vwr, (<Viewer?>obj).vwr))
         else:
-            assert (<Object?>obj).obj != NULL
             CHKERR(PetscObjectView((<Object?>obj).obj[0], self.vwr))
 
     def destroy(self) -> Self:

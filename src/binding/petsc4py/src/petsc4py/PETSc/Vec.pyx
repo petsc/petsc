@@ -974,9 +974,10 @@ cdef class Vec(Object):
 
         """
         vecs = list(vecs)
-        if isets:
+        if isets is not None:
             isets = list(isets)
-            assert len(isets) == len(vecs)
+            if len(isets) != len(vecs):
+                raise ValueError("number of index sets must match number of vectors")
         else:
             isets = None
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -2622,7 +2623,8 @@ cdef class Vec(Object):
         cdef PetscVec *v = NULL
         cdef object unused1 = iarray_s(alphas, &n, &a)
         cdef object unused2 = oarray_p(empty_p(n), NULL, <void**>&v)
-        assert n == len(vecs)
+        if n != len(vecs):
+            raise ValueError("number of coefficients must match number of vectors")
         cdef Py_ssize_t i=0
         for i from 0 <= i < n:
             v[i] = (<Vec?>(vecs[i])).vec
@@ -3523,7 +3525,8 @@ cdef class Vec(Object):
 
         """
         if idxm is None: idxm = range(len(sx))
-        else: assert len(idxm) == len(sx)
+        elif len(idxm) != len(sx):
+            raise ValueError("number of indices must match number of vectors")
         cdef PetscInt N = 0
         cdef PetscInt* cidxm = NULL
         idxm = iarray_i(idxm, &N, &cidxm)

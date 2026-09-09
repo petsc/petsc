@@ -125,7 +125,6 @@ cdef inline ndarray array_rd(PetscInt dim, PetscInt sizes[], const PetscReal* da
     cdef int d = <int> dim
     cdef int tot = 1
     cdef npy_intp sz[NPY_MAXDIMS]
-    assert(dim <= NPY_MAXDIMS)
     for e in range(d):
         sz[e] = <int> sizes[e]
         tot *= <int> sizes[e]
@@ -152,7 +151,6 @@ cdef inline ndarray array_sd(PetscInt dim, PetscInt sizes[], const PetscScalar* 
     cdef int d = <int> dim
     cdef int tot = 1
     cdef npy_intp sz[NPY_MAXDIMS]
-    assert(dim <= NPY_MAXDIMS)
     for e in range(d):
         sz[e] = <int> sizes[e]
         tot *= <int> sizes[e]

@@ -824,7 +824,6 @@ cdef inline PetscErrorCode Mat_AllocAIJ_NNZ(PetscMat A, object NNZ) except PETSC
     CHKERR(MatGetLocalSize(A, &m, NULL))
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
         CHKERR(MatGetBlockSize(A, &bs))
-        assert bs > 0, "block size not set"
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
     try:
@@ -909,7 +908,6 @@ cdef inline PetscErrorCode Mat_AllocAIJ_CSR(PetscMat A, object CSR) except PETSC
     CHKERR(MatGetLocalSize(A, &m, NULL))
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
         CHKERR(MatGetBlockSize(A, &bs))
-        assert bs > 0, "block size not set"
     # unpack CSR argument
     cdef object oi, oj, ov
     try:

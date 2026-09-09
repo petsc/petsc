@@ -1535,16 +1535,23 @@ cdef class Mat(Object):
         petsc.MatCreateNest, petsc.MATNEST
 
         """
-        cdef object mat
+        cdef object mat, row
         mats = [list(mat) for mat in mats]
-        if isrows:
+        if not mats or not mats[0]:
+            raise ValueError("mats must contain at least one block")
+        for row in mats:
+            if len(row) != len(mats[0]):
+                raise ValueError("matrix block rows must have equal length")
+        if isrows is not None:
             isrows = list(isrows)
-            assert len(isrows) == len(mats)
+            if len(isrows) != len(mats):
+                raise ValueError("number of row index sets must match matrix block rows")
         else:
             isrows = None
-        if iscols:
+        if iscols is not None:
             iscols = list(iscols)
-            assert len(iscols) == len(mats[0])
+            if len(iscols) != len(mats[0]):
+                raise ValueError("number of column index sets must match matrix block columns")
         else:
             iscols = None
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -4243,7 +4250,8 @@ cdef class Mat(Object):
         if iscols is None: iscols = isrows
         isrows = [isrows] if isinstance(isrows, IS) else list(isrows)
         iscols = [iscols] if isinstance(iscols, IS) else list(iscols)
-        assert len(isrows) == len(iscols)
+        if len(isrows) != len(iscols):
+            raise ValueError("row and column index set arrays must have equal length")
         cdef Py_ssize_t i, n = len(isrows)
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscIS  *cisrows = NULL
@@ -4257,7 +4265,8 @@ cdef class Mat(Object):
         if submats is not None:
             reuse = MAT_REUSE_MATRIX
             submats = list(submats)
-            assert len(submats) == len(isrows)
+            if len(submats) != len(isrows):
+                raise ValueError("number of submatrices must match number of index set pairs")
             CHKERR(PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats))
             for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
         CHKERR(MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats))

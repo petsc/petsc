@@ -41,7 +41,6 @@ cdef class MatPartitioning(Object):
         petsc.MatPartitioningView
 
         """
-        assert self.obj != NULL
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
         CHKERR(MatPartitioningView(self.part, vwr))

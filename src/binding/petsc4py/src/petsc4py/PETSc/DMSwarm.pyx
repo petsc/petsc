@@ -340,7 +340,8 @@ cdef class DMSwarm(DM):
         if dtype == RealType:    ctype = PETSC_REAL
         if dtype == ScalarType:  ctype = PETSC_SCALAR
         if dtype == ComplexType: ctype = PETSC_COMPLEX
-        assert ctype != PETSC_DATATYPE_UNKNOWN
+        if ctype == PETSC_DATATYPE_UNKNOWN:
+            raise TypeError("unsupported DMSwarm field data type")
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR(DMSwarmRegisterPetscDatatypeField(self.dm, cfieldname, cblocksize, ctype))
 
@@ -384,7 +385,8 @@ cdef class DMSwarm(DM):
         if ctype == PETSC_SCALAR:  typenum = NPY_PETSC_SCALAR
         if ctype == PETSC_COMPLEX: typenum = NPY_PETSC_COMPLEX
         if ctype == PETSC_DOUBLE:  typenum = NPY_DOUBLE
-        assert typenum != -1
+        if typenum == -1:
+            raise TypeError("unsupported DMSwarm field data type")
         cdef npy_intp s[2]
         s[0] = <npy_intp> nlocal
         s[1] = <npy_intp> blocksize
