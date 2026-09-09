@@ -1161,7 +1161,7 @@ cdef class TAO(Object):
         CHKERR(TaoGetTolerances(self.tao, &_gatol, &_grtol, &_gttol))
         return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
-    def setMaximumIterations(self, mit: int) -> float:
+    def setMaximumIterations(self, mit: int) -> None:
         """Set the maximum number of solver iterations.
 
         Collective.
@@ -1623,20 +1623,6 @@ cdef class TAO(Object):
 
     getFunctionValue = getObjectiveValue
 
-    def getConvergedReason(self) -> ConvergedReason:
-        """Return the reason for the solver convergence.
-
-        Not collective.
-
-        See Also
-        --------
-        petsc.TaoGetConvergedReason
-
-        """
-        cdef PetscTAOConvergedReason reason = TAO_CONTINUE_ITERATING
-        CHKERR(TaoGetConvergedReason(self.tao, &reason))
-        return reason
-
     def getSolutionNorm(self) -> tuple[float, float, float]:
         """Return the objective function value and the norms of gradient and constraints.
 
@@ -2076,7 +2062,7 @@ cdef class TAO(Object):
 
     property gtol:
         """Gradient tolerances."""
-        def __get__(self) -> Any:
+        def __get__(self) -> tuple[float, float, float]:
             return self.getTolerances()
 
         def __set__(self, value):
@@ -2089,7 +2075,7 @@ cdef class TAO(Object):
 
     property ctol:
         """Constraint tolerances."""
-        def __get__(self) -> Any:
+        def __get__(self) -> tuple[float, float]:
             return self.getConstraintTolerances()
 
         def __set__(self, value):

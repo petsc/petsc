@@ -515,10 +515,15 @@ cdef class Object:
         cdef PetscInt clevel = asInt(level)
         CHKERR(PetscObjectSetTabLevel(self.obj[0], clevel))
 
-    def getTabLevel(self) -> None:
+    def getTabLevel(self) -> int:
         """Return the PETSc object tab level.
 
         Not collective.
+
+        Returns
+        -------
+        level : int
+            The tab level.
 
         See Also
         --------

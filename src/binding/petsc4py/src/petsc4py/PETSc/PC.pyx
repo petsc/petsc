@@ -1727,7 +1727,7 @@ cdef class PC(Object):
         cdef PetscPCCompositeType cval = ctype
         CHKERR(PCCompositeSetType(self.pc, cval))
 
-    def getCompositePC(self, n: int) -> None:
+    def getCompositePC(self, n: int) -> PC:
         """Return a component of the composite `PC`.
 
         Not collective.
@@ -1736,6 +1736,11 @@ cdef class PC(Object):
         ----------
         n
             The index of the `PC` in the composition.
+
+        Returns
+        -------
+        pc : PC
+            The selected component.
 
         See Also
         --------

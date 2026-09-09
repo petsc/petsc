@@ -2727,7 +2727,7 @@ cdef class TS(Object):
 
     def setRHSJacobianP(
         self,
-        jacobianp: TSRHSJacobianP | None,
+        rhsjacobianp: TSRHSJacobianP | None,
         Mat A=None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
@@ -2737,14 +2737,14 @@ cdef class TS(Object):
 
         Parameters
         ----------
-        jacobianp
+        rhsjacobianp
             The user-defined function.
         A
             The matrix into which the Jacobian will be computed.
         args
-            Additional positional arguments for ``jacobianp``.
+            Additional positional arguments for ``rhsjacobianp``.
         kargs
-            Additional keyword arguments for ``jacobianp``.
+            Additional keyword arguments for ``rhsjacobianp``.
 
         See Also
         --------
@@ -2753,10 +2753,10 @@ cdef class TS(Object):
         """
         cdef PetscMat Amat=NULL
         if A is not None: Amat = A.mat
-        if jacobianp is not None:
+        if rhsjacobianp is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
-            context = (jacobianp, args, kargs)
+            context = (rhsjacobianp, args, kargs)
             self.set_attr('__rhsjacobianp__', context)
             CHKERR(TSSetRHSJacobianP(self.ts, Amat, TS_RHSJacobianP, <void*>context))
         else:
@@ -2805,43 +2805,6 @@ cdef class TS(Object):
         CHKERR(TSGetQuadratureTS(self.ts, &fwd, &qts.ts))
         CHKERR(PetscINCREF(qts.obj))
         return (toBool(fwd), qts)
-
-    def setRHSJacobianP(
-        self,
-        rhsjacobianp: TSRHSJacobianP | None,
-        Mat A=None,
-        args: tuple[Any, ...] | None = None,
-        kargs: dict[str, Any] | None = None) -> None:
-        """Set the function that computes the Jacobian with respect to the parameters.
-
-        Collective.
-
-        Parameters
-        ----------
-        rhsjacobianp
-            The function to compute the Jacobian
-        A
-            The JacobianP matrix
-        args
-            Additional positional arguments for ``rhsjacobianp``.
-        kargs
-            Additional keyword arguments for ``rhsjacobianp``.
-
-        See Also
-        --------
-        petsc.TSSetRHSJacobianP
-
-        """
-        cdef PetscMat Amat=NULL
-        if A is not None: Amat = A.mat
-        if rhsjacobianp is not None:
-            if args  is None: args  = ()
-            if kargs is None: kargs = {}
-            context = (rhsjacobianp, args, kargs)
-            self.set_attr('__rhsjacobianp__', context)
-            CHKERR(TSSetRHSJacobianP(self.ts, Amat, TS_RHSJacobianP, <void*>context))
-        else:
-            CHKERR(TSSetRHSJacobianP(self.ts, Amat, NULL, NULL))
 
     def computeRHSJacobianP(self, t: float, Vec x, Mat J) -> None:
         """Run the user-defined JacobianP function.
@@ -3219,7 +3182,7 @@ cdef class TS(Object):
 
     property time_step:
         """The current time step size."""
-        def __get__(self) -> None:
+        def __get__(self) -> float:
             return self.getTimeStep()
 
         def __set__(self, value):

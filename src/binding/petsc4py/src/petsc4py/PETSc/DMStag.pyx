@@ -698,7 +698,7 @@ cdef class DMStag(DM):
         CHKERR(DMStagGetLocationSlot(self.dm, sloc, comp, &slot))
         return toInt(slot)
 
-    def getProductCoordinateLocationSlot(self, loc: StencilLocation) -> None:
+    def getProductCoordinateLocationSlot(self, loc: StencilLocation) -> int:
         """Return slot for use with local product coordinate arrays.
 
         Not collective.
@@ -707,6 +707,11 @@ cdef class DMStag(DM):
         ----------
         loc
             The grid location.
+
+        Returns
+        -------
+        slot : int
+            The location slot.
 
         See Also
         --------
