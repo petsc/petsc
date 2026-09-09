@@ -2791,11 +2791,11 @@ PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char 
     moments[0] += wp;
     for (PetscInt d = 0; d < bsc; ++d) {
       moments[d + 1] += wp * c[d];
-      moments[d + bsc + 1] += wp * PetscSqr(c[d]);
+      moments[bsc + 1] += wp * PetscSqr(c[d]);
     }
   }
-  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
+  PetscCall(DMSwarmRestoreField(sw, coordinate, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(sw, weight, NULL, NULL, (void **)&w));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, moments, bsc + 2, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

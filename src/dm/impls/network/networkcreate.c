@@ -364,7 +364,6 @@ static PetscErrorCode DMNetworkCopyHeaderTopological(DM dm, DM newdm)
     newnetwork->header[i].offsetvarrel = NULL;
     newnetwork->header[i].ndata        = 0;
     newnetwork->header[i].maxcomps     = DMNETWORK_MAX_COMP_AT_POINT_DEFAULT;
-    newnetwork->header[i].hsize        = sizeof(struct _p_DMNetworkComponentHeader) / sizeof(sizeof(DMNetworkComponentGenericDataType));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

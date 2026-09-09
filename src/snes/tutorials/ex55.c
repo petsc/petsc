@@ -737,7 +737,7 @@ int main(int argc, char **argv)
 
 /*TEST
   build:
-    requires: !windows_compilers
+    requires: cxx !windows_compilers
     depends: ex55k.kokkos.cxx
 
   testset:
