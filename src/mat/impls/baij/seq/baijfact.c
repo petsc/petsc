@@ -1018,11 +1018,11 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   Mat_SeqSBAIJ      *b;
   Mat                B;
   PetscBool          perm_identity;
-  PetscInt           reallocs = 0, i, *ai = a->i, *aj = a->j, am = a->mbs, bs = A->rmap->bs, *ui;
+  PetscInt           reallocs = 0, i, *ai = a->i, *aj = a->j, am = a->mbs, bs = A->rmap->bs, *ui, levels = (PetscInt)info->levels;
   const PetscInt    *rip;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
   PetscInt           nlnk, *lnk, *lnk_lvl = NULL, ncols, ncols_upper, *cols, *cols_lvl, *uj, **uj_ptr, **uj_lvl_ptr;
-  PetscReal          fill = info->fill, levels = info->levels;
+  PetscReal          fill       = info->fill;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
   PetscBT            lnkbt;

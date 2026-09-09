@@ -1541,7 +1541,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   PetscInt           n = A->rmap->n, *ai = a->i, *aj = a->j;
   PetscInt          *bi, *cols, nnz, *cols_lvl;
   PetscInt          *bdiag, prow, fm, nzbd, reallocs = 0, dcount = 0;
-  PetscInt           i, levels, diagonal_fill;
+  PetscInt           i, levels = (PetscInt)info->levels, diagonal_fill;
   PetscBool          col_identity, row_identity;
   PetscReal          f;
   PetscInt           nlnk, *lnk, *lnk_lvl = NULL;
@@ -1556,7 +1556,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
   PetscCheck(diagDense, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entries");
 
-  levels = (PetscInt)info->levels;
   PetscCall(ISIdentity(isrow, &row_identity));
   PetscCall(ISIdentity(iscol, &col_identity));
   if (!levels && row_identity && col_identity) {
@@ -2051,12 +2050,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS perm, const MatFa
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
   PetscBool          perm_identity;
-  PetscInt           reallocs = 0, i, *ai = a->i, *aj = a->j, am = A->rmap->n, *ui, *udiag;
+  PetscInt           reallocs = 0, i, *ai = a->i, *aj = a->j, am = A->rmap->n, *ui, *udiag, levels = (PetscInt)info->levels;
   const PetscInt    *rip, *riip, *adiag;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
   PetscInt           nlnk, *lnk, *lnk_lvl = NULL;
   PetscInt           ncols, ncols_upper, *cols, *ajtmp, *uj, **uj_ptr, **uj_lvl_ptr;
-  PetscReal          fill = info->fill, levels = info->levels;
+  PetscReal          fill       = info->fill;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
   PetscBT            lnkbt;
