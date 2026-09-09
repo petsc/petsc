@@ -248,7 +248,7 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
     bilen[brow] = nrow; \
   } while (0)
 
-PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
+static PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *)mat->data;
   MatScalar    value;
@@ -1005,7 +1005,6 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer v
 {
   Mat_MPIBAIJ      *baij = (Mat_MPIBAIJ *)mat->data;
   PetscMPIInt       rank = baij->rank;
-  PetscInt          bs   = mat->rmap->bs;
   PetscBool         isascii, isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -1042,74 +1041,24 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer v
     if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  {
-    /* assemble the entire matrix onto first processor. */
-    Mat          A;
-    Mat_SeqBAIJ *Aloc;
-    PetscInt     M = mat->rmap->N, N = mat->cmap->N, *ai, *aj, col, i, j, k, *rvals, mbs = baij->mbs;
-    MatScalar   *a;
-    const char  *matname;
+  { /* assemble the entire matrix onto first process */
+    Mat A, Av;
+    IS  isrow, iscol;
 
-    /* Here we are creating a temporary matrix, so will assume MPIBAIJ is acceptable */
-    /* Perhaps this should be the type of mat? */
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)mat), &A));
-    if (rank == 0) {
-      PetscCall(MatSetSizes(A, M, N, M, N));
-    } else {
-      PetscCall(MatSetSizes(A, 0, 0, M, N));
-    }
-    PetscCall(MatSetType(A, MATMPIBAIJ));
-    PetscCall(MatMPIBAIJSetPreallocation(A, mat->rmap->bs, 0, NULL, 0, NULL));
-    PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
-
-    /* copy over the A part */
-    Aloc = (Mat_SeqBAIJ *)baij->A->data;
-    ai   = Aloc->i;
-    aj   = Aloc->j;
-    a    = Aloc->a;
-    PetscCall(PetscMalloc1(bs, &rvals));
-
-    for (i = 0; i < mbs; i++) {
-      rvals[0] = bs * (baij->rstartbs + i);
-      for (j = 1; j < bs; j++) rvals[j] = rvals[j - 1] + 1;
-      for (j = ai[i]; j < ai[i + 1]; j++) {
-        col = (baij->cstartbs + aj[j]) * bs;
-        for (k = 0; k < bs; k++) {
-          PetscCall(MatSetValues_MPIBAIJ(A, bs, rvals, 1, &col, a, INSERT_VALUES));
-          col++;
-          a += bs;
-        }
-      }
-    }
-    /* copy over the B part */
-    Aloc = (Mat_SeqBAIJ *)baij->B->data;
-    ai   = Aloc->i;
-    aj   = Aloc->j;
-    a    = Aloc->a;
-    for (i = 0; i < mbs; i++) {
-      rvals[0] = bs * (baij->rstartbs + i);
-      for (j = 1; j < bs; j++) rvals[j] = rvals[j - 1] + 1;
-      for (j = ai[i]; j < ai[i + 1]; j++) {
-        col = baij->garray[aj[j]] * bs;
-        for (k = 0; k < bs; k++) {
-          PetscCall(MatSetValues_MPIBAIJ(A, bs, rvals, 1, &col, a, INSERT_VALUES));
-          col++;
-          a += bs;
-        }
-      }
-    }
-    PetscCall(PetscFree(rvals));
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->rmap->N : 0, 0, 1, &isrow));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->cmap->N : 0, 0, 1, &iscol));
+    PetscCall(MatCreateSubMatrix(mat, isrow, iscol, MAT_INITIAL_MATRIX, &A));
+    PetscCall(MatMPIBAIJGetSeqBAIJ(A, &Av, NULL, NULL));
+    PetscCall(ISDestroy(&isrow));
+    PetscCall(ISDestroy(&iscol));
     /*
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    if (((PetscObject)mat)->name) PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
     if (rank == 0) {
-      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIBAIJ *)A->data)->A, matname));
-      PetscCall(MatView_SeqBAIJ(((Mat_MPIBAIJ *)A->data)->A, sviewer));
+      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)Av, ((PetscObject)mat)->name));
+      PetscCall(MatView_SeqBAIJ(Av, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));

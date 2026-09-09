@@ -947,7 +947,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         ct2       = 0;
         for (PetscInt j = 1, max1 = rbuf1_i[0]; j <= max1; j++) {
           kmax = rbuf1[i][2 * j];
-          for (PetscInt k = 0; k < kmax; k++, ct1++) {
+          for (PetscInt k = 0; k < kmax; k++, ct1++, ct2 += ncols) {
             PetscInt l;
             row    = rbuf1_i[ct1] - rstart;
             nzA    = a_i[row + 1] - a_i[row];
@@ -957,7 +957,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             cworkB = PetscSafePointerPlusOffset(b_j, b_i[row]);
 
             /* load the column indices for this row into cols */
-            cols = sbuf_aj_i + ct2;
+            cols = PetscSafePointerPlusOffset(sbuf_aj_i, ct2);
             for (l = 0; l < nzB; l++) {
               if ((ctmp = bmap[cworkB[l]]) < cstart) cols[l] = ctmp;
               else break;
@@ -965,7 +965,6 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
             imark = l;
             for (l = 0; l < nzA; l++) cols[imark + l] = cstart + cworkA[l];
             for (l = imark; l < nzB; l++) cols[nzA + l] = bmap[cworkB[l]];
-            ct2 += ncols;
           }
         }
         PetscCallMPI(MPIU_Isend(sbuf_aj_i, req_size[i], MPIU_INT, req_source1[i], tag3, comm, s_waits3 + i));
@@ -1246,7 +1245,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
     ct2       = 0;
     for (PetscInt j = 1, max1 = rbuf1_i[0]; j <= max1; j++) {
       kmax = rbuf1_i[2 * j];
-      for (PetscInt k = 0; k < kmax; k++, ct1++) {
+      for (PetscInt k = 0; k < kmax; k++, ct1++, ct2 += ncols) {
         PetscInt l;
 
         row    = rbuf1_i[ct1] - rstart;
@@ -1258,7 +1257,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         vworkB = PetscSafePointerPlusOffset(b_a, b_i[row] * bs2);
 
         /* load the column values for this row into vals*/
-        vals = sbuf_aa_i + ct2 * bs2;
+        vals = PetscSafePointerPlusOffset(sbuf_aa_i, ct2 * bs2);
         for (l = 0; l < nzB; l++) {
           if ((bmap[cworkB[l]]) < cstart) PetscCall(PetscArraycpy(vals + l * bs2, vworkB + l * bs2, bs2));
           else break;
@@ -1266,8 +1265,6 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
         imark = l;
         for (l = 0; l < nzA; l++) PetscCall(PetscArraycpy(vals + (imark + l) * bs2, vworkA + l * bs2, bs2));
         for (l = imark; l < nzB; l++) PetscCall(PetscArraycpy(vals + (nzA + l) * bs2, vworkB + l * bs2, bs2));
-
-        ct2 += ncols;
       }
     }
     PetscCallMPI(MPIU_Isend(sbuf_aa_i, req_size[i] * bs2, MPIU_SCALAR, req_source1[i], tag4, comm, s_waits4 + i));
