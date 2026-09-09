@@ -70,14 +70,15 @@ format). These are each in a subdirectory of `src/<class>/impls`.
 Except in rare circumstances, data structures defined here should not be
 referenced from outside this directory.
 
-Each type of object (for instance, a vector) is defined in its own
-public include file, by `typedef _p_<class>* <class>`; (for example,
-`typedef _p_Vec* Vec;`). This organization allows the compiler to
-perform type checking on all subroutine calls while at the same time
-completely removing the details of the implementation of `_p_<class>`
-from the application code. This capability is extremely important
-because it allows the library internals to be changed without altering
-or recompiling the application code.
+Each type of PETSc object (for instance, a vector) is defined in its own
+public include file by
+`typedef struct _p_<petscobjectname> *<petscobjectname>;` (for example,
+`typedef struct _p_Vec *Vec;`). This organization allows the compiler
+to perform type checking on all subroutine calls while at the same time
+completely removing the details of the implementation of
+`_p_<petscobjectname>` from the application code. This capability is
+extremely important because it allows the library internals to be
+changed without altering or recompiling the application code.
 
 ## Common Object Header
 
@@ -304,11 +305,12 @@ The `Try` variant skips the function call if the method has not been composed wi
 the object while the `Use` version generates an error in that case.
 See also, `PetscUseTypeMethod()`, and `PetscTryTypeMethod()`.
 
-### Simple PETSc Objects
+### Other Objects Defined by Structs
 
-Some simple PETSc objects do not need `PETSCHEADER` and the associated
-functionality. These objects are internally named as `_n_<class>` as
-opposed to `_p_<class>`, for example, `_n_PetscFunctionList` vs `_p_Vec`.
+Other objects defined by `struct`s do not begin with `PETSCHEADER` or have
+the associated functionality. These objects are internally named using the
+format `_n_<objectname>`, as opposed to `_p_<petscobjectname>`; for example,
+`_n_PetscFunctionList` versus `_p_Vec`.
 
 ## PETSc Packages
 

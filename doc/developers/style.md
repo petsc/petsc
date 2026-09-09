@@ -21,7 +21,13 @@ important. We use several conventions
     letters. When they consist of several complete words, there is an
     underscore between each word. For example, `MAT_FINAL_ASSEMBLY`.
 
-03. Functions that are private to PETSc (not callable by the application
+03. PETSc objects, whose `struct` definitions begin with `PETSCHEADER`,
+    are named using the format `_p_<petscobjectname>`; the `_p_` prefix is
+    reserved for these objects. Other objects defined by `struct`s may use
+    the format `_n_<objectname>`, but this convention is not strictly
+    enforced.
+
+04. Functions that are private to PETSc (not callable by the application
     code) either
 
     - have an appended `_Private` (for example, `StashValues_Private`)
@@ -32,36 +38,36 @@ important. We use several conventions
     particular file are declared `static`. Also, see the item
     on symbol visibility in {ref}`usage_of_petsc_functions_and_macros`.
 
-04. Function names in structures (for example, `_matops`) are the same
+05. Function names in structures (for example, `_matops`) are the same
     as the base application function name without the object prefix and
     in lowercase. For example, `MatMultTranspose()` has a
     structure name of `multtranspose`.
 
-05. Names of implementations of class functions should begin with the
+06. Names of implementations of class functions should begin with the
     function name, an underscore, and the name of the implementation, for
     example, `KSPSolve_GMRES()`.
 
-06. Each application-usable function begins with the name of the class
+07. Each application-usable function begins with the name of the class
     object, followed by any subclass name, for example,
     `ISInvertPermutation()`, `MatMult()`, or
     `KSPGMRESSetRestart()`.
 
-07. Functions that PETSc provides as defaults for user-providable
+08. Functions that PETSc provides as defaults for user-providable
     functions end with `Default` (for example, `PetscSignalHandlerDefault()`).
 
-08. Options database keys are lower case, have an underscore between
+09. Options database keys are lower case, have an underscore between
     words, and match the function name associated with the option without
     the word “set” or “get”, for example, `-ksp_gmres_restart`.
 
-09. Specific `XXXType` values (for example, `MATSEQAIJ`) do not have
+10. Specific `XXXType` values (for example, `MATSEQAIJ`) do not have
     an underscore in them unless they refer to another package that uses
     an underscore, for example, `MATSOLVERSUPERLU_DIST`.
 
-10. Typedefs for functions should end in `Fn` as in, for example, `SNESFunctionFn`.
+11. Typedefs for functions should end in `Fn` as in, for example, `SNESFunctionFn`.
 
-11. Use the phrase `infinity or NaN` not `NaN or infinity`.
+12. Use the phrase `infinity or NaN` not `NaN or infinity`.
 
-12. Use the abbreviation `NaN` for Not-a-Number.
+13. Use the abbreviation `NaN` for Not-a-Number.
 
 (stylepetsccount)=
 
