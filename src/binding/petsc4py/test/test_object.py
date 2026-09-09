@@ -197,6 +197,9 @@ class BaseTestObject:
         self.assertTrue(state < self.obj.stateGet())
         self.obj.stateSet(0)
         self.assertTrue(self.obj.stateGet() == 0)
+        large_state = (1 << 40) + 1
+        self.obj.stateSet(large_state)
+        self.assertEqual(self.obj.stateGet(), large_state)
         self.obj.stateSet(state)
         self.assertTrue(self.obj.stateGet() == state)
 
