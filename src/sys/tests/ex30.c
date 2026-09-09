@@ -155,12 +155,13 @@ int main(int argc, char **argv)
     output_file: output/empty.out
 
   # flamegraph: times of PetscSleep() are designed so the flamegraph should have reproducible entries
+  # but they do not solve the problem so sort the output
   test:
     suffix: 1
     nsize: {{1 2}}
     requires: defined(PETSC_USE_LOG)
     args: -log_view ::ascii_flamegraph
-    filter: sed -E "s/ [0-9]+/ time_removed/g"
+    filter: sed -E "s/ [0-9]+/ time_removed/g" | sort -b
 
   test:
     suffix: 2
