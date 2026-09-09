@@ -2279,12 +2279,12 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A, Vec bb
 static PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *b;
-  const PetscInt *rip, mbs    = a->mbs, *ai, *aj;
-  PetscInt       *jutmp, bs   = A->rmap->bs, i;
+  const PetscInt *rip, mbs  = a->mbs, *ai, *aj;
+  PetscInt       *jutmp, bs = A->rmap->bs, i, levels = (PetscInt)info->levels;
   PetscInt        m, reallocs = 0, *levtmp;
   PetscInt       *prowl, *q, jmin, jmax, juidx, nzk, qm, *iu, *ju, k, j, vj, umax, maxadd;
   PetscInt        incrlev, *lev, shift, prow, nz;
-  PetscReal       f = info->fill, levels = info->levels;
+  PetscReal       f = info->fill;
   PetscBool       perm_identity;
 
   PetscFunctionBegin;
@@ -2469,12 +2469,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const Mat
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data, *b;
   PetscBool          perm_identity, free_ij = PETSC_TRUE, diagDense;
-  PetscInt           bs = A->rmap->bs, am = a->mbs, *ai = a->i, *aj = a->j;
+  PetscInt           bs = A->rmap->bs, am = a->mbs, *ai = a->i, *aj = a->j, levels = (PetscInt)info->levels;
   const PetscInt    *rip;
   PetscInt           reallocs = 0, i, *ui, *udiag, *cols;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
   PetscInt           nlnk, *lnk, *lnk_lvl = NULL, ncols, *uj, **uj_ptr, **uj_lvl_ptr;
-  PetscReal          fill = info->fill, levels = info->levels;
+  PetscReal          fill       = info->fill;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
   PetscBT            lnkbt;
@@ -2669,12 +2669,12 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact, Mat A, IS perm, c
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ *)A->data;
   Mat_SeqSBAIJ      *b;
   PetscBool          perm_identity, free_ij = PETSC_TRUE;
-  PetscInt           bs = A->rmap->bs, am = a->mbs;
+  PetscInt           bs = A->rmap->bs, am = a->mbs, levels = (PetscInt)info->levels;
   const PetscInt    *cols, *rip, *ai = a->i, *aj = a->j;
   PetscInt           reallocs = 0, i, *ui;
   PetscInt           jmin, jmax, nzk, k, j, *jl, prow, *il, nextprow;
   PetscInt           nlnk, *lnk, *lnk_lvl = NULL, ncols, *cols_lvl, *uj, **uj_ptr, **uj_lvl_ptr;
-  PetscReal          fill = info->fill, levels = info->levels, ratio_needed;
+  PetscReal          fill       = info->fill, ratio_needed;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
   PetscFreeSpaceList free_space_lvl = NULL, current_space_lvl = NULL;
   PetscBT            lnkbt;

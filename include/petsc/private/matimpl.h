@@ -1134,7 +1134,7 @@ static inline PetscErrorCode PetscIncompleteLLInit(PetscInt nidx, const PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscIncompleteLLAdd_Private(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt prow_offset, PetscBool assume_sorted)
+static inline PetscErrorCode PetscIncompleteLLAdd_Private(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt prow_offset, PetscBool assume_sorted)
 {
   PetscFunctionBegin;
   *nlnk = 0;
@@ -1171,7 +1171,7 @@ static inline PetscErrorCode PetscIncompleteLLAdd_Private(PetscInt nidx, const P
   Note: the level of U(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(prow,i)+lvl(prow,j)+1)
         where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
 */
-static inline PetscErrorCode PetscICCLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt idxlvl_prow)
+static inline PetscErrorCode PetscICCLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt, PetscInt idxlvl_prow)
 {
   PetscFunctionBegin;
   PetscCall(PetscIncompleteLLAdd_Private(nidx, idx, level, idxlvl, idx_start, nlnk, lnk, lnklvl, bt, idxlvl_prow, PETSC_TRUE));
@@ -1223,7 +1223,7 @@ static inline PetscErrorCode PetscILULLAddSorted(PetscInt nidx, const PetscInt *
     lnklvl   - levels of lnk
     bt        - updated PetscBT (bitarray)
 */
-static inline PetscErrorCode PetscIncompleteLLAdd(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
+static inline PetscErrorCode PetscIncompleteLLAdd(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
 {
   PetscFunctionBegin;
   PetscCall(PetscIncompleteLLAdd_Private(nidx, idx, level, idxlvl, idx_start, nlnk, lnk, lnklvl, bt, 0, PETSC_FALSE));
@@ -1247,7 +1247,7 @@ static inline PetscErrorCode PetscIncompleteLLAdd(PetscInt nidx, const PetscInt 
     lnklvl    - levels of lnk
     bt        - updated PetscBT (bitarray)
 */
-static inline PetscErrorCode PetscIncompleteLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscReal level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
+static inline PetscErrorCode PetscIncompleteLLAddSorted(PetscInt nidx, const PetscInt *PETSC_RESTRICT idx, PetscInt level, const PetscInt *PETSC_RESTRICT idxlvl, PetscInt idx_start, PetscInt *PETSC_RESTRICT nlnk, PetscInt *PETSC_RESTRICT lnk, PetscInt *PETSC_RESTRICT lnklvl, PetscBT bt)
 {
   PetscFunctionBegin;
   PetscCall(PetscIncompleteLLAdd_Private(nidx, idx, level, idxlvl, idx_start, nlnk, lnk, lnklvl, bt, 0, PETSC_TRUE));
