@@ -54,7 +54,20 @@ Write the findings to `mr-<MR_IID>-findings.json` as a list of objects, each wit
 ]
 ```
 
-Then run `python3 lib/petsc/bin/maint/ai_review_post.py <MR_IID> mr-<MR_IID>-findings.json` as a single shell command (path relative to the repository root; write the findings file there too, so CI collects it). It anchors every comment to the `diff_refs` in `mr-<MR_IID>-meta.json`, demotes suggestion blocks GitLab would render incorrectly, and confirms each response is a DiffNote. Add `--dry-run` to validate the findings file without posting. A non-zero exit with no `POSTED` line means nothing was posted; fix the reported problem and rerun. A non-zero exit after one or more `POSTED` lines means only some findings posted; do not re-run the script — the comments that did post would duplicate. Report per Section 11.
+Then run `python3 lib/petsc/bin/maint/ai_review_post.py <MR_IID> mr-<MR_IID>-findings.json` as a
+single shell command (path relative to the repository root; write the findings file there too,
+so CI collects it). It anchors every comment to the `diff_refs` in `mr-<MR_IID>-meta.json`, demotes
+suggestion blocks GitLab would render incorrectly, skips findings that already exist as MR
+comments, and confirms each new response is a DiffNote. Add `--dry-run` to validate the findings
+file and see which findings are already present, without posting.
+
+Each finding prints `POSTED`, `PRESENT`, `PRESENT_NONINLINE`, `FAILED`, or `UNCERTAIN`. After a
+non-zero exit with no `UNCERTAIN` line, fix the reported problem and rerun the same findings file;
+findings already present are skipped. `UNCERTAIN` means GitLab may have accepted a request whose
+response was unusable: stop and report it instead of rerunning.
 
 ## 11. Verify
-- Report `POSTED_OK` and `POSTED_FAILED`, and quote every `FAILED` line.
+- Report `POSTED_OK`, `POSTED_PRESENT`, `POSTED_FAILED`, and `POSTED_UNCERTAIN`, and quote every
+  `FAILED` and `UNCERTAIN` line.
+- `POSTED_FAILED` includes the `UNCERTAIN` findings, whose outcome on GitLab is unknown; say so
+  whenever `POSTED_UNCERTAIN` is non-zero.
