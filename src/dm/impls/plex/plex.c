@@ -11681,6 +11681,44 @@ static inline PetscInt DMPlex_GlobalID(PetscInt point)
   return point >= 0 ? point : -(point + 1);
 }
 
+/* Return the unsorted radius neighborhood of p, including p; the caller owns *adj. */
+static PetscErrorCode DMPlexGetAdjacencyRadius_Private(DM dm, PetscInt p, PetscInt radius, PetscInt *nadj, PetscInt *adj[])
+{
+  PetscHSetI ht   = NULL;
+  PetscInt  *pts  = NULL;
+  PetscInt   npts = 0, index = 0;
+
+  PetscFunctionBegin;
+  if (radius < 2) {
+    PetscCall(DMPlexGetAdjacency(dm, p, nadj, adj));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscHSetICreate(&ht));
+  PetscCall(PetscHSetIAdd(ht, p));
+  for (PetscInt r = 0; r < radius; ++r) {
+    /* Expand only the points present at the start of this iteration. */
+    PetscCall(PetscHSetIGetSize(ht, &npts));
+    PetscCall(PetscMalloc1(npts, &pts));
+    index = 0;
+    PetscCall(PetscHSetIGetElems(ht, &index, pts));
+    for (PetscInt k = 0; k < npts; ++k) {
+      PetscInt  n = PETSC_DETERMINE;
+      PetscInt *a = NULL;
+
+      PetscCall(DMPlexGetAdjacency(dm, pts[k], &n, &a));
+      for (PetscInt s = 0; s < n; ++s) PetscCall(PetscHSetIAdd(ht, a[s]));
+      PetscCall(PetscFree(a));
+    }
+    PetscCall(PetscFree(pts));
+  }
+  PetscCall(PetscHSetIGetSize(ht, nadj));
+  PetscCall(PetscMalloc1(*nadj, adj));
+  index = 0;
+  PetscCall(PetscHSetIGetElems(ht, &index, *adj));
+  PetscCall(PetscHSetIDestroy(&ht));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Mark selected points in [pStart, pEnd). In local mode, owned points are numbered in increasing
   point order and ghost points are marked PETSC_INT_MIN. In global mode, selected points carry
@@ -11745,11 +11783,12 @@ static PetscErrorCode DMPlexCreateSubsetNumbering_Private(DM dm, PetscInt pStart
 }
 
 /*
-  Build the graph Laplacian L = D - A for points at depth, optionally restricted by label. oPoints
-  returns the owned selected points in row order. In local mode, each process gets the graph its
-  own points induce, on PETSC_COMM_SELF.
+  Build the graph Laplacian L = D - A for points at depth, optionally restricted by label. Points
+  are connected when one lies in the other's radius neighborhood. oPoints returns the owned
+  selected points in row order. In local mode, each process gets the graph its own points induce,
+  on PETSC_COMM_SELF.
 */
-static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, DMLabel label, PetscInt value, PetscBool local, Mat *oL, IS *oPoints)
+static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, PetscInt radius, DMLabel label, PetscInt value, PetscBool local, Mat *oL, IS *oPoints)
 {
   Mat             L, preall;
   Vec             x, y;
@@ -11774,7 +11813,7 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
       PetscInt  nadj = PETSC_DETERMINE;
       PetscInt *adj  = NULL;
 
-      PetscCall(DMPlexGetAdjacency(dm, pts[v], &nadj, &adj));
+      PetscCall(DMPlexGetAdjacencyRadius_Private(dm, pts[v], radius, &nadj, &adj));
       for (PetscInt a = 0; a < nadj; a++)
         if (adj[a] != pts[v] && pStart <= adj[a] && adj[a] < pEnd && numbering[adj[a] - pStart] != PETSC_INT_MIN) numEdges++;
       PetscCall(PetscFree(adj));
@@ -11786,13 +11825,13 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
       PetscInt  nadj = PETSC_DETERMINE;
       PetscInt *adj  = NULL;
 
-      PetscCall(DMPlexGetAdjacency(dm, pts[v], &nadj, &adj));
+      PetscCall(DMPlexGetAdjacencyRadius_Private(dm, pts[v], radius, &nadj, &adj));
       for (PetscInt a = 0; a < nadj; a++)
         if (adj[a] != pts[v] && pStart <= adj[a] && adj[a] < pEnd && numbering[adj[a] - pStart] != PETSC_INT_MIN) j[iptr++] = numbering[adj[a] - pStart];
       PetscCall(PetscFree(adj));
       i[v + 1] = iptr;
       /* Sort adjacencies (not strictly necessary) */
-      PetscCall(PetscSortInt(iptr - i[v], &j[i[v]]));
+      if (i[v + 1] > i[v]) PetscCall(PetscSortInt(i[v + 1] - i[v], &j[i[v]]));
     }
     PetscCall(ISRestoreIndices(points, &pts));
     PetscCall(PetscFree(numbering));
@@ -11880,7 +11919,7 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
   Input Parameters:
 + dm       - the `DMPlex` object
 . depth    - the dimension of the entities in the connectivity graph.
-- distance - the distance of the coloring (either 1 or 2).
+- distance - how far through the mesh a point reaches, in applications of the adjacency (1 for a star, 2 for its closure).
 
   Output Parameter:
 . coloring - the coloring
@@ -11896,8 +11935,8 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
 
   Mesh colorings are useful for additive and multiplicative Schwarz methods.
   In particular, they mitigate overhead costs associated with setting up individual KSPs and PCs on many subdomains per process.
-  A coloring of the vertices (`depth=0`) with `distance=1` can be use can be used to group non-overlapping vertex-star patches into multi-patch subdomains.
-  Similarly, a vertex coloring with `distance=2` can be used to group non-overlapping Vanka patches into multi-patch subdomains.
+  A coloring with `distance=1` groups non-overlapping star patches into multi-patch subdomains, and one with `distance=2`
+  groups non-overlapping Vanka patches, whose reach is the closure of a star. Either works at any `depth`.
 
   This colors the whole stratum. Use `DMPlexCreateColoringLabel()` to color a subset of it, and see that routine for
   the options controlling the ordering and hence the number of colors.
@@ -11919,7 +11958,7 @@ PetscErrorCode DMPlexCreateColoring(DM dm, PetscInt depth, PetscInt distance, IS
   Input Parameters:
 + dm       - the `DMPlex` object
 . depth    - the dimension of the entities in the connectivity graph.
-. distance - the distance of the coloring (either 1 or 2).
+. distance - how far through the mesh a point reaches, in applications of the adjacency (1 for a star, 2 for its closure).
 . label    - the `DMLabel` selecting the points to color, or `NULL` to color the whole stratum
 - value    - the stratum value of `label` selecting the points, ignored when `label` is `NULL`
 
@@ -11935,14 +11974,23 @@ PetscErrorCode DMPlexCreateColoring(DM dm, PetscInt depth, PetscInt distance, IS
   Level: developer
 
   Notes:
-  The graph is the subgraph induced by the selected points: two selected points are connected exactly when they are
-  adjacent in the mesh. Restricting the graph this way, rather than coloring the whole stratum and discarding the
-  unselected points afterwards, both costs work proportional to the selected set and uses fewer colors, since points
-  whose neighbors are all unselected become isolated and can share a color.
+  The graph is the subgraph induced by the selected points: two selected points are connected exactly when one lies in
+  the other's neighborhood, the points that `distance` applications of the adjacency reach. Restricting the graph this
+  way, rather than coloring the whole stratum and discarding the unselected points afterwards, both costs work
+  proportional to the selected set and uses fewer colors, since points whose neighbors are all unselected become
+  isolated and can share a color.
 
-  The adjacency is the one configured on `dm` by `DMSetBasicAdjacency()`. For grouping vertex-star patches, that must
-  be the finite-element adjacency (`useCone` `PETSC_FALSE`, `useClosure` `PETSC_TRUE`), for which two vertices are
-  adjacent exactly when they share a cell; points of one color then have pairwise disjoint stars.
+  Points of one color lie outside one another's neighborhoods, which is exactly the statement that the patches of that
+  reach are disjoint: with `distance` one their stars share no cell, and with `distance` two the closures of those
+  stars, which is what a Vanka patch spans, share no point. Counting hops through the mesh rather than through the
+  graph is what makes this hold at every depth. At `depth` zero the two agree, but the cell stratum induces no edges
+  at all, since the finite-element adjacency of a cell is its own closure, and only a neighborhood reaching past that
+  cell separates one cell patch from the next.
+
+  The adjacency is the one configured on `dm` by `DMSetBasicAdjacency()`. For grouping patches, that must be the
+  finite-element adjacency (`useCone` `PETSC_FALSE`, `useClosure` `PETSC_TRUE`), for which two vertices are adjacent
+  exactly when they share a cell. In parallel the neighborhood of an owned point must be complete on its process, so
+  the mesh overlap has to be at least `distance`.
 
   By default the graph spans the whole mesh, so a point is colored against its neighbors on other processes and the
   coloring is the same one a serial run would produce. With `-dm_plex_coloring_local` each process instead colors the
@@ -11982,13 +12030,14 @@ PetscErrorCode DMPlexCreateColoringLabel(DM dm, PetscInt depth, PetscInt distanc
   PetscCall(PetscOptionsBool("-local", "Color the points each process owns by themselves, without communicating", "DMPlexCreateColoringLabel", local, &local, NULL));
   PetscCall(PetscOptionsFList("-ordering_type", "Reorder the points with MatGetOrdering() before coloring them", "MatGetOrdering", MatOrderingList, NULL, ordering, sizeof(ordering), &flg));
   PetscOptionsEnd();
-  PetscCall(DMPlexCreateGraphLaplacian_Private(dm, depth, label, value, local, &L, &points));
+  PetscCall(DMPlexCreateGraphLaplacian_Private(dm, depth, distance, label, value, local, &L, &points));
   PetscCall(MatGetOwnershipRange(L, &rowStart, NULL));
   PetscCall(ISGetLocalSize(points, &numVertices));
   PetscCall(MatColoringCreate(L, &mc));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)mc, "dm_plex_coloring_"));
   PetscCall(MatColoringSetType(mc, MATCOLORINGGREEDY));
-  PetscCall(MatColoringSetDistance(mc, distance));
+  /* The mesh distance is encoded in the graph; color its one-hop overlap graph. */
+  PetscCall(MatColoringSetDistance(mc, 1));
   PetscCall(MatColoringSetWeightType(mc, MAT_COLORING_WEIGHT_LEXICAL));
   PetscCall(MatColoringSetFromOptions(mc));
   if (flg == PETSC_TRUE) {

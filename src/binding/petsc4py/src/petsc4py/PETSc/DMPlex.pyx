@@ -433,7 +433,8 @@ cdef class DMPlex(DM):
         depth
             The entity dimension of nodes in the connectivity graph.
         distance
-            The distance of the coloring (either 1 or 2).
+            How far through the mesh an entity reaches, in applications of
+            the adjacency: 1 for a star, 2 for the closure of that star.
 
         See Also
         --------
@@ -453,7 +454,8 @@ cdef class DMPlex(DM):
         depth
             The entity dimension of nodes in the connectivity graph.
         distance
-            The distance of the coloring (either 1 or 2).
+            How far through the mesh an entity reaches, in applications of
+            the adjacency: 1 for a star, 2 for the closure of that star.
         label
             Selects the entities to color, `None` to color the whole stratum.
         value
@@ -462,8 +464,10 @@ cdef class DMPlex(DM):
         Notes
         -----
         The entities are colored as the subgraph they induce, so two of them
-        get different colors exactly when they are adjacent to each other,
-        regardless of how many unselected entities lie between them.
+        get different colors exactly when one lies within ``distance`` of the
+        other, regardless of how many unselected entities lie between them.
+        Two entities of one color therefore carry patches of that reach which
+        share no mesh point.
 
         See Also
         --------
