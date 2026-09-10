@@ -1985,7 +1985,7 @@ cdef class KSP(Object):
         CHKERR(KSPHPDDMGetType(self.ksp, &cval))
         return cval
 
-    def setErrorIfNotConverged(self, flag: bool) -> None:
+    def setErrorIfNotConverged(self, flag: bool = True) -> None:
         """Cause `solve` to generate an error if not converged.
 
         Logically collective.

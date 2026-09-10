@@ -1800,7 +1800,7 @@ cdef class SNES(Object):
         CHKERR(SNESGetConvergedReason(self.snes, &reason))
         return reason
 
-    def setErrorIfNotConverged(self, flag: bool) -> None:
+    def setErrorIfNotConverged(self, flag: bool = True) -> None:
         """Immediately generate an error if the solver has not converged.
 
         Collective.

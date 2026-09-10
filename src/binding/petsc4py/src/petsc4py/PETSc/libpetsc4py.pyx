@@ -2234,6 +2234,7 @@ cdef PetscErrorCode SNESSolve_Python(
     CHKERR(SNESGetSolution(snes, &x))
     #
     snes.iter = 0
+    snes.reason = SNES_CONVERGED_ITERATING
     #
     cdef solve = PySNES(snes).solve
     if solve is not None:
@@ -2621,7 +2622,7 @@ cdef PetscErrorCode SNESTSFormFunction_Python(
     cdef formSNESFunction = PyTS(ts).formSNESFunction
     if formSNESFunction is not None:
         args = (SNES_(snes), Vec_(x), Vec_(f), TS_(ts))
-        formSNESFunction(args)
+        formSNESFunction(*args)
         return FunctionEnd()
     #
     cdef PetscVec dx = NULL
@@ -2729,28 +2730,27 @@ cdef PetscErrorCode TSStep_Python_default(
     cdef PetscReal dt = ts.time_step
     cdef PetscBool accept  = PETSC_TRUE
     cdef PetscBool stageok = PETSC_TRUE
-    for r from 0 <= r < ts.max_reject:
-        <void> r # unused
+    cdef PetscInt rejections = 0
+    while not ts.reason:
         tt = ts.ptime + ts.time_step
         CHKERR(VecCopy(ts.vec_sol, vec_update))
-        CHKERR(TSPreStage(ts, tt+dt))
+        CHKERR(TSPreStage(ts, tt))
         TSSolveStep_Python(ts, tt, vec_update)
-        CHKERR(TSPostStage(ts, tt+dt, 0, &vec_update))
-        CHKERR(TSAdaptCheckStage(ts.adapt, ts, tt+dt, vec_update, &stageok))
-        if not stageok:
-            ts.reject += 1
-            continue
-        TSAdaptStep_Python(ts, tt, vec_update, &dt, &accept)
-        if not accept:
+        CHKERR(TSPostStage(ts, tt, 0, &vec_update))
+        CHKERR(TSAdaptCheckStage(ts.adapt, ts, tt, vec_update, &stageok))
+        if stageok:
+            TSAdaptStep_Python(ts, tt, vec_update, &dt, &accept)
+            if accept:
+                CHKERR(VecCopy(vec_update, ts.vec_sol))
+                ts.ptime += ts.time_step
+                ts.time_step = dt
+                break
             ts.time_step = dt
-            ts.reject += 1
-            continue
-        CHKERR(VecCopy(vec_update, ts.vec_sol))
-        ts.ptime += ts.time_step
-        ts.time_step = dt
-        break
-    if (not stageok or not accept) and ts.reason == 0:
-        ts.reason = TS_DIVERGED_STEP_REJECTED
+        ts.reject += 1
+        accept = PETSC_FALSE
+        rejections += 1
+        if not ts.reason and ts.max_reject >= 0 and rejections > ts.max_reject:
+            ts.reason = TS_DIVERGED_STEP_REJECTED
     return FunctionEnd()
 
 # --------------------------------------------------------------------
