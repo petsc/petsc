@@ -219,7 +219,6 @@ def import_package(options, pkgname):
     args = [sys.argv[0]]
     if options.memdebug:
         args.append('-malloc_debug')
-        args.append('-malloc_dump')
     if options.summary:
         args.append('-log_view')
     package = __import__(pkgname)
