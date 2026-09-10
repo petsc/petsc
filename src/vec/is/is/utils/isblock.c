@@ -18,13 +18,17 @@
 
   Level: intermediate
 
+  Note:
+  When `is_in[i]` already has the requested block size and needs no compression,
+  `is_out[i]` may be `is_in[i]` itself with an incremented reference count.
+
 .seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISExpandIndicesGeneral()`
 @*/
 PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
 {
   PetscInt        isz, len, i, j, ival, bbs;
   const PetscInt *idx;
-  PetscBool       isblock;
+  PetscBool       flg;
 #if PetscDefined(USE_CTABLE)
   PetscHMapI    gid1_lid1 = NULL;
   PetscInt      tt, gid1, *nidx;
@@ -45,16 +49,35 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 #endif
   for (i = 0; i < imax; i++) {
     PetscCall(ISGetLocalSize(is_in[i], &len));
-    /* special case where IS is already block IS of the correct size */
-    PetscCall(PetscObjectTypeCompare((PetscObject)is_in[i], ISBLOCK, &isblock));
-    if (isblock) {
-      PetscCall(ISGetBlockSize(is_in[i], &bbs));
-      if (bs == bbs) {
+    PetscCall(ISGetBlockSize(is_in[i], &bbs));
+    /* special cases where IS already has the correct block size */
+    if (bs == bbs) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)is_in[i], ISBLOCK, &flg));
+      if (flg) {
         len = len / bs;
         PetscCall(ISBlockGetIndices(is_in[i], &idx));
         PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), len, idx, PETSC_COPY_VALUES, is_out + i));
         PetscCall(ISBlockRestoreIndices(is_in[i], &idx));
         continue;
+      } else {
+        PetscCall(PetscObjectTypeCompare((PetscObject)is_in[i], ISSTRIDE, &flg));
+        if (flg) {
+          PetscInt  first, nblocks;
+          PetscInt *idx;
+
+          PetscCall(ISStrideGetInfo(is_in[i], &first, &j));
+          if (j == 1) {
+            nblocks = len ? (first + len - 1) / bs - first / bs + 1 : 0;
+            PetscCall(PetscMalloc1(nblocks, &idx));
+            for (j = 0; j < nblocks; ++j) idx[j] = first / bs + j;
+            PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), nblocks, idx, PETSC_OWN_POINTER, is_out + i));
+            continue;
+          }
+        } else if (bs == 1) { /* ISGENERAL */
+          is_out[i] = is_in[i];
+          PetscCall(PetscObjectReference((PetscObject)is_in[i]));
+          continue;
+        }
       }
     }
     isz = 0;
