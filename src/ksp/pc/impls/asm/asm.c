@@ -290,6 +290,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     scall = MAT_INITIAL_MATRIX;
   }
 
+  /* A subsolver may have factored its submatrix in place, which leaves it
+     flagged as factored and so unfillable by MatCreateSubMatrices() below. */
+  if (scall == MAT_REUSE_MATRIX) {
+    for (i = 0; i < osm->n_local_true; i++) PetscCall(MatSetUnfactored(osm->pmat[i]));
+  }
+
   /*
      Extract out the submatrices
   */
@@ -888,7 +894,7 @@ static PetscErrorCode PCASMGetSubKSP_ASM(PC pc, PetscInt *n_local, PetscInt *fir
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
-  PetscCheck(osm->n_local_true >= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
 
   if (n_local) *n_local = osm->n_local_true;
   if (first_local) {
