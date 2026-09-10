@@ -876,12 +876,10 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatSetValues_MPIBAIJ(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 #include <petscdraw.h>
 static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
 {
   Mat_MPISBAIJ     *baij = (Mat_MPISBAIJ *)mat->data;
-  PetscInt          bs   = mat->rmap->bs;
   PetscMPIInt       rank = baij->rank;
   PetscBool         isascii, isdraw;
   PetscViewer       sviewer;
@@ -919,74 +917,24 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer 
     if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  {
-    /* assemble the entire matrix onto first processor. */
-    Mat           A;
-    Mat_SeqSBAIJ *Aloc;
-    Mat_SeqBAIJ  *Bloc;
-    PetscInt      M = mat->rmap->N, N = mat->cmap->N, *ai, *aj, col, i, j, k, *rvals, mbs = baij->mbs;
-    MatScalar    *a;
-    const char   *matname;
+  { /* assemble the entire matrix onto first process */
+    Mat A, Av;
+    IS  isrow, iscol;
 
-    /* Should this be the same type as mat? */
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)mat), &A));
-    if (rank == 0) {
-      PetscCall(MatSetSizes(A, M, N, M, N));
-    } else {
-      PetscCall(MatSetSizes(A, 0, 0, M, N));
-    }
-    PetscCall(MatSetType(A, MATMPISBAIJ));
-    PetscCall(MatMPISBAIJSetPreallocation(A, mat->rmap->bs, 0, NULL, 0, NULL));
-    PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
-
-    /* copy over the A part */
-    Aloc = (Mat_SeqSBAIJ *)baij->A->data;
-    ai   = Aloc->i;
-    aj   = Aloc->j;
-    a    = Aloc->a;
-    PetscCall(PetscMalloc1(bs, &rvals));
-
-    for (i = 0; i < mbs; i++) {
-      rvals[0] = bs * (baij->rstartbs + i);
-      for (j = 1; j < bs; j++) rvals[j] = rvals[j - 1] + 1;
-      for (j = ai[i]; j < ai[i + 1]; j++) {
-        col = (baij->cstartbs + aj[j]) * bs;
-        for (k = 0; k < bs; k++) {
-          PetscCall(MatSetValues_MPISBAIJ(A, bs, rvals, 1, &col, a, INSERT_VALUES));
-          col++;
-          a += bs;
-        }
-      }
-    }
-    /* copy over the B part */
-    Bloc = (Mat_SeqBAIJ *)baij->B->data;
-    ai   = Bloc->i;
-    aj   = Bloc->j;
-    a    = Bloc->a;
-    for (i = 0; i < mbs; i++) {
-      rvals[0] = bs * (baij->rstartbs + i);
-      for (j = 1; j < bs; j++) rvals[j] = rvals[j - 1] + 1;
-      for (j = ai[i]; j < ai[i + 1]; j++) {
-        col = baij->garray[aj[j]] * bs;
-        for (k = 0; k < bs; k++) {
-          PetscCall(MatSetValues_MPIBAIJ(A, bs, rvals, 1, &col, a, INSERT_VALUES));
-          col++;
-          a += bs;
-        }
-      }
-    }
-    PetscCall(PetscFree(rvals));
-    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->rmap->N : 0, 0, 1, &isrow));
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->cmap->N : 0, 0, 1, &iscol));
+    PetscCall(MatCreateSubMatrix(mat, isrow, iscol, MAT_INITIAL_MATRIX, &A));
+    PetscCall(MatMPIBAIJGetSeqBAIJ(A, &Av, NULL, NULL));
+    PetscCall(ISDestroy(&isrow));
+    PetscCall(ISDestroy(&iscol));
     /*
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the PetscDraw object
     */
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    if (((PetscObject)mat)->name) PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
     if (rank == 0) {
-      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPISBAIJ *)A->data)->A, matname));
-      PetscCall(MatView_SeqSBAIJ(((Mat_MPISBAIJ *)A->data)->A, sviewer));
+      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)Av, ((PetscObject)mat)->name));
+      PetscCall(MatView_SeqSBAIJ(Av, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
     PetscCall(MatDestroy(&A));

@@ -1317,29 +1317,14 @@ static PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer vi
     if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  { /* assemble the entire matrix onto first processor */
-    Mat A = NULL, Av;
+  { /* assemble the entire matrix onto first process */
+    Mat A, Av;
     IS  isrow, iscol;
 
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->rmap->N : 0, 0, 1, &isrow));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), rank == 0 ? mat->cmap->N : 0, 0, 1, &iscol));
     PetscCall(MatCreateSubMatrix(mat, isrow, iscol, MAT_INITIAL_MATRIX, &A));
     PetscCall(MatMPIAIJGetSeqAIJ(A, &Av, NULL, NULL));
-    /*  The commented code uses MatCreateSubMatrices instead */
-    /*
-    Mat *AA, A = NULL, Av;
-    IS  isrow,iscol;
-
-    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->rmap->N : 0,0,1,&isrow));
-    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat),rank == 0 ? mat->cmap->N : 0,0,1,&iscol));
-    PetscCall(MatCreateSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&AA));
-    if (rank == 0) {
-       PetscCall(PetscObjectReference((PetscObject)AA[0]));
-       A    = AA[0];
-       Av   = AA[0];
-    }
-    PetscCall(MatDestroySubMatrices(1,&AA));
-*/
     PetscCall(ISDestroy(&iscol));
     PetscCall(ISDestroy(&isrow));
     /*
