@@ -122,7 +122,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     } \
   } while (0)
 
-#define MatSetValue_SeqSELL_Private(A, row, col, value, addv, orow, ocol, cp, vp, lastcol, low, high) \
+#define MatSetValue_SeqSELL_Private(A, row, col, value, addv, orow, ocol, notdiag, cp, vp, lastcol, low, high) \
   do { \
     Mat_SeqSELL *a = (Mat_SeqSELL *)A->data; \
     found          = PETSC_FALSE; \
@@ -143,9 +143,13 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
         break; \
       } \
     } \
-    if (!found) { \
+    /* notdiag says whether a zero at this location may be dropped; a caller writing an off-diagonal block \
+       passes PETSC_TRUE, since only a diagonal block holds the diagonal the exemption exists for. \
+       ignorezeroentries comes from the enclosing routine, which reads it from the diagonal block because \
+       MatDisAssemble_MPISELL() rebuilds the off-diagonal block without it. */ \
+    if (!found && !(value == 0.0 && ignorezeroentries && (notdiag)) && a->nonew != 1) { \
       PetscCheck(a->nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-      if (a->nonew != 1 && !(value == 0.0 && a->ignorezeroentries) && a->rlen[row] >= (a->sliidx[row / a->sliceheight + 1] - a->sliidx[row / a->sliceheight]) / a->sliceheight) { \
+      if (a->rlen[row] >= (a->sliidx[row / a->sliceheight + 1] - a->sliidx[row / a->sliceheight]) / a->sliceheight) { \
         /* there is no extra room in row, therefore enlarge 1 slice column */ \
         if (a->maxallocmat < a->sliidx[a->totalslices] + a->sliceheight) { \
           /* allocates a larger array for the XSELL matrix types; only extend the current slice by one more column. */ \
@@ -191,6 +195,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       A->nonzerostate++; \
       low = _i + 1; \
       high++; \
+      found = PETSC_TRUE; \
     } \
   } while (0)
 

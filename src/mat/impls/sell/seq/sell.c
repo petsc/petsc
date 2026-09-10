@@ -950,6 +950,9 @@ PetscErrorCode MatSetOption_SeqSELL(Mat A, MatOption op, PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
     a->nounused = (flg ? -1 : 0);
     break;
+  case MAT_IGNORE_ZERO_ENTRIES:
+    a->ignorezeroentries = flg;
+    break;
   default:
     break;
   }
@@ -1533,7 +1536,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
       } else {
         value = v[k + l * m];
       }
-      if ((value == 0.0 && a->ignorezeroentries) && (is == ADD_VALUES)) continue;
+      if (value == 0.0 && a->ignorezeroentries && is == ADD_VALUES && row != col) continue;
 
       /* search in this row for the specified column, i indicates the column to be set */
       if (col <= lastcol) low = 0;
@@ -1556,7 +1559,7 @@ PetscErrorCode MatSetValues_SeqSELL(Mat A, PetscInt m, const PetscInt im[], Pets
           goto noinsert;
         }
       }
-      if (value == 0.0 && a->ignorezeroentries) goto noinsert;
+      if (value == 0.0 && a->ignorezeroentries && row != col) goto noinsert;
       if (nonew == 1) goto noinsert;
       PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") in the matrix", row, col);
 #if PetscDefined(HAVE_CUPM)

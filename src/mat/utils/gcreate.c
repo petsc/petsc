@@ -310,7 +310,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
   PetscCall(PetscOptionsBool("-mat_new_nonzero_allocation_err", "Generate an error if new nonzeros are allocated in the matrix nonzero structure (useful to test preallocation)", "MatSetOption", flg, &flg, &set));
   if (set) PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, flg));
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-mat_ignore_zero_entries", "For AIJ/IS matrices this will stop zero values from creating a zero location in the matrix", "MatSetOption", flg, &flg, &set));
+  PetscCall(PetscOptionsBool("-mat_ignore_zero_entries", "For AIJ/SELL/IS matrices this will stop zero values from creating a zero location in the matrix", "MatSetOption", flg, &flg, &set));
   if (set) PetscCall(MatSetOption(B, MAT_IGNORE_ZERO_ENTRIES, flg));
 
   flg = PETSC_FALSE;

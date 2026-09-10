@@ -59,94 +59,6 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define MatSetValues_SeqSELL_A_Private(row, col, value, addv, orow, ocol) \
-  { \
-    if (col <= lastcol1) low1 = 0; \
-    else high1 = nrow1; \
-    lastcol1 = col; \
-    while (high1 - low1 > 5) { \
-      t = (low1 + high1) / 2; \
-      if (cp1[sliceheight * t] > col) high1 = t; \
-      else low1 = t; \
-    } \
-    for (_i = low1; _i < high1; _i++) { \
-      if (cp1[sliceheight * _i] > col) break; \
-      if (cp1[sliceheight * _i] == col) { \
-        if (addv == ADD_VALUES) vp1[sliceheight * _i] += value; \
-        else vp1[sliceheight * _i] = value; \
-        inserted = PETSC_TRUE; \
-        goto a_noinsert; \
-      } \
-    } \
-    if (value == 0.0 && ignorezeroentries) { \
-      low1  = 0; \
-      high1 = nrow1; \
-      goto a_noinsert; \
-    } \
-    if (nonew == 1) { \
-      low1  = 0; \
-      high1 = nrow1; \
-      goto a_noinsert; \
-    } \
-    PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-    MatSeqXSELLReallocateSELL(A, am, 1, nrow1, a->sliidx, a->sliceheight, row / sliceheight, row, col, a->colidx, a->val, cp1, vp1, nonew, MatScalar); \
-    /* shift up all the later entries in this row */ \
-    for (ii = nrow1 - 1; ii >= _i; ii--) { \
-      cp1[sliceheight * (ii + 1)] = cp1[sliceheight * ii]; \
-      vp1[sliceheight * (ii + 1)] = vp1[sliceheight * ii]; \
-    } \
-    cp1[sliceheight * _i] = col; \
-    vp1[sliceheight * _i] = value; \
-    a->nz++; \
-    nrow1++; \
-  a_noinsert:; \
-    a->rlen[row] = nrow1; \
-  }
-
-#define MatSetValues_SeqSELL_B_Private(row, col, value, addv, orow, ocol) \
-  { \
-    if (col <= lastcol2) low2 = 0; \
-    else high2 = nrow2; \
-    lastcol2 = col; \
-    while (high2 - low2 > 5) { \
-      t = (low2 + high2) / 2; \
-      if (cp2[sliceheight * t] > col) high2 = t; \
-      else low2 = t; \
-    } \
-    for (_i = low2; _i < high2; _i++) { \
-      if (cp2[sliceheight * _i] > col) break; \
-      if (cp2[sliceheight * _i] == col) { \
-        if (addv == ADD_VALUES) vp2[sliceheight * _i] += value; \
-        else vp2[sliceheight * _i] = value; \
-        inserted = PETSC_TRUE; \
-        goto b_noinsert; \
-      } \
-    } \
-    if (value == 0.0 && ignorezeroentries) { \
-      low2  = 0; \
-      high2 = nrow2; \
-      goto b_noinsert; \
-    } \
-    if (nonew == 1) { \
-      low2  = 0; \
-      high2 = nrow2; \
-      goto b_noinsert; \
-    } \
-    PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-    MatSeqXSELLReallocateSELL(B, bm, 1, nrow2, b->sliidx, b->sliceheight, row / sliceheight, row, col, b->colidx, b->val, cp2, vp2, nonew, MatScalar); \
-    /* shift up all the later entries in this row */ \
-    for (ii = nrow2 - 1; ii >= _i; ii--) { \
-      cp2[sliceheight * (ii + 1)] = cp2[sliceheight * ii]; \
-      vp2[sliceheight * (ii + 1)] = vp2[sliceheight * ii]; \
-    } \
-    cp2[sliceheight * _i] = col; \
-    vp2[sliceheight * _i] = value; \
-    b->nz++; \
-    nrow2++; \
-  b_noinsert:; \
-    b->rlen[row] = nrow2; \
-  }
-
 static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
 {
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
@@ -159,8 +71,9 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
   Mat          A                 = sell->A;
   Mat_SeqSELL *a                 = (Mat_SeqSELL *)A->data;
   PetscBool    ignorezeroentries = a->ignorezeroentries, found;
-  Mat          B                 = sell->B;
-  Mat_SeqSELL *b                 = (Mat_SeqSELL *)B->data;
+  PetscBool    wroteA = PETSC_FALSE, wroteB = PETSC_FALSE;
+  Mat          B = sell->B;
+  Mat_SeqSELL *b = (Mat_SeqSELL *)B->data;
   PetscInt    *cp1, *cp2, ii, _i, nrow1, nrow2, low1, high1, low2, high2, t, lastcol1, lastcol2, sliceheight = a->sliceheight;
   MatScalar   *vp1, *vp2;
 
@@ -188,13 +101,11 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
       for (j = 0; j < n; j++) {
         if (roworiented) value = v[i * n + j];
         else value = v[i + j * m];
-        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
+        if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && im[i] != in[j]) continue;
         if (in[j] >= cstart && in[j] < cend) {
           col = in[j] - cstart;
-          MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
-#if PetscDefined(HAVE_CUDA)
-          if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) A->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+          MatSetValue_SeqSELL_Private(A, row, col, value, addv, im[i], in[j], im[i] != in[j], cp1, vp1, lastcol1, low1, high1); /* set one value */
+          wroteA = (PetscBool)(wroteA || found);
         } else if (in[j] < 0) {
           continue;
         } else {
@@ -210,7 +121,7 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
             if (col < 0 && !((Mat_SeqSELL *)sell->B->data)->nonew) {
               PetscCall(MatDisAssemble_MPISELL(mat));
               col = in[j];
-              /* Reinitialize the variables required by MatSetValues_SeqSELL_B_Private() */
+              /* Reinitialize the variables required by MatSetValue_SeqSELL_Private() */
               B      = sell->B;
               b      = (Mat_SeqSELL *)B->data;
               shift2 = b->sliidx[row / sliceheight] + (row % sliceheight); /* starting index of the row */
@@ -219,15 +130,19 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
               nrow2  = b->rlen[row];
               low2   = 0;
               high2  = nrow2;
-              found  = PETSC_FALSE;
-            } else {
-              PetscCheck(col >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+            } else if (col < 0 && !(ignorezeroentries && value == 0.0)) {
+              PetscCheck(b->nonew == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+              PetscCall(PetscInfo(mat, "Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%" PetscInt_FMT ",%" PetscInt_FMT ")\n", (double)PetscRealPart(value), im[i], in[j]));
             }
           } else col = in[j];
-          MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], cp2, vp2, lastcol2, low2, high2); /* set one value */
-#if PetscDefined(HAVE_CUDA)
-          if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && found) B->offloadmask = PETSC_OFFLOAD_CPU;
-#endif
+          /* a suppressed new off-diagonal location; there is nothing to insert */
+          if (col < 0) continue;
+          /* no diagonal exception here: a zero stored by the off-diagonal block does nothing for the
+             diagonal that MatInvertDiagonalForSOR_SeqSELL() needs, which lives in the diagonal block.
+             A global (i,i) reaches this block only when the row and column layouts differ, and dropping
+             it is what MatSetValues_SeqAIJ_B_Private() does. */
+          MatSetValue_SeqSELL_Private(B, row, col, value, addv, im[i], in[j], PETSC_TRUE, cp2, vp2, lastcol2, low2, high2); /* set one value */
+          wroteB = (PetscBool)(wroteB || found);
         }
       }
     } else {
@@ -242,6 +157,10 @@ static PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
       }
     }
   }
+#if PetscDefined(HAVE_CUPM)
+  if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED && wroteA) A->offloadmask = PETSC_OFFLOAD_CPU;
+  if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED && wroteB) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -317,7 +236,13 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     }
     PetscCall(MatStashScatterEnd_Private(&mat->stash));
   }
-#if PetscDefined(HAVE_CUDA)
+  /*
+    This check and its counterpart below mirror MatAssemblyEnd_MPIAIJ(). They fire when a producer
+    fills the host submatrices behind assembly's back and marks the outer mask CPU first, as
+    MatSetPreallocationCOO() and the host matrix products do for MPIAIJ. SELL has neither, so they
+    are dormant here.
+  */
+#if PetscDefined(HAVE_CUPM)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU) sell->A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->A, mode));
@@ -336,7 +261,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISELL(mat));
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_CUPM)
   if (mat->offloadmask == PETSC_OFFLOAD_CPU && sell->B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) sell->B->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscCall(MatAssemblyBegin(sell->B, mode));
@@ -350,7 +275,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
     mat->nonzerostate = sell->A->nonzerostate + sell->B->nonzerostate;
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_CUPM)
   mat->offloadmask = PETSC_OFFLOAD_BOTH;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
