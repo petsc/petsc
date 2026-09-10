@@ -17,7 +17,7 @@ typedef struct {
 
 /* pipe                 */
 /*----------------------*/
-struct _p_Pipe {
+struct _n_Pipe {
   /* identification variables */
   PetscInt id;
   PetscInt networkid; /* which network this pipe belongs */
@@ -41,7 +41,7 @@ struct _p_Pipe {
   PipeBoundary boundary; /* boundary conditions for H and Q */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_Pipe *Pipe;
+typedef struct _n_Pipe *Pipe;
 
 extern PetscErrorCode PipeCreate(MPI_Comm, Pipe *);
 extern PetscErrorCode PipeDestroy(Pipe *);

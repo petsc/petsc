@@ -90,10 +90,10 @@ int main(int argc, char **argv)
     /* Create an empty network object */
     PetscCall(DMNetworkCreate(PETSC_COMM_WORLD, &networkdm));
     /* Register the components in the network */
-    PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _p_EDGE_Power), &User.compkey_branch));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _p_VERTEX_Power), &User.compkey_bus));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _p_GEN), &User.compkey_gen));
-    PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _p_LOAD), &User.compkey_load));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "branchstruct", sizeof(struct _n_EDGE_Power), &User.compkey_branch));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "busstruct", sizeof(struct _n_VERTEX_Power), &User.compkey_bus));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "genstruct", sizeof(struct _n_GEN), &User.compkey_gen));
+    PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _n_LOAD), &User.compkey_load));
 
     PetscCall(PetscLogStageRegister("Read Data", &stage1));
     PetscCall(PetscLogStagePush(stage1));

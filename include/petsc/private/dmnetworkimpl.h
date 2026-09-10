@@ -13,8 +13,8 @@ PETSC_EXTERN PetscLogEvent DMNetwork_Distribute;
 #define DMNETWORK_MAX_COMP_REGISTERED_DEFAULT 20
 #define DMNETWORK_MAX_COMP_AT_POINT_DEFAULT   1
 
-typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
-struct _p_DMNetworkComponentHeader {
+typedef struct _n_DMNetworkComponentHeader *DMNetworkComponentHeader;
+struct _n_DMNetworkComponentHeader {
   PetscInt index;    /* index for user input global edge and vertex */
   PetscInt subnetid; /* Id for subnetwork */
   PetscInt ndata;    /* number of components */
@@ -33,8 +33,8 @@ struct _p_DMNetworkComponentHeader {
   PetscInt *offsetvarrel; /* relative offset from the first component at this point */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
-typedef struct _p_DMNetworkComponentValue *DMNetworkComponentValue;
-struct _p_DMNetworkComponentValue {
+typedef struct _n_DMNetworkComponentValue *DMNetworkComponentValue;
+struct _n_DMNetworkComponentValue {
   void **data;
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
@@ -108,8 +108,8 @@ typedef struct {
    2. Everything else in the structure:  The part of the network not shared between clones. This is the data on
       the network, so dof and component type information.
 */
-typedef struct _p_DMNetworkCloneShared *DMNetworkCloneShared;
-struct _p_DMNetworkCloneShared {
+typedef struct _n_DMNetworkCloneShared *DMNetworkCloneShared;
+struct _n_DMNetworkCloneShared {
   PetscInt  refct;                /* reference count for the shared data */
   PetscInt  NEdges, nEdges;       /* Number of global/local edges */
   PetscInt  NVertices, nVertices; /* Number of global/local vertices */

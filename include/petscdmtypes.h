@@ -317,7 +317,7 @@ typedef struct _p_DMField *DMField;
 
 .seealso: [](ch_dmbase), `DM`, `DMLabel`, `DMUniversalLabelCreate()`
 S*/
-typedef struct _p_UniversalLabel *DMUniversalLabel;
+typedef struct _n_UniversalLabel *DMUniversalLabel;
 
 typedef struct _PETSc_DMCEED *DMCeed;
 

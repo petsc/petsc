@@ -38,8 +38,8 @@ typedef struct {
   PetscScalar p_dof;
 } StokesDOF;
 
-typedef struct _p_CellProperties *CellProperties;
-struct _p_CellProperties {
+typedef struct _n_CellProperties *CellProperties;
+struct _n_CellProperties {
   PetscInt                ncells;
   PetscInt                mx, my, mz;
   PetscInt                sex, sey, sez;

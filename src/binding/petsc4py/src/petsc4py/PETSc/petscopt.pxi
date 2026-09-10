@@ -31,8 +31,8 @@ cdef extern from * nogil:
     PetscErrorCode PetscOptionsGetScalarArray(PetscOptions, char[], char[], PetscScalar[], PetscInt*, PetscBool*)
     PetscErrorCode PetscOptionsGetString(PetscOptions, char[], char[], char[], size_t, PetscBool*)
 
-    ctypedef struct _p_PetscToken
-    ctypedef _p_PetscToken* PetscToken
+    ctypedef struct _n_PetscToken
+    ctypedef _n_PetscToken* PetscToken
     PetscErrorCode PetscTokenCreate(char[], char, PetscToken*)
     PetscErrorCode PetscTokenDestroy(PetscToken*)
     PetscErrorCode PetscTokenFind(PetscToken, const char*[])

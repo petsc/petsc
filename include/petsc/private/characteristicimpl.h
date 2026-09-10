@@ -20,7 +20,7 @@ PETSC_EXTERN PetscLogEvent  CHARACTERISTIC_FullTimeExchange;
 
 #define MAX_COMPONENTS 10
 
-typedef struct _p_Item {
+typedef struct _n_Item {
   PetscMPIInt proc;                  /* Relative processor from which data is required (mapped to absolute by neighbors) */
   PetscInt    i, j;                  /* The vertex for which we need field values */
   PetscScalar x, y;                  /* Coordinates of a point on the characteristic */

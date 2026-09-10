@@ -853,7 +853,7 @@ PETSC_EXTERN PetscErrorCode VecsDuplicate(Vecs, Vecs *);
 
 .seealso: `Vec`, `VECVIENNACL`, `VecCreateSeqViennaCL()`
 S*/
-typedef struct _p_PetscViennaCLIndices *PetscViennaCLIndices;
+typedef struct _n_PetscViennaCLIndices *PetscViennaCLIndices;
 PETSC_EXTERN PetscErrorCode             VecCreateSeqViennaCL(MPI_Comm, PetscInt, Vec *);
 #endif
 #if PetscDefined(HAVE_KOKKOS_KERNELS)

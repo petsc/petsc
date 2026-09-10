@@ -199,7 +199,7 @@ typedef struct _n_Space {
   IS      fields; /* Map from DS field numbers to original field numbers in the DM */
 } DMSpace;
 
-struct _p_UniversalLabel {
+struct _n_UniversalLabel {
   DMLabel   label;   /* The universal label */
   PetscInt  Nl;      /* Number of labels encoded */
   char    **names;   /* The label names */

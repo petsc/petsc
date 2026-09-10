@@ -9,8 +9,8 @@
 #include <petscdraw.h>
 
 /* Nodes that record mouse actions when needed */
-typedef struct _p_MouseNode *MouseNode;
-struct _p_MouseNode {
+typedef struct _n_MouseNode *MouseNode;
+struct _n_MouseNode {
   PetscDrawButton Button;
   POINT           user;
   POINT           phys;
@@ -19,8 +19,8 @@ struct _p_MouseNode {
 };
 
 /* nodes that contain handle to all user created windows */
-typedef struct _p_WindowNode *WindowNode;
-struct _p_WindowNode {
+typedef struct _n_WindowNode *WindowNode;
+struct _n_WindowNode {
   HWND       hWnd;
   WindowNode wnext, wprev;
   HANDLE     event;
