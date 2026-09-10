@@ -5,4 +5,5 @@ See https://petsc.org/release/manualpages for help.
  -version: prints PETSc version
  -help intro: prints example description and PETSc version, and exits
  -help: prints example description, PETSc version, and available options for used routines
+ -help mansec: prints only the options in the given manual section(s), for example -help ksp,snes
 -help # (source: file)

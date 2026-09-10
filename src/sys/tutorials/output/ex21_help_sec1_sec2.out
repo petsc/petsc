@@ -1,0 +1,8 @@
+Scaled units options 1:
+  -r1: <now 2. : formerly 0.>: r1: real (ManPage1)
+  -s1: <now 0. : formerly 0.>: s1: real (ManPage1)
+  -i1: <now 0 : formerly 0>: i1: int (ManPage1)
+Scaled units options 2:
+  -r2: <now -1. : formerly -1.>: r2: real (ManPage2)
+  -s2: <now -1. : formerly -1.>: s2: real (ManPage2)
+  -i2: <now -1 : formerly -1>: i2: int (ManPage2)
