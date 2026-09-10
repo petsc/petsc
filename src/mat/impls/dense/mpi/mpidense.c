@@ -995,50 +995,28 @@ static PetscErrorCode MatSetOption_MPIDense(Mat A, MatOption op, PetscBool flg)
 
 static PetscErrorCode MatDiagonalScale_MPIDense(Mat A, Vec ll, Vec rr)
 {
-  Mat_MPIDense      *mdn = (Mat_MPIDense *)A->data;
-  const PetscScalar *l;
-  PetscScalar        x, *v, *vv, *r;
-  PetscInt           i, j, s2a, s3a, s2, s3, m = mdn->A->rmap->n, n = mdn->A->cmap->n, lda;
+  Mat_MPIDense *mdn = (Mat_MPIDense *)A->data;
+  PetscInt      s1, s2, s3;
 
   PetscFunctionBegin;
-  PetscCall(MatDenseGetArray(mdn->A, &vv));
-  PetscCall(MatDenseGetLDA(mdn->A, &lda));
   PetscCall(MatGetLocalSize(A, &s2, &s3));
   if (ll) {
-    PetscCall(VecGetLocalSize(ll, &s2a));
-    PetscCheck(s2a == s2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vector non-conforming local size, %" PetscInt_FMT " != %" PetscInt_FMT, s2a, s2);
-    PetscCall(VecGetArrayRead(ll, &l));
-    for (i = 0; i < m; i++) {
-      x = l[i];
-      v = vv + i;
-      for (j = 0; j < n; j++) {
-        (*v) *= x;
-        v += lda;
-      }
-    }
-    PetscCall(VecRestoreArrayRead(ll, &l));
-    PetscCall(PetscLogFlops(1.0 * n * m));
+    PetscCall(VecGetLocalSize(ll, &s1));
+    PetscCheck(s1 == s2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Left scaling vector non-conforming local size, %" PetscInt_FMT " != %" PetscInt_FMT, s1, s2);
   }
   if (rr) {
-    const PetscScalar *ar;
-
-    PetscCall(VecGetLocalSize(rr, &s3a));
-    PetscCheck(s3a == s3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling vec non-conforming local size, %" PetscInt_FMT " != %" PetscInt_FMT ".", s3a, s3);
-    PetscCall(VecGetArrayRead(rr, &ar));
+    PetscCall(VecGetLocalSize(rr, &s1));
+    PetscCheck(s1 == s3, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Right scaling vector non-conforming local size, %" PetscInt_FMT " != %" PetscInt_FMT, s1, s3);
+    /* gather the right scaling into the local column layout, staying on the device when the Vecs live there */
     if (!mdn->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
-    PetscCall(VecGetArray(mdn->lvec, &r));
-    PetscCall(PetscSFBcastBegin(mdn->Mvctx, MPIU_SCALAR, ar, r, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, ar, r, MPI_REPLACE));
-    PetscCall(VecRestoreArrayRead(rr, &ar));
-    for (i = 0; i < n; i++) {
-      x = r[i];
-      v = vv + i * lda;
-      for (j = 0; j < m; j++) (*v++) *= x;
-    }
-    PetscCall(VecRestoreArray(mdn->lvec, &r));
-    PetscCall(PetscLogFlops(1.0 * n * m));
+    PetscCall(VecScatterBegin(mdn->Mvctx, rr, mdn->lvec, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(VecScatterEnd(mdn->Mvctx, rr, mdn->lvec, INSERT_VALUES, SCATTER_FORWARD));
   }
-  PetscCall(MatDenseRestoreArray(mdn->A, &vv));
+  /* the local matrix holds exactly the local rows and all the columns, so the local part of ll applies to it directly;
+     the operation is called rather than MatDiagonalScale() because ll is the parallel Vec and the interface checks that
+     it shares the communicator of the sequential matrix, as in MatDiagonalScale_MPIAIJ() */
+  PetscUseTypeMethod(mdn->A, diagonalscale, ll, rr ? mdn->lvec : NULL);
+  PetscCall(PetscObjectStateIncrease((PetscObject)mdn->A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
