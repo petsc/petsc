@@ -231,7 +231,9 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
   if (mfctx->jorge || mfctx->compute_err) PetscCall(SNESDiffParameterCreate_More(snes, x, &mfctx->data));
   else mfctx->data = NULL;
 
-  PetscCall(PetscOptionsHasHelp(((PetscObject)snes)->options, &flg));
+  /* these options are printed outside any PetscOptionsBegin()/PetscOptionsEnd() block, so they take
+     their manual section from the SNES, as the blocks opened with PetscObjectOptionsBegin() do */
+  PetscCall(PetscOptionsHelpPrintable_Internal(((PetscObject)snes)->options, ((PetscObject)snes)->mansec, &flg));
   PetscCall(PetscStrncpy(p, "-", sizeof(p)));
   if (((PetscObject)snes)->prefix) PetscCall(PetscStrlcat(p, ((PetscObject)snes)->prefix, sizeof(p)));
   if (flg) {

@@ -1773,6 +1773,16 @@ PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options, PetscBool
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Returns in print whether the help output documented in manual section mansec should be printed. mansec is
+   the manual section that help belongs to; it may be NULL for help that belongs to no manual section. */
+PetscErrorCode PetscOptionsHelpPrintable_Internal(PetscOptions options, const char mansec[], PetscBool *print)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(print, 3);
+  PetscCall(PetscOptionsHasHelp(options, print));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or Boolean, even
   if its value is set to false.

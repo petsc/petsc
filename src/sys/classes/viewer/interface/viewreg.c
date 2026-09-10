@@ -336,7 +336,10 @@ static PetscErrorCode PetscOptionsCreateViewers_Internal(MPI_Comm comm, PetscOpt
   PetscCall(PetscOptionsGetCreateViewerOff(&flag));
   if (flag) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscOptionsHasHelp(NULL, &hashelp));
+  /* these options are printed outside any PetscOptionsBegin()/PetscOptionsEnd() block; they are documented
+     in the manual section a PetscViewer belongs to, and the default options database is used here so that
+     this agrees with the rest of the help output */
+  PetscCall(PetscOptionsHelpPrintable_Internal(NULL, "Viewer", &hashelp));
   if (hashelp) {
     PetscBool found;
 

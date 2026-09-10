@@ -49,7 +49,7 @@ PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems PetscOptionsObject, MP
   PetscCall(PetscStrallocpy(prefix, &PetscOptionsObject->prefix));
   PetscCall(PetscStrallocpy(title, &PetscOptionsObject->title));
 
-  PetscCall(PetscOptionsHasHelp(PetscOptionsObject->options, &PetscOptionsObject->printhelp));
+  PetscCall(PetscOptionsHelpPrintable_Internal(PetscOptionsObject->options, mansec, &PetscOptionsObject->printhelp));
   if (ShouldPrintHelp(PetscOptionsObject)) PetscCall((*PetscHelpPrintf)(comm, "----------------------------------------\n%s:\n", title));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
