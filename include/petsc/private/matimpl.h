@@ -255,6 +255,33 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, M
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_Basic(Mat, const PetscScalar[], InsertMode);
 
+/*
+   Index translation for the local submatrices of MATLOCALREF and MATIS, which both forward their local
+   insertions to another matrix. These need to be macros because they use sizeof
+*/
+#define MatIndexSpaceGet_Private(buf, nrow, ncol, irowm, icolm) \
+  do { \
+    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) { \
+      PetscCall(PetscMalloc2(nrow, &irowm, ncol, &icolm)); \
+    } else { \
+      irowm = &buf[0]; \
+      icolm = &buf[nrow]; \
+    } \
+  } while (0)
+
+#define MatIndexSpaceRestore_Private(buf, nrow, ncol, irowm, icolm) \
+  do { \
+    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) PetscCall(PetscFree2(irowm, icolm)); \
+  } while (0)
+
+/* Turn n block indices into the n * bs scalar indices they stand for */
+static inline void MatBlockIndicesExpand_Private(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[])
+{
+  for (PetscInt i = 0; i < n; i++) {
+    for (PetscInt j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
+  }
+}
+
 /* Scattering of dense matrices with strided PetscSF */
 PETSC_EXTERN PetscErrorCode MatDenseScatter_Private(PetscSF, Mat, Mat, InsertMode, ScatterMode);
 

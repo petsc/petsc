@@ -8,29 +8,6 @@ typedef struct {
   PetscErrorCode (*SetValuesBlocked)(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 } Mat_LocalRef;
 
-/* These need to be macros because they use sizeof */
-#define IndexSpaceGet(buf, nrow, ncol, irowm, icolm) \
-  do { \
-    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) { \
-      PetscCall(PetscMalloc2(nrow, &irowm, ncol, &icolm)); \
-    } else { \
-      irowm = &buf[0]; \
-      icolm = &buf[nrow]; \
-    } \
-  } while (0)
-
-#define IndexSpaceRestore(buf, nrow, ncol, irowm, icolm) \
-  do { \
-    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) PetscCall(PetscFree2(irowm, icolm)); \
-  } while (0)
-
-static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[])
-{
-  for (PetscInt i = 0; i < n; i++) {
-    for (PetscInt j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
-  }
-}
-
 static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
 {
   Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
@@ -38,11 +15,11 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nr
 
   PetscFunctionBegin;
   if (!nrow || !ncol) PetscFunctionReturn(PETSC_SUCCESS);
-  IndexSpaceGet(buf, nrow, ncol, irowm, icolm);
+  MatIndexSpaceGet_Private(buf, nrow, ncol, irowm, icolm);
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping, nrow, irow, irowm));
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, ncol, icol, icolm));
   PetscCall((*lr->SetValuesBlocked)(lr->Top, nrow, irowm, ncol, icolm, y, addv));
-  IndexSpaceRestore(buf, nrow, ncol, irowm, icolm);
+  MatIndexSpaceRestore_Private(buf, nrow, ncol, irowm, icolm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -53,13 +30,13 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt n
 
   PetscFunctionBegin;
   PetscCall(MatGetBlockSizes(A, &rbs, &cbs));
-  IndexSpaceGet(buf, nrow * rbs, ncol * cbs, irowm, icolm);
-  BlockIndicesExpand(nrow, irow, rbs, irowm);
-  BlockIndicesExpand(ncol, icol, cbs, icolm);
+  MatIndexSpaceGet_Private(buf, nrow * rbs, ncol * cbs, irowm, icolm);
+  MatBlockIndicesExpand_Private(nrow, irow, rbs, irowm);
+  MatBlockIndicesExpand_Private(ncol, icol, cbs, icolm);
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping, nrow * rbs, irowm, irowm));
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, ncol * cbs, icolm, icolm));
   PetscCall((*lr->SetValues)(lr->Top, nrow * rbs, irowm, ncol * cbs, icolm, y, addv));
-  IndexSpaceRestore(buf, nrow * rbs, ncol * cbs, irowm, icolm);
+  MatIndexSpaceRestore_Private(buf, nrow * rbs, ncol * cbs, irowm, icolm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -69,7 +46,7 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, co
   PetscInt      buf[4096], *irowm, *icolm;
 
   PetscFunctionBegin;
-  IndexSpaceGet(buf, nrow, ncol, irowm, icolm);
+  MatIndexSpaceGet_Private(buf, nrow, ncol, irowm, icolm);
   /* If the row IS defining this submatrix was an ISBLOCK, then the unblocked LGMapApply is the right one to use.  If
    * instead it was (say) an ISSTRIDE with a block size > 1, then we need to use LGMapApplyBlock */
   if (lr->rowisblock) {
@@ -84,7 +61,7 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, co
     PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, ncol, icol, icolm));
   }
   PetscCall((*lr->SetValues)(lr->Top, nrow, irowm, ncol, icolm, y, addv));
-  IndexSpaceRestore(buf, nrow, ncol, irowm, icolm);
+  MatIndexSpaceRestore_Private(buf, nrow, ncol, irowm, icolm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
