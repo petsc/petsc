@@ -97,6 +97,16 @@ class BaseTestTAO:
         ksp = self.tao.getKSP()
         self.assertFalse(ksp)
 
+    def testToleranceProperties(self):
+        self.tao.gtol = (1.0e-3, 2.0e-3, 3.0e-3)
+        self.assertEqual(self.tao.gtol, (1.0e-3, 2.0e-3, 3.0e-3))
+        self.tao.gtol = {'gatol': 4.0e-3, 'grtol': 5.0e-3, 'gttol': 6.0e-3}
+        self.assertEqual(self.tao.gtol, (4.0e-3, 5.0e-3, 6.0e-3))
+        self.tao.ctol = (7.0e-3, 8.0e-3)
+        self.assertEqual(self.tao.ctol, (7.0e-3, 8.0e-3))
+        self.tao.ctol = {'catol': 9.0e-3, 'crtol': 1.0e-2}
+        self.assertEqual(self.tao.ctol, (9.0e-3, 1.0e-2))
+
     def testEqualityConstraints(self):
         if self.tao.getComm().Get_size() > 1:
             return

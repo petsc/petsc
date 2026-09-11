@@ -14,6 +14,7 @@ cdef extern from "<petsc4py/numpy.h>":
 
     void* PyArray_DATA(ndarray)
     npy_intp PyArray_SIZE(ndarray)
+    npy_intp PyArray_NBYTES(ndarray)
     int PyArray_NDIM(ndarray)
     npy_intp* PyArray_DIMS(ndarray)
     npy_intp PyArray_DIM(ndarray, int)
@@ -42,6 +43,7 @@ cdef extern from "<petsc4py/numpy.h>":
 
     bint PyArray_ISCONTIGUOUS(ndarray)
     bint PyArray_ISFORTRAN(ndarray)
+    bint PyArray_ISWRITEABLE(ndarray)
     ctypedef enum NPY_ORDER:
         NPY_ANYORDER
         NPY_CORDER
@@ -123,7 +125,6 @@ cdef inline ndarray array_rd(PetscInt dim, PetscInt sizes[], const PetscReal* da
     cdef int d = <int> dim
     cdef int tot = 1
     cdef npy_intp sz[NPY_MAXDIMS]
-    assert(dim <= NPY_MAXDIMS)
     for e in range(d):
         sz[e] = <int> sizes[e]
         tot *= <int> sizes[e]
@@ -150,7 +151,6 @@ cdef inline ndarray array_sd(PetscInt dim, PetscInt sizes[], const PetscScalar* 
     cdef int d = <int> dim
     cdef int tot = 1
     cdef npy_intp sz[NPY_MAXDIMS]
-    assert(dim <= NPY_MAXDIMS)
     for e in range(d):
         sz[e] = <int> sizes[e]
         tot *= <int> sizes[e]

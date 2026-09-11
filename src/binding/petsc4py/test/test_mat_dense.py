@@ -1,5 +1,6 @@
 from petsc4py import PETSc
 import unittest
+import weakref
 
 import numpy as np
 
@@ -440,6 +441,33 @@ class TestMatMPIDense_B_G77_B5(TestMatMPIDense_B_G77):
 
 class TestMatMPIDense_B_G89_B5(TestMatMPIDense_B_G89):
     BSIZE = 5
+
+
+class TestMatDenseCUDAConstructor(unittest.TestCase):
+    @unittest.skipUnless(
+        PETSc.Sys.hasExternalPackage('cuda'), 'PETSc was built without CUDA'
+    )
+    def testCreateWithHostArray(self):
+        for comm in (PETSc.COMM_SELF, PETSc.COMM_WORLD):
+            for recreate in (False, True):
+                with self.subTest(size=comm.size, recreate=recreate):
+                    A = PETSc.Mat()
+                    try:
+                        if recreate:
+                            A.createDense([1, 1], comm=PETSc.COMM_SELF)
+                        array = np.arange(6, dtype=PETSc.ScalarType)
+                        array_ref = weakref.ref(array)
+                        A.createDenseCUDA([(2, None), 3], array=array, comm=comm)
+                        self.assertEqual(A.getSize(), (2 * comm.size, 3))
+                        self.assertIs(A.getDict()['__array__'], array)
+                        del array
+                        self.assertIsNotNone(array_ref())
+                        np.testing.assert_array_equal(
+                            A.getDenseArray(), np.arange(6).reshape((2, 3), order='F')
+                        )
+                    finally:
+                        A.destroy()
+                    self.assertIsNone(array_ref())
 
 
 # -----

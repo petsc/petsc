@@ -1126,9 +1126,7 @@ cdef class Mat(Object):
         cdef PetscInt nj=0, noj=0, *j=NULL, *oj=NULL
         pi = iarray_i(pi, &ni, &i) # Row pointers (diagonal)
         pj = iarray_i(pj, &nj, &j) # Column indices (diagonal)
-        if ni != m+1:  raise ValueError(
-            "A matrix with %d rows requires a row pointer of length %d (given: %d)" %
-            (toInt(m), toInt(m+1), toInt(ni)))
+        Mat_ValidateCSR(m, ni, i, nj)
         if poi is not None and poj is not None:
             poi = iarray_i(poi, &noi, &oi) # Row pointers (off-diagonal)
             poj = iarray_i(poj, &noj, &oj) # Column indices (off-diagonal)
@@ -1150,6 +1148,10 @@ cdef class Mat(Object):
             # if off-diagonal components are provided then SplitArrays can be
             # used (and not cause a copy).
             if oi != NULL and oj != NULL and ov != NULL:
+                Mat_ValidateCSR(m, noi, oi, noj)
+                if noj != nov: raise ValueError(
+                    "Given %d off-diagonal column indices but %d non-zero values" %
+                    (toInt(noj), toInt(nov)))
                 CHKERR(MatCreateMPIAIJWithSplitArrays(
                     ccomm, m, n, M, N, i, j, v, oi, oj, ov, &newmat))
                 csr = ((pi, pj, pv), (poi, poj, pov))
@@ -1250,10 +1252,10 @@ cdef class Mat(Object):
             CHKERR(MatSetBlockSizes(newmat, rbs, cbs))
         else:
             Mat_Create(MATDENSECUDA, comm, size, bsize, &newmat)
-            if array is not None:
-                array = Mat_AllocDense(self.mat, array)
-                self.set_attr('__array__', array)
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        if cudahandle is None and array is not None:
+            array = Mat_AllocDense(self.mat, array)
+            self.set_attr('__array__', array)
         return self
 
     def setPreallocationDense(self, array: Sequence[Scalar]) -> Self:
@@ -1533,16 +1535,23 @@ cdef class Mat(Object):
         petsc.MatCreateNest, petsc.MATNEST
 
         """
-        cdef object mat
+        cdef object mat, row
         mats = [list(mat) for mat in mats]
-        if isrows:
+        if not mats or not mats[0]:
+            raise ValueError("mats must contain at least one block")
+        for row in mats:
+            if len(row) != len(mats[0]):
+                raise ValueError("matrix block rows must have equal length")
+        if isrows is not None:
             isrows = list(isrows)
-            assert len(isrows) == len(mats)
+            if len(isrows) != len(mats):
+                raise ValueError("number of row index sets must match matrix block rows")
         else:
             isrows = None
-        if iscols:
+        if iscols is not None:
             iscols = list(iscols)
-            assert len(iscols) == len(mats[0])
+            if len(iscols) != len(mats[0]):
+                raise ValueError("number of column index sets must match matrix block columns")
         else:
             iscols = None
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -3314,7 +3323,7 @@ cdef class Mat(Object):
         ndim = asDims(dims, &cdims[0], &cdims[1], &cdims[2])
         ndof = asInt(dof)
         if starts is not None:
-            asDims(dims, &cstarts[0], &cstarts[1], &cstarts[2])
+            asDims(starts, &cstarts[0], &cstarts[1], &cstarts[2])
         CHKERR(MatSetStencil(self.mat, ndim, cdims, cstarts, ndof))
 
     def setValueStencil(
@@ -4241,7 +4250,8 @@ cdef class Mat(Object):
         if iscols is None: iscols = isrows
         isrows = [isrows] if isinstance(isrows, IS) else list(isrows)
         iscols = [iscols] if isinstance(iscols, IS) else list(iscols)
-        assert len(isrows) == len(iscols)
+        if len(isrows) != len(iscols):
+            raise ValueError("row and column index set arrays must have equal length")
         cdef Py_ssize_t i, n = len(isrows)
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef PetscIS  *cisrows = NULL
@@ -4255,7 +4265,8 @@ cdef class Mat(Object):
         if submats is not None:
             reuse = MAT_REUSE_MATRIX
             submats = list(submats)
-            assert len(submats) == len(isrows)
+            if len(submats) != len(isrows):
+                raise ValueError("number of submatrices must match number of index set pairs")
             CHKERR(PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats))
             for i from 0 <= i < n: cmats[i] = (<Mat?>submats[i]).mat
         CHKERR(MatCreateSubMatrices(self.mat, <PetscInt>n, cisrows, ciscols, reuse, &cmats))

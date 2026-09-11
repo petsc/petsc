@@ -824,7 +824,6 @@ cdef inline PetscErrorCode Mat_AllocAIJ_NNZ(PetscMat A, object NNZ) except PETSC
     CHKERR(MatGetLocalSize(A, &m, NULL))
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
         CHKERR(MatGetBlockSize(A, &bs))
-        assert bs > 0, "block size not set"
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
     try:
@@ -866,6 +865,40 @@ cdef inline PetscErrorCode Mat_AllocAIJ_NNZ(PetscMat A, object NNZ) except PETSC
         CHKERR(MatISSetPreallocation(A, d_nz, d_nnz, o_nz, o_nnz))
     return PETSC_SUCCESS
 
+cdef inline PetscErrorCode Mat_ValidateCSR(
+    PetscInt nrows,
+    PetscInt ni,
+    const PetscInt i[],
+    PetscInt nj,
+) except PETSC_ERR_PYTHON:
+    cdef PetscInt row = 0
+
+    if ni != nrows + 1:
+        raise ValueError(
+            "CSR row pointer has length %d, expected %d" %
+            (toInt(ni), toInt(nrows + 1))
+        )
+    if ni < 1:
+        raise ValueError("CSR row pointer must contain at least one entry")
+    if i[0] != 0:
+        raise ValueError(
+            "CSR row pointer must start with 0, got %d" % toInt(i[0])
+        )
+    if i[nrows] != nj:
+        raise ValueError(
+            "CSR row pointer ends at %d, but column index array has length %d" %
+            (toInt(i[nrows]), toInt(nj))
+        )
+    for row from 0 <= row < nrows:
+        if i[row] > i[row + 1]:
+            raise ValueError(
+                "CSR row pointer must be nondecreasing, "
+                "but entries %d and %d are %d and %d" %
+                (toInt(row), toInt(row + 1),
+                 toInt(i[row]), toInt(i[row + 1]))
+            )
+    return PETSC_SUCCESS
+
 cdef inline PetscErrorCode Mat_AllocAIJ_CSR(PetscMat A, object CSR) except PETSC_ERR_PYTHON:
     #
     cdef PetscBool aij=PETSC_FALSE, baij=PETSC_FALSE, sbaij=PETSC_FALSE, aijis=PETSC_FALSE
@@ -875,7 +908,6 @@ cdef inline PetscErrorCode Mat_AllocAIJ_CSR(PetscMat A, object CSR) except PETSC
     CHKERR(MatGetLocalSize(A, &m, NULL))
     if baij == PETSC_TRUE or sbaij == PETSC_TRUE:
         CHKERR(MatGetBlockSize(A, &bs))
-        assert bs > 0, "block size not set"
     # unpack CSR argument
     cdef object oi, oj, ov
     try:
@@ -891,17 +923,14 @@ cdef inline PetscErrorCode Mat_AllocAIJ_CSR(PetscMat A, object CSR) except PETSC
     oj = iarray_i(oj, &nj, &j)
     if ov is not None:
         ov = iarray_s(ov, &nv, &v)
+    if ni < 1:
+        raise ValueError("CSR row pointer must contain at least one entry")
     if m == PETSC_DECIDE: m = (ni-1)*bs
     # check array sizes
     if ((ni-1)*bs != m):
         raise ValueError("size(I) is %d, expected %d" %
                          (toInt(ni), toInt(m//bs+1)))
-    if (i[0] != 0):
-        raise ValueError("I[0] is %d, expected %d" %
-                         (toInt(i[0]), toInt(0)))
-    if (i[ni-1] != nj):
-        raise ValueError("size(J) is %d, expected %d" %
-                         (toInt(nj), toInt(i[ni-1])))
+    Mat_ValidateCSR(m//bs, ni, i, nj)
     if v != NULL and (nj*bs*bs != nv):
         raise ValueError("size(V) is %d, expected %d" %
                          (toInt(nv), toInt(nj*bs*bs)))

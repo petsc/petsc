@@ -322,7 +322,7 @@ cdef class Object:
         """
         cdef PetscObjectId cid = 0
         CHKERR(PetscObjectGetId(self.obj[0], &cid))
-        return <long>cid
+        return cid
 
     # --- general support ---
 
@@ -471,7 +471,7 @@ cdef class Object:
         """
         cdef PetscObjectState state = 0
         CHKERR(PetscObjectStateGet(self.obj[0], &state))
-        return <long>state
+        return state
 
     def stateSet(self, state : int) -> None:
         """Set the PETSc object state.
@@ -483,7 +483,7 @@ cdef class Object:
         stateIncrease, stateGet, petsc.PetscObjectStateSet
 
         """
-        cdef PetscObjectState cstate = asInt(state)
+        cdef PetscObjectState cstate = state
         CHKERR(PetscObjectStateSet(self.obj[0], cstate))
 
     # --- tab level ---
@@ -515,10 +515,15 @@ cdef class Object:
         cdef PetscInt clevel = asInt(level)
         CHKERR(PetscObjectSetTabLevel(self.obj[0], clevel))
 
-    def getTabLevel(self) -> None:
+    def getTabLevel(self) -> int:
         """Return the PETSc object tab level.
 
         Not collective.
+
+        Returns
+        -------
+        level : int
+            The tab level.
 
         See Also
         --------

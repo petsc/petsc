@@ -25,6 +25,7 @@ cdef extern from * nogil:
         PetscInt rank
         PetscInt index
     PetscErrorCode PetscSFGetGraph(PetscSF, PetscInt*, PetscInt*, const PetscInt**, const PetscSFNode**)
+    PetscErrorCode PetscSFGetLeafRange(PetscSF, PetscInt*, PetscInt*)
     PetscErrorCode PetscSFSetGraph(PetscSF, PetscInt, PetscInt, const PetscInt*, PetscCopyMode, PetscSFNode*, PetscCopyMode)
     PetscErrorCode PetscSFSetRankOrder(PetscSF, PetscBool)
 

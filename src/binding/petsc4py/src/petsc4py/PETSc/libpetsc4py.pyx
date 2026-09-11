@@ -3045,9 +3045,12 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     const char *url_p,
     ) except PETSC_ERR_PYTHON with gil:
     FunctionBegin(b"PetscPythonMonitorSet_Python")
-    assert obj_p != NULL
-    assert url_p != NULL
-    assert url_p[0] != 0
+    if obj_p == NULL:
+        raise ValueError("null PETSc object")
+    if url_p == NULL:
+        raise ValueError("null monitor URL")
+    if url_p[0] == 0:
+        raise ValueError("empty monitor URL")
     #
     cdef PetscClassId classid = 0
     CHKERR(PetscObjectGetClassId(obj_p, &classid))

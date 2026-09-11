@@ -928,12 +928,14 @@ cdef class PC(Object):
         cdef PetscIS *isets = NULL
         cdef PetscIS *isets_local = NULL
         if is_sub is not None:
-            assert len(is_sub) == nsd
+            if len(is_sub) != nsd:
+                raise ValueError("number of subdomain index sets must match nsd")
             CHKERR(PetscMalloc(<size_t>n*sizeof(PetscIS), &isets))
             for i in range(n):
                 isets[i] = (<IS?>is_sub[i]).iset
         if is_local is not None:
-            assert len(is_local) == nsd
+            if len(is_local) != nsd:
+                raise ValueError("number of local index sets must match nsd")
             CHKERR(PetscMalloc(<size_t>n*sizeof(PetscIS), &isets_local))
             for i in range(n):
                 isets_local[i] = (<IS?>is_local[i]).iset
@@ -1013,12 +1015,14 @@ cdef class PC(Object):
         cdef PetscIS *isets = NULL
         cdef PetscIS *isets_local = NULL
         if is_sub is not None:
-            assert len(is_sub) == nsd
+            if len(is_sub) != nsd:
+                raise ValueError("number of subdomain index sets must match nsd")
             CHKERR(PetscMalloc(<size_t>n*sizeof(PetscIS), &isets))
             for i in range(n):
                 isets[i] = (<IS?>is_sub[i]).iset
         if is_local is not None:
-            assert len(is_local) == nsd
+            if len(is_local) != nsd:
+                raise ValueError("number of local index sets must match nsd")
             CHKERR(PetscMalloc(<size_t>n*sizeof(PetscIS), &isets_local))
             for i in range(n):
                 isets_local[i] = (<IS?>is_local[i]).iset
@@ -1295,13 +1299,15 @@ cdef class PC(Object):
         cdef PetscMat *ND_Pi_mat = NULL
         try:
             if RT_Pi is not None:
+                if len(RT_Pi) != idim:
+                    raise ValueError("number of Raviart-Thomas interpolation matrices must match dim")
                 CHKERR (PetscMalloc(<size_t>dim*sizeof(PetscMat), &RT_Pi_mat))
-                assert len(RT_Pi) == idim
                 for i in range(idim):
                     RT_Pi_mat[i] = (<Mat?>RT_Pi[i]).mat
             if ND_Pi is not None:
+                if len(ND_Pi) != idim:
+                    raise ValueError("number of Nedelec interpolation matrices must match dim")
                 CHKERR (PetscMalloc(<size_t>dim*sizeof(PetscMat), &ND_Pi_mat))
-                assert len(ND_Pi) == idim
                 for i in range(idim):
                     ND_Pi_mat[i] = (<Mat?>ND_Pi[i]).mat
             CHKERR (PCHYPRESetInterpolations(self.pc, idim,
@@ -1727,7 +1733,7 @@ cdef class PC(Object):
         cdef PetscPCCompositeType cval = ctype
         CHKERR(PCCompositeSetType(self.pc, cval))
 
-    def getCompositePC(self, n: int) -> None:
+    def getCompositePC(self, n: int) -> PC:
         """Return a component of the composite `PC`.
 
         Not collective.
@@ -1736,6 +1742,11 @@ cdef class PC(Object):
         ----------
         n
             The index of the `PC` in the composition.
+
+        Returns
+        -------
+        pc : PC
+            The selected component.
 
         See Also
         --------

@@ -11,6 +11,62 @@ class SFType(object):
     ALLTOALL   = S_(PETSCSFALLTOALL)
     WINDOW     = S_(PETSCSFWINDOW)
 
+
+# --------------------------------------------------------------------
+
+cdef inline int sfcheckbuffer(
+    ndarray data,
+    object name,
+    PetscInt nunits,
+    object extent,
+    bint writable,
+) except -1:
+    cdef object nrequired = toInt(nunits) * extent
+
+    if not PyArray_ISCONTIGUOUS(data) and not PyArray_ISFORTRAN(data):
+        raise ValueError("%s must be contiguous" % name)
+    if writable and not PyArray_ISWRITEABLE(data):
+        raise ValueError("%s must be writable" % name)
+    if PyArray_NBYTES(data) < nrequired:
+        raise ValueError(
+            "%s buffer is too small: need at least %d bytes, has %d" %
+            (name, nrequired, PyArray_NBYTES(data)))
+    return 0
+
+
+cdef inline int sfcheckbuffers(
+    PetscSF sf,
+    object unit,
+    ndarray rootdata,
+    bint rootwritable,
+    ndarray leafdata,
+    bint leafwritable,
+    ndarray leafupdate,
+    bint multi,
+) except -1:
+    cdef PetscSF multisf = NULL
+    cdef PetscInt nroots = 0
+    cdef PetscInt minleaf = 0
+    cdef PetscInt maxleaf = -1
+    cdef object rootname = "multirootdata" if multi else "rootdata"
+    cdef object extent = unit.extent
+
+    CHKERR(PetscSFGetLeafRange(sf, &minleaf, &maxleaf))
+    if minleaf < 0:
+        raise ValueError("SF leaf indices must be nonnegative")
+    if multi:
+        CHKERR(PetscSFGetMultiSF(sf, &multisf))
+        CHKERR(PetscSFGetGraph(multisf, &nroots, NULL, NULL, NULL))
+    else:
+        CHKERR(PetscSFGetGraph(sf, &nroots, NULL, NULL, NULL))
+    sfcheckbuffer(rootdata, rootname, nroots, extent, rootwritable)
+    sfcheckbuffer(leafdata, "leafdata", maxleaf + 1, extent, leafwritable)
+    if leafupdate is not None:
+        sfcheckbuffer(leafupdate, "leafupdate", maxleaf + 1,
+                      extent, True)
+    return 0
+
+
 # --------------------------------------------------------------------
 
 
@@ -19,6 +75,10 @@ cdef class SF(Object):
 
     SF is used for setting up and managing the communication of certain
     entries of arrays and `Vec` between MPI processes.
+
+    NumPy buffers passed to communication methods must be contiguous. Output
+    buffers must be writable. Buffers passed to a ``*Begin`` method must remain
+    alive and the same buffers must be passed to the matching ``*End`` method.
 
     """
 
@@ -220,9 +280,11 @@ cdef class SF(Object):
         remote = iarray_i(remote, &nremote, <PetscInt**>&iremote)
         if local is not None:
             local = iarray_i(local, &nleaves, &ilocal)
-            assert 2*nleaves == nremote
+            if 2*nleaves != nremote:
+                raise ValueError("remote array must contain one rank-index pair per local leaf")
         else:
-            assert nremote % 2 == 0
+            if nremote % 2 != 0:
+                raise ValueError("remote array length must be even")
             nleaves = nremote // 2
         CHKERR(PetscSFSetGraph(self.sf, cnroots, nleaves, ilocal, PETSC_COPY_VALUES, iremote, PETSC_COPY_VALUES))
 
@@ -457,6 +519,8 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, False, leafdata, True,
+                       None, False)
         CHKERR(PetscSFBcastBegin(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
                                  <void*>PyArray_DATA(leafdata), cop))
 
@@ -483,6 +547,8 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, False, leafdata, True,
+                       None, False)
         CHKERR(PetscSFBcastEnd(self.sf, dtype, <const void*>PyArray_DATA(rootdata),
                                <void*>PyArray_DATA(leafdata), cop))
 
@@ -511,6 +577,8 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, True, leafdata, False,
+                       None, False)
         CHKERR(PetscSFReduceBegin(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
                                   <void*>PyArray_DATA(rootdata), cop))
 
@@ -537,6 +605,8 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, True, leafdata, False,
+                       None, False)
         CHKERR(PetscSFReduceEnd(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
                                 <void*>PyArray_DATA(rootdata), cop))
 
@@ -563,6 +633,8 @@ cdef class SF(Object):
 
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        sfcheckbuffers(self.sf, unit, multirootdata, False, leafdata, True,
+                       None, True)
         CHKERR(PetscSFScatterBegin(self.sf, dtype, <const void*>PyArray_DATA(multirootdata),
                                    <void*>PyArray_DATA(leafdata)))
 
@@ -586,6 +658,8 @@ cdef class SF(Object):
 
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        sfcheckbuffers(self.sf, unit, multirootdata, False, leafdata, True,
+                       None, True)
         CHKERR(PetscSFScatterEnd(self.sf, dtype, <const void*>PyArray_DATA(multirootdata),
                                  <void*>PyArray_DATA(leafdata)))
 
@@ -612,6 +686,8 @@ cdef class SF(Object):
 
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        sfcheckbuffers(self.sf, unit, multirootdata, True, leafdata, False,
+                       None, True)
         CHKERR(PetscSFGatherBegin(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
                                   <void*>PyArray_DATA(multirootdata)))
 
@@ -636,10 +712,12 @@ cdef class SF(Object):
 
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
+        sfcheckbuffers(self.sf, unit, multirootdata, True, leafdata, False,
+                       None, True)
         CHKERR(PetscSFGatherEnd(self.sf, dtype, <const void*>PyArray_DATA(leafdata),
                                 <void*>PyArray_DATA(multirootdata)))
 
-    def fetchAndOpBegin(self, unit: Datatype, rootdata: ndarray, leafdata: ndarray, leafupdate: ndarray, op: Op) -> None:
+    def fetchAndOpBegin(self, unit: Datatype, ndarray rootdata, ndarray leafdata, ndarray leafupdate, op: Op) -> None:
         """Begin fetch and update operation.
 
         Collective.
@@ -671,11 +749,13 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, True, leafdata, False,
+                       leafupdate, False)
         CHKERR(PetscSFFetchAndOpBegin(self.sf, dtype, <void*>PyArray_DATA(rootdata),
                                       <const void*>PyArray_DATA(leafdata),
                                       <void*>PyArray_DATA(leafupdate), cop))
 
-    def fetchAndOpEnd(self, unit: Datatype, rootdata: ndarray, leafdata: ndarray, leafupdate: ndarray, op: Op) -> None:
+    def fetchAndOpEnd(self, unit: Datatype, ndarray rootdata, ndarray leafdata, ndarray leafupdate, op: Op) -> None:
         """End operation started in a matching call to `fetchAndOpBegin`.
 
         Collective.
@@ -702,6 +782,8 @@ cdef class SF(Object):
         """
         cdef MPI_Datatype dtype = mpi4py_Datatype_Get(unit)
         cdef MPI_Op cop = mpi4py_Op_Get(op)
+        sfcheckbuffers(self.sf, unit, rootdata, True, leafdata, False,
+                       leafupdate, False)
         CHKERR(PetscSFFetchAndOpEnd(self.sf, dtype, <void*>PyArray_DATA(rootdata),
                                     <const void*>PyArray_DATA(leafdata),
                                     <void*>PyArray_DATA(leafupdate), cop))

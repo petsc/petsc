@@ -1354,7 +1354,8 @@ cdef class SNES(Object):
             self.set_attr('__converged__', None)
             CHKERR(SNESSetConvergenceTest(self.snes, SNESConvergedDefault, NULL, NULL))
         else:
-            assert callable(converged)
+            if not callable(converged):
+                raise TypeError("converged must be callable, 'skip', 'default', or None")
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (converged, args, kargs)

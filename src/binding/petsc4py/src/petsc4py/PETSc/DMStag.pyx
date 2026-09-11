@@ -106,14 +106,16 @@ cdef class DMStag(DM):
         cdef PetscInt nsizes=PETSC_DECIDE, M=1, N=1, P=1
         if sizes is not None:
             nsizes = asStagDims(gsizes, &M, &N, &P)
-            assert(nsizes==ndim)
+            if nsizes != ndim:
+                raise ValueError("sizes dimension must match dim")
 
         # dofs
         cdef object cdofs = dofs
         cdef PetscInt ndofs=PETSC_DECIDE, dof0=1, dof1=0, dof2=0, dof3=0
         if dofs is not None:
             ndofs = asDofs(cdofs, &dof0, &dof1, &dof2, &dof3)
-            assert(ndofs==ndim+1)
+            if ndofs != ndim + 1:
+                raise ValueError("dofs length must equal dim + 1")
 
         # boundary types
         cdef PetscDMBoundaryType btx = DM_BOUNDARY_NONE
@@ -137,13 +139,13 @@ cdef class DMStag(DM):
         cdef PetscInt nprocs=PETSC_DECIDE, m=PETSC_DECIDE, n=PETSC_DECIDE, p=PETSC_DECIDE
         if proc_sizes is not None:
             nprocs = asStagDims(psizes, &m, &n, &p)
-            assert(nprocs==ndim)
+            if nprocs != ndim:
+                raise ValueError("proc_sizes dimension must match dim")
 
         # ownership ranges
         cdef PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         if ownership_ranges is not None:
-            nranges = asStagOwnershipRanges(ownership_ranges, ndim, &m, &n, &p, &lx, &ly, &lz)
-            assert(nranges==ndim)
+            ownership_ranges = asStagOwnershipRanges(ownership_ranges, ndim, &m, &n, &p, &lx, &ly, &lz)
 
         # create
         cdef PetscDM newda = NULL
@@ -302,7 +304,7 @@ cdef class DMStag(DM):
         cdef PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR(DMGetDimension(self.dm, &dim))
         CHKERR(DMStagGetNumRanks(self.dm, &m, &n, &p))
-        asStagOwnershipRanges(ranges, dim, &m, &n, &p, &lx, &ly, &lz)
+        ranges = asStagOwnershipRanges(ranges, dim, &m, &n, &p, &lx, &ly, &lz)
         CHKERR(DMStagSetOwnershipRanges(self.dm, lx, ly, lz))
 
     # Getters
@@ -698,7 +700,7 @@ cdef class DMStag(DM):
         CHKERR(DMStagGetLocationSlot(self.dm, sloc, comp, &slot))
         return toInt(slot)
 
-    def getProductCoordinateLocationSlot(self, loc: StencilLocation) -> None:
+    def getProductCoordinateLocationSlot(self, loc: StencilLocation) -> int:
         """Return slot for use with local product coordinate arrays.
 
         Not collective.
@@ -707,6 +709,11 @@ cdef class DMStag(DM):
         ----------
         loc
             The grid location.
+
+        Returns
+        -------
+        slot : int
+            The location slot.
 
         See Also
         --------

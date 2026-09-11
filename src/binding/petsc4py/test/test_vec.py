@@ -43,6 +43,12 @@ class BaseTestVec:
         self.vec.dotBegin(self.vec)
         d = self.vec.dotEnd(self.vec)
         self.assertAlmostEqual(abs(d), self.vec.getSize())
+        self.vec.tDotBegin(self.vec)
+        d = self.vec.tDotEnd(self.vec)
+        self.assertAlmostEqual(abs(d), self.vec.getSize())
+        d, n2 = self.vec.dotNorm2(self.vec)
+        self.assertAlmostEqual(abs(d), self.vec.getSize())
+        self.assertAlmostEqual(n2, self.vec.getSize())
 
     def testNorm(self):
         self.vec.set(1)

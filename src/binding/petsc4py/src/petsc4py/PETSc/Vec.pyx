@@ -411,7 +411,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:  raise ValueError(
+        if cpuarray is not None and na < n:  raise ValueError(
             "array size %d and vector local size %d block size %d" %
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
@@ -469,7 +469,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:  raise ValueError(
+        if cpuarray is not None and na < n:  raise ValueError(
             "array size %d and vector local size %d block size %d" %
             (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
@@ -528,7 +528,7 @@ cdef class Vec(Object):
         Vec_Sizes(size, bsize, &bs, &n, &N)
         Sys_Layout(ccomm, bs, &n, &N)
         if bs == PETSC_DECIDE: bs = 1
-        if na < n:
+        if cpuarray is not None and na < n:
             raise ValueError("array size %d and vector local size %d block size %d" % (toInt(na), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
         if comm_size(ccomm) == 1:
@@ -974,9 +974,10 @@ cdef class Vec(Object):
 
         """
         vecs = list(vecs)
-        if isets:
+        if isets is not None:
             isets = list(isets)
-            assert len(isets) == len(vecs)
+            if len(isets) != len(vecs):
+                raise ValueError("number of index sets must match number of vectors")
         else:
             isets = None
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
@@ -2161,7 +2162,7 @@ cdef class Vec(Object):
         cdef PetscScalar sval = 0
         cdef PetscReal rval = 0
         CHKERR(VecDotNorm2(self.vec, vec.vec, &sval, &rval))
-        return toScalar(sval), toReal(float)
+        return toScalar(sval), toReal(rval)
 
     def sum(self) -> Scalar:
         """Return the sum of all the entries of the vector.
@@ -2622,7 +2623,8 @@ cdef class Vec(Object):
         cdef PetscVec *v = NULL
         cdef object unused1 = iarray_s(alphas, &n, &a)
         cdef object unused2 = oarray_p(empty_p(n), NULL, <void**>&v)
-        assert n == len(vecs)
+        if n != len(vecs):
+            raise ValueError("number of coefficients must match number of vectors")
         cdef Py_ssize_t i=0
         for i from 0 <= i < n:
             v[i] = (<Vec?>(vecs[i])).vec
@@ -3523,7 +3525,8 @@ cdef class Vec(Object):
 
         """
         if idxm is None: idxm = range(len(sx))
-        else: assert len(idxm) == len(sx)
+        elif len(idxm) != len(sx):
+            raise ValueError("number of indices must match number of vectors")
         cdef PetscInt N = 0
         cdef PetscInt* cidxm = NULL
         idxm = iarray_i(idxm, &N, &cidxm)

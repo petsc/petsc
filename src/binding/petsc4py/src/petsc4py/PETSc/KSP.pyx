@@ -1123,10 +1123,16 @@ cdef class KSP(Object):
         if kargs is None: kargs = {}
         self.set_attr('__converged__', (converged, args, kargs))
 
-    def getConvergenceTest(self) -> KSPConvergenceTestFunction:
+    def getConvergenceTest(self) -> tuple[KSPConvergenceTestFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the function to be used to determine convergence.
 
         Logically collective.
+
+        Returns
+        -------
+        context : tuple or None
+            The callback, positional arguments, and keyword arguments, or
+            `None` if the default convergence test is used.
 
         See Also
         --------
@@ -1136,7 +1142,7 @@ cdef class KSP(Object):
         """
         return self.get_attr('__converged__')
 
-    def callConvergenceTest(self, its: int, rnorm: float) -> None:
+    def callConvergenceTest(self, its: int, rnorm: float) -> ConvergedReason:
         """Call the convergence test callback.
 
         Collective.
@@ -1147,6 +1153,11 @@ cdef class KSP(Object):
             Number of iterations.
         rnorm
             The residual norm.
+
+        Returns
+        -------
+        reason : ConvergedReason
+            The convergence reason.
 
         Notes
         -----

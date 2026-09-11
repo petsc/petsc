@@ -210,3 +210,14 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexSetMigrationSF(PetscDM, PetscSF)
     PetscErrorCode DMPlexCreateGlobalToNaturalSF(PetscDM, PetscSection, PetscSF, PetscSF *)
     PetscErrorCode DMPlexMigrateGlobalToNaturalSF(PetscDM, PetscDM, PetscSF, PetscSF, PetscSF *)
+
+# -----------------------------------------------------------------------------
+
+cdef inline PetscInt DMPlex_ChartPoint(PetscDM dm, object p) except? -1:
+    cdef PetscInt cp = asInt(p)
+    cdef PetscInt pStart = 0, pEnd = 0
+    CHKERR(DMPlexGetChart(dm, &pStart, &pEnd))
+    if cp < pStart or cp >= pEnd:
+        raise ValueError("point %d is not in chart [%d, %d)" %
+                         (toInt(cp), toInt(pStart), toInt(pEnd)))
+    return cp
