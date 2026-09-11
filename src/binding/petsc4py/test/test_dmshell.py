@@ -99,11 +99,17 @@ class TestDMShell(unittest.TestCase):
             dms = [dm.clone() for _ in range(len(ises))]
             return names, ises, dms
 
+        def create_field_decomposition_without_is(dm):
+            names = [f'f_{i}' for i in range(2)]
+            dms = [dm.clone() for _ in names]
+            return names, None, dms
+
         tests = [
             (create_field_decomposition_only_is, False, False),
             (create_field_decomposition_only_is_names, True, False),
             (create_field_decomposition_only_is_dms, False, True),
             (create_field_decomposition_only_full, True, True),
+            (create_field_decomposition_without_is, True, True),
         ]
         for test_f, has_names, has_dms in tests:
             self.dm.setCreateFieldDecomposition(test_f)
@@ -121,6 +127,15 @@ class TestDMShell(unittest.TestCase):
                     self.assertEqual(type(dm), PETSc.DM)
                 else:
                     self.assertTrue(dm is None)
+
+        def create_field_decomposition_mismatched(dm):
+            return ['f_0'], [PETSc.IS().createStride(1) for _ in range(2)], None
+
+        self.dm.setCreateFieldDecomposition(create_field_decomposition_mismatched)
+        with self.assertRaises(PETSc.Error) as context:
+            self.dm.createFieldDecomposition()
+        self.assertIsInstance(context.exception.__cause__, ValueError)
+        self.assertRegex(str(context.exception.__cause__), 'same length')
 
     def testGlobalToLocal(self):
         def begin(dm, ivec, mode, ovec):

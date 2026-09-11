@@ -76,6 +76,7 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmSortGetAccess(PetscDM)
     PetscErrorCode DMSwarmSortRestoreAccess(PetscDM)
     PetscErrorCode DMSwarmSortGetPointsPerCell(PetscDM, PetscInt, PetscInt*, PetscInt**)
+    PetscErrorCode DMSwarmSortRestorePointsPerCell(PetscDM, PetscInt, PetscInt*, PetscInt**)
     PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(PetscDM, PetscInt, PetscInt*)
     PetscErrorCode DMSwarmSortGetIsValid(PetscDM, PetscBool*)
     PetscErrorCode DMSwarmSortGetSizes(PetscDM, PetscInt*, PetscInt*)

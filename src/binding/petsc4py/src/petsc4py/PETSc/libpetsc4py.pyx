@@ -1117,6 +1117,7 @@ cdef PetscErrorCode MatSolveTranspose_Python(
             CHKERR(MatSolveTranspose(mat, b, x))
         finally:
             mat.ops.solvetranspose = MatSolveTranspose_Python
+        return FunctionEnd()
     solveTranspose(Mat_(mat), Vec_(b), Vec_(x))
     return FunctionEnd()
 

@@ -66,7 +66,7 @@ cdef extern from "<petsc.h>":
     ctypedef _p_Mat* PetscMat "Mat"
 
     struct _p_MatPartitioning
-    ctypedef _p_Mat* PetscMatPartitioning "MatPartitioning"
+    ctypedef _p_MatPartitioning* PetscMatPartitioning "MatPartitioning"
 
     struct _p_MatNullSpace
     ctypedef _p_MatNullSpace* PetscNullSpace "MatNullSpace"

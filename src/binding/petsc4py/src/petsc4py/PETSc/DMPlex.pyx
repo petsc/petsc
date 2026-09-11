@@ -445,9 +445,17 @@ cdef class DMPlex(DM):
         cdef ISColoring coloring = NULL
 
         CHKERR(DMPlexCreateColoring(self.dm, cdepth, cdistance, &coloring))
-        CHKERR(ISColoringGetIS(coloring, PETSC_USE_POINTER, &ncolors, &iscolors))
-
-        cdef list isets = [ref_IS(iscolors[i]) for i from 0 <= i < ncolors]
+        cdef list isets = []
+        try:
+            CHKERR(ISColoringGetIS(coloring, PETSC_USE_POINTER, &ncolors, &iscolors))
+            for i from 0 <= i < ncolors:
+                isets.append(ref_IS(iscolors[i]))
+        finally:
+            try:
+                if iscolors != NULL:
+                    CHKERR(ISColoringRestoreIS(coloring, PETSC_USE_POINTER, &iscolors))
+            finally:
+                CHKERR(ISColoringDestroy(&coloring))
         return isets
 
     def filter(self, label: DMLabel | None = None, value: int | None = None, ignoreHalo: bool = False,
@@ -1489,9 +1497,16 @@ cdef class DMPlex(DM):
 
         Parameters
         ----------
+        label
+            The name of the label to create or update.
         value
             The marker value, or `DETERMINE` or `None` to use some
             value in the closure (or 1 if none are found).
+
+        Returns
+        -------
+        boundary : DMLabel
+            The label containing the boundary faces.
 
         See Also
         --------
@@ -1500,14 +1515,18 @@ cdef class DMPlex(DM):
 
         """
         cdef PetscInt ival = PETSC_DETERMINE
+        cdef PetscDMLabel clbl = NULL
+        cdef const char *cval = NULL
+        cdef DMLabel boundary = DMLabel()
         if value is not None: ival = asInt(value)
         if not self.hasLabel(label):
             self.createLabel(label)
-        cdef const char *cval = NULL
         label = str2bytes(label, &cval)
-        cdef PetscDMLabel clbl = NULL
         CHKERR(DMGetLabel(self.dm, cval, &clbl))
         CHKERR(DMPlexMarkBoundaryFaces(self.dm, ival, clbl))
+        boundary.dmlabel = clbl
+        CHKERR(PetscINCREF(boundary.obj))
+        return boundary
 
     def labelComplete(self, DMLabel label, useCone: bool = True) -> None:
         """Add the transitive closure or the star of each point in the label.
@@ -1721,7 +1740,7 @@ cdef class DMPlex(DM):
             CHKERR(PetscCLEAR(self.obj)); self.dm = dmParallel
             return sf
 
-    def distributeOverlap(self, overlap: int | None = 0) -> SF:
+    def distributeOverlap(self, overlap: int | None = 0) -> SF | None:
         """Add partition overlap to a distributed non-overlapping `DMPlex`.
 
         Collective.
@@ -1733,8 +1752,10 @@ cdef class DMPlex(DM):
 
         Returns
         -------
-        sf : SF
-            The `SF` used for point distribution.
+        sf : SF or None
+            The `SF` used for point distribution, or `None` if the
+            mesh was not distributed, in which case the `DMPlex` is left
+            unchanged.
 
         See Also
         --------
@@ -1747,8 +1768,9 @@ cdef class DMPlex(DM):
         cdef PetscDM dmOverlap = NULL
         CHKERR(DMPlexDistributeOverlap(self.dm, coverlap,
                                        &sf.sf, &dmOverlap))
-        CHKERR(PetscCLEAR(self.obj)); self.dm = dmOverlap
-        return sf
+        if dmOverlap != NULL:
+            CHKERR(PetscCLEAR(self.obj)); self.dm = dmOverlap
+            return sf
 
     def isDistributed(self) -> bool:
         """Return the flag indicating if the mesh is distributed.
@@ -1799,7 +1821,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexDistributeGetDefault(self.dm, &dist))
         return toBool(dist)
 
-    def distributeSetDefault(self, flag: bool) -> None:
+    def distributeSetDefault(self, flag: bool = True) -> None:
         """Set flag indicating whether the `DMPlex` should be distributed by default.
 
         Logically collective.
@@ -2373,18 +2395,18 @@ cdef class DMPlex(DM):
         petsc.DMPlexComputeCellGeometryFVM
 
         """
-        cdef PetscInt dims[2]
+        cdef PetscInt dims[2], ncoords = 0
         CHKERR(DMGetCoordinateDim(self.dm, &dims[1]))
         cdef PetscInt ccell = asInt(cell)
         cdef PetscBool isDG = PETSC_FALSE
         cdef const PetscScalar *array = NULL
         cdef PetscScalar *coords = NULL
-        CHKERR(DMPlexGetCellCoordinates(self.dm, ccell, &isDG, &dims[0], &array, &coords))
-        dims[0] /= dims[1]
+        CHKERR(DMPlexGetCellCoordinates(self.dm, ccell, &isDG, &ncoords, &array, &coords))
+        dims[0] = ncoords // dims[1]
         try:
             out = array_sd(2, dims, coords)
         finally:
-            CHKERR(DMPlexRestoreCellCoordinates(self.dm, ccell, &isDG, &dims[0], &array, &coords))
+            CHKERR(DMPlexRestoreCellCoordinates(self.dm, ccell, &isDG, &ncoords, &array, &coords))
         return (toBool(isDG), out)
 
     def computeCellGeometryFVM(self, cell: int) -> tuple[float, ArrayReal, ArrayReal]:
@@ -2503,7 +2525,7 @@ cdef class DMPlex(DM):
         # FIXME petsc.DMPlexMetricSetFromOptions
         CHKERR(DMPlexMetricSetFromOptions(self.dm))
 
-    def metricSetUniform(self, uniform: bool) -> None:
+    def metricSetUniform(self, uniform: bool = True) -> None:
         """Record whether the metric is uniform or not.
 
         Logically collective.
@@ -2537,7 +2559,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricIsUniform(self.dm, &uniform))
         return toBool(uniform)
 
-    def metricSetIsotropic(self, isotropic: bool) -> None:
+    def metricSetIsotropic(self, isotropic: bool = True) -> None:
         """Record whether the metric is isotropic or not.
 
         Logically collective.
@@ -2571,7 +2593,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricIsIsotropic(self.dm, &isotropic))
         return toBool(isotropic)
 
-    def metricSetRestrictAnisotropyFirst(self, restrictAnisotropyFirst: bool) -> None:
+    def metricSetRestrictAnisotropyFirst(self, restrictAnisotropyFirst: bool = True) -> None:
         """Record whether anisotropy is be restricted before normalization or after.
 
         Logically collective.
@@ -2605,7 +2627,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricRestrictAnisotropyFirst(self.dm, &restrictAnisotropyFirst))
         return toBool(restrictAnisotropyFirst)
 
-    def metricSetNoInsertion(self, noInsert: bool) -> None:
+    def metricSetNoInsertion(self, noInsert: bool = True) -> None:
         """Set the flag indicating whether node insertion should be turned off.
 
         Logically collective.
@@ -2641,7 +2663,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricNoInsertion(self.dm, &noInsert))
         return toBool(noInsert)
 
-    def metricSetNoSwapping(self, noSwap: bool) -> None:
+    def metricSetNoSwapping(self, noSwap: bool = True) -> None:
         """Set the flag indicating whether facet swapping should be turned off.
 
         Logically collective.
@@ -2677,7 +2699,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricNoSwapping(self.dm, &noSwap))
         return toBool(noSwap)
 
-    def metricSetNoMovement(self, noMove: bool) -> None:
+    def metricSetNoMovement(self, noMove: bool = True) -> None:
         """Set the flag indicating whether node movement should be turned off.
 
         Logically collective.
@@ -2713,7 +2735,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexMetricNoMovement(self.dm, &noMove))
         return toBool(noMove)
 
-    def metricSetNoSurf(self, noSurf: bool) -> None:
+    def metricSetNoSurf(self, noSurf: bool = True) -> None:
         """Set the flag indicating whether surface modification should be turned off.
 
         Logically collective.

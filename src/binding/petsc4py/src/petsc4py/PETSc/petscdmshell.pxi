@@ -324,6 +324,18 @@ cdef PetscErrorCode DMSHELL_CreateRestriction(
     cmat[0] = mat.mat
     return PETSC_SUCCESS
 
+cdef inline PetscInt dmshell_decomposition_length(object arrays) except -1:
+    cdef PetscInt n = -1, m = 0
+
+    for values in arrays:
+        if values is not None:
+            m = asInt(len(values))
+            if n < 0:
+                n = m
+            elif m != n:
+                raise ValueError("decomposition lists must have the same length")
+    return 0 if n < 0 else n
+
 cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     PetscDM dm,
     PetscInt *clen,
@@ -331,7 +343,7 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     PetscIS **islist,
     PetscDM **dmlist) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
-    cdef int i
+    cdef PetscInt i, n
     cdef const char *cname = NULL
     Dm.dm = dm
     CHKERR(PetscINCREF(Dm.obj))
@@ -339,32 +351,28 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     assert context is not None and type(context) is tuple
     (decomp, args, kargs) = context
     names, ises, dms = decomp(Dm, *args, **kargs)
+    n = dmshell_decomposition_length((names, ises, dms))
 
-    if clen != NULL:
-        if names is not None:
-            clen[0] = <PetscInt>len(names)
-        elif ises is not None:
-            clen[0] = <PetscInt>len(ises)
-        elif dms is not None:
-            clen[0] = <PetscInt>len(dms)
-        else:
-            clen[0] = 0
+    if clen != NULL: clen[0] = n
+    if namelist != NULL: namelist[0] = NULL
+    if islist != NULL: islist[0] = NULL
+    if dmlist != NULL: dmlist[0] = NULL
 
     if namelist != NULL and names is not None:
-        CHKERR(PetscMalloc(len(names)*sizeof(char**), namelist))
-        for i in range(len(names)):
+        CHKERR(PetscMalloc(n*sizeof(char*), namelist))
+        for i in range(n):
             names[i] = str2bytes(names[i], &cname)
             CHKERR(PetscStrallocpy(cname, &namelist[0][i]))
 
     if islist != NULL and ises is not None:
-        CHKERR(PetscMalloc(len(ises)*sizeof(PetscIS), islist))
-        for i in range(len(ises)):
+        CHKERR(PetscMalloc(n*sizeof(PetscIS), islist))
+        for i in range(n):
             islist[0][i] = (<IS?>ises[i]).iset
             CHKERR(PetscINCREF((<IS?>ises[i]).obj))
 
     if dmlist != NULL and dms is not None:
-        CHKERR(PetscMalloc(len(dms)*sizeof(PetscDM), dmlist))
-        for i in range(len(dms)):
+        CHKERR(PetscMalloc(n*sizeof(PetscDM), dmlist))
+        for i in range(n):
             dmlist[0][i] = (<DM?>dms[i]).dm
             CHKERR(PetscINCREF((<DM?>dms[i]).obj))
     return PETSC_SUCCESS
@@ -377,7 +385,7 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
     PetscIS **outerislist,
     PetscDM **dmlist) except PETSC_ERR_PYTHON with gil:
     cdef DM Dm = subtype_DM(dm)()
-    cdef int i
+    cdef PetscInt i, n
     cdef const char *cname = NULL
     Dm.dm = dm
     CHKERR(PetscINCREF(Dm.obj))
@@ -385,40 +393,35 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
     assert context is not None and type(context) is tuple
     (decomp, args, kargs) = context
     names, innerises, outerises, dms = decomp(Dm, *args, **kargs)
+    n = dmshell_decomposition_length((names, innerises, outerises, dms))
 
-    if clen != NULL:
-        if names is not None:
-            clen[0] = <PetscInt>len(names)
-        elif innerises is not None:
-            clen[0] = <PetscInt>len(innerises)
-        elif outerises is not None:
-            clen[0] = <PetscInt>len(outerises)
-        elif dms is not None:
-            clen[0] = <PetscInt>len(dms)
-        else:
-            clen[0] = 0
+    if clen != NULL: clen[0] = n
+    if namelist != NULL: namelist[0] = NULL
+    if innerislist != NULL: innerislist[0] = NULL
+    if outerislist != NULL: outerislist[0] = NULL
+    if dmlist != NULL: dmlist[0] = NULL
 
     if namelist != NULL and names is not None:
-        CHKERR(PetscMalloc(len(names)*sizeof(char**), namelist))
-        for i in range(len(names)):
+        CHKERR(PetscMalloc(n*sizeof(char*), namelist))
+        for i in range(n):
             names[i] = str2bytes(names[i], &cname)
             CHKERR(PetscStrallocpy(cname, &namelist[0][i]))
 
     if innerislist != NULL and innerises is not None:
-        CHKERR(PetscMalloc(len(innerises)*sizeof(PetscIS), innerislist))
-        for i in range(len(innerises)):
+        CHKERR(PetscMalloc(n*sizeof(PetscIS), innerislist))
+        for i in range(n):
             innerislist[0][i] = (<IS?>innerises[i]).iset
             CHKERR(PetscINCREF((<IS?>innerises[i]).obj))
 
     if outerislist != NULL and outerises is not None:
-        CHKERR(PetscMalloc(len(outerises)*sizeof(PetscIS), outerislist))
-        for i in range(len(outerises)):
+        CHKERR(PetscMalloc(n*sizeof(PetscIS), outerislist))
+        for i in range(n):
             outerislist[0][i] = (<IS?>outerises[i]).iset
             CHKERR(PetscINCREF((<IS?>outerises[i]).obj))
 
     if dmlist != NULL and dms is not None:
-        CHKERR(PetscMalloc(len(dms)*sizeof(PetscDM), dmlist))
-        for i in range(len(dms)):
+        CHKERR(PetscMalloc(n*sizeof(PetscDM), dmlist))
+        for i in range(n):
             dmlist[0][i] = (<DM?>dms[i]).dm
             CHKERR(PetscINCREF((<DM?>dms[i]).obj))
     return PETSC_SUCCESS

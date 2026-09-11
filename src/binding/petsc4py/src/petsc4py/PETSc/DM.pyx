@@ -365,7 +365,7 @@ cdef class DM(Object):
         CHKERR(DMGetUseNatural(self.dm, &uN))
         return toBool(uN)
 
-    def setUseNatural(self, useNatural : bool) -> None:
+    def setUseNatural(self, useNatural: bool = True) -> None:
         """Set the flag for constructing a global-to-natural map.
 
         Not collective.
@@ -565,6 +565,7 @@ cdef class DM(Object):
         if cval == NULL: cval = b"" # XXX Should be fixed upstream
         CHKERR(DMGetLabel(self.dm, cval, &clbl))
         CHKERR(DMGetAuxiliaryVec(self.dm, clbl, cvalue, cpart, &aux.vec))
+        CHKERR(PetscINCREF(aux.obj))
         return aux
 
     def setNumFields(self, numFields: int) -> None:
@@ -617,10 +618,15 @@ cdef class DM(Object):
         cdef PetscInt     cidx = asInt(index)
         cdef PetscObject  cobj = field.obj[0]
         cdef PetscDMLabel clbl = NULL
-        assert label is None
+        cdef const char   *clabel = NULL
+        if label is not None:
+            label = str2bytes(label, &clabel)
+            CHKERR(DMGetLabel(self.dm, clabel, &clbl))
+            if clbl == NULL:
+                raise ValueError("DM has no label named %s" % bytes2str(clabel))
         CHKERR(DMSetField(self.dm, cidx, clbl, cobj))
 
-    def getField(self, index: int) -> tuple[Object, None]:
+    def getField(self, index: int) -> tuple[Object, DMLabel | None]:
         """Return the discretization object for a given `DM` field.
 
         Not collective.
@@ -639,11 +645,15 @@ cdef class DM(Object):
         cdef PetscObject  cobj = NULL
         cdef PetscDMLabel clbl = NULL
         CHKERR(DMGetField(self.dm, cidx, &clbl, &cobj))
-        assert clbl == NULL
         cdef Object field = subtype_Object(cobj)()
         field.obj[0] = cobj
         CHKERR(PetscINCREF(field.obj))
-        return (field, None) # TODO REVIEW
+        cdef DMLabel label = None
+        if clbl != NULL:
+            label = DMLabel()
+            label.dmlabel = clbl
+            CHKERR(PetscINCREF(label.obj))
+        return (field, label)
 
     def addField(self, Object field, label: str | None = None) -> None:
         """Add a field to a `DM` object.
@@ -665,7 +675,12 @@ cdef class DM(Object):
         """
         cdef PetscObject  cobj = field.obj[0]
         cdef PetscDMLabel clbl = NULL
-        assert label is None
+        cdef const char   *clabel = NULL
+        if label is not None:
+            label = str2bytes(label, &clabel)
+            CHKERR(DMGetLabel(self.dm, clabel, &clbl))
+            if clbl == NULL:
+                raise ValueError("DM has no label named %s" % bytes2str(clabel))
         CHKERR(DMAddField(self.dm, clbl, cobj))
 
     def clearFields(self) -> None:
@@ -1372,7 +1387,7 @@ cdef class DM(Object):
         CHKERR(DMGetSparseLocalize(self.dm, &flag))
         return toBool(flag)
 
-    def setSparseLocalize(self, flag: bool) -> None:
+    def setSparseLocalize(self, flag: bool = True) -> None:
         """Set if coordinates should be only localized at the boundary.
 
         Collective.
@@ -2440,12 +2455,17 @@ cdef class DM(Object):
 
         CHKERR(DMCreateFieldDecomposition(self.dm, &clen, &cnamelist, &cis, &cdm))
 
-        cdef list isets = [ref_IS(cis[i]) for i from 0 <= i < clen]
+        cdef list isets = []
         cdef list dms   = []
         cdef list names = []
         cdef DM dm = None
 
         for i from 0 <= i < clen:
+            if cis != NULL:
+                isets.append(ref_IS(cis[i]))
+            else:
+                isets.append(None)
+
             if cdm != NULL:
                 dm = subtype_DM(cdm[i])()
                 dm.dm = cdm[i]
@@ -2462,7 +2482,8 @@ cdef class DM(Object):
             else:
                 names.append(None)
 
-            CHKERR(ISDestroy(&cis[i]))
+            if cis != NULL:
+                CHKERR(ISDestroy(&cis[i]))
 
         CHKERR(PetscFree(cis))
         CHKERR(PetscFree(cdm))
@@ -2600,9 +2621,6 @@ cdef class DM(Object):
         """Discrete space."""
         def __get__(self) -> DS:
             return self.getDS()
-
-        def __set__(self, value):
-            self.setDS(value)
 
 # --------------------------------------------------------------------
 

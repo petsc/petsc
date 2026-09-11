@@ -292,6 +292,11 @@ class Diagonal(Matrix):
             self.D.pointwiseMult(self.D, vr)
 
 
+class SolveOnly(Matrix):
+    def solve(self, mat, b, x):
+        b.copy(x)
+
+
 # --------------------------------------------------------------------
 
 
@@ -363,6 +368,18 @@ class TestMatrix(unittest.TestCase):
         x, y = self.A.createVecs()
         f = lambda: self.A.multTranspose(x, y)
         self.assertRaises(PETSc.Error, f)
+
+    def testSolveTransposeSymmetricFallback(self):
+        A = PETSc.Mat().createPython([3, 3], SolveOnly(), comm=PETSc.COMM_SELF)
+        A.setUp()
+        A.setOption(PETSc.Mat.Option.SYMMETRIC, True)
+        b, x = A.createVecs()
+        b.setRandom()
+        A.solveTranspose(b, x)
+        self.assertTrue(x.equal(b))
+        b.destroy()
+        x.destroy()
+        A.destroy()
 
     def testGetDiagonal(self):
         d = self.A.createVecLeft()

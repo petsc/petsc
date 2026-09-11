@@ -201,6 +201,11 @@
 - Add `DMSwarmSortDestroy()` and `DMSwarmSortView()`
 - Allow `DMSwarmCellDMSetSort()` to take in `NULL` and clear the sort
 - Add `DMSwarmPreallocateMassMatrix()` and `DMSwarmFillMassMatrix()`
+- Change `DMSwarmCreateGlobalVectorFromField()` and `DMSwarmCreateLocalVectorFromField()` to require fields of type `PETSC_SCALAR` instead of `PETSC_REAL`; complex scalar builds now reject `PETSC_REAL` fields
+- Change `DMSwarmVectorDefineField()` and `DMSwarmVectorDefineFields()` to validate that every field has type `PETSC_REAL` or `PETSC_SCALAR`
+- Add support for `PETSC_SCALAR` fields alongside `PETSC_REAL` fields in `DMSwarmCreateGlobalVectorFromFields()`, `DMSwarmDestroyGlobalVectorFromFields()`, `DMSwarmCreateLocalVectorFromFields()`, and `DMSwarmDestroyLocalVectorFromFields()`
+- Change `DMSwarmAddCellDM()` to register coordinate fields as `PETSC_REAL` and require existing coordinate fields to have type `PETSC_REAL` instead of `PETSC_DOUBLE`; coordinate fields now follow the configured real precision, including single and `__float128` precision
+- Add support for `PETSC_SCALAR` weight fields in `DMSwarmComputeMoments()`, using the real part of each weight
 
 ## DMPlex
 

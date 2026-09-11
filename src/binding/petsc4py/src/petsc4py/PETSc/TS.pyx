@@ -324,7 +324,7 @@ cdef class TS(Object):
         ts_type = str2bytes(ts_type, &cval)
         CHKERR(TSARKIMEXSetType(self.ts, cval))
 
-    def setARKIMEXFullyImplicit(self, flag: bool) -> None:
+    def setARKIMEXFullyImplicit(self, flag: bool = True) -> None:
         """Solve both parts of the equation implicitly.
 
         Logically collective.
@@ -342,7 +342,7 @@ cdef class TS(Object):
         cdef PetscBool bval = asBool(flag)
         CHKERR(TSARKIMEXSetFullyImplicit(self.ts, bval))
 
-    def setARKIMEXFastSlowSplit(self, flag: bool) -> None:
+    def setARKIMEXFastSlowSplit(self, flag: bool = True) -> None:
         """Use ARKIMEX for solving a fast-slow system.
 
         Logically collective.

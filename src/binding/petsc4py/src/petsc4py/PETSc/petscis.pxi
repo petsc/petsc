@@ -102,6 +102,8 @@ cdef extern from * nogil:
     ctypedef _n_ISColoring* ISColoring "ISColoring"
 
     PetscErrorCode ISColoringGetIS(ISColoring, PetscCopyMode, PetscInt*, PetscIS*[])
+    PetscErrorCode ISColoringRestoreIS(ISColoring, PetscCopyMode, PetscIS*[])
+    PetscErrorCode ISColoringDestroy(ISColoring*)
 
 # --------------------------------------------------------------------
 

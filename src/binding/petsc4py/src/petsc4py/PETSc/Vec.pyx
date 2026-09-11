@@ -1393,7 +1393,7 @@ cdef class Vec(Object):
         self.set_attr('__placed_array__', None)
         return array
 
-    def bindToCPU(self, flg: bool) -> None:
+    def bindToCPU(self, flg: bool = True) -> None:
         """Bind vector operations execution on the CPU.
 
         Logically collective.

@@ -16,6 +16,7 @@ from subprocess import check_output
 #      lib/petsc/bin/maint/runjobs.py -f linux-cuda-pkgs
 #      lib/petsc/bin/maint/runjobs.py -f freebsd-cxx-pkgs-opt linux-clang-avx linux-clang-ubsan
 #      lib/petsc/bin/maint/runjobs.py -f $(grep -lE "download-(mpich|openmpi)" config/examples/arch-ci-*.py | cut -d '/' -f 3 | sed -e 's/arch-ci-//' | sed -e 's/.py$//')
+#      lib/petsc/bin/maint/runjobs.py -f $(grep -lE "with-petsc4py" config/examples/arch-ci-*.py | cut -d '/' -f 3 | sed -e 's/arch-ci-//' | sed -e 's/.py$//')
 #
 #  Note: If no jobs are listed, then all jobs in the pipeline are run but without a need to un-pause the pipeline on the GitLab site.
 #  i.e., usage:

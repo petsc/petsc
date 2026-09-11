@@ -376,7 +376,7 @@ cdef class LogStage:
         CHKERR(PetscLogStageGetActive(self.id, &flag))
         return toBool(flag)
 
-    def setActive(self, flag: bool) -> None:
+    def setActive(self, flag: bool = True) -> None:
         """Activate or deactivate the current stage.
 
         Logically collective.
@@ -414,7 +414,7 @@ cdef class LogStage:
         CHKERR(PetscLogStageGetVisible(self.id, &flag))
         return toBool(flag)
 
-    def setVisible(self, flag: bool) -> None:
+    def setVisible(self, flag: bool = True) -> None:
         """Set the visibility of the stage.
 
         Logically collective.
@@ -503,7 +503,7 @@ cdef class LogClass:
         <void>self # unused
         raise NotImplementedError
 
-    def setActive(self, flag: bool) -> None:
+    def setActive(self, flag: bool = True) -> None:
         """Activate or deactivate the log class."""
         if flag:
             CHKERR(PetscLogClassActivate(self.id))
@@ -640,7 +640,7 @@ cdef class LogEvent:
         <void>self # unused
         raise NotImplementedError
 
-    def setActive(self, flag: bool) -> None:
+    def setActive(self, flag: bool = True) -> None:
         """Indicate whether or not the event should be logged.
 
         Logically collective.
@@ -673,7 +673,7 @@ cdef class LogEvent:
         <void>self # unused
         raise NotImplementedError
 
-    def setActiveAll(self, flag: bool) -> None:
+    def setActiveAll(self, flag: bool = True) -> None:
         """Turn on logging of all events.
 
         Logically collective.

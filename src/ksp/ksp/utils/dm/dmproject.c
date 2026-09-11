@@ -549,7 +549,7 @@ static PetscErrorCode DMSwarmProjectFields_Plex_Internal(DM sw, DM dm, PetscInt 
   PetscCall(PetscCitationsRegister(SwarmProjCitation, &SwarmProjcite));
   PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Currently supported only for a single field");
   PetscCall(DMSwarmVectorDefineFields(sw, Nf, fieldnames));
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[f], &u));
+  PetscCall(DMSwarmCreateGlobalVectorFromFields(sw, Nf, fieldnames, &u));
   PetscCall(VecGetBlockSize(u, &bs));
   PetscCheck(Nc[f] == bs, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %" PetscInt_FMT " components %" PetscInt_FMT " != %" PetscInt_FMT " blocksize for swarm field %s", f, Nc[f], bs, fieldnames[f]);
   if (mode == SCATTER_FORWARD) {
@@ -557,7 +557,7 @@ static PetscErrorCode DMSwarmProjectFields_Plex_Internal(DM sw, DM dm, PetscInt 
   } else {
     PetscCall(DMSwarmProjectParticles_Conservative_PLEX(sw, dm, u, vec));
   }
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &u));
+  PetscCall(DMSwarmDestroyGlobalVectorFromFields(sw, Nf, fieldnames, &u));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -846,7 +846,7 @@ static PetscErrorCode DMSwarmProjectGradientFields_Plex_Internal(DM sw, DM dm, P
   PetscCall(PetscCitationsRegister(SwarmProjCitation, &SwarmProjcite));
   PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Currently supported only for a single field");
   PetscCall(DMSwarmVectorDefineFields(sw, Nf, fieldnames));
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[f], &u));
+  PetscCall(DMSwarmCreateGlobalVectorFromFields(sw, Nf, fieldnames, &u));
   PetscCall(VecGetBlockSize(u, &bs));
   PetscCheck(Nc[f] * cdim == bs, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %" PetscInt_FMT " components %" PetscInt_FMT " * %" PetscInt_FMT " coordinate dim != %" PetscInt_FMT " blocksize for swarm field %s", f, Nc[f], cdim, bs, fieldnames[f]);
   if (mode == SCATTER_FORWARD) {
@@ -854,7 +854,7 @@ static PetscErrorCode DMSwarmProjectGradientFields_Plex_Internal(DM sw, DM dm, P
   } else {
     PetscCall(DMSwarmProjectGradientParticles_Conservative_PLEX(sw, dm, u, vec));
   }
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &u));
+  PetscCall(DMSwarmDestroyGlobalVectorFromFields(sw, Nf, fieldnames, &u));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

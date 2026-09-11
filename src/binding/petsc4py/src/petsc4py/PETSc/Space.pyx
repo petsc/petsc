@@ -277,7 +277,7 @@ cdef class Space(Object):
         CHKERR(PetscSpaceSumGetConcatenate(self.space, &concatenate))
         return toBool(concatenate)
 
-    def setSumConcatenate(self, concatenate: bool) -> None:
+    def setSumConcatenate(self, concatenate: bool = True) -> None:
         """Set the concatenate flag for this space.
 
         Logically collective.
@@ -333,6 +333,7 @@ cdef class Space(Object):
         cdef Space subsp = Space()
         cdef PetscInt cs = asInt(s)
         CHKERR(PetscSpaceSumGetSubspace(self.space, cs, &subsp.space))
+        CHKERR(PetscINCREF(subsp.obj))
         return subsp
 
     def setSumSubspace(self, s: int, Space subsp) -> None:
@@ -425,6 +426,7 @@ cdef class Space(Object):
         cdef PetscInt cs = asInt(s)
         cdef Space subsp = Space()
         CHKERR(PetscSpaceTensorGetSubspace(self.space, cs, &subsp.space))
+        CHKERR(PetscINCREF(subsp.obj))
         return subsp
 
     def setTensorNumSubspaces(self, numTensSpaces: int) -> None:
@@ -465,7 +467,7 @@ cdef class Space(Object):
         CHKERR(PetscSpacePolynomialGetTensor(self.space, &ctensor))
         return toBool(ctensor)
 
-    def setPolynomialTensor(self, tensor: bool) -> None:
+    def setPolynomialTensor(self, tensor: bool = True) -> None:
         """Set whether a function space is a space of tensor polynomials.
 
         Logically collective.
@@ -658,6 +660,7 @@ cdef class DualSpace(Object):
         """
         cdef DualSpace spNew = DualSpace()
         CHKERR(PetscDualSpaceDuplicate(self.dualspace, &spNew.dualspace))
+        return spNew
 
     def getDM(self) -> DM:
         """Return the `DM` representing the reference cell of a `DualSpace`.
@@ -818,10 +821,12 @@ cdef class DualSpace(Object):
 
         """
         cdef const PetscInt *cndof = NULL
-        cdef PetscInt cdim = 0
-        CHKERR(PetscDualSpaceGetDimension(self.dualspace, &cdim))
+        cdef PetscDM dm = NULL
+        cdef PetscInt depth = 0
+        CHKERR(PetscDualSpaceGetDM(self.dualspace, &dm))
+        CHKERR(DMPlexGetDepth(dm, &depth))
         CHKERR(PetscDualSpaceGetNumDof(self.dualspace, &cndof))
-        return array_i(cdim + 1, cndof)
+        return array_i(depth + 1, cndof)
 
     def getFunctional(self, i: int) -> Quad:
         """Return the i-th basis functional in the dual space.
@@ -875,7 +880,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetContinuity(self.dualspace, &ccontinuous))
         return toBool(ccontinuous)
 
-    def setLagrangeContinuity(self, continuous: bool) -> None:
+    def setLagrangeContinuity(self, continuous: bool = True) -> None:
         """Indicate whether the element is continuous.
 
         Not collective.
@@ -907,7 +912,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetTensor(self.dualspace, &ctensor))
         return toBool(ctensor)
 
-    def setLagrangeTensor(self, tensor: bool) -> None:
+    def setLagrangeTensor(self, tensor: bool = True) -> None:
         """Set the tensor nature of the dual space.
 
         Not collective.
@@ -939,7 +944,7 @@ cdef class DualSpace(Object):
         CHKERR(PetscDualSpaceLagrangeGetTrimmed(self.dualspace, &ctrimmed))
         return toBool(ctrimmed)
 
-    def setLagrangeTrimmed(self, trimmed: bool) -> None:
+    def setLagrangeTrimmed(self, trimmed: bool = True) -> None:
         """Set the trimmed nature of the dual space.
 
         Not collective.

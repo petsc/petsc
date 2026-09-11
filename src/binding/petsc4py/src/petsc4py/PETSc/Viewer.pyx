@@ -763,7 +763,7 @@ cdef class Viewer(Object):
         """
         CHKERR(PetscViewerASCIIPopTab(self.vwr))
 
-    def useASCIITabs(self, flag: bool) -> None:
+    def useASCIITabs(self, flag: bool = True) -> None:
         """Enable/disable the use of ASCII tabs.
 
         Collective.

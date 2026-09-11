@@ -138,7 +138,7 @@ PetscErrorCode DMSwarmVectorGetField(DM sw, PetscInt *Nf, const char **fieldname
   Level: beginner
 
   Notes:
-  The field with name `fieldname` must be defined as having a data type of `PetscScalar`.
+  The field with name `fieldname` must have data type `PETSC_REAL` or `PETSC_SCALAR`.
 
   This function must be called prior to calling `DMCreateLocalVector()`, `DMCreateGlobalVector()`.
   Multiple calls to `DMSwarmVectorDefineField()` are permitted.
@@ -166,7 +166,7 @@ PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
   Level: beginner
 
   Notes:
-  Each field with name in `fieldnames` must be defined as having a data type of `PetscScalar`.
+  Each field with name in `fieldnames` must have data type `PETSC_REAL` or `PETSC_SCALAR`.
 
   This function must be called prior to calling `DMCreateLocalVector()`, `DMCreateGlobalVector()`.
   Multiple calls to `DMSwarmVectorDefineField()` are permitted.
@@ -183,6 +183,12 @@ PetscErrorCode DMSwarmVectorDefineFields(DM sw, PetscInt Nf, const char *fieldna
   if (fieldnames) PetscAssertPointer(fieldnames, 3);
   if (!swarm->issetup) PetscCall(DMSetUp(sw));
   PetscCheck(Nf >= 0, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_OUTOFRANGE, "Number of fields must be non-negative, not %" PetscInt_FMT, Nf);
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscDataType type;
+
+    PetscCall(DMSwarmGetFieldInfo(sw, fieldnames[f], NULL, &type));
+    PetscCheck(type == PETSC_REAL || type == PETSC_SCALAR, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", fieldnames[f], PetscDataTypes[type]);
+  }
   // Create a dummy cell DM if none has been specified (I think we should not support this mode)
   if (!swarm->activeCellDM) {
     DM            dm;
@@ -203,14 +209,7 @@ PetscErrorCode DMSwarmVectorDefineFields(DM sw, PetscInt Nf, const char *fieldna
 
   celldm->Nf = Nf;
   PetscCall(PetscMalloc1(Nf, &celldm->dmFields));
-  for (PetscInt f = 0; f < Nf; ++f) {
-    PetscDataType type;
-
-    // Check all fields are of type PETSC_REAL or PETSC_SCALAR
-    PetscCall(DMSwarmGetFieldInfo(sw, fieldnames[f], NULL, &type));
-    PetscCheck(type == PETSC_REAL, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
-    PetscCall(PetscStrallocpy(fieldnames[f], (char **)&celldm->dmFields[f]));
-  }
+  for (PetscInt f = 0; f < Nf; ++f) PetscCall(PetscStrallocpy(fieldnames[f], (char **)&celldm->dmFields[f]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -317,8 +316,9 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscFunctionBegin;
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &n, NULL, NULL));
-  PetscCall(DMSwarmGetField(dm, fieldname, &bs, &type, (void **)&array));
-  PetscCheck(type == PETSC_REAL, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
+  PetscCall(DMSwarmGetFieldInfo(dm, fieldname, &bs, &type));
+  PetscCheck(type == PETSC_SCALAR, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Field %s must have type PETSC_SCALAR, not %s", fieldname, PetscDataTypes[type]);
+  PetscCall(DMSwarmGetField(dm, fieldname, NULL, NULL, (void **)&array));
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscStrcmp(dm->vectype, VECKOKKOS, &iskokkos));
@@ -368,17 +368,29 @@ static PetscErrorCode DMSwarmDestroyVectorFromFields_Private(DM sw, PetscInt Nf,
   PetscCheck(n == swarm->db->L, PetscObjectComm((PetscObject)sw), PETSC_ERR_USER, "DMSwarm sizes have changed since vector was created - cannot ensure pointers are valid");
   PetscCall(VecGetArrayRead(*vec, &array));
   for (PetscInt f = 0, off = 0; f < Nf; ++f) {
-    PetscScalar  *farray;
+    void         *farray;
     PetscDataType ftype;
     PetscInt      fbs;
 
-    PetscCall(DMSwarmGetField(sw, fieldnames[f], &fbs, &ftype, (void **)&farray));
+    PetscCall(DMSwarmGetFieldInfo(sw, fieldnames[f], &fbs, &ftype));
+    PetscCheck(ftype == PETSC_REAL || ftype == PETSC_SCALAR, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", fieldnames[f], PetscDataTypes[ftype]);
+    PetscCall(DMSwarmGetField(sw, fieldnames[f], NULL, NULL, &farray));
     PetscCheck(off + fbs <= bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid blocksize %" PetscInt_FMT " < %" PetscInt_FMT, bs, off + fbs);
-    for (PetscInt i = 0; i < n; ++i) {
-      for (PetscInt b = 0; b < fbs; ++b) farray[i * fbs + b] = array[i * bs + off + b];
+    if (ftype == PETSC_REAL) {
+      PetscReal *rarray = (PetscReal *)farray;
+
+      for (PetscInt i = 0; i < n; ++i) {
+        for (PetscInt b = 0; b < fbs; ++b) rarray[i * fbs + b] = PetscRealPart(array[i * bs + off + b]);
+      }
+    } else {
+      PetscScalar *sarray = (PetscScalar *)farray;
+
+      for (PetscInt i = 0; i < n; ++i) {
+        for (PetscInt b = 0; b < fbs; ++b) sarray[i * fbs + b] = array[i * bs + off + b];
+      }
     }
     off += fbs;
-    PetscCall(DMSwarmRestoreField(sw, fieldnames[f], &fbs, &ftype, (void **)&farray));
+    PetscCall(DMSwarmRestoreField(sw, fieldnames[f], NULL, NULL, &farray));
   }
   PetscCall(VecRestoreArrayRead(*vec, &array));
   PetscCall(VecDestroy(vec));
@@ -400,7 +412,7 @@ static PetscErrorCode DMSwarmCreateVectorFromFields_Private(DM sw, PetscInt Nf, 
     PetscInt      fbs;
 
     PetscCall(DMSwarmGetFieldInfo(sw, fieldnames[f], &fbs, &ftype));
-    PetscCheck(ftype == PETSC_REAL, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Only valid for PETSC_REAL");
+    PetscCheck(ftype == PETSC_REAL || ftype == PETSC_SCALAR, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", fieldnames[f], PetscDataTypes[ftype]);
     bs += fbs;
   }
 
@@ -411,16 +423,26 @@ static PetscErrorCode DMSwarmCreateVectorFromFields_Private(DM sw, PetscInt Nf, 
 
   PetscCall(VecGetArrayWrite(*vec, &array));
   for (PetscInt f = 0, off = 0; f < Nf; ++f) {
-    PetscScalar  *farray;
+    void         *farray;
     PetscDataType ftype;
     PetscInt      fbs;
 
-    PetscCall(DMSwarmGetField(sw, fieldnames[f], &fbs, &ftype, (void **)&farray));
-    for (PetscInt i = 0; i < n; ++i) {
-      for (PetscInt b = 0; b < fbs; ++b) array[i * bs + off + b] = farray[i * fbs + b];
+    PetscCall(DMSwarmGetField(sw, fieldnames[f], &fbs, &ftype, &farray));
+    if (ftype == PETSC_REAL) {
+      const PetscReal *rarray = (const PetscReal *)farray;
+
+      for (PetscInt i = 0; i < n; ++i) {
+        for (PetscInt b = 0; b < fbs; ++b) array[i * bs + off + b] = rarray[i * fbs + b];
+      }
+    } else {
+      const PetscScalar *sarray = (const PetscScalar *)farray;
+
+      for (PetscInt i = 0; i < n; ++i) {
+        for (PetscInt b = 0; b < fbs; ++b) array[i * bs + off + b] = sarray[i * fbs + b];
+      }
     }
     off += fbs;
-    PetscCall(DMSwarmRestoreField(sw, fieldnames[f], &fbs, &ftype, (void **)&farray));
+    PetscCall(DMSwarmRestoreField(sw, fieldnames[f], &fbs, &ftype, &farray));
   }
   PetscCall(VecRestoreArrayWrite(*vec, &array));
 
@@ -1196,6 +1218,8 @@ static PetscErrorCode DMCreateGradientMatrix_Swarm(DM sw, DM dm, Mat *derv)
   Note:
   The vector must be returned using a matching call to `DMSwarmDestroyGlobalVectorFromField()`.
 
+  The field must have data type `PETSC_SCALAR`.
+
 .seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmDestroyGlobalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm, const char fieldname[], Vec *vec)
@@ -1249,6 +1273,8 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm, const char fieldname[]
   Note:
   The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
 
+  The field must have data type `PETSC_SCALAR`.
+
 .seealso: `DM`, `DMSWARM`, `DMSwarmRegisterPetscDatatypeField()`, `DMSwarmDestroyLocalVectorFromField()`
 @*/
 PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm, const char fieldname[], Vec *vec)
@@ -1299,6 +1325,9 @@ PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm, const char fieldname[],
 
   Notes:
   The vector must be returned using a matching call to `DMSwarmDestroyGlobalVectorFromFields()`.
+
+  All fields must have data type `PETSC_REAL` or `PETSC_SCALAR`. When PETSc is configured with complex scalars,
+  only the real part of vector entries is copied back to `PETSC_REAL` fields.
 
   This vector is copyin-copyout, rather than a direct pointer like `DMSwarmCreateGlobalVectorFromField()`
 
@@ -1356,6 +1385,9 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromFields(DM dm, PetscInt Nf, const ch
 
   Notes:
   The vector must be returned using a matching call to DMSwarmDestroyLocalVectorFromField().
+
+  All fields must have data type `PETSC_REAL` or `PETSC_SCALAR`. When PETSc is configured with complex scalars,
+  only the real part of vector entries is copied back to `PETSC_REAL` fields.
 
   This vector is copyin-copyout, rather than a direct pointer like `DMSwarmCreateLocalVectorFromField()`
 
@@ -1709,14 +1741,14 @@ PetscErrorCode DMSwarmAddCellDM(DM sw, DMSwarmCellDM celldm)
   for (PetscInt f = 0; f < celldm->Nfc; ++f) {
     PetscCall(DMSwarmDataFieldStringInList(celldm->coordFields[f], swarm->db->nfields, (const DMSwarmDataField *)swarm->db->field, &flg));
     if (!flg) {
-      PetscCall(DMSwarmRegisterPetscDatatypeField(sw, celldm->coordFields[f], dim, PETSC_DOUBLE));
+      PetscCall(DMSwarmRegisterPetscDatatypeField(sw, celldm->coordFields[f], dim, PETSC_REAL));
     } else {
       PetscDataType dt;
       PetscInt      bs;
 
       PetscCall(DMSwarmGetFieldInfo(sw, celldm->coordFields[f], &bs, &dt));
       PetscCheck(bs == dim, comm, PETSC_ERR_ARG_WRONG, "Coordinate field %s has blocksize %" PetscInt_FMT " != %" PetscInt_FMT " spatial dimension", celldm->coordFields[f], bs, dim);
-      PetscCheck(dt == PETSC_DOUBLE, comm, PETSC_ERR_ARG_WRONG, "Coordinate field %s has datatype %s != PETSC_DOUBLE", celldm->coordFields[f], PetscDataTypes[dt]);
+      PetscCheck(dt == PETSC_REAL, comm, PETSC_ERR_ARG_WRONG, "Coordinate field %s has datatype %s != PETSC_REAL", celldm->coordFields[f], PetscDataTypes[dt]);
     }
   }
   // Assume that DMs with the same name share the cellid field
@@ -2531,8 +2563,9 @@ static PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
 static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
 {
   PetscViewerFormat format;
+  PetscDataType     wtype = PETSC_DATATYPE_UNKNOWN;
   PetscInt         *sizes;
-  PetscInt          dim, Np, maxSize = 17;
+  PetscInt          dim, Np, wbs = 0, maxSize = 17;
   MPI_Comm          comm;
   PetscMPIInt       rank, size;
   const char       *name, *cellid;
@@ -2571,23 +2604,32 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
     const char   *fname = "w_q";
 
     PetscCall(DMSwarmDataFieldStringInList(fname, sw->db->nfields, (const DMSwarmDataField *)sw->db->field, &hasWeight));
+    if (hasWeight) {
+      PetscCall(DMSwarmGetFieldInfo(dm, fname, &wbs, &wtype));
+      PetscCheck(wtype == PETSC_REAL || wtype == PETSC_SCALAR, comm, PETSC_ERR_SUP, "Weight field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", fname, PetscDataTypes[wtype]);
+      PetscCheck(wbs == 1, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must have block size 1, not %" PetscInt_FMT, fname, wbs);
+    }
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells containing each particle:\n"));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
     PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
     PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&cell));
     if (hasWeight) {
-      PetscReal   *weight, **coords;
-      PetscInt     Ncf, *bsC, bs;
+      PetscReal  **coords;
+      void        *weight;
+      PetscInt     Ncf, *bsC;
       const char **coordNames;
 
       PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Ncf, &coordNames));
       PetscCall(PetscMalloc2(Ncf, &coords, Ncf, &bsC));
       for (PetscInt n = 0; n < Ncf; ++n) PetscCall(DMSwarmGetField(dm, coordNames[n], &bsC[n], NULL, (void **)&coords[n]));
-      PetscCall(DMSwarmGetField(dm, fname, &bs, NULL, (void **)&weight));
-      PetscCheck(bs == 1, comm, PETSC_ERR_ARG_WRONG, "The weight field must be a scalar");
+      PetscCall(DMSwarmGetField(dm, fname, NULL, NULL, &weight));
       for (PetscInt p = 0; p < Np; ++p) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT " wt: %g x: (", p, cell[p], (double)weight[p]));
+        PetscReal wp;
+
+        if (wtype == PETSC_REAL) wp = ((PetscReal *)weight)[p];
+        else wp = PetscRealPart(((PetscScalar *)weight)[p]);
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT " wt: %g x: (", p, cell[p], (double)wp));
         for (PetscInt n = 0; n < Ncf; ++n) {
           if (n > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
           for (PetscInt d = 0; d < bsC[n]; ++d) {
@@ -2597,7 +2639,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
         }
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ")\n"));
       }
-      PetscCall(DMSwarmRestoreField(dm, fname, NULL, NULL, (void **)&weight));
+      PetscCall(DMSwarmRestoreField(dm, fname, NULL, NULL, &weight));
       for (PetscInt n = 0; n < Ncf; ++n) PetscCall(DMSwarmRestoreField(dm, coordNames[n], &bsC[n], NULL, (void **)&coords[n]));
       PetscCall(PetscFree2(coords, bsC));
     } else {
@@ -2759,14 +2801,15 @@ PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm)
   Notes:
   The `moments` array should be of length bs + 2, where bs is the block size of the coordinate field.
 
-  The weight field must be a scalar, having blocksize 1.
+  The weight field must have blocksize 1 and data type `PETSC_REAL` or `PETSC_SCALAR`. For complex scalars,
+  only the real part of each weight is used.
 
 .seealso: `DM`, `DMSWARM`, `DMPlexComputeMoments()`
 @*/
 PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char weight[], PetscReal moments[])
 {
   const PetscReal *coords;
-  const PetscReal *w;
+  void            *weights;
   PetscDataType    dtc, dtw;
   PetscInt         bsc, bsw, Np;
   MPI_Comm         comm;
@@ -2777,17 +2820,21 @@ PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char 
   PetscAssertPointer(weight, 3);
   PetscAssertPointer(moments, 4);
   PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
-  PetscCall(DMSwarmGetField(sw, coordinate, &bsc, &dtc, (void **)&coords));
-  PetscCall(DMSwarmGetField(sw, weight, &bsw, &dtw, (void **)&w));
+  PetscCall(DMSwarmGetFieldInfo(sw, coordinate, &bsc, &dtc));
+  PetscCall(DMSwarmGetFieldInfo(sw, weight, &bsw, &dtw));
   PetscCheck(dtc == PETSC_REAL, comm, PETSC_ERR_ARG_WRONG, "Coordinate field %s must be real, not %s", coordinate, PetscDataTypes[dtc]);
-  PetscCheck(dtw == PETSC_REAL, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must be real, not %s", weight, PetscDataTypes[dtw]);
+  PetscCheck(dtw == PETSC_REAL || dtw == PETSC_SCALAR, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must have type PETSC_REAL or PETSC_SCALAR, not %s", weight, PetscDataTypes[dtw]);
   PetscCheck(bsw == 1, comm, PETSC_ERR_ARG_WRONG, "Weight field %s must be a scalar, not blocksize %" PetscInt_FMT, weight, bsw);
+  PetscCall(DMSwarmGetField(sw, coordinate, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(sw, weight, NULL, NULL, &weights));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(PetscArrayzero(moments, bsc + 2));
   for (PetscInt p = 0; p < Np; ++p) {
-    const PetscReal *c  = &coords[p * bsc];
-    const PetscReal  wp = w[p];
+    const PetscReal *c = &coords[p * bsc];
+    PetscReal        wp;
 
+    if (dtw == PETSC_REAL) wp = ((PetscReal *)weights)[p];
+    else wp = PetscRealPart(((PetscScalar *)weights)[p]);
     moments[0] += wp;
     for (PetscInt d = 0; d < bsc; ++d) {
       moments[d + 1] += wp * c[d];
@@ -2795,7 +2842,7 @@ PetscErrorCode DMSwarmComputeMoments(DM sw, const char coordinate[], const char 
     }
   }
   PetscCall(DMSwarmRestoreField(sw, coordinate, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmRestoreField(sw, weight, NULL, NULL, (void **)&w));
+  PetscCall(DMSwarmRestoreField(sw, weight, NULL, NULL, &weights));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, moments, bsc + 2, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

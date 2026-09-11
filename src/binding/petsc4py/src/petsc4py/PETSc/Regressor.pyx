@@ -225,7 +225,7 @@ cdef class Regressor(Object):
 
     # --- Linear ---
 
-    def setLinearFitIntercept(self, flag: bool) -> None:
+    def setLinearFitIntercept(self, flag: bool = True) -> None:
         """Set a flag to indicate that the intercept should be calculated.
 
         Logically collective.
@@ -237,7 +237,7 @@ cdef class Regressor(Object):
         cdef PetscBool fitintercept = flag
         CHKERR(PetscRegressorLinearSetFitIntercept(self.regressor, fitintercept))
 
-    def setLinearUseKSP(self, flag: bool) -> None:
+    def setLinearUseKSP(self, flag: bool = True) -> None:
         """Set a flag to indicate that `KSP` instead of `TAO` solvers should be used.
 
         Logically collective.
