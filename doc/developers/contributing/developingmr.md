@@ -70,6 +70,7 @@ $ git checkout -b yourname/fix-component-name origin/main
 
   For developers using agents, PETSc provides repository-specific instructions for LLM coding tools in `AGENTS.md` and reusable skills in `.agents/skills`.
   Claude Code loads `AGENTS.md` through `CLAUDE.md` and finds the same skills through the `.claude/skills` symbolic link.
+  The writing rules cover PETSc contribution materials and their drafts; they do not govern unrelated conversations or prescribe your conversational style.
 
   One of these skills integrates [CodeGraph](https://colbymchenry.github.io/codegraph/) with PETSc source navigation and review.
   CodeGraph is third-party software; it is not maintained or vetted by the PETSc team.

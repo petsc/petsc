@@ -26,13 +26,24 @@ If your tool does not load skills automatically, read `.agents/skills/codegraph/
 
 ## Core Working Rules
 
-- Preserve PETSc style and naming conventions.
-- Keep edits minimal and local to the requested change.
-- Match existing patterns in the package you are modifying before introducing a new one.
-- Avoid unnecessary code duplication. Prefer reusing or extending nearby logic when it keeps behavior clear and local.
-- Do not add speculative abstractions or broad refactors unless explicitly requested.
-- If you modify source, check whether test blocks, expected output files, or documentation need corresponding updates.
-- Never call `PetscFinalize()` inside an `if (...)` block, including early-return patterns like `if (flag) { ...; PetscFinalize(); return 0; }`. Arrange control flow so finalization happens exactly once on every normal exit path.
+- Keep edits minimal and local to the request. Read nearby code, preserve PETSc style, and reuse or extend existing logic. Do not add speculative abstractions or broad refactors unless requested.
+- When several APIs make the same decision, for example which implementation or strategy to select, implement it once in a private helper that also reports what it chose, and call that helper from each API.
+- Use PETSc accessors for object metadata instead of reconstructing internal layouts in callers or bindings. If metadata is missing, extend the owning API and document returned data's size, ownership, and lifetime. If only the documentation is unclear, clarify it.
+- Fix only what the task requires. Report other improvements you notice, in scripts, makefiles, tools, or documentation, to the user separately with the file path and expected benefit; do not put them in the patch, review findings, or MR comments unless asked.
+- For source changes, check test blocks, expected outputs, and documentation; include headers and examples for public interfaces. Run relevant checks and tests.
+- The user selects `PETSC_ARCH`; reuse the value already supplied for the task. Ask if it is missing before configuring or building PETSc or petsc4py, running PETSc-dependent tests or executables, or importing petsc4py; pass it explicitly and never infer or change it unless asked. Architecture-independent checks need no architecture. Targets managing a dedicated default architecture, such as `make docs`, are exempt when using that default.
+- A documentation audit or review does not authorize a documentation build; run it only when explicitly requested or approved for the task.
+- All changes are expected to arrive through focused, reviewable GitLab merge requests.
+
+## Writing PETSc Contribution Materials
+
+Apply these rules to PETSc contribution materials and their drafts: commit messages, MR
+descriptions, review reports and comments, documentation, and code comments. They do not govern
+unrelated conversations or prescribe the user's conversational style.
+
+- Lead with the result and why it matters. Make the text understandable without the drafting conversation; include relevant verification, limitations, and reproduction details.
+- Write clear, grammatical, concise prose for peer mathematicians and engineers. Explain unfamiliar terms, preserve PETSc terminology and exact API names, commands, and diagnostics, and remove repetition and boilerplate before presenting.
+- Prefer self-explanatory code. Use comments and docstrings for non-obvious behavior, correctness constraints, rationale, or required documentation. Preserve accurate comments; omit process narration and edit history.
 
 ## PETSc Naming And API Conventions
 
@@ -49,6 +60,7 @@ If your tool does not load skills automatically, read `.agents/skills/codegraph/
   - Backticks are for rendered documentation only. In ordinary `/* */` and `//` comments, including the header comment of a tutorial or test, the option-name stays **bare** — no tutorial or test in the tree backticks one. The enumerated-value and plain-word rules above still apply there.
 - Function typedef names should end in `Fn`.
 - `MPI_Comm_size()` → local `size`; `MPI_Comm_rank()` → `rank`. No prefixed variants (`comm_size`, `nprocs`). If `size` is taken, rename the other local.
+- Reserve the `_p_` prefix for struct tags associated with PETSc objects, such as `_p_Mat`; other struct tags must not use it.
 
 ## PETSc Data Type Rules
 
@@ -60,30 +72,64 @@ If your tool does not load skills automatically, read `.agents/skills/codegraph/
 
 ## C Coding Style
 
-- Formatting is controlled by `.clang-format`. Use `make clangformat` when needed.
-- CI also checks source rules with `make checkbadSource`.
+- Format changed C/C++ files in PETSc's formatting set with the repository's `.clang-format` and required clang-format version.
 - Header prototypes should not include parameter names, but function typedef declarations should.
-- The local-declaration block is one contiguous group at the top of the routine: variables grouped by type (all `PetscInt`s adjacent, all `PetscReal`s adjacent, etc.), no mixed pointer arities on a single line, no blank lines or section comments splitting the block. Initialize in the declaration when practical. Exactly one blank line separates the block from `PetscFunctionBegin`/`PetscFunctionBeginUser`.
-- PETSc example functions, including `main()`, should begin with `PetscFunctionBeginUser` after declarations.
+- The declaration block at the top of a routine or nested scope is one contiguous group: variables grouped by type (all `PetscInt`s adjacent, all `PetscReal`s adjacent, etc.), no mixed pointer arities on a single line, no blank lines or section comments splitting the block. Initialize in the declaration when practical. Exactly one blank line separates the block from the first statement, including `PetscFunctionBegin`/`PetscFunctionBeginUser` at routine scope.
+- In PETSc tutorials and tests, `main()` and all functions returning `PetscErrorCode` must begin with `PetscFunctionBeginUser` after declarations.
 - Functions that begin with `PetscFunctionBegin` must return with `PetscFunctionReturn(...)` or `PetscFunctionReturnVoid()`, not raw `return`.
 - For `PetscErrorCode` functions, return `PetscFunctionReturn(PETSC_SUCCESS)` on success.
 - Wrap PETSc calls with `PetscCall(...)`. For external library calls, use the appropriate PETSc wrapper such as `PetscCallExternal()` or package-specific variants.
-- Single-statement `if`/`else` blocks must omit braces.
 - Do not leave commented-out code or dead `#ifdef` blocks in source files.
 - Use `/* ... */` for multiline comments and `// ...` for short single-line comments.
 - Do not decorate multiline comments with leading `*` on each line.
 - Always append `()` to function names when mentioning them in comments, for example `MatAssemblyEnd_MPIAIJ()`.
-- Use correct grammar and spelling in comments and messages.
-- Follow C90-style declarations at the start of a block. The only allowed exceptions are (a) loop indices in `for (...)` initializers and (b) declarations introducing a genuinely new nested `{ ... }` scope. Do **not** sprinkle `const T x = ...;` lines between statements — even after an early-return guard. Hoist all locals to the top of the function and assign them after the guards.
+- Follow C90-style declarations at the start of their enclosing block. Prefer declaring variables used only within a genuinely new nested `{ ... }` scope at the beginning of that scope. The only other allowed exception is a loop index in a `for (...)` initializer. Do **not** sprinkle `const T x = ...;` lines between statements, including after an early-return guard.
+
+### Braces on single-statement if/else
+
+Omit braces around any `if`, `else if`, or `else` branch whose body is one statement. Check each
+branch independently, including an `else` paired with a multi-statement `if`:
+
+```c
+// Incorrect
+if (type == TYPE_A) {
+  stmt1;
+  stmt2;
+} else {
+  SETERRQ(comm, PETSC_ERR_SUP, "unsupported");
+}
+// Correct
+if (type == TYPE_A) {
+  stmt1;
+  stmt2;
+} else SETERRQ(comm, PETSC_ERR_SUP, "unsupported");
+```
 
 ## Error Handling And PETSc Idioms
 
 - Most PETSc functions return `PetscErrorCode`.
-- Use `PetscFunctionBegin`/`PetscFunctionBeginUser` and `PetscFunctionReturn(...)` consistently.
 - Check object validity and arguments using the usual PETSc validation macros when working in code paths that already use them.
-- Reuse existing PETSc utility routines and macros before adding custom helpers.
 - Do not wrap `PetscCheck()` in an outer `if (...)` when the condition can be expressed directly in the check. Prefer a single guard such as `PetscCheck(!use_mms || sw->Ax == sw->Ay, ...)` over `if (use_mms) PetscCheck(sw->Ax == sw->Ay, ...)`.
 - Do not call `MatAssemblyBegin()`/`MatAssemblyEnd()` after `MatDenseRestoreArray*()` or `MatDenseRestoreColumnVec*()`. The Get/Restore pair is the assembled write path for dense matrices — the matrix stays assembled across it. Adding "just to be safe" assembly is wrong, not defensive. Assembly is only needed after `MatSetValues()`-style entry, where deferred stashing actually requires a flush.
+
+### PetscFinalize inside conditional
+
+Never call `PetscFinalize()` inside an `if` block. Arrange one finalization on every normal exit
+path, including when a mode bypasses the main computation:
+
+```c
+// Incorrect
+if (test_spatial_order) {
+  PetscCall(TestSpatialOrder(comm, &sw));
+  PetscCall(PetscFinalize());
+  return 0;
+}
+// Correct
+if (test_spatial_order) PetscCall(TestSpatialOrder(comm, &sw));
+else PetscCall(RunForwardModel(comm, &sw));
+PetscCall(PetscFinalize());
+return 0;
+```
 
 ## Kokkos / Device Code
 
@@ -150,72 +196,6 @@ When in doubt, pattern-match against existing well-formatted docstrings in the s
 - `make test search='<pattern>'` - run tests matching a pattern
 - `make alltests TIMEOUT=600` - run the full suite with an extended timeout
 - `make branch-review [PETSC_LLM_CLI=command] [PETSC_LLM_MODEL=modelname]` - run AI-assisted review on the current branch. `PETSC_LLM_CLI` defaults to `claude`
-
-## Merge Request Expectations
-
-- All changes are expected to arrive through GitLab merge requests.
-- Keep diffs reviewable and focused.
-- Before concluding work, consider whether formatting, source-style checks, and at least one relevant test should be run.
-- If you cannot run the appropriate verification in the current environment, say so explicitly.
-
-## Practical Agent Guidance
-
-- Read nearby code before editing so new code matches local conventions.
-- When touching PETSc C code, check for consistent use of `PetscCall`, `PetscFunctionBegin`, naming, and test coverage.
-- When touching tutorials or tests, inspect neighboring files for the expected `/*TEST*/` structure and output-file conventions.
-- When touching public interfaces, check whether headers, docs, and examples need updates.
-- Prefer citing exact file paths and commands in your responses.
-
-## Anti-Patterns (MUST avoid when writing or reviewing)
-
-### PetscFinalize inside conditional
-
-WRONG — finalization inside an early-return `if`:
-```c
-if (test_spatial_order) {
-  PetscCall(TestSpatialOrder(comm, &sw));
-  PetscCall(PetscFinalize());
-  return 0;
-}
-```
-RIGHT — finalization on the single exit path:
-```c
-if (test_spatial_order) PetscCall(TestSpatialOrder(comm, &sw));
-else PetscCall(RunForwardModel(comm, &sw));
-PetscCall(PetscFinalize());
-return 0;
-```
-
-### Braces on single-statement if/else
-
-WRONG:
-```c
-if (radius <= 0.0) {
-  return 0.0;
-}
-```
-RIGHT:
-```c
-if (radius <= 0.0) return 0.0;
-```
-
-This also applies to `else` blocks paired with multi-statement `if` — check each branch independently:
-WRONG:
-```c
-  if (type == TYPE_A) {
-    stmt1;
-    stmt2;
-  } else {
-    SETERRQ(comm, PETSC_ERR_SUP, "unsupported");
-  }
-```
-RIGHT:
-```c
-  if (type == TYPE_A) {
-    stmt1;
-    stmt2;
-  } else SETERRQ(comm, PETSC_ERR_SUP, "unsupported");
-```
 
 ## Key References
 
