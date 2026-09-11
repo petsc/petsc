@@ -88,7 +88,7 @@ $ git checkout -b yourname/fix-component-name origin/main
   | `petsc-docs` | Audit or build PETSc and petsc4py documentation. |
 
   For example, a request to configure PETSc can select `petsc-configure` directly; a request to build and test petsc4py can use `petsc-build` and `petsc-test`.
-  Shared repository rules stay in `AGENTS.md`, and each skill contains its task's procedure.
+  Shared repository rules stay in `AGENTS.md` and its conditional convention references; each skill contains its task's procedure.
 
   The optional `agents/openai.yaml` inside a skill contains OpenAI-specific metadata.
   PETSc uses its `interface` fields for the display name, short description, and suggested invocation prompt in the Codex UI.

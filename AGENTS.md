@@ -2,7 +2,7 @@
 
 PETSc is a C library for parallel numerical computation using MPI. The codebase is primarily C, with Python bindings in `src/binding/petsc4py/`.
 
-Shared rules are below; optional skills provide task procedures through the coding tool's skill system. Respect the user's skill settings, including for references between skills; do not load disabled skills through direct file reads.
+Shared rules are below; optional skills provide task procedures through the coding tool's skill system. Respect the user's skill settings, including for references between skills; do not load disabled skills through direct file reads. Read conditional convention references explicitly when relevant.
 
 ## Project Layout
 
@@ -26,6 +26,19 @@ Shared rules are below; optional skills provide task procedures through the codi
 - The user selects `PETSC_ARCH`; reuse the value already supplied for the task. Ask if it is missing before configuring or building PETSc or petsc4py, running PETSc-dependent tests or executables, or importing petsc4py; pass it explicitly and never infer or change it unless asked. Architecture-independent checks need no architecture. Targets managing a dedicated default architecture, such as `make docs`, are exempt when using that default.
 - A documentation audit or review does not authorize a documentation build; run it only when explicitly requested or approved for the task.
 - All changes are expected to arrive through focused, reviewable GitLab merge requests.
+
+## Conditional Conventions
+
+Before working on any of the following, read its convention reference. Load only the references
+relevant to the task, including during reviews and when no build or lint check will run.
+Reread this file or a convention reference only if it changed or is no longer in context.
+
+| Task | Reference |
+| --- | --- |
+| New features, API changes, or documentation edits/reviews | [Documentation](.agents/conventions/documentation.md) |
+| C API docstrings (`/*@ ... @*/`) | [C docstrings](.agents/conventions/c-docstrings.md) |
+| Kokkos code | [Kokkos](.agents/conventions/kokkos.md) |
+| petsc4py source or tests | [petsc4py](.agents/conventions/petsc4py.md) |
 
 ## Writing PETSc Contribution Materials
 
@@ -122,43 +135,6 @@ else PetscCall(RunForwardModel(comm, &sw));
 PetscCall(PetscFinalize());
 return 0;
 ```
-
-## Kokkos / Device Code
-
-For an unreachable guard (a `default:` arm or "can't happen" branch) inside a `KOKKOS_INLINE_FUNCTION`, use `Kokkos::abort("message")`. `SETERRQ`/`SETERRABORT` are not device-callable.
-
-When a persistent workspace view is processed in chunks, only build a `Kokkos::subview` for the active range when a consumer actually reads the view extent (e.g. `KokkosBatched::TeamVectorGMRES` infers batch size from `view.extent(0)`). If every kernel is bounded by an explicit count parameter (`RangePolicy(0, n_active)`, or a function arg like `n_batch`), pass the full-capacity view directly — the subview adds no safety and obscures intent.
-
-## Docstring Conventions (`/*@ ... @*/`)
-
-`petsclinter` (run by `make lint`) enforces docstring formatting.
-
-- **Section order.** Sections in `/*@ ... @*/` always appear in this order:
-  1. One-line synopsis (`FunctionName - one-line description`)
-  2. Collectivity (`Collective`, `Logically Collective`, `Not Collective`, `Asynchronous`)
-  3. `Input Parameter(s):`
-  4. `Output Parameter(s):`
-  5. `Options Database Key(s):`
-  6. `Level:`  ← always before Notes
-  7. `Notes:` / `Note:`
-  8. `Example Usage:`
-  9. `Fortran Notes:`
-  10. `.seealso:`
-
-Two recurring traps the linter catches:
-
-- **Param-list alignment.** In `Input Parameters:` / `Output Parameters:` blocks, every entry's `-` must sit exactly one space past the longest valid argument name. With args `da, xyz, bd, H` (longest is `xyz`), the correct form is:
-  ```
-  + da  - the `PetscDA` context
-  . xyz - array of coordinate vectors
-  . bd  - array of periodic-domain extents
-  - H   - the observation operator
-  ```
-  Continuation lines for a multi-line description must be indented to line up under the description (i.e., the column right after `- `), not under the argument name.
-
-- **Stray paragraphs in `Notes:`.** A colon-less line is flagged as a possible section header (`-fdoc-section-header-maybe-header`) only when it *begins with a section title* — `Note`, `Notes`, `Level`, `Collective`, `Input Parameter`, `Output Parameter`, `Options Database`, `Example Usage`, `Fortran Notes`, `Developer Note`, and the like. Ordinary prose starting with any other capitalized word ("When", "If", "The") is fine, blank line or not. If a paragraph does start with a section title, rephrase it or fold it into the preceding paragraph.
-
-When in doubt, pattern-match against existing well-formatted docstrings in the same file. `make lint` requires the `clang` Python package; if it isn't installed, eyeball the alignment carefully before pushing.
 
 ## Key References
 
