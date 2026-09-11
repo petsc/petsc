@@ -2100,7 +2100,7 @@ static PetscErrorCode MatZeroRows_SeqAIJ(Mat A, PetscInt N, const PetscInt rows[
 static PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A, PetscInt N, const PetscInt rows[], PetscScalar diagv, Vec x, Vec b)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
-  PetscInt           i, j, m = A->rmap->n - 1, d = 0;
+  PetscInt           i, j, m = A->rmap->n - 1;
   PetscBool         *zeroed, vecs = PETSC_FALSE;
   const PetscScalar *xx;
   PetscScalar       *bb, *aa;
@@ -2141,8 +2141,7 @@ static PetscErrorCode MatZeroRowsColumns_SeqAIJ(Mat A, PetscInt N, const PetscIn
   if (diagv != 0.0) {
     if (!diagDense) {
       for (i = 0; i < N; i++) {
-        if (rows[i] >= A->cmap->N) continue;
-        PetscCheck(!a->nonew || rows[i] < d, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix is missing diagonal entry in row %" PetscInt_FMT " (%" PetscInt_FMT ")", d, rows[i]);
+        if (rows[i] >= A->cmap->N || rows[i] < 0) continue;
         PetscCall(MatSetValues_SeqAIJ(A, 1, &rows[i], 1, &rows[i], &diagv, INSERT_VALUES));
       }
     } else {
