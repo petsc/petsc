@@ -72,6 +72,29 @@ $ git checkout -b yourname/fix-component-name origin/main
   Claude Code loads `AGENTS.md` through `CLAUDE.md` and finds the same skills through the `.claude/skills` symbolic link.
   The writing rules cover PETSc contribution materials and their drafts; they do not govern unrelated conversations or prescribe your conversational style.
 
+  Each skill has a `SKILL.md` with a name, a description that helps the tool select it, and instructions loaded when the task needs them.
+  This is the [Agent Skills format](https://agentskills.io/specification), supported by [Codex](https://developers.openai.com/codex/skills/) and [Claude Code](https://code.claude.com/docs/en/skills).
+  Other tools can use the instructions if they support the format and are configured to discover this directory, or are explicitly told to read the relevant file.
+  Skill selection follows your coding tool's discovery and enablement settings; `AGENTS.md` does not require loading disabled skills.
+
+  The development skills are organized by task, with PETSc and petsc4py procedures together where they share that task:
+
+  | Skill | Use |
+  | --- | --- |
+  | `petsc-configure` | Choose configure options, configure, or reconfigure PETSc. |
+  | `petsc-build` | Build PETSc libraries, Fortran bindings, or petsc4py. |
+  | `petsc-test` | Select, run, and diagnose tests or update expected output. |
+  | `petsc-lint` | Format source and run PETSc or petsc4py source checks. |
+  | `petsc-docs` | Audit or build PETSc and petsc4py documentation. |
+
+  For example, a request to configure PETSc can select `petsc-configure` directly; a request to build and test petsc4py can use `petsc-build` and `petsc-test`.
+  Shared repository rules stay in `AGENTS.md`, and each skill contains its task's procedure.
+
+  The optional `agents/openai.yaml` inside a skill contains OpenAI-specific metadata.
+  PETSc uses its `interface` fields for the display name, short description, and suggested invocation prompt in the Codex UI.
+  These files do not define or launch subagents, choose a model, or implement the PETSc workflow; the instructions remain in `SKILL.md`.
+  Claude Code uses the shared skills without needing this metadata.
+
   One of these skills integrates [CodeGraph](https://colbymchenry.github.io/codegraph/) with PETSc source navigation and review.
   CodeGraph is third-party software; it is not maintained or vetted by the PETSc team.
   Install the CodeGraph CLI with `npx @colbymchenry/codegraph`.
@@ -80,9 +103,8 @@ $ git checkout -b yourname/fix-component-name origin/main
   Then run `codegraph init` from the PETSc repository root to create the local `.codegraph/` index, which is ignored by Git.
   CodeGraph's installer enables anonymous usage telemetry by default; opt out with `codegraph telemetry off`, `CODEGRAPH_TELEMETRY=0`, or the cross-tool `DO_NOT_TRACK=1`.
   After installation completes, restart your agent/LLM CLI session so the CodeGraph MCP server loads.
-  When the index exists, `AGENTS.md` directs compatible LLM coding tools to load the CodeGraph skill before navigating source, so set this up before you start writing code rather than afterward.
-  If the index does not exist, they continue without it.
-  This applies to general development work and to `make branch-review`, whose review skill follows `AGENTS.md`.
+  When enabled in your coding tool, the CodeGraph skill provides PETSc-specific guidance for source navigation and review using the index.
+  If the index does not exist, the skill uses ordinary repository inspection.
 
 - For any new features or API changes you introduced add information on them to `doc/changes/dev.md`.
 
@@ -162,13 +184,14 @@ $ git checkout -b yourname/fix-component-name origin/main
   ```
 
   CLI refers to a command line interface tool such as `claude` that runs Claude Code.
+  The default is `claude`; set `PETSC_LLM_CLI` to select another tool.
   `claude`, `gemini`, `codex`, and `opencode` are supported directly. For other LLM CLIs, you must export `PETSC_LLM_CLI_OPTS` with the appropriate value to make the CLI run
   the command-line request; for example, `PETSC_LLM_CLI_OPTS=--prompt`.
 
   When possible (this depends on the capabilities of the LLM CLI), `make branch-review` runs interactively and leaves the terminal in the LLM CLI when the review is complete.
   This allows users to issue additional commands to the LLM CLI, such as requesting that it fix certain issues it may have detected in the review.
 
-  `make branch-review` follows the repository-specific `AGENTS.md` instructions, including the CodeGraph skill set up in {any}`Develop your code <sec_develop_your_code>`.
+  `make branch-review` follows the repository-specific `AGENTS.md` instructions. It can use the optional CodeGraph skill described in {any}`Develop your code <sec_develop_your_code>` when enabled in your coding tool.
 
 (sec_clean_commit_history)=
 

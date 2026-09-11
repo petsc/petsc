@@ -2,7 +2,7 @@
 
 PETSc is a C library for parallel numerical computation using MPI. The codebase is primarily C, with Python bindings in `src/binding/petsc4py/`.
 
-This file must be self-contained. Do not rely on linked Markdown files being read automatically. The essential repo guidance is embedded below.
+Shared rules are below; optional skills provide task procedures through the coding tool's skill system. Respect the user's skill settings, including for references between skills; do not load disabled skills through direct file reads.
 
 ## Project Layout
 
@@ -15,14 +15,6 @@ This file must be self-contained. Do not rely on linked Markdown files being rea
 - `src/binding/petsc4py/` - Python bindings and packaging logic
 - `config/` - configure, build, and test harness generation
 - `doc/` - user and developer documentation
-
-## CodeGraph
-
-If `.codegraph/` exists at the repository root, use the `codegraph` skill before grep/find or reading files when you need to locate or understand PETSc C, C++, or Python code, including during development and review.
-The skill contains the PETSc-specific instructions for source navigation, runtime dispatch, and blast-radius analysis.
-CodeGraph snippets are read-equivalent for understanding code, but always read files directly before editing them.
-If the index does not exist, or no CodeGraph tool or CLI is available, skip CodeGraph and continue with the usual tools; indexing is the user's decision.
-If your tool does not load skills automatically, read `.agents/skills/codegraph/SKILL.md` directly before querying the index.
 
 ## Core Working Rules
 
@@ -167,35 +159,6 @@ Two recurring traps the linter catches:
 - **Stray paragraphs in `Notes:`.** A colon-less line is flagged as a possible section header (`-fdoc-section-header-maybe-header`) only when it *begins with a section title* — `Note`, `Notes`, `Level`, `Collective`, `Input Parameter`, `Output Parameter`, `Options Database`, `Example Usage`, `Fortran Notes`, `Developer Note`, and the like. Ordinary prose starting with any other capitalized word ("When", "If", "The") is fine, blank line or not. If a paragraph does start with a section title, rephrase it or fold it into the preceding paragraph.
 
 When in doubt, pattern-match against existing well-formatted docstrings in the same file. `make lint` requires the `clang` Python package; if it isn't installed, eyeball the alignment carefully before pushing.
-
-## Testing Requirements
-
-- PETSc tests are described in `/*TEST ... TEST*/` blocks at the bottom of source files.
-- If behavior changes, update the test block and expected output files under the local `output/` directory when needed.
-- Common test block keys include:
-  - `test` or `testset`
-  - `suffix`
-  - `nsize`
-  - `args`
-  - `requires`
-  - `output_file`
-  - `filter` and `filter_output`
-  - `localrunfiles`
-  - `temporaries`
-  - `timeoutfactor`
-  - `env`
-- Use `requires:` for runtime requirements such as packages, precision, `!complex`, or `datafilespath`.
-- Expected output normally lives in `output/<testname>.out` relative to the source file.
-- Keep tests targeted. Add or update the narrowest test that proves the behavior you changed.
-
-## Build And Test Commands
-
-- `make clangformat` - format source
-- `make checkclangformat` - verify formatting
-- `make checkbadSource` - run PETSc source-style checks
-- `make test search='<pattern>'` - run tests matching a pattern
-- `make alltests TIMEOUT=600` - run the full suite with an extended timeout
-- `make branch-review [PETSC_LLM_CLI=command] [PETSC_LLM_MODEL=modelname]` - run AI-assisted review on the current branch. `PETSC_LLM_CLI` defaults to `claude`
 
 ## Key References
 

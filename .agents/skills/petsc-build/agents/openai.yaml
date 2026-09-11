@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build PETSc and petsc4py"
+  short_description: "Build PETSc libraries and Python bindings"
+  default_prompt: "Use $petsc-build to build PETSc or petsc4py using the PETSC_ARCH I supply."
