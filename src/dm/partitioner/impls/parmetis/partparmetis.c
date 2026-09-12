@@ -5,8 +5,8 @@
   #include <parmetis.h>
 #endif
 
-PetscBool  ParMetisPartitionerCite       = PETSC_FALSE;
-const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
+PetscBool  ParMETISPartitionerCite       = PETSC_FALSE;
+const char ParMETISPartitionerCitation[] = "@article{KarypisKumar98,\n"
                                            "  author  = {George Karypis and Vipin Kumar},\n"
                                            "  title   = {A Parallel Algorithm for Multilevel Graph Partitioning and Sparse Matrix Ordering},\n"
                                            "  journal = {Journal of Parallel and Distributed Computing},\n"
@@ -22,13 +22,13 @@ typedef struct {
   PetscReal imbalanceRatio;
   PetscInt  debugFlag;
   PetscInt  randomSeed;
-} PetscPartitioner_ParMetis;
+} PetscPartitioner_ParMETIS;
 
 static const char *ptypes[] = {"kway", "rb"};
 
-static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
+static PetscErrorCode PetscPartitionerDestroy_ParMETIS(PetscPartitioner part)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&p->pcomm));
@@ -36,9 +36,9 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer)
+static PetscErrorCode PetscPartitionerView_ParMETIS_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -50,7 +50,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
+static PetscErrorCode PetscPartitionerView_ParMETIS(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool isascii;
 
@@ -58,13 +58,13 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) PetscCall(PetscPartitionerView_ParMetis_ASCII(part, viewer));
+  if (isascii) PetscCall(PetscPartitionerView_ParMETIS_ASCII(part, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_ParMETIS(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMETIS Options");
@@ -76,10 +76,10 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+static PetscErrorCode PetscPartitionerPartition_ParMETIS(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
 #if PetscDefined(HAVE_PARMETIS)
-  PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *pm = (PetscPartitioner_ParMETIS *)part->data;
   MPI_Comm                   comm;
   PetscInt                   nvtxs = numVertices;     /* The number of vertices in full graph */
   PetscInt                  *vtxdist;                 /* Distribution of vertices across processes */
@@ -212,14 +212,14 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 #endif
 }
 
-static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
+static PetscErrorCode PetscPartitionerInitialize_ParMETIS(PetscPartitioner part)
 {
   PetscFunctionBegin;
   part->noGraph             = PETSC_FALSE;
-  part->ops->view           = PetscPartitionerView_ParMetis;
-  part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMetis;
-  part->ops->destroy        = PetscPartitionerDestroy_ParMetis;
-  part->ops->partition      = PetscPartitionerPartition_ParMetis;
+  part->ops->view           = PetscPartitionerView_ParMETIS;
+  part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMETIS;
+  part->ops->destroy        = PetscPartitionerDestroy_ParMETIS;
+  part->ops->partition      = PetscPartitionerPartition_ParMETIS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -239,9 +239,9 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMETIS(PetscPartitioner part)
 {
-  PetscPartitioner_ParMetis *p;
+  PetscPartitioner_ParMETIS *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
   p->debugFlag      = 0;
   p->randomSeed     = -1; /* defaults to GLOBAL_SEED=15 from `libparmetis/defs.h` */
 
-  PetscCall(PetscPartitionerInitialize_ParMetis(part));
-  PetscCall(PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionerCite));
+  PetscCall(PetscPartitionerInitialize_ParMETIS(part));
+  PetscCall(PetscCitationsRegister(ParMETISPartitionerCitation, &ParMETISPartitionerCite));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -20,6 +20,7 @@
 - Change the macros `PetscCallHDF5()`, `PetscCallHDF5ReturnNoCheck()`, `PetscCallHDF5Return()`, `PetscCallEGADS()`, `PetscCallSAWs()`, `PetscCallP4est()`, and
   `PetscCallP4estReturn()` to be variadic and take the function arguments directly without requiring the parentheses that previously wrapped the function
   arguments. For functions that take no arguments, a trailing comma after the function name is required per previous C standards
+- Change all use of Metis in the PETSc API to use METIS
 
 ## Configure/Build
 
@@ -112,6 +113,8 @@
 - Change `MatSetValues()` for `MATMPISELL` to skip, rather than error on, a new off-diagonal location when `MatSetOption(mat, MAT_NEW_NONZERO_LOCATIONS, PETSC_FALSE)` was called, matching `MATMPIAIJ`
 - Fix `MatSetValues()` for `MATMPIAIJ` to decide the `MAT_IGNORE_ZERO_ENTRIES` diagonal exemption from the global row and column, not from the indices local to the diagonal block. The two differ only when the row and column layouts differ, where a zero off the diagonal could wrongly create a location and a zero on the diagonal could wrongly be dropped
 - Add device support for `MATPRODUCT_AB` with a `MATMPIAIJCUSPARSE`, `MATMPIAIJHIPSPARSE`, or `MATMPIAIJKOKKOS` matrix and a `MATMPIDENSECUDA` or `MATMPIDENSEHIP` matrix; the off-process rows of the dense matrix are communicated with a `PetscSF` directly from device memory and the off-diagonal contribution uses the device sparse-dense product, also with `-matproduct_batch_size`
+- Deprecate `MatPartitioningParmetisSetRepartition()`, `MatPartitioningParmetisSetCoarseSequential()`, and `MatPartitioningParmetisGetEdgeCut()` in favor of
+  `MatPartitioningParMETISSetRepartition()`, `MatPartitioningParMETISSetCoarseSequential()`, and `MatPartitioningParMETISGetEdgeCut()`
 
 ## MatCoarsen
 

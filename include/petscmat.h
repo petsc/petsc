@@ -1899,9 +1899,22 @@ PETSC_EXTERN PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning, Pets
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning, MatPartitioningType *);
 
-PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning);
-PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
-PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
+PETSC_EXTERN PetscErrorCode MatPartitioningParMETISSetRepartition(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningParMETISSetCoarseSequential(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningParMETISGetEdgeCut(MatPartitioning, PetscInt *);
+
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "MatPartitioningParMETISSetRepartition()", ) static inline PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
+{
+  return MatPartitioningParMETISSetRepartition(part);
+}
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "MatPartitioningParMETISSetCoarseSequential()", ) static inline PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
+{
+  return MatPartitioningParMETISSetCoarseSequential(part);
+}
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "MatPartitioningParMETISGetEdgeCut()", ) static inline PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
+{
+  return MatPartitioningParMETISGetEdgeCut(part, cut);
+}
 
 /*E
    MPChacoGlobalType - Global partitioning method used by `MATPARTITIONINGCHACO` when delegating to the Chaco library

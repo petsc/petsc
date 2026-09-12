@@ -4,7 +4,7 @@
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning);
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning);
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_ParMETIS(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Hierarchical(MatPartitioning);
 #if PetscDefined(HAVE_CHACO)
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning);
@@ -17,10 +17,10 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 #endif
 
 #if PetscDefined(HAVE_PARMETIS)
-PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Parmetis(Mat, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_ParMETIS(Mat, PetscInt, Mat *);
 #endif
 #if PetscDefined(HAVE_METIS)
-PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Metis(Mat, PetscInt, Mat *);
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_METIS(Mat, PetscInt, Mat *);
 #endif
 
 /*@
@@ -43,7 +43,7 @@ PetscErrorCode MatPartitioningRegisterAll(void)
   PetscCall(MatPartitioningRegister(MATPARTITIONINGSQUARE, MatPartitioningCreate_Square));
   PetscCall(MatPartitioningRegister(MATPARTITIONINGHIERARCH, MatPartitioningCreate_Hierarchical));
 #if PetscDefined(HAVE_PARMETIS)
-  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARMETIS, MatPartitioningCreate_Parmetis));
+  PetscCall(MatPartitioningRegister(MATPARTITIONINGPARMETIS, MatPartitioningCreate_ParMETIS));
 #endif
 #if PetscDefined(HAVE_CHACO)
   PetscCall(MatPartitioningRegister(MATPARTITIONINGCHACO, MatPartitioningCreate_Chaco));
@@ -73,10 +73,10 @@ PetscErrorCode MatMeshToCellGraphRegisterAll(void)
   MatMeshToCellGraphRegisterAllCalled = PETSC_TRUE;
 
 #if PetscDefined(HAVE_PARMETIS)
-  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHPARMETIS, MatMeshToCellGraph_Parmetis));
+  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHPARMETIS, MatMeshToCellGraph_ParMETIS));
 #endif
 #if PetscDefined(HAVE_METIS)
-  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHMETIS, MatMeshToCellGraph_Metis));
+  PetscCall(MatMeshToCellGraphRegister(MATMESHTOCELLGRAPHMETIS, MatMeshToCellGraph_METIS));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

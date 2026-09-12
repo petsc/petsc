@@ -151,7 +151,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
    * */
   PetscCall(MatPartitioningSetType(part, MATPARTITIONINGPARMETIS));
   /* try to use reparition function, instead of partition function */
-  PetscCall(MatPartitioningParmetisSetRepartition(part));
+  PetscCall(MatPartitioningParMETISSetRepartition(part));
 #else
   /* we at least provide a default partitioner to rebalance the computation  */
   PetscCall(MatPartitioningSetType(part, MATPARTITIONINGAVERAGE));

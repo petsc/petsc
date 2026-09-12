@@ -205,7 +205,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
 
   Example Usage:
 .vb
-   MatMeshToCellGraphRegister("metis", MatMeshToCellGraph_Metis);
+   MatMeshToCellGraphRegister("metis", MatMeshToCellGraph_METIS);
 .ve
 
   Then, the converter can be selected at runtime via the option `-mat_mesh_to_cell_graph_type metis`

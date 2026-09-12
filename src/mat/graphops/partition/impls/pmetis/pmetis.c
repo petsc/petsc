@@ -12,11 +12,11 @@ typedef struct {
   PetscInt  indexing; /* 0 indicates C indexing, 1 Fortran */
   PetscInt  printout; /* indicates if one wishes METIS to print info */
   PetscBool repartition;
-} MatPartitioning_Parmetis;
+} MatPartitioning_ParMETIS;
 
-static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part, PetscBool useND, PetscBool isImprove, IS *partitioning)
+static PetscErrorCode MatPartitioningApply_ParMETIS_Private(MatPartitioning part, PetscBool useND, PetscBool isImprove, IS *partitioning)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
   PetscInt                 *locals = NULL;
   Mat                       mat    = part->adj, amat, pmat;
   PetscBool                 flg;
@@ -191,36 +191,36 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
 /*
    Uses the ParMETIS parallel matrix partitioner to compute a nested dissection ordering of the matrix in parallel
 */
-static PetscErrorCode MatPartitioningApplyND_Parmetis(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningApplyND_ParMETIS(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
-  PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_TRUE, PETSC_FALSE, partitioning));
+  PetscCall(MatPartitioningApply_ParMETIS_Private(part, PETSC_TRUE, PETSC_FALSE, partitioning));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
-static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningApply_ParMETIS(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
-  PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_FALSE, PETSC_FALSE, partitioning));
+  PetscCall(MatPartitioningApply_ParMETIS_Private(part, PETSC_FALSE, PETSC_FALSE, partitioning));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
    Uses the ParMETIS to improve the quality  of a partition
 */
-static PetscErrorCode MatPartitioningImprove_Parmetis(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningImprove_ParMETIS(MatPartitioning part, IS *partitioning)
 {
   PetscFunctionBegin;
-  PetscCall(MatPartitioningApply_Parmetis_Private(part, PETSC_FALSE, PETSC_TRUE, partitioning));
+  PetscCall(MatPartitioningApply_ParMETIS_Private(part, PETSC_FALSE, PETSC_TRUE, partitioning));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer viewer)
+static PetscErrorCode MatPartitioningView_ParMETIS(MatPartitioning part, PetscViewer viewer)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
   PetscMPIInt               rank;
   PetscBool                 isascii;
 
@@ -243,7 +243,7 @@ static PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscVi
 }
 
 /*@
-  MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
+  MatPartitioningParMETISSetCoarseSequential - Use the sequential code to
   do the partitioning of the coarse grid.
 
   Logically Collective
@@ -255,9 +255,9 @@ static PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscVi
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
-PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
+PetscErrorCode MatPartitioningParMETISSetCoarseSequential(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   pmetis->parallel = 1;
@@ -265,7 +265,7 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 }
 
 /*@
-  MatPartitioningParmetisSetRepartition - Repartition
+  MatPartitioningParMETISSetRepartition - Repartition
   current mesh to rebalance computation.
 
   Logically Collective
@@ -277,9 +277,9 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
-PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
+PetscErrorCode MatPartitioningParMETISSetRepartition(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   pmetis->repartition = PETSC_TRUE;
@@ -287,7 +287,7 @@ PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
 }
 
 /*@
-  MatPartitioningParmetisGetEdgeCut - Returns the number of edge cuts in the vertex partition.
+  MatPartitioningParMETISGetEdgeCut - Returns the number of edge cuts in the vertex partition.
 
   Input Parameter:
 . part - the partitioning context
@@ -299,32 +299,32 @@ PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part)
 
 .seealso: `MATPARTITIONINGPARMETIS`
 @*/
-PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
+PetscErrorCode MatPartitioningParMETISGetEdgeCut(MatPartitioning part, PetscInt *cut)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   *cut = pmetis->cuts;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_ParMETIS(MatPartitioning part, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Set ParMETIS partitioning options");
-  PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential", "Use sequential coarse partitioner", "MatPartitioningParmetisSetCoarseSequential", flag, &flag, NULL));
-  if (flag) PetscCall(MatPartitioningParmetisSetCoarseSequential(part));
-  PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_repartition", "", "MatPartitioningParmetisSetRepartition", flag, &flag, NULL));
-  if (flag) PetscCall(MatPartitioningParmetisSetRepartition(part));
+  PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential", "Use sequential coarse partitioner", "MatPartitioningParMETISSetCoarseSequential", flag, &flag, NULL));
+  if (flag) PetscCall(MatPartitioningParMETISSetCoarseSequential(part));
+  PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_repartition", "", "MatPartitioningParMETISSetRepartition", flag, &flag, NULL));
+  if (flag) PetscCall(MatPartitioningParMETISSetRepartition(part));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
+static PetscErrorCode MatPartitioningDestroy_ParMETIS(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
+  MatPartitioning_ParMETIS *pmetis = (MatPartitioning_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(pmetis));
@@ -347,13 +347,13 @@ static PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
    Note:
     See https://www-users.cs.umn.edu/~karypis/metis/
 
-.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningParmetisSetCoarseSequential()`, `MatPartitioningParmetisSetRepartition()`,
-          `MatPartitioningParmetisGetEdgeCut()`
+.seealso: `MatPartitioningSetType()`, `MatPartitioningType`, `MatPartitioningParMETISSetCoarseSequential()`, `MatPartitioningParMETISSetRepartition()`,
+          `MatPartitioningParMETISGetEdgeCut()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_ParMETIS(MatPartitioning part)
 {
-  MatPartitioning_Parmetis *pmetis;
+  MatPartitioning_ParMETIS *pmetis;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&pmetis));
@@ -366,19 +366,19 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
   pmetis->printout    = 0;   /* print no output while running */
   pmetis->repartition = PETSC_FALSE;
 
-  part->ops->apply          = MatPartitioningApply_Parmetis;
-  part->ops->applynd        = MatPartitioningApplyND_Parmetis;
-  part->ops->improve        = MatPartitioningImprove_Parmetis;
-  part->ops->view           = MatPartitioningView_Parmetis;
-  part->ops->destroy        = MatPartitioningDestroy_Parmetis;
-  part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
+  part->ops->apply          = MatPartitioningApply_ParMETIS;
+  part->ops->applynd        = MatPartitioningApplyND_ParMETIS;
+  part->ops->improve        = MatPartitioningImprove_ParMETIS;
+  part->ops->view           = MatPartitioningView_ParMETIS;
+  part->ops->destroy        = MatPartitioningDestroy_ParMETIS;
+  part->ops->setfromoptions = MatPartitioningSetFromOptions_ParMETIS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
    Uses the ParMETIS package to convert a mesh to a cell graph via ParMETIS_V3_Mesh2Dual()
 */
-PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Parmetis(Mat mesh, PetscInt ncommonnodes, Mat *dual)
+PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_ParMETIS(Mat mesh, PetscInt ncommonnodes, Mat *dual)
 {
   PetscInt   *newxadj, *newadjncy;
   PetscInt    numflag = 0;

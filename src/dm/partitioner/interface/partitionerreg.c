@@ -44,7 +44,7 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
 }
 
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Multistage(PetscPartitioner);
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMETIS(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner);
@@ -67,7 +67,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
   if (PetscPartitionerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscPartitionerRegisterAllCalled = PETSC_TRUE;
 
-  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMetis));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPARMETIS, PetscPartitionerCreate_ParMETIS));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERPTSCOTCH, PetscPartitionerCreate_PTScotch));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERCHACO, PetscPartitionerCreate_Chaco));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERSIMPLE, PetscPartitionerCreate_Simple));
