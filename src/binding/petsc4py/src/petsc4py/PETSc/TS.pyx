@@ -253,6 +253,8 @@ cdef class TS(Object):
         """
         cdef TS ts = TS()
         CHKERR(TSClone(self.ts, &ts.ts))
+        # TSClone() shares callback contexts owned by the source's dictionary.
+        ts.set_attr('__clone_context__', self.get_dict())
         return ts
 
     def setType(self, ts_type: Type | str) -> None:
