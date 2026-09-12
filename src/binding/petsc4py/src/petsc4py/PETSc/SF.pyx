@@ -277,6 +277,7 @@ cdef class SF(Object):
         cdef PetscInt nremote = 0
         cdef PetscInt *ilocal = NULL
         cdef PetscSFNode* iremote = NULL
+        remote = PyArray_FROM_OTF(remote, NPY_PETSC_INT, NPY_ARRAY_CARRAY_RO)
         remote = iarray_i(remote, &nremote, <PetscInt**>&iremote)
         if local is not None:
             local = iarray_i(local, &nleaves, &ilocal)
