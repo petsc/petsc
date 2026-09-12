@@ -23,8 +23,19 @@ cdef class MatPartitioning(Object):
         self.obj = <PetscObject*> &self.part
         self.part = NULL
 
-    def __call__(self):
-        return self.getValue()
+    def __call__(self) -> IS:
+        """Compute and return a partitioning of the adjacency graph.
+
+        Collective.
+
+        See Also
+        --------
+        apply, petsc.MatPartitioningApply
+
+        """
+        cdef IS partitioning = IS()
+        self.apply(partitioning)
+        return partitioning
 
     def view(self, Viewer viewer=None) -> None:
         """View the partitioning data structure.
