@@ -380,9 +380,11 @@ class BaseTestMatAnyAIJ:
         (S1,) = self.A.createSubMatrices([rows], [cols])
         (S2,) = self.A.createSubMatrices([rows], [cols])
         self.assertTrue(S1.equal(S2))
-        S2.zeroEntries()
-        self.A.createSubMatrices([rows], [cols], [S2])
-        self.assertTrue(S1.equal(S2))
+        for submats in ([S2], S2):
+            S2.zeroEntries()
+            (reused,) = self.A.createSubMatrices([rows], [cols], submats)
+            self.assertIs(reused, S2)
+            self.assertTrue(S1.equal(S2))
         S1.destroy()
         S2.destroy()
 

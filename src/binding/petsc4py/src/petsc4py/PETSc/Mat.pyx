@@ -4264,7 +4264,7 @@ cdef class Mat(Object):
         for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
         if submats is not None:
             reuse = MAT_REUSE_MATRIX
-            submats = list(submats)
+            submats = [submats] if isinstance(submats, Mat) else list(submats)
             if len(submats) != len(isrows):
                 raise ValueError("number of submatrices must match number of index set pairs")
             CHKERR(PetscMalloc(<size_t>(n+1)*sizeof(PetscMat), &cmats))
