@@ -12,15 +12,8 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 */
 
 #include <petscsys.h>
+#include <petsc/private/matparmetisimpl.h>
 #include <parmetis.h>
-
-#define PetscCallPARMETIS(...) \
-  do { \
-    int metis_ierr = __VA_ARGS__; \
-    PetscCheck(metis_ierr != METIS_ERROR_INPUT, PETSC_COMM_SELF, PETSC_ERR_LIB, "ParMETIS error due to wrong inputs and/or options"); \
-    PetscCheck(metis_ierr != METIS_ERROR_MEMORY, PETSC_COMM_SELF, PETSC_ERR_LIB, "ParMETIS error due to insufficient memory"); \
-    PetscCheck(metis_ierr != METIS_ERROR, PETSC_COMM_SELF, PETSC_ERR_LIB, "ParMETIS general error"); \
-  } while (0)
 
 int main(int argc, char *argv[])
 {
@@ -101,7 +94,7 @@ int main(int argc, char *argv[])
   options[4] = 0;
 
   PetscCallMPI(MPI_Comm_dup(MPI_COMM_WORLD, &comm));
-  PetscCallPARMETIS(ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec, options, &edgecut, part, &comm));
+  PetscCallParMETIS(ParMETIS_V3_PartGeomKway, vtxdist, xadj, adjncy, vwgt, NULL, &wgtflag, &numflag, &ndims, sxyz, &ncon, &isize, tpwgts, ubvec, options, &edgecut, part, &comm);
   PetscCallMPI(MPI_Comm_free(&comm));
 
   PetscCall(PetscFree(vtxdist));
