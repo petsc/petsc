@@ -218,6 +218,8 @@ cdef class SF(Object):
         Not collective.
 
         The number of leaves can be determined from the size of ``ilocal``.
+        If the graph has not been set, ``nroots`` is ``-1`` and the index
+        arrays are empty.
 
         Returns
         -------
@@ -239,6 +241,7 @@ cdef class SF(Object):
         cdef const PetscInt *ilocal = NULL
         cdef const PetscSFNode *iremote = NULL
         CHKERR(PetscSFGetGraph(self.sf, &nroots, &nleaves, &ilocal, &iremote))
+        if nleaves < 0: nleaves = 0
         if ilocal == NULL:
             local = arange(0, nleaves, 1)
         else:
