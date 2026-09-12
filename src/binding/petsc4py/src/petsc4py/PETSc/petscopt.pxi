@@ -193,6 +193,17 @@ cdef getpair(prefix, name, const char **pr, const char **nm):
     nm[0] = n
     return (prefix, name)
 
+cdef getprefixedname(prefix, name, const char **key):
+    # Build the full option name, including its leading hyphen.
+    cdef const char *pr = NULL
+    cdef const char *nm = NULL
+    cdef object unused = getpair(prefix, name, &pr, &nm)
+    if pr == NULL:
+        option = bytes2str(nm)
+    else:
+        option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
+    return str2bytes(option, key)
+
 cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
     cdef const char *pr = NULL
     cdef const char *nm = NULL

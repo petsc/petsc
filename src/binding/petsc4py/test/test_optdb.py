@@ -56,6 +56,19 @@ class TestOptions(unittest.TestCase):
             self.assertEqual(getopt(k), v)
         self._delopts()
 
+    def testUsed(self):
+        for prefix in (None, self.PREFIX):
+            opts = PETSc.Options(prefix).create()
+            for name in ('value', '-value'):
+                with self.subTest(prefix=prefix, name=name):
+                    opts.setValue(name, 7)
+                    self.assertFalse(opts.used(name))
+                    self.assertEqual(opts.getInt(name), 7)
+                    self.assertTrue(opts.used(name))
+                    opts.delValue(name)
+                    self.assertFalse(opts.used(name))
+            opts.destroy()
+
     def testGetAll(self):
         self._putopts()
         allopts = self.opts.getAll()
