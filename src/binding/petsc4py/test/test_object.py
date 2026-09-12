@@ -57,6 +57,15 @@ class BaseTestObject:
         ## self.assertRaises(PETSc.Error, self.obj.destroy)
         ## self.assertTrue(self.obj.this is this)
 
+    def testRecreate(self):
+        old = copy.copy(self.obj)
+        obj = getattr(self.obj, self.FACTORY)(*self.TARGS, **self.KARGS)
+        self.assertIs(obj, self.obj)
+        self.assertNotEqual(old, self.obj)
+        self.assertEqual(old.getRefCount(), 1)
+        self.assertEqual(self.obj.getRefCount(), 1)
+        old.destroy()
+
     def testOptions(self):
         self.assertFalse(self.obj.getOptionsPrefix())
         prefix1 = 'my_'

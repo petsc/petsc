@@ -86,7 +86,9 @@ cdef class Random(Object):
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR(PetscRandomCreate(ccomm, &self.rnd))
+        cdef PetscRandom newrnd = NULL
+        CHKERR(PetscRandomCreate(ccomm, &newrnd))
+        CHKERR(PetscCLEAR(self.obj)); self.rnd = newrnd
         return self
 
     def setType(self, rnd_type: Random.Type | str) -> None:

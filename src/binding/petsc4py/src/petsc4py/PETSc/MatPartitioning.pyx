@@ -74,7 +74,9 @@ cdef class MatPartitioning(Object):
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR(MatPartitioningCreate(ccomm, &self.part))
+        cdef PetscMatPartitioning newpart = NULL
+        CHKERR(MatPartitioningCreate(ccomm, &newpart))
+        CHKERR(PetscCLEAR(self.obj)); self.part = newpart
         return self
 
     def setType(self, matpartitioning_type: Type | str) -> None:
