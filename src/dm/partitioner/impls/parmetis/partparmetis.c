@@ -1,6 +1,7 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
-
+#include <petsc/private/matmetisimpl.h>
 #if PetscDefined(HAVE_PARMETIS)
+  #include <petsc/private/matparmetisimpl.h>
   #include <parmetis.h>
 #endif
 
@@ -157,29 +158,18 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   for (p = 0; !vtxdist[p + 1] && p < size; ++p);
   if (vtxdist[p + 1] == vtxdist[size]) {
     if (rank == p) {
-      int err;
-      err                          = METIS_SetDefaultOptions(options); /* initialize all defaults */
+      PetscCallMETIS(METIS_SetDefaultOptions, options);
       options[METIS_OPTION_DBGLVL] = pm->debugFlag;
       options[METIS_OPTION_SEED]   = pm->randomSeed;
-      PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
-      if (metis_ptype == 1) {
-        PetscStackPushExternal("METIS_PartGraphRecursive");
-        err = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
-        PetscStackPop;
-        PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
-      } else {
-        /*
-         It would be nice to activate the two options below, but they would need some actual testing.
-         - Turning on these options may exercise path of the METIS code that have bugs and may break production runs.
-         - If CONTIG is set to 1, METIS will exit with error if the graph is disconnected, despite the manual saying the option is ignored in such case.
-        */
-        /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
-        /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
-        PetscStackPushExternal("METIS_PartGraphKway");
-        err = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
-        PetscStackPop;
-        PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
-      }
+      /*
+        It would be nice to activate the two METIS_PartGraphKway() options below, but they would need some actual testing.
+        - Turning on these options may exercise path of the METIS code that have bugs and may break production runs.
+        - If CONTIG is set to 1, METIS will exit with error if the graph is disconnected, despite the manual saying the option is ignored in such case.
+      */
+      /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
+      /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
+      if (metis_ptype == 1) PetscCallMETIS(METIS_PartGraphRecursive, &nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
+      else PetscCallMETIS(METIS_PartGraphKway, &nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
     }
   } else {
     MPI_Comm pcomm = pm->pcomm;
@@ -199,13 +189,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         }
       }
     }
-    if (nvtxs) {
-      int err;
-      PetscStackPushExternal("ParMETIS_V3_PartKway");
-      err = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
-      PetscStackPop;
-      PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
-    }
+    if (nvtxs) PetscCallParMETIS(ParMETIS_V3_PartKway, vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
     if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
   }
 

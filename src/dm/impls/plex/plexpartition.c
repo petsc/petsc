@@ -1,5 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <petsc/private/partitionerimpl.h>
+#include <petsc/private/matmetisimpl.h>
+#include <petsc/private/matparmetisimpl.h>
 #include <petsc/private/hashseti.h>
 
 const char *const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_", NULL};
@@ -1659,7 +1661,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 {
 #if PetscDefined(HAVE_PARMETIS)
   PetscSF            sf;
-  PetscInt           ierr, i, j, idx, jdx;
+  PetscInt           i, j, idx, jdx;
   PetscInt           eBegin, eEnd, nroots, nleafs, pStart, pEnd;
   const PetscInt    *degrees, *ilocal;
   const PetscSFNode *iremote;
@@ -1868,19 +1870,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscCall(PetscViewerASCIIPrintf(viewer, "THIS DOES NOT WORK! I don't know why. Using current distribution of points as initial guess.\n"));
       for (i = 0; i < numRows; i++) part[i] = rank;
       if (viewer) PetscCall(PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n"));
-      PetscStackPushExternal("ParMETIS_V3_RefineKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      ierr = ParMETIS_V3_RefineKway((PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      PetscCallParMETIS(ParMETIS_V3_RefineKway, (PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_RefineKway()");
     } else {
-      PetscStackPushExternal("ParMETIS_V3_PartKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      ierr = ParMETIS_V3_PartKway((PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      PetscCallParMETIS(ParMETIS_V3_PartKway, (PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
     }
     PetscCall(MatRestoreRowIJ(A, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &numRows, &xadj, &adjncy, &done));
     PetscCall(PetscFree(options));
@@ -1917,13 +1913,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       }
 
       PetscCall(PetscMalloc1(64, &options));
-      ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
+      PetscCallMETIS(METIS_SetDefaultOptions, options);
       options[METIS_OPTION_CONTIG] = 1;
-      PetscStackPushExternal("METIS_PartGraphKway");
-      ierr = METIS_PartGraphKway(&numRows_g, &ncon, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
+      PetscCallMETIS(METIS_PartGraphKway, &numRows_g, &ncon, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscCall(PetscFree(options));
       PetscCall(PetscFree(vtxwgt_g));
       PetscCall(MatRestoreRowIJ(As, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &numRows_g, &xadj, &adjncy, &done));
