@@ -1159,6 +1159,7 @@ cdef class Mat(Object):
                 CHKERR(MatCreateMPIAIJWithArrays(
                     ccomm, m, n, M, N, i, j, v, &newmat))
                 csr = None
+        CHKERR(MatSetBlockSizes(newmat, rbs, cbs))
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         self.set_attr('__csr__', csr)
         return self
