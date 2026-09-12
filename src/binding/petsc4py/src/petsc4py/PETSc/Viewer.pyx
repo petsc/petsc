@@ -120,7 +120,7 @@ cdef class Viewer(Object):
 
     # backward compatibility
     Mode = ViewerFileMode
-    Size = ViewerFileMode
+    Size = ViewerDrawSize
 
     #
 
