@@ -189,6 +189,22 @@ class TestDMShell(unittest.TestCase):
         self.assertIsInstance(context.exception.__cause__, ValueError)
         self.assertRegex(str(context.exception.__cause__), 'same length')
 
+    def testFieldDecompositionNames(self):
+        def decompose(dm, names):
+            return names, None, None
+
+        expected = ['velocity', 'pressure']
+        for sequence in (list, tuple):
+            with self.subTest(sequence=sequence.__name__):
+                names = sequence(expected)
+                self.dm.setCreateFieldDecomposition(decompose, args=(names,))
+                self.dm.setUp()
+                result, ises, dms = self.dm.createFieldDecomposition()
+                self.assertEqual(result, expected)
+                self.assertEqual(list(names), expected)
+                self.assertEqual(ises, [None, None])
+                self.assertEqual(dms, [None, None])
+
     def testGlobalToLocal(self):
         def begin(dm, ivec, mode, ovec):
             if mode == PETSc.InsertMode.INSERT_VALUES:
