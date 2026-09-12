@@ -2544,7 +2544,7 @@ To use these solvers, one may:
 
 1. Run `configure` with the additional options
    `--download-packagename` e.g. `--download-superlu_dist`
-   `--download-parmetis` (SuperLU_DIST needs ParMetis) or
+   `--download-parmetis` (SuperLU_DIST needs ParMETIS) or
    `--download-mumps` `--download-scalapack` (MUMPS requires
    ScaLAPACK).
 2. Build the PETSc libraries.

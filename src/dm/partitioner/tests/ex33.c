@@ -174,7 +174,7 @@ finally:
     nsize: {{1 2}}
     args: -petscpartitioner_type parmetis -part_view
     args: -petscpartitioner_parmetis_type {{kway rb}separate output}
-    filter: grep "ParMetis type"
+    filter: grep "ParMETIS type"
 
   test:
     requires: ptscotch

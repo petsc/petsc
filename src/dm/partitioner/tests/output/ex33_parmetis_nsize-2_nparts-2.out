@@ -6,7 +6,7 @@ Graph Partitioner: 2 MPI Processes
   balance: 0
   use vertex weights: 1
   use edge weights: 0
-  ParMetis type: kway
+  ParMETIS type: kway
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
@@ -34,7 +34,7 @@ Graph Partitioner: 2 MPI Processes
   balance: 0
   use vertex weights: 1
   use edge weights: 0
-  ParMetis type: kway
+  ParMETIS type: kway
   load imbalance ratio 1.05
   debug flag 0
   random seed -1
@@ -66,7 +66,7 @@ Graph Partitioner: 2 MPI Processes
   balance: 0
   use vertex weights: 1
   use edge weights: 0
-  ParMetis type: kway
+  ParMETIS type: kway
   load imbalance ratio 1.05
   debug flag 0
   random seed -1

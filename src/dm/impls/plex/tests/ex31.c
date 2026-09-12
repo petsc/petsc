@@ -6,8 +6,8 @@ static char FILENAME[] = "ex31.c";
 #include <petscsf.h>
 
 typedef struct {
-  PetscBool parallel;        /* Use ParMetis or Metis */
-  PetscBool useInitialGuess; /* Only active when in parallel, uses RefineKway of ParMetis */
+  PetscBool parallel;        /* Use ParMETIS or METIS */
+  PetscBool useInitialGuess; /* Only active when in parallel, uses RefineKway of ParMETIS */
   PetscInt  entityDepth;     /* depth of the entities to rebalance ( 0 => vertices) */
 } AppCtx;
 
@@ -20,8 +20,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-entity_depth", "Depth of the entities to rebalance (0 => vertices)", FILENAME, options->entityDepth, &options->entityDepth, NULL, 0));
-  PetscCall(PetscOptionsBool("-parallel", "Use ParMetis instead of Metis", FILENAME, options->parallel, &options->parallel, NULL));
-  PetscCall(PetscOptionsBool("-use_initial_guess", "Use RefineKway function of ParMetis", FILENAME, options->useInitialGuess, &options->useInitialGuess, NULL));
+  PetscCall(PetscOptionsBool("-parallel", "Use ParMETIS instead of METIS", FILENAME, options->parallel, &options->parallel, NULL));
+  PetscCall(PetscOptionsBool("-use_initial_guess", "Use RefineKway function of ParMETIS", FILENAME, options->useInitialGuess, &options->useInitialGuess, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

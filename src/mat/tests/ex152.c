@@ -4,7 +4,7 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 
 /*
   Implements two tests for a bug reported in ParMETIS. These tests are not expected to pass without the
-  patches in the PETSc distribution of ParMetis. See parmetis.py
+  patches in the PETSc distribution of ParMETIS. See parmetis.py
 
  The bug was reported upstream, but has received no action so far.
 
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
-  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Parmetis test options", "");
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ParMETIS test options", "");
   PetscCall(PetscOptionsString("-prefix", "Path and prefix of test file", "", prefix, prefix, sizeof(prefix), &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must specify -prefix");
   PetscOptionsEnd();

@@ -72,7 +72,7 @@ PETSc interfaces to many external software packages including:
   University;
   <http://www.sbsi-sol-optimize.com/>
 - MATLAB
-- Metis/ParMeTiS - parallel graph partitioner,
+- METIS/ParMETIS - parallel graph partitioner,
   <https://www-users.cs.umn.edu/~karypis/metis/>
 - MUMPS - MUltifrontal Massively Parallel sparse direct
   Solver developed by Patrick Amestoy, Iain Duff, Jacko Koster, and

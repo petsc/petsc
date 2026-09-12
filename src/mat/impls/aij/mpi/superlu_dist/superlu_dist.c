@@ -881,7 +881,7 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A, PetscViewer viewer)
   case MMD_ATA:
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Column permutation MMD_ATA\n"));
     break;
-  /*  Even though this is called METIS, the SuperLU_DIST code sets this by default if PARMETIS is defined, not METIS */
+  /*  Even though this is called METIS, the SuperLU_DIST code sets this by default if ParMETIS is defined, not METIS */
   case METIS_AT_PLUS_A:
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Column permutation METIS_AT_PLUS_A\n"));
     break;

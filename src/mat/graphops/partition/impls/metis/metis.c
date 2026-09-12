@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode MatMeshToCellGraph_Metis(Mat mesh, PetscInt ncommonn
   PetscCheck(flg, comm, PETSC_ERR_SUP, "Must use MPIAdj matrix type");
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size == 1, comm, PETSC_ERR_SUP, "MatMeshToCellGraph_Metis() requires a sequential matrix (communicator size must be 1)");
+  PetscCheck(size == 1, comm, PETSC_ERR_WRONG_MPI_SIZE, "MatMeshToCellGraph_Metis() requires a sequential matrix (communicator size must be 1)");
 
   {
     idx_t ne = mesh->rmap->N;

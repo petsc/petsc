@@ -41,7 +41,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "ParMETIS type: %s\n", ptypes[p->ptype]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double)p->imbalanceRatio));
   PetscCall(PetscViewerASCIIPrintf(viewer, "debug flag %" PetscInt_FMT "\n", p->debugFlag));
   PetscCall(PetscViewerASCIIPrintf(viewer, "random seed %" PetscInt_FMT "\n", p->randomSeed));
@@ -66,7 +66,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMetis Options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMETIS Options");
   PetscCall(PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL));
   PetscCall(PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL));
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL));
@@ -188,7 +188,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     options[1] = pm->debugFlag;
     options[2] = (pm->randomSeed == -1) ? 15 : pm->randomSeed; /* default is GLOBAL_SEED=15 from `libparmetis/defs.h` */
 
-    if (hasempty) { /* parmetis does not support empty graphs on some of the processes */
+    if (hasempty) { /* ParMETIS does not support empty graphs on some of the processes */
       PetscInt cnt;
 
       PetscCallMPI(MPI_Comm_split(pm->pcomm, !!nvtxs, rank, &pcomm));

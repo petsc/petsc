@@ -1,20 +1,16 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 
-/*
-   Currently using ParMetis-4.0.2
-*/
-
 #include <parmetis.h>
 
 /*
-      The first 5 elements of this structure are the input control array to Metis
+      The first 5 elements of this structure are the input control array to METIS
 */
 typedef struct {
   PetscInt  cuts; /* number of cuts made (output) */
   PetscInt  foldfactor;
   PetscInt  parallel; /* use parallel partitioner for coarse problem */
   PetscInt  indexing; /* 0 indicates C indexing, 1 Fortran */
-  PetscInt  printout; /* indicates if one wishes Metis to print info */
+  PetscInt  printout; /* indicates if one wishes METIS to print info */
   PetscBool repartition;
 } MatPartitioning_Parmetis;
 
@@ -75,7 +71,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt rstart;
       PetscCall(MatGetOwnershipRange(pmat, &rstart, NULL));
       for (i = 0; i < pmat->rmap->n; i++) {
-        for (j = xadj[i]; j < xadj[i + 1]; j++) PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; Parmetis forbids diagonal entry", i + rstart);
+        for (j = xadj[i]; j < xadj[i + 1]; j++) PetscCheck(adjncy[j] != i + rstart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Row %" PetscInt_FMT " has diagonal entry; ParMETIS forbids diagonal entry", i + rstart);
       }
     }
 
@@ -334,7 +330,7 @@ static PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning par
   PetscBool flag = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "Set ParMeTiS partitioning options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "Set ParMETIS partitioning options");
   PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_coarse_sequential", "Use sequential coarse partitioner", "MatPartitioningParmetisSetCoarseSequential", flag, &flag, NULL));
   if (flag) PetscCall(MatPartitioningParmetisSetCoarseSequential(part));
   PetscCall(PetscOptionsBool("-mat_partitioning_parmetis_repartition", "", "MatPartitioningParmetisSetRepartition", flag, &flag, NULL));
@@ -361,7 +357,7 @@ static PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 .  part - the partitioning context
 
    Options Database Key:
-.  -mat_partitioning_parmetis_coarse_sequential - use sequential PARMETIS coarse partitioner
+.  -mat_partitioning_parmetis_coarse_sequential - use sequential ParMETIS coarse partitioner
 
    Level: beginner
 

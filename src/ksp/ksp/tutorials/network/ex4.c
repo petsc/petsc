@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     PetscCall(DMNetworkGetPlex(dmnetwork, &plexdm));
     PetscCall(DMPlexGetPartitioner(plexdm, &part));
     PetscCall(PetscPartitionerSetType(part, PETSCPARTITIONERSIMPLE));
-    PetscCall(PetscOptionsSetValue(NULL, "-dm_plex_csr_alg", "mat")); /* for parmetis */
+    PetscCall(PetscOptionsSetValue(NULL, "-dm_plex_csr_alg", "mat")); /* for ParMETIS */
   }
 
   /* Setup dmnetwork */
