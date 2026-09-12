@@ -232,6 +232,11 @@ class TestObjectIS(BaseTestObject, unittest.TestCase):
     TARGS = ([],)
 
 
+class TestObjectSection(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Section
+    FACTORY = 'create'
+
+
 class TestObjectLGMap(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.LGMap
     FACTORY = 'create'

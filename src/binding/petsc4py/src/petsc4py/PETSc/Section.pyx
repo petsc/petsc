@@ -93,6 +93,18 @@ cdef class Section(Object):
         CHKERR(PetscSectionClone(self.sec, &sec.sec))
         return sec
 
+    def setFromOptions(self) -> None:
+        """Set section parameters from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscSectionSetFromOptions
+
+        """
+        CHKERR(PetscSectionSetFromOptions(self.sec))
+
     def setUp(self) -> None:
         """Calculate offsets.
 
