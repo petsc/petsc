@@ -150,12 +150,19 @@ cdef class MatPartitioning(Object):
         For each local node this tells the processor number that that node is
         assigned to.
 
+        Parameters
+        ----------
+        partitioning
+            Output index set. Its previous contents are replaced.
+
         See Also
         --------
         petsc.MatPartitioningApply
 
         """
-        CHKERR(MatPartitioningApply(self.part, &partitioning.iset))
+        cdef PetscIS newiset = NULL
+        CHKERR(MatPartitioningApply(self.part, &newiset))
+        CHKERR(PetscCLEAR(partitioning.obj)); partitioning.iset = newiset
 
 # --------------------------------------------------------------------
 
