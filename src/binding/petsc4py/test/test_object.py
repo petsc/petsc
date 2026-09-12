@@ -102,6 +102,7 @@ class BaseTestObject:
                     'ISLocalToGlobalMapping',
                     'MatPartitioning',
                     'MatNullSpace',
+                    'PetscQuadrature',
                     'PetscRandom',
                     'PetscViewer',
                 ]
@@ -337,10 +338,11 @@ class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
 # class TestObjectFE(BaseTestObject, unittest.TestCase):
 #     CLASS  = PETSc.FE
 #     FACTORY = 'create'
-#
-# class TestObjectQuad(BaseTestObject, unittest.TestCase):
-#     CLASS  = PETSc.Quad
-#     FACTORY = 'create'
+
+
+class TestObjectQuad(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Quad
+    FACTORY = 'create'
 
 
 class TestObjectDMLabel(BaseTestObject, unittest.TestCase):

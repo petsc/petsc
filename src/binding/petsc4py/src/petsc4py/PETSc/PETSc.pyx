@@ -525,6 +525,7 @@ cdef extern from * nogil:
     PetscClassId PETSC_DS_CLASSID               "PETSCDS_CLASSID"
     PetscClassId PETSC_PARTITIONER_CLASSID      "PETSCPARTITIONER_CLASSID"
     PetscClassId PETSC_FE_CLASSID               "PETSCFE_CLASSID"
+    PetscClassId PETSC_QUADRATURE_CLASSID       "PETSCQUADRATURE_CLASSID"
     PetscClassId PETSC_DMLABEL_CLASSID          "DMLABEL_CLASSID"
     PetscClassId PETSC_SPACE_CLASSID            "PETSCSPACE_CLASSID"
     PetscClassId PETSC_DUALSPACE_CLASSID        "PETSCDUALSPACE_CLASSID"
@@ -582,6 +583,7 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_DM_CLASSID,               DM)
     PyPetscType_Register(PETSC_DS_CLASSID,               DS)
     PyPetscType_Register(PETSC_FE_CLASSID,               FE)
+    PyPetscType_Register(PETSC_QUADRATURE_CLASSID,       Quad)
     PyPetscType_Register(PETSC_DMLABEL_CLASSID,          DMLabel)
     PyPetscType_Register(PETSC_SPACE_CLASSID,            Space)
     PyPetscType_Register(PETSC_DUALSPACE_CLASSID,        DualSpace)
