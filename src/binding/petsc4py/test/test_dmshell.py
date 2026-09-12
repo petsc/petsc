@@ -1,5 +1,6 @@
 from petsc4py import PETSc
 import unittest
+import weakref
 import numpy as np
 
 
@@ -13,6 +14,57 @@ class TestDMShell(unittest.TestCase):
         self.dm.destroy()
         self.dm = None
         PETSc.garbage_cleanup()
+
+    def testClearCallbacks(self):
+        setters = (
+            'setCreateGlobalVector',
+            'setCreateLocalVector',
+            'setCreateMatrix',
+            'setCoarsen',
+            'setRefine',
+            'setCreateInterpolation',
+            'setCreateInjection',
+            'setCreateRestriction',
+            'setCreateFieldDecomposition',
+            'setCreateDomainDecomposition',
+            'setCreateDomainDecompositionScatters',
+            'setCreateSubDM',
+        )
+        for name in setters:
+            with self.subTest(setter=name):
+
+                def callback(*args):
+                    pass
+
+                callback_ref = weakref.ref(callback)
+                setter = getattr(self.dm, name)
+                setter(callback)
+                del callback
+                self.assertIsNotNone(callback_ref())
+                setter(None)
+                self.assertIsNone(callback_ref())
+
+    def testClearScatterCallbacks(self):
+        for name in ('setGlobalToLocal', 'setLocalToGlobal', 'setLocalToLocal'):
+            with self.subTest(setter=name):
+
+                def begin(*args):
+                    pass
+
+                def end(*args):
+                    pass
+
+                begin_ref, end_ref = weakref.ref(begin), weakref.ref(end)
+                setter = getattr(self.dm, name)
+                setter(begin, end)
+                del begin, end
+                self.assertIsNotNone(begin_ref())
+                self.assertIsNotNone(end_ref())
+                setter(None, end_ref())
+                self.assertIsNone(begin_ref())
+                self.assertIsNotNone(end_ref())
+                setter(None, None)
+                self.assertIsNone(end_ref())
 
     def testSetGlobalVector(self):
         vec = PETSc.Vec().create(comm=self.COMM)
