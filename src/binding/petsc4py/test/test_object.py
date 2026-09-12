@@ -218,6 +218,36 @@ class BaseTestObject:
 # --------------------------------------------------------------------
 
 
+class TestObjectTypeLookup(unittest.TestCase):
+    def testComposeQuery(self):
+        dm = PETSc.DMShell().create(comm=PETSc.COMM_SELF)
+        owner = PETSc.Random().create(comm=PETSc.COMM_SELF)
+        classes = (
+            PETSc.SNESLineSearch,
+            PETSc.TAOLineSearch,
+            PETSc.TAOTerm,
+            PETSc.DMPlexTransform,
+            PETSc.CellDM,
+        )
+        for cls in classes:
+            if cls is PETSc.TAOLineSearch and np.iscomplexobj(PETSc.ScalarType()):
+                continue
+            with self.subTest(cls=cls.__name__):
+                if cls is PETSc.CellDM:
+                    obj = cls().create(dm, ['field'], ['coordinates'])
+                else:
+                    obj = cls().create(comm=PETSc.COMM_SELF)
+                owner.compose('child', obj)
+                queried = owner.query('child')
+                self.assertIs(type(queried), cls)
+                self.assertEqual(queried, obj)
+                owner.compose('child', None)
+                queried.destroy()
+                obj.destroy()
+        owner.destroy()
+        dm.destroy()
+
+
 class TestObjectRandom(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.Random
     FACTORY = 'create'
