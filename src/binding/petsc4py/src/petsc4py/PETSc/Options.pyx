@@ -179,16 +179,7 @@ cdef class Options:
         cdef const char *key = NULL
         cdef const char *val = NULL
         cdef object unused = getprefixedname(self.prefix, name, &key)
-        if isinstance(value, ndarray):
-            value = value.tolist()
-        if isinstance(value, (tuple, list)):
-            value = str(value).replace(' ', '').\
-                    replace('(', '').replace(')', '').\
-                    replace('[', '').replace(']', '')
-        elif isinstance(value, bool):
-            value = str(value).lower()
-        elif value is not None:
-            value = str(value)
+        value = optionvalue(value)
         value  = str2bytes(value,  &val)
         CHKERR(PetscOptionsSetValue(self.opt, key, val))
 

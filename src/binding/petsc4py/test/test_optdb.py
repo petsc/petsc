@@ -174,6 +174,25 @@ class TestOptions(unittest.TestCase):
         self.assertEqual(getrefcount(mon) - 1, 1)
         self._delopts()
 
+    @unittest.skipUnless(
+        PETSc.ScalarType is PETSc.ComplexType, 'requires complex scalars'
+    )
+    def testComplexValues(self):
+        opts = PETSc.Options(self.PREFIX).create()
+        values = (1 + 2j, 3 - 4j, 2j, -3j)
+        for convert in (complex, PETSc.ScalarType, np.array):
+            for value in values:
+                with self.subTest(convert=convert, value=value):
+                    opts.setValue('scalar', convert(value))
+                    self.assertEqual(opts.getScalar('scalar'), value)
+        for convert in (list, tuple, lambda v: np.array(v, dtype=PETSc.ScalarType)):
+            with self.subTest(convert=convert):
+                opts.setValue('array', convert(values))
+                np.testing.assert_array_equal(opts.getScalarArray('array'), values)
+        opts.setValue('string', 'jacobi')
+        self.assertEqual(opts.getString('string'), 'jacobi')
+        opts.destroy()
+
 
 # --------------------------------------------------------------------
 
