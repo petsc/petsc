@@ -1,5 +1,5 @@
 #include <../src/mat/impls/baij/seq/baij.h> /*I   "petscmat.h"   I*/
-#include <libxsmm.h>
+#include <libxsmm/libxsmm.h>
 
 typedef struct {
   libxsmm_gemmfunction kernel;
