@@ -87,7 +87,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
 
   PetscCall(PetscCalloc1(1 + oldcols, &smap));
   ssmap = smap;
-  PetscCall(PetscMalloc1(1 + nrows, &lens));
+  PetscCall(PetscMalloc1(nrows, &lens));
   for (i = 0; i < ncols; i++) smap[icol[i]] = i + 1;
   /* determine lens of each row */
   for (i = 0; i < nrows; i++) {

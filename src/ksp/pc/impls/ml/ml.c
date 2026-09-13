@@ -183,8 +183,8 @@ static PetscErrorCode MatConvert_MPIAIJ_ML(Mat A, MatType newtype, MatReuse scal
     PetscCall(PetscMalloc1(1 + am, &ci));
     ci[0] = 0;
     for (i = 0; i < am; i++) ci[i + 1] = ci[i] + (ai[i + 1] - ai[i]) + (bi[i + 1] - bi[i]);
-    PetscCall(PetscMalloc1(1 + ci[am], &cj));
-    PetscCall(PetscMalloc1(1 + ci[am], &ca));
+    PetscCall(PetscMalloc1(ci[am], &cj));
+    PetscCall(PetscMalloc1(ci[am], &ca));
 
     k = 0;
     for (i = 0; i < am; i++) {

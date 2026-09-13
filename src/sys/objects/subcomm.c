@@ -381,7 +381,7 @@ static PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   /* get size of each subcommunicator */
-  PetscCall(PetscMalloc1(1 + nsubcomm, &subsize));
+  PetscCall(PetscMalloc1(nsubcomm, &subsize));
 
   np_subcomm = size / nsubcomm;
   nleftover  = size - nsubcomm * np_subcomm;
@@ -452,7 +452,7 @@ static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   /* get size of each subcommunicator */
-  PetscCall(PetscMalloc1(1 + nsubcomm, &subsize));
+  PetscCall(PetscMalloc1(nsubcomm, &subsize));
 
   np_subcomm = size / nsubcomm;
   nleftover  = size - nsubcomm * np_subcomm;
