@@ -84,3 +84,9 @@ pointer-overflow:bitmap.c
 nonnull-attribute:pml_ob1_hdr.h
 function:libscotch/*
 pointer-overflow:libscotch/*
+
+# Htool callbacks with mixed C/C++ complex-valued PetscScalar
+function:MatCreateHtoolFromKernel
+function:MatHtoolSetKernel
+function:WrapperHtool::copy_submatrix
+function:GenEntriesTranspose
