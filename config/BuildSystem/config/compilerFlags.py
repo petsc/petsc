@@ -132,9 +132,9 @@ class Configure(config.base.Configure):
             self.setCompilers.addCompilerFlag(testFlag)
           except RuntimeError:
             if userflags:
-              raise RuntimeError('User provided flags for language '+language+' with '+self.getOptionalFlagsName(language)+': '+self.argDB[self.getOptionalFlagsName(language)]+' are not correct for the compiler')
+              raise RuntimeError('User-provided flags for language '+language+' with '+self.getOptionalFlagsName(language)+'="'+self.argDB[self.getOptionalFlagsName(language)]+'" are not correct for the compiler')
             if userlangflags:
-              raise RuntimeError('User provided flags for language '+language+' with '+flagsName+'+: '+self.argDB[flagsName+'+']+' are not correct for the compiler')
+              raise RuntimeError('User-provided flags for language '+language+' with '+flagsName+'+="'+self.argDB[flagsName+'+']+'" are not correct for the compiler')
             self.logPrint('Rejected '+language+' compiler flag '+testFlag)
             self.rejected[language].append(testFlag)
       self.setCompilers.popLanguage()
