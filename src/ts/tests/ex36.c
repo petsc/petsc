@@ -118,6 +118,7 @@ int main(int argc, char **argv)
   Mat                Jrhs, Ji, Jacp = NULL, Jacprhs = NULL;
   AppCtx             user;
   PetscReal          ftime = 0.1, rtol = 1e-2, rate, drate, analytic, gradient;
+  PetscBool          nullijacobianp = PETSC_FALSE;
   const PetscScalar *m;
 
   PetscFunctionBeginUser;
@@ -127,6 +128,7 @@ int main(int argc, char **argv)
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Adjoint parameter Jacobian options", "TS");
   PetscCall(PetscOptionsEnum("-param_dependence", "Which part of the IMEX splitting the parameter appears in", NULL, ParamDependences, (PetscEnum)user.dep, (PetscEnum *)&user.dep, NULL));
   PetscCall(PetscOptionsReal("-p", "Value of the parameter", NULL, user.p, &user.p, NULL));
+  PetscCall(PetscOptionsBool("-null_ijacobianp", "Register the IJacobianP matrix without a callback, as PETSC_NULL_FUNCTION does from Fortran", NULL, nullijacobianp, &nullijacobianp, NULL));
   PetscOptionsEnd();
 
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, 1, &U));
@@ -142,7 +144,13 @@ int main(int argc, char **argv)
   PetscCall(TSSetIJacobian(ts, Ji, Ji, IJacobian, &user));
   if (user.dep != PARAM_EXPLICIT) {
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, 1, 1, NULL, &Jacp));
-    PetscCall(TSSetIJacobianP(ts, Jacp, IJacobianP, &user));
+    if (nullijacobianp) {
+      /* seed the matrix so that a contribution taken from it, rather than from the absent callback, is unmistakable */
+      PetscCall(MatSetValue(Jacp, 0, 0, 1e3, INSERT_VALUES));
+      PetscCall(MatAssemblyBegin(Jacp, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Jacp, MAT_FINAL_ASSEMBLY));
+      PetscCall(TSSetIJacobianP(ts, Jacp, NULL, NULL));
+    } else PetscCall(TSSetIJacobianP(ts, Jacp, IJacobianP, &user));
   }
   if (user.dep != PARAM_IMPLICIT) {
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, 1, 1, NULL, &Jacprhs));
@@ -165,8 +173,10 @@ int main(int argc, char **argv)
   PetscCall(TSSetCostGradients(ts, 1, &lambda, &mu));
   PetscCall(TSAdjointSolve(ts));
 
-  rate     = Alpha(&user) + Beta(&user);
-  drate    = user.dep == PARAM_BOTH ? 2.0 : 1.0;
+  rate  = Alpha(&user) + Beta(&user);
+  drate = user.dep == PARAM_BOTH ? 2.0 : 1.0;
+  /* an unregistered callback contributes nothing, so its term drops out of the expected gradient as well */
+  if (nullijacobianp && user.dep != PARAM_EXPLICIT) drate -= 1.0;
   analytic = -ftime * drate * PetscExpReal(-rate * ftime);
   PetscCall(VecGetArrayRead(mu, &m));
   gradient = PetscRealPart(m[0]);
@@ -206,5 +216,11 @@ int main(int argc, char **argv)
       test:
         suffix: both
         args: -param_dependence both
+
+      # a matrix registered without a callback must contribute nothing, on the TSTHETA path
+      # where TSComputeIJacobianP() is called with imex = PETSC_FALSE
+      test:
+        suffix: null_ijacobianp
+        args: -param_dependence implicit -null_ijacobianp -ts_type beuler
 
 TEST*/
