@@ -618,7 +618,7 @@ int main(int argc, char **args)
    test:
       suffix: superlu_ilu
       requires: superlu superlu_dist
-      args: -use_superlu_ilu
+      args: -use_superlu_ilu -mat_superlu_rowperm NOROWPERM
       output_file: output/ex52_2.out
 
 TEST*/
