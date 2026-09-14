@@ -1322,7 +1322,7 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + comm         - MPI communicator to collect values
 . label        - the `DMLabel`, may be `NULL` for ranks in `comm` which do not have the corresponding `DMLabel`
 - get_nonempty - whether to get nonempty stratum values (akin to `DMLabelGetNonEmptyStratumValuesIS()`)
@@ -1333,7 +1333,7 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
   Level: intermediate
 
   Notes:
-  The `values` should be destroyed when no longer needed.
+  The `values` should be destroyed when no longer needed. If no rank contributes label values, this routine returns an empty `IS`.
 
   This is similar to `DMLabelGetValueIS()` and `DMLabelGetNonEmptyStratumValuesIS()`, but gets the (nonempty) values across all ranks in `comm`.
 
@@ -1341,10 +1341,11 @@ PetscErrorCode DMLabelGetNonEmptyStratumValuesIS(DMLabel label, IS *values)
 @*/
 PetscErrorCode DMLabelGetValueISGlobal(MPI_Comm comm, DMLabel label, PetscBool get_nonempty, IS *values)
 {
-  PetscInt        num_values_local = 0, num_values_global, minmax_values[2], minmax_values_loc[2] = {PETSC_INT_MAX, PETSC_INT_MIN};
-  IS              is_values    = NULL;
-  const PetscInt *values_local = NULL;
+  PetscInt        num_values_local = 0, num_values_global, value_range, minmax_values[2], minmax_values_loc[2] = {PETSC_INT_MAX, PETSC_INT_MIN};
   PetscInt       *values_global;
+  const PetscInt *values_local = NULL;
+  IS              is_values    = NULL;
+  PetscBT         global_values_bt;
 
   PetscFunctionBegin;
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
@@ -1369,8 +1370,13 @@ PetscErrorCode DMLabelGetValueISGlobal(MPI_Comm comm, DMLabel label, PetscBool g
   }
 
   PetscCall(PetscGlobalMinMaxInt(comm, minmax_values_loc, minmax_values));
-  PetscInt value_range = minmax_values[1] - minmax_values[0] + 1;
-  PetscBT  global_values_bt;
+  // The global range is empty when no rank has any values.
+  if (minmax_values[0] > minmax_values[1]) value_range = 0;
+  else {
+    PetscCheck(minmax_values[0] >= 0 || minmax_values[1] <= minmax_values[0] + (PETSC_INT_MAX - 1), comm, PETSC_ERR_SUP, "Global label value range [%" PetscInt_FMT ", %" PetscInt_FMT "] is too large", minmax_values[0], minmax_values[1]);
+    PetscCheck(minmax_values[0] < 0 || minmax_values[1] - minmax_values[0] < PETSC_INT_MAX, comm, PETSC_ERR_SUP, "Global label value range [%" PetscInt_FMT ", %" PetscInt_FMT "] is too large", minmax_values[0], minmax_values[1]);
+    value_range = minmax_values[1] - minmax_values[0] + 1;
+  }
 
   // Create a "ballot" where each rank marks which values they have into the PetscBT.
   // An Allreduce using bitwise-OR over the ranks then communicates which values are owned by a rank in comm

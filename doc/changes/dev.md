@@ -196,6 +196,7 @@
 
 ## DM
 
+- Fix `DMLabelGetValueISGlobal()` to return an empty index set when no rank contributes label values, avoiding integer overflow in the allocation size
 - Change `DMLabelPropagatePush()` to take a reduce operator
 - Add `DMKSPSetCreateOperators()` to let the `DM` provide a pair of application specific `Mat` objects to inner `KSP` solvers.
 - Fix `DMGetLocalToGlobalMapping()` for a local section carrying a chart permutation (see `DMReorderSectionSetDefault()`); the map is now indexed by the local section offsets. The local section must now be set up with `PetscSectionSetUp()` before the mapping is built, otherwise an error is raised
