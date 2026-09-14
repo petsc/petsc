@@ -80,6 +80,7 @@ BLAS_EXTERN PetscBLASInt Cblacs_pnum(PetscBLASInt context, PetscBLASInt prow, Pe
 BLAS_EXTERN PetscBLASInt Cblacs_gridinit(PetscBLASInt *context, const char *order, PetscBLASInt np_row, PetscBLASInt np_col);
 BLAS_EXTERN void         Cblacs_gridinfo(PetscBLASInt context, PetscBLASInt *np_row, PetscBLASInt *np_col, PetscBLASInt *my_row, PetscBLASInt *my_col);
 BLAS_EXTERN void         Cblacs_gridexit(PetscBLASInt context);
+BLAS_EXTERN void         Cblacs_freebuff(PetscBLASInt, PetscBLASInt);
 BLAS_EXTERN void         Cblacs_exit(PetscBLASInt error_code);
 BLAS_EXTERN void         Cdgebs2d(PetscBLASInt ctxt, const char *scope, const char *top, PetscBLASInt m, PetscBLASInt n, PetscScalar *A, PetscBLASInt lda);
 BLAS_EXTERN void         Cdgebr2d(PetscBLASInt ctxt, const char *scope, const char *top, PetscBLASInt m, PetscBLASInt n, PetscScalar *A, PetscBLASInt lda, PetscBLASInt rsrc, PetscBLASInt csrc);
