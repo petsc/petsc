@@ -2469,7 +2469,7 @@ int main(int argc, char **argv)
 
   testset:
     requires: hdf5
-    args: -test_restart -dm_plex_box_faces 3,3 -ksp_type preonly -pc_type mg -mg_levels_pc_type svd -c_petscspace_degree 1 -p_petscspace_degree 1 -petscpartitioner_type simple -test_restart
+    args: -test_restart -dm_plex_box_faces 3,3 -ksp_type preonly -pc_type mg -mg_levels_pc_type svd -c_petscspace_degree 1 -p_petscspace_degree 1 -petscpartitioner_type simple -test_restart -initial_snes_type ksponly -snes_type ksponly
 
     test:
       requires: !single
