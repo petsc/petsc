@@ -14,6 +14,7 @@ Options for all PETSc programs:
  -version: prints PETSc version
  -help intro: prints example description and PETSc version, and exits
  -help: prints example description, PETSc version, and available options for used routines
+ -help mansec: prints only the options in the given manual section(s), for example -help ksp,snes
  -on_error_abort: cause an abort when an error is detected. Useful 
         only when run in the debugger
  -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)]

@@ -217,7 +217,8 @@ PetscErrorCode          PetscOptionsEnd(void);
 +   comm - communicator that shares GUI
 .   prefix - options prefix for all options displayed on window (optional)
 .   title - short descriptive text, for example "Krylov Solver Options"
--   mansec - section of manual pages for options, for example `KSP` (optional)
+-   mansec - section of manual pages for options, for example `KSP` (optional); it also selects this
+             block for `-help mansec`, and a block with no manual section is never selected
 
     Level: intermediate
 

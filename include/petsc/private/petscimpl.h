@@ -210,7 +210,9 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectViewFn *PetscObjectViewFunction;
 + classid    - The classid associated with this object (for example `VEC_CLASSID`)
 . class_name - String name of class; should be static (for example "Vec"), may be `PETSC_NULLPTR`
 . descr      - String containing short description; should be static (for example "Vector"), may be `PETSC_NULLPTR`
-. mansec     - String indicating section in manual pages; should be static (for example "Vec"), may be `PETSC_NULLPTR`
+. mansec     - String indicating section in manual pages; should be static (for example "Vec"), may be `PETSC_NULLPTR`.
+               It also selects the options blocks this object opens for `-help mansec`; an object with no manual
+               section has none of its blocks selected
 . comm       - The MPI Communicator
 . destroy    - The destroy routine for this object (for example `VecDestroy()`)
 - view       - The view routine for this object (for example `VecView()`), may be `PETSC_NULLPTR`
@@ -396,9 +398,11 @@ PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointer
 PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscFortranCallbackFn *, PetscCtx ctx);
 PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, PetscFortranCallbackFn **, void **ctx);
 
-PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
-PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
-PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions, PetscBool *);
+PETSC_INTERN PetscErrorCode                PetscCitationsInitialize(void);
+PETSC_INTERN PetscErrorCode                PetscFreeMPIResources(void);
+PETSC_INTERN PetscErrorCode                PetscOptionsHasHelpIntro_Internal(PetscOptions, PetscBool *);
+PETSC_INTERN PetscErrorCode                PetscOptionsHelpManSecs_Internal(PetscOptions, PetscInt *, const char *const *[]);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscOptionsHelpPrintable_Internal(PetscOptions, const char[], PetscBool *);
 
 /* Code shared between C and Fortran */
 PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, const char *, PetscBool, PetscInt);

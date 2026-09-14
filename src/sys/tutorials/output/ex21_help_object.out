@@ -1,0 +1,2 @@
+Random number generator (PetscRandom) options:
+  -random_seed: <now 0 : formerly 0>: Seed to use to generate random numbers (PetscRandomSetSeed)

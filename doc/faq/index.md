@@ -1322,6 +1322,30 @@ encountered option names which are then printed **in the order of their appearan
 root rank**. Different programs may take different paths through PETSc source code, so
 they will encounter different providers, and therefore have different `-help` output.
 
+Options are printed in blocks, one per `PetscOptionsBegin()` / `PetscOptionsEnd()` pair, and each
+block belongs to a manual section such as `KSP`, `SNES`, `Mat`, or `Sys`. Passing one or more section
+names to `-help` as a comma-separated list, for example `-help ksp` or `-help ksp,snes`, prints only
+the blocks in those sections. Matching ignores case. Help output that names no manual section is never
+selected, so `-help mansec` prints less than plain `-help`, never more. Options registered outside a
+block do name a section: those registered with `PetscBagRegisterInt()` and the other `PetscBagRegister`
+routines are in the `Bag` section, so `-help bag` selects them. This covers the help PETSc itself
+prints; help that application code prints for itself after calling `PetscOptionsHasHelp()` is not
+restricted.
+
+An option belongs to exactly one manual section, which is the section of the block that registers it,
+not of the object whose behavior it controls. In particular the viewer options an object creates, such
+as `-ksp_monitor` and `-ksp_view`, are registered by the `PetscViewer` machinery and so belong to the
+`Viewer` section: `-help ksp` does not list them, `-help viewer` lists them for every object in the run,
+and `-help ksp,viewer` gives both. Showing `-ksp_monitor` under both `ksp` and `viewer` would require an
+option to carry more than one manual section, which PETSc does not support.
+
+Because `-help` also accepts a logical value, a value of exactly `0`, `no`, `false`, or `off` turns the
+help output off, and `1`, `yes`, `true`, or `on` turns it on, rather than naming a section; `intro` is
+reserved in the same way, since `-help intro` prints the example description and PETSc version and exits.
+These readings apply only when the value is exactly one of those words, so a section so named can still
+be selected as part of a comma-separated list, as in `-help 0,ksp`. No PETSc manual section is named
+this way, so this only matters if you use such a section name in your own code.
+
 ### PETSc has so many options for my program that it is hard to keep them straight
 
 Running the PETSc program with the option `-help` will print out many of the options. To

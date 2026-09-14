@@ -141,4 +141,20 @@ int main(int argc, char **argv)
       args: -help
       filter: grep -E "pbag_(int|real|bool)_array <"
 
+   # bag options are in the Bag manual section, so "-help bag" selects exactly what plain -help shows
+   test:
+      suffix: help_bag
+      requires: !complex
+      args: -help bag
+      filter: grep -E "pbag_(int|real|bool)_array <"
+      output_file: output/ex5_help.out
+
+   # and a manual section that no block declares selects none of them
+   test:
+      suffix: help_other_mansec
+      requires: !complex
+      args: -help NoSuchSection
+      filter: grep -E "pbag_(int|real|bool)_array <"
+      output_file: output/empty.out
+
 TEST*/

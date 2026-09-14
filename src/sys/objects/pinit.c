@@ -1279,7 +1279,7 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
    if different subcommunicators of the job are doing different things with PETSc.
 
   Options Database Keys:
-+ -help [intro]                                          - prints help method for each option; if `intro` is given the program stops after printing the introductory help message
++ -help [(intro|mansec1,mansec2,...)]                    - prints help method for each option; if `intro` is given the program stops after printing the introductory help message; if manual sections are given only the options blocks in those sections are printed
 . -start_in_debugger [(noxterm)],[(gdb|lldb|...)]        - Starts program in debugger
 . -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)] - Starts debugger when error detected
 . -on_error_emacs machinename                            - causes `emacsclient` to jump to error file if an error is detected
