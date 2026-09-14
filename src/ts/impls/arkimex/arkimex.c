@@ -1570,6 +1570,7 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
   PetscReal        t                 = ts->ptime, stage_time_ex;
   PetscReal        adjoint_time_step = -ts->time_step; /* always positive since ts->time_step is negative */
   KSP              ksp;
+  PetscBool        has_jacp = (PetscBool)(ts->ijacobianp != NULL);
 
   PetscFunctionBegin;
   ark->status = TS_STEP_INCOMPLETE;
@@ -1587,9 +1588,12 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
     }
     PetscCall(TSComputeSNESJacobian(ts, Y[i], Jim, Jimpre));
     PetscCall(TSComputeRHSJacobian(ts, stage_time_ex, Y[i], Jex, Jex));
+    /* The parameters can be in the IFunction or the RHSFunction or both, so dFdP or dGdP may not exist. ts->Jacp cannot be
+       tested for that because TSSetUp() aliases it to ts->Jacprhs when only RHSJacobianP is provided, hence has_jacp follows
+       the registered callback instead. */
     if (ts->vecs_sensip) {
-      PetscCall(TSComputeIJacobianP(ts, ark->stage_time, Y[i], Ydot, ark->scoeff / adjoint_time_step, ts->Jacp, PETSC_TRUE)); // get dFdP (-dHdP), Ydot not really used since mass matrix is identity
-      PetscCall(TSComputeRHSJacobianP(ts, stage_time_ex, Y[i], ts->Jacprhs));                                                 // get dGdP
+      if (has_jacp) PetscCall(TSComputeIJacobianP(ts, ark->stage_time, Y[i], Ydot, ark->scoeff / adjoint_time_step, ts->Jacp, PETSC_TRUE)); // get dFdP (-dHdP), Ydot not really used since mass matrix is identity
+      if (ts->Jacprhs) PetscCall(TSComputeRHSJacobianP(ts, stage_time_ex, Y[i], ts->Jacprhs));                                              // get dGdP
     }
     /* Build RHS (stored in VecsDeltaLam) for first-order adjoint */
     for (nadj = 0; nadj < ts->numcost; nadj++) {
@@ -1607,7 +1611,7 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
         PetscCall(MatMultTranspose(Jim, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i]));
         /* cancel out shift Temp where shift=-scoeff/h */
         PetscCall(VecAXPY(VecsDeltaLam[nadj * s + i], ark->scoeff / adjoint_time_step, VecsSensiTemp[nadj]));
-        if (ts->vecs_sensip) {
+        if (ts->vecs_sensip && has_jacp) {
           /* - dHdP Temp */
           PetscCall(MatMultTranspose(ts->Jacp, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
           /* mu_n += -h dHdP Temp */
@@ -1628,7 +1632,7 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
       if (b[i] || s - i - 1 > 0) {
         /* dGdU Temp */
         PetscCall(MatMultTransposeAdd(Jex, VecsSensiTemp[nadj], VecsDeltaLam[nadj * s + i], VecsDeltaLam[nadj * s + i]));
-        if (ts->vecs_sensip) {
+        if (ts->vecs_sensip && ts->Jacprhs) {
           /* dGdP Temp */
           PetscCall(MatMultTranspose(ts->Jacprhs, VecsSensiTemp[nadj], VecsSensiPTemp[nadj]));
           /* mu_n += h dGdP Temp */
@@ -1650,7 +1654,7 @@ static PetscErrorCode TSAdjointStep_ARKIMEX(TS ts)
           ts->reason = TSADJOINT_DIVERGED_LINEAR_SOLVE;
           PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", %" PetscInt_FMT "th cost function, transposed linear solve fails, stopping 1st-order adjoint solve\n", ts->steps, nadj));
         }
-        if (ts->vecs_sensip) {
+        if (ts->vecs_sensip && has_jacp) {
           /* -dHdP lambda_s[i] */
           PetscCall(MatMultTranspose(ts->Jacp, VecsDeltaLam[nadj * s + i], VecsSensiPTemp[nadj]));
           /* mu_n += h at[i][i] dHdP lambda_s[i] */

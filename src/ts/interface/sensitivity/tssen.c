@@ -20,16 +20,22 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 
   Level: intermediate
 
-  Note:
+  Notes:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
-.seealso: [](ch_ts), `TS`, `TSRHSJacobianPFn`, `TSGetRHSJacobianP()`
+  When `TSSetIJacobianP()` is also called, the two must be given different matrices since each holds a separate term of the
+  parameter Jacobian; sharing one is an error.
+
+.seealso: [](ch_ts), `TS`, `TSRHSJacobianPFn`, `TSGetRHSJacobianP()`, `TSSetIJacobianP()`
 @*/
 PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, PetscCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
+  /* ts->Jacp may legitimately alias ts->Jacprhs after TSSetUp() when only this routine was called, so a shared matrix is
+     rejected only once an IJacobianP exists whose separate term would be stored in it */
+  PetscCheck(!ts->ijacobianp || Amat != ts->Jacp, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSSetIJacobianP() and TSSetRHSJacobianP() must be given different matrices");
 
   ts->rhsjacobianp    = func;
   ts->rhsjacobianpctx = ctx;
@@ -129,8 +135,11 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 
   Level: intermediate
 
-  Note:
+  Notes:
   `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
+
+  When `TSSetRHSJacobianP()` is also called, the two must be given different matrices since each holds a separate term of the
+  parameter Jacobian; sharing one is an error.
 
 .seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`
 @*/
@@ -139,6 +148,9 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Amat, MAT_CLASSID, 2);
+  /* ts->Jacprhs is only ever the RHSJacobianP matrix, so reusing it here means the two parameter Jacobian terms would
+     clobber each other, unless no callback is registered and there is no second term to store */
+  PetscCheck(!func || Amat != ts->Jacprhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSSetIJacobianP() and TSSetRHSJacobianP() must be given different matrices");
 
   ts->ijacobianp    = func;
   ts->ijacobianpctx = ctx;
@@ -220,25 +232,24 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 
   PetscCall(PetscLogEventBegin(TS_JacobianPEval, ts, U, Amat, 0));
   if (ts->ijacobianp) PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->ijacobianp)(ts, t, U, Udot, shift, Amat, ts->ijacobianpctx));
-  if (imex) {
-    if (!ts->ijacobianp) { /* system was written as Udot = G(t,U) */
-      PetscBool assembled;
-      PetscCall(MatZeroEntries(Amat));
-      PetscCall(MatAssembled(Amat, &assembled));
-      if (!assembled) {
-        PetscCall(MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY));
-        PetscCall(MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY));
-      }
+  else { /* system was written as Udot = G(t,U), so the implicit term is zero; Amat must still be cleared because it can
+            hold values left by an earlier registration or by the previous call on shared RHS storage */
+    PetscBool assembled;
+
+    PetscCall(MatZeroEntries(Amat));
+    PetscCall(MatAssembled(Amat, &assembled));
+    if (!assembled) {
+      PetscCall(MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY));
     }
-  } else {
+  }
+  if (!imex) {
     if (ts->rhsjacobianp) PetscCall(TSComputeRHSJacobianP(ts, t, U, ts->Jacprhs));
     if (ts->Jacprhs == Amat) { /* No IJacobian, so we only have the RHS matrix */
       PetscCall(MatScale(Amat, -1));
     } else if (ts->Jacprhs) { /* Both IJacobian and RHSJacobian */
       MatStructure axpy = DIFFERENT_NONZERO_PATTERN;
-      if (!ts->ijacobianp) { /* No IJacobianp provided, but we have a separate RHS matrix */
-        PetscCall(MatZeroEntries(Amat));
-      }
+
       PetscCall(MatAXPY(Amat, -1, ts->Jacprhs, axpy));
     }
   }
