@@ -41,6 +41,7 @@ class TAOType:
     ADMM     = S_(TAOADMM)
     ALMM     = S_(TAOALMM)
     PYTHON   = S_(TAOPYTHON)
+    SNES     = S_(TAOSNES)
 
 
 class TAOConvergedReason:

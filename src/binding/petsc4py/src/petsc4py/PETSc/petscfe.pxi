@@ -6,6 +6,7 @@ cdef extern from * nogil:
     PetscFEType PETSCFEBASIC
     PetscFEType PETSCFEOPENCL
     PetscFEType PETSCFECOMPOSITE
+    PetscFEType PETSCFEVECTOR
 
     PetscErrorCode PetscFECreate(MPI_Comm, PetscFE*)
     PetscErrorCode PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE*)

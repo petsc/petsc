@@ -70,6 +70,7 @@ cdef extern from * nogil:
         KSP_CONVERGED_NEG_CURVE
         KSP_CONVERGED_STEP_LENGTH
         KSP_CONVERGED_HAPPY_BREAKDOWN
+        KSP_CONVERGED_USER
         # diverged
         KSP_DIVERGED_NULL
         KSP_DIVERGED_MAX_IT "KSP_DIVERGED_ITS"
@@ -81,6 +82,7 @@ cdef extern from * nogil:
         KSP_DIVERGED_NANORINF
         KSP_DIVERGED_INDEFINITE_MAT
         KSP_DIVERGED_PC_FAILED
+        KSP_DIVERGED_USER
 
     ctypedef enum PetscKSPDMActive "KSPDMActive":
         KSP_DMACTIVE_OPERATOR = 1

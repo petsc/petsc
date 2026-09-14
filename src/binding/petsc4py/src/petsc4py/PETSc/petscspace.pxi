@@ -53,6 +53,7 @@ cdef extern from * nogil:
     PetscDualSpaceType PETSCDUALSPACESIMPLE
     PetscDualSpaceType PETSCDUALSPACEREFINED
     PetscDualSpaceType PETSCDUALSPACEBDM
+    PetscDualSpaceType PETSCDUALSPACESUM
 
     PetscErrorCode PetscDualSpaceCreate(MPI_Comm, PetscDualSpace*)
     PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace*)

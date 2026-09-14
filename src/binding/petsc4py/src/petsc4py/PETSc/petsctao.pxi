@@ -34,6 +34,7 @@ cdef extern from * nogil:
     PetscTAOType TAOADMM
     PetscTAOType TAOALMM
     PetscTAOType TAOPYTHON
+    PetscTAOType TAOSNES
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         # iterating

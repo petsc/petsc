@@ -19,6 +19,7 @@ class TSType(object):
     GLEE            = S_(TSGLEE)
     SSP             = S_(TSSSP)
     ARKIMEX         = S_(TSARKIMEX)
+    IRK             = S_(TSIRK)
     DIRK            = S_(TSDIRK)
     ROSW            = S_(TSROSW)
     EIMEX           = S_(TSEIMEX)
@@ -129,6 +130,8 @@ class TSConvergedReason:
     CONVERGED_ITS            = TS_CONVERGED_ITS
     CONVERGED_USER           = TS_CONVERGED_USER
     CONVERGED_EVENT          = TS_CONVERGED_EVENT
+    CONVERGED_PSEUDO_FATOL   = TS_CONVERGED_PSEUDO_FATOL
+    CONVERGED_PSEUDO_FRTOL   = TS_CONVERGED_PSEUDO_FRTOL
     # diverged
     DIVERGED_NONLINEAR_SOLVE = TS_DIVERGED_NONLINEAR_SOLVE
     DIVERGED_STEP_REJECTED   = TS_DIVERGED_STEP_REJECTED

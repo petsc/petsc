@@ -568,6 +568,7 @@ class DualSpaceType(object):
     SIMPLE   = S_(PETSCDUALSPACESIMPLE)
     REFINED  = S_(PETSCDUALSPACEREFINED)
     BDM      = S_(PETSCDUALSPACEBDM)
+    SUM      = S_(PETSCDUALSPACESUM)
 
 # --------------------------------------------------------------------
 

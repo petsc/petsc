@@ -5,6 +5,7 @@ class FEType(object):
     BASIC     = S_(PETSCFEBASIC)
     OPENCL    = S_(PETSCFEOPENCL)
     COMPOSITE = S_(PETSCFECOMPOSITE)
+    VECTOR    = S_(PETSCFEVECTOR)
 
 # --------------------------------------------------------------------
 

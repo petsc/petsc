@@ -16,6 +16,7 @@ cdef extern from * nogil:
     PetscTSType TSGLEE
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
+    PetscTSType TSIRK
     PetscTSType TSDIRK
     PetscTSType TSROSW
     PetscTSType TSEIMEX
@@ -52,6 +53,8 @@ cdef extern from * nogil:
         TS_CONVERGED_ITS
         TS_CONVERGED_USER
         TS_CONVERGED_EVENT
+        TS_CONVERGED_PSEUDO_FATOL
+        TS_CONVERGED_PSEUDO_FRTOL
         # diverged
         TS_DIVERGED_NONLINEAR_SOLVE
         TS_DIVERGED_STEP_REJECTED

@@ -287,6 +287,8 @@ class KSPConvergedReason(object):
         Undocumented.
     `CONVERGED_HAPPY_BREAKDOWN`
         Undocumented.
+    `CONVERGED_USER`
+        The user has indicated convergence for an arbitrary reason.
 
     `DIVERGED_NULL`
         Undocumented.
@@ -322,6 +324,8 @@ class KSPConvergedReason(object):
         factorization. It can also result from a failure in a
         subpreconditioner inside a nested preconditioner such as
         `PC.Type.FIELDSPLIT`.
+    `DIVERGED_USER`
+        The user has indicated divergence for an arbitrary reason.
 
     See Also
     --------
@@ -340,6 +344,7 @@ class KSPConvergedReason(object):
     CONVERGED_NEG_CURVE       = KSP_CONVERGED_NEG_CURVE
     CONVERGED_STEP_LENGTH     = KSP_CONVERGED_STEP_LENGTH
     CONVERGED_HAPPY_BREAKDOWN = KSP_CONVERGED_HAPPY_BREAKDOWN
+    CONVERGED_USER            = KSP_CONVERGED_USER
     # diverged
     DIVERGED_NULL             = KSP_DIVERGED_NULL
     DIVERGED_MAX_IT           = KSP_DIVERGED_MAX_IT
@@ -351,6 +356,7 @@ class KSPConvergedReason(object):
     DIVERGED_NANORINF         = KSP_DIVERGED_NANORINF
     DIVERGED_INDEFINITE_MAT   = KSP_DIVERGED_INDEFINITE_MAT
     DIVERGED_PCSETUP_FAILED   = KSP_DIVERGED_PC_FAILED
+    DIVERGED_USER             = KSP_DIVERGED_USER
 
 
 class KSPHPDDMType(object):
