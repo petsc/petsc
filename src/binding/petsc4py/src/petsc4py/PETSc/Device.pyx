@@ -466,7 +466,7 @@ cdef class DeviceContext(Object):
         cdef PetscDeviceContextJoinMode cjoin_mode = asJoinMode(join_mode)
         cdef Py_ssize_t nctxs = len(py_sub_ctxs)
 
-        CHKERR(PetscMalloc(<size_t>(nctxs) * sizeof(PetscDeviceContext *), &np_subctx))
+        CHKERR(PetscMalloc(<size_t>(nctxs) * sizeof(PetscDeviceContext), &np_subctx))
         for i from 0 <= i < nctxs:
             dctx = py_sub_ctxs[i]
             np_subctx[i] = (<DeviceContext?>dctx).dctx if dctx is not None else NULL

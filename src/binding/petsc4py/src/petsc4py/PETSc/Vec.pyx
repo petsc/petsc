@@ -3200,7 +3200,7 @@ cdef class Vec(Object):
     def strideNorm(
         self,
         field: int,
-        norm_type: NormTypeSpec = None) -> float | tuple[float, float]:
+        norm_type: NormTypeSpec = None) -> float:
         """Return the norm of entries in a subvector.
 
         Collective.
@@ -3213,7 +3213,8 @@ cdef class Vec(Object):
         field
             Component index. Must be between ``0`` and ``vec.block_size``.
         norm_type
-            The norm type.
+            The norm type: `NormType.NORM_1`, `NormType.NORM_2` (default),
+            or `NormType.NORM_INFINITY`.
 
         See Also
         --------
@@ -3221,13 +3222,11 @@ cdef class Vec(Object):
 
         """
         cdef PetscInt ival = asInt(field)
-        cdef PetscNormType norm_1_2 = PETSC_NORM_1_AND_2
         cdef PetscNormType ntype = PETSC_NORM_2
+        cdef PetscReal rval = 0
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal rval[2]
-        CHKERR(VecStrideNorm(self.vec, ival, ntype, rval))
-        if ntype != norm_1_2: return toReal(rval[0])
-        else: return (toReal(rval[0]), toReal(rval[1]))
+        CHKERR(VecStrideNorm(self.vec, ival, ntype, &rval))
+        return toReal(rval)
 
     def strideScatter(
         self,

@@ -50,6 +50,22 @@ class BaseTestVec:
         self.assertAlmostEqual(abs(d), self.vec.getSize())
         self.assertAlmostEqual(n2, self.vec.getSize())
 
+    def testStrideNorm(self):
+        self.vec.setBlockSize(1)
+        self.vec.set(3)
+        size = self.vec.getSize()
+        for norm_type, expected in (
+            (PETSc.NormType.NORM_1, 3 * size),
+            (PETSc.NormType.NORM_2, 3 * sqrt(size)),
+            (PETSc.NormType.NORM_INFINITY, 3),
+        ):
+            with self.subTest(norm_type=norm_type):
+                result = self.vec.strideNorm(0, norm_type)
+                self.assertIsInstance(result, float)
+                self.assertAlmostEqual(result, expected)
+        with self.assertRaises(PETSc.Error):
+            self.vec.strideNorm(0, PETSc.NormType.NORM_1_AND_2)
+
     def testNorm(self):
         self.vec.set(1)
         n1 = self.vec.norm(PETSc.NormType.NORM_1)

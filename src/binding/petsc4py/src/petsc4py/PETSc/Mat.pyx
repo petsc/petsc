@@ -6645,7 +6645,6 @@ cdef class Mat(Object):
     def toDLPack(self, mode: AccessModeSpec = 'rw') -> Any:
         """Return a DLPack `PyCapsule` wrapping the matrix data."""
         if mode is None: mode = 'rw'
-        if mode is None: mode = 'rw'
         if mode not in ['rw', 'r', 'w']:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 

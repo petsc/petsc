@@ -254,12 +254,10 @@ cdef extern from * nogil:
     PetscErrorCode TSAdjointComputeDRDYFunction(PetscTS, PetscReal, PetscVec, PetscVec*)
     PetscErrorCode TSAdjointCostIntegral(PetscTS)
 
-    PetscErrorCode TSForwardSetSensitivities(PetscTS, PetscInt, PetscVec*, PetscInt, PetscVec*)
-    PetscErrorCode TSForwardGetSensitivities(PetscTS, PetscInt*, PetscVec**, PetscInt*, PetscVec**)
-    PetscErrorCode TSForwardSetIntegralGradients(PetscTS, PetscInt, PetscVec *, PetscVec *)
-    PetscErrorCode TSForwardGetIntegralGradients(PetscTS, PetscInt*, PetscVec **, PetscVec **)
-    PetscErrorCode TSForwardSetRHSJacobianP(PetscTS, PetscVec*, PetscTSCostIntegrandFunction, void*)
-    PetscErrorCode TSForwardComputeRHSJacobianP(PetscTS, PetscReal, PetscVec, PetscVec*)
+    PetscErrorCode TSForwardSetSensitivities(PetscTS, PetscInt, PetscMat)
+    PetscErrorCode TSForwardGetSensitivities(PetscTS, PetscInt*, PetscMat*)
+    PetscErrorCode TSForwardSetIntegralGradients(PetscTS, PetscInt, PetscVec*)
+    PetscErrorCode TSForwardGetIntegralGradients(PetscTS, PetscInt*, PetscVec**)
     PetscErrorCode TSForwardSetUp(PetscTS)
     PetscErrorCode TSForwardCostIntegral(PetscTS)
     PetscErrorCode TSForwardStep(PetscTS)
@@ -355,8 +353,6 @@ cdef extern from * nogil:
     PetscErrorCode TSAdaptSetStepLimits(PetscTSAdapt, PetscReal, PetscReal)
     PetscErrorCode TSAdaptCheckStage(PetscTSAdapt, PetscTS, PetscReal, PetscVec, PetscBool*)
 
-cdef extern from * nogil: # custom.h
-    PetscErrorCode TSSetTimeStepNumber(PetscTS, PetscInt)
 
 # -----------------------------------------------------------------------------
 

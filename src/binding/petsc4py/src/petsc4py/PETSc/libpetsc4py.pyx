@@ -1037,7 +1037,6 @@ cdef PetscErrorCode MatMultAdd_Python(
             CHKERR(MatMult(mat, x, y))
             CHKERR(VecAXPY(y, 1.0, v))
         return FunctionEnd()
-    if multAdd is None: return UNSUPPORTED(b"multAdd")
     multAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
     return FunctionEnd()
 
@@ -1060,7 +1059,6 @@ cdef PetscErrorCode MatMultTransposeAdd_Python(
             CHKERR(MatMultTranspose(mat, x, y))
             CHKERR(VecAXPY(y, 1.0, v))
         return FunctionEnd()
-    if multTransposeAdd is None: return UNSUPPORTED(b"multTransposeAdd")
     multTransposeAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
     return FunctionEnd()
 

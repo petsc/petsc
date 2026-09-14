@@ -695,7 +695,7 @@ cdef class LogEvent:
     property active_all:
         """All events activation."""
         def __get__(self) -> bool:
-            self.getActiveAll()
+            return self.getActiveAll()
 
         def __set__(self, value):
             self.setActiveAll(value)
