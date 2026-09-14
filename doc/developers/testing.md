@@ -190,6 +190,13 @@ With this background, these keywords are as follows.
     specified. See {any}`test harness data<test_harness_data>`
   - Packages are indicated with lower-case specification, for example,
     `requires: superlu_dist`.
+  - Package versions can be checked with the comparison macros generated in
+    `petscpkg_version.h`, for example,
+    `requires: superlu_dist superlu_dist_version_ge(9,0,0)`.
+    Names are case-insensitive and may include the full `PETSC_PKG_` prefix,
+    so `PETSC_PKG_SUPERLU_DIST_VERSION_GE(9,0,0)` is equivalent.
+    The comparisons `eq`, `lt`, `le`, `gt`, and `ge` are supported, as is
+    negation with `!`. Do not put spaces inside the macro invocation.
   - Any defined variable in petscconf.h can be specified with the
     `defined(...)` syntax, for example, `defined(PETSC_USE_INFO)`.
   - Any definition of the form `PETSC_HAVE_FOO` can just use

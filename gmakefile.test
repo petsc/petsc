@@ -101,7 +101,7 @@ ifdef TIMEOUT
   TESTFLAGS += -t $(TIMEOUT) # Override the default timeout
 endif
 
-$(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
+$(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegen.py $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)"
 
 ifneq ($(filter-out help docs clean distclean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange deletefortranbindings fortranbindings alletags etags clangformat checkclangformat fprettify lint shellcheck checkshellcheck branch-review fixbadSource get% %build,$(MAKECMDGOALS:clean%=clean)),)

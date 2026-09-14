@@ -23,6 +23,7 @@
 - Increase the minimum required Python version for `./configure` to 3.6
 - Add `providesDocs` and `docsDirs` package attributes so that an external package's sources can be cloned and scanned to generate PETSc manual pages when the documentation is built
 - Add interface to LIBXSMM
+- Add package-version comparisons to test harness `requires`, such as `superlu_dist_version_ge(9,0,0)` or `PETSC_PKG_SUPERLU_DIST_VERSION_GE(9,0,0)`, using the versions recorded by configure
 
 ## Sys
 
