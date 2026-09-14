@@ -281,12 +281,12 @@ class BaseTestVec:
         x.set(1)
         y.set(2)
         z, _index_ises = PETSc.Vec.concatenate([x, y])
-        self.assertEqual(z.getLocalSize(), x.getLocalSize() + y.getLocalSize())
+        self.assertEqual(z.getSize(), x.getSize() + y.getSize())
         self.assertEqual(z.min()[1], x.min()[1])
         self.assertEqual(z.max()[1], y.max()[1])
-        np.allclose(z.getArray(), np.concatenate([x.getArray(), y.getArray()]))
-        np.allclose(z.getArray()[0 : x.getLocalSize()], x.getArray())
-        np.allclose(z.getArray()[x.getLocalSize() :], y.getArray())
+        start, end = z.getOwnershipRange()
+        expected = np.where(np.arange(start, end) < x.getSize(), 1, 2)
+        np.testing.assert_allclose(z.getArray(), expected)
 
     def testMean(self):
         x = self.vec
