@@ -633,7 +633,7 @@ cdef dict dMatOps = {
                       47 : 'setDiagonal',
                       48 : 'zeroRowsColumns',
                       59 : 'createSubMatrix',
-                      83 : 'getVecs', # FIXME -> createVecs
+                      83 : 'createVecs',
                       93 : 'conjugate',
                       96 : 'realPart',
                       97 : 'imagPart',

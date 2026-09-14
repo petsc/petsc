@@ -20,7 +20,7 @@ Testing with -enable mult
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -46,7 +46,7 @@ Testing with -enable mult
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -73,7 +73,7 @@ Testing with -enable multAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -99,7 +99,7 @@ Testing with -enable multAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -126,7 +126,7 @@ Testing with -enable multTranspose
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -152,7 +152,7 @@ Testing with -enable multTranspose
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -179,7 +179,7 @@ Testing with -enable multTransposeAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -205,7 +205,7 @@ Testing with -enable multTransposeAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -232,7 +232,7 @@ Testing with -enable solve
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -258,7 +258,7 @@ Testing with -enable solve
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -285,7 +285,7 @@ Testing with -enable solveAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -311,7 +311,7 @@ Testing with -enable solveAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -338,7 +338,7 @@ Testing with -enable solveTranspose
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -364,7 +364,7 @@ Testing with -enable solveTranspose
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -391,7 +391,7 @@ Testing with -enable solveTransposeAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -417,7 +417,7 @@ Testing with -enable solveTransposeAdd
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -444,7 +444,7 @@ Testing with -enable SOR
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -470,7 +470,7 @@ Testing with -enable SOR
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -497,7 +497,7 @@ Testing with -enable getDiagonal
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -523,7 +523,7 @@ Testing with -enable getDiagonal
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -550,7 +550,7 @@ Testing with -enable diagonalScale
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -576,7 +576,7 @@ Testing with -enable diagonalScale
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -603,7 +603,7 @@ Testing with -enable norm
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -629,7 +629,7 @@ Testing with -enable norm
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -656,7 +656,7 @@ Testing with -enable zeroEntries
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -682,7 +682,7 @@ Testing with -enable zeroEntries
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -709,7 +709,7 @@ Testing with -enable getDiagonalBlock
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -735,7 +735,7 @@ Testing with -enable getDiagonalBlock
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -762,7 +762,7 @@ Testing with -enable duplicate
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -788,7 +788,7 @@ Testing with -enable duplicate
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -815,7 +815,7 @@ Testing with -enable copy
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -841,7 +841,7 @@ Testing with -enable copy
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -868,7 +868,7 @@ Testing with -enable scale
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -894,7 +894,7 @@ Testing with -enable scale
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -921,7 +921,7 @@ Testing with -enable shift
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -947,7 +947,7 @@ Testing with -enable shift
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -974,7 +974,7 @@ Testing with -enable setDiagonal
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1000,7 +1000,7 @@ Testing with -enable setDiagonal
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1027,7 +1027,7 @@ Testing with -enable zeroRowsColumns
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1053,7 +1053,7 @@ Testing with -enable zeroRowsColumns
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1080,7 +1080,7 @@ Testing with -enable createSubMatrix
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1106,12 +1106,12 @@ Testing with -enable createSubMatrix
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
   Pass: multDiagonalBlock
-Testing with -enable getVecs
+Testing with -enable createVecs
   Pass: mult
   Pass: multAdd
   Pass: multTranspose
@@ -1133,7 +1133,7 @@ Testing with -enable getVecs
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1159,7 +1159,7 @@ Testing with -enable getVecs
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1186,7 +1186,7 @@ Testing with -enable conjugate
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1212,7 +1212,7 @@ Testing with -enable conjugate
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1239,7 +1239,7 @@ Testing with -enable realPart
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1265,7 +1265,7 @@ Testing with -enable realPart
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1292,7 +1292,7 @@ Testing with -enable imagPart
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1318,7 +1318,7 @@ Testing with -enable imagPart
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1345,7 +1345,7 @@ Testing with -enable multDiagonalBlock
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
@@ -1371,7 +1371,7 @@ Testing with -enable multDiagonalBlock
   Pass: setDiagonal
   Pass: zeroRowsColumns
   Pass: createSubMatrix
-  Pass: getVecs
+  Pass: createVecs
   Pass: conjugate
   Pass: realPart
   Pass: imagPart
