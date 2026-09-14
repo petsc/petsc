@@ -127,7 +127,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorPredict
+        petsc.PetscRegressorFit
 
         """
         CHKERR(PetscRegressorFit(self.regressor, X.mat, y.vec))
@@ -146,7 +146,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorFit
+        petsc.PetscRegressorPredict
 
         """
         CHKERR(PetscRegressorPredict(self.regressor, X.mat, y.vec))
@@ -172,7 +172,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorDestroy
+        petsc.PetscRegressorReset
 
         """
         CHKERR(PetscRegressorReset(self.regressor))

@@ -87,7 +87,7 @@ cdef class DMPlex(DM):
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 
-    def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0, 0, 0), upper: Sequence[float] | None = (1, 1, 1),
+    def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] = (0, 0, 0), upper: Sequence[float] = (1, 1, 1),
                       simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, localizationHeight: int | None = 0, sparseLocalize: bool | None = True, comm: Comm | None = None) -> Self:
         """Create a mesh on the tensor product of intervals.
 
@@ -96,11 +96,11 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         faces
-            Number of faces per dimension, or `None` for the default.
+            Number of faces per dimension. The sequence length sets the dimension.
         lower
-            The lower left corner.
+            The lower left corner, with at least one entry per dimension.
         upper
-            The upper right corner.
+            The upper right corner, with at least one entry per dimension.
         simplex
             `True` for simplices, `False` for tensor cells.
         periodic
@@ -147,7 +147,7 @@ cdef class DMPlex(DM):
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 
-    def createBoxSurfaceMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0, 0, 0), upper: Sequence[float] | None = (1, 1, 1),
+    def createBoxSurfaceMesh(self, faces: Sequence[int], lower: Sequence[float] = (0, 0, 0), upper: Sequence[float] = (1, 1, 1),
                              interpolate: bool | None = True, comm: Comm | None = None) -> Self:
         """Create a mesh on the surface of a box mesh using tensor cells.
 
@@ -156,11 +156,11 @@ cdef class DMPlex(DM):
         Parameters
         ----------
         faces
-            Number of faces per dimension, or `None` for the default.
+            Number of faces per dimension. The sequence length sets the dimension.
         lower
-            The lower left corner.
+            The lower left corner, with at least one entry per dimension.
         upper
-            The upper right corner.
+            The upper right corner, with at least one entry per dimension.
         interpolate
             Flag to create intermediate mesh pieces (edges, faces).
         comm
@@ -468,13 +468,13 @@ cdef class DMPlex(DM):
 
         Parameters
         ----------
-        cellLabel
+        label
             label marking cells to be contained in the new mesh
         value
             label value to use
         ignoreHalo
             Flag indicating if labeled points that are in the halo are ignored
-        sanitizeSubmesh
+        sanitizeSubMesh
             Flag indicating if a subpoint is forced to be owned by a rank that owns
             a subcell that contains that point in its closure
         comm
@@ -1338,7 +1338,7 @@ cdef class DMPlex(DM):
             The point in the `DMPlex`.
         values
             The array of values.
-        mode
+        addv
             The insertion mode.
 
         See Also
@@ -1374,7 +1374,7 @@ cdef class DMPlex(DM):
             The point in the `DMPlex`.
         values
             The array of values.
-        mode
+        addv
             The insertion mode.
 
         See Also
@@ -1422,7 +1422,7 @@ cdef class DMPlex(DM):
     def setTriangleOptions(self, opts: str) -> None:
         """Set the options used for the Triangle mesh generator.
 
-        Not collective.
+        Logically collective.
 
         Parameters
         ----------
@@ -1442,7 +1442,7 @@ cdef class DMPlex(DM):
     def setTetGenOptions(self, opts: str) -> None:
         """Set the options used for the Tetgen mesh generator.
 
-        Not collective.
+        Logically collective.
 
         Parameters
         ----------
@@ -1462,7 +1462,7 @@ cdef class DMPlex(DM):
     def markBoundaryFaces(self, label: str, value: int | None = None) -> DMLabel:
         """Mark all faces on the boundary.
 
-        Not collective.
+        Collective.
 
         Parameters
         ----------
@@ -1883,7 +1883,7 @@ cdef class DMPlex(DM):
 
     def distributeField(self, SF sf, Section sec, Vec vec,
                         Section newsec=None, Vec newvec=None) -> tuple[Section, Vec]:
-        """Distribute field data with a with a given `SF`.
+        """Distribute field data with a given `SF`.
 
         Collective.
 
@@ -1896,14 +1896,14 @@ cdef class DMPlex(DM):
         vec
             The existing data in a local vector.
         newsec
-            The `SF` describing the new data layout.
+            The `Section` describing the new data layout.
         newvec
             The new data in a local vector.
 
         Returns
         -------
         newSection : Section
-            The `SF` describing the new data layout.
+            The `Section` describing the new data layout.
         newVec : Vec
             The new data in a local vector.
 
@@ -2331,7 +2331,7 @@ cdef class DMPlex(DM):
 
         Parameters
         ----------
-        reorder
+        flag
             Flag for reordering.
 
         See Also
@@ -3682,7 +3682,7 @@ cdef class DMPlex(DM):
     def setMigrationSF(self, SF sf) -> None:
         """Set the `SF` for migrating from a parent `DM` into this `DM`.
 
-        Not collective.
+        Logically collective.
 
         See Also
         --------

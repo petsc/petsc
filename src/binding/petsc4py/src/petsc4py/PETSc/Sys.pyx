@@ -175,7 +175,7 @@ cdef class Sys:
         comm
             MPI communicator, defaults to `getDefaultComm`.
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are ignored.
 
         See Also
         --------
@@ -207,6 +207,9 @@ cdef class Sys:
 
         Not collective.
 
+        With ``flush=True``, the flush is collective over the communicator;
+        all ranks must participate in the matching flush.
+
         Parameters
         ----------
         *args
@@ -220,7 +223,7 @@ cdef class Sys:
         comm
             MPI communicator, defaults to `getDefaultComm`.
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are ignored.
 
         See Also
         --------

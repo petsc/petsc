@@ -531,7 +531,10 @@ cdef class IS(Object):
     def isSorted(self) -> bool:
         """Return whether the indices have been sorted.
 
-        Collective.
+        Not collective.
+
+        Only the local indices are checked; different ranks may return different
+        results.
 
         See Also
         --------

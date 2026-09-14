@@ -2226,7 +2226,7 @@ cdef class Vec(Object):
             Location of the maximum value. If multiple entries exist with the
             same value then the smallest index will be returned.
         val : Scalar
-            Minimum value.
+            Maximum real part.
 
         See Also
         --------
@@ -2732,13 +2732,11 @@ cdef class Vec(Object):
 
         Logically collective.
 
-        Equivalent to ``result = max_i abs(x[i] / y[i])``.
+        Equivalent to ``result = max_i abs(self[i] / vec[i])``.
 
         Parameters
         ----------
-        x
-            Numerator vector.
-        y
+        vec
             Denominator vector.
 
         See Also
@@ -3286,7 +3284,7 @@ cdef class Vec(Object):
 
         See Also
         --------
-        strideScatter, petsc.VecStrideScatter
+        strideScatter, petsc.VecStrideGather
 
         """
         cdef PetscInt ival = asInt(field)

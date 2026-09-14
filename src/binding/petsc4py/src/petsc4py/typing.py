@@ -367,34 +367,35 @@ PCHPDDMAssembleAuxiliaryMatFunction = Callable[[Mat, float, Vec, Vec, float, IS]
 
 # --- SNES ---
 
+# Qualify SNES references to distinguish the solver class from TAO.Type.SNES.
 SNESMonitorFunction = Callable[[SNES, int, float], None]
-"""`SNES` monitor callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` monitor callback."""
 
 SNESObjFunction = Callable[[SNES, Vec], None]
-"""`SNES` objective function callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` objective function callback."""
 
 SNESFunction = Callable[[SNES, Vec, Vec], None]
-"""`SNES` residual function callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` residual function callback."""
 
 SNESJacobianFunction = Callable[[SNES, Vec, Mat, Mat], None]
-"""`SNES` Jacobian callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` Jacobian callback."""
 
 SNESGuessFunction = Callable[[SNES, Vec], None]
-"""`SNES` initial guess callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` initial guess callback."""
 
 SNESUpdateFunction = Callable[[SNES, int], None]
-"""`SNES` step update callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` step update callback."""
 
 SNESLSPreFunction = Callable[[Vec, Vec], None]
-"""`SNES` linesearch pre-check update callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` linesearch pre-check update callback."""
 
 SNESNGSFunction = Callable[[SNES, Vec, Vec], None]
-"""`SNES` nonlinear Gauss-Seidel callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` nonlinear Gauss-Seidel callback."""
 
 SNESConvergedFunction = Callable[
     [SNES, int, tuple[float, float, float]], SNES.ConvergedReason
 ]
-"""`SNES` convergence test callback."""
+""":class:`SNES <petsc4py.PETSc.SNES>` convergence test callback."""
 
 # --- TS ---
 

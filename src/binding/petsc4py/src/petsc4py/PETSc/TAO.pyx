@@ -1052,7 +1052,7 @@ cdef class TAO(Object):
 
         See Also
         --------
-        setVariableBounds, petsc.TaoComputeVariableBounds
+        setConstraints, petsc.TaoComputeConstraints
 
         """
         CHKERR(TaoComputeConstraints(self.tao, x.vec, c.vec))

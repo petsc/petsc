@@ -1407,13 +1407,13 @@ cdef class DM(Object):
         CHKERR(DMSetSparseLocalize(self.dm, cflag))
 
     def getBoundingBox(self) -> tuple[tuple[float, float], ...]:
-        """Return the dimension of embedding space for coordinates values.
+        """Return the global bounding box of the coordinates.
 
-        Not collective.
+        Collective.
 
         See Also
         --------
-        petsc.DMGetBoundingBox
+        getLocalBoundingBox, petsc.DMGetBoundingBox
 
         """
         cdef PetscInt dim=0

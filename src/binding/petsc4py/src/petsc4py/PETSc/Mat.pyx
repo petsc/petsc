@@ -2796,7 +2796,7 @@ cdef class Mat(Object):
 
         See Also
         --------
-        petsc.MatGetRowIJ
+        petsc.MatGetColumnIJ
 
         """
         cdef PetscInt shift=0
@@ -2861,7 +2861,7 @@ cdef class Mat(Object):
         cols
             Column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols)``.
+            The scalar values. A sequence of length exactly ``len(rows) * len(cols)``.
         addv
             Insertion mode.
 
@@ -2973,7 +2973,7 @@ cdef class Mat(Object):
         cols
             Block column indices.
         values
-            The scalar values. A sequence of length at least
+            The scalar values. A sequence of length exactly
             ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
@@ -3136,7 +3136,7 @@ cdef class Mat(Object):
         cols
             Local column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols)``.
+            The scalar values. A sequence of length exactly ``len(rows) * len(cols)``.
         addv
             Insertion mode.
 
@@ -3227,7 +3227,7 @@ cdef class Mat(Object):
         cols
             Local block column indices.
         values
-            The scalar values. A sequence of length at least
+            The scalar values. A sequence of length exactly
             ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
@@ -6643,7 +6643,7 @@ cdef class Mat(Object):
         return (dltype, devId)
 
     def toDLPack(self, mode: AccessModeSpec = 'rw') -> Any:
-        """Return a DLPack `PyCapsule` wrapping the vector data."""
+        """Return a DLPack `PyCapsule` wrapping the matrix data."""
         if mode is None: mode = 'rw'
         if mode is None: mode = 'rw'
         if mode not in ['rw', 'r', 'w']:

@@ -103,8 +103,8 @@ class KSPType(object):
         Conjugate Gradient Squared method.
         `petsc.KSPCGS`
     `TFQMR`
-        A Transpose Tree Quasi- Minimal Residual (QMR).
-        `petsc.KSPCR`
+        A Transpose Free Quasi-Minimal Residual (TFQMR) method.
+        `petsc.KSPTFQMR`
     `CR`
         (Preconditioned) Conjugate Residuals (CR) method.
         `petsc.KSPCR`
@@ -1791,7 +1791,8 @@ cdef class KSP(Object):
 
         Notes
         -----
-        If one uses `setDM` then ``x`` or ``b`` need not be passed. Use
+        If one uses `setDM` then ``x`` or ``b`` may be passed as `None`. Both
+        positional arguments are required. Use
         `getSolution` to access the solution in this case.
 
         The operator is specified with `setOperators`.
