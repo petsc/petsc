@@ -46,6 +46,7 @@ If your tool does not load skills automatically, read `.agents/skills/codegraph/
   - Free-form arguments use plain words (e.g. `radius`, `size`, `name`), **never** `<radius>` and never backticks around the arg.
   - Inside the `Options Database Keys:` linter block (the bullet entries `+ -opt val - desc`), the option-name is **bare** — no backticks. Example: `. -petscda_letkf_localization_type (none|gaspari_cohn|gaussian|boxcar) - select the localization kernel`.
   - In inline prose elsewhere (Notes blocks, `.md` chapters, `/*MC M*/` body), wrap the option in backticks as code: `` `-petscda_type name` ``, `` `-log_view` ``. This matches the convention used throughout `doc/manual/` and PETSc's docstring prose.
+  - Backticks are for rendered documentation only. In ordinary `/* */` and `//` comments, including the header comment of a tutorial or test, the option-name stays **bare** — no tutorial or test in the tree backticks one. The enumerated-value and plain-word rules above still apply there.
 - Function typedef names should end in `Fn`.
 - `MPI_Comm_size()` → local `size`; `MPI_Comm_rank()` → `rank`. No prefixed variants (`comm_size`, `nprocs`). If `size` is taken, rename the other local.
 
@@ -117,7 +118,7 @@ Two recurring traps the linter catches:
   ```
   Continuation lines for a multi-line description must be indented to line up under the description (i.e., the column right after `- `), not under the argument name.
 
-- **Stray paragraphs in `Notes:`.** A bare paragraph that starts with a capitalized word and no trailing colon can be misparsed as a section header (`-fdoc-section-header-maybe-header`). Keep follow-up sentences in the same paragraph as the existing Notes text (no blank line between them), or rephrase so the line cannot look like a heading.
+- **Stray paragraphs in `Notes:`.** A colon-less line is flagged as a possible section header (`-fdoc-section-header-maybe-header`) only when it *begins with a section title* — `Note`, `Notes`, `Level`, `Collective`, `Input Parameter`, `Output Parameter`, `Options Database`, `Example Usage`, `Fortran Notes`, `Developer Note`, and the like. Ordinary prose starting with any other capitalized word ("When", "If", "The") is fine, blank line or not. If a paragraph does start with a section title, rephrase it or fold it into the preceding paragraph.
 
 When in doubt, pattern-match against existing well-formatted docstrings in the same file. `make lint` requires the `clang` Python package; if it isn't installed, eyeball the alignment carefully before pushing.
 
