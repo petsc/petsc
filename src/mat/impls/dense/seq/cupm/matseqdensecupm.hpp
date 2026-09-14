@@ -98,6 +98,9 @@ public:
   static PetscErrorCode Convert_SeqDense_SeqDenseCUPM(Mat, MatType, MatReuse, Mat *) noexcept;
   static PetscErrorCode Convert_SeqDenseCUPM_SeqDense(Mat, MatType, MatReuse, Mat *) noexcept;
 
+  static PetscErrorCode PlaceColumnVecArray(Vec, PetscScalar *) noexcept;
+  static PetscErrorCode ResetColumnVecArray(Vec) noexcept;
+
   template <PetscMemType, PetscMemoryAccessMode>
   static PetscErrorCode GetArray(Mat, PetscScalar **, PetscDeviceContext) noexcept;
   template <PetscMemType, PetscMemoryAccessMode>
@@ -1939,6 +1942,53 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetColumnVector(Mat A, Vec v, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Place the device array a[] of a column of the matrix in its column Vec cvec. MatDenseCreateColumnVec_Private()
+// creates cvec from the VecType of the matrix, so it is a CUPM Vec, or a VECKOKKOS when the Kokkos backend runs on
+// this device (see MatCreateDenseFromVecType()); each needs its own place/reset routines
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::PlaceColumnVecArray(Vec cvec, PetscScalar *a) noexcept
+{
+  using namespace vec::cupm;
+  PetscBool iscupm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(cvec), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), ""));
+  if (iscupm) PetscCall(VecCUPMPlaceArrayAsync<T>(cvec, a));
+  else {
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+    constexpr bool kokkos_on_this_device = (T == device::cupm::DeviceType::CUDA && PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_CUDA)) || (T == device::cupm::DeviceType::HIP && PetscDefined(HAVE_MACRO_KOKKOS_ENABLE_HIP));
+    PetscBool      iskokkos;
+
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(cvec), &iskokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+    PetscCheck(iskokkos, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column Vec of type %s cannot be used with a %s matrix", PetscObjectCast(cvec)->type_name, MATDENSECUPM());
+    PetscCheck(kokkos_on_this_device, PETSC_COMM_SELF, PETSC_ERR_SUP, "The Kokkos backend does not run on the device of a %s matrix, so a %s cannot be its column Vec", MATDENSECUPM(), PetscObjectCast(cvec)->type_name);
+    PetscCall(VecKokkosPlaceArray(cvec, a));
+#else
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column Vec of type %s cannot be used with a %s matrix", PetscObjectCast(cvec)->type_name, MATDENSECUPM());
+#endif
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::ResetColumnVecArray(Vec cvec) noexcept
+{
+  using namespace vec::cupm;
+  PetscBool iscupm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(cvec), &iscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), ""));
+  if (iscupm) PetscCall(VecCUPMResetArrayAsync<T>(cvec));
+  else {
+#if PetscDefined(HAVE_KOKKOS_KERNELS)
+    PetscCall(VecKokkosResetArray(cvec)); // PlaceColumnVecArray() already checked cvec is a VECKOKKOS
+#else
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column Vec of type %s cannot be used with a %s matrix", PetscObjectCast(cvec)->type_name, MATDENSECUPM());
+#endif
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 template <device::cupm::DeviceType T>
 template <PetscMemoryAccessMode access>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Vec *v) noexcept
@@ -1954,7 +2004,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetColumnVec(Mat A, PetscInt col, Ve
   if (!mimpl->cvec) PetscCall(MatDenseCreateColumnVec_Private(A, &mimpl->cvec));
   PetscCall(GetHandles_(&dctx));
   PetscCall(GetArray<PETSC_MEMTYPE_DEVICE, access>(A, const_cast<PetscScalar **>(&mimpl->ptrinuse), dctx));
-  PetscCall(VecCUPMPlaceArrayAsync<T>(mimpl->cvec, mimpl->ptrinuse + static_cast<std::size_t>(col) * static_cast<std::size_t>(mimpl->lda)));
+  PetscCall(PlaceColumnVecArray(mimpl->cvec, const_cast<PetscScalar *>(mimpl->ptrinuse) + static_cast<std::size_t>(col) * static_cast<std::size_t>(mimpl->lda)));
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPush(mimpl->cvec));
   *v = mimpl->cvec;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1974,7 +2024,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::RestoreColumnVec(Mat A, PetscInt, Ve
   PetscCheck(cvec, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing internal column vector");
   mimpl->vecinuse = 0;
   if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecLockReadPop(cvec));
-  PetscCall(VecCUPMResetArrayAsync<T>(cvec));
+  PetscCall(ResetColumnVecArray(cvec));
   PetscCall(GetHandles_(&dctx));
   PetscCall(RestoreArray<PETSC_MEMTYPE_DEVICE, access>(A, const_cast<PetscScalar **>(&mimpl->ptrinuse), dctx));
   if (v) *v = nullptr;

@@ -39,23 +39,24 @@ struct Vec_Kokkos {
   PetscScalarKokkosDualView w_dual;
 
   /* Construct Vec_Kokkos with the given array(s). n is the length of the array.
-    If n != 0, host array (array_h) must not be NULL.
-    If device array (array_d) is NULL, then a proper device mirror will be allocated.
+    If device array (array_d) is NULL but host array (array_h) is not, then a proper device mirror will be allocated.
     Otherwise, the mirror will be created using the given array_d.
     If both arrays are given, we assume they contain the same value (i.e., sync'ed)
+    If both arrays are NULL, the vector is array-less: no memory is allocated, the views wrap NULL with extent n and
+    nothing is marked as modified, until an array is placed with VecPlaceArray() or VecKokkosPlaceArray(), see UpdateArray()
   */
   Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL)
   {
     PetscScalarKokkosViewHost v_h(array_h, n);
     PetscScalarKokkosView     v_d;
 
-    if (array_d) {
-      v_d = PetscScalarKokkosView(array_d, n); /* Use the given device array */
+    if (array_d || !array_h) {
+      v_d = PetscScalarKokkosView(array_d, n); /* Use the given device array, or none for an array-less vector */
     } else {
       v_d = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), v_h); /* Create a mirror in DefaultMemorySpace but do not copy values */
     }
     v_dual = PetscScalarKokkosDualView(v_d, v_h);
-    if (!array_d) v_dual.modify_host();
+    if (array_h && !array_d) v_dual.modify_host();
   }
 
   // Construct Vec_Kokkos with the given DualView. Use the sync state as is. With reference counting, Kokkos manages its lifespan.
@@ -63,6 +64,8 @@ struct Vec_Kokkos {
 
   /* SFINAE: Update the object with an array in the given memory space,
      assuming the given array contains the latest value for this vector.
+     A NULL array takes the vector back to the array-less state in that memory space (see the constructor),
+     so nothing is marked as modified, as a view wrapping NULL can never be the source or the target of a sync.
    */
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, HostMirrorMemorySpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
   PetscErrorCode UpdateArray(PetscScalar *array)
@@ -80,10 +83,13 @@ struct Vec_Kokkos {
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
+    PetscScalarKokkosView     v_d = v_dual.view<DefaultMemorySpace>();
 
     PetscFunctionBegin;
-    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h));
-    PetscCallCXX(v_dual.modify_host());
+    /* An array-less vector gets its device mirror with the first host array placed in it */
+    if (array && !v_d.data()) PetscCallCXX(v_d = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, DefaultMemorySpace(), v_h));
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_h));
+    if (array) PetscCallCXX(v_dual.modify_host());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -94,7 +100,7 @@ struct Vec_Kokkos {
 
     PetscFunctionBegin;
     PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_dual.view_host()));
-    PetscCallCXX(v_dual.modify_device());
+    if (array) PetscCallCXX(v_dual.modify_device());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

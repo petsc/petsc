@@ -427,8 +427,9 @@ PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, co
   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
   same type as an existing vector.
 
-  If the user-provided array is NULL, then VecKokkosPlaceArray() can be used
-  at a later stage to SET the array for storing the vector values.
+  If `darray` is NULL, the vector is created without any array, on host or device;
+  `VecKokkosPlaceArray()` (with a device array) or `VecPlaceArray()` (with a host array)
+  must then be called before the vector is used.
 
   PETSc does NOT free the array when the vector is destroyed via VecDestroy().
   The user should not free the array until the vector is destroyed.
@@ -455,19 +456,19 @@ PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscCall(VecSetBlockSize(w, bs));
   PetscCall(PetscLayoutSetUp(w->map));
 
-  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) {
-    harray = const_cast<PetscScalar *>(darray);
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value || !darray) {
+    harray = const_cast<PetscScalar *>(darray);       /* With a NULL darray, the vector is array-less until an array is placed */
   } else PetscCall(PetscMalloc1(w->map->n, &harray)); /* If device is not the same as host, allocate the host array ourselves */
 
   PetscCall(VecCreate_MPI_Private(w, PETSC_FALSE /*alloc*/, 0 /*nghost*/, harray)); /* Build a sequential vector with provided data */
   vecmpi = static_cast<Vec_MPI *>(w->data);
 
-  if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by PETSc */
+  if (harray != darray) vecmpi->array_allocated = harray; /* The host array was allocated by PETSc */
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS));
   PetscCall(VecCreate_MPIKokkos_Common(w));
   veckok = new Vec_Kokkos(n, harray, const_cast<PetscScalar *>(darray));
-  veckok->v_dual.modify_device(); /* Mark the device is modified */
+  if (darray) veckok->v_dual.modify_device(); /* Mark the device is modified */
   w->spptr = static_cast<void *>(veckok);
   *v       = w;
   PetscFunctionReturn(PETSC_SUCCESS);
