@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'dd6207fc8114e0cc21a5ac2f5d1e07899e2de22d' # v0.12.0-1148-gdd6207fc on Aug 21, 2025
+    self.gitcommit              = '3381e6d3ca5750f9dad1bcf0a0bec6afee7db4aa' # main sep-11-2026
     self.download               = ['git://https://github.com/CEED/libceed.git','https://github.com/CEED/libceed/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = ['CeedRegister']
     self.includes               = ['ceed.h']
