@@ -1492,7 +1492,7 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
   PetscAssertPointer(nm, 4);
   PetscValidType(s, 1);
   PetscValidType(t, 2);
-  PetscCheckSameTypeAndComm(s, 1, t, 2);
+  PetscCheckSameComm(s, 1, t, 2);
   PetscCheck(s->map->N == t->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incompatible vector global lengths");
   PetscCheck(s->map->n == t->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incompatible vector local lengths");
 

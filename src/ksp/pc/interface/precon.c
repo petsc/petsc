@@ -885,7 +885,6 @@ PetscErrorCode PCMatApplyRichardson(PC pc, Mat B, Mat Y, Mat W, PetscReal rtol, 
   PetscCheckSameComm(pc, 1, B, 2);
   PetscCheckSameComm(pc, 1, Y, 3);
   if (W) PetscCheckSameComm(pc, 1, W, 4);
-  PetscCheckSameType(B, 2, Y, 3);
   PetscCheck(Y != B, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and B must be different matrices");
   PetscCheck(!W || (W != Y && W != B), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "W must be different from B and Y");
   PetscCall(PCMatCheckBlocks_Private(pc, B, Y, "right-hand sides", "solutions"));

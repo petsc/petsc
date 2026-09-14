@@ -1071,9 +1071,6 @@ PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
   PetscValidType(Vec2, 2);
   PetscValidType(Vec3, 3);
   PetscValidType(VMedian, 4);
-  PetscCheckSameType(Vec1, 1, Vec2, 2);
-  PetscCheckSameType(Vec1, 1, Vec3, 3);
-  PetscCheckSameType(Vec1, 1, VMedian, 4);
   PetscCheckSameComm(Vec1, 1, Vec2, 2);
   PetscCheckSameComm(Vec1, 1, Vec3, 3);
   PetscCheckSameComm(Vec1, 1, VMedian, 4);

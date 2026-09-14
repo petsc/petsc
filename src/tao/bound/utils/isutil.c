@@ -158,8 +158,8 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 
   Input Parameters:
 + X       - solution vector
-. XL      - lower bound vector
-. XU      - upper bound vector
+. XL      - lower bound vector, may be `NULL`
+. XU      - upper bound vector, may be `NULL`
 . G       - unprojected gradient
 . S       - step direction with which the active bounds will be estimated
 . W       - work vector of type and size of `X`
@@ -188,7 +188,7 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscInt           N_isl, N_isu, N_isf, N_isa, N_isi;
   PetscInt           n, low, high, nDiff;
   PetscInt          *isl = NULL, *isu = NULL, *isf = NULL, *isa = NULL, *isi = NULL;
-  const PetscScalar *xl, *xu, *x, *g;
+  const PetscScalar *xl = NULL, *xu = NULL, *x, *g;
   MPI_Comm           comm = PetscObjectComm((PetscObject)X);
 
   PetscFunctionBegin;
@@ -199,11 +199,6 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   PetscValidHeaderSpecific(S, VEC_CLASSID, 5);
   PetscValidHeaderSpecific(W, VEC_CLASSID, 6);
 
-  if (XL) PetscCheckSameType(X, 1, XL, 2);
-  if (XU) PetscCheckSameType(X, 1, XU, 3);
-  PetscCheckSameType(X, 1, G, 4);
-  PetscCheckSameType(X, 1, S, 5);
-  PetscCheckSameType(X, 1, W, 6);
   if (XL) PetscCheckSameComm(X, 1, XL, 2);
   if (XU) PetscCheckSameComm(X, 1, XU, 3);
   PetscCheckSameComm(X, 1, G, 4);
@@ -238,8 +233,8 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
   }
   if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
-    PetscCall(VecGetArrayRead(XL, &xl));
-    PetscCall(VecGetArrayRead(XU, &xu));
+    if (XL) PetscCall(VecGetArrayRead(XL, &xl));
+    if (XU) PetscCall(VecGetArrayRead(XU, &xu));
     PetscCall(VecGetArrayRead(G, &g));
 
     /* Loop over variables and categorize the indexes */
@@ -249,19 +244,19 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
     PetscCall(PetscMalloc1(n, &isa));
     PetscCall(PetscMalloc1(n, &isi));
     for (i = 0; i < n; ++i) {
-      if (xl[i] == xu[i]) {
+      if (XL && XU && xl[i] == xu[i]) {
         /* Fixed variables */
         isf[n_isf] = low + i;
         ++n_isf;
         isa[n_isa] = low + i;
         ++n_isa;
-      } else if (xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + *bound_tol && g[i] > zero) {
+      } else if (XL && xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + *bound_tol && g[i] > zero) {
         /* Lower bounded variables */
         isl[n_isl] = low + i;
         ++n_isl;
         isa[n_isa] = low + i;
         ++n_isa;
-      } else if (xu[i] < PETSC_INFINITY && x[i] >= xu[i] - *bound_tol && g[i] < zero) {
+      } else if (XU && xu[i] < PETSC_INFINITY && x[i] >= xu[i] - *bound_tol && g[i] < zero) {
         /* Upper bounded variables */
         isu[n_isu] = low + i;
         ++n_isu;
@@ -275,8 +270,8 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
     }
 
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCall(VecRestoreArrayRead(XL, &xl));
-    PetscCall(VecRestoreArrayRead(XU, &xu));
+    if (XL) PetscCall(VecRestoreArrayRead(XL, &xl));
+    if (XU) PetscCall(VecRestoreArrayRead(XU, &xu));
     PetscCall(VecRestoreArrayRead(G, &g));
   }
 
@@ -389,8 +384,8 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 
   Input Parameters:
 + X         - solution vector
-. XL        - lower bound vector
-. XU        - upper bound vector
+. XL        - lower bound vector, may be `NULL`
+. XU        - upper bound vector, may be `NULL`
 - bound_tol - absolute tolerance in enforcing the bound
 
   Output Parameters:
@@ -405,7 +400,7 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
 {
   PetscInt           i, n, low, high;
   PetscScalar       *xout;
-  const PetscScalar *x, *xl, *xu;
+  const PetscScalar *x, *xl = NULL, *xu = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
@@ -414,41 +409,38 @@ PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, Pets
   PetscValidHeaderSpecific(Xout, VEC_CLASSID, 6);
   if (!XL && !XU) {
     PetscCall(VecCopy(X, Xout));
-    *nDiff = 0.0;
+    *nDiff = 0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscCheckSameType(X, 1, XL, 2);
-  PetscCheckSameType(X, 1, XU, 3);
-  PetscCheckSameType(X, 1, Xout, 6);
-  PetscCheckSameComm(X, 1, XL, 2);
-  PetscCheckSameComm(X, 1, XU, 3);
+  if (XL) PetscCheckSameComm(X, 1, XL, 2);
+  if (XU) PetscCheckSameComm(X, 1, XU, 3);
   PetscCheckSameComm(X, 1, Xout, 6);
-  VecCheckSameSize(X, 1, XL, 2);
-  VecCheckSameSize(X, 1, XU, 3);
-  VecCheckSameSize(X, 1, Xout, 4);
+  if (XL) VecCheckSameSize(X, 1, XL, 2);
+  if (XU) VecCheckSameSize(X, 1, XU, 3);
+  VecCheckSameSize(X, 1, Xout, 6);
 
   PetscCall(VecGetOwnershipRange(X, &low, &high));
   PetscCall(VecGetLocalSize(X, &n));
   *nDiff = 0;
   if (n > 0) {
     PetscCall(VecGetArrayRead(X, &x));
-    PetscCall(VecGetArrayRead(XL, &xl));
-    PetscCall(VecGetArrayRead(XU, &xu));
+    if (XL) PetscCall(VecGetArrayRead(XL, &xl));
+    if (XU) PetscCall(VecGetArrayRead(XU, &xu));
     PetscCall(VecGetArray(Xout, &xout));
 
     for (i = 0; i < n; ++i) {
-      if (xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + bound_tol) {
+      if (XL && xl[i] > PETSC_NINFINITY && x[i] <= xl[i] + bound_tol) {
         xout[i] = xl[i];
         ++(*nDiff);
-      } else if (xu[i] < PETSC_INFINITY && x[i] >= xu[i] - bound_tol) {
+      } else if (XU && xu[i] < PETSC_INFINITY && x[i] >= xu[i] - bound_tol) {
         xout[i] = xu[i];
         ++(*nDiff);
       }
     }
 
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCall(VecRestoreArrayRead(XL, &xl));
-    PetscCall(VecRestoreArrayRead(XU, &xu));
+    if (XL) PetscCall(VecRestoreArrayRead(XL, &xl));
+    if (XU) PetscCall(VecRestoreArrayRead(XU, &xu));
     PetscCall(VecRestoreArray(Xout, &xout));
   }
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nDiff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)X)));

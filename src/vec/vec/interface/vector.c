@@ -317,8 +317,8 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscDevice
   PetscValidType(w, 1);
   PetscValidType(x, 2);
   PetscValidType(y, 3);
-  PetscCheckSameTypeAndComm(x, 2, y, 3);
-  PetscCheckSameTypeAndComm(y, 3, w, 1);
+  PetscCheckSameComm(x, 2, y, 3);
+  PetscCheckSameComm(y, 3, w, 1);
   VecCheckSameSize(w, 1, x, 2);
   VecCheckSameSize(w, 1, y, 3);
   VecCheckAssembled(x);
@@ -1976,7 +1976,7 @@ PetscErrorCode VecSwapAsync_Private(Vec x, Vec y, PetscDeviceContext dctx)
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
   PetscValidType(x, 1);
   PetscValidType(y, 2);
-  PetscCheckSameTypeAndComm(x, 1, y, 2);
+  PetscCheckSameComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
   VecCheckAssembled(x);
   VecCheckAssembled(y);
