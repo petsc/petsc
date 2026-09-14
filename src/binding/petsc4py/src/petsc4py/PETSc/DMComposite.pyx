@@ -61,7 +61,6 @@ cdef class DMComposite(DM):
         cdef PetscInt n = 0
         CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         return toInt(n)
-    getNumberDM = getNumber
 
     def getEntries(self) -> list[DM]:
         """Return sub-DMs contained in the composite.

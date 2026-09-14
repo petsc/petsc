@@ -111,8 +111,6 @@ cdef class TAO(Object):
     ConvergedReason = TAOConvergedReason
     BNCGType = TAOBNCGType
     ALMMType = TAOALMMType
-    # FIXME backward compatibility
-    Reason = TAOConvergedReason
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.tao
@@ -1622,8 +1620,6 @@ cdef class TAO(Object):
         CHKERR(TaoGetSolutionStatus(self.tao, NULL, &fval, NULL, NULL, NULL, NULL))
         return toReal(fval)
 
-    getFunctionValue = getObjectiveValue
-
     def getSolutionNorm(self) -> tuple[float, float, float]:
         """Return the objective function value and the norms of gradient and constraints.
 
@@ -2038,10 +2034,6 @@ cdef class TAO(Object):
         CHKERR(PetscINCREF(ls.obj))
         return ls
 
-    # --- backward compatibility ---
-
-    setInitial = setSolution
-
     # --- application context ---
 
     property appctx:
@@ -2117,7 +2109,7 @@ cdef class TAO(Object):
     property function:
         """Objective value."""
         def __get__(self) -> float:
-            return self.getFunctionValue()
+            return self.getObjectiveValue()
 
     property gradient:
         """Gradient vector."""
@@ -2193,8 +2185,6 @@ cdef class TAOLineSearch(Object):
 
     Type   = TAOLineSearchType
     ConvergedReason = TAOLineSearchConvergedReason
-    # FIXME backward compatibility
-    Reason = TAOLineSearchConvergedReason
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.taols

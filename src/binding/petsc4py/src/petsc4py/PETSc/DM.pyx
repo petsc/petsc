@@ -1955,15 +1955,6 @@ cdef class DM(Object):
         CHKERR(PetscINCREF(sec.obj))
         return sec
 
-    setSection = setLocalSection
-    getSection = getLocalSection
-    setDefaultSection = setLocalSection
-    getDefaultSection = getLocalSection
-    setDefaultLocalSection = setLocalSection
-    getDefaultLocalSection = getLocalSection
-    setDefaultGlobalSection = setGlobalSection
-    getDefaultGlobalSection = getGlobalSection
-
     def createSectionSF(self, Section localsec, Section globalsec) -> None:
         """Create the `SF` encoding the parallel DOF overlap for the `DM`.
 
@@ -2013,10 +2004,6 @@ cdef class DM(Object):
 
         """
         CHKERR(DMSetSectionSF(self.dm, sf.sf))
-
-    createDefaultSF = createSectionSF
-    getDefaultSF = getSectionSF
-    setDefaultSF = setSectionSF
 
     def getPointSF(self) -> SF:
         """Return the `SF` encoding the parallel DOF overlap for the `DM`.
@@ -2366,11 +2353,6 @@ cdef class DM(Object):
         cdef PetscBool coutput = PETSC_FALSE
         CHKERR(DMGetLabelOutput(self.dm, cname, &coutput))
         return coutput
-
-    # backward compatibility
-    createGlobalVector = createGlobalVec
-    createLocalVector = createLocalVec
-    getMatrix = createMatrix = createMat
 
     def setKSPCreateOperators(
         self, operators: KSPCreateOperatorsFunction | None,

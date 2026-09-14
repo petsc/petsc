@@ -289,10 +289,6 @@ cdef class SNES(Object):
             appctx = toAppCtx(ctx)
         return appctx
 
-    # backward compatibility
-    setAppCtx = setApplicationContext
-    getAppCtx = getApplicationContext
-
     # --- discretization space ---
 
     def getDM(self) -> DM:
@@ -1555,8 +1551,6 @@ cdef class SNES(Object):
         CHKERR(SNESMonitorCancel(self.snes))
         self.set_attr('__monitor__', None)
 
-    cancelMonitor = monitorCancel
-
     def monitor(self, its, rnorm) -> None:
         """Monitor the solver.
 
@@ -1706,13 +1700,6 @@ cdef class SNES(Object):
         cdef PetscInt ival = 0
         CHKERR(SNESGetLinearSolveFailures(self.snes, &ival))
         return toInt(ival)
-
-    setMaxNonlinearStepFailures = setMaxStepFailures
-    getMaxNonlinearStepFailures = getMaxStepFailures
-    getNonlinearStepFailures    = getStepFailures
-    setMaxLinearSolveFailures   = setMaxKSPFailures
-    getMaxLinearSolveFailures   = getMaxKSPFailures
-    getLinearSolveFailures      = getKSPFailures
 
     # --- solving ---
 
@@ -2474,10 +2461,10 @@ cdef class SNES(Object):
     property appctx:
         """Application context."""
         def __get__(self) -> Any:
-            return self.getAppCtx()
+            return self.getApplicationContext()
 
         def __set__(self, value):
-            self.setAppCtx(value)
+            self.setApplicationContext(value)
 
     # --- discretization space ---
 

@@ -6,6 +6,49 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Development
+===========
+
+- Remove backward-compatibility entry points. Use their current names:
+
+  - ``PETSc.DMDA`` instead of ``PETSc.DA``.
+  - ``DM.createGlobalVec()``, ``DM.createLocalVec()``, and ``DM.createMat()``
+    instead of ``createGlobalVector()``, ``createLocalVector()``, and
+    ``getMatrix()``/``createMatrix()``.
+  - ``DM.setLocalSection()``/``getLocalSection()`` instead of
+    ``setSection()``/``getSection()``, ``setDefaultSection()``/``getDefaultSection()``,
+    or ``setDefaultLocalSection()``/``getDefaultLocalSection()``.
+    Use ``setGlobalSection()``/``getGlobalSection()`` instead of
+    ``setDefaultGlobalSection()``/``getDefaultGlobalSection()``.
+  - ``DM.createSectionSF()``, ``getSectionSF()``, and ``setSectionSF()`` instead
+    of ``createDefaultSF()``, ``getDefaultSF()``, and ``setDefaultSF()``.
+  - ``DMDA.createNaturalVec()`` instead of ``createNaturalVector()`` and
+    ``DMComposite.getNumber()`` instead of ``getNumberDM()``.
+  - ``Mat.createVecs()``, ``createVecRight()``, ``createVecLeft()``, and ``ptap()``
+    instead of ``getVecs()``, ``getVecRight()``, ``getVecLeft()``, and ``PtAP()``.
+  - ``Mat.Type.LMVMDIAGBROYDEN`` and ``Mat.SORType.SYMMETRIC_SWEEP`` instead of
+    the misspelled ``LMVMDIAGBBROYDEN`` and ``SYMMETRY_SWEEP``.
+  - ``SNES.setApplicationContext()``/``getApplicationContext()`` instead of
+    ``setAppCtx()``/``getAppCtx()``. The ``appctx`` property remains available.
+    Use the ``setMaxStepFailures()``, ``getMaxStepFailures()``, and
+    ``getStepFailures()`` methods instead of their ``NonlinearStepFailures``
+    counterparts, and the corresponding ``KSPFailures`` methods instead of
+    ``LinearSolveFailures``.
+  - ``KSP.monitorCancel()``, ``SNES.monitorCancel()``, and ``TS.monitorCancel()``
+    instead of ``cancelMonitor()``; ``Scatter.begin()``/``end()`` instead of
+    ``scatterBegin()``/``scatterEnd()``.
+  - ``PC.FieldSplitSchurFactType``/``FieldSplitSchurPreType`` instead of
+    ``SchurFactType``/``SchurPreType``.
+  - ``TAO.ConvergedReason`` and ``TAOLineSearch.ConvergedReason`` instead of
+    ``Reason``; ``TAO.setSolution()`` instead of ``setInitial()`` and
+    ``TAO.getObjectiveValue()`` instead of ``getFunctionValue()``.
+  - ``TS.getEvaluationTimes()`` instead of ``getTimeSpan()``. Replace
+    ``getTimeSpanSolutions()`` with ``getEvaluationSolutions()``, which returns
+    both the evaluation times and the solution list.
+  - ``Viewer.FileMode``/``DrawSize`` instead of ``Mode``/``Size``, and
+    ``Log.logFlops()`` instead of ``addFlops()``.
+
+
 Release 3.25.0
 ==============
 

@@ -14,7 +14,7 @@ def RunTest():
     A.setPythonContext(example100.Laplace1D())
     A.setUp()
 
-    x, b = A.getVecs()
+    x, b = A.createVecs()
     b.set(1)
 
     ksp = PETSc.KSP()

@@ -3737,10 +3737,6 @@ cdef class Mat(Object):
         CHKERR(MatCreateVecs(self.mat, NULL, &vecl.vec))
         return vecl
 
-    getVecs = createVecs
-    getVecRight = createVecRight
-    getVecLeft = createVecLeft
-
     #
 
     def getColumnVector(self, column: int, Vec result=None) -> Vec:
@@ -6570,10 +6566,6 @@ cdef class Mat(Object):
 
         """
         CHKERR(MatSetDM(self.mat, dm.dm))
-
-    # backward compatibility
-
-    PtAP = ptap
 
     #
 

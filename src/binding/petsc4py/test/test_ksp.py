@@ -250,11 +250,8 @@ class TestKSPRICHARDSON(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.RICHARDSON
 
 
-class TestKSPCHEBYCHEV(BaseTestKSP, unittest.TestCase):
-    try:
-        KSP_TYPE = PETSc.KSP.Type.CHEBYSHEV
-    except AttributeError:
-        KSP_TYPE = PETSc.KSP.Type.CHEBYCHEV
+class TestKSPCHEBYSHEV(BaseTestKSP, unittest.TestCase):
+    KSP_TYPE = PETSc.KSP.Type.CHEBYSHEV
 
 
 class TestKSPCG(BaseTestKSP, unittest.TestCase):

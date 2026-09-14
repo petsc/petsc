@@ -98,7 +98,7 @@ class TestGCSNES(BaseTestGC, unittest.TestCase):
     CLASS = PETSc.SNES
 
     def testCycleInAppCtx(self):
-        self.obj.setAppCtx(self.obj)
+        self.obj.setApplicationContext(self.obj)
 
 
 class TestGCSNESSubType(TestGCSNES):

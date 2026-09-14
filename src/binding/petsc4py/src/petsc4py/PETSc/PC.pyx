@@ -217,9 +217,6 @@ cdef class PC(Object):
     HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
     DeflationSpaceType        = PCDeflationSpaceType
     FailedReason              = PCFailedReason
-    # Backward compatibility
-    SchurFactType             = PCFieldSplitSchurFactType
-    SchurPreType              = PCFieldSplitSchurPreType
 
     # --- xxx ---
 

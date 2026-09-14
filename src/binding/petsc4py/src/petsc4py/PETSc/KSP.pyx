@@ -1324,8 +1324,6 @@ cdef class KSP(Object):
         CHKERR(KSPMonitorCancel(self.ksp))
         self.set_attr('__monitor__', None)
 
-    cancelMonitor = monitorCancel
-
     def monitor(self, its: int, rnorm: float) -> None:
         """Run the user provided monitor routines, if they exist.
 

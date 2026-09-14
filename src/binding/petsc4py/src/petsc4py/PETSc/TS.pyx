@@ -1590,26 +1590,6 @@ cdef class TS(Object):
         cdef unused = oarray_r(tspan, &nt, &rtspan)
         CHKERR(TSSetTimeSpan(self.ts, nt, rtspan))
 
-    getTimeSpan = getEvaluationTimes
-
-    def getTimeSpanSolutions(self) -> list[Vec]:
-        """Return the solutions at the times in the time span. Deprecated.
-
-        Not collective.
-
-        See Also
-        --------
-        setTimeSpan, setEvaluationTimes, getEvaluationSolutions
-
-        """
-        cdef PetscInt nt = 0
-        cdef PetscVec *sols = NULL
-        CHKERR(TSGetEvaluationSolutions(self.ts, &nt, NULL, &sols))
-        cdef object sollist = None
-        if sols != NULL:
-            sollist = [ref_Vec(sols[i]) for i from 0 <= i < nt]
-        return sollist
-
     # --- inner solver ---
 
     def getSNES(self) -> SNES:
@@ -2235,8 +2215,6 @@ cdef class TS(Object):
         """
         self.set_attr('__monitor__', None)
         CHKERR(TSMonitorCancel(self.ts))
-
-    cancelMonitor = monitorCancel
 
     def monitor(self, step: int, time: float, Vec u=None) -> None:
         """Monitor the solve.

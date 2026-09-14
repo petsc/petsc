@@ -282,7 +282,7 @@ class BaseTestMatAnyAIJ:
         self._set_values_ijv()
         A = self.A
         A.assemble()
-        x, y = A.getVecs()
+        x, y = A.createVecs()
         x.setRandom()
         z = y.duplicate()
         A.mult(x, y)
@@ -304,7 +304,7 @@ class BaseTestMatAnyAIJ:
         self._set_values_ijv()
         A = self.A
         A.assemble()
-        x, y = A.getVecs()
+        x, y = A.createVecs()
         x.setRandom()
         z = y.duplicate()
         A.mult(x, y)
