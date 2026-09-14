@@ -104,6 +104,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateGlobalVector(self.dm, DMSHELL_CreateGlobalVector))
         else:
             CHKERR(DMShellSetCreateGlobalVector(self.dm, NULL))
+            self.set_attr('__create_global_vector__', None)
 
     def setCreateLocalVector(
         self,
@@ -136,6 +137,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateLocalVector(self.dm, DMSHELL_CreateLocalVector))
         else:
             CHKERR(DMShellSetCreateLocalVector(self.dm, NULL))
+            self.set_attr('__create_local_vector__', None)
 
     def setGlobalToLocal(
         self,
@@ -185,6 +187,8 @@ cdef class DMShell(DM):
             self.set_attr('__g2l_end__', context)
             cend = &DMSHELL_GlobalToLocalEnd
         CHKERR(DMShellSetGlobalToLocal(self.dm, cbegin, cend))
+        if begin is None: self.set_attr('__g2l_begin__', None)
+        if end is None: self.set_attr('__g2l_end__', None)
 
     def setGlobalToLocalVecScatter(self, Scatter gtol) -> None:
         """Set a `Scatter` context for global to local communication.
@@ -249,6 +253,8 @@ cdef class DMShell(DM):
             self.set_attr('__l2g_end__', context)
             cend = &DMSHELL_LocalToGlobalEnd
         CHKERR(DMShellSetLocalToGlobal(self.dm, cbegin, cend))
+        if begin is None: self.set_attr('__l2g_begin__', None)
+        if end is None: self.set_attr('__l2g_end__', None)
 
     def setLocalToGlobalVecScatter(self, Scatter ltog) -> None:
         """Set a `Scatter` context for local to global communication.
@@ -315,6 +321,8 @@ cdef class DMShell(DM):
             self.set_attr('__l2l_end__', context)
             cend = &DMSHELL_LocalToLocalEnd
         CHKERR(DMShellSetLocalToLocal(self.dm, cbegin, cend))
+        if begin is None: self.set_attr('__l2l_begin__', None)
+        if end is None: self.set_attr('__l2l_end__', None)
 
     def setLocalToLocalVecScatter(self, Scatter ltol) -> None:
         """Set a ``Scatter`` context for local to local communication.
@@ -364,6 +372,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateMatrix(self.dm, DMSHELL_CreateMatrix))
         else:
             CHKERR(DMShellSetCreateMatrix(self.dm, NULL))
+            self.set_attr('__create_matrix__', None)
 
     def setCoarsen(
         self,
@@ -396,6 +405,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCoarsen(self.dm, DMSHELL_Coarsen))
         else:
             CHKERR(DMShellSetCoarsen(self.dm, NULL))
+            self.set_attr('__coarsen__', None)
 
     def setRefine(
         self,
@@ -428,6 +438,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetRefine(self.dm, DMSHELL_Refine))
         else:
             CHKERR(DMShellSetRefine(self.dm, NULL))
+            self.set_attr('__refine__', None)
 
     def setCreateInterpolation(
         self,
@@ -460,6 +471,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateInterpolation(self.dm, DMSHELL_CreateInterpolation))
         else:
             CHKERR(DMShellSetCreateInterpolation(self.dm, NULL))
+            self.set_attr('__create_interpolation__', None)
 
     def setCreateInjection(
         self,
@@ -492,6 +504,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateInjection(self.dm, DMSHELL_CreateInjection))
         else:
             CHKERR(DMShellSetCreateInjection(self.dm, NULL))
+            self.set_attr('__create_injection__', None)
 
     def setCreateRestriction(
         self,
@@ -524,6 +537,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateRestriction(self.dm, DMSHELL_CreateRestriction))
         else:
             CHKERR(DMShellSetCreateRestriction(self.dm, NULL))
+            self.set_attr('__create_restriction__', None)
 
     def setCreateFieldDecomposition(
         self,
@@ -556,6 +570,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateFieldDecomposition(self.dm, DMSHELL_CreateFieldDecomposition))
         else:
             CHKERR(DMShellSetCreateFieldDecomposition(self.dm, NULL))
+            self.set_attr('__create_field_decomp__', None)
 
     def setCreateDomainDecomposition(
         self,
@@ -588,6 +603,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateDomainDecomposition(self.dm, DMSHELL_CreateDomainDecomposition))
         else:
             CHKERR(DMShellSetCreateDomainDecomposition(self.dm, NULL))
+            self.set_attr('__create_domain_decomp__', None)
 
     def setCreateDomainDecompositionScatters(
         self,
@@ -620,6 +636,7 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateDomainDecompositionScatters(self.dm, DMSHELL_CreateDomainDecompositionScatters))
         else:
             CHKERR(DMShellSetCreateDomainDecompositionScatters(self.dm, NULL))
+            self.set_attr('__create_domain_decomp_scatters__', None)
 
     def setCreateSubDM(
         self,
@@ -652,3 +669,4 @@ cdef class DMShell(DM):
             CHKERR(DMShellSetCreateSubDM(self.dm, DMSHELL_CreateSubDM))
         else:
             CHKERR(DMShellSetCreateSubDM(self.dm, NULL))
+            self.set_attr('__create_subdm__', None)

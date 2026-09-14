@@ -17,6 +17,7 @@ PetscErrorCode PetscInitializePackageAll(void)
   PetscCall(KSPInitializePackage());
   PetscCall(SNESInitializePackage());
   PetscCall(TaoInitializePackage());
+  PetscCall(TaoLineSearchInitializePackage());
   PetscCall(TSInitializePackage());
   PetscCall(PetscPartitionerInitializePackage());
   PetscCall(DMInitializePackage());

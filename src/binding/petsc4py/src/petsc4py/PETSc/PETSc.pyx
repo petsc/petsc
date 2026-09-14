@@ -518,13 +518,19 @@ cdef extern from * nogil:
     PetscClassId PETSC_PC_CLASSID               "PC_CLASSID"
     PetscClassId PETSC_KSP_CLASSID              "KSP_CLASSID"
     PetscClassId PETSC_SNES_CLASSID             "SNES_CLASSID"
+    PetscClassId PETSC_SNESLINESEARCH_CLASSID   "SNESLINESEARCH_CLASSID"
     PetscClassId PETSC_TS_CLASSID               "TS_CLASSID"
     PetscClassId PETSC_TAO_CLASSID              "TAO_CLASSID"
+    PetscClassId PETSC_TAOLINESEARCH_CLASSID    "TAOLINESEARCH_CLASSID"
+    PetscClassId PETSC_TAOTERM_CLASSID          "TAOTERM_CLASSID"
     PetscClassId PETSC_AO_CLASSID               "AO_CLASSID"
     PetscClassId PETSC_DM_CLASSID               "DM_CLASSID"
+    PetscClassId PETSC_DMPLEXTRANSFORM_CLASSID  "DMPLEXTRANSFORM_CLASSID"
+    PetscClassId PETSC_DMSWARMCELLDM_CLASSID    "DMSWARMCELLDM_CLASSID"
     PetscClassId PETSC_DS_CLASSID               "PETSCDS_CLASSID"
     PetscClassId PETSC_PARTITIONER_CLASSID      "PETSCPARTITIONER_CLASSID"
     PetscClassId PETSC_FE_CLASSID               "PETSCFE_CLASSID"
+    PetscClassId PETSC_QUADRATURE_CLASSID       "PETSCQUADRATURE_CLASSID"
     PetscClassId PETSC_DMLABEL_CLASSID          "DMLABEL_CLASSID"
     PetscClassId PETSC_SPACE_CLASSID            "PETSCSPACE_CLASSID"
     PetscClassId PETSC_DUALSPACE_CLASSID        "PETSCDUALSPACE_CLASSID"
@@ -575,13 +581,20 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_PC_CLASSID,               PC)
     PyPetscType_Register(PETSC_KSP_CLASSID,              KSP)
     PyPetscType_Register(PETSC_SNES_CLASSID,             SNES)
+    PyPetscType_Register(PETSC_SNESLINESEARCH_CLASSID,   SNESLineSearch)
     PyPetscType_Register(PETSC_TS_CLASSID,               TS)
     PyPetscType_Register(PETSC_TAO_CLASSID,              TAO)
+    if PETSC_TAOLINESEARCH_CLASSID:
+        PyPetscType_Register(PETSC_TAOLINESEARCH_CLASSID, TAOLineSearch)
+    PyPetscType_Register(PETSC_TAOTERM_CLASSID,          TAOTerm)
     PyPetscType_Register(PETSC_PARTITIONER_CLASSID,      Partitioner)
     PyPetscType_Register(PETSC_AO_CLASSID,               AO)
     PyPetscType_Register(PETSC_DM_CLASSID,               DM)
+    PyPetscType_Register(PETSC_DMPLEXTRANSFORM_CLASSID,  DMPlexTransform)
+    PyPetscType_Register(PETSC_DMSWARMCELLDM_CLASSID,    CellDM)
     PyPetscType_Register(PETSC_DS_CLASSID,               DS)
     PyPetscType_Register(PETSC_FE_CLASSID,               FE)
+    PyPetscType_Register(PETSC_QUADRATURE_CLASSID,       Quad)
     PyPetscType_Register(PETSC_DMLABEL_CLASSID,          DMLabel)
     PyPetscType_Register(PETSC_SPACE_CLASSID,            Space)
     PyPetscType_Register(PETSC_DUALSPACE_CLASSID,        DualSpace)

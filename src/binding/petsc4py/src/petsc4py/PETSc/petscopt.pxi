@@ -193,6 +193,31 @@ cdef getpair(prefix, name, const char **pr, const char **nm):
     nm[0] = n
     return (prefix, name)
 
+cdef getprefixedname(prefix, name, const char **key):
+    # Build the full option name, including its leading hyphen.
+    cdef const char *pr = NULL
+    cdef const char *nm = NULL
+    cdef object unused = getpair(prefix, name, &pr, &nm)
+    if pr == NULL:
+        option = bytes2str(nm)
+    else:
+        option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
+    return str2bytes(option, key)
+
+cdef optionvalue(value):
+    # Convert Python values to PETSc options syntax.
+    if isinstance(value, ndarray):
+        value = value.tolist()
+    if isinstance(value, (tuple, list)):
+        return ','.join([optionvalue(v) for v in value])
+    if isinstance(value, (complex, ComplexType)):
+        return str(value).strip('()').replace('j', 'i')
+    if isinstance(value, bool):
+        return str(value).lower()
+    if value is not None:
+        return str(value)
+    return None
+
 cdef getopt(PetscOptions opt, PetscOptType otype, prefix, name, deft):
     cdef const char *pr = NULL
     cdef const char *nm = NULL

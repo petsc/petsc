@@ -1067,8 +1067,11 @@ cdef class DMSwarm(DM):
         cdef const char **c = NULL
         CHKERR(DMSwarmGetCellDMNames(self.dm, &nc, &c))
         cdef list names = []
-        for i from 0 <= i < nc:
-            names.append(bytes2str(c[i]))
+        try:
+            for i from 0 <= i < nc:
+                names.append(bytes2str(c[i]))
+        finally:
+            CHKERR(PetscFree(c))
         return names
 
     def computeMoments(self, coord: str, weight: str) -> list[float]:

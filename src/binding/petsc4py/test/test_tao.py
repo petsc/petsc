@@ -97,6 +97,50 @@ class BaseTestTAO:
         ksp = self.tao.getKSP()
         self.assertFalse(ksp)
 
+    def testLineSearch(self):
+        def objective(ls, x):
+            return 1 + 0.5 * x.dot(x)
+
+        def gradient(ls, x, g):
+            x.copy(g)
+
+        def objective_gradient(ls, x, g):
+            gradient(ls, x, g)
+            return objective(ls, x)
+
+        x = PETSc.Vec().createMPI((2, None), comm=self.COMM)
+        g = x.duplicate()
+        s = x.duplicate()
+        self.tao.setObjectiveGradient(objective_gradient)
+        for lstype in (
+            PETSc.TAOLineSearch.Type.MORETHUENTE,
+            PETSc.TAOLineSearch.Type.ARMIJO,
+        ):
+            for routines in ('separate', 'combined', 'tao'):
+                with self.subTest(lstype=lstype, routines=routines):
+                    ls = PETSc.TAOLineSearch().create(comm=self.COMM)
+                    ls.setType(lstype)
+                    if routines == 'separate':
+                        ls.setObjective(objective)
+                        ls.setGradient(gradient)
+                    elif routines == 'combined':
+                        ls.setObjectiveGradient(objective_gradient)
+                    else:
+                        ls.useTAORoutine(self.tao)
+                    x.set(1)
+                    g.set(1)
+                    s.set(-1)
+                    f, step, reason = ls.apply(x, g, s)
+                    self.assertEqual(reason, PETSc.TAOLineSearch.Reason.SUCCESS)
+                    self.assertAlmostEqual(f, 1)
+                    self.assertAlmostEqual(step, 1)
+                    self.assertAlmostEqual(x.norm(), 0)
+                    self.assertAlmostEqual(g.norm(), 0)
+                    ls.destroy()
+        s.destroy()
+        g.destroy()
+        x.destroy()
+
     def testToleranceProperties(self):
         self.tao.gtol = (1.0e-3, 2.0e-3, 3.0e-3)
         self.assertEqual(self.tao.gtol, (1.0e-3, 2.0e-3, 3.0e-3))

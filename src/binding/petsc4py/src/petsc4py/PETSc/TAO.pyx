@@ -2441,6 +2441,7 @@ cdef class TAOLineSearch(Object):
         cdef PetscReal f = 0
         cdef PetscReal steplen = 0
         cdef PetscTAOLineSearchConvergedReason reason = TAOLINESEARCH_CONTINUE_ITERATING
+        CHKERR(TaoLineSearchComputeObjective(self.taols, x.vec, &f))
         CHKERR(TaoLineSearchApply(self.taols, x.vec, &f, g.vec, s.vec, &steplen, &reason))
         return (toReal(f), toReal(steplen), reason)
 

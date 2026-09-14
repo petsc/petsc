@@ -1,5 +1,6 @@
 from petsc4py import PETSc
 import unittest
+import weakref
 import numpy as np
 
 
@@ -13,6 +14,57 @@ class TestDMShell(unittest.TestCase):
         self.dm.destroy()
         self.dm = None
         PETSc.garbage_cleanup()
+
+    def testClearCallbacks(self):
+        setters = (
+            'setCreateGlobalVector',
+            'setCreateLocalVector',
+            'setCreateMatrix',
+            'setCoarsen',
+            'setRefine',
+            'setCreateInterpolation',
+            'setCreateInjection',
+            'setCreateRestriction',
+            'setCreateFieldDecomposition',
+            'setCreateDomainDecomposition',
+            'setCreateDomainDecompositionScatters',
+            'setCreateSubDM',
+        )
+        for name in setters:
+            with self.subTest(setter=name):
+
+                def callback(*args):
+                    pass
+
+                callback_ref = weakref.ref(callback)
+                setter = getattr(self.dm, name)
+                setter(callback)
+                del callback
+                self.assertIsNotNone(callback_ref())
+                setter(None)
+                self.assertIsNone(callback_ref())
+
+    def testClearScatterCallbacks(self):
+        for name in ('setGlobalToLocal', 'setLocalToGlobal', 'setLocalToLocal'):
+            with self.subTest(setter=name):
+
+                def begin(*args):
+                    pass
+
+                def end(*args):
+                    pass
+
+                begin_ref, end_ref = weakref.ref(begin), weakref.ref(end)
+                setter = getattr(self.dm, name)
+                setter(begin, end)
+                del begin, end
+                self.assertIsNotNone(begin_ref())
+                self.assertIsNotNone(end_ref())
+                setter(None, end_ref())
+                self.assertIsNone(begin_ref())
+                self.assertIsNotNone(end_ref())
+                setter(None, None)
+                self.assertIsNone(end_ref())
 
     def testSetGlobalVector(self):
         vec = PETSc.Vec().create(comm=self.COMM)
@@ -136,6 +188,22 @@ class TestDMShell(unittest.TestCase):
             self.dm.createFieldDecomposition()
         self.assertIsInstance(context.exception.__cause__, ValueError)
         self.assertRegex(str(context.exception.__cause__), 'same length')
+
+    def testFieldDecompositionNames(self):
+        def decompose(dm, names):
+            return names, None, None
+
+        expected = ['velocity', 'pressure']
+        for sequence in (list, tuple):
+            with self.subTest(sequence=sequence.__name__):
+                names = sequence(expected)
+                self.dm.setCreateFieldDecomposition(decompose, args=(names,))
+                self.dm.setUp()
+                result, ises, dms = self.dm.createFieldDecomposition()
+                self.assertEqual(result, expected)
+                self.assertEqual(list(names), expected)
+                self.assertEqual(ises, [None, None])
+                self.assertEqual(dms, [None, None])
 
     def testGlobalToLocal(self):
         def begin(dm, ivec, mode, ovec):

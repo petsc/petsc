@@ -4,6 +4,7 @@ cdef extern from * nogil:
 
     PetscErrorCode PetscSectionCreate(MPI_Comm, PetscSection*)
     PetscErrorCode PetscSectionClone(PetscSection, PetscSection*)
+    PetscErrorCode PetscSectionSetFromOptions(PetscSection)
     PetscErrorCode PetscSectionSetUp(PetscSection)
     PetscErrorCode PetscSectionSetUpBC(PetscSection)
     PetscErrorCode PetscSectionView(PetscSection, PetscViewer)

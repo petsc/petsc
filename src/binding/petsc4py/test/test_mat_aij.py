@@ -55,6 +55,33 @@ class TestMatCSRValidation(unittest.TestCase):
         self.assertTrue(np.array_equal(result, [[1, 2], [0, 3]]))
         A.destroy()
 
+    def testCreateAIJWithArraysBlockSizes(self):
+        for comm in (PETSc.COMM_SELF, PETSc.COMM_WORLD):
+            for bsize in (2, (2, 3)):
+                for split in (False, True):
+                    with self.subTest(size=comm.size, bsize=bsize, split=split):
+                        rowptr = [0, 1, 2]
+                        colidx = np.array([0, 5], dtype=PETSc.IntType)
+                        values = [2, 3]
+                        if split:
+                            csr = (rowptr, colidx, values), ([0, 0, 0], [], [])
+                        else:
+                            csr = rowptr, colidx + 6 * comm.rank, values
+                        A = PETSc.Mat().createAIJWithArrays(
+                            ((2, None), (6, None)), csr, bsize=bsize, comm=comm
+                        )
+                        rbs, cbs = (2, 2) if bsize == 2 else bsize
+                        self.assertEqual(A.getBlockSizes(), (rbs, cbs))
+                        x, y = A.createVecs()
+                        self.assertEqual(x.getBlockSize(), cbs)
+                        self.assertEqual(y.getBlockSize(), rbs)
+                        x.set(1)
+                        A.mult(x, y)
+                        self.assertTrue(np.array_equal(y.array, values))
+                        x.destroy()
+                        y.destroy()
+                        A.destroy()
+
     def testSetPreallocationCSRRejectsInvalidRowPointers(self):
         invalid = [
             ([], []),
@@ -380,9 +407,11 @@ class BaseTestMatAnyAIJ:
         (S1,) = self.A.createSubMatrices([rows], [cols])
         (S2,) = self.A.createSubMatrices([rows], [cols])
         self.assertTrue(S1.equal(S2))
-        S2.zeroEntries()
-        self.A.createSubMatrices([rows], [cols], [S2])
-        self.assertTrue(S1.equal(S2))
+        for submats in ([S2], S2):
+            S2.zeroEntries()
+            (reused,) = self.A.createSubMatrices([rows], [cols], submats)
+            self.assertIs(reused, S2)
+            self.assertTrue(S1.equal(S2))
         S1.destroy()
         S2.destroy()
 

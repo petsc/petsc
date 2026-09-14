@@ -10,6 +10,39 @@ except ImportError:
     MPI = None
 
 
+class TestSFGraph(unittest.TestCase):
+    def testGetGraphUnset(self):
+        sf = PETSc.SF().create(PETSc.COMM_SELF)
+        for reset in (False, True):
+            with self.subTest(reset=reset):
+                if reset:
+                    sf.reset()
+                nroots, local, remote = sf.getGraph()
+                self.assertEqual(nroots, -1)
+                self.assertEqual(local.shape, (0,))
+                self.assertEqual(remote.shape, (0, 2))
+                sf.setGraph(0, None, [])
+                nroots, local, remote = sf.getGraph()
+                self.assertEqual(nroots, 0)
+                self.assertEqual(local.shape, (0,))
+                self.assertEqual(remote.shape, (0, 2))
+        sf.destroy()
+
+    def testFortranOrderRemote(self):
+        remote = np.array([[0, 1], [0, 0]], dtype=PETSc.IntType, order='F')
+        for local in (None, [0, 2]):
+            with self.subTest(local=local):
+                sf = PETSc.SF().create(PETSc.COMM_SELF)
+                sf.setGraph(2, local, remote)
+                sf.setUp()
+                nroots, actual_local, actual_remote = sf.getGraph()
+                self.assertEqual(nroots, 2)
+                np.testing.assert_array_equal(actual_remote, remote)
+                if local is not None:
+                    np.testing.assert_array_equal(actual_local, local)
+                sf.destroy()
+
+
 @unittest.skipIf(MPI is None, 'current SF API needs mpi4py')
 class TestSF(unittest.TestCase):
     def setUp(self):

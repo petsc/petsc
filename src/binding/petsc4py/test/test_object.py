@@ -26,13 +26,13 @@ class BaseTestObject:
         type_reg = PETSc.__type_registry__
         classid = self.obj.getClassId()
         typeobj = self.CLASS
-        if isinstance(self.obj, PETSc.DMDA):
+        if isinstance(self.obj, PETSc.DM):
             typeobj = PETSc.DM
         self.assertTrue(type_reg[classid] is typeobj)
 
     def testLogClass(self):
         name = self.CLASS.__name__
-        if name == 'DMDA':
+        if isinstance(self.obj, PETSc.DM):
             name = 'DM'
         logcls = PETSc.Log.Class(name)
         classid = self.obj.getClassId()
@@ -56,6 +56,15 @@ class BaseTestObject:
         self.assertFalse(bool(self.obj))
         ## self.assertRaises(PETSc.Error, self.obj.destroy)
         ## self.assertTrue(self.obj.this is this)
+
+    def testRecreate(self):
+        old = copy.copy(self.obj)
+        obj = getattr(self.obj, self.FACTORY)(*self.TARGS, **self.KARGS)
+        self.assertIs(obj, self.obj)
+        self.assertNotEqual(old, self.obj)
+        self.assertEqual(old.getRefCount(), 1)
+        self.assertEqual(self.obj.getRefCount(), 1)
+        old.destroy()
 
     def testOptions(self):
         self.assertFalse(self.obj.getOptionsPrefix())
@@ -93,7 +102,9 @@ class BaseTestObject:
                     'ISLocalToGlobalMapping',
                     'MatPartitioning',
                     'MatNullSpace',
+                    'PetscQuadrature',
                     'PetscRandom',
+                    'PetscSF',
                     'PetscViewer',
                 ]
                 if self.obj.klass not in missing:
@@ -207,6 +218,36 @@ class BaseTestObject:
 # --------------------------------------------------------------------
 
 
+class TestObjectTypeLookup(unittest.TestCase):
+    def testComposeQuery(self):
+        dm = PETSc.DMShell().create(comm=PETSc.COMM_SELF)
+        owner = PETSc.Random().create(comm=PETSc.COMM_SELF)
+        classes = (
+            PETSc.SNESLineSearch,
+            PETSc.TAOLineSearch,
+            PETSc.TAOTerm,
+            PETSc.DMPlexTransform,
+            PETSc.CellDM,
+        )
+        for cls in classes:
+            if cls is PETSc.TAOLineSearch and np.iscomplexobj(PETSc.ScalarType()):
+                continue
+            with self.subTest(cls=cls.__name__):
+                if cls is PETSc.CellDM:
+                    obj = cls().create(dm, ['field'], ['coordinates'])
+                else:
+                    obj = cls().create(comm=PETSc.COMM_SELF)
+                owner.compose('child', obj)
+                queried = owner.query('child')
+                self.assertIs(type(queried), cls)
+                self.assertEqual(queried, obj)
+                owner.compose('child', None)
+                queried.destroy()
+                obj.destroy()
+        owner.destroy()
+        dm.destroy()
+
+
 class TestObjectRandom(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.Random
     FACTORY = 'create'
@@ -221,6 +262,16 @@ class TestObjectIS(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.IS
     FACTORY = 'createGeneral'
     TARGS = ([],)
+
+
+class TestObjectSF(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.SF
+    FACTORY = 'create'
+
+
+class TestObjectSection(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Section
+    FACTORY = 'create'
 
 
 class TestObjectLGMap(BaseTestObject, unittest.TestCase):
@@ -239,6 +290,23 @@ class TestObjectDMDA(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.DMDA
     FACTORY = 'create'
     TARGS = ([3, 3, 3],)
+
+
+class TestObjectDMShell(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.DMShell
+    FACTORY = 'create'
+
+
+class TestObjectDMComposite(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.DMComposite
+    FACTORY = 'create'
+
+
+class TestObjectDMPlex(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.DMPlex
+    FACTORY = 'createBoxMesh'
+    TARGS = ([1, 1],)
+    KARGS = {'simplex': False}
 
 
 class TestObjectDS(BaseTestObject, unittest.TestCase):
@@ -270,6 +338,15 @@ class TestObjectMat(BaseTestObject, unittest.TestCase):
 class TestObjectMatPartitioning(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.MatPartitioning
     FACTORY = 'create'
+
+
+class TestObjectPartitioner(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Partitioner
+    FACTORY = 'create'
+
+    def setUp(self):
+        super().setUp()
+        self.obj.setType(PETSc.Partitioner.Type.SIMPLE)
 
 
 class TestObjectNullSpace(BaseTestObject, unittest.TestCase):
@@ -320,13 +397,14 @@ class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
     TARGS = ([], [])
 
 
-# class TestObjectFE(BaseTestObject, unittest.TestCase):
-#     CLASS  = PETSc.FE
-#     FACTORY = 'create'
-#
-# class TestObjectQuad(BaseTestObject, unittest.TestCase):
-#     CLASS  = PETSc.Quad
-#     FACTORY = 'create'
+class TestObjectFE(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.FE
+    FACTORY = 'create'
+
+
+class TestObjectQuad(BaseTestObject, unittest.TestCase):
+    CLASS = PETSc.Quad
+    FACTORY = 'create'
 
 
 class TestObjectDMLabel(BaseTestObject, unittest.TestCase):

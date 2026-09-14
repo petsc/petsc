@@ -154,8 +154,9 @@ cdef class Options:
         """Return the boolean indicating if the option was queried from the database."""
         cdef const char *key = NULL
         cdef PetscBool flag = PETSC_FALSE
-        name = str2bytes(name, &key)
-        CHKERR(PetscOptionsUsed(self.opt, key, &flag))
+        name = getprefixedname(self.prefix, name, &key)
+        # PetscOptionsUsed() expects the name without its leading hyphen.
+        CHKERR(PetscOptionsUsed(self.opt, &key[1], &flag))
         return toBool(flag)
 
     def setValue(self, name: str, value: OptionValueSpec) -> None:
@@ -175,27 +176,10 @@ cdef class Options:
         delValue, petsc.PetscOptionsSetValue
 
         """
-        cdef const char *pr = NULL
-        cdef const char *nm = NULL
-        cdef object unused = getpair(self.prefix, name, &pr, &nm)
-        if pr == NULL:
-            option = bytes2str(nm)
-        else:
-            option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
-
-        if isinstance(value, ndarray):
-            value = value.tolist()
-        if isinstance(value, (tuple, list)):
-            value = str(value).replace(' ', '').\
-                    replace('(', '').replace(')', '').\
-                    replace('[', '').replace(']', '')
-        elif isinstance(value, bool):
-            value = str(value).lower()
-        elif value is not None:
-            value = str(value)
         cdef const char *key = NULL
         cdef const char *val = NULL
-        option = str2bytes(option, &key)
+        cdef object unused = getprefixedname(self.prefix, name, &key)
+        value = optionvalue(value)
         value  = str2bytes(value,  &val)
         CHKERR(PetscOptionsSetValue(self.opt, key, val))
 
@@ -209,15 +193,8 @@ cdef class Options:
         setValue, petsc.PetscOptionsClearValue
 
         """
-        cdef const char *pr = NULL
-        cdef const char *nm = NULL
-        cdef object unused = getpair(self.prefix, name, &pr, &nm)
-        if pr == NULL:
-            option = bytes2str(nm)
-        else:
-            option = '-%s%s' % (bytes2str(pr), bytes2str(&nm[1]))
         cdef const char *key = NULL
-        option = str2bytes(option, &key)
+        cdef object unused = getprefixedname(self.prefix, name, &key)
         CHKERR(PetscOptionsClearValue(self.opt, key))
 
     #

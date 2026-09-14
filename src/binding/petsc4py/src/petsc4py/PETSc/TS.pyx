@@ -253,6 +253,8 @@ cdef class TS(Object):
         """
         cdef TS ts = TS()
         CHKERR(TSClone(self.ts, &ts.ts))
+        # TSClone() shares callback contexts owned by the source's dictionary.
+        ts.set_attr('__clone_context__', self.get_dict())
         return ts
 
     def setType(self, ts_type: Type | str) -> None:
@@ -1300,7 +1302,6 @@ cdef class TS(Object):
 
         """
         cdef const char *cname = NULL
-        cdef char *aname = NULL
         splitname = str2bytes(splitname, <const char**>&cname)
         cdef PetscVec rvec=NULL
         if r is not None: rvec = r.vec
@@ -1308,8 +1309,7 @@ cdef class TS(Object):
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (function, args, kargs)
-            str2bytes(function.__name__, <const char**>&aname)
-            self.set_attr(aname, context) # to avoid being GCed
+            self.get_dict().setdefault('__rhssplit__', {})[(splitname, 'rhsfunction')] = context
             CHKERR(TSRHSSplitSetRHSFunction(self.ts, cname, rvec, TS_RHSFunction, <void*>context))
         else:
             CHKERR(TSRHSSplitSetRHSFunction(self.ts, cname, rvec, NULL, NULL))
@@ -1344,7 +1344,6 @@ cdef class TS(Object):
 
         """
         cdef const char *cname = NULL
-        cdef char *aname = NULL
         splitname = str2bytes(splitname, &cname)
         cdef PetscVec rvec=NULL
         if r is not None: rvec = r.vec
@@ -1352,8 +1351,7 @@ cdef class TS(Object):
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (function, args, kargs)
-            str2bytes(function.__name__, <const char**>&aname)
-            self.set_attr(aname, context) # to avoid being GCed
+            self.get_dict().setdefault('__rhssplit__', {})[(splitname, 'ifunction')] = context
             CHKERR(TSRHSSplitSetIFunction(self.ts, cname, rvec, TS_IFunction, <void*>context))
         else:
             CHKERR(TSRHSSplitSetIFunction(self.ts, cname, rvec, NULL, NULL))
@@ -1391,7 +1389,6 @@ cdef class TS(Object):
 
         """
         cdef const char *cname = NULL
-        cdef char *aname = NULL
         splitname = str2bytes(splitname, &cname)
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
@@ -1401,8 +1398,7 @@ cdef class TS(Object):
             if args  is None: args  = ()
             if kargs is None: kargs = {}
             context = (jacobian, args, kargs)
-            str2bytes(jacobian.__name__, <const char**>&aname)
-            self.set_attr(aname, context) # to avoid being GCed
+            self.get_dict().setdefault('__rhssplit__', {})[(splitname, 'ijacobian')] = context
             CHKERR(TSRHSSplitSetIJacobian(self.ts, cname, Jmat, Pmat, TS_IJacobian, <void*>context))
         else:
             CHKERR(TSRHSSplitSetIJacobian(self.ts, cname, Jmat, Pmat, NULL, NULL))

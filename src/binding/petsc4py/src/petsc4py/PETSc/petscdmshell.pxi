@@ -359,6 +359,7 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
     if dmlist != NULL: dmlist[0] = NULL
 
     if namelist != NULL and names is not None:
+        names = list(names)
         CHKERR(PetscMalloc(n*sizeof(char*), namelist))
         for i in range(n):
             names[i] = str2bytes(names[i], &cname)
@@ -402,6 +403,7 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
     if dmlist != NULL: dmlist[0] = NULL
 
     if namelist != NULL and names is not None:
+        names = list(names)
         CHKERR(PetscMalloc(n*sizeof(char*), namelist))
         for i in range(n):
             names[i] = str2bytes(names[i], &cname)

@@ -48,6 +48,7 @@ cdef class _DMComposite_access:
 
     def __exit__(self, *exc):
         cdef Py_ssize_t i, n = self.nlocs
-        for i from 0 <= i < n: (<Vec>self.access[i]).vec = NULL
+        for i from 0 <= i < n:
+            CHKERR(VecDestroy(&(<Vec>self.access[i]).vec))
         CHKERR(DMCompositeRestoreAccessArray(self.dm, self.gvec, self.nlocs, self.locs, self.vecs))
         self.access   = None

@@ -47,6 +47,16 @@ class BaseTestLGMap:
         self.lgmap.apply(idxin, idxout)
         _ = self.lgmap.applyInverse(idxout)
 
+    def testCall(self):
+        idxin = [self.lgmap.getSize() - 1, 0, 1]
+        expected = [self.idx[i] for i in idxin]
+        idxout = self.lgmap(idxin)
+        self.assertIsNotNone(idxout)
+        self.assertEqual(idxout.tolist(), expected)
+        idxout[:] = -1
+        self.assertIs(self.lgmap(idxin, idxout), idxout)
+        self.assertEqual(idxout.tolist(), expected)
+
     def testApplyIS(self):
         is_in = PETSc.IS().createStride(self.lgmap.getSize())
         _ = self.lgmap.apply(is_in)

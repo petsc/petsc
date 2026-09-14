@@ -93,6 +93,18 @@ cdef class Section(Object):
         CHKERR(PetscSectionClone(self.sec, &sec.sec))
         return sec
 
+    def setFromOptions(self) -> None:
+        """Set section parameters from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscSectionSetFromOptions
+
+        """
+        CHKERR(PetscSectionSetFromOptions(self.sec))
+
     def setUp(self) -> None:
         """Calculate offsets.
 
@@ -625,10 +637,12 @@ cdef class Section(Object):
 
         """
         cdef PetscInt cpoint = asInt(point)
-        cdef PetscInt nindex = 0
+        cdef PetscInt nindex = 0, cdof = 0
         cdef PetscInt *cindices = NULL
         indices = iarray_i(indices, &nindex, &cindices)
-        CHKERR(PetscSectionSetConstraintDof(self.sec, cpoint, nindex))
+        CHKERR(PetscSectionGetConstraintDof(self.sec, cpoint, &cdof))
+        if nindex != cdof:
+            raise ValueError("indices length must match the point constraint dof")
         CHKERR(PetscSectionSetConstraintIndices(self.sec, cpoint, cindices))
 
     def getFieldConstraintIndices(self, point: int, field: int) -> ArrayInt:
@@ -683,10 +697,12 @@ cdef class Section(Object):
         """
         cdef PetscInt cpoint = asInt(point)
         cdef PetscInt cfield = asInt(field)
-        cdef PetscInt nindex = 0
+        cdef PetscInt nindex = 0, cdof = 0
         cdef PetscInt *cindices = NULL
         indices = iarray_i(indices, &nindex, &cindices)
-        CHKERR(PetscSectionSetFieldConstraintDof(self.sec, cpoint, cfield, nindex))
+        CHKERR(PetscSectionGetFieldConstraintDof(self.sec, cpoint, cfield, &cdof))
+        if nindex != cdof:
+            raise ValueError("indices length must match the field constraint dof")
         CHKERR(PetscSectionSetFieldConstraintIndices(self.sec, cpoint, cfield, cindices))
 
     def getMaxDof(self) -> int:

@@ -1167,7 +1167,7 @@ cdef class LGMap(Object):
     def __call__(
         self,
         indices: Sequence[int],
-        result: ArrayInt | None = None) -> None:
+        result: ArrayInt | None = None) -> ArrayInt:
         """Convert a locally numbered list of integers to a global numbering.
 
         Not collective.
@@ -1180,12 +1180,18 @@ cdef class LGMap(Object):
             Array to write the global numbering to. If `None` then a
             new array will be allocated.
 
+        Returns
+        -------
+        ArrayInt
+            Indices in global numbering. If ``result`` is not `None` then this is
+            returned here.
+
         See Also
         --------
-        IS.apply, petsc.ISLocalToGlobalMappingApply
+        LGMap.apply, petsc.ISLocalToGlobalMappingApply
 
         """
-        self.apply(indices, result)
+        return self.apply(indices, result)
 
     #
 

@@ -23,8 +23,19 @@ cdef class MatPartitioning(Object):
         self.obj = <PetscObject*> &self.part
         self.part = NULL
 
-    def __call__(self):
-        return self.getValue()
+    def __call__(self) -> IS:
+        """Compute and return a partitioning of the adjacency graph.
+
+        Collective.
+
+        See Also
+        --------
+        apply, petsc.MatPartitioningApply
+
+        """
+        cdef IS partitioning = IS()
+        self.apply(partitioning)
+        return partitioning
 
     def view(self, Viewer viewer=None) -> None:
         """View the partitioning data structure.
@@ -74,7 +85,9 @@ cdef class MatPartitioning(Object):
 
         """
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-        CHKERR(MatPartitioningCreate(ccomm, &self.part))
+        cdef PetscMatPartitioning newpart = NULL
+        CHKERR(MatPartitioningCreate(ccomm, &newpart))
+        CHKERR(PetscCLEAR(self.obj)); self.part = newpart
         return self
 
     def setType(self, matpartitioning_type: Type | str) -> None:
@@ -148,12 +161,19 @@ cdef class MatPartitioning(Object):
         For each local node this tells the processor number that that node is
         assigned to.
 
+        Parameters
+        ----------
+        partitioning
+            Output index set. Its previous contents are replaced.
+
         See Also
         --------
         petsc.MatPartitioningApply
 
         """
-        CHKERR(MatPartitioningApply(self.part, &partitioning.iset))
+        cdef PetscIS newiset = NULL
+        CHKERR(MatPartitioningApply(self.part, &newiset))
+        CHKERR(PetscCLEAR(partitioning.obj)); partitioning.iset = newiset
 
 # --------------------------------------------------------------------
 
