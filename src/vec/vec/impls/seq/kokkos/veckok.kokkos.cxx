@@ -1310,6 +1310,7 @@ PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
   PetscCall(veckok->UpdateArray<DefaultMemorySpace>(a));
   // When host and device share the array, keep the host array in Vec_Seq consistent with the placed one for VecGetArray()
   if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecseq->array = veckok->v_dual.view_host().data();
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1345,6 +1346,7 @@ PetscErrorCode VecKokkosResetArray(Vec v)
   PetscCall(veckok->UpdateArray<DefaultMemorySpace>(veckok->unplaced_d.data()));
   // Keep the host array in Vec_Seq consistent with the one put back, see VecKokkosPlaceArray()
   if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecseq->array = veckok->v_dual.view_host().data();
+  PetscCall(PetscObjectStateIncrease((PetscObject)v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
