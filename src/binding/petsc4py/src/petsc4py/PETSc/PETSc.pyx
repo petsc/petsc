@@ -476,7 +476,7 @@ cdef int _pop_vfprintf() except -1:
     global PetscVFPrintf, prevfprintf
     assert prevfprintf != NULL
     PetscVFPrintf = prevfprintf
-    prevfprintf == NULL
+    prevfprintf = NULL
 
 cdef int initialize(object args, object comm) except -1:
     if (<int>PetscInitializeCalled): return 1

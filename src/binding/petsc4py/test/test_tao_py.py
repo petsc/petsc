@@ -142,6 +142,30 @@ class TestTaoPython(unittest.TestCase):
     def _getCtx(self):
         return self.tao.getPythonContext()
 
+    def testDivergenceAtIterationLimit(self):
+        def converged(tao):
+            if tao.getIterationNumber() == 0:
+                return PETSc.TAO.ConvergedReason.CONTINUE_ITERATING
+            return PETSc.TAO.ConvergedReason.DIVERGED_USER
+
+        tao = self.tao
+        tao.getPythonContext().solve = None
+        x = PETSc.Vec().createSeq(2, comm=PETSc.COMM_SELF)
+        try:
+            x.set(0.5)
+            tao.setSolution(x)
+            tao.setObjective(Objective())
+            tao.setGradient(Gradient(), None)
+            tao.setMaximumIterations(1)
+            tao.setConvergenceTest(converged)
+            tao.solve()
+            self.assertEqual(tao.getIterationNumber(), 1)
+            self.assertEqual(
+                tao.getConvergedReason(), PETSc.TAO.ConvergedReason.DIVERGED_USER
+            )
+        finally:
+            x.destroy()
+
 
 class MyGradientDescent:
     def __init__(self):

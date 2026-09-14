@@ -2461,7 +2461,7 @@ cdef class DMPlex(DM):
         """
         cdef IS iset = IS()
         CHKERR(DMPlexGetSubpointIS(self.dm, &iset.iset))
-        PetscINCREF(iset.obj)
+        CHKERR(PetscINCREF(iset.obj))
         return iset
 
     def getSubpointMap(self) -> DMLabel:
@@ -2481,7 +2481,7 @@ cdef class DMPlex(DM):
         """
         cdef DMLabel label = DMLabel()
         CHKERR(DMPlexGetSubpointMap(self.dm, &label.dmlabel))
-        PetscINCREF(label.obj)
+        CHKERR(PetscINCREF(label.obj))
         return label
 
     # Metric

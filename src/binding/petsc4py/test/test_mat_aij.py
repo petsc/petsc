@@ -35,6 +35,32 @@ def mkgraph(comm, m, n):
     return nods, xadj, adjy
 
 
+class TestMatVariableBlockSizes(unittest.TestCase):
+    def setUp(self):
+        self.A = PETSc.Mat().createAIJ([3, 3], nnz=3, comm=PETSc.COMM_SELF)
+        self.pc = PETSc.PC().create(PETSc.COMM_SELF)
+        self.x, self.b = self.A.createVecs()
+
+    def tearDown(self):
+        self.pc.destroy()
+        self.x.destroy()
+        self.b.destroy()
+        self.A.destroy()
+
+    def testVariableBlockSizesFromList(self):
+        A, pc, x, b = self.A, self.pc, self.x, self.b
+        A.setValues(range(3), range(3), [[2, 0, 0], [0, 3, 1], [0, 1, 4]])
+        A.assemble()
+        A.setVariableBlockSizes([1, 2])
+        pc.setType(PETSc.PC.Type.VPBJACOBI)
+        pc.setOperators(A)
+        x.set(1)
+        A.mult(x, b)
+        x.set(0)
+        pc.apply(b, x)
+        np.testing.assert_allclose(x.array, 1)
+
+
 class TestMatCSRValidation(unittest.TestCase):
     def setUp(self):
         self.A = PETSc.Mat().create(PETSc.COMM_SELF)

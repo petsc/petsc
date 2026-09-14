@@ -2569,7 +2569,7 @@ cdef class TS(Object):
         cdef PetscTSAdapt tsadapt = NULL
         cdef PetscReal hminr = toReal(hmin)
         cdef PetscReal hmaxr = toReal(hmax)
-        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR(TSGetAdapt(self.ts, &tsadapt))
         CHKERR(TSAdaptSetStepLimits(tsadapt, hminr, hmaxr))
 
     def getStepLimits(self) -> tuple[float, float]:
@@ -2585,7 +2585,7 @@ cdef class TS(Object):
         cdef PetscTSAdapt tsadapt = NULL
         cdef PetscReal hminr = 0.
         cdef PetscReal hmaxr = 0.
-        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR(TSGetAdapt(self.ts, &tsadapt))
         CHKERR(TSAdaptGetStepLimits(tsadapt, &hminr, &hmaxr))
         return (asReal(hminr), asReal(hmaxr))
 

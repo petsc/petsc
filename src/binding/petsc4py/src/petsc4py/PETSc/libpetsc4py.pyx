@@ -1988,7 +1988,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
         if ksp.reason: break
         KSPPreStep_Python(ksp)
         #
-        KSPStep_Python(ksp, B, X) # FIXME? B?
+        CHKERR(KSPStep_Python(ksp, B, X)) # FIXME? B?
         CHKERR(KSPBuildResidual(ksp, t, v, &R))
         CHKERR(VecNorm(R, PETSC_NORM_2, &rnorm))
         ksp.iter += 1
@@ -2269,7 +2269,7 @@ cdef PetscErrorCode SNESSolve_Python_default(
 
     for its from 0 <= its < snes.max_its:
         <void> its # unused
-        SNESComputeUpdate(snes)
+        CHKERR(SNESComputeUpdate(snes))
         SNESPreStep_Python(snes)
         #
         lits = -snes.linear_its
@@ -2997,7 +2997,7 @@ cdef PetscErrorCode TaoSolve_Python_default(
         CHKERR(TaoConverged(tao, &tao.reason))
 
     if tao.niter == tao.max_it:
-        if tao.reason <= 0:
+        if tao.reason == TAO_CONTINUE_ITERATING:
             tao.reason = TAO_DIVERGED_MAXITS
     #
     return FunctionEnd()

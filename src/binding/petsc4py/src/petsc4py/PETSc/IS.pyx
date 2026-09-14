@@ -1466,8 +1466,8 @@ cdef class LGMap(Object):
             for i from 0 <= i < nproc:
                 neighs[toInt(procs[i])] = array_i(numprocs[i], indices[i])
         finally:
-            ISLocalToGlobalMappingRestoreInfo(
-                self.lgm, &nproc, &procs, &numprocs, &indices)
+            CHKERR(ISLocalToGlobalMappingRestoreInfo(
+                self.lgm, &nproc, &procs, &numprocs, &indices))
         return neighs
 
     def getBlockInfo(self) -> dict[int, ArrayInt]:
@@ -1495,8 +1495,8 @@ cdef class LGMap(Object):
             for i from 0 <= i < nproc:
                 neighs[toInt(procs[i])] = array_i(numprocs[i], indices[i])
         finally:
-            ISLocalToGlobalMappingRestoreBlockInfo(
-                self.lgm, &nproc, &procs, &numprocs, &indices)
+            CHKERR(ISLocalToGlobalMappingRestoreBlockInfo(
+                self.lgm, &nproc, &procs, &numprocs, &indices))
         return neighs
 
     #

@@ -688,7 +688,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt nb=0, *b=NULL
-        iarray_i(blocks, &nb, &b)
+        cdef object unused = iarray_i(blocks, &nb, &b)
         CHKERR(MatSetVariableBlockSizes(self.mat, nb, b))
 
     def setVecType(self, vec_type: Vec.Type | str) -> None:

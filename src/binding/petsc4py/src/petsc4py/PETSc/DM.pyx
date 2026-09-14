@@ -896,7 +896,7 @@ cdef class DM(Object):
         """
         cdef Vec vg = Vec()
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         if cname != NULL:
             CHKERR(DMGetNamedGlobalVector(self.dm, cname, &vg.vec))
         else:
@@ -922,7 +922,7 @@ cdef class DM(Object):
 
         """
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         CHKERR(PetscDECREF(vg.obj))
         if cname != NULL:
             CHKERR(DMRestoreNamedGlobalVector(self.dm, cname, &vg.vec))
@@ -950,7 +950,7 @@ cdef class DM(Object):
         """
         cdef Vec vl = Vec()
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         if cname != NULL:
             CHKERR(DMGetNamedLocalVector(self.dm, cname, &vl.vec))
         else:
@@ -976,7 +976,7 @@ cdef class DM(Object):
 
         """
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         CHKERR(PetscDECREF(vl.obj))
         if cname != NULL:
             CHKERR(DMRestoreNamedLocalVector(self.dm, cname, &vl.vec))
