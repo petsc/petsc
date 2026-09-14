@@ -2429,7 +2429,7 @@ cdef class TAOLineSearch(Object):
         """
         CHKERR(TaoLineSearchUseTaoRoutines(self.taols, tao.tao))
 
-    def apply(self, Vec x, Vec g, Vec s) -> tuple[float, float, str]:
+    def apply(self, Vec x, Vec g, Vec s) -> tuple[float, float, int]:
         """Performs a line-search in a given step direction.
 
         Collective.

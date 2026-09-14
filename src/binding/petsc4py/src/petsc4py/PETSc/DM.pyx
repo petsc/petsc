@@ -507,7 +507,7 @@ cdef class DM(Object):
 
     #
 
-    def setAuxiliaryVec(self, Vec aux, label: DMLabel | None, value=0, part=0) -> None:
+    def setAuxiliaryVec(self, Vec aux, label: str | None, value=0, part=0) -> None:
         """Set an auxiliary vector for a specific region.
 
         Not collective.

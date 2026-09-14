@@ -460,7 +460,7 @@ TAOUpdateFunction = Callable[[TAO, int], None]
 TAOMonitorFunction = Callable[[TAO], None]
 """`TAO` monitor callback."""
 
-TAOConvergedFunction = Callable[[TAO], None]
+TAOConvergedFunction = Callable[[TAO], TAO.ConvergedReason]
 """`TAO` convergence test callback."""
 
 TAOJacobianFunction = Callable[[TAO, Vec, Mat, Mat], None]

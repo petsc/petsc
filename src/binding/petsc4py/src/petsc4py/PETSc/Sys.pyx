@@ -9,7 +9,7 @@ cdef class Sys:
         cls,
         devel: bool = False,
         date: bool = False,
-        author: bool = False) -> tuple[int, int, int]:
+        author: bool = False) -> tuple[int, int, int] | tuple[tuple[int, int, int] | bool | str | tuple[str, ...], ...]:
         """Return PETSc version information.
 
         Not collective.

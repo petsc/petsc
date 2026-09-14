@@ -395,10 +395,12 @@ cdef class Options:
         string = str2bytes(string, &cstring)
         CHKERR(PetscOptionsInsertString(self.opt, cstring))
 
-    def getAll(self) -> dict[str, str]:
+    def getAll(self) -> dict[str, str | None]:
         """Return all the options and their values.
 
         Not collective.
+
+        Options without a value are returned as `None`.
 
         See Also
         --------

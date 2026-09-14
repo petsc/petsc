@@ -397,7 +397,7 @@ cdef class FE(Object):
         CHKERR(PetscFESetQuadrature(self.fe, quad.quad))
         return self
 
-    def setFaceQuadrature(self, Quad quad) -> Quad:
+    def setFaceQuadrature(self, Quad quad) -> Self:
         """Set the `Quad` used to calculate inner products on faces.
 
         Not collective.

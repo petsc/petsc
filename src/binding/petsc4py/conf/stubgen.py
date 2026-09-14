@@ -527,13 +527,88 @@ ScalarType: numpy.dtype = ...
 """
 
 OVERRIDE = {
+    'Sys': {
+        'getVersion': """
+            @classmethod
+            @overload
+            def getVersion(cls, devel: Literal[False] = False, date: Literal[False] = False, author: Literal[False] = False) -> tuple[int, int, int]: ...
+            @classmethod
+            @overload
+            def getVersion(cls, devel: bool = False, date: bool = False, author: bool = False) -> tuple[int, int, int] | tuple[tuple[int, int, int] | bool | str | tuple[str, ...], ...]: ...
+        """,
+    },
     'Error': {
         '__init__': 'def __init__(self, ierr: int = 0) -> None: ...',
     },
     'Options': {
+        '__contains__': 'def __contains__(self, item: str) -> bool: ...',
+        '__delitem__': 'def __delitem__(self, item: str) -> None: ...',
         '__init__': 'def __init__(self, prefix: str | None = None) -> None: ...',
         '__getitem__': 'def __getitem__(self, item: str) -> str: ...',
         '__setitem__': 'def __setitem__(self, item: str, value: OptionValueSpec) -> None: ...',
+    },
+    'Vec': {
+        '__enter__': 'def __enter__(self) -> ArrayScalar: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    'IS': {
+        '__enter__': 'def __enter__(self) -> ArrayInt: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    'LogStage': {
+        '__enter__': 'def __enter__(self) -> Self: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    'LogEvent': {
+        '__enter__': 'def __enter__(self) -> Self: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    '_Vec_buffer': {
+        '__enter__': 'def __enter__(self) -> ArrayScalar: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    '_IS_buffer': {
+        '__enter__': 'def __enter__(self) -> ArrayInt: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    '_Vec_LocalForm': {
+        '__enter__': 'def __enter__(self) -> Vec: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    '_DMDA_Vec_array': {
+        '__enter__': 'def __enter__(self) -> Self: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    '_DMComposite_access': {
+        '__enter__': 'def __enter__(self) -> tuple[Vec, ...]: ...',
+        '__exit__': 'def __exit__(self, *exc: Any) -> None: ...',
+    },
+    'LGMap': {
+        '__call__': 'def __call__(self, indices: Sequence[int], result: ArrayInt | None = None) -> ArrayInt: ...',
+    },
+    'Scatter': {
+        '__call__': 'def __call__(self, x: Vec, y: Vec, addv: InsertModeSpec = None, mode: ScatterModeSpec = None) -> None: ...',
+    },
+    'KSP': {
+        '__call__': 'def __call__(self, b: Vec, x: Vec | None = None) -> Vec: ...',
+    },
+    'Mat': {
+        '__call__': 'def __call__(self, x: Vec, y: Vec | None = None) -> Vec: ...',
+    },
+    'PC': {
+        '__call__': 'def __call__(self, x: Vec, y: Vec | None = None) -> Vec: ...',
+    },
+    'NullSpace': {
+        '__call__': 'def __call__(self, vec: Vec) -> None: ...',
+    },
+    'Viewer': {
+        '__call__': 'def __call__(self, obj: Object) -> None: ...',
+    },
+    'Random': {
+        '__call__': 'def __call__(self) -> Scalar: ...',
+    },
+    'MatPartitioning': {
+        '__call__': 'def __call__(self) -> IS: ...',
     },
     '__pyx_capi__': '__pyx_capi__: Final[dict[str, Any]] = ...',
     '__type_registry__': '__type_registry__: Final[dict[int, type[Object]]] = ...',
