@@ -389,36 +389,43 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *c
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&contents->workB));
+  PetscCall(PetscSFDestroy(&contents->sf[0]));
+  PetscCall(PetscSFDestroy(&contents->sf[1]));
   for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
   for (PetscInt i = 0; i < contents->nrecvs; i++) PetscCallMPI(MPI_Type_free(&contents->rtype[i]));
   PetscCall(PetscFree4(contents->stype, contents->rtype, contents->rwaits, contents->swaits));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  MPIAIJ_MPIDense scatter;
+  Mat             workC; /* off-diagonal contribution A_o * workB on the device route, NULL otherwise */
+} MPIAIJ_MPIDense_AB;
+
 static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
 {
-  MPIAIJ_MPIDense *contents = *(MPIAIJ_MPIDense **)ctx;
+  MPIAIJ_MPIDense_AB *data = *(MPIAIJ_MPIDense_AB **)ctx;
 
   PetscFunctionBegin;
-  PetscCall(MatMPIDenseScatterDestroy_Private(contents));
-  PetscCall(PetscFree(contents));
+  PetscCall(MatDestroy(&data->workC));
+  PetscCall(MatMPIDenseScatterDestroy_Private(&data->scatter));
+  PetscCall(PetscFree(data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, PetscInt Am, Mat B, Mat C, MPIAIJ_MPIDense *contents, PetscInt *batchSize, PetscInt *numBatches)
 {
-  PetscInt        Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbs, numBb;
+  PetscInt        Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbs, numBb, ncols;
   MPI_Comm        comm;
   MPI_Datatype    type1;
   const PetscInt *sindices, *sstarts, *rstarts;
   PetscMPIInt    *disp;
   PetscMPIInt     nsends, nrecvs, nrows_to, nrows_from, bs_mpi;
+  PetscBool       flg;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
   PetscCall(MatDenseGetLDA(B, &contents->blda));
-  PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
-  PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE, &nrecvs, &rstarts, NULL, NULL, NULL));
 
   /* Create column block of B and C for memory scalability when BN is too large */
   /* Estimate Bbn, column size of Bb */
@@ -441,38 +448,59 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
   if (Bbn > 0 && Bbn < BN) numBb = BN / Bbn;
   else numBb = 0;
   if (numBb) PetscCall(PetscInfo(C, "Using column batches of size %" PetscInt_FMT " for %" PetscInt_FMT " dense columns\n", Bbn, BN));
-  /* Create work matrix used to store off processor rows of B needed for local product */
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, nrows, Bbn ? Bbn : BN, NULL, &contents->workB));
+  ncols = Bbn ? Bbn : BN;
 
-  /* Use MPI derived data type to reduce memory required by the send/recv buffers */
-  PetscCall(PetscMalloc4(nsends, &contents->stype, nrecvs, &contents->rtype, nrecvs, &contents->rwaits, nsends, &contents->swaits));
-  contents->nsends = nsends;
-  contents->nrecvs = nrecvs;
+  /* Create work matrix used to store off processor rows of B needed for local product, with the same type as the local block of B */
+  PetscCall(MatCreate(PETSC_COMM_SELF, &contents->workB));
+  PetscCall(MatSetSizes(contents->workB, nrows, ncols, nrows, ncols));
+  PetscCall(MatSetType(contents->workB, ((PetscObject)((Mat_MPIDense *)B->data)->A)->type_name));
+  PetscCall(MatSetUp(contents->workB));
 
-  PetscCall(PetscMalloc1(PetscMax(Bm, 1), &disp));
-  PetscCall(PetscMPIIntCast(bs, &bs_mpi));
-  for (PetscMPIInt i = 0; i < nsends; i++) {
-    PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
-    for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
-    PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
-    PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
-    PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
-    PetscCallMPI(MPI_Type_free(&type1));
+  PetscCall(PetscObjectTypeCompare((PetscObject)((Mat_MPIDense *)B->data)->A, MATSEQDENSE, &flg));
+  contents->ondevice = (PetscBool)!flg;
+  if (contents->ondevice) {
+    /* Use strided PetscSFs, which support device memory, instead of the MPI derived data types below */
+    PetscCheck(ctx->vscat.bs <= 1 || contents->blda % ctx->vscat.bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Leading dimension %" PetscInt_FMT " of the dense matrix must be a multiple of the block size %" PetscInt_FMT, contents->blda, ctx->vscat.bs);
+    contents->ncols[0] = ncols;
+    PetscCall(PetscSFCreateStridedSF(ctx, ncols, contents->blda, nrows, &contents->sf[0]));
+    if (numBb && BN % Bbn) {
+      contents->ncols[1] = BN % Bbn;
+      PetscCall(PetscSFCreateStridedSF(ctx, BN % Bbn, contents->blda, nrows, &contents->sf[1]));
+    }
+  } else {
+    PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE, &nrecvs, &rstarts, NULL, NULL, NULL));
+
+    /* Use MPI derived data type to reduce memory required by the send/recv buffers */
+    PetscCall(PetscMalloc4(nsends, &contents->stype, nrecvs, &contents->rtype, nrecvs, &contents->rwaits, nsends, &contents->swaits));
+    contents->nsends = nsends;
+    contents->nrecvs = nrecvs;
+
+    PetscCall(PetscMalloc1(PetscMax(Bm, 1), &disp));
+    PetscCall(PetscMPIIntCast(bs, &bs_mpi));
+    for (PetscMPIInt i = 0; i < nsends; i++) {
+      PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
+      for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
+      PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
+      PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
+      PetscCallMPI(MPI_Type_free(&type1));
+    }
+
+    for (PetscMPIInt i = 0; i < nrecvs; i++) {
+      /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
+      PetscCall(PetscMPIIntCast((rstarts[i + 1] - rstarts[i]) * bs, &nrows_from));
+      disp[0] = 0;
+      PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_resized(type1, 0, nrows * sizeof(PetscScalar), &contents->rtype[i]));
+      PetscCallMPI(MPI_Type_commit(&contents->rtype[i]));
+      PetscCallMPI(MPI_Type_free(&type1));
+    }
+
+    PetscCall(PetscFree(disp));
+    PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, NULL, NULL));
   }
-
-  for (PetscMPIInt i = 0; i < nrecvs; i++) {
-    /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
-    PetscCall(PetscMPIIntCast((rstarts[i + 1] - rstarts[i]) * bs, &nrows_from));
-    disp[0] = 0;
-    PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
-    PetscCallMPI(MPI_Type_create_resized(type1, 0, nrows * sizeof(PetscScalar), &contents->rtype[i]));
-    PetscCallMPI(MPI_Type_commit(&contents->rtype[i]));
-    PetscCallMPI(MPI_Type_free(&type1));
-  }
-
-  PetscCall(PetscFree(disp));
-  PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, NULL, NULL));
-  PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, NULL, NULL));
   if (batchSize) *batchSize = Bbn;
   if (numBatches) *numBatches = numBb;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -480,12 +508,14 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
 
 static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  Mat_MPIAIJ      *aij = (Mat_MPIAIJ *)A->data;
-  MPIAIJ_MPIDense *contents;
-  PetscInt         nz  = aij->B->cmap->n;
-  VecScatter       ctx = aij->Mvctx;
-  PetscInt         Am = A->rmap->n, BN = B->cmap->N;
-  PetscBool        cisdense;
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ *)A->data;
+  MPIAIJ_MPIDense_AB *data;
+  PetscInt            nz  = aij->B->cmap->n;
+  VecScatter          ctx = aij->Mvctx;
+  PetscInt            Am = A->rmap->n, BN = B->cmap->N, Bbn, numBb;
+  Mat                 workB1, workC1;
+  const char         *ctype;
+  PetscBool           cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -495,19 +525,45 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatSetUp(C));
-  PetscCall(PetscNew(&contents));
-  PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, 1, Am, B, C, contents, NULL, NULL));
+  /* The cuSPARSE and hipSPARSE symbolic below re-types a host local block of C in place, so capture the type
+     of the local block of C now to give the work matrix the type the numeric will add it to */
+  ctype = ((PetscObject)((Mat_MPIDense *)C->data)->A)->type_name;
+  PetscCall(PetscNew(&data));
+  PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, 1, Am, B, C, &data->scatter, &Bbn, &numBb));
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatProductClear(aij->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)B->data)->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)C->data)->A));
+  if (data->scatter.ondevice && nz) {
+    /* On the device route the off-diagonal contribution is computed into a work matrix and added to the local
+       block of C, rather than accumulated in place by a host kernel */
+    PetscCall(MatCreate(PETSC_COMM_SELF, &data->workC));
+    PetscCall(MatSetSizes(data->workC, Am, Bbn ? Bbn : BN, Am, Bbn ? Bbn : BN));
+    PetscCall(MatSetType(data->workC, ctype));
+    PetscCall(MatSetUp(data->workC));
+    PetscCall(MatProductCreateWithMat(aij->B, data->scatter.workB, NULL, data->workC));
+    PetscCall(MatProductSetType(data->workC, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(data->workC));
+    PetscCall(MatProductSymbolic(data->workC));
+    if (numBb && BN % Bbn) {
+      /* the last column batch is smaller, set up the product on the sub-matrices the numeric will use for it */
+      PetscCall(MatDenseGetSubMatrix(data->scatter.workB, PETSC_DECIDE, PETSC_DECIDE, 0, BN % Bbn, &workB1));
+      PetscCall(MatDenseGetSubMatrix(data->workC, PETSC_DECIDE, PETSC_DECIDE, 0, BN % Bbn, &workC1));
+      PetscCall(MatProductCreateWithMat(aij->B, workB1, NULL, workC1));
+      PetscCall(MatProductSetType(workC1, MATPRODUCT_AB));
+      PetscCall(MatProductSetFromOptions(workC1));
+      PetscCall(MatProductSymbolic(workC1));
+      PetscCall(MatDenseRestoreSubMatrix(data->workC, &workC1));
+      PetscCall(MatDenseRestoreSubMatrix(data->scatter.workB, &workB1));
+    }
+  }
   PetscCall(MatProductCreateWithMat(aij->A, ((Mat_MPIDense *)B->data)->A, NULL, ((Mat_MPIDense *)C->data)->A));
   PetscCall(MatProductSetType(((Mat_MPIDense *)C->data)->A, MATPRODUCT_AB));
   PetscCall(MatProductSetFromOptions(((Mat_MPIDense *)C->data)->A));
   PetscCall(MatProductSymbolic(((Mat_MPIDense *)C->data)->A));
-  C->product->data       = contents;
+  C->product->data       = data;
   C->product->destroy    = MatMPIAIJ_MPIDenseDestroy;
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -519,8 +575,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat, Mat, Mat, 
     Performs an efficient scatter on the rows of B needed by this process; this is
     a modification of the VecScatterBegin_() routines.
 */
-
-PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+static PetscErrorCode MatMPIDenseScatterHost_Private(VecScatter ctx, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
 {
   const PetscScalar *b;
   PetscScalar       *rvalues;
@@ -529,21 +584,15 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt 
   PetscMPIInt        nsends, nrecvs;
   MPI_Comm           comm;
   PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols, nsends_mpi, nrecvs_mpi;
-  PetscInt           blda;
 
   PetscFunctionBegin;
-  MatCheckProduct(C, 7);
-  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   PetscCall(PetscMPIIntCast(B->cmap->N, &ncols));
   PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL /*bs*/));
   PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL /*bs*/));
   PetscCall(PetscMPIIntCast(nsends, &nsends_mpi));
   PetscCall(PetscMPIIntCast(nrecvs, &nrecvs_mpi));
-  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
 
   PetscCall(MatDenseGetArrayRead(B, &b));
-  PetscCall(MatDenseGetLDA(B, &blda));
-  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
   PetscCall(MatDenseGetArray(workB, &rvalues));
 
   /* Post recv, use MPI derived data type to save memory */
@@ -561,80 +610,193 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, Mat workB, Mat C)
+/*
+   Same as MatMPIDenseScatterHost_Private(), but using the strided PetscSFs set up in
+   MatMPIDenseScatterSetUp_Private() so that the data never leaves the device. The scatter is split in two
+   halves so that a caller can run other work while the off-process rows of B are in flight
+*/
+static PetscErrorCode MatMPIDenseScatterDeviceBegin_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
 {
-  Mat_MPIAIJ      *aij = (Mat_MPIAIJ *)A->data;
-  MPIAIJ_MPIDense *contents;
+  PetscSF      sf;
+  PetscInt     k = 0;
+  PetscMemType bmtype, wmtype;
 
   PetscFunctionBegin;
-  contents = (MPIAIJ_MPIDense *)C->product->data;
-  PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
+  PetscCheck(!contents->sfinuse, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A scatter is already in flight");
+  if (B->cmap->N != contents->ncols[0]) k = 1;
+  PetscCheck(contents->sf[k] && contents->ncols[k] == B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter set up for %" PetscInt_FMT " columns", B->cmap->N);
+  sf = contents->sf[k];
+  /* every entry of workB is overwritten, so write-only access is enough */
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &contents->barray, &bmtype));
+  PetscCall(MatDenseGetArrayWriteAndMemType(workB, &contents->warray, &wmtype));
+  PetscCall(PetscSFBcastWithMemTypeBegin(sf, sf->vscat.unit, bmtype, contents->barray, wmtype, contents->warray, MPI_REPLACE));
+  contents->sfinuse = sf;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
+{
+  PetscSF sf = contents->sfinuse;
+
+  PetscFunctionBegin;
+  PetscCheck(sf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter in flight");
+  PetscCall(PetscSFBcastEnd(sf, sf->vscat.unit, contents->barray, contents->warray, MPI_REPLACE));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(workB, &contents->warray));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &contents->barray));
+  contents->sfinuse = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   The checks the host and device scatters share; on the device route they are done by the begin half
+*/
+static PetscErrorCode MatMPIDenseScatterCheck_Private(PetscInt nrows, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+{
+  PetscInt blda;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 5);
+  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
+  PetscCall(MatDenseGetLDA(B, &blda));
+  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatMPIDenseScatterCheck_Private(nrows, workB, contents, B, C));
+  if (contents->ondevice) {
+    PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
+    PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
+  } else PetscCall(MatMPIDenseScatterHost_Private(ctx, bs, workB, contents, B, C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   Starts the scatter of the off-process rows of B into workB. On the device route only the begin half of the
+   PetscSF broadcast is posted, so the caller must complete it with MatMPIDenseScatterEnd(); the host scatter
+   is blocking and is done entirely here
+*/
+static PetscErrorCode MatMPIDenseScatterBegin(Mat A, Mat B, Mat workB, Mat C)
+{
+  Mat_MPIAIJ      *aij      = (Mat_MPIAIJ *)A->data;
+  MPIAIJ_MPIDense *contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
+
+  PetscFunctionBegin;
+  if (contents->ondevice) {
+    PetscCall(MatMPIDenseScatterCheck_Private(aij->B->cmap->n, workB, contents, B, C));
+    PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
+  } else PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMPIDenseScatterEnd(Mat B, Mat workB, Mat C)
+{
+  MPIAIJ_MPIDense *contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
+
+  PetscFunctionBegin;
+  if (contents->ondevice) PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   Computes C = A * B, creating the nested product and its symbolic the first time. When clear is true the
+   product is cleared by the numeric, so that the symbolic is redone on the next call
+*/
+static PetscErrorCode MatMPIAIJ_MPIDenseProductNumeric_Private(Mat A, Mat B, Mat C, PetscBool clear)
+{
+  PetscFunctionBegin;
+  if (!C->product) {
+    PetscCall(MatProductCreateWithMat(A, B, NULL, C));
+    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSetFromOptions(C));
+    PetscCall(MatProductSymbolic(C));
+  } else PetscCall(MatProductReplaceMats(A, B, NULL, C));
+  if (clear && !C->product->clear) C->product->clear = PETSC_TRUE;
+  PetscCall(MatProductNumeric(C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 {
-  Mat_MPIAIJ      *aij    = (Mat_MPIAIJ *)A->data;
-  Mat_MPIDense    *bdense = (Mat_MPIDense *)B->data;
-  Mat_MPIDense    *cdense = (Mat_MPIDense *)C->data;
-  Mat              workB;
-  MPIAIJ_MPIDense *contents;
+  Mat_MPIAIJ         *aij    = (Mat_MPIAIJ *)A->data;
+  Mat_MPIDense       *bdense = (Mat_MPIDense *)B->data;
+  Mat_MPIDense       *cdense = (Mat_MPIDense *)C->data;
+  Mat                 workB;
+  MPIAIJ_MPIDense    *contents;
+  MPIAIJ_MPIDense_AB *data;
+  PetscBool           clear = PETSC_FALSE, flg, overlap;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  contents = (MPIAIJ_MPIDense *)C->product->data;
-  /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
-  if (!cdense->A->product) {
-    PetscCall(MatProductCreateWithMat(aij->A, bdense->A, NULL, cdense->A));
-    PetscCall(MatProductSetType(cdense->A, MATPRODUCT_AB));
-    PetscCall(MatProductSetFromOptions(cdense->A));
-    PetscCall(MatProductSymbolic(cdense->A));
-  } else PetscCall(MatProductReplaceMats(aij->A, bdense->A, NULL, cdense->A));
-  if (PetscDefined(HAVE_CUPM) && !cdense->A->product->clear) {
-    PetscBool flg;
-
+  data     = (MPIAIJ_MPIDense_AB *)C->product->data;
+  contents = &data->scatter;
+  if (PetscDefined(HAVE_CUPM)) {
     PetscCall(PetscObjectTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
     if (flg) PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &flg));
-    if (!flg) cdense->A->product->clear = PETSC_TRUE; /* if either A or C is a device Mat, make sure MatProductClear() is called */
+    clear = (PetscBool)!flg; /* if either A or C is a device Mat, make sure MatProductClear() is called */
   }
-  PetscCall(MatProductNumeric(cdense->A));
+  /* The device scatter is non-blocking, so when there are no column batches start it before the product of the
+     diagonal block below to overlap the communication with that product, as MatMult_MPIAIJ() does. The host
+     scatter is blocking, so it is left where it is */
+  overlap = (PetscBool)(contents->ondevice && contents->workB->cmap->n == B->cmap->N);
+  if (overlap) PetscCall(MatMPIDenseScatterBegin(A, B, contents->workB, C));
+  /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
+  PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->A, bdense->A, cdense->A, clear));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     workB = contents->workB;
-    PetscCall(MatMPIDenseScatter(A, B, workB, C));
+    if (!overlap) PetscCall(MatMPIDenseScatterBegin(A, B, workB, C));
+    PetscCall(MatMPIDenseScatterEnd(B, workB, C));
 
     /* off-diagonal block of A times nonlocal rows of B */
-    PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE));
+    if (data->workC) {
+      PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, data->workC, clear));
+      PetscCall(MatAXPY(cdense->A, 1.0, data->workC, SAME_NONZERO_PATTERN));
+    } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE)); /* the device route has no work matrix only when the off-diagonal block has no columns */
   } else {
-    Mat       Bb, Cb;
+    Mat       Bb, Cb, workC;
     PetscInt  BN = B->cmap->N, n = contents->workB->cmap->n, cols;
-    PetscBool ccpu;
+    PetscBool ccpu = PETSC_FALSE;
 
     PetscCheck(n > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column block size %" PetscInt_FMT " must be positive", n);
-    /* Prevent from unneeded copies back and forth from the GPU
-       when getting and restoring the submatrix
-       We need a proper GPU code for AIJ * dense in parallel */
-    PetscCall(MatBoundToCPU(C, &ccpu));
-    PetscCall(MatBindToCPU(C, PETSC_TRUE));
+    /* The host route accumulates into the local block of C on the host, bind C to the CPU to avoid copies back
+       and forth from the device when getting and restoring the sub-matrices */
+    if (!contents->ondevice) {
+      PetscCall(MatBoundToCPU(C, &ccpu));
+      PetscCall(MatBindToCPU(C, PETSC_TRUE));
+    }
     for (PetscInt i = 0; i < BN; i += n) {
       cols  = PetscMin(n, BN - i);
       workB = contents->workB;
-      if (cols != n) PetscCall(MatDenseGetSubMatrix(contents->workB, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workB));
+      workC = data->workC;
+      if (cols != n) {
+        PetscCall(MatDenseGetSubMatrix(contents->workB, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workB));
+        if (workC) PetscCall(MatDenseGetSubMatrix(data->workC, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workC));
+      }
       PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, i, i + cols, &Bb));
       PetscCall(MatDenseGetSubMatrix(C, PETSC_DECIDE, PETSC_DECIDE, i, i + cols, &Cb));
 
       /* get off processor parts of B needed to complete C=A*B */
-      PetscCall(MatMPIDenseScatter(A, Bb, workB, C));
+      PetscCall(MatMPIDenseScatterBegin(A, Bb, workB, C));
+      PetscCall(MatMPIDenseScatterEnd(Bb, workB, C));
 
       /* off-diagonal block of A times nonlocal rows of B */
-      cdense = (Mat_MPIDense *)Cb->data;
-      PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE));
-      if (cols != n) PetscCall(MatDenseRestoreSubMatrix(contents->workB, &workB));
+      if (workC) {
+        PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, workC, clear));
+        PetscCall(MatAXPY(((Mat_MPIDense *)Cb->data)->A, 1.0, workC, SAME_NONZERO_PATTERN));
+      } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, ((Mat_MPIDense *)Cb->data)->A, PETSC_TRUE));
+      if (cols != n) {
+        if (workC) PetscCall(MatDenseRestoreSubMatrix(data->workC, &workC));
+        PetscCall(MatDenseRestoreSubMatrix(contents->workB, &workB));
+      }
       PetscCall(MatDenseRestoreSubMatrix(B, &Bb));
       PetscCall(MatDenseRestoreSubMatrix(C, &Cb));
     }
-    PetscCall(MatBindToCPU(C, ccpu));
+    if (!contents->ondevice) PetscCall(MatBindToCPU(C, ccpu));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

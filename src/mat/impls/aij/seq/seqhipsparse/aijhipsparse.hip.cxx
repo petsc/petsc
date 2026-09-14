@@ -1676,7 +1676,8 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
   Mat_Product                   *product = C->product;
   Mat                            A, B;
   PetscInt                       m, n, blda, clda;
-  PetscBool                      flg, biship;
+  PetscBool                      flg, biship, compressed;
+  Mat_SeqAIJ                    *a;
   Mat_SeqAIJHIPSPARSE           *cusp;
   hipsparseOperation_t           opA;
   const PetscScalar             *barray;
@@ -1697,6 +1698,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
      Instead of silently accepting the wrong answer, I prefer to raise the error */
   PetscCheck(!A->boundtocpu, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Cannot bind to CPU a HIPSPARSE matrix between MatProductSymbolic and MatProductNumeric phases");
   PetscCall(MatSeqAIJHIPSPARSECopyToGPU(A));
+  a    = (Mat_SeqAIJ *)A->data;
   cusp = (Mat_SeqAIJHIPSPARSE *)A->spptr;
   switch (product->type) {
   case MATPRODUCT_AB:
@@ -1730,6 +1732,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
   }
   PetscCheck(mat, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Missing Mat_SeqAIJHIPSPARSEMultStruct");
   csrmat = (CsrMatrix *)mat->mat;
+  /* when the rows of A are compressed on the device, csrmat holds only the nonempty rows of A, so the
+     SpMM descriptor below must be built with the full row offsets instead of those of csrmat */
+  compressed = (PetscBool)(mat->cprowIndices != NULL);
   /* if the user passed a CPU matrix, copy the data to the GPU */
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSEHIP, &biship));
   if (!biship) PetscCall(MatConvert(B, MATSEQDENSEHIP, MAT_INPLACE_MATRIX, &B));
@@ -1745,6 +1750,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
 
   PetscCall(PetscLogGpuTimeBegin());
   hipsparseOperation_t opB = (product->type == MATPRODUCT_ABt || product->type == MATPRODUCT_RARt) ? HIPSPARSE_OPERATION_TRANSPOSE : HIPSPARSE_OPERATION_NON_TRANSPOSE;
+  /* mat->matDescr is also used by the SpGEMM code, which relies on its compressed dimensions, so when A is
+     compressed the SpMM needs a descriptor of its own */
+  hipsparseSpMatDescr_t &matADescr = compressed ? mat->matDescr_SpMM[opA] : mat->matDescr;
   /* (re)allocate mmBuffer if not initialized or LDAs are different */
   if (!mmdata->initialized || mmdata->Blda != blda || mmdata->Clda != clda) {
     size_t mmBufferSize;
@@ -1764,10 +1772,19 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
       PetscCallHIPSPARSE(hipsparseCreateDnMat(&mmdata->matCDescr, m, n, clda, (void *)carray, hipsparse_scalartype, HIPSPARSE_ORDER_COL));
       mmdata->Clda = clda;
     }
-    if (!mat->matDescr) {
-      PetscCallHIPSPARSE(hipsparseCreateCsr(&mat->matDescr, csrmat->num_rows, csrmat->num_cols, csrmat->num_entries, csrmat->row_offsets->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
+    if (!matADescr) {
+      if (compressed) {
+        if (!cusp->rowoffsets_gpu) { /* the full row offsets may be absent when we did not construct the transpose with csr2csc */
+          cusp->rowoffsets_gpu = new THRUSTINTARRAY(A->rmap->n + 1);
+          cusp->rowoffsets_gpu->assign(a->i, a->i + A->rmap->n + 1);
+          PetscCall(PetscLogCpuToGpu((A->rmap->n + 1) * sizeof(PetscInt)));
+        }
+        PetscCallHIPSPARSE(hipsparseCreateCsr(&matADescr, A->rmap->n, csrmat->num_cols, csrmat->num_entries, cusp->rowoffsets_gpu->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
+      } else {
+        PetscCallHIPSPARSE(hipsparseCreateCsr(&matADescr, csrmat->num_rows, csrmat->num_cols, csrmat->num_entries, csrmat->row_offsets->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, HIPSPARSE_INDEX_BASE_ZERO, hipsparse_scalartype));
+      }
     }
-    PetscCallHIPSPARSE(hipsparseSpMM_bufferSize(cusp->handle, opA, opB, mat->alpha_one, mat->matDescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, hipsparse_scalartype, cusp->spmmAlg, &mmBufferSize));
+    PetscCallHIPSPARSE(hipsparseSpMM_bufferSize(cusp->handle, opA, opB, mat->alpha_one, matADescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, hipsparse_scalartype, cusp->spmmAlg, &mmBufferSize));
     if ((mmdata->mmBuffer && mmdata->mmBufferSize < mmBufferSize) || !mmdata->mmBuffer) {
       PetscCallHIP(hipFree(mmdata->mmBuffer));
       PetscCallHIP(hipMalloc(&mmdata->mmBuffer, mmBufferSize));
@@ -1776,13 +1793,13 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
     mmdata->initialized = PETSC_TRUE;
   } else {
     /* to be safe, always update pointers of the mats */
-    PetscCallHIPSPARSE(hipsparseSpMatSetValues(mat->matDescr, csrmat->values->data().get()));
+    PetscCallHIPSPARSE(hipsparseSpMatSetValues(matADescr, csrmat->values->data().get()));
     PetscCallHIPSPARSE(hipsparseDnMatSetValues(mmdata->matBDescr, (void *)barray));
     PetscCallHIPSPARSE(hipsparseDnMatSetValues(mmdata->matCDescr, (void *)carray));
   }
 
   /* do hipsparseSpMM, which supports transpose on B */
-  PetscCallHIPSPARSE(hipsparseSpMM(cusp->handle, opA, opB, mat->alpha_one, mat->matDescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, hipsparse_scalartype, cusp->spmmAlg, mmdata->mmBuffer));
+  PetscCallHIPSPARSE(hipsparseSpMM(cusp->handle, opA, opB, mat->alpha_one, matADescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, hipsparse_scalartype, cusp->spmmAlg, mmdata->mmBuffer));
 
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(n * 2.0 * csrmat->num_entries));
@@ -2951,6 +2968,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSEMu
         PetscCallHIPSPARSE(hipsparseDestroyDnVec(mdata->hipSpMV[i].vecYDescr));
         PetscCallHIPSPARSE(hipsparseDestroySpMat(mdata->hipSpMV[i].matDescr));
       }
+      if (mdata->matDescr_SpMM[i]) PetscCallHIPSPARSE(hipsparseDestroySpMat(mdata->matDescr_SpMM[i]));
     }
     delete *matstruct;
     *matstruct = NULL;

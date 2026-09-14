@@ -187,24 +187,20 @@ struct Mat_CusparseSpMV {
 
 /* This is struct holding the relevant data needed to a MatMult */
 struct Mat_SeqAIJCUSPARSEMultStruct {
-  void                *mat;          /* opaque pointer to a matrix. This could be either a cusparseHybMat_t or a CsrMatrix */
-  cusparseMatDescr_t   descr;        /* Data needed to describe the matrix for a multiply */
-  THRUSTINTARRAY      *cprowIndices; /* compressed row indices used in the parallel SpMV */
-  PetscScalar         *alpha_one;    /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
-  PetscScalar         *beta_zero;    /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
-  PetscScalar         *beta_one;     /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
-  cusparseSpMatDescr_t matDescr;     /* descriptor for the matrix, used by SpMM */
-#if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-  cusparseSpMatDescr_t matDescr_SpMM[3]; // and known issues https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cusparse-release-12-6
-#endif
-  Mat_CusparseSpMV cuSpMV[3]; /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
+  void                *mat;              /* opaque pointer to a matrix. This could be either a cusparseHybMat_t or a CsrMatrix */
+  cusparseMatDescr_t   descr;            /* Data needed to describe the matrix for a multiply */
+  THRUSTINTARRAY      *cprowIndices;     /* compressed row indices used in the parallel SpMV */
+  PetscScalar         *alpha_one;        /* pointer to a device "scalar" storing the alpha parameter in the SpMV */
+  PetscScalar         *beta_zero;        /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
+  PetscScalar         *beta_one;         /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
+  cusparseSpMatDescr_t matDescr;         /* descriptor for the matrix, used by SpMM */
+  cusparseSpMatDescr_t matDescr_SpMM[3]; // separate descriptors for opA's used by SpMM, see the known issues https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cusparse-release-12-6
+  Mat_CusparseSpMV     cuSpMV[3];        /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
   Mat_SeqAIJCUSPARSEMultStruct() : matDescr(NULL)
   {
     for (int i = 0; i < 3; i++) {
       cuSpMV[i].initialized = PETSC_FALSE;
-#if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-      matDescr_SpMM[i] = NULL;
-#endif
+      matDescr_SpMM[i]      = NULL;
     }
   }
 };

@@ -1660,7 +1660,8 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   Mat_Product                  *product = C->product;
   Mat                           A, B;
   PetscInt                      m, n, blda, clda;
-  PetscBool                     flg, biscuda;
+  PetscBool                     flg, biscuda, compressed;
+  Mat_SeqAIJ                   *a;
   Mat_SeqAIJCUSPARSE           *cusp;
   cusparseOperation_t           opA;
   const PetscScalar            *barray;
@@ -1681,6 +1682,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
      Instead of silently accepting the wrong answer, I prefer to raise the error */
   PetscCheck(!A->boundtocpu, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Cannot bind to CPU a CUSPARSE matrix between MatProductSymbolic and MatProductNumeric phases");
   PetscCall(MatSeqAIJCUSPARSECopyToGPU(A));
+  a    = (Mat_SeqAIJ *)A->data;
   cusp = (Mat_SeqAIJCUSPARSE *)A->spptr;
   switch (product->type) {
   case MATPRODUCT_AB:
@@ -1714,6 +1716,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   }
   PetscCheck(mat, PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Missing Mat_SeqAIJCUSPARSEMultStruct");
   csrmat = (CsrMatrix *)mat->mat;
+  /* when the rows of A are compressed on the device, csrmat holds only the nonempty rows of A, so the
+     SpMM descriptor below must be built with the full row offsets instead of those of csrmat */
+  compressed = (PetscBool)(mat->cprowIndices != NULL);
   /* if the user passed a CPU matrix, copy the data to the GPU */
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSECUDA, &biscuda));
   if (!biscuda) PetscCall(MatConvert(B, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &B));
@@ -1733,7 +1738,9 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
   cusparseSpMatDescr_t &matADescr = mat->matDescr_SpMM[opA];
 #else
-  cusparseSpMatDescr_t &matADescr = mat->matDescr;
+  /* mat->matDescr is also used by the SpGEMM code, which relies on its compressed dimensions, so when A is
+     compressed the SpMM needs a descriptor of its own */
+  cusparseSpMatDescr_t &matADescr = compressed ? mat->matDescr_SpMM[opA] : mat->matDescr;
 #endif
 
   /* (re)allocate mmBuffer if not initialized or LDAs are different */
@@ -1765,7 +1772,16 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 #endif
 
     if (!matADescr) {
-      PetscCallCUSPARSE(cusparseCreateCsr(&matADescr, csrmat->num_rows, csrmat->num_cols, csrmat->num_entries, csrmat->row_offsets->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype));
+      if (compressed) {
+        if (!cusp->rowoffsets_gpu) { /* the full row offsets may be absent when we did not construct the transpose with csr2csc */
+          cusp->rowoffsets_gpu = new THRUSTINTARRAY(A->rmap->n + 1);
+          cusp->rowoffsets_gpu->assign(a->i, a->i + A->rmap->n + 1);
+          PetscCall(PetscLogCpuToGpu((A->rmap->n + 1) * sizeof(PetscInt)));
+        }
+        PetscCallCUSPARSE(cusparseCreateCsr(&matADescr, A->rmap->n, csrmat->num_cols, csrmat->num_entries, cusp->rowoffsets_gpu->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype));
+      } else {
+        PetscCallCUSPARSE(cusparseCreateCsr(&matADescr, csrmat->num_rows, csrmat->num_cols, csrmat->num_entries, csrmat->row_offsets->data().get(), csrmat->column_indices->data().get(), csrmat->values->data().get(), csrRowOffsetsType, csrColIndType, CUSPARSE_INDEX_BASE_ZERO, cusparse_scalartype));
+      }
     }
 
     PetscCallCUSPARSE(cusparseSpMM_bufferSize(cusp->handle, opA, opB, mat->alpha_one, matADescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, cusparse_scalartype, cusp->spmmAlg, &mmBufferSize));
@@ -2960,10 +2976,8 @@ static PetscErrorCode MatSeqAIJCUSPARSEMultStruct_Destroy(Mat_SeqAIJCUSPARSEMult
         PetscCallCUSPARSE(cusparseDestroyDnVec(mdata->cuSpMV[i].vecXDescr));
         PetscCallCUSPARSE(cusparseDestroyDnVec(mdata->cuSpMV[i].vecYDescr));
         PetscCallCUSPARSE(cusparseDestroySpMat(mdata->cuSpMV[i].matDescr));
-#if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
-        if (mdata->matDescr_SpMM[i]) PetscCallCUSPARSE(cusparseDestroySpMat(mdata->matDescr_SpMM[i]));
-#endif
       }
+      if (mdata->matDescr_SpMM[i]) PetscCallCUSPARSE(cusparseDestroySpMat(mdata->matDescr_SpMM[i]));
     }
     delete *matstruct;
     *matstruct = NULL;

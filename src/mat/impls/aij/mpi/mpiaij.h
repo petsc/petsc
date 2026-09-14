@@ -190,6 +190,13 @@ typedef struct {
   PetscInt      nsends, nrecvs;
   MPI_Datatype *stype, *rtype;
   PetscInt      blda;
+  PetscSF       sf[2]; /* strided scatters for ncols[0] = workB->cmap->n columns and ncols[1] = remainder columns of the batched path, NULL if unused */
+  PetscInt      ncols[2];
+  PetscBool     ondevice; /* workB has a device type, use sf[] instead of the MPI derived datatypes */
+  /* state of a split device scatter, held between MatMPIDenseScatterDeviceBegin_Private() and MatMPIDenseScatterDeviceEnd_Private() */
+  PetscSF            sfinuse; /* the sf[] entry the outstanding scatter uses, NULL when no scatter is in flight */
+  const PetscScalar *barray;  /* root array, the local block of B that scatter reads */
+  PetscScalar       *warray;  /* leaf array, the workB that scatter writes */
 } MPIAIJ_MPIDense;
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter, PetscInt, PetscInt, PetscInt, Mat, Mat, MPIAIJ_MPIDense *, PetscInt *, PetscInt *);
