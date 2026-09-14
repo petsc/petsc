@@ -115,6 +115,12 @@ class Petsc(object):
                     key = define[:space]
                     val = define[space+1:]
                     self.conf[key] = val
+        with open(self.arch_path('include', 'petscpkg_version.h')) as petscpkg_version_h:
+            for line in petscpkg_version_h:
+                if line.startswith('#define PETSC_PKG_'):
+                    key, val = line.split(None, 2)[1:]
+                    if key.endswith(('_VERSION_MAJOR', '_VERSION_MINOR', '_VERSION_SUBMINOR')):
+                        self.conf[key] = val
         self.conf.update(parse_makefile(self.arch_path('lib','petsc','conf', 'petscvariables')))
         # allow parsing package additional configurations (if any)
         if self.pkg_name != 'petsc' :

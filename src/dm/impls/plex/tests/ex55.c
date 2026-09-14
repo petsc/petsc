@@ -321,7 +321,7 @@ int main(int argc, char **argv)
     suffix: 4
     requires: !complex
     args: -orig_dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.h5 -dm_plex_create_from_hdf5_xdmf
-    args: -distribute 0 -second_write_read -compare
+    args: -distribute 0 -second_write_read -compare -petscpartitioner_type simple
     test:
       suffix: hdf5_petsc
       nsize: {{1 2}}

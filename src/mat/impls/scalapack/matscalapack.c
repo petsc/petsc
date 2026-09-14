@@ -1230,6 +1230,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A), &icomm, NULL));
   PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, &iflg));
   if (--grid->grid_refct == 0) {
+    Cblacs_freebuff(grid->ictxt, 1);
     Cblacs_gridexit(grid->ictxt);
     Cblacs_gridexit(grid->ictxrow);
     Cblacs_gridexit(grid->ictxcol);

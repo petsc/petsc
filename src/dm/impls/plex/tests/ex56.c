@@ -99,9 +99,12 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
     PetscCall(DMPlexLabelsLoad(dm, v, sfXC));
   }
   if (explicitDistribute) {
-    DM      dmdist;
-    PetscSF sfXB = sfXC, sfBC;
+    DM               dmdist;
+    PetscSF          sfXB = sfXC, sfBC;
+    PetscPartitioner part;
 
+    PetscCall(DMPlexGetPartitioner(dm, &part));
+    PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, 0, &sfBC, &dmdist));
     if (dmdist) {
       const char *name;

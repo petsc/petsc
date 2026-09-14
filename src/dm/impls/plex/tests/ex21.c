@@ -171,12 +171,16 @@ int main(int argc, char **argv)
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));
     /* Save exampleDMPlex */
     {
-      DM             pdm;
-      const PetscInt faces[2] = {6, 1};
-      PetscSF        sf;
-      PetscInt       overlap = 1;
+      DM               pdm;
+      const PetscInt   faces[2] = {6, 1};
+      PetscSF          sf;
+      PetscInt         overlap = 1;
+      PetscPartitioner part;
 
       PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
+      PetscCall(DMPlexGetPartitioner(dm, &part));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)part, "save_"));
+      PetscCall(PetscPartitionerSetFromOptions(part));
       PetscCall(DMPlexDistribute(dm, overlap, &sf, &pdm));
       if (pdm) {
         PetscCall(DMDestroy(&dm));
@@ -488,6 +492,7 @@ int main(int argc, char **argv)
     nsize: 4
     args: -fname ex12_dump.h5 -shell {{True False}separate output} -dm_view ascii::ascii_info_detail
     args: -dm_plex_view_hdf5_storage_version 2.0.0
+    args: -save_petscpartitioner_type simple
     test:
       suffix: parmetis
       requires: parmetis

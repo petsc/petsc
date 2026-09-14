@@ -142,7 +142,7 @@ checkbadSource:
 	-@echo "----- Extra spaces in test harness rules ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '^(\!){0,1}[ ]*(suffix|output_file|nsize|requires|args):.*  .*' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Extra comma in test harness rules ----------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E '^(\!){0,1}[ ]*requires:.*,' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '(?i)^!?[ ]*requires:(?>[ \t]+|!?[A-Z0-9_]+_VERSION_(?:EQ|LT|LE|GT|GE)\([0-9]+,[0-9]+,[0-9]+\)(?!\S)|[^\s,]+)*,' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Using PetscInfo() without carriage return --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscCall\(PetscInfo\(' -- ${GITSRC} | grep -v '\\n' >> checkbadSource.out;true
 	-@echo "----- Using Petsc(Assert|Check)() with carriage return -------------" >> checkbadSource.out
