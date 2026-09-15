@@ -4,12 +4,12 @@ def RunTest():
     import example100
 
     OptDB = PETSc.Options()
-    N     = OptDB.getInt('N', 100)
-    draw  = OptDB.getBool('draw', False)
+    N = OptDB.getInt('N', 100)
+    draw = OptDB.getBool('draw', False)
 
     A = PETSc.Mat()
     A.create(comm=PETSc.COMM_WORLD)
-    A.setSizes([N,N])
+    A.setSizes([N, N])
     A.setType(PETSc.Mat.Type.PYTHON)
     A.setPythonContext(example100.Laplace1D())
     A.setUp()
@@ -34,16 +34,17 @@ def RunTest():
     A.mult(x, r)
     r.aypx(-1, b)
     rnorm = r.norm()
-    PETSc.Sys.Print('error norm = %g' % rnorm,
-                    comm=PETSc.COMM_WORLD)
+    PETSc.Sys.Print(f'error norm = {rnorm:g}', comm=PETSc.COMM_WORLD)
 
     if draw:
         viewer = PETSc.Viewer.DRAW(x.getComm())
         x.view(viewer)
         PETSc.Sys.sleep(2)
 
+
 if __name__ == '__main__':
-    import sys, petsc4py
+    import sys
+    import petsc4py
+
     petsc4py.init(sys.argv)
     RunTest()
-

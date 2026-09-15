@@ -54,18 +54,22 @@ uninstall:
 .PHONY: lint ruff-lint cython-lint ruff-format check-docs stubtest
 CYTHONLINT_SRC = src demo
 CYTHONLINT_OPTS =
+RUFF ?= ruff
 RUFF_SRC = conf demo docs src test setup.py
+RUFF_EXAMPLES = $(wildcard \
+    ../../*/tests/*.py ../../*/*/tests/*.py \
+    ../../*/tutorials/*.py ../../*/*/tutorials/*.py)
 
 cython-lint:
 	conf/cythonize.sh -Wextra -Werror
 	cython-lint ${CYTHONLINT_OPTS} ${CYTHONLINT_SRC}
 
 ruff-lint:
-	ruff check ${RUFF_SRC}
-	ruff format --diff ${RUFF_SRC}
+	${RUFF} check ${RUFF_SRC} ${RUFF_EXAMPLES}
+	${RUFF} format --diff ${RUFF_SRC} ${RUFF_EXAMPLES}
 
 ruff-format:
-	ruff format ${RUFF_SRC}
+	${RUFF} format ${RUFF_SRC} ${RUFF_EXAMPLES}
 
 lint:
 	${RM} -r petsc4py-lint-env
