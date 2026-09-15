@@ -11759,7 +11759,7 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
   for (PetscInt k = 0; k < numVertices; k++) {
     PetscInt  nnzrow = i[k + 1] - i[k];
     PetscInt  row    = shift + k;
-    PetscInt *col    = j + i[k];
+    PetscInt *col    = PetscSafePointerPlusOffset(j, i[k]);
     maxnnzrow        = PetscMax(maxnnzrow, nnzrow);
     /* Add adjacency connection */
     PetscCall(MatSetValues(preall, 1, &row, nnzrow, col, NULL, INSERT_VALUES));
@@ -11779,7 +11779,7 @@ static PetscErrorCode DMPlexCreateGraphLaplacian_Private(DM dm, PetscInt depth, 
   for (PetscInt k = 0; k < numVertices; k++) {
     PetscInt  nnzrow = i[k + 1] - i[k];
     PetscInt  row    = shift + k;
-    PetscInt *col    = j + i[k];
+    PetscInt *col    = PetscSafePointerPlusOffset(j, i[k]);
     PetscCall(MatSetValues(L, 1, &row, nnzrow, col, vals, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(L, MAT_FINAL_ASSEMBLY));
