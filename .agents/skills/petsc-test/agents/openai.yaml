@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test PETSc and petsc4py"
+  short_description: "Select and run PETSc and petsc4py tests"
+  default_prompt: "Use $petsc-test to select and run relevant tests using the PETSC_ARCH I supply."

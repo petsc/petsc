@@ -1,0 +1,4 @@
+interface:
+  display_name: "Configure PETSc"
+  short_description: "Configure PETSc with the requested options"
+  default_prompt: "Use $petsc-configure to configure PETSc using the PETSC_ARCH and options I supply."

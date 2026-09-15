@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lint PETSc and petsc4py"
+  short_description: "Format source and check PETSc and petsc4py"
+  default_prompt: "Use $petsc-lint to run the source checks relevant to my changes."

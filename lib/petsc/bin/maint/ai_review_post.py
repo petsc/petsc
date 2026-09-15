@@ -15,14 +15,26 @@ FINDINGS.json holds a list of objects, each with
 The commit shas the comments are anchored to, and the pre-rename path of every
 file the merge request renames, are read from mr-IID-meta.json in the
 repository root, written there by ai_review_fetch.py.  FINDINGS.json and a
---meta FILE resolve against the invocation directory, as usual.  One POSTED
-or FAILED line is printed per finding, followed by a POSTED_OK and
-POSTED_FAILED count.  A --dry-run posts nothing, counts the findings it
-checked as DRY_RUN instead of POSTED_OK, and flags each suggestion block that
-would be demoted to a plain code block.
+--meta FILE resolve against the invocation directory, as usual. Before posting,
+every discussion page is fetched and checked. Matching notes are skipped using
+the normalized, guarded body, new path, new line, and head SHA. Normalization
+removes carriage returns and trailing whitespace to match GitLab. Non-inline
+notes match by body and commit_id; a matching non-inline body without a
+revision blocks that finding because its origin cannot be established.
 
-Exit status: 0 every finding posted, or a --dry-run that reached the end, 1
-otherwise.
+Each finding prints POSTED, PRESENT, PRESENT_NONINLINE, FAILED, or UNCERTAIN.
+UNCERTAIN means a POST may have been accepted but its response is unusable; no
+further posts are attempted in that run. Stop and report it before considering
+a rerun. Otherwise, rerun the same findings file to reconcile partial success.
+POSTED_OK counts new inline notes, POSTED_PRESENT counts both PRESENT statuses
+(including newly accepted non-inline notes), and POSTED_UNCERTAIN counts unknown
+outcomes. For compatibility, POSTED_FAILED counts all FAILED and UNCERTAIN
+findings. A --dry-run posts nothing, prints DRY-RUN for absent findings, flags
+demoted suggestions, and adds a DRY_RUN count. It still reconciles existing
+notes and reports failures.
+
+Exit status: 0 if every finding is posted, present, or would be posted in a
+dry run; 1 if reconciliation fails or any finding is FAILED or UNCERTAIN.
 """
 import os
 import re
@@ -82,8 +94,98 @@ def load_meta(path):
   if missing: die('%s is missing diff_refs.%s' % (path, ', diff_refs.'.join(missing)))
   return refs, meta.get('renames') or {}
 
+def discussion_request(iid, timeout, page=1, payload=None):
+  """Capture headers as well as JSON so pagination and HTTP failures are explicit."""
+  path = 'projects/:id/merge_requests/%s/discussions' % iid
+  if payload is None: path += '?per_page=100&page=%d' % page
+  cmd = ['glab', 'api', path, '--include']
+  if payload is not None: cmd += ['-X', 'POST', '--input', '-', '-H', 'Content-Type: application/json']
+  return subprocess.run(cmd, input=None if payload is None else json.dumps(payload).encode(),
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+
+def response_parts(raw):
+  """Parse the HTTP status, headers, and body emitted by glab api --include."""
+  parts = re.split(rb'\r?\n\r?\n', raw, maxsplit=1)
+  if len(parts) != 2: raise ValueError('glab did not return complete HTTP headers')
+  lines = parts[0].decode('utf-8', 'replace').splitlines()
+  match = re.fullmatch(r'HTTP/[0-9.]+ (\d{3})(?: .*)?', lines[0]) if lines else None
+  if not match: raise ValueError('glab did not return an HTTP status')
+  headers = {}
+  for line in lines[1:]:
+    key, separator, value = line.partition(':')
+    if not separator: raise ValueError('glab returned a malformed HTTP header')
+    headers[key.lower()] = value.strip()
+  return int(match.group(1)), headers, parts[1]
+
+def discussion_notes(discussion):
+  """Reject incomplete discussion objects instead of silently losing match candidates."""
+  if not isinstance(discussion, dict) or not isinstance(discussion.get('id'), str) or not discussion['id']:
+    raise ValueError('discussion has no valid id')
+  notes = discussion.get('notes')
+  if not isinstance(notes, list) or not notes: raise ValueError('discussion %s has no notes' % discussion['id'])
+  for note in notes:
+    if not isinstance(note, dict) or not note.get('id') or not isinstance(note.get('body'), str):
+      raise ValueError('discussion %s has an incomplete note' % discussion['id'])
+    if note.get('position') is not None and not isinstance(note['position'], dict):
+      raise ValueError('discussion %s has an invalid position' % discussion['id'])
+  return notes
+
+def load_discussions(iid, timeout):
+  """Read all pages before allowing any POST; missing pagination evidence is fatal."""
+  discussions, seen = [], set()
+  page, total = 1, None
+  while True:
+    proc = discussion_request(iid, timeout, page=page)
+    if proc.returncode:
+      raise ValueError('discussion page %d: %s' % (page, flatten(proc.stderr + b' ' + proc.stdout) or 'glab failed'))
+    status, headers, raw = response_parts(proc.stdout)
+    if status != 200: raise ValueError('discussion page %d returned HTTP %d' % (page, status))
+    if headers.get('x-page') != str(page) or 'x-next-page' not in headers:
+      raise ValueError('discussion page %d lacks consistent X-Page/X-Next-Page headers; completeness is unknown' % page)
+    next_page = headers['x-next-page']
+    if next_page not in ('', str(page + 1)): raise ValueError('discussion pagination skips or repeats a page')
+    if 'x-total-pages' in headers:
+      pages = int(headers['x-total-pages'])
+      if pages < 0 or page > max(1, pages) or bool(next_page) != (page < pages):
+        raise ValueError('discussion pagination contradicts X-Total-Pages')
+    if 'x-total' in headers:
+      count = int(headers['x-total'])
+      if count < 0 or (total is not None and total != count): raise ValueError('discussion total changed during pagination')
+      total = count
+    batch = json.loads(raw)
+    if not isinstance(batch, list): raise ValueError('discussion page %d is not a JSON array' % page)
+    if next_page and not batch: raise ValueError('discussion page %d is empty before the last page' % page)
+    for discussion in batch:
+      discussion_notes(discussion)
+      if discussion['id'] in seen: raise ValueError('discussion pagination repeated %s' % discussion['id'])
+      seen.add(discussion['id'])
+      discussions.append(discussion)
+    if not next_page:
+      if total is not None and len(discussions) != total: raise ValueError('discussion listing is incomplete: expected %d, received %d' % (total, len(discussions)))
+      return discussions
+    page += 1
+
+def find_present(discussions, refs, finding, body):
+  """Return a matching note's status and discussion id, or a blocking ambiguity."""
+  noninline, ambiguous = None, None
+  for discussion in discussions:
+    for note in discussion['notes']:
+      if note.get('system') or note['body'].replace('\r', '').rstrip() != body: continue
+      position = note.get('position') or {}
+      if position:
+        if (position.get('new_path'), position.get('new_line')) != (finding['file'], finding['line']): continue
+        if position.get('head_sha') == refs['head_sha']: return 'PRESENT', discussion['id']
+        if not position.get('head_sha'): ambiguous = discussion['id']
+      elif note.get('commit_id') == refs['head_sha']:
+        noninline = discussion['id']
+      elif not note.get('commit_id'):
+        ambiguous = discussion['id']
+  if noninline: return 'PRESENT_NONINLINE', noninline
+  if ambiguous: return 'FAILED', 'matching note in discussion %s has no revision; inspect it before retrying' % ambiguous
+  return None, None
+
 def post(iid, refs, renames, finding, body, timeout):
-  """Create one inline DiffNote and return (discussion id, None), or (None, error message) on failure."""
+  """Return (status, detail, accepted discussion), distinguishing rejection from uncertainty."""
   payload = {
     'body': body,
     'position': {
@@ -96,25 +198,33 @@ def post(iid, refs, renames, finding, body, timeout):
       'new_line': finding['line'],
     },
   }
-  cmd = ['glab', 'api', 'projects/:id/merge_requests/%s/discussions' % iid,
-         '-X', 'POST', '--input', '-', '-H', 'Content-Type: application/json']
   try:
-    proc = subprocess.run(cmd, input=json.dumps(payload).encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
-  except FileNotFoundError:
-    die('glab is not in PATH')
+    proc = discussion_request(iid, timeout, payload=payload)
+  except FileNotFoundError as exc:
+    return 'FAILED', 'could not start glab: %s' % exc, None
   except subprocess.TimeoutExpired:
-    return None, 'glab timed out after %d seconds' % timeout
-  # glab puts GitLab's error body on stdout and only a terse note on stderr; keep
-  # both, and never return an empty message for a failure.
-  if proc.returncode: return None, flatten(proc.stderr + b' ' + proc.stdout) or 'glab exited %d with no output' % proc.returncode
+    return 'UNCERTAIN', 'glab timed out after %d seconds; GitLab may have accepted the request' % timeout, None
+  except OSError as exc:
+    return 'UNCERTAIN', 'glab communication failed; GitLab may have accepted the request: %s' % exc, None
   try:
-    discussion = json.loads(proc.stdout)
-  except ValueError:
-    return None, 'glab did not return JSON: %s' % proc.stdout[:200].decode('utf-8', 'replace')
-  notes = discussion.get('notes') or []
-  if not notes or notes[0].get('type') != 'DiffNote':
-    return None, 'GitLab created a %s, not an inline DiffNote' % (notes[0].get('type') if notes else 'discussion with no note')
-  return discussion.get('id'), None
+    status, _, raw = response_parts(proc.stdout)
+  except ValueError as exc:
+    return 'UNCERTAIN', '%s: %s' % (exc, flatten(proc.stderr + b' ' + proc.stdout)), None
+  if 400 <= status < 500 and status != 408:
+    return 'FAILED', 'HTTP %d: %s' % (status, flatten(proc.stderr + b' ' + raw)), None
+  if proc.returncode or status != 201:
+    return 'UNCERTAIN', 'HTTP %d, glab exit %d: %s' % (status, proc.returncode, flatten(proc.stderr + b' ' + raw)), None
+  try:
+    discussion = json.loads(raw)
+    notes = discussion_notes(discussion)
+    present, _ = find_present([discussion], refs, finding, body)
+  except ValueError as exc:
+    return 'UNCERTAIN', 'unusable creation response: %s' % exc, None
+  if present == 'PRESENT' and notes[0].get('type') == 'DiffNote':
+    return 'POSTED', discussion['id'], discussion
+  if present == 'PRESENT_NONINLINE':
+    return present, discussion['id'], discussion
+  return 'UNCERTAIN', 'creation response does not confirm the requested inline note and revision', None
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -132,27 +242,36 @@ def main():
   findings      = load_findings(args.findings)
   refs, renames = load_meta(args.meta or 'mr-%s-meta.json' % args.iid)
 
-  posted = 0
-  failed = 0
+  counts = dict.fromkeys(('POSTED', 'PRESENT', 'PRESENT_NONINLINE', 'FAILED', 'UNCERTAIN', 'DRY_RUN'), 0)
+  blocked = None
+  try:
+    discussions = load_discussions(args.iid, args.timeout)
+  except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
+    discussions = []
+    blocked = 'cannot list all MR discussions; nothing posted: %s' % exc
+    print(blocked, file=sys.stderr)
   for finding in findings:
     where = '%s:%d' % (finding['file'], finding['line'])
-    body  = guard_suggestion(finding['body'])
-    if args.dry_run:
-      print('DRY-RUN %s%s' % (where, '' if body == finding['body'] else ' (the suggestion block will be demoted to a plain code block)'))
+    normalized_body = finding['body'].replace('\r', '').rstrip()
+    body = guard_suggestion(normalized_body)
+    status, detail = find_present(discussions, refs, finding, body)
+    if status is None and blocked: status, detail = 'FAILED', blocked
+    if status is None and args.dry_run:
+      print('DRY-RUN %s%s' % (where, '' if body == normalized_body else ' (the suggestion block will be demoted to a plain code block)'))
+      counts['DRY_RUN'] += 1
       continue
-    discussion, error = post(args.iid, refs, renames, finding, body, args.timeout)
-    if error is not None:
-      print('FAILED %s %s' % (where, error))
-      failed += 1
-    else:
-      print('POSTED %s %s' % (where, discussion))
-      posted += 1
-  if args.dry_run:
-    emit('DRY_RUN', len(findings))
-  else:
-    emit('POSTED_OK', posted)
-    emit('POSTED_FAILED', failed)
-  return EXIT_FAIL if failed else EXIT_OK
+    if status is None:
+      status, detail, discussion = post(args.iid, refs, renames, finding, body, args.timeout)
+      if discussion is not None: discussions.append(discussion)
+      if status == 'UNCERTAIN': blocked = 'not attempted after an UNCERTAIN result; stop and report it before retrying'
+    print('%s %s %s' % (status, where, detail))
+    counts[status] += 1
+  if args.dry_run: emit('DRY_RUN', counts['DRY_RUN'])
+  emit('POSTED_OK', counts['POSTED'])
+  emit('POSTED_FAILED', counts['FAILED'] + counts['UNCERTAIN'])
+  emit('POSTED_PRESENT', counts['PRESENT'] + counts['PRESENT_NONINLINE'])
+  emit('POSTED_UNCERTAIN', counts['UNCERTAIN'])
+  return EXIT_FAIL if blocked or counts['FAILED'] or counts['UNCERTAIN'] else EXIT_OK
 
 if __name__ == '__main__':
   sys.exit(main())

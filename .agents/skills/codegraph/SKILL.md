@@ -1,13 +1,13 @@
 ---
 name: codegraph
 description: >-
-  Use CodeGraph to navigate PETSc and avoid duplicating existing functionality. Use whenever
-  writing or reviewing PETSc C, C++, or Python, especially before adding or changing a public
-  API, package utility, object operation, implementation, backend, registration, or composed
-  method; when finding callers and the blast radius of a change; or when comparing sibling
-  implementations. Target PETSc's own index explicitly so queries use the intended graph.
-  CodeGraph is optional: if the index is absent, no CodeGraph tool or CLI is available, or
-  runtime dispatch is unresolved, continue with normal repository inspection without blocking.
+  Use CodeGraph when `.codegraph/` exists to navigate PETSc and avoid duplicating existing
+  functionality. Use whenever writing or reviewing PETSc C, C++, or Python, especially before
+  adding or changing a public API, package utility, object operation, private object state or
+  lifecycle, implementation, backend, registration, or composed method; when finding callers
+  and the blast radius of a change; or when comparing sibling implementations. Target PETSc's
+  own index explicitly so queries use the intended graph. If `.codegraph/` is unavailable,
+  continue with normal repository inspection.
 ---
 
 # CodeGraph for PETSc
@@ -81,6 +81,34 @@ For registered types, query the public creation path, `*Register()` routine,
 registry-selected function-pointer call to require verification through the exact type key and
 registration entry.
 
+## Trace object lifecycle and cached state
+
+When changing private object data, defaults, cached state, or setup behavior, query the private
+implementation header together with the exact class-prefixed lifecycle routines: `*Create()`,
+`*SetType()`, `*SetFromOptions()`, `*SetUp()`, `*Reset()`, `*Destroy()`, and `*View()`. Include
+`*Load()`, `*Duplicate()`, `*Copy()`, or `*Convert()` when the object provides them.
+
+Use exact symbols instead of bare lifecycle words such as `setup`, `reset`, or `destroy`, which
+match unrelated packages and languages. For example, query `PCCreate PCSetType PCSetFromOptions
+PCSetUp PCReset PCDestroy PCView pcimpl.h` as one bundle.
+
+Verify each applicable part of the lifecycle:
+
+- Initialize defaults and ownership in the base creation path and implementation constructor.
+- Reinitialize or transfer state correctly when `*SetType()` destroys one implementation and
+  installs another.
+- Invalidate setup flags, object states, and cached results from every setter or dependency change
+  that affects them.
+- Release owned resources in reset, destroy, and type-change paths without breaking reference
+  counting.
+- Preserve or expose the state consistently through options, view, load, duplicate, copy, and
+  conversion paths where those operations exist.
+
+CodeGraph may not represent C struct-member references as complete field edges. After exploring
+the object and its lifecycle, directly search the exact `->member` and `.member` tokens for every
+read and write of a changed member. This closes a known graph-coverage gap; it is not a reason to
+re-verify source CodeGraph already returned.
+
 ## Assess blast radius
 
 Before changing a shared symbol, use CodeGraph to find callers, references, siblings, and covering
@@ -96,9 +124,15 @@ Use these checks to scope the requested change, not to expand it into unrelated 
 
 ## Practical rules
 
-- Treat source returned by `codegraph_explore` as already read; do not fetch the same source again.
-  Before editing a file, read it directly — declaration blocks, `PetscFunctionBegin` pairing, and
-  the `/*TEST*/` block lie outside a symbol-scoped snippet.
+- For documentation-only verification of a known symbol, option, prototype, or source path, use
+  direct source search. Use CodeGraph when dispatch, lifecycle, callers, or implementation
+  relationships must be understood.
+- Treat source returned by `codegraph_explore` as already read for understanding; do not reopen the
+  same symbol merely to verify it. Before editing, read the containing file for surrounding context
+  omitted from symbol-scoped snippets, such as declarations, `PetscFunctionBegin` pairing, and the
+  `/*TEST*/` block. This read supplies editing context rather than re-validating CodeGraph's source.
+- Review evidence must come from the reviewed revision, which may differ from the graph or
+  working tree. Follow [review verification](../review-mr/review-procedure.md#4-verify-each-finding-before-reporting).
 - Use other repository-inspection capabilities only for details CodeGraph did not cover,
   especially macro expansion, function-pointer assignment, generated files, preprocessor
   variants, and text-only configuration.

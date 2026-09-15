@@ -1,0 +1,4 @@
+interface:
+  display_name: "PETSc and petsc4py documentation"
+  short_description: "Audit or build PETSc and petsc4py documentation"
+  default_prompt: "Use $petsc-docs to inspect or build PETSc or petsc4py documentation as requested."
