@@ -2760,6 +2760,13 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill
 
     PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
+    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
+    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
+    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
+    else {
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
+      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
+    }
   }
   PetscCall(MatSetUp(C));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2810,6 +2817,13 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
 
     PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
+    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
+    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
+    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
+    else {
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
+      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
+    }
   }
   PetscCall(MatSetUp(C));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2860,6 +2874,13 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, Petsc
 
     PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
     PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
+    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
+    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
+    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
+    else {
+      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
+      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
+    }
   }
   PetscCall(MatSetUp(C));
   PetscFunctionReturn(PETSC_SUCCESS);

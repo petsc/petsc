@@ -77,6 +77,7 @@ static PetscErrorCode MatProductSymbolic_SeqBAIJLIBXSMM_SeqDense(Mat C)
   PetscCall(MatSetSizes(C, m, n, m, n));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatSetType(C, MATSEQDENSE));
+  PetscCall(MatSetVecType(C, B->defaultvectype));
   PetscCall(MatSetUp(C));
   PetscCall(MatDenseGetLDA(B, &ldb));
   PetscCall(MatDenseGetLDA(C, &ldc));

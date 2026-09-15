@@ -513,14 +513,20 @@ static PetscErrorCode MatProductSymbolic_H2OPUS(Mat C)
     PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(C, product->A, product->B));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-    if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)product->B)->type_name));
+    if (!cisdense) {
+      PetscCall(MatSetType(C, ((PetscObject)product->B)->type_name));
+      PetscCall(MatSetVecType(C, product->B->defaultvectype));
+    }
     PetscCall(MatSetUp(C));
     break;
   case MATPRODUCT_AtB:
     PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(C, product->A, product->B));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-    if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)product->B)->type_name));
+    if (!cisdense) {
+      PetscCall(MatSetType(C, ((PetscObject)product->B)->type_name));
+      PetscCall(MatSetVecType(C, product->B->defaultvectype));
+    }
     PetscCall(MatSetUp(C));
     break;
   default:

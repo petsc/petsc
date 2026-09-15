@@ -2205,7 +2205,10 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
 #if PetscDefined(HAVE_HIP)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSEHIP, ""));
 #endif
-  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
+  if (!cisdense) {
+    PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
+    PetscCall(MatSetVecType(C, A->defaultvectype));
+  }
   PetscCall(MatSetUp(C));
 
   /* create data structure for reuse C */
@@ -2243,6 +2246,9 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   /* setup matrix product C */
   PetscCall(MatSetSizes(C, A->rmap->n, B->rmap->n, A->rmap->N, B->rmap->N));
   PetscCall(MatSetType(C, MATMPIDENSE));
+  /* keep the VecType of A, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if A is a MATMPIDENSE like C, since the VecType of a MATMPIDENSECUDA or MATMPIDENSEHIP A, e.g. VECCUDA, is not valid for C */
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
+  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
   PetscCall(MatSetUp(C));
   PetscCall(PetscObjectGetNewTag((PetscObject)C, &tag));
 
@@ -2549,6 +2555,9 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
   /* setup C */
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
   PetscCall(MatSetType(C, MATMPIDENSE));
+  /* keep the VecType of A, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if A is a MATMPIDENSE like C, since the VecType of a MATMPIDENSECUDA or MATMPIDENSEHIP A, e.g. VECCUDA, is not valid for C */
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
+  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
   PetscCall(MatSetUp(C));
 
   /* create data structure for reuse Cdense */

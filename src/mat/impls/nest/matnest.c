@@ -189,7 +189,10 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   PetscCall(MatGetSize(A, &M, NULL));
   PetscCall(MatSetSizes(C, m, n, M, N));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  if (!cisdense) {
+    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+    PetscCall(MatSetVecType(C, B->defaultvectype));
+  }
   PetscCall(MatSetUp(C));
   if (!N) {
     C->ops->productnumeric = MatProductNumeric_Nest_Dense;

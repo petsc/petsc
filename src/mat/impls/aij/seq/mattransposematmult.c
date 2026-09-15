@@ -41,7 +41,10 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
     dofm = B->rmap->n;
   }
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  if (!cisdense) {
+    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+    PetscCall(MatSetVecType(C, B->defaultvectype));
+  }
   PetscCall(MatSetUp(C));
 
   /* create additional data structure for the product */

@@ -785,6 +785,7 @@ static PetscErrorCode MatProductSymbolic_Diagonal_Dense(Mat C)
   PetscCall(MatGetSize(A, &M, NULL));
   PetscCall(MatSetSizes(C, m, n, M, N));
   PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  PetscCall(MatSetVecType(C, B->defaultvectype));
   PetscCall(MatSetUp(C));
   C->ops->productnumeric = MatProductNumeric_Diagonal_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
