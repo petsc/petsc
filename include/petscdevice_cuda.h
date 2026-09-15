@@ -19,7 +19,9 @@
   #include <cusolverSp.h>
   #include <cufft.h>
   #include <curand.h>
-  #include <nvml.h> // NVML comes with the NVIDIA GPU driver
+  #if PetscDefined(HAVE_NVML)
+    #include <nvml.h> // NVML comes with the NVIDIA GPU driver
+  #endif
 
 /* cuBLAS does not have cublasGetErrorName(). We create one on our own. */
 PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t); /* PETSC_EXTERN since it is exposed by the CHKERRCUBLAS macro */

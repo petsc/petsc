@@ -63,7 +63,7 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
   if (cupmSetDevice(id()) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // and in case it doesn't, explicitly call init here
   PetscCallCUPM(cupmInit(0));
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_NVML)
   // nvmlInit() deprecated in NVML 5.319
   PetscCallNVML(nvmlInit_v2());
 #endif
@@ -169,7 +169,7 @@ PetscErrorCode Device<T>::DeviceInternal::shutdown() noexcept
 {
   PetscFunctionBegin;
   if (!initialized()) PetscFunctionReturn(PETSC_SUCCESS);
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_NVML)
   PetscCallNVML(nvmlShutdown());
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

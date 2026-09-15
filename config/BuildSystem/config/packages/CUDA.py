@@ -8,8 +8,8 @@ class Configure(config.package.Package):
     self.versionname       = 'CUDA_VERSION'
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1
-    self.functions         = ['cublasInit','cufftDestroy','nvmlInit_v2']
-    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h','nvml.h']
+    self.functions         = ['cublasInit','cufftDestroy']
+    self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
     self.basicliblist      = [['libcudart.a','libnvtx3interop.a'],['libcudart.a','libnvToolsExt.a']]
     self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a']]
     # CUDA provides 2 variants of libcuda.so (for access to CUDA driver API):
@@ -22,7 +22,7 @@ class Configure(config.package.Package):
     # Note: PETSc does not use CUDA driver API (as of Sep 29, 2021), but external package for ex: Kokkos does.
     #
     # see more at https://stackoverflow.com/a/52784819
-    self.stubliblist       = [['libcuda.so','libnvidia-ml.so']]
+    self.stubliblist       = [['libcuda.so']]
     self.liblist           = 'dummy' # existence of self.liblist is used by package.py to determine if --with-cuda-lib must be provided
     self.precisions        = ['single','double']
     self.buildLanguages    = ['CUDA']
@@ -43,6 +43,15 @@ class Configure(config.package.Package):
         'packages). A comma-separated list can be passed to target multiple architectures (e.g. '
         'for distribution). When using the nvcc compiler, other possible options include "all", '
         '"all-major", and "native" (see documentation of the nvcc "--gpu-architecture" flag)'
+      )
+    )
+    help.addArgument(
+      'CUDA', '-with-cuda-nvml=<bool>',
+      nargs.ArgBool(
+        None, 0,
+        'Use NVML (NVIDIA Management Library) for GPU power and energy monitoring '
+        '(-log_view_gpu_energy, -log_view_gpu_energy_meter). Off by default because it makes the '
+        'PETSc libraries depend at runtime on the driver-provided libnvidia-ml. Requires CUDA >= 12.2'
       )
     )
     return
@@ -332,6 +341,12 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     import re
 
+    # NVML (libnvidia-ml) comes with the NVIDIA driver, so link it only when requested.
+    # configureLibrary() may be called more than once (see updateCompilers() in package.py), hence the check on self.includes
+    if self.argDB['with-cuda-nvml'] and 'nvml.h' not in self.includes:
+      self.functions.append('nvmlInit_v2')
+      self.includes.append('nvml.h')
+      self.stubliblist = [libs+['libnvidia-ml.so'] for libs in self.stubliblist]
     self.setCudaDir()
     # skip this because it does not properly set self.lib and self.include if they have already been set
     if not self.found: config.package.Package.configureLibrary(self)
@@ -428,8 +443,10 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP
     if not self.version_tuple:
       self.checkVersion(); # set version_tuple
-    if self.version_tuple[0] > 12 or (self.version_tuple[0] == 12 and self.version_tuple[1] >= 2):
-      self.addDefine('HAVE_CUDA_VERSION_12_2PLUS','1')
+    if self.argDB['with-cuda-nvml']:
+      # NVML_FI_DEV_POWER_INSTANT arrived in the CUDA 12.2 toolkit
+      if self.version_tuple[:2] < (12,2): raise RuntimeError('--with-cuda-nvml=1 requires CUDA version >= 12.2, found '+self.foundversion)
+      self.addDefine('HAVE_NVML','1')
     if self.version_tuple[0] >= 11:
       self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
     if self.cudaclang:
