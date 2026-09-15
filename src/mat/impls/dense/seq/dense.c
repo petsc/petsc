@@ -3572,6 +3572,7 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDense(Mat A, PetscInt col, Vec *
 PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
+  PetscBool     flg;
 
   PetscFunctionBegin;
   PetscCheck(!a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
@@ -3579,6 +3580,9 @@ PetscErrorCode MatDenseGetSubMatrix_SeqDense(Mat A, PetscInt rbegin, PetscInt re
   if (a->cmat && (cend - cbegin != a->cmat->cmap->N || rend - rbegin != a->cmat->rmap->N)) PetscCall(MatDestroy(&a->cmat));
   if (!a->cmat) {
     PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, PetscSafePointerPlusOffset(a->v, rbegin + (size_t)cbegin * a->lda), &a->cmat));
+    /* A may be a MATSEQDENSECUDA or MATSEQDENSEHIP bound to the CPU, whose VecType is not valid for the MATSEQDENSE submatrix */
+    PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &flg));
+    if (flg) PetscCall(MatSetVecType(a->cmat, A->defaultvectype));
   } else {
     PetscCall(MatDensePlaceArray(a->cmat, PetscSafePointerPlusOffset(a->v, rbegin + (size_t)cbegin * a->lda)));
   }

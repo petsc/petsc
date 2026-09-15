@@ -1,4 +1,4 @@
-static const char help[] = "Tests MatDenseGetColumnVec() and friends on dense matrices created from a VecType, and on the Mats a MatProduct derives from them\n\n";
+static const char help[] = "Tests MatDenseGetColumnVec() and friends on dense matrices created from a VecType, and on the Mats a MatProduct and MatDenseGetSubMatrix() derive from them\n\n";
 
 #include <petscmat.h>
 
@@ -38,10 +38,10 @@ static PetscErrorCode CreateDenseDefaultVecType(Mat A, PetscInt M, PetscInt N, M
 
 int main(int argc, char **argv)
 {
-  Mat                A, C, S, S2, C2, C3, C4, C5, C6, D, E, F;
+  Mat                A, C, P, S, S2, C2, C3, C4, C5, C6, D, E, F;
   Vec                v, w;
   char               vtype[64] = VECSTANDARD;
-  VecType            avtype;
+  VecType            avtype, pvtype;
   PetscBool          same;
   PetscInt           M = 9, N = 3, lda, rstart, rend, i, j;
   PetscReal          norm;
@@ -100,6 +100,24 @@ int main(int argc, char **argv)
     PetscCall(MatDenseRestoreColumnVec(C, j, &v));
     PetscCheck(norm < PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Column %" PetscInt_FMT " of the product differs from three times the column it was built from by %g", j, (double)norm);
   }
+
+  /* A submatrix must have the VecType of its parent Mat */
+  PetscCall(MatDenseGetSubMatrix(C, PETSC_DECIDE, PETSC_DECIDE, 1, N, &P));
+  PetscCall(MatGetVecType(P, &pvtype));
+  PetscCall(PetscStrcmp(avtype, pvtype, &same));
+  PetscCheck(same, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The submatrix has VecType %s, expected %s", pvtype, avtype);
+
+  /* The columns of C are zero after the loop above, so adding back a column of A recovers it */
+  for (j = 0; j < N - 1; j++) {
+    PetscCall(MatDenseGetColumnVec(P, j, &v));
+    PetscCall(MatDenseGetColumnVecRead(A, j + 1, &w));
+    PetscCall(VecAXPY(v, 1.0, w));
+    PetscCall(VecNorm(v, NORM_INFINITY, &norm));
+    PetscCall(MatDenseRestoreColumnVecRead(A, j + 1, &w));
+    PetscCall(MatDenseRestoreColumnVec(P, j, &v));
+    PetscCheck(PetscAbsReal(norm - 2.0 * (j + 2)) < PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Column %" PetscInt_FMT " of the submatrix gives %g, expected %g", j, (double)norm, 2.0 * (j + 2));
+  }
+  PetscCall(MatDenseRestoreSubMatrix(C, &P));
 
   /* An AIJ times dense product takes a different symbolic route; it only keeps the VecType when the Mat it
      creates is the same kind of Mat as the block, which is not the case for a host AIJ and a device block */
