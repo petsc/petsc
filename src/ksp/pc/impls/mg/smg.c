@@ -37,8 +37,8 @@ PetscErrorCode PCMGACycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
       }
     } else {
       PetscCheck(!matapp, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not supported");
-      PetscCall(KSPSolveTranspose(mglevels[i]->smoothu, mglevels[i]->b, mglevels[i]->x));
-      PetscCall(KSPCheckSolve(mglevels[i]->smoothu, pc, mglevels[i]->x));
+      PetscCall(KSPSolveTranspose(mglevels[i]->smoothd, mglevels[i]->b, mglevels[i]->x));
+      PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, mglevels[i]->x));
     }
     if (mglevels[i]->eventsmoothsolve) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsolve, 0, 0, 0, 0));
   }

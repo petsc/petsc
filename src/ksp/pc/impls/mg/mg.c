@@ -11,6 +11,24 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
 */
 PetscFunctionList PCMGCoarseList = NULL;
 
+/*
+  A down smoother that is distinct from the up smoother starts from a zero initial guess in the forward V cycle. It is given
+  a nonzero initial guess where a cycle continues from an existing solution, which KSPPREONLY cannot do
+*/
+static PetscErrorCode PCMGCheckSmootherDownGuess_Private(PC pc, KSP smoothd, const char cycle[])
+{
+  PC        spc;
+  PetscBool ispreonly, allowed;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)smoothd, &ispreonly, KSPPREONLY, KSPNONE, ""));
+  if (!ispreonly) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(KSPGetPC(smoothd, &spc));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)spc, &allowed, PCREDISTRIBUTE, PCMPI, ""));
+  PetscCheck(allowed, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "%s with distinct up and down smoothers needs a down smoother that accepts a nonzero initial guess, which KSPPREONLY does not; use one iteration of KSPRICHARDSON instead", cycle);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool transpose, PetscBool matapp, PCRichardsonConvergedReason *reason)
 {
   PC_MG        *mg = (PC_MG *)pc->data;
@@ -99,9 +117,16 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
         PetscCall(KSPCheckSolve(mglevels->smoothu, pc, mglevels->x));
       }
     } else {
+      PetscBool guessnonzero;
+
       PetscCheck(!matapp, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not supported");
-      PetscCall(KSPSolveTranspose(mglevels->smoothd, mglevels->b, mglevels->x)); /* post smooth */
+      /* smoothd may use a zero initial guess as the forward pre-smoother, but its transpose is applied last and must start from the interpolated coarse correction */
+      PetscCall(KSPGetInitialGuessNonzero(mglevels->smoothd, &guessnonzero));
+      if (!guessnonzero) PetscCall(PCMGCheckSmootherDownGuess_Private(pc, mglevels->smoothd, "PCApplyTranspose()"));
+      PetscCall(KSPSetInitialGuessNonzero(mglevels->smoothd, PETSC_TRUE));
+      PetscCall(KSPSolveTranspose(mglevels->smoothd, mglevels->b, mglevels->x)); /* transpose of pre-smooth */
       PetscCall(KSPCheckSolve(mglevels->smoothd, pc, mglevels->x));
+      PetscCall(KSPSetInitialGuessNonzero(mglevels->smoothd, guessnonzero));
     }
     if (mglevels->cr) {
       Mat crA;
@@ -1190,8 +1215,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (mglevels[n - 1]->smoothd->setupstage != KSP_SETUP_NEW) mglevels[n - 1]->smoothd->setupstage = KSP_SETUP_NEWMATRIX;
 
   for (PetscInt i = 1; i < n; i++) {
-    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1) {
-      /* if doing only down then initial guess is zero */
+    PetscBool wcycle = (PetscBool)(mg->am == PC_MG_MULTIPLICATIVE && i < n - 1 && mglevels[i + 1]->cycles > 1);
+
+    if (mglevels[i]->smoothu == mglevels[i]->smoothd || mg->am == PC_MG_FULL || mg->am == PC_MG_KASKADE || mg->cyclesperpcapply > 1 || wcycle) {
+      /* if going only down then initial guess is zero, unless a W cycle re-enters this level with the previous sub-cycle's solution */
+      if (wcycle && mglevels[i]->smoothu != mglevels[i]->smoothd) PetscCall(PCMGCheckSmootherDownGuess_Private(pc, mglevels[i]->smoothd, "A W cycle"));
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->smoothd, PETSC_TRUE));
     }
     if (mglevels[i]->cr) PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
