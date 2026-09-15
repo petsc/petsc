@@ -41,7 +41,16 @@ variables:
   extends: .test-basic
   except:
     variables:
-      # Skip if the docs-only label is attached to a merge request
+      # Skip if a reduced-pipeline label is attached to a merge request
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)petsc4py-only($|,)/
+      - $PETSC_CI_SCHEDULED =~ /yes/
+
+# Keep petsc4py jobs in the petsc4py-only pipeline; docs-only still takes precedence.
+# List this template last in extends so it overrides .test exclusions.
+.test-petsc4py:
+  except:
+    variables:
       - $CI_MERGE_REQUEST_LABELS =~ /(^|,)docs-only($|,)/
       - $PETSC_CI_SCHEDULED =~ /yes/
 
@@ -182,7 +191,9 @@ gcc-lto:
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f%
 
 petsc4py-install:
-  extends: .stage-2
+  extends:
+    - .stage-2
+    - .test-petsc4py
   tags:
     - gce-u24-stage1
   variables:
@@ -220,7 +231,9 @@ petsc4py-install:
     - mv arch-* hide/ && PETSC_DIR="${PWD}/${T_PREFIX}" ${T_VALIDATE_CMD} && mv hide/arch-* ./
 
 petsc4py-pip:
-  extends: .stage-2
+  extends:
+    - .stage-2
+    - .test-petsc4py
   tags:
     - gce-u24-stage1
   variables:
@@ -527,6 +540,7 @@ macos-arm:
     - .stage-3
     - .macos_test
     - .coverage-disable
+    - .test-petsc4py
   tags:
     - os:macos-arm
   variables:
@@ -583,6 +597,7 @@ linux-gcc-pkgs-opt:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
   except:
     variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)petsc4py-only($|,)/
       - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-gcc-complex-opt-32bit:
@@ -853,6 +868,7 @@ linux-cmplx-single-arm:
     - .linux_test
     # gcovr does not work on arm/linux
     - .coverage-disable
+    - .test-petsc4py
   tags:
     - arch:arm
     - os:linux
@@ -905,6 +921,7 @@ linux-cxx-cmplx-pkgs-64idx:
   extends:
     - .stage-3
     - .linux_test
+    - .test-petsc4py
   tags:
     - gce-u22-stage3
   variables:
@@ -931,6 +948,7 @@ linux-pkgs-cxx-mlib:
   extends:
     - .stage-3
     - .linux_test
+    - .test-petsc4py
   tags:
     - gce-u22-stage3
   variables:
@@ -953,6 +971,7 @@ linux-pkgs-opt:
   extends:
     - .stage-3
     - .linux_test
+    - .test-petsc4py
   tags:
     - gce-u22-stage3
     - linux-fast
@@ -969,6 +988,7 @@ linux-pkgs-dbg:
   extends:
     - .stage-3
     - .linux_test
+    - .test-petsc4py
   tags:
     - gce-u22-stage3
     - linux-gcov
@@ -994,6 +1014,7 @@ linux-intel-cmplx:
     - .stage-3
     - .linux_test_nofflags
     - .coverage-disable
+    - .test-petsc4py
   tags:
     - gce-u22-stage3
   variables:
@@ -1016,6 +1037,7 @@ check-each-commit:
     - .stage-2
     - .linux_test
     - .coverage-disable
+    - .test-petsc4py
   tags:
     - gce-u22-stage2
   script:
@@ -1057,6 +1079,7 @@ linux-analyzer:
     expire_in: 4 days
   except:
     variables:
+      - $CI_MERGE_REQUEST_LABELS =~ /(^|,)petsc4py-only($|,)/
       - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-intel:
@@ -1214,6 +1237,7 @@ macos-cxx-cmplx-pkgs-dbg-arm:
     - .stage-3
     - .macos_test
     - .coverage-disable
+    - .test-petsc4py
   tags:
     - os:macos-arm
   variables:
