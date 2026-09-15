@@ -108,9 +108,7 @@ def main(stage,petsc_dir,build_dir,outdir):
                  '--with-mkl_sparse_optimize=0',
                  '--with-mkl_sparse=0',
                  '--with-debugging=0',
-                 '--download-sowing=1',
-                 'COPTFLAS=-O0',
-                 '--with-petsc4py',
+                 'COPTFLAGS=-O0',
                  'PETSC_ARCH=' + petsc_arch,
                 ]
       if 'PETSCBUIDTARBALL' in os.environ:
@@ -129,7 +127,7 @@ def main(stage,petsc_dir,build_dir,outdir):
 
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('==================================================================')
-      print('Running configure')
+      print(f'Running {" ".join(command)}')
       subprocess.run(command, cwd=petsc_dir, check=True)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('==================================================================')
