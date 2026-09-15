@@ -36,9 +36,9 @@ other select operations) using each of:
      - SUPPORTED
      - NVIDIA GPUs
    * - HIP
-     - Rocm
+     - ROCm
      - SUPPORTED
-     - IN DEVELOPMENT
+     - SUPPORTED
      - AMD GPUs
    * - SYCL
      - MKL
@@ -69,6 +69,4 @@ and Jacobian creation and for matrix assembly extensions to `MATAIJCUSPARSE` and
 
 We could use your help in further developing PETSc for GPUs; see PETSc Developers
 {ref}`documentation <ind_developers>`. The label `GPU` is used on our [GitLab](https://gitlab.com/petsc/petsc) repository for all activity involving GPUs.
-
-**You should use PETSc main (Git branch) for GPUs, do not install the current release.**
 :::

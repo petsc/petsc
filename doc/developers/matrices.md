@@ -61,10 +61,10 @@ the overhead of small loops entirely.
 The following table presents the floating-point performance for a basic
 matrix-vector product using three approaches: a basic compressed row
 storage format (using the PETSc runtime options
-`-mat_seqaij -mat_nounroll)`; the same compressed row format using
-I-nodes (with the option `-mat_seqaij`); and a fixed block size code,
+`-mat_type seqaij -mat_no_unroll`); the same compressed row format using
+I-nodes (with the option `-mat_type seqaij`); and a fixed block size code,
 with a block size of 3 for these problems (using the option
-`-mat_seqbaij`). The rates were computed on one node of an older IBM
+`-mat_type seqbaij`). The rates were computed on one node of an older IBM
 Power processor based system, using two test matrices. The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
 simulation; it has 1,501 degrees of freedom, 26,131 matrix nonzeros, a
@@ -126,7 +126,7 @@ The routine for creating a sequential block AIJ matrix with `m` rows,
 `n` columns, and a block size of `nb` is
 
 ```
-MatCreateSeqBAIJ(MPI_Comm comm,int nb,int m,int n,int nz,int *nnz,Mat *A)
+MatCreateSeqBAIJ(MPI_Comm comm, PetscInt nb, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A);
 ```
 
 The arguments `nz` and `nnz` can be used to preallocate matrix
@@ -146,7 +146,7 @@ Parallel block AIJ matrices with block size nb can be created with the
 command `MatCreateBAIJ()`
 
 ```
-MatCreateBAIJ(MPI_Comm comm,int nb,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A);
+MatCreateBAIJ(MPI_Comm comm, PetscInt nb, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[], Mat *A);
 ```
 
 `A` is the newly created matrix, while the arguments `m`, `n`,

@@ -42,7 +42,7 @@ functions (or their contexts) without affecting the original DMKSP, call
 DM    dm_2;
 DMKSP dmksp;
 KSPGetDM(ksp_2,&dm_2);
-DMGetDMKSPWrite(dm_2,&dmksp_2);
+DMGetDMKSPWrite(dm_2,&dmksp);
 ```
 
 This results in the object organization as indicated in the following figure
@@ -56,27 +56,16 @@ Two levels of KSP/DM share the same DMKSP; one has its own private copy
 The `DMKSP` object is essentially the list of callback functions and
 their contexts, for example,
 
+```{literalinclude} /../include/petsc/private/kspimpl.h
+:end-at: };
+:language: c
+:start-at: typedef struct _p_DMKSP
 ```
-typedef struct _p_DMKSP *DMKSP;
-typedef struct _DMKSPOps *DMKSPOps;
-struct _DMKSPOps {
-  PetscErrorCode (*computeoperators)(KSP,Mat,Mat,void*);
-  PetscErrorCode (*computerhs)(KSP,Vec,void*);
-  PetscErrorCode (*computeinitialguess)(KSP,Vec,void*);
-  PetscErrorCode (*destroy)(DMKSP*);
-  PetscErrorCode (*duplicate)(DMKSP,DMKSP);
-};
 
-struct _p_DMKSP {
-  PETSCHEADER(struct _DMKSPOps);
-  void *operatorsctx;
-  void *rhsctx;
-  void *initialguessctx;
-  void *data;
-  DM originaldm;
-
-  void (*fortran_func_pointers[3])(void); /* Store our own function pointers so they are associated with the DMKSP instead of the DM */
-};
+```{literalinclude} /../include/petsc/private/kspimpl.h
+:end-at: };
+:language: c
+:start-at: struct _p_DMKSP {
 ```
 
 We now explore in more detail exactly how the solver calls set by the
@@ -85,36 +74,22 @@ solver routine for setting a callback a similar routine exists at the
 `DM` level. Thus, `XXXSetY(XXX,...)` has a routine
 `DMXXXSetY(DM,...)`.
 
-```
-PetscErrorCode KSPSetComputeOperators(KSP ksp, PetscErrorCode (*func)(KSP, Mat, Mat, PetscCtx), PetscCtx ctx)
-{
-  DM dm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCall(KSPGetDM(ksp,&dm));
-  PetscCall(DMKSPSetComputeOperators(dm,func,ctx));
-  if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/itfunc.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: PetscErrorCode KSPSetComputeOperators(
 ```
 
 The implementation of `DMXXXSetY(DM,...)` gets a “writable” version of
 the `DMXXX` object via `DMGetDMXXXWrite(DM,DMXXX*)` and sets the
 function callback and its context into the `DMXXX` object.
 
-```
-PetscErrorCode DMKSPSetComputeOperators(DM dm, PetscErrorCode (*func)(KSP, Mat, Mat, PetscCtx), PetscCtx ctx)
-{
-  DMKSP kdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMKSPWrite(dm,&kdm));
-  if (func) kdm->ops->computeoperators = func;
-  if (ctx) kdm->operatorsctx = ctx;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/dmksp.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: PetscErrorCode DMKSPSetComputeOperators(
 ```
 
 The routine for `DMGetDMXXXWrite(DM,DMXXX*)` entails a duplication of
@@ -122,47 +97,20 @@ the object unless the `DM` associated with the `DMXXX` object is the
 original `DM` that the `DMXXX` object was created with. This can be
 seen in the following code.
 
-```
-PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
-{
-  DMKSP kdm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscCall(DMGetDMKSP(dm,&kdm));
-  if (!kdm->originaldm) kdm->originaldm = dm;
-  if (kdm->originaldm != dm) {  /* Copy on write */
-    DMKSP oldkdm = kdm;
-    PetscCall(PetscInfo(dm,"Copying DMKSP due to write\n"));
-    PetscCall(DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm));
-    PetscCall(DMKSPCopy(oldkdm,kdm));
-    PetscCall(DMKSPDestroy((DMKSP*)&dm->dmksp));
-    dm->dmksp = (PetscObject)kdm;
-    kdm->originaldm = dm;
-  }
-  *kspdm = kdm;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/dmksp.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: PetscErrorCode DMGetDMKSPWrite(
 ```
 
 The routine `DMGetDMXXX(DM,DMXXX*)` has the following form.
 
-```
-PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  *kspdm = (DMKSP) dm->dmksp;
-  if (!*kspdm) {
-    PetscCall(PetscInfo(dm,"Creating new DMKSP\n"));
-    PetscCall(DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm));
-    dm->dmksp = (PetscObject) *kspdm;
-    (*kspdm)->originaldm = dm;
-    PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL));
-    PetscCall(DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/dmksp.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: PetscErrorCode DMGetDMKSP(DM dm, DMKSP *kspdm)
 ```
 
 This routine uses `DMCoarsenHookAdd()` and `DMRefineHookAdd()` to
@@ -170,30 +118,20 @@ attach to the `DM` object two functions that are automatically called
 when the object is coarsened or refined. The hooks
 `DMCoarsenHook_DMXXX()` and `DMRefineHook_DMXXX()` have the same form:
 
-```
-static PetscErrorCode DMCoarsenHook_DMKSP(DM dm, DM dmc, PetscCtx ctx)
-{
-  PetscFunctionBegin;
-  PetscCall(DMCopyDMKSP(dm,dmc));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/dmksp.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: static PetscErrorCode DMCoarsenHook_DMKSP(
 ```
 
 where
 
-```
-PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
-  PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  PetscCall(DMKSPDestroy((DMKSP*)&dmdest->dmksp));
-  dmdest->dmksp = dmsrc->dmksp;
-  PetscCall(PetscObjectReference(dmdest->dmksp));
-  PetscCall(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL));
-  PetscCall(DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+```{literalinclude} /../src/ksp/ksp/interface/dmksp.c
+:append: '}'
+:end-at: PetscFunctionReturn(PETSC_SUCCESS);
+:language: c
+:start-at: PetscErrorCode DMCopyDMKSP(
 ```
 
 ensures that the new `DM` shares the same `DMXXX` as the parent

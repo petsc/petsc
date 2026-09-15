@@ -24,8 +24,13 @@ We use a [Python 3 virtual environment](https://docs.python.org/3/tutorial/venv.
 ```console
 $ cd $PETSC_DIR
 $ make docs
-$ open $PETSC_ARCH-doc/_build/html/index.html # in a browser
+$ open ${PETSC_ARCH:-arch-docs}/doc/_build/html/index.html # in a browser
 ```
+
+Documentation uses `PETSC_ARCH` when it is set and otherwise uses `arch-docs`. The source
+mirror, generated manual pages, and images are under `$PETSC_ARCH/doc`; the shared Python
+environment is retained under `$PETSC_DIR/petsc-doc-env`. The original files in `doc/` are
+not modified.
 
 (sec_local_docs_latex)=
 
@@ -41,7 +46,7 @@ if need be, to resolve LaTeX errors.
 $ cd $PETSC_DIR
 $ make docs
 $ make docspdf
-$ open $PETSC_ARCH-doc/_build/latex/manual.pdf # in a PDF viewer
+$ open ${PETSC_ARCH:-arch-docs}/doc/_build/latex/manual.pdf # in a PDF viewer
 ```
 
 (sphinx_guidelines)=
@@ -134,8 +139,8 @@ Refer to Sphinx's [own documentation](https://www.sphinx-doc.org) for general in
 
 - We use the [sphinxcontrib-bibtex extension](https://sphinxcontrib-bibtex.readthedocs.io/en/latest/)
   to include citations from BibTeX files.
-  You must include `.. bibliography::` blocks at the bottom of a page, including citations ([example](https://gitlab.com/petsc/petsc/-/raw/main/doc/manual/ksp.rst)).
-  To cite the same reference on more than one page, use [this workaround](https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing) on one of them ([example](https://gitlab.com/petsc/petsc/-/raw/main/doc/developers/articles.rst)) [^bibtex-footnote].
+  You must include `.. bibliography::` blocks at the bottom of a page, including citations ([example](https://gitlab.com/petsc/petsc/-/raw/main/doc/manual/ksp.md)).
+  To cite the same reference on more than one page, use [this workaround](https://sphinxcontrib-bibtex.readthedocs.io/en/latest/usage.html#key-prefixing) on one of them ([example](https://gitlab.com/petsc/petsc/-/raw/main/doc/developers/articles.md)) [^bibtex-footnote].
 
 - See special instructions on {any}`docs_images`.
 
@@ -168,7 +173,7 @@ files that are unnecessary for most PETSc usages and thus are not stored in the 
 - [Annual-Meetings](https://gitlab.com/petsc/annual-meetings) contains various documents from the {any}`meetings`. See {any}`docs_meetings`.
 - [Datafiles](https://gitlab.com/petsc/datafiles) contains large matrices, meshes, and various other data files that
   are used in the {any}`PETSc CI<test_harness_data>`.
-- [Tutorials]((https://gitlab.com/petsc/annual-meetings) contains slides from {any}`tutorials`. See {any}`docs_tutorials`.
+- [Tutorials](https://gitlab.com/petsc/annual-meetings) contains slides from {any}`tutorials`. See {any}`docs_tutorials`.
 
 Other repositories containing software PETSc uses are located at [GitLab](https://gitlab.com/petsc/)
 and [BitBucket](https://bitbucket.org/petsc/workspace/repositories). The BitBucket location is used for historical reasons,
@@ -183,7 +188,7 @@ is tracked in the primary PETSc Git repository. However, image files are
 too large to track directly this way (especially because they persist in the integration branches' histories). Thus we do not put images
 into the PETSc git repository.
 
-Therefore, we store image files in a separate Git repository, [Images](https://gitlab.com/petsc/petsc). This repository is automatically cloned
+Therefore, we store image files in a separate Git repository, [Images](https://gitlab.com/petsc/images). This repository is automatically cloned
 (if not already available) and updated  when building the documentation. It can also be cloned by running
 `make images` in the `doc/` directory.
 Any new images required must be added to the currently-used branch of this repository.

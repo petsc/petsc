@@ -19,10 +19,12 @@ See {ref}`quick-start tutorial <tut_install>` for a step-by-step walk-through of
 :::{attention}
 There are many example `configure` scripts at `config/examples/*.py`. These cover a
 wide variety of systems, and we use some of these scripts locally for testing. One can
-modify these files and run them in lieu of writing one yourself. For example:
+modify these files and run them in lieu of writing one yourself. For example, run the
+repository's {download}`macOS debug configuration
+<../../config/examples/arch-ci-macos-dbg.py>`:
 
 ```console
-$ ./config/examples/arch-ci-osx-dbg.py
+$ ./config/examples/arch-ci-macos-dbg.py
 ```
 
 If there is a system for which we do not yet have such a `configure` script and/or
@@ -61,7 +63,7 @@ your recommendations to <mailto:petsc-maint@mcs.anl.gov>. See bug report {ref}`d
   or
 
   ```console
-  $ ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-cc=/usr/local/mpich/bin/mpicc --with-mpi-f90=/usr/local/mpich/bin/mpif90 --with-mpiexec=/usr/local/mpich/bin/mpiexec
+  $ ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-cc=/usr/local/mpich/bin/mpicc --with-fc=/usr/local/mpich/bin/mpif90 --with-mpiexec=/usr/local/mpich/bin/mpiexec
   ```
 
 :::{admonition} Note
@@ -92,8 +94,8 @@ Do not specify `--with-cc`, `--with-fc` etc for the above when using
   ```console
   $ ./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich
   $ make PETSC_ARCH=linux-gnu all test
-  $ ./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-cxx=icpc --with-fc=ifort --download-mpich --with-blaslapack-dir=/usr/local/mkl
-  $ make PETSC_ARCH=linux-gnu-intel all test
+  $ ./configure PETSC_ARCH=linux-oneapi --with-cc=icx --with-cxx=icpx --with-fc=ifx --download-mpich --with-blaslapack-dir=/usr/local/mkl
+  $ make PETSC_ARCH=linux-oneapi all test
   ```
 
 (doc_config_compilers)=
@@ -441,13 +443,17 @@ the following options to let PETSc's `configure` download and install MPI.
   set by certain modules. So one must be careful to ensure they are using the desired compilers.
   :::
 
-### Installing With Open MPI With Shared MPI Libraries
+### Installing With Open MPI Shared Libraries
 
-[Open MPI] defaults to building shared libraries for MPI. However, the binaries generated
-by MPI compiler wrappers `mpicc`/`mpif90` etc. require `$LD_LIBRARY_PATH` to be set to the
-location of these libraries.
+[Open MPI] defaults to shared libraries. Its compiler wrappers normally add a runpath or
+rpath to linked executables, so no additional library-path setting is needed when that path
+locates the installed Open MPI libraries.
 
-Due to this [Open MPI] restriction one has to set `$LD_LIBRARY_PATH` correctly (per [Open MPI] [installation instructions]), before running PETSc `configure`. If you do not set this environmental variables you will get messages when running `configure` such as:
+If Open MPI is installed in a nonstandard location and its libraries are not found through
+the system search path or the executable's runpath, add the library directory to
+`$LD_LIBRARY_PATH` before running PETSc `configure`. The [Open MPI] [installation
+instructions] describe when this is necessary. An incorrect run-time library search path
+can produce messages such as:
 
 ```text
 UNABLE to EXECUTE BINARIES for config/configure.py
@@ -484,24 +490,24 @@ $ brew upgrade         # Update packages already installed through brew
 $ brew install gcc
 ```
 
-This installs gfortran, gcc, and g++ with the compiler names
-`gfortran-version` (also available as `gfortran`), `gcc-version` and `g++-version`, for example `gfortran-12`, `gcc-12`, and `g++-12`.
+This installs `gfortran`, `gcc`, and `g++`. Homebrew also provides version-suffixed
+compiler names such as `gfortran-MAJOR`, `gcc-MAJOR`, and `g++-MAJOR`.
 
-After upgrading macOS, you generally need to update the Xcode GUI development system (using the standard Apple software update system),
-and the Xcode Command Line tools (run `xcode-select --install` again).
+After upgrading macOS, you generally need to update the Xcode GUI development system or the Xcode Command Line tools (using the standard Apple software update system).
 
-It is best to update `brew` after all macOS or Xcode upgrades (use `brew upgrade`). Sometimes gfortran will not work correctly after an upgrade.
-If this happens, it is best to reinstall all `brew` packages using, for example,
+It is best to update `brew` after all macOS or Xcode upgrades (use `brew upgrade`). Sometimes
+`gfortran` or its dependencies will not work correctly after an upgrade. To reconstruct the
+Homebrew installation, save the installed packages in a `Brewfile`, then remove and reinstall them:
 
 ```console
-$ brew leaves > list.txt         # save list of formulae to re-install
-$ brew list --casks >> list.txt  # save list of casks to re-install
-$ emacs list.txt                 # edit list.txt to remove any unneeded formulae or casks
-$ brew uninstall `brew list`     # delete all installed formulae and casks
+$ brew bundle dump --force        # Write ./Brewfile listing formulae and casks
+$ brew uninstall --force $(brew list)
 $ brew cleanup
 $ brew update
-$ brew install `cat list.txt`    # install needed formulae and casks
+$ brew bundle install             # Reinstall everything from the Brewfile
 ```
+
+See the [Homebrew Bundle documentation](https://docs.brew.sh/Brew-Bundle-and-Brewfile).
 
 (doc_config_install)=
 
@@ -668,20 +674,24 @@ has a [CUDA] enabled GPU by consulting <https://developer.nvidia.com/cuda-gpus>.
 
 On Linux - verify [^id12] that CUDA compatible [NVIDIA driver](https://www.nvidia.com/en-us/drivers) is installed.
 
-On Microsoft Windows - Use either [Cygwin] or [WSL] the latter of which is entirely untested right
-now. If you have experience with [WSL] and/or have successfully built PETSc on Microsoft Windows
-for use with [CUDA] we welcome your input at <mailto:petsc-maint@mcs.anl.gov>. See the
+For an experimental CUDA build on Microsoft Windows with [WSL], first install CUDA by following
+NVIDIA's [CUDA on WSL guide](https://docs.nvidia.com/cuda/wsl-user-guide/). If you have experience building PETSc
+with CUDA under WSL, we welcome your input at <mailto:petsc-maint@mcs.anl.gov>. See the
 bug-reporting {ref}`documentation <doc_creepycrawly>` for more details.
 
-In most cases you need only pass the configure option `--with-cuda`; check
-`config/examples/arch-ci-linux-cuda-double.py` for example usage.
+In most cases you need only pass the configure option `--with-cuda`; see the repository's
+{download}`CUDA configuration example <../../config/examples/arch-ci-linux-cuda-latest.py>`.
 
 GPU power and energy monitoring (`-log_view_gpu_energy`, `-log_view_gpu_energy_meter`) requires NVML
 (the NVIDIA Management Library, `libnvidia-ml`), which the NVIDIA driver provides at runtime. Linking
 it makes the PETSc libraries require the driver even on machines without a GPU, so it is off by
 default; pass `--with-cuda-nvml=1` (CUDA 12.2 or later) to enable it.
 
-CUDA build of PETSc currently works on Mac OS X, Linux, Microsoft Windows with [Cygwin].
+CUDA builds of PETSc currently work on Linux only. Windows/WSL builds are
+not included in PETSc's tested configurations. CUDA builds are not supported on macOS:
+[NVIDIA ended macOS support after CUDA
+10.2](https://docs.nvidia.com/cuda/archive/10.2/cuda-toolkit-release-notes/index.html),
+which is older than the minimum CUDA version supported by PETSc.
 
 Examples that use CUDA have the suffix .cu; see `$PETSC_DIR/src/snes/tutorials/ex47cu.cu`
 
@@ -689,9 +699,11 @@ Examples that use CUDA have the suffix .cu; see `$PETSC_DIR/src/snes/tutorials/e
 
 ### [Kokkos]
 
-In most cases you need only pass the configure option `--download-kokkos` `--download-kokkos-kernels`
-and one of `--with-cuda`, `--with-hip`, `--with-sycl`, `--with-openmp`, or `--with-pthread` (or nothing to use sequential
-[Kokkos]). See the {ref}`CUDA installation documentation <doc_config_accel_cuda>`,
+In most cases you need only pass the configure options `--download-kokkos` and
+`--download-kokkos-kernels`, plus one of `--with-cuda`, `--with-hip`, `--with-sycl`, or
+`--with-openmp`. Use `--download-kokkos-cxx-std-threads` for the Kokkos C++ Threads backend,
+or do not select a backend to use sequential [Kokkos]. See the
+{ref}`CUDA installation documentation <doc_config_accel_cuda>`,
 {ref}`OpenMP installation documentation <doc_config_accel_openmp>` for further reference on
 respective requirements of some installations.
 
@@ -701,21 +713,17 @@ search them with `grep -r -l "requires:.*kokkos_kernels" src/`.
 
 (doc_config_accel_opencl)=
 
-### [OpenCL]/[ViennaCL]
+### Legacy [OpenCL]/[ViennaCL] Support
 
-Requires the [OpenCL] shared library, which is shipped in the vendor graphics driver and
-the [OpenCL] headers; if needed you can download them from the Khronos Group
-directly. Package managers on Linux provide these headers through a package named
-'opencl-headers' or similar. On Apple systems the [OpenCL] drivers and headers are always
-available and do not need to be downloaded.
+[ViennaCL] is no longer actively developed. For new accelerator-enabled installations,
+prefer [Kokkos] with CUDA, HIP, SYCL, or OpenMP. The ViennaCL interface remains available
+for existing applications.
 
-Always make sure you have the latest GPU driver installed. There are several known issues
-with older driver versions.
+ViennaCL requires the [OpenCL] shared library and headers. Linux package managers commonly
+provide the headers in a package named `opencl-headers` or similar.
 
-Run `configure` with `--download-viennacl`; check
-`config/examples/arch-ci-linux-viennacl.py` for example usage.
-
-[OpenCL]/[ViennaCL] builds of PETSc currently work on Mac OS X, Linux, and Microsoft Windows.
+Run `configure` with `--download-viennacl`; see the repository's
+{download}`ViennaCL configuration example <../../config/examples/arch-ci-linux-viennacl.py>`.
 
 (doc_emcc)=
 
@@ -762,9 +770,9 @@ systems. Also note the configuration examples in `config/examples`.
 [essl]: https://www.ibm.com/support/knowledgecenter/en/SSFHY8/essl_welcome.html
 [hdf5]: https://www.hdfgroup.org/solutions/hdf5/
 [hypre]: https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods
-[installation instructions]: https://www.open-mpi.org/faq/?category=building
+[installation instructions]: https://docs.open-mpi.org/en/main/launching-apps/prerequisites.html
 [kokkos]: https://github.com/kokkos/kokkos
-[metis]: http://glaros.dtc.umn.edu/gkhome/metis/metis/overview
+[metis]: https://github.com/KarypisLab/METIS
 [mkl]: https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html
 [mkl link line advisor]: https://software.intel.com/content/www/us/en/develop/articles/intel-mkl-link-line-advisor.html
 [modules]: https://www.alcf.anl.gov/support-center/theta/compiling-and-linking-overview-theta-thetagpu
@@ -772,10 +780,10 @@ systems. Also note the configuration examples in `config/examples`.
 [mumps]: https://mumps-solver.org/
 [open mpi]: https://www.open-mpi.org/
 [opencl]: https://www.khronos.org/opencl/
-[parmetis]: http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview
+[parmetis]: https://github.com/KarypisLab/PARMETIS
 [pdt]: https://www.cs.uoregon.edu/research/pdt/home.php
 [superlu]: https://portal.nersc.gov/project/sparse/superlu/
 [superlu_dist]: https://github.com/xiaoyeli/superlu_dist
 [tau]: https://www.cs.uoregon.edu/research/tau/home.php
-[viennacl]: http://viennacl.sourceforge.net/
-[wsl]: https://docs.microsoft.com/en-us/windows/wsl/install-win10
+[viennacl]: https://github.com/viennacl/viennacl-dev
+[wsl]: https://learn.microsoft.com/windows/wsl/install

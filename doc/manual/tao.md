@@ -1080,7 +1080,7 @@ problems (unconstrained, bound-constrained, and PDE-constrained
 minimization, nonlinear least-squares, and complementarity). The TAO
 algorithms for solving these problems are detailed in this section, a
 particular algorithm can chosen by using the `TaoSetType()` function
-or using the command line arguments `-tao_type <name>`. For those
+or using the command line arguments `-tao_type name`. For those
 interested in extending these algorithms or using new ones, please see
 {any}`sec_tao_addsolver` for more information.
 
@@ -2233,7 +2233,7 @@ $$
 In certain formulation of ADMM, solution of $z^{k+1}$ may have
 closed-form solution. Currently ADMM provides one default implementation
 for $z^{k+1}$, which is soft-threshold. It can be used with either
-`TaoADMMSetRegularizerType_ADMM()` or
+`TaoADMMSetRegularizerType()` or
 `-tao_admm_regularizer_type regularizer_soft_thresh`. User can also
 pass spectral penalty value, $\rho$, with either
 `TaoADMMSetSpectralPenalty()` or `-tao_admm_spectral_penalty`.
@@ -2247,7 +2247,7 @@ Currently, user can use
 Any other combination of routines is currently not supported. Hessian
 matrices can either be constant or non-constant, of which fact can be
 set via `TaoADMMSetMisfitHessianChangeStatus()`, and
-`TaoADMMSetRegularizerHessianChangeStatus()`. Also, it may appear in
+`TaoADMMSetRegHessianChangeStatus()`. Also, it may appear in
 certain cases where augmented Lagrangian’s Hessian may become nearly
 singular depending on the $\rho$, which may change in the case of
 `-tao_admm_dual_update (update_basic|update_adaptive|update_adaptive_relaxed)`.
@@ -2617,7 +2617,7 @@ f(x)= \| F(x) \|_2^2 = \sum_{i=1}^m F_i(x)^2.
 $$ (eq_nlsf)
 
 The nonlinear equations $F$ should be specified with the function
-`TaoSetResidual()`.
+`TaoSetResidualRoutine()`.
 
 (sec_tao_pounders)=
 

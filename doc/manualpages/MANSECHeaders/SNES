@@ -6,7 +6,6 @@ nonlinear equations. User guide chapter: [](ch_snes).
 
 `SNES` internally employs `KSP` for the solution of its linear systems. `SNES` users can also set `KSP` options directly in application
 codes by first extracting the `KSP` context from the `SNES` context via `SNESGetKSP()`
-and then directly calling various `KSP` (and `PC`) routines,
+and then directly calling various `KSP` (and `PC`) routines.
 
 <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/index.html">Examples</A><BR>
-

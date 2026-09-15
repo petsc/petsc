@@ -40,11 +40,11 @@
 Only `Owners/Maintainers` can push commits to a merge request fork branch. Here, use the `ssh-URL` for the Git repository.
 
 ```console
-% git fetch <ssh-URL> <branchname>
-% git checkout -b <branchname> FETCH_HEAD
-% git push -u <ssh-URL> <branchname>
-% (edit/commit)
-% git push
+$ git fetch ssh_URL branchname
+$ git checkout -b branchname FETCH_HEAD
+$ git push -u ssh_URL branchname
+$ # Edit and commit the changes
+$ git push
 ```
 
 Notes:
@@ -57,4 +57,3 @@ For example, with `merge request` at <https://gitlab.com/petsc/petsc/-/merge_req
 - `URL` = `https://gitlab.com/paul.kuehner/petsc`
 - `ssh-URL` = `git@gitlab.com:paul.kuehner/petsc.git`
 - `branchname` = `add-tao-get-constraints`
-

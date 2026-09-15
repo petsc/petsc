@@ -21,47 +21,53 @@ important. We use several conventions
     letters. When they consist of several complete words, there is an
     underscore between each word. For example, `MAT_FINAL_ASSEMBLY`.
 
-03. Functions that are private to PETSc (not callable by the application
+03. PETSc objects, whose `struct` definitions begin with `PETSCHEADER`,
+    are named using the format `_p_<petscobjectname>`; the `_p_` prefix is
+    reserved for these objects. Other objects defined by `struct`s may use
+    the format `_n_<objectname>`, but this convention is not strictly
+    enforced.
+
+04. Functions that are private to PETSc (not callable by the application
     code) either
 
     - have an appended `_Private` (for example, `StashValues_Private`)
       or
-    - have an appended `_Subtype` (for example, `MatMultSeq_AIJ`).
+    - have an appended `_Subtype` (for example, `MatMult_SeqAIJ`).
 
     In addition, functions that are not intended for use outside of a
     particular file are declared `static`. Also, see the item
     on symbol visibility in {ref}`usage_of_petsc_functions_and_macros`.
 
-04. Function names in structures (for example, `_matops`) are the same
+05. Function names in structures (for example, `_matops`) are the same
     as the base application function name without the object prefix and
     in lowercase. For example, `MatMultTranspose()` has a
     structure name of `multtranspose`.
 
-05. Names of implementations of class functions should begin with the
+06. Names of implementations of class functions should begin with the
     function name, an underscore, and the name of the implementation, for
     example, `KSPSolve_GMRES()`.
 
-06. Each application-usable function begins with the name of the class
+07. Each application-usable function begins with the name of the class
     object, followed by any subclass name, for example,
     `ISInvertPermutation()`, `MatMult()`, or
     `KSPGMRESSetRestart()`.
 
-07. Functions that PETSc provides as defaults for user-providable
+08. Functions that PETSc provides as defaults for user-providable
     functions end with `Default` (for example, `PetscSignalHandlerDefault()`).
 
-08. Options database keys are lower case, have an underscore between
+09. Options database keys are lower case, have an underscore between
     words, and match the function name associated with the option without
     the word “set” or “get”, for example, `-ksp_gmres_restart`.
 
-09. Specific `XXXType` values (for example, `MATSEQAIJ`) do not have
+10. Specific `XXXType` values (for example, `MATSEQAIJ`) do not have
     an underscore in them unless they refer to another package that uses
     an underscore, for example, `MATSOLVERSUPERLU_DIST`.
 
-10. Typedefs for functions should end in `Fn` as in, for example, `SNESFunctionFn`.
+11. Typedefs for functions should end in `Fn` as in, for example, `SNESFunctionFn`.
 
-11. Use the phrase `infinity or NaN` not `NaN or infinity`.
+12. Use the phrase `infinity or NaN` not `NaN or infinity`.
 
-12. Use the abbreviation `NaN` for Not-a-Number.
+13. Use the abbreviation `NaN` for Not-a-Number.
 
 (stylepetsccount)=
 
@@ -510,7 +516,7 @@ Even with the use of `clang-format` there are still many decisions about code fo
     #if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
       PetscCallMPI(MPI_Reduce_local(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM));
     #else
-      PetscCallMPI(MPI_Reduce(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM, 0, PETSC_COMM_SELF);
+      PetscCallMPI(MPI_Reduce(inbuf, inoutbuf, count, MPIU_INT, MPI_SUM, 0, PETSC_COMM_SELF));
     #endif
     ```
 
@@ -527,8 +533,8 @@ Even with the use of `clang-format` there are still many decisions about code fo
     local contribution.
 
 13. Never use a local variable counter such as `PetscInt flops = 0;` to
-    accumulate flops and then call `PetscLogFlops();` *always* just
-    call `PetscLogFlops()` directly when needed.
+    accumulate flops and later pass the total to `PetscLogFlops()`.
+    Use `PetscCall(PetscLogFlops(n));` directly where the flops occur.
 
 14. Library symbols meant to be directly usable by the user should be declared
     `PETSC_EXTERN` in their respective public header file. Symbols intended for internal use should instead be declared `PETSC_INTERN`. Note that doing so is
@@ -590,10 +596,10 @@ Even with the use of `clang-format` there are still many decisions about code fo
     not a `%d`.
 
 18. All arguments of type `PetscReal` to PETSc ASCII output routines,
-    such as `PetscPrintf`, must be cast to `double`, for example,
+    such as `PetscPrintf()`, must be cast to `double`, for example,
 
     ```
-    PetscPrintf(PETSC_COMM_WORLD, "Norm %g\n", (double)norm);
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm %g\n", (double)norm));
     ```
 
 19. When appropriate, ensure that each `XXXSetYYY()` function has a corresponding `XXXGetYYY()` function for obtaining
@@ -630,7 +636,7 @@ which Sphinx later processes.
 
 The Fortran interface files supplied manually by the developer go into the 
 directory `ftn-custom`, while those automatically generated
-go into directories in the \$PETSC_ARCH/ftn\`\` directory tree.
+go into directories in the `$PETSC_ARCH/ftn` directory tree.
 
 Each include file that contains formatted comments needs to have a line of the form
 
@@ -668,7 +674,7 @@ where noted, add a newline after the section headings.
     - `Not Collective` if the function need not be called on multiple (or possibly all) MPI
       processes
     - `Collective` if the function is a collective operation.
-    - `Logically Collective; yyy must contain common value]`
+    - `Logically Collective; yyy must contain a common value`
       if the function is collective but does not require any actual
       synchronization (e.g., setting class parameters uniformly). Any
       argument yyy, which must have the same value on all ranks of the

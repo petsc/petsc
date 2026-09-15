@@ -93,7 +93,7 @@ format string, with all additional parameters passed after the string as
 its arguments. For example:
 
 ```
-SETERRQ(comm,PETSC_ERR,"Iteration overflow: its %" PetscInt_FMT " norm %g",its,(double)norm);
+SETERRQ(comm,PETSC_ERR_NOT_CONVERGED,"Iteration overflow: its %" PetscInt_FMT " norm %g",its,(double)norm);
 ```
 
 ### Error Handlers
@@ -126,9 +126,9 @@ PETSc provides several default error handlers:
 
 The PETSc error handler takes an error code. The generic error codes are
 defined in
-<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscerror.h.html">include/petscerror.h</a>
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscsystypes.h.html">include/petscsystypes.h</a>
 The same error code is used many times in the libraries. For example,
-the error code `PETSCERRMEM` is used whenever a requested memory
+the error code `PETSC_ERR_MEM` is used whenever a requested memory
 allocation is not available.
 
 ### Detailed Error Messages
@@ -143,11 +143,10 @@ function pointer
 (*PetscErrorPrintf)("Format",...);
 ```
 
-which, by default, prints to standard out. Thus, error messages should
+which, by default, prints to `stderr`. Thus, error messages should
 not be printed with `printf()` or `fprintf()`. Rather, they should
-be printed with `(*PetscErrorPrintf)()`. You can direct all error
-messages to `stderr`, instead of the default `stdout`, with the
-command line option `-erroroutputstderr`.
+be printed with `(*PetscErrorPrintf)()`. You can direct error messages
+to `stdout` with the command-line option `-error_output_stdout`.
 
 ### C++ Exceptions
 
@@ -266,9 +265,9 @@ object type instead of requiring the user to provide the correct value
 with `sizeof()`.
 
 The routines `PetscTrMallocDefault()` and `PetscTrFreeDefault()`,
-which are set with the routine `PetscSetUseTrMallocPrivate()` (and are
-used by default for the debug version of PETSc), provide simple logging
-and error checking versions of memory allocation.
+which `PetscMallocSetDebug()` installs, provide simple logging and
+error-checking versions of memory allocation. Debug builds enable these
+routines by default.
 
 ## Implementation of Profiling
 
@@ -276,7 +275,7 @@ This section provides details about the implementation of event logging
 and profiling within the PETSc kernel. The interface for profiling in
 PETSc is contained in the file
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petsclog.h.html">include/petsclog.h</a>
-The source code for the profile logging is in `src/sys/plog/`.
+The source code for profile logging is in `src/sys/logging/`.
 
 ### Profiling Object Creation and Destruction
 
@@ -323,12 +322,11 @@ Routines that control the default profiling available in PETSc include
 the following
 
 - `PetscLogDefaultBegin();`
-- `PetscLogAllBegin();`
 - `PetscLogDump(const char *filename);`
 - `PetscLogView(PetscViewer);`
 
 These routines are normally called by the `PetscInitialize()` and
-`PetscFinalize()` routines when the option `-logview` is given.
+`PetscFinalize()` routines when the option `-log_view` is given.
 
 ## References
 

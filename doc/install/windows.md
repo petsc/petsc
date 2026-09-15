@@ -24,7 +24,7 @@ ______________________________________________________________________
 
 ## Linux on Microsoft Windows
 
-- Microsoft Windows Subsystem for Linux 2 ([WSL2](https://docs.microsoft.com/en-us/windows/wsl/install-win10)). Be sure to use WSL2 for best performance.
+- Microsoft Windows Subsystem for Linux 2 ([WSL2](https://learn.microsoft.com/windows/wsl/install)). Be sure to use WSL2 for best performance.
 - [Docker](https://docs.docker.com/docker-for-windows/) for Microsoft
   Windows.
 - Linux virtual machine via [VirtualBox](https://www.virtualbox.org/) or similar. One sample
@@ -42,7 +42,7 @@ that work on Microsoft Windows, with Cygwin pre-built libraries for BLAS, LAPACK
 
 1. Install Cygwin:
 
-   Download and install Cygwin from <http://www.cygwin.com> and make sure the
+   Download and install Cygwin from <https://www.cygwin.com> and make sure the
    following Cygwin components are installed:
 
    - python3
@@ -72,14 +72,16 @@ ______________________________________________________________________
 
 ## Native Microsoft/Intel Windows Compilers
 
-Microsoft Windows does not provide a Unix shell environment. Also
-the native Microsoft/Intel compilers behave differently than other (Unix) compilers. So to
-install PETSc on Microsoft Windows with Microsoft or Intel compilers one has to install Cygwin (for the Unix environment)
-and use `win32fe` [^win32] compiler wrapper, to use the Microsoft/Intel compilers.
+Microsoft Windows does not provide a Unix shell environment, and the native Microsoft and
+Intel compilers behave differently from Unix compilers. To use these compilers, install Cygwin
+to provide the Unix environment. Under Cygwin, specify the native compiler names directly,
+such as `cl`, `icx`, `ifort`, or `ifx`. During configuration, PETSc replaces these names with
+its bundled `win32fe` [^win32] wrappers. These wrappers allow the native Microsoft and Intel
+tools to be used from Cygwin `make`; users normally do not invoke the wrappers directly.
 
 1. Install Cygwin:
 
-   Download and install Cygwin from <http://www.cygwin.com> and make sure the
+   Download and install Cygwin from <https://www.cygwin.com> and make sure the
    following Cygwin components are installed:
 
    - python3
@@ -88,10 +90,10 @@ and use `win32fe` [^win32] compiler wrapper, to use the Microsoft/Intel compiler
    Additional Cygwin components like git and CMake can be useful for installing
    {ref}`external packages <doc_externalsoftware>`.
 
-2. Remove Cygwin link.exe:
+2. Remove Cygwin `link.exe` when using Intel Classic compilers:
 
-   Cygwin link.exe can conflict with Intel ifort compiler. If you are using ifort -
-   do (from `Cygwin64 Terminal`):
+   Cygwin `link.exe` can conflict with the Intel `icl` and `ifort` compilers. If you use
+   either compiler, rename it from `Cygwin64 Terminal`:
 
    ```console
    $ mv /usr/bin/link.exe /usr/bin/link-cygwin.exe
@@ -99,74 +101,70 @@ and use `win32fe` [^win32] compiler wrapper, to use the Microsoft/Intel compiler
 
 3. Setup `Cygwin64 Terminal` with working compilers:
 
-   We require the compilers to be setup properly in a Cygwin bash command shell, so that
-   `cl foo.c` or `ifort foo.F` works from this shell. For example - if using `Visual Studio 2022 C`
-   and `Intel oneAPI 2022 Fortran`, one can do:
+   Set up the compilers in a Cygwin bash command shell so that commands such as `cl foo.c`,
+   `icx foo.c`, or `ifx foo.F90` work from that shell. Older oneAPI installations can use
+   `ifort foo.F` instead. For example:
 
-   1. `Start` -> `Programs` -> `Intel oneAPI 2022` -> `Intel oneAPI command prompt for Intel 64 for Visual Studio 2022`.
-      This should start a `DOS Command shell` with working compilers.
+   1. Start the Intel oneAPI command prompt for Intel 64 and a supported Visual Studio version.
 
-   2. Within this `DOS Command shell` - run `Cygwin64 Terminal`, i.e., `mintty.exe` as:
+   2. Within this command prompt, run `Cygwin64 Terminal`, i.e., `mintty.exe` as:
 
       ```powershell
       C:\cygwin64\bin\mintty.exe -
       ```
 
-   3. Verify if the compilers are usable (by running `cl` and `ifort` in this `Cygwin64 Terminal`).
+   3. Verify that the selected compilers are usable in this `Cygwin64 Terminal`.
 
-   4. Now run `configure` with compiler wrapper script `win32fe_cl` that uses `win32fe` [^win32] and then build the libraries with
+   4. Run `configure` with the selected compilers and then build the libraries with
       `make` (as per the usual instructions).
 
 ### Example Configure Usage With Microsoft Windows Compilers
 
-Use `configure` with `Visual Studio 2022 C` and `Intel oneAPI 2022 Fortran` (without MPI):
+Use `configure` with the current Intel oneAPI C, C++, and Fortran compilers (without MPI).
+The Intel `ifx` compiler currently requires a static PETSc build on Microsoft Windows:
 
 ```console
-$ ./configure --with-cc='win32fe_cl' --with-fc='win32fe_ifort' --with-cxx='win32fe_cl' --with-mpi=0 --download-fblaslapack
+$ ./configure --with-cc=icx --with-cxx=icx --with-fc=ifx --with-shared-libraries=0 --with-mpi=0 --download-fblaslapack
+```
+
+Older oneAPI installations that provide the Intel Classic `ifort` compiler can use:
+
+```console
+$ ./configure --with-cc=cl --with-cxx=cl --with-fc=ifort --with-mpi=0 --download-fblaslapack
 ```
 
 If Fortran or C++ usage is not required, use:
 
 ```console
-$ ./configure --with-cc='win32fe_cl' --with-fc=0 --with-cxx=0 --download-f2cblaslapack
+$ ./configure --with-cc=cl --with-fc=0 --with-cxx=0 --download-f2cblaslapack
 ```
 
 :::{note}
-- One can use Intel oneAPI C/C++ compiler `icl` or `icx` instead of Microsoft `cl`, for ex: `--with-cc=win32fe_icl --with-cxx=win32fe_icl`.
-- A shorter form `--with-cc=cl` that translates to `--with-cc=win32fe_cl` is also supported. Similarly for `icl`, `icx`, `ifort`, `ifx`.
-- Intel oneAPI `ifx` currently works with `--with-shared-libraries=0` only, `ifort` is recommended for default shared library build.
+- Microsoft `cl` can be used instead of Intel `icx`, for example `--with-cc=cl --with-cxx=cl`.
+- Under Cygwin, PETSc automatically maps the bare `cl`, `icx`, `ifort`, and `ifx` compiler
+  names to its bundled `win32fe` [^win32] wrappers.
+- Intel oneAPI `ifx` currently works with `--with-shared-libraries=0` only.
 - The `--download-package` option may work with some {ref}`external packages <doc_externalsoftware>` and fail with most packages.
 :::
 
 ### Using MPI, MKL
 
-We support both MS-MPI (64-bit) and Intel MPI on Microsoft Windows. We also support using Intel MKL as BLAS and LAPACK implementations.
-For example usages, check `$PETSC_DIR/config/examples/arch-mswin*.py`
+We support both MS-MPI (64-bit) and Intel MPI on Microsoft Windows. We also support using
+Intel MKL as a BLAS and LAPACK implementation. See the repository's current
+{download}`Intel MPI, MKL, and ifx configuration example
+<../../config/examples/arch-mswin-icx.py>` or the legacy {download}`ifort configuration
+example <../../config/examples/arch-mswin-icx-ifort.py>`.
 
 :::{warning}
 **Avoid spaces in \$PATH**
 
-It is better to avoid spaces or similar special chars when specifying `configure` options. On
-Microsoft Windows - this usually affects specifying MPI or MKL. Microsoft Windows
-supports DOS short form for directory names - so it is better to use this notation. Cygwin
-tool `cygpath` can be used to get paths in this notation. For example:
+It is better to avoid spaces or similar special characters when specifying `configure`
+options. On Microsoft Windows, this usually affects MPI or MKL paths. Microsoft Windows
+supports DOS short names for directories, so prefer that notation. The Cygwin `cygpath`
+tool can convert a path, for example:
 
 ```console
-$ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/Microsoft SDKs/MPI'`
-/cygdrive/c/PROGRA~2/MICROS~2/MPI
-$ cygpath -u `cygpath -ms '/cygdrive/c/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl/lib/intel64'`
-/cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64
-```
-
-Then use in `configure` as follows:
-
-```console
-$ ./configure --with-cc='win32fe_cl' --with-fc='win32fe_ifort' --with-cxx='win32fe_cl' \
---with-shared-libraries=0 \
---with-mpi-include='[/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include,/cygdrive/c/PROGRA~2/MICROS~2/MPI/Include/x64]' \
---with-mpi-lib='-L/cygdrive/c/PROGRA~2/MICROS~2/MPI/lib/x64 msmpifec.lib msmpi.lib' \
---with-mpiexec=/cygdrive/c/PROGRA~1/MICROS~2/Bin/mpiexec \
---with-blaslapack-lib='-L/cygdrive/c/PROGRA~2/INTELS~1/COMPIL~2/windows/mkl/lib/intel64 mkl_intel_lp64_dll.lib mkl_sequential_dll.lib mkl_core_dll.lib'
+$ cygpath -u "$(cygpath -ms '/cygdrive/c/Program Files/Microsoft MPI')"
 ```
 :::
 

@@ -8,8 +8,15 @@ include petscdir.mk
 all :
 	+@$(MAKE) -f makefile --no-print-directory $@
 
+.PHONY: docs docspdf
+docs docspdf:
+	+@$(MAKE) -C doc --no-print-directory $@
+
+# Documentation creates its own PETSc configuration.
+ifneq ($(filter-out docs docspdf,$(or $(MAKECMDGOALS),all)),)
 ifeq ($(firstword $(sort 4.1.99 $(MAKE_VERSION))),4.1.99)
 include gmakefile
+endif
 endif
 
 # For any target that doesn't exist in gmakefile, use the legacy makefile (which has the logging features)

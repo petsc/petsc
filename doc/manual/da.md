@@ -195,7 +195,7 @@ PetscDAGetObsErrorVariance(PetscDA da, Vec *obs_error_var);
 PetscCall(PetscDAEnsembleAnalysis(da, observation, H));
 ```
 
-`H` is a `Mat` (typically sparse AIJ) that maps the N-dimensional state vector to the P-dimensional observation space: `y ≈ H*x`. `PetscDAAnalysis()` handles all ensemble reductions,
+`H` is a `Mat` (typically sparse AIJ) that maps the N-dimensional state vector to the P-dimensional observation space: `y ≈ H*x`. `PetscDAEnsembleAnalysis()` handles all ensemble reductions,
 gain computations, and posterior updates.
 
 (sec_da_model)=

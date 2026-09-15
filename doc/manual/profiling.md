@@ -669,8 +669,8 @@ Nsight Systems will generate profiling data with a CUDA executable
 with the command `nsys`.
 For example, in serial
 
-```bash
-nsys profile -t nvtx,cuda -o file --stats=true --force-overwrite true ./a.out
+```console
+$ nsys profile -t nvtx,cuda -o file --stats=true --force-overwrite true ./a.out
 ```
 
 will generate a file `file.qdstrm` with performance data that is
@@ -692,7 +692,7 @@ ranks call the executable directly. For example with MPICH
 or Open MPI - we can run a parallel job on 4 MPI tasks as:
 
 ```console
-mpiexec -n 1 nsys profile -t nvtx,cuda -o file_name --stats=true --force-overwrite true ./a.out : -n 3 ./a.out
+$ mpiexec -n 1 nsys profile -t nvtx,cuda -o file_name --stats=true --force-overwrite true ./a.out : -n 3 ./a.out
 ```
 
 (sec_using_tau)=
@@ -711,7 +711,7 @@ See the `rocprof` [documentation](https://rocm.docs.amd.com/projects/rocprofiler
 At the least, you will need:
 
 ```console
-mpiexec -n 1 rocprofv3 --marker-trace -o file_name -- ./path/to/application -log_roctx
+$ mpiexec -n 1 rocprofv3 --marker-trace -o file_name -- ./path/to/application -log_roctx
 ```
 
 
@@ -721,25 +721,25 @@ TAU profiles can be generated without the need for instrumentation through the
 use of the perfstubs package. PETSc by default is configured with `--with-tau-perfstubs`.
 To generate profiles with TAU, first setup TAU:
 
-```bash
-wget http://tau.uoregon.edu/tau.tgz
-./configure -cc=mpicc -c++=mpicxx -mpi -bfd=download -unwind=download && make install
-export PATH=<tau dir>/x86_64/bin:$PATH
+```console
+$ wget http://tau.uoregon.edu/tau.tgz
+$ ./configure -cc=mpicc -c++=mpicxx -mpi -bfd=download -unwind=download && make install
+$ export PATH=/path/to/tau/x86_64/bin:$PATH
 ```
 
 For more information on configuring TAU, see [http://tau.uoregon.edu](http://tau.uoregon.edu).
 Next, run your program with TAU. For instance, to profile `ex56`,
 
-```bash
-cd $PETSC_DIR/src/snes/tutorials
-make ex56
-mpiexec -n 4 tau_exec -T mpi ./ex56 -log_perfstubs <args>
+```console
+$ cd $PETSC_DIR/src/snes/tutorials
+$ make ex56
+$ mpiexec -n 4 tau_exec -T mpi ./ex56 -log_perfstubs
 ```
 
 This should produce four `profile.*` files with profile data that can be
 viewed with `paraprof/pprof`:
 
-```shell
+```text
 Reading Profile files in profile.*
 
 NODE 0;CONTEXT 0;THREAD 0:

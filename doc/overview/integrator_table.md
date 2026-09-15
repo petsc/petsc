@@ -52,7 +52,7 @@
      - one-step
      - implicit
      - :math:`2`
-   * - gl
+   * - glle
      - general linear :cite:`butcher_2007`
      - multistep-multistage
      - implicit

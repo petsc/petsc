@@ -108,17 +108,15 @@ def query(invDict,fields,labels):
             setlist.append(fnmatch.filter(invDict['name'],label))
             continue
 
-        foundLabel=False   # easy to do if you misspell argument search
+        matches=[]
         label=label.lower()
         for key in invDict[field]:
             if fnmatch.filter([key.lower()],label):
-              foundLabel=True
               # Do not return values with not unless label itself has not
               if label.startswith('!') and not key.startswith('!'): continue
               if not label.startswith('!') and key.startswith('!'): continue
-              setlist.append(invDict[field][key])
-        if not foundLabel:
-          setlist.append([])
+              matches.extend(invDict[field][key])
+        setlist.append(matches)
 
     # Now process the union and intersection operators based on setlist
     allresults=[]
@@ -307,7 +305,7 @@ def main():
     parser.add_option('-t', '--testdir', dest='testdir',
                       help='Test directory if not PETSC_ARCH/tests.  Must be full path',
                       default='tests')
-    parser.add_option('-u', '--use-source', action="store_false",
+    parser.add_option('-u', '--use-source', action="store_true",
                       dest='use_source',
                       help='Query all sources rather than those configured in PETSC_ARCH')
     parser.add_option('-i', '--searchin', dest='searchin',
@@ -372,10 +370,10 @@ def main():
     searchin=opts.searchin
 
     petsc_dir = opts.petsc_dir
-    petsc_arch = opts.petsc_arch
+    petsc_arch = opts.petsc_arch if opts.petsc_arch is not None else ''
     petsc_full_arch = os.path.join(petsc_dir, petsc_arch)
 
-    if petsc_arch == '':
+    if petsc_arch == '' and not opts.use_source:
         petsc_full_src = os.path.join(petsc_dir, 'share', 'petsc', 'examples', 'src')
     else:
       if opts.srcdir == 'src':
@@ -401,11 +399,11 @@ def main():
             print("PETSC_DIR/PETSC_ARCH must be a directory")
             return
         elif not os.path.isdir(petsc_full_test):
-            print("Testdir must be a directory"+petsc_full_test)
+            print("Testdir must be a directory "+petsc_full_test)
             return
     else:
         if not os.path.isdir(petsc_full_src):
-            print("Source directory must be a directory"+petsc_full_src)
+            print("Source directory must be a directory "+petsc_full_src)
             return
 
     labels = expand_path_like(petsc_dir,petsc_arch,labels)

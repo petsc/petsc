@@ -1,6 +1,6 @@
 # A Forest of Trees and Structured Adaptive Refinement (DMFOREST)
 
-The `DMFOREST` subclass of `DM` encapsulates an octree mesh, with interfaces for both topology and geometry.
+The `DMFOREST` subclass of `DM` encapsulates a forest of quadtrees or octrees, with interfaces for both topology and geometry.
 It is capable of parallel structured adaptive mesh refinement and coarsening and parallel redistribution for load balancing.
 It is designed to interface with the `PetscFE` and `PetscFV` discretization objects, and converts smoothly to a `DMPLEX`.
 
@@ -9,4 +9,3 @@ It is designed to interface with the `PetscFE` and `PetscFV` discretization obje
 </ul>
 
 <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/impls/forest/tutorials/index.html">Examples</A><BR>
-

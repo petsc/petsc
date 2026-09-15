@@ -72,7 +72,7 @@ To choose a regressor type, the user can either call
 PetscRegressorSetType(PetscRegressor regressor, PetscRegressorType type);
 ```
 
-or use the command-line option `-regressor_type <method>`; details regarding the
+or use the command-line option `-regressor_type method`; details regarding the
 available methods are presented in {any}`sec_regressor_solvers`.
 The application code can specify the options used by underlying linear,
 nonlinear, and optimization solver methods used in fitting the model
@@ -139,7 +139,7 @@ the user can set regularizer's weight via
 PetscRegressorSetRegularizerWeight(PetscRegressor regressor, PetscReal weight);
 ```
 
-or with the option `-regressor_regularizer_weight <weight>`.
+or with the option `-regressor_regularizer_weight weight`.
 
 (sec_regressor_linear)=
 
@@ -180,7 +180,7 @@ via
 PetscRegressorLinearSetUseKSP(PetscRegressor regressor, PetscBool flg);
 ```
 
-or with the option `-regressor_linear_use_ksp <true,false>`.
+or with the option `-regressor_linear_use_ksp (true|false)`.
 
 Calculation of the intercept (also known as the "bias" or "offset") is performed
 separately from the rest of the model fitting process, because data sets are often
@@ -193,7 +193,7 @@ this can be done by calling
 PetscRegressorLinearSetFitIntercept(PetscRegressor regressor, PetscBool flg);
 ```
 
-or by specifying the option `-regressor_linear_fit_intercept <true,false>`.
+or by specifying the option `-regressor_linear_fit_intercept (true|false)`.
 
 For a fitted regression, one can obtain the intercept and
 a vector of the model coefficients from a linear regression model via

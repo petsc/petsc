@@ -46,7 +46,7 @@ e_doctext_verbatim  %n</pre>%n
 #
 s_caption  <CENTER><B>
 e_caption  </B></CENTER>
-picture    <A IMG="%1"></A>
+picture    <IMG SRC="%1" ALT="%1">
 # If the location variable is changed, then maint/exampleindex.tcl MUST be changed accordingly!
 location   <P><B><FONT COLOR="#CC3333">Location:</FONT></B><A HREF="../../../%1#%rq0">%1</A>
 # Only do the actual title

@@ -79,22 +79,22 @@ class PETScHTMLTranslatorMixin:
     """
 
     def __init__(self, *args: Any) -> None:
-        self._manpage_map = None
         self._word_pattern = re.compile(r'\w+')
         super().__init__(*args)
 
 
     def _get_manpage_map(self) -> Dict[str,str]:
         """ Return the manpage strings to link, as a dict.  """
-        if not self._manpage_map:
+        # Translators are per document, so cache the map on their shared builder.
+        if not hasattr(self.builder, '_petsc_manpage_map'):
             htmlmap_filename = os.path.join('manualpages', 'htmlmap')
             if not os.path.isfile(htmlmap_filename):
                 raise Exception("Expected file %s not found. " %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
             manpage_prefix_base = PETSC_DOC_OUT_ROOT_PLACEHOLDER
             manpage_prefix = os.path.join(manpage_prefix_base, '')
-            self._manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
-        return self._manpage_map
+            self.builder._petsc_manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
+        return self.builder._petsc_manpage_map
 
 
     def _add_manpage_links(self, string: str) -> str:

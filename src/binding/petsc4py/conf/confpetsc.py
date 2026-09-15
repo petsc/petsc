@@ -375,9 +375,12 @@ class PetscConfig:
                     break
             return ' '.join(cmd[1:])
 
+        def remove_wall(flags):
+            return re.sub(r'(^|\s)-Wall(?=\s|$)', r'\1', flags)
+
         # PETSc C compiler
         PCC = self['PCC']
-        PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
+        PCC_FLAGS = get_flags(cc) + ' ' + remove_wall(self['PCC_FLAGS'])
         PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
         PCC_FLAGS = PCC_FLAGS.replace('-Wpedantic', '-Wno-pedantic')
         PCC_FLAGS = PCC_FLAGS.replace('-Wextra-semi-stmt', '-Wno-extra-semi-stmt')
@@ -387,7 +390,7 @@ class PetscConfig:
         PCXX = PCC if self.language == 'c++' else self.get('CXX', cxx)
         # PETSc linker
         PLD = self['PCC_LINKER']
-        PLD_FLAGS = get_flags(ld) + ' ' + self['PCC_LINKER_FLAGS']
+        PLD_FLAGS = get_flags(ld) + ' ' + remove_wall(self['PCC_LINKER_FLAGS'])
         PLD_FLAGS = PLD_FLAGS.replace('-fvisibility=hidden', '')
         PLD = getenv('PLD', PLD) + ' ' + getenv('PLDFLAGS', PLD_FLAGS)
         PLD_SHARED = str.join(' ', (PLD, ldshared, ldflags))

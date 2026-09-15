@@ -19,7 +19,7 @@ We can see that there are two 3-cells, meaning three-dimensional cells, and from
 
 Regular Refinement of Simplex Meshes
 
-We can regularly refine the surface before extrusion using `-dm_refine <k>`, where `k` is the number of refinements,
+We can regularly refine the surface before extrusion using `-dm_refine k`, where `k` is the number of refinements,
 
 ```console
 $ make -f ./gmakefile test search="dm_impls_plex_tutorials-ex10_1" EXTRA_OPTIONS="-srf_dm_refine 2 -srf_dm_view draw -draw_save $PETSC_DIR/surface.png -draw_save_single_file"
@@ -71,7 +71,7 @@ Adaptive refinement of simplicial meshes is somewhat tricky when we demand that 
 
 or you can label the mesh using a GUI, such as GMsh, and PETSc will read the label values from the input file.
 
-We next create a label marking each cell in the mesh with an action, such as `DM_ADAPT_REFINE` or `DM_ADAPT_COARSEN`. We do this based on a volume constraint, namely that cells with a certain label value should have a certain volume. You could, of course, choose a more complex strategy, but here we just want a clear criterion. We can give volume constraints for label value `v` using the command line argument `-volume_constraint_<v> <vol>`. The mesh is then refined iteratively, checking the volume constraints each time,
+We next create a label marking each cell in the mesh with an action, such as `DM_ADAPT_REFINE` or `DM_ADAPT_COARSEN`. We do this based on a volume constraint, namely that cells with a certain label value should have a certain volume. You could, of course, choose a more complex strategy, but here we just want a clear criterion. We can give volume constraints for label value `v` using the command line argument `-volume_constraint_%d vol`, where `%d` is replaced by `v`. The mesh is then refined iteratively, checking the volume constraints each time,
 
 ```{literalinclude} /../src/dm/impls/plex/tutorials/ex10.c
 :append: '}'
