@@ -182,7 +182,12 @@ r'''
 
 # -- Setup and event callbacks -------------------------------------------------
 
+def _parallel_operation_allowed(operation):
+    """Read sources serially while allowing supported builders to write in parallel."""
+    return operation == 'write'
+
 def setup(app):
+    app.is_parallel_allowed = _parallel_operation_allowed
     app.connect('builder-inited', builder_init_handler)
     app.connect('build-finished', build_finished_handler)
     if 'PETSC_DIR' in os.environ:

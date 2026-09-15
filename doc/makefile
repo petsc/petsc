@@ -52,12 +52,12 @@ website-deploy: docs-source
 
 # use this rule to build the documentation on your machine when working on PETSc documentation
 docs: docs-env clean
-	. "$(DOCS_VENV)/bin/activate" && $(MAKE) SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 8" html
+	. "$(DOCS_VENV)/bin/activate" && $(MAKE) SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j auto" html
 
 # use this rule AFTER make docs to build the users manual as a PDF file
 docspdf: docs-env
 	${RM} -r "$(abspath $(BUILDDIR))/latex"
-	. "$(DOCS_VENV)/bin/activate" && $(MAKE) SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j 8" latexpdf
+	. "$(DOCS_VENV)/bin/activate" && $(MAKE) SPHINXOPTS_EXTRA="--fail-on-warning --keep-going -j auto" latexpdf
 
 # Catch-all target: route all unknown targets to Sphinx using the new "make mode" option.
 %: makefile docs-source
