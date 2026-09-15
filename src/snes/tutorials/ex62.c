@@ -28,6 +28,7 @@ Lots of information about the FEM assembly can be printed using
 */
 
 #include <petscdmplex.h>
+#include <petscpc.h>
 #include <petscsnes.h>
 #include <petscds.h>
 #include <petscbag.h>
@@ -58,6 +59,164 @@ typedef struct {
   SolType  sol; /* MMS solution */
   BCType   bc;  /* Boundary condition type */
 } AppCtx;
+
+typedef struct {
+  PetscInt  numPatchPoints;
+  PetscInt *patchPoints;
+  PetscInt  dofsPerCell;
+  PetscInt  numInteriorFacetCalls;
+  PetscInt  numExteriorFacetCalls;
+} PatchFacetTestCtx;
+
+static PetscErrorCode TestPatchConstruct(PC pc, PetscInt *npatch, IS *patches[], IS *patchIterationSet, PetscCtx ctx)
+{
+  PatchFacetTestCtx *test = (PatchFacetTestCtx *)ctx;
+
+  PetscFunctionBeginUser;
+  *npatch = 1;
+  PetscCall(PetscMalloc1(*npatch, patches));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, test->numPatchPoints, test->patchPoints, PETSC_COPY_VALUES, *patches));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, *npatch, 0, 1, patchIterationSet));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchFacetCallback(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt dofsArray[], const PetscInt dofsArrayWithAll[], PetscCtx ctx, PetscInt cellsPerFacet, PetscInt *numCalls)
+{
+  PatchFacetTestCtx *test = (PatchFacetTestCtx *)ctx;
+  PetscInt           numFacets;
+
+  PetscFunctionBeginUser;
+  PetscCall(ISGetLocalSize(facetIS, &numFacets));
+  PetscCheck(n == cellsPerFacet * numFacets * test->dofsPerCell, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Expected %" PetscInt_FMT " facet dofs, got %" PetscInt_FMT, cellsPerFacet * numFacets * test->dofsPerCell, n);
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(dofsArray[i] == dofsArrayWithAll[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Facet dof maps differ at entry %" PetscInt_FMT, i);
+  ++(*numCalls);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchComputeFunctionInteriorFacets(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt dofsArray[], const PetscInt dofsArrayWithAll[], PetscCtx ctx)
+{
+  PatchFacetTestCtx *test = (PatchFacetTestCtx *)ctx;
+
+  PetscFunctionBeginUser;
+  PetscCall(TestPatchFacetCallback(pc, point, x, f, facetIS, n, dofsArray, dofsArrayWithAll, ctx, 2, &test->numInteriorFacetCalls));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchComputeFunctionExteriorFacets(PC pc, PetscInt point, Vec x, Vec f, IS facetIS, PetscInt n, const PetscInt dofsArray[], const PetscInt dofsArrayWithAll[], PetscCtx ctx)
+{
+  PatchFacetTestCtx *test = (PatchFacetTestCtx *)ctx;
+
+  PetscFunctionBeginUser;
+  PetscCall(TestPatchFacetCallback(pc, point, x, f, facetIS, n, dofsArray, dofsArrayWithAll, ctx, 1, &test->numExteriorFacetCalls));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchComputeFunction(PC pc, PetscInt point, Vec x, Vec f, IS cellIS, PetscInt n, const PetscInt dofsArray[], const PetscInt dofsArrayWithAll[], PetscCtx ctx)
+{
+  PetscFunctionBeginUser;
+  PetscCall(PCPatchSetComputeFunctionInteriorFacets(pc, TestPatchComputeFunctionInteriorFacets, ctx));
+  PetscCall(PCPatchSetComputeFunctionExteriorFacets(pc, TestPatchComputeFunctionExteriorFacets, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchComputeOperator(PC pc, PetscInt point, Vec x, Mat mat, IS cellIS, PetscInt n, const PetscInt dofsArray[], const PetscInt dofsArrayWithAll[], PetscCtx ctx)
+{
+  PetscFunctionBeginUser;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchOuterFunction(SNES snes, Vec x, Vec f, PetscCtx ctx)
+{
+  PetscFunctionBeginUser;
+  PetscCall(VecSet(f, 1.0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestPatchFacetResidual(void)
+{
+  const PetscInt    faces[2]          = {2, 1};
+  const PetscInt    nodesPerCellValue = 4;
+  DM                dm;
+  PetscSection      section;
+  PetscInt          cStart, cEnd, pStart, pEnd, vStart, vEnd, cell, closureSize, numDofs, numCells;
+  PetscInt         *cellNodeMap = NULL, *closure = NULL;
+  const PetscInt   *cellNodeMaps[1];
+  PetscInt          bs[1] = {1}, nodesPerCell[1] = {nodesPerCellValue}, subspaceOffsets[2] = {0, 0};
+  DM                dms[1];
+  SNES              snes;
+  Vec               x, f, rhs;
+  PatchFacetTestCtx test = {0};
+
+  PetscFunctionBeginUser;
+  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCheck(cStart == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected cell points to start at zero, got %" PetscInt_FMT, cStart);
+  numCells            = cEnd - cStart;
+  test.dofsPerCell    = nodesPerCellValue;
+  test.numPatchPoints = vEnd - vStart;
+  PetscCall(PetscMalloc1(test.numPatchPoints, &test.patchPoints));
+  for (PetscInt vertex = vStart; vertex < vEnd; ++vertex) test.patchPoints[vertex - vStart] = vertex;
+
+  PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &section));
+  PetscCall(PetscSectionSetChart(section, pStart, pEnd));
+  for (PetscInt vertex = vStart; vertex < vEnd; ++vertex) PetscCall(PetscSectionSetDof(section, vertex, 1));
+  PetscCall(PetscSectionSetUp(section));
+  PetscCall(DMSetLocalSection(dm, section));
+  PetscCall(PetscSectionGetStorageSize(section, &numDofs));
+  subspaceOffsets[1] = numDofs;
+
+  PetscCall(PetscMalloc1(numCells * nodesPerCellValue, &cellNodeMap));
+  for (cell = cStart; cell < cEnd; ++cell) {
+    PetscInt numVertices = 0;
+
+    PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
+    for (PetscInt i = 0; i < closureSize * 2; i += 2) {
+      const PetscInt point = closure[i];
+
+      if (point >= vStart && point < vEnd) {
+        PetscInt offset;
+
+        PetscCall(PetscSectionGetOffset(section, point, &offset));
+        PetscCheck(numVertices < nodesPerCellValue, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Found too many vertices in cell");
+        cellNodeMap[cell * nodesPerCellValue + numVertices++] = offset;
+      }
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
+    PetscCheck(numVertices == nodesPerCellValue, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected %" PetscInt_FMT " vertices in cell, got %" PetscInt_FMT, nodesPerCellValue, numVertices);
+  }
+
+  dms[0]          = dm;
+  cellNodeMaps[0] = cellNodeMap;
+  PetscCall(VecCreateSeq(PETSC_COMM_SELF, numDofs, &x));
+  PetscCall(VecDuplicate(x, &f));
+  PetscCall(VecDuplicate(x, &rhs));
+  PetscCall(VecSet(rhs, 0.0));
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(SNESSetType(snes, SNESPATCH));
+  PetscCall(SNESSetDM(snes, dm));
+  PetscCall(SNESSetFunction(snes, f, TestPatchOuterFunction, NULL));
+  PetscCall(SNESPatchSetConstructType(snes, PC_PATCH_USER, TestPatchConstruct, &test));
+  PetscCall(SNESPatchSetDiscretisationInfo(snes, 1, dms, bs, nodesPerCell, cellNodeMaps, subspaceOffsets, 0, NULL, 0, NULL));
+  PetscCall(SNESPatchSetComputeFunction(snes, TestPatchComputeFunction, &test));
+  PetscCall(SNESPatchSetComputeOperator(snes, TestPatchComputeOperator, NULL));
+  PetscCall(SNESSetTolerances(snes, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1, PETSC_CURRENT));
+  PetscCall(PetscOptionsSetValue(NULL, "-sub_snes_max_it", "1"));
+  PetscCall(SNESSetFromOptions(snes));
+  PetscCall(SNESSolve(snes, rhs, x));
+  PetscCheck(test.numInteriorFacetCalls > 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Interior facet callback was not called");
+  PetscCheck(test.numExteriorFacetCalls > 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Exterior facet callback was not called");
+  PetscCall(SNESDestroy(&snes));
+  PetscCall(VecDestroy(&rhs));
+  PetscCall(VecDestroy(&f));
+  PetscCall(VecDestroy(&x));
+  PetscCall(PetscFree(cellNodeMap));
+  PetscCall(PetscSectionDestroy(&section));
+  PetscCall(DMDestroy(&dm));
+  PetscCall(PetscFree(test.patchPoints));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
@@ -627,46 +786,51 @@ static PetscErrorCode SetupProblem(DM dm, PetscErrorCode (*setupEqn)(DM, AppCtx 
 
 int main(int argc, char **argv)
 {
-  SNES   snes;
-  DM     dm;
-  Vec    u;
-  AppCtx user;
+  SNES      snes;
+  DM        dm;
+  Vec       u;
+  AppCtx    user;
+  PetscBool testPatchFacetResidual = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
-  PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
-  PetscCall(SNESCreate(PetscObjectComm((PetscObject)dm), &snes));
-  PetscCall(SNESSetDM(snes, dm));
-  PetscCall(DMSetApplicationContext(dm, &user));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_patch_facet_residual", &testPatchFacetResidual, NULL));
+  if (testPatchFacetResidual) PetscCall(TestPatchFacetResidual());
+  else {
+    PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
+    PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+    PetscCall(SNESCreate(PetscObjectComm((PetscObject)dm), &snes));
+    PetscCall(SNESSetDM(snes, dm));
+    PetscCall(DMSetApplicationContext(dm, &user));
 
-  PetscCall(SetupParameters(PETSC_COMM_WORLD, &user));
-  PetscCall(SetupProblem(dm, SetupEqn, &user));
-  PetscCall(DMPlexCreateClosureIndex(dm, NULL));
+    PetscCall(SetupParameters(PETSC_COMM_WORLD, &user));
+    PetscCall(SetupProblem(dm, SetupEqn, &user));
+    PetscCall(DMPlexCreateClosureIndex(dm, NULL));
 
-  PetscCall(DMCreateGlobalVector(dm, &u));
-  PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
-  PetscCall(SNESSetFromOptions(snes));
-  PetscCall(DMSNESCheckFromOptions(snes, u));
-  PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
-  {
-    Mat          J;
-    MatNullSpace sp;
+    PetscCall(DMCreateGlobalVector(dm, &u));
+    PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
+    PetscCall(SNESSetFromOptions(snes));
+    PetscCall(DMSNESCheckFromOptions(snes, u));
+    PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
+    {
+      Mat          J;
+      MatNullSpace sp;
 
-    PetscCall(SNESSetUp(snes));
-    PetscCall(CreatePressureNullSpace(dm, 1, 1, &sp));
-    PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
-    PetscCall(MatSetNullSpace(J, sp));
-    PetscCall(MatNullSpaceDestroy(&sp));
-    PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
-    PetscCall(MatViewFromOptions(J, NULL, "-J_view"));
+      PetscCall(SNESSetUp(snes));
+      PetscCall(CreatePressureNullSpace(dm, 1, 1, &sp));
+      PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
+      PetscCall(MatSetNullSpace(J, sp));
+      PetscCall(MatNullSpaceDestroy(&sp));
+      PetscCall(PetscObjectSetName((PetscObject)J, "Jacobian"));
+      PetscCall(MatViewFromOptions(J, NULL, "-J_view"));
+    }
+    PetscCall(SNESSolve(snes, NULL, u));
+
+    PetscCall(VecDestroy(&u));
+    PetscCall(SNESDestroy(&snes));
+    PetscCall(DMDestroy(&dm));
+    PetscCall(PetscBagDestroy(&user.bag));
   }
-  PetscCall(SNESSolve(snes, NULL, u));
-
-  PetscCall(VecDestroy(&u));
-  PetscCall(SNESDestroy(&snes));
-  PetscCall(DMDestroy(&dm));
-  PetscCall(PetscBagDestroy(&user.bag));
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -930,6 +1094,10 @@ int main(int argc, char **argv)
         -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd
     output_file: output/empty.out
   #   Vanka
+  test:
+    suffix: patch_facet_residual
+    args: -test_patch_facet_residual
+    output_file: output/empty.out
   test:
     suffix: 2d_q1_p0_vanka
     output_file: output/empty.out

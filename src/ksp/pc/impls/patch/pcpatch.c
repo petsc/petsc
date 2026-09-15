@@ -2301,32 +2301,68 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
     PetscCallBack("PCPatch callback", patch->usercomputef(pc, point, x, F, patch->cellIS, ncell * patch->totalDofsPerCell, dofsArray + offset * patch->totalDofsPerCell, dofsArrayWithAll + offset * patch->totalDofsPerCell, patch->usercomputefctx));
     PetscCall(ISDestroy(&patch->cellIS));
   }
+  if (patch->usercomputefintfacet) {
+    PetscInt numIntFacets, intFacetOffset;
+
+    PetscCall(PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets));
+    PetscCall(PetscSectionGetOffset(patch->intFacetCounts, point, &intFacetOffset));
+    if (numIntFacets > 0) {
+      /* For each interior facet, grab the two cells (in local numbering, and concatenate dof numberings for those cells) */
+      PetscInt       *facetDofs = NULL, *facetDofsWithAll = NULL;
+      const PetscInt *intFacetsArray = NULL, *intFacetCells = NULL;
+      PetscInt        idx     = 0;
+      IS              facetIS = NULL;
+
+      PetscCall(ISGetIndices(patch->intFacetsToPatchCell, &intFacetCells));
+      PetscCall(ISGetIndices(patch->intFacets, &intFacetsArray));
+      PetscCall(PetscMalloc2(2 * patch->totalDofsPerCell * numIntFacets, &facetDofs, 2 * patch->totalDofsPerCell * numIntFacets, &facetDofsWithAll));
+      for (PetscInt i = 0; i < numIntFacets; i++) {
+        for (PetscInt c = 0; c < 2; c++) {
+          const PetscInt cell = intFacetCells[2 * (intFacetOffset + i) + c];
+          for (PetscInt d = 0; d < patch->totalDofsPerCell; d++) {
+            facetDofs[idx]        = dofsArray[(offset + cell) * patch->totalDofsPerCell + d];
+            facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell) * patch->totalDofsPerCell + d];
+            idx++;
+          }
+        }
+      }
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numIntFacets, intFacetsArray + intFacetOffset, PETSC_USE_POINTER, &facetIS));
+      PetscCallBack("PCPatch callback (interior facets)", patch->usercomputefintfacet(pc, point, x, F, facetIS, 2 * numIntFacets * patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputefintfacetctx));
+      PetscCall(ISDestroy(&facetIS));
+      PetscCall(ISRestoreIndices(patch->intFacetsToPatchCell, &intFacetCells));
+      PetscCall(ISRestoreIndices(patch->intFacets, &intFacetsArray));
+      PetscCall(PetscFree2(facetDofs, facetDofsWithAll));
+    }
+  }
   if (patch->usercomputefextfacet) {
     PetscInt numExtFacets, extFacetOffset;
+
     PetscCall(PetscSectionGetDof(patch->extFacetCounts, point, &numExtFacets));
     PetscCall(PetscSectionGetOffset(patch->extFacetCounts, point, &extFacetOffset));
     if (numExtFacets > 0) {
-      PetscInt       *facetDofs      = NULL;
+      /* For each exterior facet, grab the one cell (in local numbering, and build dof numbering for that cell) */
+      PetscInt       *facetDofs = NULL, *facetDofsWithAll = NULL;
       const PetscInt *extFacetsArray = NULL, *extFacetCells = NULL;
       PetscInt        idx     = 0;
       IS              facetIS = NULL;
 
       PetscCall(ISGetIndices(patch->extFacetsToPatchCell, &extFacetCells));
       PetscCall(ISGetIndices(patch->extFacets, &extFacetsArray));
-      PetscCall(PetscMalloc1(patch->totalDofsPerCell * numExtFacets, &facetDofs));
+      PetscCall(PetscMalloc2(patch->totalDofsPerCell * numExtFacets, &facetDofs, patch->totalDofsPerCell * numExtFacets, &facetDofsWithAll));
       for (PetscInt i = 0; i < numExtFacets; i++) {
         const PetscInt cell = extFacetCells[extFacetOffset + i];
         for (PetscInt d = 0; d < patch->totalDofsPerCell; d++) {
-          facetDofs[idx] = dofsArray[(offset + cell) * patch->totalDofsPerCell + d];
+          facetDofs[idx]        = dofsArray[(offset + cell) * patch->totalDofsPerCell + d];
+          facetDofsWithAll[idx] = dofsArrayWithAll[(offset + cell) * patch->totalDofsPerCell + d];
           idx++;
         }
       }
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numExtFacets, extFacetsArray + extFacetOffset, PETSC_USE_POINTER, &facetIS));
-      PetscCall(patch->usercomputefextfacet(pc, point, x, F, facetIS, numExtFacets * patch->totalDofsPerCell, facetDofs, dofsArrayWithAll + offset * patch->totalDofsPerCell, patch->usercomputefextfacetctx));
+      PetscCallBack("PCPatch callback (exterior facets)", patch->usercomputefextfacet(pc, point, x, F, facetIS, numExtFacets * patch->totalDofsPerCell, facetDofs, facetDofsWithAll, patch->usercomputefextfacetctx));
       PetscCall(ISDestroy(&facetIS));
       PetscCall(ISRestoreIndices(patch->extFacetsToPatchCell, &extFacetCells));
       PetscCall(ISRestoreIndices(patch->extFacets, &extFacetsArray));
-      PetscCall(PetscFree(facetDofs));
+      PetscCall(PetscFree2(facetDofs, facetDofsWithAll));
     }
   }
   PetscCall(ISRestoreIndices(patch->dofs, &dofsArray));
