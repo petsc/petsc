@@ -93,8 +93,9 @@ def main(petsc_dir, build_dir, doctext, extra_roots=None):
   except:
     pass
   numberErrors = 0
+  skip_dirs = _SKIP_DIRS + [os.environ.get('PETSC_ARCH', 'arch-docs')]
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
-    dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith('arch')]
+    dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith('arch')]
     numberErrors = numberErrors + processdir(petsc_dir,build_dir,dirpath,doctext)
 
   # generate the .md files for the manual pages from the sources of cloned providesDocs packages
@@ -102,7 +103,7 @@ def main(petsc_dir, build_dir, doctext, extra_roots=None):
   # per-directory SUBMANSEC lookup and the source-location paths resolve inside the clone
   for base, walk_root in (extra_roots or []):
     for dirpath, dirnames, filenames in os.walk(walk_root,topdown=True):
-      dirnames[:] = [d for d in dirnames if d not in _SKIP_DIRS and not d.startswith('arch')]
+      dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith('arch')]
       numberErrors = numberErrors + processdir(base,build_dir,dirpath,doctext)
   if numberErrors:
     raise RuntimeError('Stopping document build since errors were detected in generating manual pages')

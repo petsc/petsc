@@ -99,7 +99,7 @@ cd $PETSC_DIR/doc
 python3 -m pip install -r requirements.txt
 PETSCBUIDTARBALL=1 make html BUILDDIR="../docs" SPHINXOPTS_EXTRA="-j 1"
 mv ../docs/html/* ../docs/html/.[!.]* ../docs
-make latexpdf SPHINXOPTS_EXTRA="-j 1" && cp _build/latex/manual.pdf ../docs/manual/
+make latexpdf BUILDDIR="_build" SPHINXOPTS_EXTRA="-j 1" && cp _build/latex/manual.pdf ../docs/manual/
 
 # build petsc4py tarball (docs are no longer built here)
 cd $PETSC_DIR/src/binding/petsc4py

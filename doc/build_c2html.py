@@ -31,6 +31,7 @@ def main(petsc_dir,build_dir,loc,c2html,mapnames):
 
   # walk directories generating list of all source code that needs processing and creating index.html for each directory
   SKIPDIRS = set('.claude .agents public html benchmarks output doc docs binding config petsc-doc lib bin systems share mpiuni kernels khash valgrind interfaces data linter'.split())
+  SKIPDIRS.add(os.environ.get('PETSC_ARCH', 'arch-docs'))
   SKIPDIRSPREFIX = set('arch- venv- .git'.split())
   SUFFIXES = set('.F90 .F .c .cxx .cpp .h .cu .hpp'.split())
   allfiles = []
