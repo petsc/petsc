@@ -155,7 +155,7 @@ docsclean:
 	-${RM} docs/source/*.inv
 
 website:
-	CFLAGS=-O0 python -m pip install .
+	CFLAGS=-O0 python -m pip install . -v --no-build-isolation
 	${MAKE} sphinx-html SPHINXOPTS_EXTRA="--fail-on-warning -j 2"
 	mkdir -p ${LOC}/petsc4py
 	mv docs/html/* ${LOC}/petsc4py
