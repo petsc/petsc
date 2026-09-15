@@ -18,6 +18,8 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--with-mpi-dir=/home/software/mpich-5.0.1-gcc-16-cuda134',
     '--with-cuda-dir=/usr/local/cuda-13.4',
+    # the one CUDA job that compiles the NVML code paths
+    '--with-cuda-nvml=1',
     '--download-umpire',
     '--with-cuda-arch=80,86',
     '--download-hypre=1',

@@ -676,6 +676,11 @@ bug-reporting {ref}`documentation <doc_creepycrawly>` for more details.
 In most cases you need only pass the configure option `--with-cuda`; check
 `config/examples/arch-ci-linux-cuda-double.py` for example usage.
 
+GPU power and energy monitoring (`-log_view_gpu_energy`, `-log_view_gpu_energy_meter`) requires NVML
+(the NVIDIA Management Library, `libnvidia-ml`), which the NVIDIA driver provides at runtime. Linking
+it makes the PETSc libraries require the driver even on machines without a GPU, so it is off by
+default; pass `--with-cuda-nvml=1` (CUDA 12.2 or later) to enable it.
+
 CUDA build of PETSc currently works on Mac OS X, Linux, Microsoft Windows with [Cygwin].
 
 Examples that use CUDA have the suffix .cu; see `$PETSC_DIR/src/snes/tutorials/ex47cu.cu`

@@ -350,7 +350,7 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-  #if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+  #if PetscDefined(HAVE_NVML)
 static inline PetscErrorCode PetscDeviceContextGetPower_Internal(PetscDeviceContext dctx, PetscLogDouble *power)
 {
   PetscFunctionBegin;
@@ -449,7 +449,7 @@ static inline PetscErrorCode PetscDeviceContextSynchronizeIfWithBarrier_Internal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_NVML)
 
   #define PetscCallNVML(...) \
     do { \

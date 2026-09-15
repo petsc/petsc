@@ -57,7 +57,7 @@ public:
 #endif
     cupmBlasHandle_t   blas{};
     cupmSolverHandle_t solver{};
-#if PetscDefined(HAVE_CUDA)
+#if PetscDefined(HAVE_NVML)
     nvmlDevice_t       nvmlHandle{};
     unsigned long long energymeterbegin{};
     unsigned long long energymeterend{};
@@ -234,15 +234,12 @@ public:
     PetscDesignatedInitializer(getstreamhandle, getHandlePtr<stream_tag>),
     PetscDesignatedInitializer(begintimer, beginTimer),
     PetscDesignatedInitializer(endtimer, endTimer),
-#if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+#if PetscDefined(HAVE_NVML)
     PetscDesignatedInitializer(getpower, getPower),
-#else
-    PetscDesignatedInitializer(getpower, nullptr),
-#endif
-#if PetscDefined(HAVE_CUDA)
     PetscDesignatedInitializer(beginenergymeter, beginEnergyMeter),
     PetscDesignatedInitializer(endenergymeter, endEnergyMeter),
 #else
+    PetscDesignatedInitializer(getpower, nullptr),
     PetscDesignatedInitializer(beginenergymeter, nullptr),
     PetscDesignatedInitializer(endenergymeter, nullptr),
 #endif
@@ -428,7 +425,7 @@ inline PetscErrorCode DeviceContext<T>::endTimer(PetscDeviceContext dctx, PetscL
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+#if PetscDefined(HAVE_NVML)
 template <DeviceType T>
 inline PetscErrorCode DeviceContext<T>::getPower(PetscDeviceContext dctx, PetscLogDouble *power) noexcept
 {
@@ -444,9 +441,7 @@ inline PetscErrorCode DeviceContext<T>::getPower(PetscDeviceContext dctx, PetscL
   *power = static_cast<util::remove_pointer_t<decltype(power)>>(values[0].value.uiVal);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
 
-#if PetscDefined(HAVE_CUDA)
 template <DeviceType T>
 inline PetscErrorCode DeviceContext<T>::beginEnergyMeter(PetscDeviceContext dctx) noexcept
 {

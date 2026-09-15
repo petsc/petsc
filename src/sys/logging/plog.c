@@ -2471,7 +2471,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextEndTimer_Internal(dctx, &elapsed));
     petsc_gtime += (elapsed / 1000.0);
-    #if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+    #if PetscDefined(HAVE_NVML)
     if (PetscLogGpuEnergyFlag) {
       PetscLogDouble power;
       PetscCall(PetscDeviceContextGetPower_Internal(dctx, &power));
@@ -2496,7 +2496,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
   This option is mutually exclusive to `-log_view_gpu_energy_meter`.
 
   Developer Note:
-  This option turns on energy monitoring of GPU kernels and requires CUDA version >= 12.2. The energy consumption is estimated as
+  Requires configuring with `--with-cuda-nvml=1` (CUDA >= 12.2). The energy consumption is estimated as
   instant_power * gpu_kernel_time. Due to the delay in NVML power sampling, we read the instantaneous power draw at the end of each
   event using `nvmlDeviceGetFieldValues()` with the field ID `NVML_FI_DEV_POWER_INSTANT`.
 
@@ -2505,7 +2505,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
 PetscErrorCode PetscLogGpuEnergy(void)
 {
   PetscFunctionBegin;
-  PetscCheck(PetscDefined(HAVE_CUDA_VERSION_12_2PLUS), PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "-log_view_gpu_energy requires CUDA version >= 12.2");
+  PetscCheck(PetscDefined(HAVE_NVML), PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "-log_view_gpu_energy requires a CUDA build of PETSc configured with --with-cuda-nvml=1 (not used by default)");
   PetscCheck(petsc_genergy == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "GPU energy logging has already been turned on");
   PetscLogGpuEnergyFlag      = PETSC_TRUE;
   PetscLogGpuEnergyMeterFlag = PETSC_FALSE;
@@ -2524,7 +2524,7 @@ PetscErrorCode PetscLogGpuEnergy(void)
   This option is mutually exclusive to `-log_view_gpu_energy`.
 
   Developer Note:
-  This option turns on energy monitoring of GPU kernels. The energy consumption is measured directly using the NVML API
+  Requires configuring with `--with-cuda-nvml=1` (CUDA >= 12.2). The energy consumption is measured directly using the NVML API
   `nvmlDeviceGetTotalEnergyConsumption()`, which returns the total energy used by the GPU since the driver was last initialized.
   For newer GPUs, energy readings are updated every 20-100ms, so this approach may be inaccurate for short-duration GPU events.
 
@@ -2533,6 +2533,7 @@ PetscErrorCode PetscLogGpuEnergy(void)
 PetscErrorCode PetscLogGpuEnergyMeter(void)
 {
   PetscFunctionBegin;
+  PetscCheck(PetscDefined(HAVE_NVML), PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "-log_view_gpu_energy_meter requires a CUDA build of PETSc configured with --with-cuda-nvml=1 (not used by default)");
   PetscCheck(petsc_genergy == 0.0, PETSC_COMM_SELF, PETSC_ERR_SUP, "GPU energy logging has already been turned on");
   PetscLogGpuEnergyMeterFlag = PETSC_TRUE;
   PetscLogGpuEnergyFlag      = PETSC_FALSE;
