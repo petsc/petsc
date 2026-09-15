@@ -2611,7 +2611,7 @@ cdef class PC(Object):
         if kargs is None: kargs = {}
         context = (function, args, kargs)
         self.set_attr("__patch_compute_function_interior_facets__", context)
-        CHKERR(PCPatchSetComputeFunction(self.pc, PCPatch_ComputeFunctionInteriorFacets, <void*>context))
+        CHKERR(PCPatchSetComputeFunctionInteriorFacets(self.pc, PCPatch_ComputeFunctionInteriorFacets, <void*>context))
 
     def setPatchConstructType(self, typ, operator=None, args=None, kargs=None) -> None:
         """Set compute operator callbacks."""
