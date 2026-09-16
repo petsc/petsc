@@ -1590,7 +1590,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 . spacedim  - dimension of the space coordinates
 . coords    - coordinates of the points
 . cdist     - whether or not coordinates are distributed
-. kernel    - computational kernel (or `NULL`)
+. kernel    - computational kernel (or `NULL`), see `MatH2OpusKernelFn` for the calling sequence
 . kernelctx - kernel context
 . eta       - admissibility condition tolerance
 . leafsize  - leaf size in cluster tree
@@ -1600,16 +1600,19 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 . nA - matrix
 
   Options Database Keys:
-+ -mat_h2opus_leafsize <`PetscInt`>    - Leaf size of cluster tree
-. -mat_h2opus_eta <`PetscReal`>        - Admissibility condition tolerance
-. -mat_h2opus_order <`PetscInt`>       - Chebychev approximation order
-- -mat_h2opus_normsamples <`PetscInt`> - Maximum number of samples to be used when estimating norms
++ -mat_h2opus_leafsize leafsize      - Leaf size of cluster tree
+. -mat_h2opus_eta eta                - Admissibility condition tolerance
+. -mat_h2opus_order order            - Chebychev approximation order
+- -mat_h2opus_normsamples maxsamples - Maximum number of samples to be used when estimating norms
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`
+  Note:
+  Requires `./configure` with `--download-h2opus` or `--with-h2opus-dir`
+
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromMat()`, `MatH2OpusKernelFn`
 @*/
-PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, void *kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
+PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernelFn *kernel, PetscCtx kernelctx, PetscReal eta, PetscInt leafsize, PetscInt basisord, Mat *nA)
 {
   Mat         A;
   Mat_H2OPUS *h2opus;

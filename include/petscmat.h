@@ -2466,10 +2466,32 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscIn
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
 #if PetscDefined(HAVE_H2OPUS)
-PETSC_EXTERN_TYPEDEF typedef PetscScalar(MatH2OpusKernelFn)(PetscInt, PetscReal[], PetscReal[], void *);
-PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel;
+/*S
+  MatH2OpusKernelFn - Function type for the user-supplied kernel callback used by `MATH2OPUS` (see `MatCreateH2OpusFromKernel()`)
+  to evaluate the dense matrix entries on demand
 
-PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *, PetscReal, PetscInt, PetscInt, Mat *);
+  Synopsis:
+  #include <petscmat.h>
+  PetscScalar MatH2OpusKernelFn(PetscInt spacedim, PetscReal target[], PetscReal source[], PetscCtx ctx)
+
+  Calling Sequence:
++ spacedim - spatial dimension, either 1, 2, or 3
+. target   - spatial coordinate of the target point, its length is `spacedim`
+. source   - spatial coordinate of the source point, its length is `spacedim`
+- ctx      - the optional application context passed with `MatCreateH2OpusFromKernel()`
+
+  Level: intermediate
+
+  Note:
+  Returns the matrix entry coupling the target and source points
+
+.seealso: `Mat`, `MATH2OPUS`, `MATHTOOL`, `MatCreateH2OpusFromKernel()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscScalar MatH2OpusKernelFn(PetscInt spacedim, PetscReal target[], PetscReal source[], PetscCtx ctx);
+
+PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatH2OpusKernelFn*", );
+
+PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, PetscCtx, PetscReal, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
 PETSC_EXTERN PetscErrorCode MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
 PETSC_EXTERN PetscErrorCode MatH2OpusOrthogonalize(Mat);

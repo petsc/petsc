@@ -118,6 +118,7 @@
 - Deprecate `MatPartitioningParmetisSetRepartition()`, `MatPartitioningParmetisSetCoarseSequential()`, and `MatPartitioningParmetisGetEdgeCut()` in favor of
   `MatPartitioningParMETISSetRepartition()`, `MatPartitioningParMETISSetCoarseSequential()`, and `MatPartitioningParMETISGetEdgeCut()`
 - Deprecate `MatSolverFunction`, `MatHtoolKernel` and `MatH2OpusKernel` in favor of `MatSolverFn *`, `MatHtoolKernelFn *` and `MatH2OpusKernelFn *`
+- Change the application context argument of `MatCreateH2OpusFromKernel()` and of the `MatH2OpusKernelFn` callback from `void *` to `PetscCtx`; no user source changes are required
 
 ## MatCoarsen
 
