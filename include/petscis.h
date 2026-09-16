@@ -259,8 +259,21 @@ typedef enum {
   IS_COLORING_LOCAL
 } ISColoringType;
 
-PETSC_EXTERN const char *const                ISColoringTypes[];
+PETSC_EXTERN const char *const ISColoringTypes[];
+
+/*M
+  ISColoringValue - unsigned integral type used to indicate a coloring
+
+  Level: beginner
+
+  Note:
+  The unsigned integral type is determined at `./configure` time with the option `--with-is-color-value-type=(char|short)` which results
+  in either `unsigned char` or `unsigned short`.
+
+.seealso: `ISColoringCreate()`
+M*/
 typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
+
 #define IS_COLORING_MAX     PETSC_IS_COLORING_MAX
 #define MPIU_COLORING_VALUE PETSC_MPIU_IS_COLORING_VALUE_TYPE
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValue *, PetscInt *, ISColoringValue *[]);

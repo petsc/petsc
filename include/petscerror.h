@@ -1327,7 +1327,7 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) stat
 
    Synopsis:
     #include <petscsys.h>
-     PetscErrorCode (*PetscErrorPrintf)(const char format[], ...);
+    PetscErrorCode (*PetscErrorPrintf)(const char format[], ...);
 
     Not Collective; No Fortran Support
 
@@ -1348,15 +1348,36 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) stat
 .ve
    Use
 .vb
-     `PETSC_STDERR` = FILE* obtained from a file open etc. to have stderr printed to the file.
-     `PETSC_STDOUT` = FILE* obtained from a file open etc. to have stdout printed to the file.
+     PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file.
+     PETSC_STDOUT = FILE* obtained from a file open etc. to have stdout printed to the file.
 .ve
+
+   You can change how error messages are printed by replacing the function pointer with your own function, for example,
+   where `mylogfile` is a `FILE` the application has opened,
+.vb
+   PetscErrorCode MyErrorPrintf(const char format[], ...)
+   {
+     va_list Argp;
+
+     // do not use PetscFunctionBegin here, this is called while an error is being handled
+     va_start(Argp, format);
+     (void)vfprintf(mylogfile, format, Argp);
+     va_end(Argp);
+     return PETSC_SUCCESS;
+   }
+.ve
+   then set
+.vb
+   PetscErrorPrintf = MyErrorPrintf;
+.ve
+
    Use
 .vb
       `PetscPushErrorHandler()` to provide your own error handler that determines what kind of messages to print
 .ve
 
-.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscHelpPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`, `PetscVFPrintf()`, `PetscHelpPrintf()`
+.seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscHelpPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`, `PetscVFPrintf()`,
+          `PetscErrorPrintfNone()`, `PetscErrorPrintfDefault()`
 M*/
 PETSC_EXTERN PetscErrorCode (*PetscErrorPrintf)(const char[], ...) PETSC_ATTRIBUTE_FORMAT(1, 2);
 

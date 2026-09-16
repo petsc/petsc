@@ -613,6 +613,28 @@ static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
 /*
    Logging of MPI activities
 */
+/*@
+  PetscMPITypeSize - Atomically add a `PetscLogDouble` value to both a global counter and its per-thread counterpart based on the
+  length of an `MPI_Datatype`
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ count     - the length of the array containing a specific `MPI_Datatype`
+. type      - the `MPI_Datatype`
+. length    - pointer to the global counter to update
+- length_th - pointer to the per-thread counter to update
+
+  Level: developer
+
+  Note:
+  When PETSc is built without thread safety this is a fast routine that performs the same update without locking.
+
+  Developer Note:
+  This should have a better name related to its functionality
+
+.seealso: `PetscAddLogDouble()`, `PetscAddLogDoubleCnt()`, `PetscLogFlops()`, `PetscLogDouble`, `PetscMPITypeSizeComm()`
+@*/
 static inline PetscErrorCode PetscMPITypeSize(PetscCount count, MPI_Datatype type, PetscLogDouble *length, PetscLogDouble *length_th)
 {
   PetscMPIInt typesize;
@@ -622,6 +644,29 @@ static inline PetscErrorCode PetscMPITypeSize(PetscCount count, MPI_Datatype typ
   return PetscAddLogDouble(length, length_th, (PetscLogDouble)(count * typesize));
 }
 
+/*@
+  PetscMPITypeSizeComm - Atomically add a `PetscLogDouble` value to both a global counter and its per-thread counterpart based on the
+  length of an `MPI_Datatype`
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ comm      - the `MPI_Comm` that shared the communication of the `MPI_Datatype`
+. counts    - the length of the array containing a specific `MPI_Datatype` being sent to each MPI process
+. type      - the `MPI_Datatype`
+. length    - pointer to the global counter to update
+- length_th - pointer to the per-thread counter to update
+
+  Level: developer
+
+  Note:
+  When PETSc is built without thread safety this is a fast routine that performs the same update without locking.
+
+  Developer Note:
+  This should have a better name related to its functionality
+
+.seealso: `PetscAddLogDouble()`, `PetscAddLogDoubleCnt()`, `PetscLogFlops()`, `PetscLogDouble`, `PetscMPITypeSize()`
+@*/
 static inline PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, const PetscMPIInt *counts, MPI_Datatype type, PetscLogDouble *length, PetscLogDouble *length_th)
 {
   PetscMPIInt    typesize, size, p;

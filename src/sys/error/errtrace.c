@@ -48,11 +48,43 @@ PetscErrorCode PetscErrorPrintfInitialize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscErrorPrintfNone - An alternative to `PetscErrorPrintfDefault()` that prints no error messages
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. format - the usual `printf()` format string
+
+  Options Database Key:
+. -error_output_none - install this function; the error is still handled in the same way, only the message is suppressed
+
+  Level: developer
+
+.seealso: `PetscErrorPrintf()`, `PetscErrorPrintfDefault()`, `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscPrintf()`,
+          `PetscPushErrorHandler()`, `PetscVFPrintf()`, `PetscHelpPrintf()`
+@*/
 PetscErrorCode PetscErrorPrintfNone(const char format[], ...)
 {
   return PETSC_SUCCESS;
 }
 
+/*@
+  PetscErrorPrintfDefault - The default error printing used by `PetscErrorPrintf()`
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. format - the usual `printf()` format string
+
+  Options Database Key:
+. -error_output_stdout - write the error messages to `stdout` instead of the default `stderr`
+
+  Level: developer
+
+.seealso: `PetscErrorPrintf()`, `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`,
+          `PetscVFPrintf()`, `PetscHelpPrintf()`, `PetscErrorPrintfNone()`
+@*/
 PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 {
   va_list          Argp;

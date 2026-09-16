@@ -2041,6 +2041,17 @@ PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartiti
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning, PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning, PetscInt);
 
+/*J
+  MatMeshToCellGraphType - String with the name of registered algorithm that computes a cell graph from a mesh (graph containing
+  the coupling of vertices) representation.
+
+  Options Database Key:
+. -mat_mesh_to_cell_graph_type (parmetis|metis) - the conversion package to use; default is ParMETIS if available, otherwise METIS
+
+  Level: beginner
+
+.seealso: `Mat`, `MatMeshToCellGraph()`, `MatMeshToCellGraphRegister()`
+J*/
 typedef const char *MatMeshToCellGraphType;
 #define MATMESHTOCELLGRAPHMETIS    "metis"
 #define MATMESHTOCELLGRAPHPARMETIS "parmetis"

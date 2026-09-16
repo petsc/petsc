@@ -175,6 +175,21 @@ PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue queue, PetscInt *p)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexPointQueueEmpty - Returns `PETSC_TRUE` if the queue is empty
+
+  Not Collective
+
+  Input Parameter:
+. queue - the queue
+
+  Level: developer
+
+  Note:
+  Unlike most PETSc functions this does not return an error code.
+
+.seealso: `DMPLEX`, `DMPlexPointQueue`, `DMPlexPointQueueFront()`, `DMPlexPointQueueEnqueue()`
+@*/
 PetscBool DMPlexPointQueueEmpty(DMPlexPointQueue queue)
 {
   if (!queue->num) return PETSC_TRUE;

@@ -136,3 +136,14 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   PetscCall(DMPatchSetCommSize(*dm, commSize));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+  DMPATCH = "patch" - A `DM` object that is a collection of other `DM`s patched together
+
+  Level: intermediate
+
+  Note:
+  Not currently enabled, see `DMPatchCreateGrid()` and `DMPatchCreate()`.
+
+.seealso: `DMType`, `DMPatchCreateGrid()`, `DMPatchCreate()`, `DMCOMPOSITE`, `DMSTAG`, `DMPLEX`, `DMDA`, `DMDACreate()`, `DMCreate()`, `DMSetType()`
+M*/
