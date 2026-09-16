@@ -16,7 +16,8 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
 #if defined(TYPE_SBAIJ)
   const PetscInt bs = A->rmap->bs;
 #endif
-  const PetscBool ignorezeroentries = ((Mat_SeqAIJ *)a->A->data)->ignorezeroentries;
+  const PetscBool structure_only    = a->A->structure_only;
+  const PetscBool ignorezeroentries = (PetscBool)(!structure_only && ((Mat_SeqAIJ *)a->A->data)->ignorezeroentries);
 
   PetscFunctionBegin;
   for (PetscInt r = 0; r < m; ++r) {
@@ -27,9 +28,9 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
       if (!a->donotstash) {
         A->assembled = PETSC_FALSE;
         if (a->roworiented) {
-          PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, PetscSafePointerPlusOffset(values, r * n), (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesRow_Private(&A->stash, rows[r], n, cols, PetscSafePointerPlusOffset(values, r * n), (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         } else {
-          PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, PetscSafePointerPlusOffset(values, r), m, (PetscBool)(ignorezeroentries && (addv == ADD_VALUES))));
+          PetscCall(MatStashValuesCol_Private(&A->stash, rows[r], n, cols, PetscSafePointerPlusOffset(values, r), m, (PetscBool)(ignorezeroentries && addv == ADD_VALUES)));
         }
       }
     } else {
@@ -39,8 +40,8 @@ static PetscErrorCode MatSetValues_MPI_Hash(Mat A, PetscInt m, const PetscInt *r
 #else
         if (cols[c] < 0) continue;
 #endif
-        value = values ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
-        if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES) && rows[r] != cols[c]) continue;
+        value = values && !structure_only ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
+        if (ignorezeroentries && value == 0.0 && addv == ADD_VALUES && rows[r] != cols[c]) continue;
         if (cols[c] >= cStart && cols[c] < cEnd) {
           PetscCall(MatSetValue(a->A, rows[r] - rStart, cols[c] - cStart, value, addv));
         } else if (!ignorezeroentries || value != 0.0) {
@@ -205,6 +206,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
 #else
   PetscCall(MatSetType(a->A, PetscConcat(MATSEQ, TYPE)));
 #endif
+  PetscCall(MatSetOption(a->A, MAT_STRUCTURE_ONLY, A->structure_only));
   PetscCall(MatSetUp(a->A));
 
   PetscCall(MatCreate(PETSC_COMM_SELF, &a->B));
@@ -219,6 +221,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
   PetscCall(MatSetType(a->B, PetscConcat(MATSEQ, TYPE)));
   #endif
 #endif
+  PetscCall(MatSetOption(a->B, MAT_STRUCTURE_ONLY, A->structure_only));
   PetscCall(MatSetUp(a->B));
 
   /* keep a record of the operations so they can be reset when the hash handling is complete */

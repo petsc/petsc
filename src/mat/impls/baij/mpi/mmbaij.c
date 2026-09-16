@@ -132,7 +132,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
   Mat_SeqBAIJ *Bbaij;
   PetscInt     i, j, mbs, n = A->cmap->N, col, *garray = baij->garray;
   PetscInt     bs2 = baij->bs2, *nz = NULL, m = A->rmap->n;
-  MatScalar   *a, *atmp;
+  MatScalar   *a;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
@@ -160,6 +160,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
     PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &Bnew));
     PetscCall(MatSetSizes(Bnew, m, n, m, n));
     PetscCall(MatSetType(Bnew, ((PetscObject)B)->type_name));
+    PetscCall(MatSetOption(Bnew, MAT_STRUCTURE_ONLY, B->structure_only));
     PetscCall(MatSeqBAIJSetPreallocation(Bnew, B->rmap->bs, 0, nz));
     /*
      Ensure that B's nonzerostate is monotonically increasing.
@@ -173,9 +174,8 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
     PetscCall(MatSetOption(Bnew, MAT_ROW_ORIENTED, PETSC_FALSE));
     for (i = 0; i < mbs; i++) {
       for (j = Bbaij->i[i]; j < Bbaij->i[i + 1]; j++) {
-        col  = garray[Bbaij->j[j]];
-        atmp = a + j * bs2;
-        PetscCall(MatSetValuesBlocked_SeqBAIJ(Bnew, 1, &i, 1, &col, atmp, B->insertmode));
+        col = garray[Bbaij->j[j]];
+        PetscCall(MatSetValuesBlocked_SeqBAIJ(Bnew, 1, &i, 1, &col, PetscSafePointerPlusOffset(a, j * bs2), B->insertmode));
       }
     }
     PetscCall(MatSetOption(Bnew, MAT_ROW_ORIENTED, Bbaij->roworiented));

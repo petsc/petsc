@@ -2228,10 +2228,12 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A, MatAssemblyType mode)
     rmax = PetscMax(rmax, ailen[i]);
     if (fshift) {
       ip = aj + ai[i];
-      ap = aa + bs2 * ai[i];
       N  = ailen[i];
       PetscCall(PetscArraymove(ip - fshift, ip, N));
-      if (!A->structure_only) PetscCall(PetscArraymove(ap - bs2 * fshift, ap, bs2 * N));
+      if (!A->structure_only) {
+        ap = aa + bs2 * ai[i];
+        PetscCall(PetscArraymove(ap - bs2 * fshift, ap, bs2 * N));
+      }
     }
     ai[i] = ai[i - 1] + ailen[i - 1];
   }
@@ -2242,13 +2244,9 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A, MatAssemblyType mode)
 
   /* reset ilen and imax for each row */
   a->nonzerorowcnt = 0;
-  if (A->structure_only) {
-    PetscCall(PetscFree2(a->imax, a->ilen));
-  } else { /* !A->structure_only */
-    for (i = 0; i < mbs; i++) {
-      ailen[i] = imax[i] = ai[i + 1] - ai[i];
-      a->nonzerorowcnt += ((ai[i + 1] - ai[i]) > 0);
-    }
+  for (i = 0; i < mbs; i++) {
+    ailen[i] = imax[i] = ai[i + 1] - ai[i];
+    a->nonzerorowcnt += (ailen[i] > 0);
   }
   a->nz = ai[mbs];
 
@@ -3471,8 +3469,9 @@ PetscErrorCode MatSeqBAIJRestoreArray(Mat A, PetscScalar *array[])
    Level: beginner
 
    Notes:
-   `MatSetOptions`(,`MAT_STRUCTURE_ONLY`,`PETSC_TRUE`) may be called for this matrix type. In this no
-   space is allocated for the nonzero entries and any entries passed with `MatSetValues()` are ignored
+   Call `MatSetOption(A, MAT_STRUCTURE_ONLY, PETSC_TRUE)` before preallocation or `MatSetUp()` to store only the nonzero pattern.
+   The assembled matrix has no numerical value array. Row and column indices supplied during insertion are retained, while numerical values are ignored.
+   Such matrices can be used for structural operations, but not for numerical operations.
 
    Run with `-info` to see what version of the matrix-vector product is being used
 
@@ -3534,6 +3533,7 @@ PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplic
   PetscFunctionBegin;
   PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Cannot duplicate unassembled matrix");
   PetscCheck(a->i[mbs] == nz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupt matrix");
+  PetscCall(MatSetOption(C, MAT_STRUCTURE_ONLY, A->structure_only));
 
   if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
     c->imax           = a->imax;
@@ -3551,8 +3551,10 @@ PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplic
   /* allocate the matrix space */
   if (mallocmatspace) {
     if (cpvalues == MAT_SHARE_NONZERO_PATTERN) {
-      PetscCall(PetscShmgetAllocateArray(bs2 * nz, sizeof(PetscScalar), (void **)&c->a));
-      PetscCall(PetscArrayzero(c->a, bs2 * nz));
+      if (!A->structure_only) {
+        PetscCall(PetscShmgetAllocateArray(bs2 * nz, sizeof(PetscScalar), (void **)&c->a));
+        PetscCall(PetscArrayzero(c->a, bs2 * nz));
+      }
       c->free_a       = PETSC_TRUE;
       c->i            = a->i;
       c->j            = a->j;
@@ -3565,7 +3567,7 @@ PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplic
       PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
       PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     } else {
-      PetscCall(PetscShmgetAllocateArray(bs2 * nz, sizeof(PetscScalar), (void **)&c->a));
+      if (!A->structure_only) PetscCall(PetscShmgetAllocateArray(bs2 * nz, sizeof(PetscScalar), (void **)&c->a));
       PetscCall(PetscShmgetAllocateArray(nz, sizeof(PetscInt), (void **)&c->j));
       PetscCall(PetscShmgetAllocateArray(mbs + 1, sizeof(PetscInt), (void **)&c->i));
       c->free_a  = PETSC_TRUE;
@@ -3574,10 +3576,9 @@ PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplic
       PetscCall(PetscArraycpy(c->i, a->i, mbs + 1));
       if (mbs > 0) {
         PetscCall(PetscArraycpy(c->j, a->j, nz));
-        if (cpvalues == MAT_COPY_VALUES) {
-          PetscCall(PetscArraycpy(c->a, a->a, bs2 * nz));
-        } else {
-          PetscCall(PetscArrayzero(c->a, bs2 * nz));
+        if (!A->structure_only) {
+          if (cpvalues == MAT_COPY_VALUES) PetscCall(PetscArraycpy(c->a, a->a, bs2 * nz));
+          else PetscCall(PetscArrayzero(c->a, bs2 * nz));
         }
       }
       C->preallocated = PETSC_TRUE;

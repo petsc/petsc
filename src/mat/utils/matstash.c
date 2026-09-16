@@ -354,11 +354,11 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash, PetscInt row, P
        This enables inserting multiple blocks belonging to a row with a single
        function call */
     array = space->val + bs2 * l;
-    vals  = values + idx * bs2 * n + bs * i;
+    vals  = PetscSafePointerPlusOffset(values, idx * bs2 * n + bs * i);
     for (j = 0; j < bs; j++) {
       for (k = 0; k < bs; k++) array[k * bs] = values ? vals[k] : 0.0;
       array++;
-      vals += cmax * bs;
+      if (values) vals += cmax * bs;
     }
     l++;
   }
@@ -405,11 +405,11 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash, PetscInt row, P
      This enables inserting multiple blocks belonging to a row with a single
      function call */
     array = space->val + bs2 * l;
-    vals  = values + idx * bs2 * n + bs * i;
+    vals  = PetscSafePointerPlusOffset(values, idx * bs2 * n + bs * i);
     for (j = 0; j < bs; j++) {
       for (k = 0; k < bs; k++) array[k] = values ? vals[k] : 0.0;
       array += bs;
-      vals += rmax * bs;
+      if (values) vals += rmax * bs;
     }
     l++;
   }

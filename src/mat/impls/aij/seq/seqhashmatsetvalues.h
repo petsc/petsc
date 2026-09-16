@@ -12,7 +12,7 @@ static PetscErrorCode PetscConcat(MatSetValues_Seq_Hash, TYPE_BS)(Mat A, PetscIn
 #if defined(TYPE_BS_ON)
   const PetscInt bs = A->rmap->bs;
 #endif
-  const PetscBool ignorezeroentries = a->ignorezeroentries;
+  const PetscBool ignorezeroentries = (PetscBool)(!A->structure_only && a->ignorezeroentries);
 
   PetscFunctionBegin;
   for (PetscInt r = 0; r < m; ++r) {
@@ -44,7 +44,7 @@ static PetscErrorCode PetscConcat(MatSetValues_Seq_Hash, TYPE_BS)(Mat A, PetscIn
       if (key.j < 0) continue;
   #endif
 #endif
-      value = values ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
+      value = values && !A->structure_only ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
       if (ignorezeroentries && value == 0.0 && key.i != key.j) continue;
       switch (addv) {
       case INSERT_VALUES:
