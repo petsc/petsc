@@ -5,15 +5,26 @@ and drives it through modeling → discretization → code generation →
 verification → simulation → analysis, producing verified and analyzed numerical
 solutions — visualized too when the user asks to see them.
 
+The orchestrator first triages the request into a `task_kind` (see D21): the
+default **`simulation`** lane runs the full PDE/ODE pipeline above; a lightweight
+**`programming`** lane handles direct PETSc coding tasks that have no governing
+equation (e.g. `VecScatter`, data-structure/API exercises), skipping modeling,
+discretization, and MMS and verifying by a clean run that produces the requested
+output. Both lanes emit the same `results-manifest.json`.
+
 The design is split into a framework-neutral **core** (contracts, agent role
 prompts, domain-knowledge skills, example components, tests) and a thin per-tool
 **binding**. Inside PETSc the core lives under `.agents/`: the domain **skills**
 in `.agents/pde-sim/skills/` (deliberately **not** in the auto-discovered
 `.agents/skills/`, so they never load until the pipeline is invoked), the four
 agent role prompts in `.agents/pde-sim/agents/`, and the contracts, components, tests, and
-docs under `.agents/pde-sim/` (this directory). The only binding built so far
-is for **Claude Code**; see [Running under Claude Code](#running-under-claude-code)
-and [Portability](#portability).
+docs under `.agents/pde-sim/` (this directory). Two bindings exist today: the
+interactive **Claude Code** tool binding (the `/pde-sim` command) and a
+**harness binding** under `.agents/pde-sim/bindings/petscagent-bench/` that drives
+the pipeline non-interactively, exposing it as an A2A "Purple agent" for the
+petscagent-bench evaluator. See
+[Running under Claude Code](#running-under-claude-code) and
+[Portability](#portability).
 
 > Paths written as `contracts/…`, `components/…`, `skills/…`, `tests/…`, `docs/…`
 > below are relative to this `.agents/pde-sim/` directory. Agent role prompts
@@ -194,8 +205,8 @@ brief (`.agents/pde-sim/skills/orchestration/SKILL.md`) into the main session,
 which then reads the specialist role prompts (`.agents/pde-sim/agents/<role>.md`) and domain
 skills (`.agents/pde-sim/skills/<name>/SKILL.md`) **by path** and dispatches
 each specialist as a `general-purpose` subagent. Contract artifacts are written
-under a scratch `artifacts/<study-id>/` directory (add it to your local
-`.git/info/exclude`).
+under a scratch `artifacts/<study-id>/` directory, which is git-ignored via the
+repository's `/artifacts/` entry in `.gitignore`.
 
 > **Why by path, not auto-discovery.** PETSc commits a `.claude/skills ->
 > ../.agents/skills` symlink, so *anything under `.agents/skills/` auto-loads into
@@ -230,6 +241,7 @@ under a scratch `artifacts/<study-id>/` directory (add it to your local
     ├── components/   # verified, reusable building blocks + case-index.json (reuse registry)
     ├── examples/     # complete worked studies (examples/<study-id>)
     ├── tests/        # regression suite (guards self-improvement) + schema validator
+    ├── bindings/     # non-Claude adapters — e.g. petscagent-bench/ (A2A Purple-agent harness)
     ├── docs/         # DECISIONS.md
     └── README.md     # this file
 
@@ -253,8 +265,12 @@ brief, which dispatches specialists as `general-purpose` subagents. (The separat
 `.claude/skills` symlink is a pre-existing PETSc convenience for its own
 `codegraph`/`review-*` skills and is not part of the pipeline.)
 
-To add another tool (e.g. **Codex** or **opencode**) as a second binding, add a thin
-per-tool trigger that points at the same brief — e.g. a Codex custom prompt
-(`~/.codex/prompts/pde-sim.md`) whose body is "read
-`.agents/pde-sim/skills/orchestration/SKILL.md` and act as orchestrator." No
-second binding is built yet (see `docs/DECISIONS.md` D15/D19).
+Two kinds of binding are possible. A **tool-integration binding** hooks the
+pipeline into an interactive assistant: to add another (e.g. **Codex** or
+**opencode**), add a thin per-tool trigger that points at the same brief — e.g. a
+Codex custom prompt (`~/.codex/prompts/pde-sim.md`) whose body is "read
+`.agents/pde-sim/skills/orchestration/SKILL.md` and act as orchestrator." Only the
+Claude Code tool binding is built so far. A **harness binding** instead drives the
+pipeline non-interactively for automated evaluation; one already exists under
+`.agents/pde-sim/bindings/petscagent-bench/` (an A2A Purple-agent server). See
+`docs/DECISIONS.md` D15/D19.

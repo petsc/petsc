@@ -59,7 +59,10 @@ Load each by reading the file directly (loaded by path, not auto-discovered):
 ## Inputs (contract)
 - **Numerical Plan** (`.agents/pde-sim/contracts/numerical-plan.schema.json`): geometry
   class, discretization, coefficient functions to implement, solver stack, MMS,
-  and verification plan.
+  and verification plan. (Simulation lane.)
+- **Task brief** (programming lane): in place of a Numerical Plan, a short brief
+  of behavior, required options, required MPI ranks, and expected output — see
+  Direct-task mode below.
 - **Vis Spec** (`.agents/pde-sim/contracts/vis-spec.schema.json`, optional): implement
   only the items marked `execution: "in_situ"` (solution output, in-situ
   rendering, in-binary auxiliary computations such as particle tracing). Ignore
@@ -78,6 +81,19 @@ Load each by reading the file directly (loaded by path, not auto-discovered):
   inventorying build status, runs, and output files (large artifacts are
   referenced by path, never inlined) — these paths are what the visualization
   agent's post-processors read.
+
+## Direct-task mode (programming lane)
+When the orchestrator dispatches a **programming** task (task_kind = programming)
+instead of a Numerical Plan, you get a short task brief: the required behavior,
+the input options to accept (e.g. `-N 10`), the required MPI rank count (e.g. run
+with 3 processes), and the exact program output expected. There is no governing
+equation, discretization, or manufactured solution. Implement the program to the
+brief, then verify by a **clean run at the required rank count producing the
+requested output** — this replaces "passes MMS" everywhere below. The build/run
+`attempts[]` journal, retry budget, escalation block, and formatting gate all
+still apply. Emit the same `results-manifest.json` (a `runs[]` entry with the
+full `command` and `mpi_ranks`; omit `convergence_study`). The rest of this
+brief (below) is the simulation lane.
 
 ## Verify-and-fix loop
 Build → run → read errors → fix → repeat. Run the MMS validation and report

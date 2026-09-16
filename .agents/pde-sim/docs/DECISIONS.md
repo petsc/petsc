@@ -131,7 +131,7 @@ escalation, verdict), so the orchestrator routes by reading them. A formal
 `handoff-receipt` is only worth it once dispatch is automated. See **OQ-4**.
 
 ## D15 — Portability: framework-neutral core + a per-tool binding
-**Status:** Accepted (neutralized in place) · Claude Code binding only for now
+**Status:** Accepted (neutralized in place) · Claude Code tool binding + a petscagent-bench harness binding
 **Decision:** The system is split into a framework-neutral **core** and a thin
 per-tool **binding**. The core — the JSON-Schema `contracts/`, the agent role
 prompts, the `skills/` domain knowledge, `examples/`, `components/`, `tests/` — is
@@ -139,8 +139,7 @@ model- and tool-agnostic: contracts now live at top-level `contracts/` (not unde
 `.claude/`), agent frontmatter no longer hardcodes a model, and prose avoids
 Claude-isms (the Skill/Agent-tool mechanics are flagged as binding-specific, with a
 file-read fallback). The **Claude Code binding** is the `.claude/` layout (agent +
-skill discovery, frontmatter dialect, `settings.local.json`) and is the only binding
-built so far.
+skill discovery, frontmatter dialect, `settings.local.json`).
 **Why:** Experiments compare multiple models/tools (e.g. Codex, opencode). Keeping the
 core neutral means a second binding is additive.
 **Update (D19):** the Claude Code binding is now a single committed command
@@ -149,8 +148,14 @@ loads by explicit path, so a second binding is just a thin trigger pointing at t
 orchestration brief (e.g. a Codex custom prompt at `~/.codex/prompts/pde-sim.md`). The
 pre-existing `.claude/skills` symlink is a PETSc convenience for its own
 `codegraph`/`review-*` skills only — unrelated to the pipeline.
-**Deferred:** a second (Codex/opencode) binding and a source→binding generator. See
-**OQ-5**.
+**Update (harness binding):** a second binding now exists — a non-interactive
+**harness binding** under `.agents/pde-sim/bindings/petscagent-bench/` that exposes
+the pipeline as an A2A "Purple agent" for the petscagent-bench evaluator. It is a
+*harness/eval* binding, distinct in kind from a *tool-integration* binding (the
+Claude Code `/pde-sim` command); of the tool-integration bindings, only Claude Code
+is built so far.
+**Deferred:** a second *tool-integration* (Codex/opencode) binding and a
+source→binding generator. See **OQ-5**.
 
 ## D16 — Visualization stack = VTK / ParaView (+ matplotlib)
 **Status:** Open (assumption)
@@ -236,6 +241,45 @@ unconditionally — an inconsistency (pre-run vis-spec was already "optional").
 which fans them out — but the visualization arm of that fan-out is conditional.
 **Cost accepted:** the orchestrator must judge "did the user ask to see results?"
 rather than always rendering; ambiguous cases are resolved at HITL gate 4.
+
+## D21 — Task triage: a `programming` lane beside `simulation`
+**Status:** Accepted — extends D1/D3
+**Decision:** The orchestrator first classifies each request into
+`task_kind: simulation | programming` (a routing decision, like autonomy, not a
+contract field). `simulation` (default) runs the full modeling → discretization →
+MMS-verify pipeline. `programming` — a direct PETSc coding task with no governing
+equation (e.g. `VecScatter`, data-structure/API exercises) — skips pde-modeling,
+numerical-analysis, and MMS, and instead has code-generation implement to a short
+brief and verify by a clean run that produces the exact requested output. Both
+lanes emit the same `results-manifest.json` (`convergence_study` is optional).
+**Why:** Not every "PETSc in C" task is a PDE. Forcing a programming task through
+pde-modeling (governing equations, geometry, BCs — all required by
+`problem-spec.json`) is a category error, and MMS is meaningless without a
+manufactured solution. A second lightweight lane reuses code-generation and the
+existing manifest without distorting the PDE path.
+**Naming:** `simulation`/`programming` (positive, by verification style), not
+`pde`/`non_pde` — the space is not binary (ODE and optimization are non-PDE yet
+still "simulation"-shaped) and negation names age badly.
+**Deferred:** a formal `task-spec.json` contract for the programming brief — kept
+as skill-level prose for now; formalize once exercised. Non-PDE tasks are NOT
+promoted into the MMS-gated case index (D18): they lack convergence ground truth.
+
+## D22 — Convergence errors keyed by norm only (per-field deferred)
+**Status:** Open (needs a call)
+**Decision (interim):** `results-manifest.json` records `convergence_study.levels[].errors`
+as a flat `norm -> value` map — one error per norm per level, not per solution field.
+A `numerical-assessment.json`, by contrast, carries one `convergence` entry per
+`(field, norm)`. For a **single-field** study the two line up and `tests/validate.py`
+checks the recomputed order against the assessment claim. For a **multi-field** study a
+norm maps to several per-field claims that the flat manifest cannot disambiguate, so the
+validator **skips** the check for that norm rather than compare against an arbitrary
+field.
+**Why deferred:** making `errors` per-field (e.g. `field -> norm -> value`) is a contract
+change with fan-out into code-generation output, the numerical-analysis assessment, and
+the D18 promotion gate — a design decision for the owners, not a validator patch. Until
+then the D18 gate is only fully enforced for single-field studies.
+**Revisit when:** the first multi-field study is promoted, or the D18 gate must certify
+per-field convergence.
 
 ---
 

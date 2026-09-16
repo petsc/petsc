@@ -110,7 +110,46 @@ post-run `analysis-report.json` fan-out (Stage 4). Raw solution output is still
 written by code-generation as the result data regardless — that is not the
 visualization agent's job.
 
-## Stages of work
+## Task triage (do this first)
+Before dispatching anyone, classify the request into a `task_kind` — a routing
+decision you make (like autonomy), not a contract field:
+- **`simulation`** (default) — a physical phenomenon to model and solve: a
+  PDE/ODE with governing equations, a domain, and boundary/initial conditions,
+  verified by MMS/convergence. Runs the full stages below.
+- **`programming`** — a direct PETSc coding task with no governing equation to
+  model: exercising data structures or APIs (e.g. `Vec`/`Mat` assembly,
+  `VecScatter`, `IS`, parallel I/O, a specific solver-API usage) with fixed
+  inputs and an exact expected output. No manufactured solution exists;
+  correctness is the program running cleanly and producing the output the request
+  describes. Takes the Programming lane.
+
+Classify from the request text: governing equations / BCs / a field to solve for
+⇒ `simulation`; "write a test/program that uses <PETSc API> …" with fixed inputs
+and outputs ⇒ `programming`. When unsure, ask the human; under `autonomous`,
+choose `simulation` only if a governing equation is present, else `programming`.
+The human may override.
+
+## Programming lane (task_kind = programming)
+Skip pde-modeling, numerical-analysis, MMS, and the case-index/MMS reuse gate —
+none apply. Instead:
+1. **Brief** → distill the request into a short task brief in the study dir: the
+   required behavior, the input options it must accept (e.g. `-N 10`), the
+   required MPI rank count if stated ("run with 3 processes" ⇒ `mpi_ranks: 3`),
+   and the exact program output expected (e.g. the gathered vector via `VecView`
+   on rank 0).
+2. **Generate & verify** → dispatch code-generation in direct-task mode: it
+   writes the program, builds, and runs it at the required rank count with the
+   required options, iterating on build/run errors (same `attempts[]` journal and
+   retry budget). Verification is a clean run producing the requested output —
+   NOT an MMS convergence study. It returns the same `results-manifest.json` (a
+   `runs[]` entry with the full `command` and `mpi_ranks`; no `convergence_study`).
+3. **Deliver** → the verified program and its manifest. numerical-analysis
+   assessment and visualization do not apply unless the request explicitly asks
+   for one. Build/run failures still route to code-generation; there is no
+   `plan`/`model` agent to route to, so an infeasible request is surfaced to the
+   human.
+
+## Stages of work (simulation lane)
 1. **Model** → dispatch pde-modeling: text → `problem-spec.json`.
 2. **Discretize** → dispatch numerical-analysis (consult the case index first —
    see Reuse & learning) → `numerical-plan.json`
@@ -159,7 +198,9 @@ After a full study, reflect and plan additional studies at greater detail:
 - Keep each specialist within its role; you own decomposition and sequencing.
 - Respect the autonomy level and its gates (see Human-in-the-loop); never
   fabricate human approval or treat silence as consent.
-- Verify before you scale: MMS must pass before large/production runs.
+- Verify before you scale: in the simulation lane, MMS must pass before
+  large/production runs; in the programming lane, the program must run cleanly and
+  produce the requested output.
 - Run ownership: code-generation runs the simulation binary; visualization runs
   its own standalone post-processors; you decide which runs happen.
 - Prefer parallel dispatch when stages are independent (e.g. draft a vis spec
