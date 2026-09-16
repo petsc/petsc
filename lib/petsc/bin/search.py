@@ -52,6 +52,10 @@ def ProcessMarkDown(text):
   text = re.sub(r'\([a-zA-Z0-9_]*\)=\n','',text)
   return text
 #
+def docsDir(sub):
+  '''Location of a documentation build subdirectory; see doc/makefile, which builds under $PETSC_ARCH/doc'''
+  return os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'doc', sub)
+
 def createDocsSchema():
   schema_builder = tantivy.SchemaBuilder()
   schema_builder.add_text_field("file", stored=True, tokenizer_name='raw')
@@ -72,12 +76,11 @@ def generateDocsIndex():
   # could maybe use TextAnalyzerBuilder()
 
   writer = index.writer()
-  for root, _, files in os.walk(os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'] + '-doc')):
-    if '_build/html/manual' in root: continue
+  for root, _, files in os.walk(docsDir(os.path.join('source', 'doc'))):
     if 'changes' in root: continue
     for file_name in files:
       if file_name == 'singleindex.md': continue
-      if file_name == 'index.md': continue
+      if file_name == 'index.md' and os.path.basename(root) != 'faq': continue  # the FAQ is a single index.md, the other index.md are tables of contents
       file_path = os.path.join(root, file_name)
       if not file_path.endswith('.md'): continue
       if file_path.endswith('RegisterAll.md'): continue
@@ -105,11 +108,7 @@ def searchDocsIndex(text: str, cnt: int = 10, md: bool = False):
   files = []
   for i in range(0,min(cnt,len(top))):
     file = searcher.doc(top[i][1])['path'][0]
-    if not md:
-      if file.find('manualpages') > -1:
-        file = file.replace('manualpages/','_build/html/manualpages/').replace('.md','.html')
-      else:
-        file = file.replace(os.environ['PETSC_ARCH'] + '-doc/',os.environ['PETSC_ARCH'] + '-doc/_build/html/').replace('.md','.html')
+    if not md: file = file.replace(docsDir(os.path.join('source', 'doc')), docsDir(os.path.join('_build', 'html'))).replace('.md','.html')
     files.append(file)
   return files
 
@@ -128,7 +127,7 @@ if __name__ ==  '__main__':
 
     browser = False
     if len(argv) > 1 and argv[0] == '--md':
-      files = searchDocsIndex(' '.join(sys.argv[2:]), cnt = cnt, md = True)
+      files = searchDocsIndex(' '.join(argv[1:]), cnt = cnt, md = True)
     elif len(argv) > 1 and argv[0] == '--browser':
       files = searchDocsIndex(' '.join(argv[1:]), cnt = cnt)
       browser = True
