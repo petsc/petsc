@@ -1290,20 +1290,66 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
   # functions are also conditionally compiled as CPP macros depending on configure options; getFunctions()
   # keeps whichever form was documented first so only one of each pair reaches the bindings
 
+  missingManualPage = False
   verbosePrint(verbose, '# PETSc classes')
   for i in classes.keys():
     verbosePrint(verbose, classes[i])
+    if not classes[i].name in manualpages:
+      print('Class ' + classes[i].name + ' is missing manual page')
+      missingManualPage = True
 
   verbosePrint(verbose, '# PETSc standalone functions')
   for i in funcs.keys():
     verbosePrint(verbose, funcs[i])
+    if not funcs[i].name in manualpages:
+      print('Function ' + funcs[i].name + ' ' + funcs[i].file + ' is missing manual page')
+      missingManualPage = True
 
   verbosePrint(verbose, '# PETSc typedefs for function prototypes')
   for i in functiontypedefs.keys():
     verbosePrint(verbose, functiontypedefs[i])
+    if not functiontypedefs[i].name in manualpages:
+      print('Function typedef ' + functiontypedefs[i].name + ' is missing manual page')
+      missingManualPage = True
 
+  verbosePrint(verbose, '# PETSc typedefs')
+  for i in typedefs.keys():
+    verbosePrint(verbose, typedefs[i])
+    name = typedefs[i].name
+    if name.startswith('*'): name = name[1:]
+    if not name in manualpages:
+      print('typedef ' + typedefs[i].name + ' is missing manual page')
+      missingManualPage = True
+
+  verbosePrint(verbose, 'PETSc function-like macros  --------------------------------')
   for i in defines.keys():
     verbosePrint(verbose, defines[i])
+    if not defines[i].name in manualpages:
+      print('define ' + defines[i].name + ' is missing manual page')
+      missingManualPage = True
+
+  verbosePrint(verbose, 'PETSc enums ------------------------------------------------')
+  for i in enums.keys():
+    verbosePrint(verbose, enums[i])
+    if not enums[i].name in manualpages:
+      print('enum ' + enums[i].name + ' is missing manual page')
+      missingManualPage = True
+
+  verbosePrint(verbose, 'PETSc string enums -----------------------------------------')
+  for i in senums.keys():
+    verbosePrint(verbose, senums[i])
+    if not senums[i].name in manualpages:
+      print('string enum ' + senums[i].name + ' is missing manual page')
+      missingManualPage = True
+
+  verbosePrint(verbose, 'PETSc structs ----------------------------------------------')
+  for i in structs.keys():
+    verbosePrint(verbose, structs[i])
+    if not structs[i].name in manualpages:
+      print('struct ' + structs[i].name + ' is missing manual page')
+      missingManualPage = True
+
+  if missingManualPage: raise RuntimeError('Ensure all ' + {'petsc': 'PETSc', 'slepc': 'SLEPc'}.get(pkgname, pkgname) + ' API elements have manual pages before proceeding')
 
   # check seealso for manual pages that they actually point to a valid manual page
   # this will be turned on later
