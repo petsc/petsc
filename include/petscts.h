@@ -584,15 +584,12 @@ PETSC_EXTERN PetscErrorCode TSSetStepNumber(TS, PetscInt);
 
   Level: beginner
 
-  Note:
-  The deprecated `TSRHSFunction` still works as a replacement for `TSRHSFunctionFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunctionFn`,
 `TSIJacobianFn`, `TSRHSJacobianFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSRHSFunctionFn(TS ts, PetscReal t, Vec u, Vec F, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSRHSFunctionFn *TSRHSFunction;
+PETSC_EXTERN_TYPEDEF typedef TSRHSFunctionFn *TSRHSFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSRHSFunctionFn*", );
 
 /*S
   TSRHSJacobianFn - A prototype of a `TS` right-hand-side Jacobian evaluation function that would be passed to `TSSetRHSJacobian()`
@@ -607,15 +604,12 @@ PETSC_EXTERN_TYPEDEF typedef TSRHSFunctionFn *TSRHSFunction;
 
   Level: beginner
 
-  Note:
-  The deprecated `TSRHSJacobian` still works as a replacement for `TSRHSJacobianFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `DMTSSetRHSJacobian()`, `TSRHSFunctionFn`,
 `TSIFunctionFn`, `TSIJacobianFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSRHSJacobianFn(TS ts, PetscReal t, Vec u, Mat Amat, Mat Pmat, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSRHSJacobianFn *TSRHSJacobian;
+PETSC_EXTERN_TYPEDEF typedef TSRHSJacobianFn *TSRHSJacobian PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSRHSJacobianFn*", );
 
 /*S
   TSRHSJacobianPFn - A prototype of a function that computes the Jacobian of G w.r.t. the parameters P where
@@ -630,14 +624,11 @@ PETSC_EXTERN_TYPEDEF typedef TSRHSJacobianFn *TSRHSJacobian;
 
   Level: beginner
 
-  Note:
-  The deprecated `TSRHSJacobianP` still works as a replacement for `TSRHSJacobianPFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetRHSJacobianP()`, `TSGetRHSJacobianP()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSRHSJacobianPFn(TS ts, PetscReal t, Vec U, Mat A, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSRHSJacobianPFn *TSRHSJacobianP;
+PETSC_EXTERN_TYPEDEF typedef TSRHSJacobianPFn *TSRHSJacobianP PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSRHSJacobianPFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetRHSFunction(TS, Vec, TSRHSFunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode TSGetRHSFunction(TS, Vec *, TSRHSFunctionFn **, PetscCtxRt);
@@ -656,14 +647,11 @@ PETSC_EXTERN PetscErrorCode TSRHSJacobianSetReuse(TS, PetscBool);
 
   Level: advanced
 
-  Note:
-  The deprecated `TSSolutionFunction` still works as a replacement for `TSSolutionFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetSolutionFunction()`, `DMTSSetSolutionFunction()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSSolutionFn(TS ts, PetscReal t, Vec u, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSSolutionFn *TSSolutionFunction;
+PETSC_EXTERN_TYPEDEF typedef TSSolutionFn *TSSolutionFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSSolutionFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS, TSSolutionFn *, PetscCtx);
 
@@ -678,14 +666,11 @@ PETSC_EXTERN PetscErrorCode TSSetSolutionFunction(TS, TSSolutionFn *, PetscCtx);
 
   Level: advanced
 
-  Note:
-  The deprecated `TSForcingFunction` still works as a replacement for `TSForcingFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetForcingFunction()`, `DMTSSetForcingFunction()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSForcingFn(TS ts, PetscReal t, Vec f, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSForcingFn *TSForcingFunction;
+PETSC_EXTERN_TYPEDEF typedef TSForcingFn *TSForcingFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSForcingFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFn *, PetscCtx);
 
@@ -702,14 +687,11 @@ PETSC_EXTERN PetscErrorCode TSSetForcingFunction(TS, TSForcingFn *, PetscCtx);
 
   Level: beginner
 
-  Note:
-  The deprecated `TSIFunction` still works as a replacement for `TSIFunctionFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetIFunction()`, `DMTSSetIFunction()`, `TSIJacobianFn`, `TSRHSFunctionFn`, `TSRHSJacobianFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSIFunctionFn(TS ts, PetscReal t, Vec U, Vec U_t, Vec F, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSIFunctionFn *TSIFunction;
+PETSC_EXTERN_TYPEDEF typedef TSIFunctionFn *TSIFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSIFunctionFn*", );
 
 /*S
   TSIJacobianFn - A prototype of a `TS` Jacobian evaluation function that would be passed to `TSSetIJacobian()`
@@ -726,14 +708,11 @@ PETSC_EXTERN_TYPEDEF typedef TSIFunctionFn *TSIFunction;
 
   Level: beginner
 
-  Note:
-  The deprecated `TSIJacobian` still works as a replacement for `TSIJacobianFn` *.
-
 .seealso: [](ch_ts), `TSSetIJacobian()`, `DMTSSetIJacobian()`, `TSIFunctionFn`, `TSRHSFunctionFn`, `TSRHSJacobianFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSIJacobianFn(TS ts, PetscReal t, Vec U, Vec U_t, PetscReal a, Mat Amat, Mat Pmat, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSIJacobianFn *TSIJacobian;
+PETSC_EXTERN_TYPEDEF typedef TSIJacobianFn *TSIJacobian PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSIJacobianFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS, Vec, TSIFunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode TSGetIFunction(TS, Vec *, TSIFunctionFn **, PetscCtxRt);
@@ -754,14 +733,11 @@ PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS, Mat *, Mat *, TSIJacobianFn **, P
 
   Level: advanced
 
-  Note:
-  The deprecated `TSI2Function` still works as a replacement for `TSI2FunctionFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetI2Function()`, `DMTSSetI2Function()`, `TSIFunctionFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSI2FunctionFn(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, Vec F, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSI2FunctionFn *TSI2Function;
+PETSC_EXTERN_TYPEDEF typedef TSI2FunctionFn *TSI2Function PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSI2FunctionFn*", );
 
 /*S
   TSI2JacobianFn - A prototype of a `TS` implicit Jacobian evaluation function for 2nd order systems that would be passed to `TSSetI2Jacobian()`
@@ -780,14 +756,11 @@ PETSC_EXTERN_TYPEDEF typedef TSI2FunctionFn *TSI2Function;
 
   Level: advanced
 
-  Note:
-  The deprecated `TSI2Jacobian` still works as a replacement for `TSI2JacobianFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`, `DMTSSetI2Jacobian()`, `TSIFunctionFn`, `TSIJacobianFn`, `TSRHSFunctionFn`, `TSRHSJacobianFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSI2JacobianFn(TS ts, PetscReal t, Vec U, Vec U_t, Vec U_tt, PetscReal v, PetscReal a, Mat J, Mat Jac, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSI2JacobianFn *TSI2Jacobian;
+PETSC_EXTERN_TYPEDEF typedef TSI2JacobianFn *TSI2Jacobian PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSI2JacobianFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetI2Function(TS, Vec, TSI2FunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode TSGetI2Function(TS, Vec *, TSI2FunctionFn **, PetscCtxRt);
@@ -894,14 +867,11 @@ PETSC_EXTERN PetscErrorCode DMTSSetI2JacobianContextDestroy(DM, PetscCtxDestroyF
 
   Level: advanced
 
-  Note:
-  The deprecated `TSTransientVariable` still works as a replacement for `TSTransientVariableFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSSetTransientVariable()`, `DMTSSetTransientVariable()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSTransientVariableFn(TS ts, Vec p, Vec c, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSTransientVariableFn *TSTransientVariable;
+PETSC_EXTERN_TYPEDEF typedef TSTransientVariableFn *TSTransientVariable PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSTransientVariableFn*", );
 
 PETSC_EXTERN PetscErrorCode TSSetTransientVariable(TS, TSTransientVariableFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMTSSetTransientVariable(DM, TSTransientVariableFn *, PetscCtx);
@@ -942,14 +912,11 @@ PETSC_EXTERN PetscErrorCode DMTSSetIJacobianSerialize(DM, PetscErrorCode (*)(Pet
 
   Level: beginner
 
-  Note:
-  The deprecated `DMDATSRHSFunctionLocal` still works as a replacement for `DMDATSRHSFunctionLocalFn` *.
-
 .seealso: `DMDA`, `DMDATSSetRHSFunctionLocal()`, `TSRHSFunctionFn`, `DMDATSRHSJacobianLocalFn`, `DMDATSIJacobianLocalFn`, `DMDATSIFunctionLocalFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDATSRHSFunctionLocalFn(DMDALocalInfo *info, PetscReal t, void *x, void *f, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef DMDATSRHSFunctionLocalFn *DMDATSRHSFunctionLocal;
+PETSC_EXTERN_TYPEDEF typedef DMDATSRHSFunctionLocalFn *DMDATSRHSFunctionLocal PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "DMDATSRHSFunctionLocalFn*", );
 
 /*S
   DMDATSRHSJacobianLocalFn - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetRHSJacobianLocal()`
@@ -964,14 +931,11 @@ PETSC_EXTERN_TYPEDEF typedef DMDATSRHSFunctionLocalFn *DMDATSRHSFunctionLocal;
 
   Level: beginner
 
-  Note:
-  The deprecated `DMDATSRHSJacobianLocal` still works as a replacement for `DMDATSRHSJacobianLocalFn` *.
-
 .seealso: `DMDA`, `DMDATSSetRHSJacobianLocal()`, `TSRHSJacobianFn`, `DMDATSRHSFunctionLocalFn`, `DMDATSIJacobianLocalFn`, `DMDATSIFunctionLocalFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDATSRHSJacobianLocalFn(DMDALocalInfo *info, PetscReal t, void *x, Mat J, Mat B, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef DMDATSRHSJacobianLocalFn *DMDATSRHSJacobianLocal;
+PETSC_EXTERN_TYPEDEF typedef DMDATSRHSJacobianLocalFn *DMDATSRHSJacobianLocal PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "DMDATSRHSJacobianLocalFn*", );
 
 /*S
   DMDATSIFunctionLocalFn - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetIFunctionLocal()`
@@ -986,14 +950,11 @@ PETSC_EXTERN_TYPEDEF typedef DMDATSRHSJacobianLocalFn *DMDATSRHSJacobianLocal;
 
   Level: beginner
 
-  Note:
-  The deprecated `DMDATSIFunctionLocal` still works as a replacement for `DMDATSIFunctionLocalFn` *.
-
 .seealso: `DMDA`, `DMDATSSetIFunctionLocal()`, `DMDATSIJacobianLocalFn`, `TSIFunctionFn`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDATSIFunctionLocalFn(DMDALocalInfo *info, PetscReal t, void *x, void *xdot, void *imode, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef DMDATSIFunctionLocalFn *DMDATSIFunctionLocal;
+PETSC_EXTERN_TYPEDEF typedef DMDATSIFunctionLocalFn *DMDATSIFunctionLocal PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "DMDATSIFunctionLocalFn*", );
 
 /*S
   DMDATSIJacobianLocalFn - A prototype of a local residual evaluation function for use with `DMDA` that would be passed to `DMDATSSetIJacobianLocal()`
@@ -1010,14 +971,11 @@ PETSC_EXTERN_TYPEDEF typedef DMDATSIFunctionLocalFn *DMDATSIFunctionLocal;
 
   Level: beginner
 
-  Note:
-  The deprecated `DMDATSIJacobianLocal` still works as a replacement for `DMDATSIJacobianLocalFn` *.
-
 .seealso: `DMDA`, `DMDATSSetIJacobianLocal()`, `TSIJacobianFn`, `DMDATSIFunctionLocalFn`, `DMDATSRHSFunctionLocalFn`, `DMDATSRHSJacobianlocal()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode DMDATSIJacobianLocalFn(DMDALocalInfo *info, PetscReal t, void *x, void *xdot, PetscReal shift, Mat J, Mat B, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef DMDATSIJacobianLocalFn *DMDATSIJacobianLocal;
+PETSC_EXTERN_TYPEDEF typedef DMDATSIJacobianLocalFn *DMDATSIJacobianLocal PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "DMDATSIJacobianLocalFn*", );
 
 PETSC_EXTERN PetscErrorCode DMDATSSetRHSFunctionLocal(DM, InsertMode, DMDATSRHSFunctionLocalFn *, void *);
 PETSC_EXTERN PetscErrorCode DMDATSSetRHSJacobianLocal(DM, DMDATSRHSJacobianLocalFn *, void *);
@@ -1320,15 +1278,12 @@ typedef const char *TSGLLEAcceptType;
 
   Level: beginner
 
-  Note:
-  The deprecated `TSGLLEAcceptFunction` still works as a replacement for `TSGLLEAcceptFn` *
-
 .seealso: [](ch_ts), `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `TSIFunctionFn`,
 `TSIJacobianFn`, `TSRHSJacobianFn`, `TSGLLEAcceptRegister()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSGLLEAcceptFn(TS ts, PetscReal nt, PetscReal h, const PetscReal enorm[], PetscBool *accept);
 
-PETSC_EXTERN_TYPEDEF typedef TSGLLEAcceptFn *TSGLLEAcceptFunction;
+PETSC_EXTERN_TYPEDEF typedef TSGLLEAcceptFn *TSGLLEAcceptFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSGLLEAcceptFn*", );
 
 PETSC_EXTERN PetscErrorCode TSGLLEAcceptRegister(const char[], TSGLLEAcceptFn *);
 
@@ -1698,14 +1653,11 @@ PETSC_EXTERN PetscErrorCode TSAlpha2GetParams(TS, PetscReal *, PetscReal *, Pets
 
   Level: intermediate
 
-  Note:
-  The deprecated `TSAlpha2Predictor` still works as a replacement for `TSAlpha2PredictorFn` *.
-
 .seealso: [](ch_ts), `TS`, `TSAlpha2SetPredictor()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSAlpha2PredictorFn(TS ts, Vec X0, Vec V0, Vec A0, Vec X1, PetscCtx ctx);
 
-PETSC_EXTERN_TYPEDEF typedef TSAlpha2PredictorFn *TSAlpha2Predictor;
+PETSC_EXTERN_TYPEDEF typedef TSAlpha2PredictorFn *TSAlpha2Predictor PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSAlpha2PredictorFn*", );
 
 PETSC_EXTERN PetscErrorCode TSAlpha2SetPredictor(TS, TSAlpha2PredictorFn *, void *);
 

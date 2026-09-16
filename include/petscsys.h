@@ -1314,16 +1314,12 @@ PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 
   `PetscErrorCodeFn` is similar to `PetscVoidFn` but should be used when the function returns a `PetscErrorCode`
 
-  The deprecated `PetscVoidFunction` works as a replacement for `PetscVoidFn` *.
-
-  The deprecated `PetscVoidStarFunction` works as a replacement for `PetscVoidFn` **.
-
 .seealso: `PetscErrorCodeFn`, `PetscObject`, `PetscObjectDestroy()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscVoidFn(void);
 
-PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction;
-PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
+PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "PetscVoidFn*", );
+PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "PetscVoidFn**", );
 
 /*S
   PetscErrorCodeFn - a function typedef that represents abstractly a function that returns a PETSc error code

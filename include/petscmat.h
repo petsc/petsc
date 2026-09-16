@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat, MatFactorType);
 .seealso: `Mat`, `MatGetFactor()`, `MatSolverType`, `MatFactorType`, `MatSolverTypeRegister()`, `MatSolverTypeGet()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatSolverFn(Mat, MatFactorType, Mat *);
-PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction;
+PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatSolverFn*", );
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType, MatType, MatFactorType, MatSolverFn *);
 PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType, MatType, MatFactorType, PetscBool *, PetscBool *, MatSolverFn **);
@@ -2502,7 +2502,7 @@ PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 .seealso: `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
-PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
+PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatHtoolKernelFn*", );
 
 PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernelFn *, void *, Mat *);
 PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat, MatHtoolKernelFn *, void *);

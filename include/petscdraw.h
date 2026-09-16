@@ -368,7 +368,7 @@ PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
 .seealso: `PetscDraw`, `PetscSetXIOErrorHandler()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void                    PetscXIOErrorHandlerFn(void *display);
-PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandlerFn *PetscXIOErrorHandler;
+PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandlerFn *PetscXIOErrorHandler PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "PetscXIOErrorHandlerFn*", );
 PETSC_EXTERN PetscXIOErrorHandlerFn                 *PetscSetXIOErrorHandler(PetscXIOErrorHandlerFn *);
 
   /*MC
