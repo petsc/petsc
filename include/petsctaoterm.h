@@ -173,7 +173,7 @@ PETSC_EXTERN PetscErrorCode TaoTermGetCreateHessianMode(TaoTerm, PetscBool *, Ma
           `TaoTermGradientFn`,
           `TaoTermHessianFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermObjectiveFn)(TaoTerm term, Vec x, Vec params, PetscReal *value);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TaoTermObjectiveFn(TaoTerm term, Vec x, Vec params, PetscReal *value);
 
 /*S
   TaoTermObjectiveAndGradientFn - A prototype of a `TaoTerm` function that would be passed to `TaoTermShellSetObjectiveAndGradient()`
@@ -195,7 +195,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermObjectiveFn)(TaoTerm term, Ve
           `TaoTermGradientFn`,
           `TaoTermHessianFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermObjectiveAndGradientFn)(TaoTerm term, Vec x, Vec params, PetscReal *value, Vec g);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TaoTermObjectiveAndGradientFn(TaoTerm term, Vec x, Vec params, PetscReal *value, Vec g);
 
 /*S
   TaoTermGradientFn - A prototype of a `TaoTerm` function that would be passed to `TaoTermShellSetGradient()`
@@ -216,7 +216,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermObjectiveAndGradientFn)(TaoTe
           `TaoTermObjectiveAndGradientFn`,
           `TaoTermHessianFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermGradientFn)(TaoTerm term, Vec x, Vec params, Vec g);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TaoTermGradientFn(TaoTerm term, Vec x, Vec params, Vec g);
 
 /*S
   TaoTermHessianFn - A prototype of a `TaoTerm` function that would be passed to `TaoTermShellSetHessian()`
@@ -238,7 +238,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermGradientFn)(TaoTerm term, Vec
           `TaoTermObjectiveAndGradientFn`,
           `TaoTermGradientFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TaoTermHessianFn)(TaoTerm term, Vec x, Vec params, Mat H, Mat Hpre);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TaoTermHessianFn(TaoTerm term, Vec x, Vec params, Mat H, Mat Hpre);
 
 PETSC_EXTERN PetscErrorCode TaoTermComputeObjective(TaoTerm, Vec, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode TaoTermComputeGradient(TaoTerm, Vec, Vec, Vec);
