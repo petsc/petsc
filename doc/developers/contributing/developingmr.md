@@ -95,7 +95,10 @@ $ git checkout -b yourname/fix-component-name origin/main
   These files do not define or launch subagents, choose a model, or implement the PETSc workflow; the instructions remain in `SKILL.md`.
   Claude Code uses the shared skills without needing this metadata.
 
-  One of these skills integrates [CodeGraph](https://colbymchenry.github.io/codegraph/) with PETSc source navigation and review.
+  Subagent definitions live in `.agents/agents`, which Claude Code finds through the `.claude/agents` symbolic link; they are Claude Code-specific, though another tool can be told to read one and follow it as a role.
+  PETSc defines `petsc-search-docs`, which runs in its own context and answers documentation questions from a local documentation build, so the pages it reads never enter the main session; the `/petsc-search-docs` skill dispatches to it.
+
+  One of the skills integrates [CodeGraph](https://colbymchenry.github.io/codegraph/) with PETSc source navigation and review.
   CodeGraph is third-party software; it is not maintained or vetted by the PETSc team.
   Install the CodeGraph CLI with `npx @colbymchenry/codegraph`.
   The installer is interactive and prompts to add `codegraph` to your PATH (required) and whether to configure globally or per-project.
