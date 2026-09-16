@@ -29,12 +29,10 @@ def verbosePrint(verbose, text):
 
 classes = {}
 funcs = {}           # standalone functions like PetscInitialize()
-allfuncs = set()     # both class and standalone functions, used to prevent duplicates
 enums = {}
 senums = {}          # like enums except strings instead of integer values for enumvalue
 typedefs = {}
 functiontypedefs = {}  # for example SNESFunctionFn
-aliases = {}
 structs = {}
 includefiles = {}
 mansecs = {}         # mansec[mansecname] = set(all submansecnames in mansecname)
@@ -304,7 +302,7 @@ def getIncludeFiles(filename,pkgname):
 
 badSeealso = False
 
-def processManualPage(name, lines):
+def processManualPage(name, lines, filename):
   '''Processes the manual page associated with a name'''
   global badSeealso
   cnt = 0
@@ -314,7 +312,7 @@ def processManualPage(name, lines):
     for flag in ['E', 'J', 'S', 'M', '@']:
       if lastline == -1 and i.find(flag + '*/') > -1:
         lastline = cnt + 1
-        if lastline > 3:
+        if lastline > 4:
            #print('It is unlikely ' +  name + ' has a manual page')
            return
       elif firstline == -1 and i.find('/*' + flag) > -1:
@@ -331,9 +329,11 @@ def processManualPage(name, lines):
   lines.reverse()
   text = lines
   top = lines[0].strip(' ')
+  if name.startswith('*'): name = name[1:]
   loc = top.find(name)
   if not loc == 0:
-    print('First line of manual page does not start with ' + name)
+    print('First line of manual page does not start with ' + name + ' in ' + filename)
+    print(''.join(lines))
     badSeealso = True
     return
   cnt = 0
@@ -418,20 +418,30 @@ def processManualPage(name, lines):
   manualpages[name] = ManualPage(name, 'unknown', text, seealsos)
   #print(seealso)
 
+def skipMultilineComment(f, line, lines):
+  '''Consumes the rest of a multiline comment, accumulating its lines in lines, and returns the last line read'''
+  if line.find('/*') > -1 and line.find('*/') == -1:
+    while line.find('*/') == -1:
+      line = f.readline().lstrip(' ')
+      if not line: break
+      lines.insert(0,line)
+  return line
+
 def getEnums(filename):
   import re
-  regtypedef  = re.compile(r'typedef [ ]*enum')
+  regtypedef  = re.compile(r'typedef\s+enum')
   reg         = re.compile(r'}')
   regname     = re.compile(r'}[ A-Za-z0-9]*')
 
   file = os.path.basename(filename).replace('types.h','.h')
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   submansec = None
   mansec = None
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regtypedef.search(line)
     if fl:
@@ -460,25 +470,26 @@ def getEnums(filename):
               ivalues.append(i)
 
           enums[name] = Enum(name,mansec,file,ivalues)
-          processManualPage(name, lines)
+          processManualPage(name, lines, filename)
           lines = []
           break
-        line = f.readline()
+        line = f.readline().lstrip(' ')
         struct = struct + line
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
 def getSenums(filename):
   import re
-  regdefine   = re.compile(r'typedef const char \*[A-Za-z]*;')
+  regdefine   = re.compile(r'^typedef const char \*[A-Za-z]*;')
   file = os.path.basename(filename).replace('types.h','.h')
   mansec = None
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,None)
     fl = regdefine.search(line)
     if fl:
@@ -490,23 +501,24 @@ def getSenums(filename):
         d[values[1]] = values[2]
         line = regblank.sub(" ",f.readline().strip())
       senums[senum]             = Senum(senum,mansec,file,d)
-      processManualPage(senum, lines)
+      processManualPage(senum, lines, filename)
       lines = []
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
 def getDefines(filename):
   import re
   file = os.path.basename(filename).replace('types.h','.h')
-  regdefine   = re.compile(r'#define [A-Za-z0-9]*\([A-Za-z0-9_, ]*\) ')
+  regdefine   = re.compile(r'^#define [A-Za-z0-9]*\([A-Za-z0-9_, ]*\) ')
   submansec = None
   mansec = None
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regdefine.search(line)
     if fl:
@@ -514,35 +526,44 @@ def getDefines(filename):
       args = fl.group(0).split('(')[1][:-2]
       args = args.split(', ')
       defines[name] = Define(name,mansec,file,args)
-      processManualPage(name, lines)
+      processManualPage(name, lines, filename)
       lines = []
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
 def getTypedefs(filename):
   import re
   file = os.path.basename(filename).replace('types.h','.h')
-  regdefine   = re.compile(r'typedef [A-Za-z0-9_]* [ ]*[A-Za-z0-9_]*;')
+  regdefine   = re.compile(r'typedef (?:unsigned )?[A-Za-z0-9_]*\s+(?:\*)?[A-Za-z0-9_]*;')
   submansec = None
   mansec = None
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
+    if line.find('PETSC_DEPRECATED_TYPEDEF') > -1:
+      line = f.readline().lstrip(' ')
+      lines.insert(0,line)
+      continue
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regdefine.search(line)
     if fl:
-      typedef = fl.group(0).split()[2][0:-1];
+      if line.find('unsigned') > -1: typedef = fl.group(0).split()[3][0:-1];
+      else: typedef = fl.group(0).split()[2][0:-1];
       if typedef in typedefs:
         typedefs[typedef].opaque = True # found more than once so cannot generate Fortran code from it
         pass
       else:
-        typedefs[typedef] = Typedef(typedef,mansec,file,fl.group(0).split()[1])
-      processManualPage(typedef, lines)
+        if line.find('unsigned') > -1: typedefs[typedef] = Typedef(typedef,mansec,file,' '.join(fl.group(0).split()[1:3]))
+        else:  typedefs[typedef] = Typedef(typedef,mansec,file,fl.group(0).split()[1])
+      if line.find('unsigned') > -1: typedefs[typedef].opaque = True
+      processManualPage(typedef, lines, filename)
       lines = []
-    line = f.readline()
+      if typedef.startswith('*'): typedefs[typedef].opaque = True
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
@@ -554,9 +575,10 @@ def getFunctionTypedefs(filename):
   mansec = None
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regdefine.search(line)
     if fl:
@@ -565,25 +587,26 @@ def getFunctionTypedefs(filename):
       fun.submansec   = submansec
       fun.includefile = os.path.basename(filename)
       functiontypedefs[fun.name] = fun
-      processManualPage(fun.name, lines)
+      processManualPage(fun.name, lines, filename)
       lines = []
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
 def getStructs(filename):
   import re
   file = os.path.basename(filename).replace('types.h','.h')
-  regtypedef  = re.compile(r'^typedef [ ]*struct {')
+  regtypedef  = re.compile(r'^typedef\s+struct {')
   reg         = re.compile(r'}')
   regname     = re.compile(r'}[ A-Za-z]*')
   submansec = None
   mansec = None
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regtypedef.search(line)
     opaque = False
@@ -610,30 +633,31 @@ def getStructs(filename):
           values = values.split(";")
           ivalues = []
           for i in values:
-            ivalues.append(Record(i.strip()))
+            ivalues.append(Record(i.lstrip(' ')))
           structs[name] = Struct(name,mansec,file,opaque,ivalues)
-          processManualPage(name, lines)
+          processManualPage(name, lines, filename)
           lines = []
           break
-        line = f.readline()
+        line = f.readline().lstrip(' ')
         struct = struct + line
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
 def getClasses(filename):
   import re
-  regclass    = re.compile(r'typedef struct _[np]_[A-Za-z_]*[ ]*\*')
-  regnclass    = re.compile(r'typedef struct _n_[A-Za-z_]*[ ]*\*')
+  regclass    = re.compile(r'^typedef struct _[np]_[A-Za-z_]*[ ]*\*')
+  regnclass    = re.compile(r'^typedef struct _n_[A-Za-z_]*[ ]*\*')
   regsemi     = re.compile(r';')
   submansec = None
   mansec = None
   file = os.path.basename(filename).replace('types.h','.h')
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     mansec,submansec = findmansec(line,mansec,submansec)
     fl = regclass.search(line)
     gl = regnclass.search(line)
@@ -649,9 +673,9 @@ def getClasses(filename):
       classes[struct].mansec = mansec
       classes[struct].includefile = file
       if gl: classes[struct].petscobject = False
-      processManualPage(struct, lines)
+      processManualPage(struct, lines, filename)
       lines = []
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
@@ -704,10 +728,9 @@ def getpossiblefunctions(pkgname):
 def parseFunction(line):
   '''Parses a function declaration such as SNESFunctionFn(SNES snes, Vec u, Vec F, void *ctx)'''
   import re
-  regfun      = re.compile(r'^[static inline]*PetscErrorCode ')
-  regfunvoid  = re.compile(r'^[static inline]*void ')
+  regfun      = re.compile(r'^(?:static inline )?PetscErrorCode ')
+  regfunvoid  = re.compile(r'^(?:static inline )?void ')
   regarg      = re.compile(r'\([A-Za-z0-9*_\[\]]*[,\) ]')
-  regerror    = re.compile(r'PetscErrorCode')
   reg         = re.compile(r' ([*])*[a-zA-Z0-9_]*([\[\]]*)')
   regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')
 
@@ -722,7 +745,7 @@ def parseFunction(line):
   regfncntnptrarrays = re.compile(r'\(\*[A-Za-z0-9]*\[[A-Za-z0-9]*\]\)')
   regfncntnptrnoname = re.compile(r'\(\*\)')
 
-  rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
+  rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','va_list','Ceed']
   #
   # search through list BACKWARDS to get the longest match
   #
@@ -803,9 +826,8 @@ def parseFunction(line):
 def getFunctions(mansec, functiontoinclude, filename):
   '''Appends the functions found in filename to their associated class classes[i], or funcs[] if they are classless'''
   import re
-  regfun      = re.compile(r'^[static inline]*PetscErrorCode ')
-  regarg      = re.compile(r'\([A-Za-z0-9*_\[\]]*[,\) ]')
-  regerror    = re.compile(r'PetscErrorCode')
+  regfun      = re.compile(r'^(?:static inline )?Petsc(ErrorCode|Byte) ')
+  regarg      = re.compile(r'\([A-Za-z0-9*_\[\]\.]*[,\) ]')
   reg         = re.compile(r' ([*])*[a-zA-Z0-9_]*([\[\]]*)')
   regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')
 
@@ -820,7 +842,7 @@ def getFunctions(mansec, functiontoinclude, filename):
   regfncntnptrarrays = re.compile(r'\(\*[A-Za-z0-9]*\[[A-Za-z0-9]*\]\)')
   regfncntnptrnoname = re.compile(r'\(\*\)')
 
-  rejects     = ['...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
+  rejects     = ['<','(*)','(**)','off_t','va_list','Ceed']
   #
   # search through list BACKWARDS to get the longest match
   #
@@ -829,21 +851,29 @@ def getFunctions(mansec, functiontoinclude, filename):
   classlist.reverse()
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
+    line = skipMultilineComment(f, line, lines)
     fl = regfun.search(line)
     if fl:
       opaque = False
       opaquestub = False
+      # we cannot generate for other languages functions that do not return PetscErrorCode
+      if line.find('PetscErrorCode') == -1:
+        opaque = True
+        opaquestub = True
+      if line.find('...') > -1:
+        opaque = True
+        opaquestub = True
       penss = False
       if  line[0:line.find('(')].find('_') > -1:
-        line = f.readline()
+        line = f.readline().lstrip(' ')
         lines.insert(0,line)
         continue
       line = line.replace('PETSC_UNUSED ','')
       line = line.replace('PETSC_RESTRICT ','')
-      line = line.strip()
+      line = line.strip() # remove newline
       if line.endswith(' PeNS'):
         opaque = True
         penss  = True
@@ -853,23 +883,22 @@ def getFunctions(mansec, functiontoinclude, filename):
         penss      = True
         line = line[0:-6]
       if line.endswith(';'):
-        line = f.readline()
+        line = f.readline().lstrip(' ')
         lines.insert(0,line)
         continue
       if not line.endswith(')'):
-        line = f.readline()
+        line = f.readline().lstrip(' ')
         lines.insert(0,line)
         continue
       line = regfun.sub("",line)
       line = regcomment.sub("",line)
       line = line.replace("\n","")
-      line = line.strip()
+      line = line.lstrip(' ')
       name = line[:line.find("(")]
-      if not name in functiontoinclude or name in allfuncs:
-        line = f.readline()
+      if (not name in functiontoinclude and not filename.endswith('.h')) or name in manualpages:
+        line = f.readline().lstrip(' ')
         lines.insert(0,line)
         continue
-
       # find arguments that return a function pointer (**xxx)
       fnctnptrptrs = regfncntnptrptr.findall(line)
       if fnctnptrptrs:
@@ -919,7 +948,8 @@ def getFunctions(mansec, functiontoinclude, filename):
           if line.find(i) > -1:
             reject = 1
         if  not reject:
-          fun.includefile = functiontoinclude[name]
+          if name in functiontoinclude: fun.includefile = functiontoinclude[name]
+          else: fun.includefile = os.path.basename(filename)
           args = line[line.find("(") + 1:line.find(")")]
           if args != 'void':
             for i in ['FILE','hid_t','MPI_File','MPI_Offset','MPI_Info','PETSC_UINTPTR_T','LinkMode']:
@@ -982,7 +1012,6 @@ def getFunctions(mansec, functiontoinclude, filename):
 
           #print('Opaqueness of function ' + fun.name + ' ' + str(fun.opaque) + ' ' + str(fun.opaquestub))
           # add function to appropriate class
-          allfuncs.add(name)
           notfound = True
           for i in classlist:
             if name.lower().startswith(i.lower()):
@@ -991,10 +1020,10 @@ def getFunctions(mansec, functiontoinclude, filename):
               break
           if notfound:
             funcs[name] = fun
-          processManualPage(name, lines)
+          processManualPage(name, lines, filename)
           lines = []
 
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
@@ -1003,33 +1032,33 @@ def getSenumValueManualPage(mansec, filename):
      These are standalone and may not have code associated with them
   '''
   import re
-  regdefine   = re.compile(r' [A-Za-z][A-Za-z0-9]* ')
+  regdefine   = re.compile(r'[A-Za-z][A-Za-z0-9]* ')
   f = open(filename)
   lines = []
-  line = f.readline()
+  line = f.readline().lstrip(' ')
   lines.insert(0,line)
   while line:
     if line.find('/*MC') > -1:
-      line = f.readline()
+      line = f.readline().lstrip(' ')
       lines.insert(0,line)
       fl = regdefine.search(line)
       if fl:
-        senumvalue = fl.group(0)[1:-1]
+        senumvalue = fl.group(0).strip()
         if senumvalue in senumvalues:
-          line = f.readline()
+          line = f.readline().lstrip(' ')
           lines.insert(0,line)
           while line:
-            line = f.readline()
+            line = f.readline().lstrip(' ')
             lines.insert(0,line)
             if line.find('M*/') > -1:
-              processManualPage(senumvalue, lines)
+              processManualPage(senumvalue, lines, filename)
               lines = []
               line = None
-    line = f.readline()
+    line = f.readline().lstrip(' ')
     lines.insert(0,line)
   f.close()
 
-ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
+ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems', 'mex-scripts', 'benchmarks']
 
 def getAPI(directory,pkgname = 'petsc',verbose = False):
   global typedefs
@@ -1114,12 +1143,6 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
 
   if pkgname == 'petsc':
     # a few special cases that must be handled manually
-    typedefs['PetscBool'] = Typedef('PetscBool','sys','petscsys.h','PetscBool')
-    classes['PetscNull'] = Class('PetscNull')
-    classes['PetscNull'].includefile = 'petscsys.h'
-    classes['PetscNull'].mansec = 'sys'
-    classes['PetscNull'].submansec = 'sys'
-    classes['PetscNull'].petscobject = False
     classes['PetscObject'].petscobject = False
     classes['PetscObject'].includefile = 'petscsys.h'
 
@@ -1250,6 +1273,23 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
                                                   Argument('n',             'PetscInt',    stars = 1),
                                                   Argument('set',           'PetscBool',   stars = 1)]
 
+  # All values for a given enum must be provided or none of them
+  for i in enums.keys():
+    givenvalue = 0
+    for j in enums[i].values:
+      if j.find('=') > -1:
+        if givenvalue == -1:
+          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
+        givenvalue = 1
+      else:
+        if givenvalue == 1:
+          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
+        givenvalue = -1
+
+  # some CPP function-like macros are handled as if they were true functions and a small number of
+  # functions are also conditionally compiled as CPP macros depending on configure options; getFunctions()
+  # keeps whichever form was documented first so only one of each pair reaches the bindings
+
   verbosePrint(verbose, '# PETSc classes')
   for i in classes.keys():
     verbosePrint(verbose, classes[i])
@@ -1262,7 +1302,6 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
   for i in functiontypedefs.keys():
     verbosePrint(verbose, functiontypedefs[i])
 
-  verbosePrint(verbose, 'Function-like macros  --------------------------------')
   for i in defines.keys():
     verbosePrint(verbose, defines[i])
 
@@ -1279,24 +1318,10 @@ def getAPI(directory,pkgname = 'petsc',verbose = False):
   for i in manualpages.keys():
     verbosePrint(verbose, manualpages[i])
 
-  # All values for a given enum must be provided or none of them
-  for i in enums.keys():
-    givenvalue = 0
-    for j in enums[i].values:
-      if j.find('=') > -1:
-        if givenvalue == -1:
-          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
-        givenvalue = 1
-      else:
-        if givenvalue == 1:
-          raise RuntimeError('Some enum values for ' + i + ' are set but others are not set')
-        givenvalue = -1
-
   #file = open('classes.data','wb')
   #pickle.dump(enums,file)
   #pickle.dump(senums,file)
   #pickle.dump(structs,file)
-  #pickle.dump(aliases,file)
   #pickle.dump(classes,file)
   #pickle.dump(typedefs,file)
 

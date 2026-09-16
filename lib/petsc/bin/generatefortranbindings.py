@@ -735,6 +735,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
         if funname in ['PetscObjectCompose', 'PetscObjectQuery']: continue
         fi = petscobjectfunctions[funname]
 
+        if fi.opaque: continue
         # the subclassing only works for PetscObjectXXX(PetscObject xxx,...) class methods
         if not fi.arguments or not fi.arguments[0].typename == 'PetscObject': continue
 
@@ -808,6 +809,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
         for funname in petscobjectfunctions:
           if funname in ['PetscObjectCompose', 'PetscObjectQuery']: continue
           fi = petscobjectfunctions[funname]
+          if fi.opaque: continue
           if not fi.arguments or not fi.arguments[0].typename == 'PetscObject': continue
 
           # cannot generate Fortran functions if any argument is void or PetscCtxRt
