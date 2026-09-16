@@ -123,7 +123,9 @@ cdef extern from * nogil:
     PetscErrorCode TaoSetIterationNumber(PetscTAO, PetscInt)
     PetscErrorCode TaoGetIterationNumber(PetscTAO, PetscInt*)
 
+    PetscErrorCode TaoSetInitialTrustRegionRadius(PetscTAO, PetscReal)
     PetscErrorCode TaoGetInitialTrustRegionRadius(PetscTAO, PetscReal*)
+    PetscErrorCode TaoGetCurrentTrustRegionRadius(PetscTAO, PetscReal*)
 
     PetscErrorCode TaoDefaultConvergenceTest(PetscTAO, void*) except PETSC_ERR_PYTHON
     PetscErrorCode TaoSetConvergenceTest(PetscTAO, PetscTaoConvergenceTest*, void*)
@@ -192,8 +194,6 @@ cdef extern from * nogil:
 
     PetscErrorCode TaoAddTerm(PetscTAO, const char*, PetscReal, PetscTAOTerm, PetscVec, PetscMat)
     PetscErrorCode TaoGetTerm(PetscTAO, PetscReal*, PetscTAOTerm*, PetscVec*, PetscMat*)
-
-    PetscErrorCode TaoSetInitialTrustRegionRadius(PetscTAO, PetscReal)
 
     PetscErrorCode TaoGetKSP(PetscTAO, PetscKSP*)
     PetscErrorCode TaoGetLineSearch(PetscTAO, PetscTAOLineSearch*)
