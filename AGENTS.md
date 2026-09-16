@@ -15,6 +15,7 @@ Shared rules are below; optional skills provide task procedures through the codi
 - `src/binding/petsc4py/` - Python bindings and packaging logic
 - `config/` - configure, build, and test harness generation
 - `doc/` - user and developer documentation
+- `.agents/pde-sim/` - opt-in multi-agent PDE simulation pipeline; in Claude Code run `/pde-sim <phenomenon>` to start it (nothing loads until invoked)
 
 ## Core Working Rules
 
