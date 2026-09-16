@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/numerical-assessment.schema.json",
+  "title": "Numerical Assessment",
+  "description": "numerical-analysis's INTERPRETATION of a Results Manifest: convergence and conservation verdicts plus recommended revisions. Returned to the orchestrator, which routes revisions to the responsible agent.",
+  "type": "object",
+  "required": ["schema_version", "id", "results_manifest_id", "verdict"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string" },
+    "results_manifest_id": { "type": "string" },
+    "convergence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "norm", "observed_order", "expected_order", "verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "field": { "type": "string" },
+          "norm": { "type": "string" },
+          "observed_order": { "type": "number" },
+          "expected_order": { "type": "number" },
+          "verdict": { "type": "string", "enum": ["pass", "order_reduction", "fail"] }
+        }
+      }
+    },
+    "conservation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["invariant", "verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "invariant": { "type": "string" },
+          "drift": { "type": "number" },
+          "tolerance": { "type": "number" },
+          "verdict": { "type": "string", "enum": ["pass", "fail"] }
+        }
+      }
+    },
+    "diagnosis": { "type": "string", "description": "Root-cause reasoning for any discrepancy." },
+    "recommended_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target_agent", "change"],
+        "additionalProperties": false,
+        "properties": {
+          "target_agent": { "type": "string", "enum": ["pde-modeling", "numerical-analysis", "code-generation"] },
+          "change": { "type": "string" }
+        }
+      }
+    },
+    "verdict": { "type": "string", "enum": ["accept", "revise"] }
+  }
+}

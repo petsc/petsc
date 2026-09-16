@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/case-index.schema.json",
+  "title": "Case Index",
+  "description": "Registry of solved, MMS-verified studies for reuse. The orchestrator/numerical-analysis consult this before planning from scratch; entries point at the study artifacts and any promoted reusable component. Part of the Level-1 self-improvement loop.",
+  "type": "object",
+  "required": ["schema_version", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "problem_class", "dimension", "geometry_class", "discretization", "verified", "artifacts_dir"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "problem_class": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["elliptic", "parabolic", "hyperbolic", "mixed", "dae", "ode", "other"] }
+          },
+          "dimension": { "type": "integer", "enum": [1, 2, 3] },
+          "geometry_class": { "type": "string", "enum": ["structured_dmda", "particle_dmswarm", "unstructured_dmplex"] },
+          "discretization": { "type": "string" },
+          "solver": { "type": "string" },
+          "confirmed_orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["field", "norm", "order"],
+              "additionalProperties": false,
+              "properties": {
+                "field": { "type": "string" },
+                "norm": { "type": "string" },
+                "order": { "type": "number" }
+              }
+            }
+          },
+          "verified": { "type": "boolean", "description": "True only if the study passed its MMS/convergence checks." },
+          "component": { "type": "string", "description": "Path to a reusable component under components/, if one was promoted." },
+          "artifacts_dir": { "type": "string" },
+          "problem_spec_id": { "type": "string" },
+          "numerical_plan_id": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

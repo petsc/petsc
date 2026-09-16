@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/numerical-plan.schema.json",
+  "title": "Numerical Plan",
+  "description": "Discretization, solver, and verification plan. Produced by numerical-analysis from a Problem Spec; consumed by code-generation.",
+  "type": "object",
+  "required": ["schema_version", "id", "problem_spec_id", "geometry_class", "discretization", "coefficient_functions", "solver_stack", "mms", "verification_plan"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string" },
+    "problem_spec_id": { "type": "string", "description": "id of the Problem Spec this plan discretizes." },
+    "geometry_class": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["structured_dmda", "particle_dmswarm", "unstructured_dmplex"] },
+        "dimension": { "type": "integer", "enum": [1, 2, 3] },
+        "resolution_strategy": { "type": "string", "description": "Base resolution and refinement approach (uniform, AMR, etc.)." }
+      }
+    },
+    "discretization": {
+      "type": "object",
+      "required": ["method", "order"],
+      "additionalProperties": false,
+      "properties": {
+        "method": { "type": "string", "enum": ["finite_difference", "finite_volume", "finite_element", "particle", "other"] },
+        "order": { "type": "number" },
+        "details": { "type": "string", "description": "Stencils, element family, quadrature, flux scheme, etc." }
+      }
+    },
+    "time_integration": {
+      "type": "object",
+      "description": "Present only for time-dependent problems.",
+      "additionalProperties": false,
+      "properties": {
+        "scheme": { "type": "string", "description": "e.g. backward-Euler, BDF2, RK4, Crank-Nicolson." },
+        "order": { "type": "number" },
+        "implicit": { "type": "boolean" },
+        "adaptive": { "type": "boolean" },
+        "stability_constraint": { "type": "string", "description": "CFL or stiffness note." }
+      }
+    },
+    "coefficient_functions": {
+      "type": "array",
+      "description": "Every function code-generation must implement: forcing terms, per-term coefficients (e.g. variable viscosity), sources, BC/IC evaluators, and MMS forcing.",
+      "items": {
+        "type": "object",
+        "required": ["name", "role", "signature", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string", "enum": ["forcing", "coefficient", "source", "boundary", "initial", "manufactured_forcing", "diagnostic"] },
+          "applies_to_term": { "type": "string", "description": "Which term/equation this function enters." },
+          "signature": { "type": "string", "description": "Inputs/outputs, e.g. 'mu(x,y,t) -> scalar'." },
+          "is_field": { "type": "boolean", "description": "Spatially/temporally varying vs constant." },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "solver_stack": {
+      "type": "object",
+      "description": "High-level PETSc algorithm choices; code-generation fills configuration details.",
+      "additionalProperties": false,
+      "properties": {
+        "ksp": { "type": "string", "description": "e.g. cg, gmres, fgmres." },
+        "pc": { "type": "string", "description": "e.g. jacobi, ilu, gamg, asm, fieldsplit." },
+        "snes": { "type": "string", "description": "Nonlinear solver + globalization, if nonlinear." },
+        "ts": { "type": "string", "description": "PETSc TS type, if time-dependent." },
+        "tolerances": { "type": "object", "additionalProperties": { "type": "number" } },
+        "rationale": { "type": "string" }
+      }
+    },
+    "mms": {
+      "type": "object",
+      "description": "Method of manufactured solutions for code validation.",
+      "required": ["manufactured_solutions", "forcing_functions", "expected_rates"],
+      "additionalProperties": false,
+      "properties": {
+        "manufactured_solutions": {
+          "type": "array",
+          "items": { "type": "object", "required": ["field", "expression_latex"], "additionalProperties": false,
+            "properties": { "field": { "type": "string" }, "expression_latex": { "type": "string" } } }
+        },
+        "forcing_functions": {
+          "type": "array",
+          "items": { "type": "object", "required": ["name", "expression_latex"], "additionalProperties": false,
+            "properties": { "name": { "type": "string" }, "expression_latex": { "type": "string" } } }
+        },
+        "expected_rates": {
+          "type": "array",
+          "items": { "type": "object", "required": ["field", "norm", "expected_order"], "additionalProperties": false,
+            "properties": { "field": { "type": "string" }, "norm": { "type": "string", "enum": ["L2", "Linf", "H1", "energy"] }, "expected_order": { "type": "number" } } }
+        }
+      }
+    },
+    "verification_plan": {
+      "type": "object",
+      "required": ["refinement_sequence", "norms"],
+      "additionalProperties": false,
+      "properties": {
+        "refinement_sequence": { "type": "array", "items": { "type": "string" }, "description": "Grid/time-step levels to run." },
+        "norms": { "type": "array", "items": { "type": "string" } },
+        "conservation_checks": { "type": "array", "items": { "type": "string" }, "description": "Invariants to verify and tolerances." }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

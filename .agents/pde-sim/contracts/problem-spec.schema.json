@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/problem-spec.schema.json",
+  "title": "Problem Spec",
+  "description": "Machine-readable mathematical description of an ODE/PDE problem. Produced by the pde-modeling agent; consumed by the numerical-analysis agent. This is the continuous problem only — no discretization choices belong here.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "phenomenon",
+    "pde_class",
+    "unknowns",
+    "governing_equations",
+    "geometry",
+    "boundary_conditions",
+    "parameters",
+    "time_dependent"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string", "description": "Short slug identifying this problem." },
+    "phenomenon": {
+      "type": "string",
+      "description": "The original text description of the phenomenon being modeled (provenance)."
+    },
+    "pde_class": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["elliptic", "parabolic", "hyperbolic", "mixed", "dae", "ode", "other"] },
+      "description": "Mathematical classification; drives well-posedness of BC/IC choices."
+    },
+    "unknowns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["symbol", "description", "tensor_rank"],
+        "additionalProperties": false,
+        "properties": {
+          "symbol": { "type": "string" },
+          "description": { "type": "string" },
+          "tensor_rank": { "type": "integer", "enum": [0, 1, 2], "description": "0=scalar, 1=vector, 2=tensor." },
+          "units": { "type": "string" }
+        }
+      }
+    },
+    "governing_equations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "strong_form_latex"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "strong_form_latex": { "type": "string", "description": "The PDE/ODE in LaTeX." },
+          "weak_form_latex": { "type": "string", "description": "Optional variational form." },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "description": "The CONTINUOUS domain. The numerical grid type is chosen later by numerical-analysis, not here.",
+      "required": ["dimension", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "dimension": { "type": "integer", "enum": [1, 2, 3] },
+        "description": { "type": "string", "description": "Concise, complete description of the domain shape." },
+        "extent": { "type": "string", "description": "Bounds / measurements, e.g. '[0,1]x[0,1]' or a CAD/mesh reference." },
+        "boundary_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Named boundary regions referenced by boundary_conditions."
+        }
+      }
+    },
+    "boundary_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["applies_to", "location", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "applies_to": { "type": "string", "description": "Unknown symbol this BC constrains." },
+          "location": { "type": "string", "description": "A boundary_tag from geometry, or a description." },
+          "type": { "type": "string", "enum": ["dirichlet", "neumann", "robin", "periodic", "outflow", "symmetry", "other"] },
+          "value_latex": { "type": "string", "description": "Prescribed value/flux expression." }
+        }
+      }
+    },
+    "initial_conditions": {
+      "type": "array",
+      "description": "Required when time_dependent is true.",
+      "items": {
+        "type": "object",
+        "required": ["applies_to", "value_latex"],
+        "additionalProperties": false,
+        "properties": {
+          "applies_to": { "type": "string" },
+          "value_latex": { "type": "string" }
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "description": "Physical coefficients. Encodes the modeling questions: constant vs field, and scale dependence.",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "description", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "symbol": { "type": "string" },
+          "description": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["constant", "field"],
+            "description": "'constant' = single scalar/tensor value; 'field' = varies in space and/or time (e.g. variable viscosity)."
+          },
+          "value": { "description": "Numeric value(s) if constant; a defining expression/reference if field." },
+          "units": { "type": "string" },
+          "scale_dependent": {
+            "type": "boolean",
+            "description": "Does this parameter change with the problem scale?"
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "description": "Quantities that must be conserved or otherwise constrained; consumed by numerical-analysis for conservation checks.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "expression_latex": { "type": "string" },
+          "kind": { "type": "string", "enum": ["conserved", "bounded", "monotone", "other"] }
+        }
+      }
+    },
+    "time_dependent": { "type": "boolean" },
+    "time_domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "interval": { "type": "string", "description": "e.g. '[0, T]'." },
+        "notes": { "type": "string" }
+      }
+    },
+    "scale_considerations": {
+      "type": "object",
+      "description": "Multiscale / closure concerns.",
+      "additionalProperties": false,
+      "properties": {
+        "unresolved_scales": {
+          "type": "boolean",
+          "description": "Do unresolved scales affect this problem (requiring a closure/subgrid model)?"
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Modeling assumptions and their justification."
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unresolved modeling questions to surface to the orchestrator/user."
+    }
+  }
+}

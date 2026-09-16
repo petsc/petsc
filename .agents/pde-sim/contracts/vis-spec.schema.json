@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/vis-spec.schema.json",
+  "title": "Vis Spec",
+  "description": "High-level specification of the visualizations and analytics required. Produced by the visualization agent. Each item is tagged `execution`: `in_situ` items (solution output, in-situ rendering) are implemented by code-generation inside the simulation binary; `post_hoc` items are implemented and run by the visualization agent as standalone post-processors.",
+  "type": "object",
+  "required": ["schema_version", "id", "visualizations", "analytics", "output_formats"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string" },
+    "problem_spec_id": { "type": "string", "description": "Omitted for programming-lane tasks, which produce no problem spec." },
+    "numerical_plan_id": { "type": "string", "description": "Omitted for programming-lane tasks, which skip numerical analysis and have no numerical plan to reference." },
+    "visualizations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "fields"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string", "enum": ["volume_render", "isosurface", "out_of_range_highlight", "mesh_render", "slice", "streamlines", "glyphs", "warp", "pathlines", "other"] },
+          "fields": { "type": "array", "items": { "type": "string" } },
+          "tool": { "type": "string", "enum": ["vtk", "paraview", "matplotlib"], "default": "vtk" },
+          "params": { "type": "object", "description": "Isovalues, camera, transfer function, colormap, range, etc.", "additionalProperties": true },
+          "execution": { "type": "string", "enum": ["in_situ", "post_hoc"], "default": "post_hoc", "description": "in_situ = implemented by code-generation inside the binary; post_hoc = implemented and run by the visualization agent." }
+        }
+      }
+    },
+    "auxiliary_computations": {
+      "type": "array",
+      "description": "Extra computations the simulation/viz code must perform, e.g. particle tracing.",
+      "items": {
+        "type": "object",
+        "required": ["name", "description"],
+        "additionalProperties": false,
+        "properties": { "name": { "type": "string" }, "description": { "type": "string" } }
+      }
+    },
+    "analytics": {
+      "type": "array",
+      "description": "Quantitative, FACTUAL diagnostics the code should emit; interpretation happens downstream.",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string", "enum": ["nan_inf_detection", "range_check", "solver_convergence_plot", "mesh_convergence_plot", "conservation_plot", "sanity_check", "other"] },
+          "fields": { "type": "array", "items": { "type": "string" } },
+          "params": { "type": "object", "additionalProperties": true, "description": "Nominal ranges, user-specified checks, etc." },
+          "execution": { "type": "string", "enum": ["in_situ", "post_hoc"], "default": "post_hoc", "description": "in_situ = emitted by the simulation binary (code-generation); post_hoc = computed by the visualization agent from output files." }
+        }
+      }
+    },
+    "output_formats": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["vtu", "vts", "vtk", "hdf5", "xdmf", "png", "csv"] }
+    },
+    "notes": { "type": "string" }
+  }
+}

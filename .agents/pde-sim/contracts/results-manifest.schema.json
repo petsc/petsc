@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/results-manifest.schema.json",
+  "title": "Results Manifest",
+  "description": "Inventory of what a simulation run produced. Emitted by code-generation to the orchestrator, which fans it out to visualization and numerical-analysis. Large data files are referenced by path, never inlined.",
+  "type": "object",
+  "required": ["schema_version", "id", "build", "runs", "attempts"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string" },
+    "numerical_plan_id": { "type": "string", "description": "Omitted for programming-lane tasks, which skip numerical analysis and have no numerical plan to reference." },
+    "vis_spec_id": { "type": "string" },
+    "build": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["success", "failure"] },
+        "compiler": { "type": "string" },
+        "flags": { "type": "string" },
+        "log_path": { "type": "string" }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "description": "Chronological journal of the build/run/format fix loop, ALWAYS populated (on success and failure), one entry per iteration. Lets a reader reconstruct how many tries a case took and what each error and fix was, without opening the subagent transcript. The last entry is the outcome this manifest reports; on escalation, escalation.attempts equals this array's length.",
+      "items": {
+        "type": "object",
+        "required": ["attempt", "action", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "attempt": { "type": "integer", "description": "1-based iteration number." },
+          "action": { "type": "string", "enum": ["build", "run", "format"], "description": "What this iteration did." },
+          "status": { "type": "string", "enum": ["success", "failure"] },
+          "error_excerpt": { "type": "string", "description": "Short excerpt of the compiler/runtime/style error that drove the next fix; omit on a passing iteration." },
+          "fix": { "type": "string", "description": "The change made in response to this iteration's error." },
+          "log_path": { "type": "string", "description": "Per-attempt log, e.g. artifacts/<study-id>/build_attempt_2.log; do not overwrite it across attempts." }
+        }
+      }
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "status", "output_files"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string", "description": "e.g. 'mms-level-3', 'production-Re1000'." },
+          "command": { "type": "string", "description": "The direct program invocation used for this run, e.g. 'mpiexec -n 4 ./app -pc_type gamg'. Must be the actual executable command (optionally with an MPI launcher), NOT a build-system target such as 'make run' — consumers parse it to recover the executable and its CLI arguments." },
+          "mpi_ranks": { "type": "integer" },
+          "status": { "type": "string", "enum": ["success", "failure", "diverged", "timeout"] },
+          "wall_time_s": { "type": "number" },
+          "output_files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "kind"],
+              "additionalProperties": false,
+              "properties": {
+                "path": { "type": "string" },
+                "kind": { "type": "string", "enum": ["solution", "checkpoint", "log", "convergence_data", "diagnostic", "other"] },
+                "format": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "convergence_study": {
+      "type": "object",
+      "description": "Present when a refinement study was run.",
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["h"],
+            "additionalProperties": false,
+            "properties": {
+              "h": { "type": "number", "description": "Representative mesh size / time step." },
+              "dof": { "type": "integer" },
+              "errors": { "type": "object", "additionalProperties": { "type": "number" }, "description": "norm -> error value." },
+              "solver_iterations": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "description": "Present only when code-generation could not reach a passing/usable result on its own and is handing back to the orchestrator. Machine-routable, symmetric with numerical-assessment.recommended_changes. A run that merely converged wrongly is NOT an escalation — return it normally for numerical-analysis to assess.",
+      "required": ["suspected_cause", "target_agent", "summary", "attempts"],
+      "additionalProperties": false,
+      "properties": {
+        "suspected_cause": { "type": "string", "enum": ["implementation", "plan", "model", "environment", "unknown"] },
+        "target_agent": { "type": "string", "enum": ["code-generation", "numerical-analysis", "pde-modeling", "orchestrator"] },
+        "summary": { "type": "string", "description": "What failed and the supporting evidence." },
+        "attempts": { "type": "integer", "description": "Number of build/run fix attempts made before escalating; equals the length of the top-level attempts[] journal." },
+        "last_error": { "type": "string", "description": "The final persistent error message or symptom." }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}
