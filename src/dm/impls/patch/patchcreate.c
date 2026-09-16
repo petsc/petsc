@@ -1,18 +1,6 @@
 #include <petsc/private/dmpatchimpl.h> /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-static PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems PetscOptionsObject)
-{
-  /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
-
-  PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "DMPatch Options");
-  /* Handle associated vectors */
-  /* Handle viewing */
-  PetscOptionsHeadEnd();
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* External function declarations here */
 extern PetscErrorCode DMSetUp_Patch(DM dm);
 extern PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer);
@@ -25,7 +13,6 @@ static PetscErrorCode DMInitialize_Patch(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->view                    = DMView_Patch;
-  dm->ops->setfromoptions          = DMSetFromOptions_Patch;
   dm->ops->setup                   = DMSetUp_Patch;
   dm->ops->createglobalvector      = DMCreateGlobalVector_Patch;
   dm->ops->createlocalvector       = DMCreateLocalVector_Patch;
