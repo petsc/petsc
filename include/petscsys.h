@@ -1519,7 +1519,7 @@ M*/
    `PetscCtx` is used instead of `void *` in PETSc code to enhance the clarity of the PETSc source code since `void *` serves so many different roles.
    The getAPI() code processor also uses the variable type to generate correct bindings for other languages.
 
-.seealso: [](sec_fortran_context), `PetscCtxRt`, PetscCtxDestroyFn()`, `PeOp`, `PeNS`, `PetscInitialize()`, `DMGetApplicationContext()`,
+.seealso: [](sec_fortran_context), `PetscCtxRt`, `PetscCtxDestroyFn()`, `PeOp`, `PeNS`, `PetscInitialize()`, `DMGetApplicationContext()`,
           `DMSetApplicationContextDestroy()`
 M*/
 typedef void *PetscCtx;

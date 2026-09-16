@@ -643,7 +643,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscProbFn *PetscProbFunc PETSC_DEPRECATED_TYPEDEF
 
    Level: intermediate
 
-.seealso: `PetscPDFMaxwellBoltzmann1D()`, `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `DTProbDensityTypes`
+.seealso: `PetscPDFMaxwellBoltzmann1D()`, `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`
 E*/
 typedef enum {
   DTPROB_DENSITY_CONSTANT,

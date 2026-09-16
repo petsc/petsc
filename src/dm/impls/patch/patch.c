@@ -36,7 +36,7 @@ Solver loop to update \tau:
 
   Level: intermediate
 
-.seealso: `DMPatchSolve()`, `DMDACreatePatchIS()`
+.seealso: `DMPATCH`, `DMPatchSolve()`, `DMDACreatePatchIS()`
 @*/
 PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PeOp PetscSF *sfz, PeOp PetscSF *sfzr)
 {
@@ -195,7 +195,8 @@ typedef enum {
   Level: developer
 
   Note:
-  This code is a work in progress and is not currently used by other parts of PETSc. It implements the outer loop of the FAS/multigrid-like patch solver sketched at the top of the source file.
+  This code is a work in progress and is not currently used by other parts of PETSc.
+  It implements the outer loop of the FAS/multigrid-like patch solver sketched at the top of the source file.
 
 .seealso: `DMPATCH`, `DMPatchZoom()`, `DMPatchGetCoarse()`, `DMPatchGetPatchSize()`, `DMPatchGetCommSize()`
 @*/

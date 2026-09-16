@@ -182,16 +182,16 @@ PetscBool DMPlexPointQueueEmpty(DMPlexPointQueue queue)
 }
 
 /*@
-  DMPlexPointQueueEmptyCollective - Collectively determine whether a `DMPlexPointQueue` is empty on every rank of a communicator.
+  DMPlexPointQueueEmptyCollective - Collectively determine whether a `DMPlexPointQueue` is empty on every process of an MPI communicator.
 
   Collective
 
   Input Parameters:
-+ obj   - a `PetscObject` whose communicator is used for the reduction
++ obj   - a `PetscObject` whose MPI communicator is used for the reduction
 - queue - the queue
 
   Output Parameter:
-. empty - `PETSC_TRUE` if the queue is empty on every rank, `PETSC_FALSE` otherwise
+. empty - `PETSC_TRUE` if the queue is empty on every process in the MPI communicator, `PETSC_FALSE` otherwise
 
   Level: developer
 

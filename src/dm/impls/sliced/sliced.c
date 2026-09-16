@@ -119,10 +119,10 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
 
   Note:
   See `MatMPIBAIJSetPreallocation()` for more details on preallocation.  If a scalar matrix (`MATAIJ`) is
-  obtained with `DMSlicedGetMatrix()`, the correct preallocation will be set, respecting `DMSlicedSetBlockFills()`.
+  obtained with `DMCreateMatrix()`, the correct preallocation will be set, respecting `DMSlicedSetBlockFills()`.
 
 .seealso: `DM`, `DMSLICED`, `DMDestroy()`, `DMCreateGlobalVector()`, `MatMPIAIJSetPreallocation()`,
-         `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
+         `MatMPIBAIJSetPreallocation()`, `DMCreateMatrix()`, `DMSlicedSetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
 {
@@ -165,7 +165,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
 
 /*@
   DMSlicedSetBlockFills - Sets the fill pattern in each block for a multi-component problem
-  of the matrix returned by `DMSlicedGetMatrix()`.
+  of the matrix returned by `DMCreateMatrix()`.
 
   Logically Collective
 
@@ -180,7 +180,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
   This only makes sense for multicomponent problems using scalar matrix formats (AIJ).
   See `DMDASetBlockFills()` for example usage.
 
-.seealso: `DM`, `DMSLICED`, `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
+.seealso: `DM`, `DMSLICED`, `DMCreateMatrix()`, `DMDASetBlockFills()`
 @*/
 PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt dfill[], const PetscInt ofill[])
 {

@@ -1083,7 +1083,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
   Level: developer
 
   Note:
-  This is simply a wrapper around `PetscSectionMigrateData()`, but includes DM-specific logging.
+  This is simply a wrapper around `PetscSectionMigrateData()`, but includes `DM`-specific logging.
 
 .seealso: `DMPLEX`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `PetscSectionMigrateData()`
 @*/

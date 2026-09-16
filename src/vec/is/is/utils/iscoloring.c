@@ -247,7 +247,7 @@ PetscErrorCode ISColoringGetColors(ISColoring iscoloring, PetscInt *n, PetscInt 
   Note:
   If mode is `PETSC_USE_POINTER` then `ISColoringRestoreIS()` must be called when the `IS` are no longer needed
 
-.seealso: `ISColoring`, `IS`, `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetColoring()`, `ISColoringGetColors()`
+.seealso: `ISColoring`, `IS`, `ISColoringRestoreIS()`, `ISColoringView()`, `ISColoringGetType()`, `ISColoringGetColors()`
 @*/
 PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscInt *nn, IS *isis[])
 {
@@ -328,9 +328,9 @@ PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring, PetscCopyMode mode, IS
 
   Input Parameters:
 + comm    - communicator for the processors creating the coloring
-. ncolors - max color value
+. ncolors - maximum color value
 . n       - number of nodes on this processor
-. colors  - array containing the colors for this MPI rank, color numbers begin at 0, for each local node
+. colors  - array containing the colors for this MPI process, color numbers begin at 0, for each local node
 - mode    - see `PetscCopyMode` for meaning of this flag.
 
   Output Parameter:

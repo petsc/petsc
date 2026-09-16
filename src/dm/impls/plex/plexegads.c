@@ -2314,7 +2314,8 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
 #endif
 
 /*@
-  DMPlexInflateToGeomModelUseXYZ - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
+  DMPlexInflateToGeomModelUseXYZ - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model.
+  This usually happens with non-conforming refinement.
 
   Collective
 
@@ -3123,23 +3124,26 @@ static PetscErrorCode DestroyHashMap(PetscCtxRt p)
   Collective
 
   Input Parameters:
-+ dm           - The DM object representing the mesh with PetscContainer containing an EGADS geometry model
-- fullGeomGrad - PetscBool flag. Determines how the Surface Area and Volume Gradients wrt to Control Points and Control Point Weights are calculated.
++ dm           - The `DM` object representing the mesh with `PetscContainer` containing an EGADS geometry model
+- fullGeomGrad - Determines how the Surface Area and Volume Gradients wrt to Control Points and Control Point Weights are calculated.
+.vb
                       PETSC_FALSE :: Surface Area Gradient wrt Control Points and Control Point Weights are calculated using the change in the local
                                      FACE changes (not the entire body). Volume Gradients are not calculated. Faster computations.
                       PETSC_TRUE  :: Surface Area Gradietn wrt to Control Points and Control Point Weights are calculated using the change observed in
                                      the entire solid body. Volume Gradients are calculated. Slower computation due to the need to generate a new solid
                                      body geometry for every Control Point and Control Point Weight change.
+.ve
 
   Output Parameter:
-. dm - The updated DM object representing the mesh with PetscContainers containing the Control Point, Control Point Weight and Gradient Data.
+. dm - The updated `DM` object representing the mesh with `PetscContainer`s containing the Control Point, Control Point Weight and Gradient Data.
 
   Level: intermediate
 
   Note:
-  Calculates the DM Point location, surface area and volume gradients wrt to Control Point and Control Point Weights using Finite Difference (small perturbation of Control Point coordinates or Control Point Weight value).
+  Calculates the `DM` Point location, surface area and volume gradients wrt to Control Point and Control Point Weights using Finite Difference
+  (small perturbation of Control Point coordinates or Control Point Weight value).
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexModifyEGADSGeomModel()`
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexCreateGeomFromFile()`, `DMPlexModifyGeomModel()`
 @*/
 PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 {
@@ -4315,32 +4319,40 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 }
 
 /*@
-  DMPlexModifyGeomModel - Generates a new EGADS geometry model based in user provided Control Points and Control Points Weights. Optionally, the function will inflate the DM to the new geometry and save the new geometry to a file.
+  DMPlexModifyGeomModel - Generates a new EGADS geometry model based in user provided Control Points and Control Points Weights.
+  Optionally, the function will inflate the `DM` to the new geometry and save the new geometry to a file.
 
   Collective
 
   Input Parameters:
-+ dm          - The DM object representing the mesh with PetscContainer containing an EGADS geometry model
-. comm        - MPI_Comm object
-. newCP       - C Array of [x, y, z] New/Updated Control Point Coordinates defining the geometry (See DMPlexGeomDataAndGrads() for format)
-. newW        - C Array of New/Updated Control Point Weights associated with the Control Points defining the new geometry (See DMPlexGemGrads() for format)
-. autoInflate - PetscBool Flag denoting if the user would like to inflate the DM points to the new geometry.
-. saveGeom    - PetscBool Flag denoting if the user would iike to save the new geometry to a file.
-- stpName     - Char Array indicating the name of the file to save the new geometry to. Extension must be included and will denote type of file written.
++ dm          - The `DM` object representing the mesh with `PetscContainer` containing an EGADS geometry model
+. comm        - Used to generate `IS` in the function
+. newCP       - Array of [x, y, z] New/Updated Control Point Coordinates defining the geometry (See `DMPlexGeomDataAndGrads()` for format)
+. newW        - Array of New/Updated Control Point Weights associated with the Control Points defining the new geometry
+. autoInflate - Flag denoting if the user would like to inflate the DM points to the new geometry.
+. saveGeom    - Flag denoting if the user would like to save the new geometry to a file.
+- stpName     - Array indicating the name of the file to save the new geometry to. Extension must be included and will denote type of file written.
+.vb
                       *.stp or *.step = STEP File
                       *.igs or *.iges = IGES File
                               *.egads = EGADS File
                                *.brep = BRep File (OpenCASCADE File)
+.ve
 
   Output Parameter:
-. dm - The updated DM object representing the mesh with PetscContainers containing the updated/modified geometry
+. dm - The updated DM object representing the mesh with `PetscContainer`s containing the updated/modified geometry
 
   Level: intermediate
 
-  Note:
-  Functionality not available for DMPlexes with attached EGADSlite geometry files (.egadslite).
+  Notes:
+  Functionality not available for `DMPLEX`s with attached EGADSlite geometry files (.egadslite).
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`
+  Requires `./configure` be run with `--download-egads`
+
+  Developer Note:
+  Why does this function take a `comm` argument? Why can't it use the MPI communicator in `dm`? This should be documented.
+
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexCreateGeomFromFile()`, `DMPlexGeomDataAndGrads()`
 @*/
 PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], PetscScalar newW[], PetscBool autoInflate, PetscBool saveGeom, const char *stpName) PeNS
 {
@@ -4721,11 +4733,11 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
   Collective
 
   Input Parameter:
-. dm - The DM object representing the mesh with PetscContainer containing an EGADS geometry model
+. dm - The DM object representing the mesh with `PetscContainer` containing an EGADS geometry model
 
   Level: intermediate
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexCreateGeomFromFile()`, `DMPlexGeomDataAndGrads()`
 @*/
 PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 {
@@ -4833,7 +4845,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
   /* Clear out global coordinates */
   PetscCall(VecDestroy(&dm->coordinates[0].x));
 
-  /* Store in PetscContainters */
+  /* Store in PetscContainers */
   {
     PetscContainer t_pointObj, u_pointObj, v_pointObj;
 
@@ -4887,19 +4899,20 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 }
 
 /*@
-  DMPlexInflateToGeomModelUseTUV - Inflates the DM to the associated underlying geometry using the [t] {EDGES) and [u, v] (FACES} associated parameters. Requires a DM with an EGADS model attached and a previous call to DMPlexGetGeomModelTUV().
+  DMPlexInflateToGeomModelUseTUV - Inflates the `DM` to the associated underlying geometry using the [t] {EDGES) and [u, v] (FACES} associated parameters.
+  Requires a `DM` with an EGADS model attached and a previous call to `DMPlexGetGeomModelTUV()`.
 
   Collective
 
   Input Parameter:
-. dm - The DM object representing the mesh with PetscContainer containing an EGADS geometry model
+. dm - The `DM` object representing the mesh with a `PetscContainer` containing an EGADS geometry model
 
   Level: intermediate
 
   Note:
-  The updated DM object inflated to the associated underlying geometry. This updates the [x, y, z] coordinates of DM points associated with geometry.
+  The updated `DM` object inflated to the associated underlying geometry. This updates the [x, y, z] coordinates of `DM` points associated with geometry.
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`, `DMPlexGetGeomModelTUV()`
+.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexCreateGeomFromFile()`, `DMPlexGeomDataAndGrads()`, `DMPlexGetGeomModelTUV()`
 @*/
 PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm) PeNS
 {
@@ -5021,21 +5034,21 @@ PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm) PeNS
   Collective
 
   Input Parameters:
-+ dm     - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
-- useTUV - PetscBool indicating if the user would like to inflate the DMPlex to the underlying geometry
++ dm     - The `DMPLEX` object with an attached `PetscContainer` storing a CAD Geometry object
+- useTUV - whether to inflate the `DMPLEX` to the underlying geometry
            using (t) for nodes on EDGEs and (u, v) for nodes on FACEs or using the nodes (x, y, z) coordinates
            and shortest distance routine.
             If useTUV = PETSC_TRUE, use the (t) or (u, v) parameters to inflate the DMPlex to the CAD geometry.
             If useTUV = PETSC_FALSE, use the nodes (x, y, z) coordinates and the shortest disctance routine.
 
-  Notes:
-  DM with nodal coordinates modified so that they lie on the EDGEs and FACEs of the underlying geometry.
+  Level: intermediate
 
-  (t) and (u, v) parameters for all DMPlex nodes on EDGEs and FACEs are stored in arrays within PetscContainers attached to the DM.
+  Notes:
+  `DM` with nodal coordinates modified so that they lie on the EDGEs and FACEs of the underlying geometry.
+
+  (t) and (u, v) parameters for all `DMPLEX` nodes on EDGEs and FACEs are stored in arrays within `PetscContainer`s attached to the `DM`.
   The containers have names "Point - Edge t Parameter", "Point - Face u Parameter", and "Point - Face v Parameter".
   The arrays are organized by Point 0-based ID (i.e. [v-vstart] as defined in the DMPlex.
-
-  Level: intermediate
 
 .seealso: `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
@@ -5435,9 +5448,9 @@ PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge
   Collective
 
   Input Parameters:
-+ dm      - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
-. body    - PetscGeom body object containing the lower level entity the ID number is being requested.
-- topoObj - PetscGeom SHELL, FACE, LOOP, EDGE, or NODE object for which ID number is being requested.
++ dm      - The `DMPLEX` object with an attached `PetscContainer` storing a CAD Geometry object
+. body    - `PetscGeom` body object containing the lower level entity the ID number is being requested.
+- topoObj - `PetscGeom` SHELL, FACE, LOOP, EDGE, or NODE object for which ID number is being requested.
 
   Output Parameter:
 . id - ID number of the entity
@@ -5476,8 +5489,8 @@ PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscIn
   Collective
 
   Input Parameters:
-+ dm       - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
-. body     - PetscGeom body object containing the lower level entity the referenced by the ID.
++ dm       - The `DMPLEX` object with an attached `PetscContainer` storing a CAD Geometry object
+. body     - `PetscGeom` body object containing the lower level entity the referenced by the ID.
 . geomType - Keyword SHELL, FACE, LOOP, EDGE, or NODE of the geometry type for which ID number is being requested.
 - geomID   - ID number of the geometry entity being requested.
 
@@ -5515,8 +5528,8 @@ PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, Pet
   Not collective
 
   Input Parameters:
-+ dm   - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
-- face - PetscGeom FACE object
++ dm   - The `DMPLEX` object with an attached `PetscContainer` storing a CAD Geometry object
+- face - `PetscGeom` FACE object
 
   Output Parameter:
 . numCntrlPnts - Number of Control Points (and Weights) defining the FACE
@@ -5653,8 +5666,8 @@ PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscS
   Not collective
 
   Input Parameters:
-+ dm      - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
-- geomObj - PetscGeom object
++ dm      - The `DMPLEX` object with an attached PetscContainer storing a CAD Geometry object
+- geomObj - `PetscGeom` object
 
   Level: intermediate
 
@@ -5686,7 +5699,7 @@ PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
   Not collective
 
   Input Parameter:
-. dm - The DMPlex object with an attached PetscContainer storing a CAD Geometry object
+. dm - The `DMPLEX` object with an attached `PetscContainer` storing a CAD Geometry object
 
   Output Parameters:
 + cpHashTable       - Hash Table containing the relationship between FACE ID and Control Point IDs.
@@ -5699,7 +5712,7 @@ PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
 - wData             - Array holding the Weight for an associated Geometry Control Point.
 
   Note:
-  Must Call DMPLexGeomDataAndGrads() before calling this function.
+  Must Call `DMPlexGeomDataAndGrads()` before calling this function.
 
   Level: intermediate
 
@@ -5970,9 +5983,7 @@ PetscErrorCode DMPlexGetGeomCntrlPntMaps(DM dm, PetscInt *numCntrlPnts, PetscInt
     PetscCall(PetscContainerGetPointer(cntrlPntWeightVertexMapObj, &cntrlPntWeightVertexMapPtr));
     *cntrlPntWeightVertexMap = cntrlPntWeightVertexMapPtr;
   }
-
   #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
 #endif

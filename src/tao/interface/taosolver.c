@@ -1316,7 +1316,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao, PetscInt *maxits)
   Note:
   Use `PETSC_DETERMINE` to use the default radius that was set when the object's type was set.
 
-.seealso: [](ch_tao), `Tao`, `TaoGetTrustRegionRadius()`, `TaoSetTrustRegionTolerance()`, `TAONTR`
+.seealso: [](ch_tao), `Tao`, `TaoGetCurrentTrustRegionRadius()`, `TaoGetInitialTrustRegionRadius()`, `TAONTR`
 @*/
 PetscErrorCode TaoSetInitialTrustRegionRadius(Tao tao, PetscReal radius)
 {
@@ -3187,7 +3187,7 @@ PetscErrorCode TaoAddTerm(Tao tao, const char prefix[], PetscReal scale, TaoTerm
 }
 
 /*@
-  TaoSetDM - Sets the `DM` that may be used by some `TAO` solvers or their underlying solvers and preconditioners
+  TaoSetDM - Sets the `DM` that may be used by some `Tao` solvers or their underlying solvers and preconditioners
 
   Logically Collective
 
@@ -3202,7 +3202,7 @@ PetscErrorCode TaoAddTerm(Tao tao, const char prefix[], PetscReal scale, TaoTerm
   even when not using interfaces like `DMSNESSetFunction()`.  Use `DMClone()` to get a distinct `DM` when solving different
   problems using the same function space.
 
-.seealso: [](ch_snes), `DM`, `TAO`, `TaoGetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
+.seealso: [](ch_snes), `DM`, `Tao`, `TaoGetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode TaoSetDM(Tao tao, DM dm)
 {
@@ -3224,19 +3224,19 @@ PetscErrorCode TaoSetDM(Tao tao, DM dm)
 }
 
 /*@
-  TaoGetDM - Gets the `DM` that may be used by some `TAO` solvers or their underlying solvers and preconditioners
+  TaoGetDM - Gets the `DM` that may be used by some `Tao` solvers or their underlying solvers and preconditioners
 
   Not Collective but `dm` obtained is parallel on `tao`
 
   Input Parameter:
-. tao - the `TAO` context
+. tao - the `Tao` context
 
   Output Parameter:
 . dm - the `DM`
 
   Level: intermediate
 
-.seealso: [](ch_snes), `DM`, `TAO`, `TaoSetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
+.seealso: [](ch_snes), `DM`, `Tao`, `TaoSetDM()`, `SNESSetDM()`, `SNESGetDM()`, `KSPSetDM()`, `KSPGetDM()`
 @*/
 PetscErrorCode TaoGetDM(Tao tao, DM *dm)
 {

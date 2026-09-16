@@ -7,8 +7,7 @@
 PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
 /*@
-   PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes
-                    in a communicator.
+   PETSC_VIEWER_STDOUT_ - Creates a `PETSCVIEWERASCII` `PetscViewer` shared by all MPI processes in a communicator.
 
    Collective
 
