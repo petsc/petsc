@@ -41,7 +41,7 @@ class Configure(config.package.Package):
 
     with_gpu = self.cuda.found and self.magma.found and self.kblas.found
     if not with_gpu and not (self.thrust.found or self.cuda.found or self.hip.found):
-      raise RuntimeError('Missing THRUST. Run with --download-thrust or specify the location of the package')
+      raise RuntimeError('This configuration of H2Opus requires Thrust. Run with --download-thrust or specify the location of the package')
 
     if self.openmp.found:
       self.usesopenmp = 'yes'
