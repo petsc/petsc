@@ -292,10 +292,13 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
 
    Level: advanced
 
-   Note:
+   Notes:
    Contributed by Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
-.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+   This line search computes a simplified Newton step by solving with the `KSP` of the `SNES` on the full space, so it cannot be used with
+   `SNESVINEWTONRSLS`, whose `KSP` is defined on the reduced (inactive set) space. It may be used with `SNESVINEWTONSSLS`.
+
+.seealso: [](ch_snes), `SNESLineSearch`, `SNES`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`
 M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesearch)
 {
