@@ -318,55 +318,74 @@ pause-for-approval:
   tags:
     - feature:ai
   variables:
-    # Export Claude Code token/cost metrics via OTLP to the Grafana Cloud gateway,
-    # for cross-run dashboards. Required CI/CD variables (Settings > CI/CD > Variables):
-    #   GRAFANA_CLOUD_OTLP_ENDPOINT - OTLP gateway base URL; not a secret
-    #   GRAFANA_CLOUD_OTLP_TOKEN    - base64("<instance-id>:<api-token>"); masked, NOT protected
-    #                                 (protected variables are absent on merge-request refs)
-    # OTEL_METRIC_EXPORT_INTERVAL is short so the final flush arrives before the SDK
-    # shuts down; raise it if flush-on-exit is confirmed reliable for `claude -p`.
+    # Metrics go to the Grafana Cloud OTLP gateway. Required CI/CD variables:
+    #   GRAFANA_CLOUD_OTLP_ENDPOINT - gateway base URL; not a secret
+    #   GRAFANA_CLOUD_OTLP_TOKEN    - base64("<instance-id>:<api-token>"); masked, NOT
+    #                                 protected (protected ones are absent on MR refs)
+    # The export interval is short so the last flush precedes shutdown, and Prometheus
+    # stores cumulative, not delta.
+    #
+    # Claude Code. user.email, user.id and organization.id have no opt-out.
     CLAUDE_CODE_ENABLE_TELEMETRY: "1"
     OTEL_METRICS_EXPORTER: otlp
     OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
     OTEL_EXPORTER_OTLP_ENDPOINT: "$GRAFANA_CLOUD_OTLP_ENDPOINT"
     OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic $GRAFANA_CLOUD_OTLP_TOKEN"
-    OTEL_METRIC_EXPORT_INTERVAL: "10000"
-    # ci.job is omitted deliberately: Claude Code already attaches a unique-per-run
-    # session.id, so a per-job label would double the series churn for no query power.
-    OTEL_RESOURCE_ATTRIBUTES: "ci.mr=$CI_MERGE_REQUEST_IID,ci.ref=$CI_COMMIT_REF_SLUG"
-    # Drops user.account_uuid / user.account_id. Note that user.email, user.id and
-    # organization.id have no opt-out and do reach the endpoint.
-    OTEL_METRICS_INCLUDE_ACCOUNT_UUID: "false"
-    # Claude Code defaults to delta; the Grafana Cloud Prometheus backend stores
-    # cumulative, so convert here rather than relying on gateway-side conversion.
     OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: cumulative
+    # ci.job is omitted: the CLI attaches a unique-per-run session.id, so a per-job
+    # label would double series churn for no query power.
+    OTEL_RESOURCE_ATTRIBUTES: "ci.mr=$CI_MERGE_REQUEST_IID,ci.ref=$CI_COMMIT_REF_SLUG"
+    OTEL_METRIC_EXPORT_INTERVAL: "10000"
+    OTEL_METRICS_INCLUDE_ACCOUNT_UUID: "false"
+    #
+    # opencode, via opencode-plugin-otel (https://github.com/DEVtheOPS/opencode-plugin-otel)
+    # on the runner, which writes the OTEL_ equivalents itself. Metrics only: logs and spans
+    # could carry the MR diff. Inert until a paid opencode model, as AI_TIER=free unsets these.
+    OPENCODE_ENABLE_TELEMETRY: "1"
+    OPENCODE_OTLP_PROTOCOL: http/protobuf
+    OPENCODE_OTLP_ENDPOINT: "$GRAFANA_CLOUD_OTLP_ENDPOINT"
+    OPENCODE_OTLP_HEADERS: "Authorization=Basic $GRAFANA_CLOUD_OTLP_TOKEN"
+    OPENCODE_OTLP_METRICS_INTERVAL: "10000"
+    OPENCODE_OTLP_METRICS_TEMPORALITY: cumulative
+    OPENCODE_RESOURCE_ATTRIBUTES: "ci.mr=$CI_MERGE_REQUEST_IID,ci.ref=$CI_COMMIT_REF_SLUG"
+    OPENCODE_DISABLE_LOGS: "1"
+    OPENCODE_DISABLE_TRACES: all
   before_script:
     - date
     - hostname
   script:
-    - claude --version || { echo "claude not installed"; exit 1; }
+    - $AI_CLI --version || { echo "$AI_CLI not installed"; exit 1; }
     - glab --version || { echo "glab not installed"; exit 1; }
     - python3 --version || { echo "python3 not installed"; exit 1; }
     - echo "$CI_MERGE_REQUEST_IID" | grep -qE '^[0-9]+$' || { echo "invalid MR IID"; exit 1; }
     - |
-      if [ -z "$GRAFANA_CLOUD_OTLP_ENDPOINT" ] || [ -z "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
-        echo "Grafana OTLP variables not set; disabling telemetry"
+      if [ "$AI_TIER" = "free" ] || [ -z "$GRAFANA_CLOUD_OTLP_ENDPOINT" ] || [ -z "$GRAFANA_CLOUD_OTLP_TOKEN" ]; then
+        echo "Disabling telemetry: free model, or Grafana OTLP variables not set"
         unset CLAUDE_CODE_ENABLE_TELEMETRY OTEL_METRICS_EXPORTER OTEL_EXPORTER_OTLP_ENDPOINT OTEL_EXPORTER_OTLP_HEADERS
+        unset OPENCODE_ENABLE_TELEMETRY OPENCODE_OTLP_ENDPOINT OPENCODE_OTLP_HEADERS
       fi
       if echo "$CI_MERGE_REQUEST_LABELS" | grep -qF 'Post AI review'; then
         test -n "$GITLAB_TOKEN" || { echo "GITLAB_TOKEN not set"; exit 1; }
-        REVIEW_CMD="/review-mr-post"
+        REVIEW_SKILL="review-mr-post"
       else
         unset GITLAB_TOKEN
-        REVIEW_CMD="/review-mr"
+        REVIEW_SKILL="review-mr"
       fi
-      # --max-turns 200: raised from the 30-turn default, then again from 100, because large MRs hit the cap before the review finished.
-      claude -p "${REVIEW_CMD} ${CI_MERGE_REQUEST_IID}" --model "${ANTHROPIC_MODEL}" --dangerously-skip-permissions --max-turns 200
+      if [ "$AI_CLI" = "opencode" ]; then
+        # stderr is dropped, not captured: it is very verbose and dumps the environment.
+        # --variant sets reasoning effort; providers defining no variants ignore it.
+        opencode run --model "$AI_MODEL" --variant xhigh --auto "Review MR $CI_MERGE_REQUEST_IID using the skill $REVIEW_SKILL" 2> /dev/null
+      elif [ "$AI_CLI" = "claude" ]; then
+        # 200 turns: large MRs hit the 30-turn default before the review finished.
+        claude -p "/${REVIEW_SKILL} ${CI_MERGE_REQUEST_IID}" --model "$AI_MODEL" --dangerously-skip-permissions --max-turns 200
+      else
+        echo "unknown AI_CLI '$AI_CLI'; expected claude or opencode"; exit 1
+      fi
   timeout: 1h
   allow_failure: true
   interruptible: true
   environment:
-    name: AI-Review/$ANTHROPIC_MODEL/$CI_COMMIT_REF_SLUG
+    name: AI-Review/$AI_MODEL/$CI_COMMIT_REF_SLUG
     url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/ai-review.html
     auto_stop_in: one week
     deployment_tier: development
@@ -383,7 +402,12 @@ ai-review:
   extends: .ai-review
   parallel:
     matrix:
-      - ANTHROPIC_MODEL: [haiku, sonnet, opus]
+      - AI_CLI: claude
+        AI_MODEL: [sonnet, opus]
+        AI_TIER: paid
+      - AI_CLI: opencode
+        AI_MODEL: [alcf/nemotron, opencode/spark]
+        AI_TIER: free
 
 #
 # Basic template for code coverage generation. Tests should additionally inherit from the more
