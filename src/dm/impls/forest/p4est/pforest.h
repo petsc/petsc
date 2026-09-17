@@ -505,6 +505,10 @@ static int pforest_refine_flag(p4est_t *p4est, p4est_topidx_t which_tree, p4est_
   return quadrant->p.user_int == DM_ADAPT_REFINE;
 }
 
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclobbered"
+  #endif
 static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFrom, PetscInt FromOffset, p4est_t *p4estTo, PetscInt ToOffset, p4est_topidx_t flt, p4est_topidx_t llt, PetscInt *toFineLeavesCount, PetscInt *toLeaves, PetscSFNode *fromRoots, PetscInt *fromFineLeavesCount, PetscInt *fromLeaves, PetscSFNode *toRoots)
 {
   PetscMPIInt    rank = p4estFrom->mpirank;
@@ -583,6 +587,9 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
   *fromFineLeavesCount = fromFineLeaves;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+  #endif
 
 /* Compute the maximum level across all the trees */
 static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
@@ -644,6 +651,10 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF(MPI_Comm comm, p4est_t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclobbered"
+  #endif
 /* range of processes whose B sections overlap this ranks A section */
 static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMPIInt rank, p4est_t *p4estA, p4est_t *p4estB, PetscInt *startB, PetscInt *endB)
 {
@@ -696,10 +707,17 @@ static PetscErrorCode DMPforestComputeOverlappingRanks(PetscMPIInt size, PetscMP
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+  #endif
 
 static PetscErrorCode DMPforestGetPlex(DM, DM *);
 
   #define DMSetUp_pforest _append_pforest(DMSetUp)
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclobbered"
+  #endif
 static PetscErrorCode DMSetUp_pforest(DM dm)
 {
   DM_Forest         *forest  = (DM_Forest *)dm->data;
@@ -1314,6 +1332,9 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+  #endif
 
   #define DMForestGetAdaptivitySuccess_pforest _append_pforest(DMForestGetAdaptivitySuccess)
 static PetscErrorCode DMForestGetAdaptivitySuccess_pforest(DM dm, PetscBool *success)
@@ -2330,6 +2351,10 @@ static void MPIAPI DMPforestMaxSFNode(void *a, void *b, PetscMPIInt *len, MPI_Da
   }
 }
 
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclobbered"
+  #endif
 static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
 {
   MPI_Comm           comm;
@@ -2887,6 +2912,9 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
   PetscCallMPI(MPI_Type_free(&nodeType));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+  #endif
 
 /* children are sf leaves of parents */
 static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
@@ -3031,6 +3059,10 @@ static PetscErrorCode DMPforestGetTransferSF(DM dmA, DM dmB, const PetscInt dofP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclobbered"
+  #endif
 static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
 {
   DM_Forest         *forest  = (DM_Forest *)dm->data;
@@ -3464,6 +3496,9 @@ static PetscErrorCode DMPforestLabelsInitialize(DM dm, DM plex)
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+  #if defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+  #endif
 
 static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 {

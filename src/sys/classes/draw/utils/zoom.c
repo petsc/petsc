@@ -1,5 +1,9 @@
 #include <petscdraw.h> /*I "petscdraw.h"  I*/
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 /*@
   PetscDrawZoom - Allows one to provide a function that gets called for zooming in on a drawing using the mouse buttons
 
@@ -86,3 +90,6 @@ PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw dr
 theend:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif

@@ -951,6 +951,10 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
 }
 
 #include <petscdraw.h>
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 static PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw, void *Aa)
 {
   Mat                A = (Mat)Aa;
@@ -1037,6 +1041,9 @@ static PetscErrorCode MatView_SeqAIJ_Draw_Zoom(PetscDraw draw, void *Aa)
   PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
 
 #include <petscdraw.h>
 static PetscErrorCode MatView_SeqAIJ_Draw(Mat A, PetscViewer viewer)
