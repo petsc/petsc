@@ -1064,6 +1064,8 @@ check-each-commit:
     - .test-petsc4py
   tags:
     - gce-u22-stage2
+  variables:
+    GIT_DEPTH: 0  # non-shallow clone
   script:
     - export PATH=/nfs/gce/projects/petsc/soft/LLVM-22.1.4-Linux-X64/bin:$PATH
     - lib/petsc/bin/maint/check-each-commit.sh
@@ -1342,6 +1344,7 @@ coverage-analyze:
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
+    GIT_DEPTH: 0  # non-shallow clone; gcov.py blames the branch range
   before_script:
     - date
     - hostname
@@ -1374,6 +1377,8 @@ coverage-analyze:
   stage: .post
   tags:
     - gce-u22-short
+  variables:
+    GIT_STRATEGY: none  # artifacts only; also leaves coverage-analyze's clone non-shallow
   dependencies:
     - coverage-analyze
   script:
@@ -1425,8 +1430,9 @@ analyze-pipeline:
     - gce-u24-docs
   variables:
     PETSC_ARCH: arch-docs
+    GIT_DEPTH: 0  # non-shallow clone
   before_script:
-    - git fetch --unshallow --tags origin +release:remotes/origin/release +main:remotes/origin/main
+    - git fetch --tags origin +release:remotes/origin/release +main:remotes/origin/main
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
