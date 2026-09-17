@@ -886,8 +886,8 @@ cdef class DMStag(DM):
             return self.getStencilWidth()
 
     property corners:
-        """The lower left corner and size of local region in each dimension."""
-        def __get__(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
+        """The lower left corner, size and extra points in each dimension."""
+        def __get__(self) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
             return self.getCorners()
 
     property ghost_corners:

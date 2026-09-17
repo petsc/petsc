@@ -150,7 +150,8 @@ class BaseTestDA:
             self.assertFalse(vg)
             self.assertFalse(vl)
 
-        name = 'abcd'
+    def testGetNamedVec(self):
+        name = 'persistent vector \u03b1\u03b2\u03b3 ' * 16
 
         vg = self.da.getGlobalVec(name)
         vg.set(4.0)
@@ -286,8 +287,8 @@ class BaseTestDA:
 
     def testzeroRowsColumnsStencil(self):
         da = self.da
-        A = da.createMatrix()
-        x = da.createGlobalVector()
+        A = da.createMat()
+        x = da.createGlobalVec()
         x.set(2.0)
         A.setDiagonal(x)
         diag1 = x.duplicate()

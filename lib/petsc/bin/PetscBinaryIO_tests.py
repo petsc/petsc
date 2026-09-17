@@ -19,7 +19,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         array = np.array([1.1, 2.2, 3.3])
         vec = PETSc.Vec().createSeq(3)
         vec[...] = array
-        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.W)
+        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.FileMode.W)
         vec.view(viewer)
         viewer.destroy()
         vec.destroy()
@@ -34,7 +34,7 @@ class TestPetscBinaryIO(unittest.TestCase):
 
         vec = PETSc.Vec().createSeq(3)
         vec.set(0.)
-        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.R)
+        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.FileMode.R)
         vec.load(viewer)
         viewer.destroy()
 
@@ -45,7 +45,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         """Test reading an IS"""
         indices = np.array([3,4,5])
         anis = PETSc.IS().createGeneral(list(indices))
-        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.W)
+        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.FileMode.W)
         anis.view(viewer)
         viewer.destroy()
         anis.destroy()
@@ -65,7 +65,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         counts = np.array([0,2,3])
         cols = np.array([0,1,1])
 
-        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.W)
+        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.FileMode.W)
         mat.view(viewer)
         viewer.destroy()
         mat.destroy()
@@ -88,7 +88,7 @@ class TestPetscBinaryIO(unittest.TestCase):
         PetscBinaryIO().writeBinaryFile('test.dat', [mat,])
 
         mat = PETSc.Mat().createAIJ(2)
-        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.Mode.R)
+        viewer = PETSc.Viewer().createBinary('test.dat', PETSc.Viewer.FileMode.R)
         mat.load(viewer)
         viewer.destroy()
 

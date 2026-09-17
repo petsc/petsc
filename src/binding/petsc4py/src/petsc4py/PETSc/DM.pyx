@@ -507,7 +507,7 @@ cdef class DM(Object):
 
     #
 
-    def setAuxiliaryVec(self, Vec aux, label: DMLabel | None, value=0, part=0) -> None:
+    def setAuxiliaryVec(self, Vec aux, label: str | None, value=0, part=0) -> None:
         """Set an auxiliary vector for a specific region.
 
         Not collective.
@@ -896,7 +896,7 @@ cdef class DM(Object):
         """
         cdef Vec vg = Vec()
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         if cname != NULL:
             CHKERR(DMGetNamedGlobalVector(self.dm, cname, &vg.vec))
         else:
@@ -922,7 +922,7 @@ cdef class DM(Object):
 
         """
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         CHKERR(PetscDECREF(vg.obj))
         if cname != NULL:
             CHKERR(DMRestoreNamedGlobalVector(self.dm, cname, &vg.vec))
@@ -950,7 +950,7 @@ cdef class DM(Object):
         """
         cdef Vec vl = Vec()
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         if cname != NULL:
             CHKERR(DMGetNamedLocalVector(self.dm, cname, &vl.vec))
         else:
@@ -976,7 +976,7 @@ cdef class DM(Object):
 
         """
         cdef const char *cname = NULL
-        str2bytes(name, &cname)
+        name = str2bytes(name, &cname)
         CHKERR(PetscDECREF(vl.obj))
         if cname != NULL:
             CHKERR(DMRestoreNamedLocalVector(self.dm, cname, &vl.vec))
@@ -1407,13 +1407,13 @@ cdef class DM(Object):
         CHKERR(DMSetSparseLocalize(self.dm, cflag))
 
     def getBoundingBox(self) -> tuple[tuple[float, float], ...]:
-        """Return the dimension of embedding space for coordinates values.
+        """Return the global bounding box of the coordinates.
 
-        Not collective.
+        Collective.
 
         See Also
         --------
-        petsc.DMGetBoundingBox
+        getLocalBoundingBox, petsc.DMGetBoundingBox
 
         """
         cdef PetscInt dim=0
@@ -1955,15 +1955,6 @@ cdef class DM(Object):
         CHKERR(PetscINCREF(sec.obj))
         return sec
 
-    setSection = setLocalSection
-    getSection = getLocalSection
-    setDefaultSection = setLocalSection
-    getDefaultSection = getLocalSection
-    setDefaultLocalSection = setLocalSection
-    getDefaultLocalSection = getLocalSection
-    setDefaultGlobalSection = setGlobalSection
-    getDefaultGlobalSection = getGlobalSection
-
     def createSectionSF(self, Section localsec, Section globalsec) -> None:
         """Create the `SF` encoding the parallel DOF overlap for the `DM`.
 
@@ -2013,10 +2004,6 @@ cdef class DM(Object):
 
         """
         CHKERR(DMSetSectionSF(self.dm, sf.sf))
-
-    createDefaultSF = createSectionSF
-    getDefaultSF = getSectionSF
-    setDefaultSF = setSectionSF
 
     def getPointSF(self) -> SF:
         """Return the `SF` encoding the parallel DOF overlap for the `DM`.
@@ -2366,11 +2353,6 @@ cdef class DM(Object):
         cdef PetscBool coutput = PETSC_FALSE
         CHKERR(DMGetLabelOutput(self.dm, cname, &coutput))
         return coutput
-
-    # backward compatibility
-    createGlobalVector = createGlobalVec
-    createLocalVector = createLocalVec
-    getMatrix = createMatrix = createMat
 
     def setKSPCreateOperators(
         self, operators: KSPCreateOperatorsFunction | None,

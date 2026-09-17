@@ -41,6 +41,7 @@ class TAOType:
     ADMM     = S_(TAOADMM)
     ALMM     = S_(TAOALMM)
     PYTHON   = S_(TAOPYTHON)
+    SNES     = S_(TAOSNES)
 
 
 class TAOConvergedReason:
@@ -110,8 +111,6 @@ cdef class TAO(Object):
     ConvergedReason = TAOConvergedReason
     BNCGType = TAOBNCGType
     ALMMType = TAOALMMType
-    # FIXME backward compatibility
-    Reason = TAOConvergedReason
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.tao
@@ -1051,7 +1050,7 @@ cdef class TAO(Object):
 
         See Also
         --------
-        setVariableBounds, petsc.TaoComputeVariableBounds
+        setConstraints, petsc.TaoComputeConstraints
 
         """
         CHKERR(TaoComputeConstraints(self.tao, x.vec, c.vec))
@@ -1621,8 +1620,6 @@ cdef class TAO(Object):
         CHKERR(TaoGetSolutionStatus(self.tao, NULL, &fval, NULL, NULL, NULL, NULL))
         return toReal(fval)
 
-    getFunctionValue = getObjectiveValue
-
     def getSolutionNorm(self) -> tuple[float, float, float]:
         """Return the objective function value and the norms of gradient and constraints.
 
@@ -2037,10 +2034,6 @@ cdef class TAO(Object):
         CHKERR(PetscINCREF(ls.obj))
         return ls
 
-    # --- backward compatibility ---
-
-    setInitial = setSolution
-
     # --- application context ---
 
     property appctx:
@@ -2116,7 +2109,7 @@ cdef class TAO(Object):
     property function:
         """Objective value."""
         def __get__(self) -> float:
-            return self.getFunctionValue()
+            return self.getObjectiveValue()
 
     property gradient:
         """Gradient vector."""
@@ -2192,8 +2185,6 @@ cdef class TAOLineSearch(Object):
 
     Type   = TAOLineSearchType
     ConvergedReason = TAOLineSearchConvergedReason
-    # FIXME backward compatibility
-    Reason = TAOLineSearchConvergedReason
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.taols
@@ -2428,7 +2419,7 @@ cdef class TAOLineSearch(Object):
         """
         CHKERR(TaoLineSearchUseTaoRoutines(self.taols, tao.tao))
 
-    def apply(self, Vec x, Vec g, Vec s) -> tuple[float, float, str]:
+    def apply(self, Vec x, Vec g, Vec s) -> tuple[float, float, int]:
         """Performs a line-search in a given step direction.
 
         Collective.

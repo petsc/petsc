@@ -142,7 +142,7 @@ class BaseTestPlex:
 
     def testSectionClosure(self):
         section = self.plex.createSection([self.COMP], [self.DOFS])
-        self.plex.setSection(section)
+        self.plex.setLocalSection(section)
         vec = self.plex.createLocalVec()
         pStart, pEnd = self.plex.getChart()
         for p in range(pStart, pEnd):

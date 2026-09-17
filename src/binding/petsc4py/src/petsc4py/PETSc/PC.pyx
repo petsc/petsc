@@ -8,6 +8,7 @@ class PCType(object):
     LU                 = S_(PCLU)
     QR                 = S_(PCQR)
     SHELL              = S_(PCSHELL)
+    AMGX               = S_(PCAMGX)
     BJACOBI            = S_(PCBJACOBI)
     VPBJACOBI          = S_(PCVPBJACOBI)
     MG                 = S_(PCMG)
@@ -17,6 +18,7 @@ class PCType(object):
     ASM                = S_(PCASM)
     GASM               = S_(PCGASM)
     KSP                = S_(PCKSP)
+    BJKOKKOS           = S_(PCBJKOKKOS)
     COMPOSITE          = S_(PCCOMPOSITE)
     REDUNDANT          = S_(PCREDUNDANT)
     SPAI               = S_(PCSPAI)
@@ -36,6 +38,7 @@ class PCType(object):
     PYTHON             = S_(PCPYTHON)
     PFMG               = S_(PCPFMG)
     SYSPFMG            = S_(PCSYSPFMG)
+    SMG                = S_(PCSMG)
     REDISTRIBUTE       = S_(PCREDISTRIBUTE)
     SVD                = S_(PCSVD)
     GAMG               = S_(PCGAMG)
@@ -51,11 +54,13 @@ class PCType(object):
     DEFLATION          = S_(PCDEFLATION)
     HPDDM              = S_(PCHPDDM)
     H2OPUS             = S_(PCH2OPUS)
+    MPI                = S_(PCMPI)
 
 
 class PCSide(object):
     """The manner in which the preconditioner is applied."""
     # native
+    DEFAULT   = PC_SIDE_DEFAULT
     LEFT      = PC_LEFT
     RIGHT     = PC_RIGHT
     SYMMETRIC = PC_SYMMETRIC
@@ -109,6 +114,7 @@ class PCCompositeType(object):
     SYMMETRIC_MULTIPLICATIVE = PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
     SPECIAL                  = PC_COMPOSITE_SPECIAL
     SCHUR                    = PC_COMPOSITE_SCHUR
+    GKB                      = PC_COMPOSITE_GKB
 
 
 class PCFieldSplitSchurPreType(object):
@@ -167,6 +173,7 @@ class PCFailedReason(object):
     FACTOR_NUMERIC_ZEROPIVOT = PC_FACTOR_NUMERIC_ZEROPIVOT
     FACTOR_OUTMEMORY         = PC_FACTOR_OUTMEMORY
     FACTOR_OTHER             = PC_FACTOR_OTHER
+    INCONSISTENT_RHS         = PC_INCONSISTENT_RHS
     SUBPC_ERROR              = PC_SUBPC_ERROR
 
 # --------------------------------------------------------------------
@@ -210,9 +217,6 @@ cdef class PC(Object):
     HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
     DeflationSpaceType        = PCDeflationSpaceType
     FailedReason              = PCFailedReason
-    # Backward compatibility
-    SchurFactType             = PCFieldSplitSchurFactType
-    SchurPreType              = PCFieldSplitSchurPreType
 
     # --- xxx ---
 

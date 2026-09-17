@@ -9,7 +9,7 @@ cdef class Sys:
         cls,
         devel: bool = False,
         date: bool = False,
-        author: bool = False) -> tuple[int, int, int]:
+        author: bool = False) -> tuple[int, int, int] | tuple[tuple[int, int, int] | bool | str | tuple[str, ...], ...]:
         """Return PETSc version information.
 
         Not collective.
@@ -175,7 +175,7 @@ cdef class Sys:
         comm
             MPI communicator, defaults to `getDefaultComm`.
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are ignored.
 
         See Also
         --------
@@ -207,6 +207,9 @@ cdef class Sys:
 
         Not collective.
 
+        With ``flush=True``, the flush is collective over the communicator;
+        all ranks must participate in the matching flush.
+
         Parameters
         ----------
         *args
@@ -220,7 +223,7 @@ cdef class Sys:
         comm
             MPI communicator, defaults to `getDefaultComm`.
         **kwargs
-            Keyword arguments.
+            Additional keyword arguments are ignored.
 
         See Also
         --------

@@ -118,10 +118,6 @@ cdef class Viewer(Object):
     FileMode = ViewerFileMode
     DrawSize = ViewerDrawSize
 
-    # backward compatibility
-    Mode = ViewerFileMode
-    Size = ViewerDrawSize
-
     #
 
     def __cinit__(self):

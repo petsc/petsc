@@ -1,7 +1,7 @@
 from petsc4py import PETSc
 
-class Matrix(object):
 
+class Matrix:
     def __init__(self):
         pass
 
@@ -12,6 +12,6 @@ class Matrix(object):
         pass
 
     def setFromOptions(self, mat):
-        m = PETSc.Options().getString('enable',None)
+        m = PETSc.Options().getString('enable', None)
         if m is not None:
-          setattr(self,m,1)
+            setattr(self, m, 1)

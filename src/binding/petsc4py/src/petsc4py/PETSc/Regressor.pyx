@@ -76,7 +76,7 @@ cdef class Regressor(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscRegressor newregressor = NULL
         CHKERR(PetscRegressorCreate(ccomm, &newregressor))
-        PetscCLEAR(self.obj); self.regressor = newregressor
+        CHKERR(PetscCLEAR(self.obj)); self.regressor = newregressor
         return self
 
     def setRegularizerWeight(self, weight: float) -> None:
@@ -127,7 +127,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorPredict
+        petsc.PetscRegressorFit
 
         """
         CHKERR(PetscRegressorFit(self.regressor, X.mat, y.vec))
@@ -146,7 +146,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorFit
+        petsc.PetscRegressorPredict
 
         """
         CHKERR(PetscRegressorPredict(self.regressor, X.mat, y.vec))
@@ -172,7 +172,7 @@ cdef class Regressor(Object):
 
         See Also
         --------
-        petsc.PetscRegressorDestroy
+        petsc.PetscRegressorReset
 
         """
         CHKERR(PetscRegressorReset(self.regressor))

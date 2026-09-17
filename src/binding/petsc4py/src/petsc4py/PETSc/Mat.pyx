@@ -94,7 +94,7 @@ class MatType(object):
     LMVMBADBROYDEN  = S_(MATLMVMBADBROYDEN)
     LMVMSYMBROYDEN  = S_(MATLMVMSYMBROYDEN)
     LMVMSYMBADBROYDEN = S_(MATLMVMSYMBADBROYDEN)
-    LMVMDIAGBBROYDEN = S_(MATLMVMDIAGBROYDEN)
+    LMVMDIAGBROYDEN  = S_(MATLMVMDIAGBROYDEN)
     CONSTANTDIAGONAL = S_(MATCONSTANTDIAGONAL)
     DIAGONAL         = S_(MATDIAGONAL)
     H2OPUS           = S_(MATH2OPUS)
@@ -272,7 +272,7 @@ class MatSORType(object):
     """
     FORWARD_SWEEP         = SOR_FORWARD_SWEEP
     BACKWARD_SWEEP        = SOR_BACKWARD_SWEEP
-    SYMMETRY_SWEEP        = SOR_SYMMETRIC_SWEEP
+    SYMMETRIC_SWEEP       = SOR_SYMMETRIC_SWEEP
     LOCAL_FORWARD_SWEEP   = SOR_LOCAL_FORWARD_SWEEP
     LOCAL_BACKWARD_SWEEP  = SOR_LOCAL_BACKWARD_SWEEP
     LOCAL_SYMMETRIC_SWEEP = SOR_LOCAL_SYMMETRIC_SWEEP
@@ -688,7 +688,7 @@ cdef class Mat(Object):
 
         """
         cdef PetscInt nb=0, *b=NULL
-        iarray_i(blocks, &nb, &b)
+        cdef object unused = iarray_i(blocks, &nb, &b)
         CHKERR(MatSetVariableBlockSizes(self.mat, nb, b))
 
     def setVecType(self, vec_type: Vec.Type | str) -> None:
@@ -2796,7 +2796,7 @@ cdef class Mat(Object):
 
         See Also
         --------
-        petsc.MatGetRowIJ
+        petsc.MatGetColumnIJ
 
         """
         cdef PetscInt shift=0
@@ -2861,7 +2861,7 @@ cdef class Mat(Object):
         cols
             Column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols)``.
+            The scalar values. A sequence of length exactly ``len(rows) * len(cols)``.
         addv
             Insertion mode.
 
@@ -2973,7 +2973,7 @@ cdef class Mat(Object):
         cols
             Block column indices.
         values
-            The scalar values. A sequence of length at least
+            The scalar values. A sequence of length exactly
             ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
@@ -3136,7 +3136,7 @@ cdef class Mat(Object):
         cols
             Local column indices.
         values
-            The scalar values. A sequence of length at least ``len(rows) * len(cols)``.
+            The scalar values. A sequence of length exactly ``len(rows) * len(cols)``.
         addv
             Insertion mode.
 
@@ -3227,7 +3227,7 @@ cdef class Mat(Object):
         cols
             Local block column indices.
         values
-            The scalar values. A sequence of length at least
+            The scalar values. A sequence of length exactly
             ``len(rows) * len(cols) * bs * bs``,
             where ``bs`` is the block size of the matrix.
         addv
@@ -3736,10 +3736,6 @@ cdef class Mat(Object):
         cdef Vec vecl = Vec()
         CHKERR(MatCreateVecs(self.mat, NULL, &vecl.vec))
         return vecl
-
-    getVecs = createVecs
-    getVecRight = createVecRight
-    getVecLeft = createVecLeft
 
     #
 
@@ -6571,10 +6567,6 @@ cdef class Mat(Object):
         """
         CHKERR(MatSetDM(self.mat, dm.dm))
 
-    # backward compatibility
-
-    PtAP = ptap
-
     #
 
     property sizes:
@@ -6643,8 +6635,7 @@ cdef class Mat(Object):
         return (dltype, devId)
 
     def toDLPack(self, mode: AccessModeSpec = 'rw') -> Any:
-        """Return a DLPack `PyCapsule` wrapping the vector data."""
-        if mode is None: mode = 'rw'
+        """Return a DLPack `PyCapsule` wrapping the matrix data."""
         if mode is None: mode = 'rw'
         if mode not in ['rw', 'r', 'w']:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")

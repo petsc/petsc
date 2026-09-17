@@ -383,7 +383,6 @@ def setup(app):
     except ImportError:
         autodoc_mock_imports.append('PETSc')
         return
-    del PETSc.DA  # FIXME
 
     sys_dwb = sys.dont_write_bytecode
     sys.dont_write_bytecode = True

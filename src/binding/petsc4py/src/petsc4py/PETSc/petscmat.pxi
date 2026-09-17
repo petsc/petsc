@@ -361,9 +361,7 @@ cdef extern from * nogil:
     PetscErrorCode MatRestrict(PetscMat, PetscVec, PetscVec)
 
     PetscErrorCode MatPermute(PetscMat, PetscIS, PetscIS, PetscMat*)
-    PetscErrorCode MatPermuteSparsify(PetscMat, PetscInt, PetscReal, PetscReal, PetscIS, PetscIS, PetscMat*)
 
-    PetscErrorCode MatMerge(MPI_Comm, PetscMat, PetscInt, PetscMatReuse, PetscMat*)
     PetscErrorCode MatCreateSubMatrix(PetscMat, PetscIS, PetscIS, PetscMatReuse, PetscMat*)
     PetscErrorCode MatCreateSubMatrices(PetscMat, PetscInt, PetscIS[], PetscIS[], PetscMatReuse, PetscMat*[])
     PetscErrorCode MatIncreaseOverlap(PetscMat, PetscInt, PetscIS[], PetscInt)
@@ -496,16 +494,15 @@ cdef extern from * nogil:
     PetscErrorCode MatFactorInfoInitialize(PetscMatFactorInfo*)
 
     PetscErrorCode MatCholeskyFactor(PetscMat, PetscIS, PetscMatFactorInfo*)
-    PetscErrorCode MatCholeskyFactorSymbolic(PetscMat, PetscIS, PetscMatFactorInfo*, PetscMat*)
-    PetscErrorCode MatCholeskyFactorNumeric(PetscMat, PetscMatFactorInfo*, PetscMat*)
+    PetscErrorCode MatCholeskyFactorSymbolic(PetscMat, PetscMat, PetscIS, const PetscMatFactorInfo*)
+    PetscErrorCode MatCholeskyFactorNumeric(PetscMat, PetscMat, const PetscMatFactorInfo*)
     PetscErrorCode MatLUFactor(PetscMat, PetscIS, PetscIS, PetscMatFactorInfo*)
     PetscErrorCode MatILUFactor(PetscMat, PetscIS, PetscIS, PetscMatFactorInfo*)
     PetscErrorCode MatICCFactor(PetscMat, PetscIS, PetscMatFactorInfo*)
-    PetscErrorCode MatLUFactorSymbolic(PetscMat, PetscIS, PetscIS, PetscMatFactorInfo*, PetscMat*)
-    PetscErrorCode MatILUFactorSymbolic(PetscMat, PetscIS, PetscIS, PetscMatFactorInfo*, PetscMat*)
-    PetscErrorCode MatICCFactorSymbolic(PetscMat, PetscIS, PetscMatFactorInfo*, PetscMat*)
-    PetscErrorCode MatLUFactorNumeric(PetscMat, PetscMatFactorInfo*, PetscMat*)
-    PetscErrorCode MatILUDTFactor(PetscMat, PetscIS, PetscIS, PetscMatFactorInfo*, PetscMat*)
+    PetscErrorCode MatLUFactorSymbolic(PetscMat, PetscMat, PetscIS, PetscIS, const PetscMatFactorInfo*)
+    PetscErrorCode MatILUFactorSymbolic(PetscMat, PetscMat, PetscIS, PetscIS, const PetscMatFactorInfo*)
+    PetscErrorCode MatICCFactorSymbolic(PetscMat, PetscMat, PetscIS, const PetscMatFactorInfo*)
+    PetscErrorCode MatLUFactorNumeric(PetscMat, PetscMat, const PetscMatFactorInfo*)
     PetscErrorCode MatGetInertia(PetscMat, PetscInt*, PetscInt*, PetscInt*)
     PetscErrorCode MatSetUnfactored(PetscMat)
 
@@ -528,11 +525,6 @@ cdef extern from * nogil:
     PetscErrorCode MatSolveAdd(PetscMat, PetscVec, PetscVec, PetscVec)
     PetscErrorCode MatSolveTransposeAdd(PetscMat, PetscVec, PetscVec, PetscVec)
     PetscErrorCode MatMatSolve(PetscMat, PetscMat, PetscMat)
-
-    PetscErrorCode MatComputeExplicitOperator(PetscMat, PetscMat*)
-    PetscErrorCode MatUseScaledForm(PetscMat, PetscBool)
-    PetscErrorCode MatScaleSystem(PetscMat, PetscVec, PetscVec)
-    PetscErrorCode MatUnScaleSystem(PetscMat, PetscVec, PetscVec)
 
     PetscErrorCode MatDenseSetLDA(PetscMat, PetscInt)
     PetscErrorCode MatDenseGetLDA(PetscMat, PetscInt*)

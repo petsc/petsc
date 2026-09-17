@@ -1,5 +1,7 @@
 #include <petscksp.h>
 
+// Keep this driver and the companion Python driver ex100.py in sync.
+
 /* ------------------------------------------------------- */
 
 PetscErrorCode RunTest(void)
@@ -64,7 +66,9 @@ PetscErrorCode RunTest(void)
 
 /* ------------------------------------------------------- */
 
-static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
+static char help[] = "Python-implemented Mat/KSP/PC.\n"
+                     "The companion Python driver ex100.py uses the same implementations in example100.py.\n"
+                     "Run it with python ex100.py and the same PETSc options as this example.\n\n";
 
 #if !defined(PYTHON_EXE)
   #define PYTHON_EXE 0

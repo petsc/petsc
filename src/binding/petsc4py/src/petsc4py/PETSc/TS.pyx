@@ -19,6 +19,7 @@ class TSType(object):
     GLEE            = S_(TSGLEE)
     SSP             = S_(TSSSP)
     ARKIMEX         = S_(TSARKIMEX)
+    IRK             = S_(TSIRK)
     DIRK            = S_(TSDIRK)
     ROSW            = S_(TSROSW)
     EIMEX           = S_(TSEIMEX)
@@ -129,6 +130,8 @@ class TSConvergedReason:
     CONVERGED_ITS            = TS_CONVERGED_ITS
     CONVERGED_USER           = TS_CONVERGED_USER
     CONVERGED_EVENT          = TS_CONVERGED_EVENT
+    CONVERGED_PSEUDO_FATOL   = TS_CONVERGED_PSEUDO_FATOL
+    CONVERGED_PSEUDO_FRTOL   = TS_CONVERGED_PSEUDO_FRTOL
     # diverged
     DIVERGED_NONLINEAR_SOLVE = TS_DIVERGED_NONLINEAR_SOLVE
     DIVERGED_STEP_REJECTED   = TS_DIVERGED_STEP_REJECTED
@@ -1587,26 +1590,6 @@ cdef class TS(Object):
         cdef unused = oarray_r(tspan, &nt, &rtspan)
         CHKERR(TSSetTimeSpan(self.ts, nt, rtspan))
 
-    getTimeSpan = getEvaluationTimes
-
-    def getTimeSpanSolutions(self) -> list[Vec]:
-        """Return the solutions at the times in the time span. Deprecated.
-
-        Not collective.
-
-        See Also
-        --------
-        setTimeSpan, setEvaluationTimes, getEvaluationSolutions
-
-        """
-        cdef PetscInt nt = 0
-        cdef PetscVec *sols = NULL
-        CHKERR(TSGetEvaluationSolutions(self.ts, &nt, NULL, &sols))
-        cdef object sollist = None
-        if sols != NULL:
-            sollist = [ref_Vec(sols[i]) for i from 0 <= i < nt]
-        return sollist
-
     # --- inner solver ---
 
     def getSNES(self) -> SNES:
@@ -2233,8 +2216,6 @@ cdef class TS(Object):
         self.set_attr('__monitor__', None)
         CHKERR(TSMonitorCancel(self.ts))
 
-    cancelMonitor = monitorCancel
-
     def monitor(self, step: int, time: float, Vec u=None) -> None:
         """Monitor the solve.
 
@@ -2588,7 +2569,7 @@ cdef class TS(Object):
         cdef PetscTSAdapt tsadapt = NULL
         cdef PetscReal hminr = toReal(hmin)
         cdef PetscReal hmaxr = toReal(hmax)
-        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR(TSGetAdapt(self.ts, &tsadapt))
         CHKERR(TSAdaptSetStepLimits(tsadapt, hminr, hmaxr))
 
     def getStepLimits(self) -> tuple[float, float]:
@@ -2604,7 +2585,7 @@ cdef class TS(Object):
         cdef PetscTSAdapt tsadapt = NULL
         cdef PetscReal hminr = 0.
         cdef PetscReal hmaxr = 0.
-        TSGetAdapt(self.ts, &tsadapt)
+        CHKERR(TSGetAdapt(self.ts, &tsadapt))
         CHKERR(TSAdaptGetStepLimits(tsadapt, &hminr, &hmaxr))
         return (asReal(hminr), asReal(hmaxr))
 

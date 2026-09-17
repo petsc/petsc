@@ -56,7 +56,7 @@ origSect.setFieldName(0, 'TestField')
 origSect.setUp()
 origSect.view()
 
-plex.setSection(origSect)
+plex.setLocalSection(origSect)
 origVec = plex.createGlobalVec()
 origVec.view()
 

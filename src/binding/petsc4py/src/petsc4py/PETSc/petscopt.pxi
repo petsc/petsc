@@ -292,7 +292,7 @@ cdef parseopt(options, prefix):
             first = gettok(tokens)
         else:
             second = gettok(tokens)
-            if getkey(second, prefix):
+            if iskey(second):
                 value = None
                 first = second
             else:

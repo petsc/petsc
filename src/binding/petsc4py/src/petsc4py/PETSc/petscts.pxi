@@ -16,6 +16,7 @@ cdef extern from * nogil:
     PetscTSType TSGLEE
     PetscTSType TSSSP
     PetscTSType TSARKIMEX
+    PetscTSType TSIRK
     PetscTSType TSDIRK
     PetscTSType TSROSW
     PetscTSType TSEIMEX
@@ -52,6 +53,8 @@ cdef extern from * nogil:
         TS_CONVERGED_ITS
         TS_CONVERGED_USER
         TS_CONVERGED_EVENT
+        TS_CONVERGED_PSEUDO_FATOL
+        TS_CONVERGED_PSEUDO_FRTOL
         # diverged
         TS_DIVERGED_NONLINEAR_SOLVE
         TS_DIVERGED_STEP_REJECTED
@@ -251,12 +254,10 @@ cdef extern from * nogil:
     PetscErrorCode TSAdjointComputeDRDYFunction(PetscTS, PetscReal, PetscVec, PetscVec*)
     PetscErrorCode TSAdjointCostIntegral(PetscTS)
 
-    PetscErrorCode TSForwardSetSensitivities(PetscTS, PetscInt, PetscVec*, PetscInt, PetscVec*)
-    PetscErrorCode TSForwardGetSensitivities(PetscTS, PetscInt*, PetscVec**, PetscInt*, PetscVec**)
-    PetscErrorCode TSForwardSetIntegralGradients(PetscTS, PetscInt, PetscVec *, PetscVec *)
-    PetscErrorCode TSForwardGetIntegralGradients(PetscTS, PetscInt*, PetscVec **, PetscVec **)
-    PetscErrorCode TSForwardSetRHSJacobianP(PetscTS, PetscVec*, PetscTSCostIntegrandFunction, void*)
-    PetscErrorCode TSForwardComputeRHSJacobianP(PetscTS, PetscReal, PetscVec, PetscVec*)
+    PetscErrorCode TSForwardSetSensitivities(PetscTS, PetscInt, PetscMat)
+    PetscErrorCode TSForwardGetSensitivities(PetscTS, PetscInt*, PetscMat*)
+    PetscErrorCode TSForwardSetIntegralGradients(PetscTS, PetscInt, PetscVec*)
+    PetscErrorCode TSForwardGetIntegralGradients(PetscTS, PetscInt*, PetscVec**)
     PetscErrorCode TSForwardSetUp(PetscTS)
     PetscErrorCode TSForwardCostIntegral(PetscTS)
     PetscErrorCode TSForwardStep(PetscTS)
@@ -352,8 +353,6 @@ cdef extern from * nogil:
     PetscErrorCode TSAdaptSetStepLimits(PetscTSAdapt, PetscReal, PetscReal)
     PetscErrorCode TSAdaptCheckStage(PetscTSAdapt, PetscTS, PetscReal, PetscVec, PetscBool*)
 
-cdef extern from * nogil: # custom.h
-    PetscErrorCode TSSetTimeStepNumber(PetscTS, PetscInt)
 
 # -----------------------------------------------------------------------------
 

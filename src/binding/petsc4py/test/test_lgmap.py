@@ -59,7 +59,10 @@ class BaseTestLGMap:
 
     def testApplyIS(self):
         is_in = PETSc.IS().createStride(self.lgmap.getSize())
-        _ = self.lgmap.apply(is_in)
+        is_out = self.lgmap.applyIS(is_in)
+        self.assertEqual(is_out.getIndices().tolist(), self.idx)
+        is_out.destroy()
+        is_in.destroy()
 
     def testProperties(self):
         for prop in ('size', 'indices', 'info'):

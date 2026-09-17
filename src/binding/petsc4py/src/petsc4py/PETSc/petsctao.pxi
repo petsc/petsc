@@ -34,6 +34,7 @@ cdef extern from * nogil:
     PetscTAOType TAOADMM
     PetscTAOType TAOALMM
     PetscTAOType TAOPYTHON
+    PetscTAOType TAOSNES
 
     ctypedef enum PetscTAOConvergedReason "TaoConvergedReason":
         # iterating
@@ -122,10 +123,7 @@ cdef extern from * nogil:
     PetscErrorCode TaoSetIterationNumber(PetscTAO, PetscInt)
     PetscErrorCode TaoGetIterationNumber(PetscTAO, PetscInt*)
 
-    PetscErrorCode TaoSetTrustRegionTolerance(PetscTAO, PetscReal)
     PetscErrorCode TaoGetInitialTrustRegionRadius(PetscTAO, PetscReal*)
-    PetscErrorCode TaoGetTrustRegionRadius(PetscTAO, PetscReal*)
-    PetscErrorCode TaoSetTrustRegionRadius(PetscTAO, PetscReal)
 
     PetscErrorCode TaoDefaultConvergenceTest(PetscTAO, void*) except PETSC_ERR_PYTHON
     PetscErrorCode TaoSetConvergenceTest(PetscTAO, PetscTaoConvergenceTest*, void*)
@@ -151,7 +149,6 @@ cdef extern from * nogil:
     PetscErrorCode TaoComputeJacobian(PetscTAO, PetscVec, PetscMat, PetscMat)
 
     PetscErrorCode TaoSetSolution(PetscTAO, PetscVec)
-    PetscErrorCode TaoSetConstraintsVec(PetscTAO, PetscVec)
     PetscErrorCode TaoSetVariableBounds(PetscTAO, PetscVec, PetscVec)
 
     PetscErrorCode TaoGetSolution(PetscTAO, PetscVec*)
@@ -246,7 +243,7 @@ cdef extern from * nogil:
     ctypedef PetscErrorCode PetscTaoLineSearchObjective(PetscTAOLineSearch, PetscVec, PetscReal*, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoLineSearchGradient(PetscTAOLineSearch, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoLineSearchObjGrad(PetscTAOLineSearch, PetscVec, PetscReal*, PetscVec, void*) except PETSC_ERR_PYTHON
-    ctypedef PetscErrorCode PetscTaoLineSearchObjGTS(PetscTaoLineSearch, PetscVec, PetscVec, PetscReal*, PetscReal*, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoLineSearchObjGTS(PetscTAOLineSearch, PetscVec, PetscVec, PetscReal*, PetscReal*, void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode TaoLineSearchCreate(MPI_Comm, PetscTAOLineSearch*)
     PetscErrorCode TaoLineSearchDestroy(PetscTAOLineSearch*)

@@ -78,6 +78,23 @@ class TestOptions(unittest.TestCase):
             self.assertTrue((k, v) in optlist)
         self._delopts()
 
+    def testGetAllPrefixBoundary(self):
+        opts = PETSc.Options('a_').create()
+        opts['flag'] = None
+        opts.prefix = 'b_'
+        opts['value'] = 123
+        opts.prefix = 'c_'
+        opts['negative'] = -7
+        for prefix, expected in (
+            ('a_', {'flag': None}),
+            ('b_', {'value': '123'}),
+            ('c_', {'negative': '-7'}),
+        ):
+            with self.subTest(prefix=prefix):
+                opts.prefix = prefix
+                self.assertEqual(opts.getAll(), expected)
+        opts.destroy()
+
     def testGetAllQuoted(self):
         dct = {
             'o0': '"0 1 2"',

@@ -131,7 +131,9 @@ class BaseTestTAO:
                     g.set(1)
                     s.set(-1)
                     f, step, reason = ls.apply(x, g, s)
-                    self.assertEqual(reason, PETSc.TAOLineSearch.Reason.SUCCESS)
+                    self.assertEqual(
+                        reason, PETSc.TAOLineSearch.ConvergedReason.SUCCESS
+                    )
                     self.assertAlmostEqual(f, 1)
                     self.assertAlmostEqual(step, 1)
                     self.assertAlmostEqual(x.norm(), 0)

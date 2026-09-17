@@ -2953,7 +2953,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 /*@
   DMPlexComputeCellGeometryFVM - Compute the volume for a given cell
 
-  Collective
+  Not Collective
 
   Input Parameters:
 + dm   - the `DMPLEX`
@@ -2965,6 +2965,9 @@ static PetscErrorCode DMPlexComputeGeometryFVM_3D_Internal(DM dm, PetscInt dim, 
 - normal   - the cell normal, if appropriate
 
   Level: advanced
+
+  Note:
+  Local coordinates must be available before calling this routine in a noncollective loop. If needed, call `DMGetCoordinatesLocalSetUp()` and, when using cellwise coordinates, `DMGetCellCoordinatesLocalSetUp()` collectively beforehand.
 
 .seealso: `DMPLEX`, `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/

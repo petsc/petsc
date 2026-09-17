@@ -1161,12 +1161,6 @@ cdef class DMDA(DM):
         def __get__(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
             return self.getGhostCorners()
 
-    # backward compatibility
-    createNaturalVector = createNaturalVec
-
-
-# backward compatibility alias
-DA = DMDA
 
 # --------------------------------------------------------------------
 

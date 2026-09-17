@@ -338,8 +338,6 @@ cdef class Scatter(Object):
         CHKERR(VecScatterEnd(self.sct, vec_from.vec, vec_to.vec,
                              caddv, csctm))
 
-    scatterBegin = begin
-    scatterEnd = end
 
 # --------------------------------------------------------------------
 

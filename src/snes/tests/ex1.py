@@ -1,7 +1,4 @@
-from petsc4py import PETSc
-
-class MySNES(object):
-
+class MySNES:
     def view(self, snes, vwr):
         viewctx = snes.appctx
         if viewctx is not None:

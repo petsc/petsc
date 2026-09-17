@@ -91,3 +91,5 @@ inline-quotes = "single"
     "PERF401", # Use `list.extend` to create a transformed list
     "EM101",   # Exception must not use a string literal, assign to variable first
 ]
+"../../**/tests/*.py" = ["ARG001", "ARG002", "PLC0415"]
+"../../**/tutorials/*.py" = ["ARG001", "ARG002", "PLC0415"]

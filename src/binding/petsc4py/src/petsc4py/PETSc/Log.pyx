@@ -168,29 +168,6 @@ cdef class Log:
         CHKERR(PetscLogFlops(cflops))
 
     @classmethod
-    def addFlops(cls, flops: float) -> None:
-        """Add floating point operations to the current event.
-
-        Not collective.
-
-        Parameters
-        ----------
-        flops
-            The number of flops to log.
-
-        Notes
-        -----
-        This method exists for backward compatibility.
-
-        See Also
-        --------
-        logFlops, petsc.PetscLogFlops
-
-        """
-        cdef PetscLogDouble cflops=flops
-        CHKERR(PetscLogFlops(cflops))
-
-    @classmethod
     def getFlops(cls) -> float:
         """Return the number of flops used on this processor since the program began.
 
@@ -695,7 +672,7 @@ cdef class LogEvent:
     property active_all:
         """All events activation."""
         def __get__(self) -> bool:
-            self.getActiveAll()
+            return self.getActiveAll()
 
         def __set__(self, value):
             self.setActiveAll(value)

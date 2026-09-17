@@ -7,6 +7,7 @@ cdef extern from * nogil:
     PetscPCType PCLU
     PetscPCType PCQR
     PetscPCType PCSHELL
+    PetscPCType PCAMGX
     PetscPCType PCBJACOBI
     PetscPCType PCMG
     PetscPCType PCEISENSTAT
@@ -15,6 +16,7 @@ cdef extern from * nogil:
     PetscPCType PCASM
     PetscPCType PCGASM
     PetscPCType PCKSP
+    PetscPCType PCBJKOKKOS
     PetscPCType PCCOMPOSITE
     PetscPCType PCREDUNDANT
     PetscPCType PCSPAI
@@ -35,6 +37,7 @@ cdef extern from * nogil:
     PetscPCType PCPYTHON
     PetscPCType PCPFMG
     PetscPCType PCSYSPFMG
+    PetscPCType PCSMG
     PetscPCType PCREDISTRIBUTE
     PetscPCType PCSVD
     PetscPCType PCGAMG
@@ -50,6 +53,7 @@ cdef extern from * nogil:
     PetscPCType PCDEFLATION
     PetscPCType PCHPDDM
     PetscPCType PCH2OPUS
+    PetscPCType PCMPI
 
     ctypedef enum PetscPCSide "PCSide":
         PC_SIDE_DEFAULT
@@ -92,6 +96,7 @@ cdef extern from * nogil:
         PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
         PC_COMPOSITE_SPECIAL
         PC_COMPOSITE_SCHUR
+        PC_COMPOSITE_GKB
 
     ctypedef enum PetscPCFieldSplitSchurPreType "PCFieldSplitSchurPreType":
         PC_FIELDSPLIT_SCHUR_PRE_SELF
@@ -138,6 +143,7 @@ cdef extern from * nogil:
         PC_FACTOR_NUMERIC_ZEROPIVOT
         PC_FACTOR_OUTMEMORY
         PC_FACTOR_OTHER
+        PC_INCONSISTENT_RHS
         PC_SUBPC_ERROR
 
     PetscErrorCode PCCreate(MPI_Comm, PetscPC*)

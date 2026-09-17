@@ -3,6 +3,7 @@ cdef extern from * nogil:
     ctypedef const char* PetscSNESType "SNESType"
     PetscSNESType SNESNEWTONLS
     PetscSNESType SNESNEWTONTR
+    PetscSNESType SNESNEWTONTRDC
     PetscSNESType SNESNEWTONAL
     PetscSNESType SNESPYTHON
     PetscSNESType SNESNRICHARDSON
@@ -39,6 +40,7 @@ cdef extern from * nogil:
         SNES_CONVERGED_FNORM_RELATIVE
         SNES_CONVERGED_SNORM_RELATIVE
         SNES_CONVERGED_ITS
+        SNES_CONVERGED_USER
         # diverged
         SNES_DIVERGED_FUNCTION_DOMAIN
         SNES_DIVERGED_FUNCTION_NANORINF
@@ -53,6 +55,7 @@ cdef extern from * nogil:
         SNES_DIVERGED_LOCAL_MIN
         SNES_DIVERGED_DTOL
         SNES_DIVERGED_TR_DELTA
+        SNES_DIVERGED_USER
 
     ctypedef PetscErrorCode (*PetscSNESCtxDel)(void**)
 

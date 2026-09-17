@@ -71,7 +71,7 @@ class TestDMShell(unittest.TestCase):
         vec.setSizes((10, None))
         vec.setUp()
         self.dm.setGlobalVector(vec)
-        gvec = self.dm.createGlobalVector()
+        gvec = self.dm.createGlobalVec()
         self.assertEqual(vec.getSizes(), gvec.getSizes())
         self.assertEqual(vec.comm, gvec.comm)
 
@@ -83,7 +83,7 @@ class TestDMShell(unittest.TestCase):
             return v
 
         self.dm.setCreateGlobalVector(create_vec)
-        gvec = self.dm.createGlobalVector()
+        gvec = self.dm.createGlobalVec()
         self.assertEqual(gvec.comm, self.dm.comm)
         self.assertEqual(gvec.getLocalSize(), 10)
 
@@ -92,7 +92,7 @@ class TestDMShell(unittest.TestCase):
         vec.setSizes((1 + 10 * self.COMM.rank, None))
         vec.setUp()
         self.dm.setLocalVector(vec)
-        lvec = self.dm.createLocalVector()
+        lvec = self.dm.createLocalVec()
         self.assertEqual(vec.getSizes(), lvec.getSizes())
         lsize, gsize = lvec.getSizes()
         self.assertEqual(lsize, gsize)
@@ -106,7 +106,7 @@ class TestDMShell(unittest.TestCase):
             return v
 
         self.dm.setCreateLocalVector(create_vec)
-        lvec = self.dm.createLocalVector()
+        lvec = self.dm.createLocalVec()
         lsize, gsize = lvec.getSizes()
         self.assertEqual(lsize, gsize)
         self.assertEqual(lsize, 1 + 10 * self.dm.comm.rank)
@@ -118,7 +118,7 @@ class TestDMShell(unittest.TestCase):
         mat.setUp()
         mat.assemble()
         self.dm.setMatrix(mat)
-        nmat = self.dm.createMatrix()
+        nmat = self.dm.createMat()
         self.assertEqual(nmat.getSizes(), mat.getSizes())
 
     def testSetCreateMatrix(self):
@@ -129,7 +129,7 @@ class TestDMShell(unittest.TestCase):
             return mat
 
         self.dm.setCreateMatrix(create_mat)
-        nmat = self.dm.createMatrix()
+        nmat = self.dm.createMat()
         self.assertEqual(nmat.getSizes(), create_mat(self.dm).getSizes())
 
     def testSetCreateFieldDecomposition(self):

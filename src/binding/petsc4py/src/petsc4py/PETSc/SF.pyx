@@ -250,7 +250,7 @@ cdef class SF(Object):
         remote = remote.reshape(nleaves, 2)
         return toInt(nroots), local, remote
 
-    def setGraph(self, nroots: int, local: Sequence[int], remote: Sequence[int]) -> None:
+    def setGraph(self, nroots: int, local: Sequence[int] | None, remote: Sequence[int]) -> None:
         """Set star forest graph.
 
         Collective.

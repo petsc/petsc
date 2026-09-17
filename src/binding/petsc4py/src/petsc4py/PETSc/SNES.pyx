@@ -10,6 +10,7 @@ class SNESType(object):
     """
     NEWTONLS         = S_(SNESNEWTONLS)
     NEWTONTR         = S_(SNESNEWTONTR)
+    NEWTONTRDC       = S_(SNESNEWTONTRDC)
     NEWTONAL         = S_(SNESNEWTONAL)
     PYTHON           = S_(SNESPYTHON)
     NRICHARDSON      = S_(SNESNRICHARDSON)
@@ -72,6 +73,7 @@ class SNESConvergedReason(object):
     CONVERGED_FNORM_RELATIVE    = SNES_CONVERGED_FNORM_RELATIVE
     CONVERGED_SNORM_RELATIVE    = SNES_CONVERGED_SNORM_RELATIVE
     CONVERGED_ITS               = SNES_CONVERGED_ITS
+    CONVERGED_USER              = SNES_CONVERGED_USER
     # diverged
     DIVERGED_FUNCTION_DOMAIN    = SNES_DIVERGED_FUNCTION_DOMAIN
     DIVERGED_FUNCTION_NANORINF  = SNES_DIVERGED_FUNCTION_NANORINF
@@ -86,6 +88,7 @@ class SNESConvergedReason(object):
     DIVERGED_LOCAL_MIN          = SNES_DIVERGED_LOCAL_MIN
     DIVERGED_DTOL               = SNES_DIVERGED_DTOL
     DIVERGED_TR_DELTA           = SNES_DIVERGED_TR_DELTA
+    DIVERGED_USER               = SNES_DIVERGED_USER
 
 
 class SNESNewtonALCorrectionType(object):
@@ -285,10 +288,6 @@ cdef class SNES(Object):
             CHKERR(SNESGetApplicationContext(self.snes, &ctx))
             appctx = toAppCtx(ctx)
         return appctx
-
-    # backward compatibility
-    setAppCtx = setApplicationContext
-    getAppCtx = getApplicationContext
 
     # --- discretization space ---
 
@@ -841,7 +840,7 @@ cdef class SNES(Object):
             self.set_attr('__initialguess__', None)
             CHKERR(SNESSetComputeInitialGuess(self.snes, NULL, NULL))
 
-    def getInitialGuess(self) -> SNESGuessFunction:
+    def getInitialGuess(self) -> tuple[SNESGuessFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the callback to compute the initial guess.
 
         Not collective.
@@ -890,7 +889,7 @@ cdef class SNES(Object):
                 self.set_attr('__function__', None)
             CHKERR(SNESSetFunction(self.snes, fvec, NULL, NULL))
 
-    def getFunction(self) -> SNESFunction:
+    def getFunction(self) -> tuple[Vec, tuple[SNESFunction, tuple[Any, ...], dict[str, Any]] | None]:
         """Return the callback to compute the nonlinear function.
 
         Not collective.
@@ -951,7 +950,7 @@ cdef class SNES(Object):
             self.set_attr('__update__', None)
             CHKERR(SNESSetUpdate(self.snes, NULL))
 
-    def getUpdate(self) -> SNESUpdateFunction:
+    def getUpdate(self) -> tuple[SNESUpdateFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the callback to compute the update at the beginning of each step.
 
         Not collective.
@@ -1063,7 +1062,7 @@ cdef class SNES(Object):
             self.set_attr('__objective__', None)
             CHKERR(SNESSetObjective(self.snes, NULL, NULL))
 
-    def getObjective(self) -> SNESObjFunction:
+    def getObjective(self) -> tuple[SNESObjFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the objective callback tuple.
 
         Not collective.
@@ -1168,7 +1167,7 @@ cdef class SNES(Object):
             self.set_attr('__ngs__', None)
             CHKERR(SNESSetNGS(self.snes, NULL, NULL))
 
-    def getNGS(self) -> SNESNGSFunction:
+    def getNGS(self) -> tuple[SNESNGSFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the nonlinear Gauss-Seidel callback tuple.
 
         Not collective.
@@ -1362,7 +1361,7 @@ cdef class SNES(Object):
             self.set_attr('__converged__', context)
             CHKERR(SNESSetConvergenceTest(self.snes, SNES_Converged, <void*>context, NULL))
 
-    def getConvergenceTest(self) -> SNESConvergedFunction:
+    def getConvergenceTest(self) -> tuple[SNESConvergedFunction, tuple[Any, ...], dict[str, Any]] | None:
         """Return the callback to used as convergence test.
 
         Not collective.
@@ -1552,8 +1551,6 @@ cdef class SNES(Object):
         CHKERR(SNESMonitorCancel(self.snes))
         self.set_attr('__monitor__', None)
 
-    cancelMonitor = monitorCancel
-
     def monitor(self, its, rnorm) -> None:
         """Monitor the solver.
 
@@ -1703,13 +1700,6 @@ cdef class SNES(Object):
         cdef PetscInt ival = 0
         CHKERR(SNESGetLinearSolveFailures(self.snes, &ival))
         return toInt(ival)
-
-    setMaxNonlinearStepFailures = setMaxStepFailures
-    getMaxNonlinearStepFailures = getMaxStepFailures
-    getNonlinearStepFailures    = getStepFailures
-    setMaxLinearSolveFailures   = setMaxKSPFailures
-    getMaxLinearSolveFailures   = getMaxKSPFailures
-    getLinearSolveFailures      = getKSPFailures
 
     # --- solving ---
 
@@ -2471,10 +2461,10 @@ cdef class SNES(Object):
     property appctx:
         """Application context."""
         def __get__(self) -> Any:
-            return self.getAppCtx()
+            return self.getApplicationContext()
 
         def __set__(self, value):
-            self.setAppCtx(value)
+            self.setApplicationContext(value)
 
     # --- discretization space ---
 

@@ -19,6 +19,10 @@ If you are not contributing from a fork:
 - For changes only to documentation, add the `docs-only` label, which will
   trigger a modified pipeline to build a preview of the documentation automatically.
   Any warnings from Sphinx will cause the pipeline to fail. Once completed, click "View App" on the right side in the middle of the MR page.
+- For changes limited to petsc4py, add the `petsc4py-only` label to run the
+  petsc4py build/test configurations, installation and pip checks, and documentation
+  preview, together with the source and CI checks. The `docs-only` label takes
+  precedence if both labels are present. Remove `petsc4py-only` to restore the full pipeline.
 - If appropriate, once the MR has been submitted, refresh the browser and select Pipelines to examine and run testing; see doc:`/developers/contributing/pipelines`.
 
 For MRs from forks:

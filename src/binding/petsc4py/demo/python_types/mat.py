@@ -63,7 +63,7 @@ class Poisson2D:
                     u_e = x[i + 1, j]  # east
                 if j > 0:
                     u_s = x[i, j - 1]  # south
-                if j < ny - 1:
+                if j < my - 1:
                     u_n = x[i, j + 1]  # north
                 u_xx = (-u_e + 2 * u - u_w) * hy / hx
                 u_yy = (-u_n + 2 * u - u_s) * hx / hy

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 # --------------------------------------------------------------------
 
 from petsc4py import PETSc
@@ -10,18 +8,18 @@ OptDB = PETSc.Options()
 
 INFO = OptDB.hasName('info')
 
+
 def LOG(arg):
     if INFO:
-        print(arg)
+        PETSc.Sys.Print(arg, comm=PETSc.COMM_SELF)
+
 
 # --------------------------------------------------------------------
 
-class Laplace1D(object):
 
+class Laplace1D:
     def create(self, A):
         LOG('Laplace1D.create()')
-        M, N = A.getSize()
-        assert M == N
 
     def destroy(self, A):
         LOG('Laplace1D.destroy()')
@@ -43,20 +41,20 @@ class Laplace1D(object):
 
     def getDiagonal(self, A, d):
         LOG('Laplace1D.getDiagonal()')
-        M, N = A.getSize()
-        h = 1.0/(M-1)
-        d.set(2.0/h**2)
+        M, _ = A.getSize()
+        h = 1.0 / (M - 1)
+        d.set(2.0 / h**2)
 
     def mult(self, A, x, y):
         LOG('Laplace1D.mult()')
-        M, N = A.getSize()
-        xx = x.getArray(readonly=1) # to numpy array
-        yy = y.getArray(readonly=0) # to numpy array
-        yy[0]    =  2.0*xx[0] - xx[1]
-        yy[1:-1] = - xx[:-2] + 2.0*xx[1:-1] - xx[2:]
-        yy[-1]   = - xx[-2] + 2.0*xx[-1]
-        h = 1.0/(M-1)
-        yy *= 1.0/h**2
+        M, _ = A.getSize()
+        xx = x.getArray(readonly=1)  # to numpy array
+        yy = y.getArray(readonly=0)  # to numpy array
+        yy[0] = 2.0 * xx[0] - xx[1]
+        yy[1:-1] = -xx[:-2] + 2.0 * xx[1:-1] - xx[2:]
+        yy[-1] = -xx[-2] + 2.0 * xx[-1]
+        h = 1.0 / (M - 1)
+        yy *= 1.0 / h**2
 
     def multTranspose(self, A, x, y):
         LOG('Laplace1D.multTranspose()')
@@ -65,8 +63,8 @@ class Laplace1D(object):
 
 # --------------------------------------------------------------------
 
-class Jacobi(object):
 
+class Jacobi:
     def create(self, pc):
         LOG('Jacobi.create()')
         self.diag = None
@@ -84,7 +82,7 @@ class Jacobi(object):
 
     def setUp(self, pc):
         LOG('Jacobi.setUp()')
-        A, B = pc.getOperators()
+        _, B = pc.getOperators()
         self.diag = B.getDiagonal(self.diag)
 
     def apply(self, pc, x, y):
@@ -95,10 +93,11 @@ class Jacobi(object):
         LOG('Jacobi.applyTranspose()')
         self.apply(pc, x, y)
 
+
 # --------------------------------------------------------------------
 
-class ConjGrad(object):
 
+class ConjGrad:
     def create(self, ksp):
         LOG('ConjGrad.create()')
         self.work = []
@@ -127,6 +126,7 @@ class ConjGrad(object):
         A, P = get_op_pc(ksp, transpose=True)
         pcg(ksp, A, P, b, x, *self.work)
 
+
 def get_op_pc(ksp, transpose=False):
     op, _ = ksp.getOperators()
     pc = ksp.getPC()
@@ -138,6 +138,7 @@ def get_op_pc(ksp, transpose=False):
         P = pc.applyTranspose
     return A, P
 
+
 def do_loop(ksp, r):
     its = ksp.getIterationNumber()
     rnorm = r.norm()
@@ -146,10 +147,11 @@ def do_loop(ksp, r):
     ksp.monitor(its, rnorm)
     reason = ksp.callConvergenceTest(its, rnorm)
     if not reason:
-        ksp.setIterationNumber(its+1)
+        ksp.setIterationNumber(its + 1)
     else:
         ksp.setConvergedReason(reason)
     return reason
+
 
 def pcg(ksp, A, P, b, x, r, z, p):
     A(x, r)
@@ -168,6 +170,7 @@ def pcg(ksp, A, P, b, x, r, z, p):
         beta = delta / delta_old
         p.aypx(beta, z)
 
+
 def richardson(ksp, A, P, b, x, r, z):
     A(x, r)
     r.aypx(-1, b)
@@ -178,5 +181,6 @@ def richardson(ksp, A, P, b, x, r, z):
         r.aypx(-1, b)
         P(r, z)
         x.axpy(1, z)
+
 
 # --------------------------------------------------------------------
