@@ -17,7 +17,7 @@
   Note:
 .vb
  PETSCPARTITIONERCHACO    - The Chaco partitioner (--download-chaco)
- PETSCPARTITIONERPARMETIS - The ParMetis partitioner (--download-parmetis)
+ PETSCPARTITIONERPARMETIS - The ParMETIS partitioner (--download-parmetis)
  PETSCPARTITIONERSHELL    - A shell partitioner implemented by the user
  PETSCPARTITIONERSIMPLE   - A simple partitioner that divides cells into equal, contiguous chunks
  PETSCPARTITIONERGATHER   - Gathers all cells onto process 0

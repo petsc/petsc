@@ -318,7 +318,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCall(PetscFunction(args))
+  void PetscCall(PetscFunction(...))
 
   Not Collective
 
@@ -389,7 +389,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallNull(PetscFunction(args))
+  void PetscCallNull(PetscFunction(...))
 
   Not Collective; No Fortran Support
 
@@ -433,7 +433,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallBack(const char *functionname, PetscFunction(args))
+  void PetscCallBack(const char *functionname, PetscFunction(...))
 
   Not Collective; No Fortran Support
 
@@ -469,7 +469,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallVoid(PetscFunction(args))
+  void PetscCallVoid(PetscFunction(...))
 
   Not Collective; No Fortran Support
 
@@ -523,7 +523,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallReturnMPI(PetscFunction(args))
+  void PetscCallReturnMPI(PetscFunction(...))
 
   Not Collective
 
@@ -629,7 +629,7 @@ PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, size_t, char *);
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallMPI(MPI_Function(args))
+  void PetscCallMPI(MPI_Function(...))
 
   Not Collective
 
@@ -683,7 +683,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallMPIReturnMPI(MPI_Function(args))
+  void PetscCallMPIReturnMPI(MPI_Function(...))
 
   Not Collective
 
@@ -703,7 +703,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallMPINull(MPI_Function(args))
+  void PetscCallMPINull(MPI_Function(...))
 
   Not Collective; No Fortran Support
 
@@ -737,7 +737,7 @@ M*/
 
   Synopsis:
   #include <petscsys.h>
-  void PetscCallMPIAbort(MPI_Comm comm, MPI_Function(args))
+  void PetscCallMPIAbort(MPI_Comm comm, MPI_Function(...))
 
   Not Collective
 

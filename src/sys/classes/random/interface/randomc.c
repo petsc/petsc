@@ -360,7 +360,7 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 
       PetscCall(PetscObjectViewSAWs((PetscObject)rnd, viewer));
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Objects/%s/Low", name));
-      PetscCallSAWs(SAWs_Register, (dir, &rnd->low, 1, SAWs_READ, SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register, dir, &rnd->low, 1, SAWs_READ, SAWs_DOUBLE);
     }
 #endif
   }

@@ -587,7 +587,7 @@ struct _p_MatPartitioning {
   PetscBool  use_edge_weights; /* A flag indicates whether or not to use edge weights */
 };
 
-/* needed for parallel nested dissection by ParMetis and PTSCOTCH */
+/* needed for parallel nested dissection by ParMETIS */
 PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt, PetscInt[], PetscInt[], PetscInt[]);
 
 /*

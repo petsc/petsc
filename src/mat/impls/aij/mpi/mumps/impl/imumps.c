@@ -2758,9 +2758,9 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_6", "ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)", "None", mumps->id.ICNTL(6), &icntl, &flg));
   if (flg) mumps->id.ICNTL(6) = icntl;
 
-  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_7", "ICNTL(7): computes a symmetric permutation in sequential analysis. 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto(default)", "None", mumps->id.ICNTL(7), &icntl, &flg));
+  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_7", "ICNTL(7): computes a symmetric permutation in sequential analysis. 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=METIS, 6=QAMD, and 7=auto(default)", "None", mumps->id.ICNTL(7), &icntl, &flg));
   if (flg) {
-    PetscCheck(icntl != 1 && icntl >= 0 && icntl <= 7, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Valid values are 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto");
+    PetscCheck(icntl != 1 && icntl >= 0 && icntl <= 7, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Valid values are 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=METIS, 6=QAMD, and 7=auto");
     mumps->id.ICNTL(7) = icntl;
   }
 
@@ -2847,7 +2847,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_26", "ICNTL(26): drives the solution phase if a Schur complement matrix", "None", mumps->id.ICNTL(26), &mumps->id.ICNTL(26), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_27", "ICNTL(27): controls the blocking size for multiple right-hand sides", "None", mumps->id.ICNTL(27), &mumps->id.ICNTL(27), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_28", "ICNTL(28): use 1 for sequential analysis and ICNTL(7) ordering, or 2 for parallel analysis and ICNTL(29) ordering", "None", mumps->id.ICNTL(28), &mumps->id.ICNTL(28), NULL));
-  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_29", "ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis", "None", mumps->id.ICNTL(29), &mumps->id.ICNTL(29), NULL));
+  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_29", "ICNTL(29): parallel ordering 1 = PTScotch, 2 = ParMETIS", "None", mumps->id.ICNTL(29), &mumps->id.ICNTL(29), NULL));
   /* PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",mumps->id.ICNTL(30),&mumps->id.ICNTL(30),NULL)); */ /* call MatMumpsGetInverse() directly */
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_31", "ICNTL(31): indicates which factors may be discarded during factorization", "None", mumps->id.ICNTL(31), &mumps->id.ICNTL(31), NULL));
   /* PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_32","ICNTL(32): performs the forward elimination of the right-hand sides during factorization","None",mumps->id.ICNTL(32),&mumps->id.ICNTL(32),NULL));  -- not supported by PETSc API */
@@ -3634,7 +3634,7 @@ static PetscErrorCode MatMumpsSetBlk_MUMPS(Mat F, PetscInt nblk, const PetscInt 
 
   Works with `MATAIJ` and `MATSBAIJ` matrices
 
-  Use ./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch to have PETSc installed with MUMPS
+  Use `./configure --download-mumps --download-scalapack --download-parmetis --download-metis --download-ptscotch` to have PETSc installed with MUMPS
 
   Use ./configure --with-openmp --download-hwloc (or --with-hwloc) to enable running MUMPS in MPI+OpenMP hybrid mode and non-MUMPS in flat-MPI mode.
   See details below.
@@ -3647,7 +3647,7 @@ static PetscErrorCode MatMumpsSetBlk_MUMPS(Mat F, PetscInt nblk, const PetscInt 
 .  -mat_mumps_icntl_3           - ICNTL(3): output stream for global information, collected on the host
 .  -mat_mumps_icntl_4           - ICNTL(4): level of printing (0 to 4)
 .  -mat_mumps_icntl_6           - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
-.  -mat_mumps_icntl_7           - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
+.  -mat_mumps_icntl_7           - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=METIS, 6=QAMD, and 7=auto
                                   Use -pc_factor_mat_ordering_type type to have PETSc perform the ordering (sequential only)
 .  -mat_mumps_icntl_8           - ICNTL(8): scaling strategy (-2 to 8 or 77)
 .  -mat_mumps_icntl_10          - ICNTL(10): max num of refinements
@@ -3664,7 +3664,7 @@ static PetscErrorCode MatMumpsSetBlk_MUMPS(Mat F, PetscInt nblk, const PetscInt 
 .  -mat_mumps_icntl_25          - ICNTL(25): compute a solution of a deficient matrix and a null space basis
 .  -mat_mumps_icntl_26          - ICNTL(26): drives the solution phase if a Schur complement matrix
 .  -mat_mumps_icntl_28          - ICNTL(28): use 1 for sequential analysis and ICNTL(7) ordering, or 2 for parallel analysis and ICNTL(29) ordering
-.  -mat_mumps_icntl_29          - ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis
+.  -mat_mumps_icntl_29          - ICNTL(29): parallel ordering 1 = PTScotch, 2 = ParMETIS
 .  -mat_mumps_icntl_30          - ICNTL(30): compute user-specified set of entries in inv(A)
 .  -mat_mumps_icntl_31          - ICNTL(31): indicates which factors may be discarded during factorization
 .  -mat_mumps_icntl_33          - ICNTL(33): compute determinant

@@ -39,7 +39,7 @@ class Configure(config.package.CMakePackage):
 
     args.append('-DENABLE_PARALLEL=yes')
     if not self.metis.found and not self.zoltan.found and not self.trilinos:
-      raise  RuntimeError('MSTK requires either Metis (--download-metis) or Zoltan (--download-zoltan (or --download-trilinos) --download-parmetis --download-metis)!')
+      raise  RuntimeError('MSTK requires either METIS (--download-metis) or Zoltan (--download-zoltan (or --download-trilinos) --download-parmetis --download-metis)!')
     if self.metis.found:
       args.append('-DENABLE_METIS:BOOL=ON')
       args.append('-DMETIS_DIR:FILEPATH='+self.metis.directory)
@@ -63,7 +63,7 @@ class Configure(config.package.CMakePackage):
       else:
         args.append('-DEXODUSII_DIR:FILEPATH='+self.trilinos.directory)
 
-    #  Need to pass -DMETIS_5 to C and C++ compiler flags otherwise assumes older Metis
+    #  Need to pass -DMETIS_5 to C and C++ compiler flags otherwise assumes older METIS
     args = self.rmArgsStartsWith(args,['-DCMAKE_CXX_FLAGS:STRING','-DCMAKE_C_FLAGS:STRING'])
     args.append('-DCMAKE_C_FLAGS:STRING="'+self.updatePackageCFlags(self.getCompilerFlags())+' -DMETIS_5"')
     if hasattr(self.compilers, 'CXX'):

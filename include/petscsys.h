@@ -1818,7 +1818,7 @@ M*/
 
    Synopsis:
    #include <petscsys.h>
-   PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[], args);
+   PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[], ...);
 
    Not Collective, only applies on MPI rank 0; No Fortran Support
 

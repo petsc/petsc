@@ -115,7 +115,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)part, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)hpart->coarseMatPart, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->coarseMatPart, "hierarch_coarse_"));
-  /* if did not set partitioning type yet, use parmetis by default */
+  /* if did not set partitioning type yet, use ParMETIS by default */
   if (!hpart->coarseparttype) {
 #if PetscDefined(HAVE_PARMETIS)
     PetscCall(MatPartitioningSetType(hpart->coarseMatPart, MATPARTITIONINGPARMETIS));
@@ -124,7 +124,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
     PetscCall(MatPartitioningSetType(hpart->coarseMatPart, MATPARTITIONINGPTSCOTCH));
     PetscCall(PetscStrallocpy(MATPARTITIONINGPTSCOTCH, &hpart->coarseparttype));
 #else
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Requires PETSc be installed with ParMETIS or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
 #endif
   } else {
     PetscCall(MatPartitioningSetType(hpart->coarseMatPart, hpart->coarseparttype));
@@ -178,7 +178,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
       PetscCall(MatPartitioningCreate(scomm, &hpart->fineMatPart));
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)hpart->fineMatPart, prefix));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->fineMatPart, "hierarch_fine_"));
-      /* if do not set partitioning type, use parmetis by default */
+      /* if do not set partitioning type, use ParMETIS by default */
       if (!hpart->fineparttype) {
 #if PetscDefined(HAVE_PARMETIS)
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGPARMETIS));
@@ -193,7 +193,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part, IS
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, MATPARTITIONINGPARTY));
         PetscCall(PetscStrallocpy(PETSC_HAVE_PARTY, &hpart->fineparttype));
 #else
-        SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Requires PETSc be installed with ParMetis or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
+        SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Requires PETSc be installed with ParMETIS or run with -mat_partitioning_hierarchical_coarseparttype partitiontype");
 #endif
       } else {
         PetscCall(MatPartitioningSetType(hpart->fineMatPart, hpart->fineparttype));
@@ -535,7 +535,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)part, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)hpart->improver, prefix));
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)hpart->improver, "hierarch_improver_"));
-  /* Only parmetis supports to refine a partition */
+  /* Only ParMETIS supports to refine a partition */
 #if PetscDefined(HAVE_PARMETIS)
   PetscCall(MatPartitioningSetType(hpart->improver, MATPARTITIONINGPARMETIS));
   PetscCall(MatPartitioningSetAdjacency(hpart->improver, adj));
@@ -550,7 +550,7 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
   PetscCall(MatDestroy(&adj));
   PetscFunctionReturn(PETSC_SUCCESS);
 #else
-  SETERRQ(PetscObjectComm((PetscObject)adj), PETSC_ERR_SUP, "Requires PETSc be installed with ParMetis");
+  SETERRQ(PetscObjectComm((PetscObject)adj), PETSC_ERR_SUP, "Requires PETSc be installed with ParMETIS");
 #endif
 }
 
@@ -569,8 +569,8 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
 .  part - the partitioning context
 
    Options Database Keys:
-+     -mat_partitioning_hierarchical_coarseparttype - partitioner type at the first level and parmetis is used by default
-.     -mat_partitioning_hierarchical_fineparttype   - partitioner type at the second level and parmetis is used by default
++     -mat_partitioning_hierarchical_coarseparttype - partitioner type at the first level and ParMETIS is used by default
+.     -mat_partitioning_hierarchical_fineparttype   - partitioner type at the second level and ParMETIS is used by default
 .     -mat_partitioning_hierarchical_ncoarseparts   - number of subgraphs is required at the first level, which is often the number of compute nodes
 -     -mat_partitioning_hierarchical_nfineparts     - number of smaller subgraphs for each subgraph, which is often the number of cores per compute node
 

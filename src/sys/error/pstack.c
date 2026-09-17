@@ -70,8 +70,8 @@ PetscErrorCode PetscStackViewSAWs(void)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) return PETSC_SUCCESS;
   #if PetscDefined(USE_DEBUG)
-  PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/functions", petscstack.function, 20, SAWs_READ, SAWs_STRING));
-  PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/__current_size", &petscstack.currentsize, 1, SAWs_READ, SAWs_INT));
+  PetscCallSAWs(SAWs_Register, "/PETSc/Stack/functions", petscstack.function, 20, SAWs_READ, SAWs_STRING);
+  PetscCallSAWs(SAWs_Register, "/PETSc/Stack/__current_size", &petscstack.currentsize, 1, SAWs_READ, SAWs_INT);
   #endif
   amsmemstack = PETSC_TRUE;
   return PETSC_SUCCESS;
@@ -93,7 +93,7 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 {
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCallSAWs(SAWs_Delete, ("/PETSc/Stack"));
+  PetscCallSAWs(SAWs_Delete, "/PETSc/Stack");
   amsmemstack = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

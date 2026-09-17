@@ -33,7 +33,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_ScaLAPACK(Mat, Mat, Mat);
 
   Synopsis:
   #include <petscscalapack.h>
-  void PetscCallScaLAPACKInfo(char *name, routine)
+  void PetscCallScaLAPACKInfo(char *name, routine(...))
 
   Not Collective
 

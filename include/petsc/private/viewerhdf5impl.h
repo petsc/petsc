@@ -15,25 +15,25 @@
   Returns a non-negative value if successful; otherwise returns a negative value.
   (see e.g. https://support.hdfgroup.org/HDF5/doc/RM/RM_H5O.html#Object-Close)
 */
-  #define PetscCallHDF5(func, args) \
+  #define PetscCallHDF5(func, ...) \
     do { \
       herr_t _status; \
       PetscStackPushExternal(#func); \
-      _status = func args; \
+      _status = func(__VA_ARGS__); \
       PetscStackPop; \
       PetscCheck(_status >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HDF5 call %s() Status %d", #func, (int)_status); \
     } while (0)
 
-  #define PetscCallHDF5ReturnNoCheck(ret, func, args) \
+  #define PetscCallHDF5ReturnNoCheck(ret, func, ...) \
     do { \
       PetscStackPushExternal(#func); \
-      ret = func args; \
+      ret = func(__VA_ARGS__); \
       PetscStackPop; \
     } while (0)
 
-  #define PetscCallHDF5Return(ret, func, args) \
+  #define PetscCallHDF5Return(ret, func, ...) \
     do { \
-      PetscCallHDF5ReturnNoCheck(ret, func, args); \
+      PetscCallHDF5ReturnNoCheck(ret, func, __VA_ARGS__); \
       PetscCheck(ret >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HDF5 call %s() Status %d", #func, (int)ret); \
     } while (0)
 

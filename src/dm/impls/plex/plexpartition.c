@@ -1,5 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <petsc/private/partitionerimpl.h>
+#include <petsc/private/matmetisimpl.h>
+#include <petsc/private/matparmetisimpl.h>
 #include <petsc/private/hashseti.h>
 
 const char *const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_", NULL};
@@ -60,7 +62,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
   PetscCall(ISGetIndices(cellNumbering, &cellNum));
   /* Determine sizes */
   for (*numVertices = 0, c = cStart; c < cEnd; ++c) {
-    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    /* Skip non-owned cells in parallel (ParMETIS expects no overlap) */
     if (cellNum[c - cStart] < 0) continue;
     (*numVertices)++;
   }
@@ -82,7 +84,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
   for (c = cStart, v = 0; c < cEnd; ++c) {
     PetscInt adjSize = PETSC_DETERMINE, a, off = vOffsets[v];
 
-    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    /* Skip non-owned cells in parallel (ParMETIS expects no overlap) */
     if (cellNum[c - cStart] < 0) continue;
     PetscCall(DMPlexGetAdjacency(ovdm, c, &adjSize, &adj));
     for (a = 0; a < adjSize; ++a) {
@@ -209,7 +211,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   }
   /* Combine local and global adjacencies */
   for (*numVertices = 0, p = pStart; p < pEnd; p++) {
-    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    /* Skip non-owned cells in parallel (ParMETIS expects no overlap) */
     if (nroots > 0) {
       if (cellNum[p - pStart] < 0) continue;
     }
@@ -447,7 +449,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   if (numVertices) *numVertices = m;
   if (offsets) {
     PetscCall(PetscCalloc1(m + 1, &idxs));
-    for (i = 1; i < m + 1; i++) idxs[i] = ii[i] - i; /* ParMetis does not like self-connectivity */
+    for (i = 1; i < m + 1; i++) idxs[i] = ii[i] - i; /* ParMETIS does not like self-connectivity */
     *offsets = idxs;
   }
   if (adjacency) {
@@ -537,7 +539,7 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
   Level: advanced
 
   Note:
-  This is suitable for input to a mesh partitioner like ParMetis.
+  This is suitable for input to a mesh partitioner like ParMETIS.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`
 @*/
@@ -1646,8 +1648,8 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 . success - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
 
   Options Database Keys:
-+ -dm_plex_rebalance_shared_points_parmetis             - Use ParMetis instead of Metis for the partitioner
-. -dm_plex_rebalance_shared_points_use_initial_guess    - Use current partition to bootstrap ParMetis partition
++ -dm_plex_rebalance_shared_points_parmetis             - Use ParMETIS instead of METIS for the partitioner
+. -dm_plex_rebalance_shared_points_use_initial_guess    - Use current partition to bootstrap ParMETIS partition
 . -dm_plex_rebalance_shared_points_use_mat_partitioning - Use the MatPartitioning object to perform the partition, the prefix for those operations is -dm_plex_rebalance_shared_points_
 - -dm_plex_rebalance_shared_points_monitor              - Monitor the shared points rebalance process
 
@@ -1659,7 +1661,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 {
 #if PetscDefined(HAVE_PARMETIS)
   PetscSF            sf;
-  PetscInt           ierr, i, j, idx, jdx;
+  PetscInt           i, j, idx, jdx;
   PetscInt           eBegin, eEnd, nroots, nleafs, pStart, pEnd;
   const PetscInt    *degrees, *ilocal;
   const PetscSFNode *iremote;
@@ -1703,8 +1705,8 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   parallel        = PETSC_FALSE;
   useInitialGuess = PETSC_FALSE;
   PetscObjectOptionsBegin((PetscObject)dm);
-  PetscCall(PetscOptionsName("-dm_plex_rebalance_shared_points_parmetis", "Use ParMetis instead of Metis for the partitioner", "DMPlexRebalanceSharedPoints", &parallel));
-  PetscCall(PetscOptionsBool("-dm_plex_rebalance_shared_points_use_initial_guess", "Use current partition to bootstrap ParMetis partition", "DMPlexRebalanceSharedPoints", useInitialGuess, &useInitialGuess, NULL));
+  PetscCall(PetscOptionsName("-dm_plex_rebalance_shared_points_parmetis", "Use ParMETIS instead of METIS for the partitioner", "DMPlexRebalanceSharedPoints", &parallel));
+  PetscCall(PetscOptionsBool("-dm_plex_rebalance_shared_points_use_initial_guess", "Use current partition to bootstrap ParMETIS partition", "DMPlexRebalanceSharedPoints", useInitialGuess, &useInitialGuess, NULL));
   PetscCall(PetscOptionsBool("-dm_plex_rebalance_shared_points_use_mat_partitioning", "Use the MatPartitioning object to partition", "DMPlexRebalanceSharedPoints", usematpartitioning, &usematpartitioning, NULL));
   PetscCall(PetscOptionsViewer("-dm_plex_rebalance_shared_points_monitor", "Monitor the shared points rebalance process", "DMPlexRebalanceSharedPoints", &viewer, &format, NULL));
   PetscOptionsEnd();
@@ -1868,19 +1870,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       PetscCall(PetscViewerASCIIPrintf(viewer, "THIS DOES NOT WORK! I don't know why. Using current distribution of points as initial guess.\n"));
       for (i = 0; i < numRows; i++) part[i] = rank;
       if (viewer) PetscCall(PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n"));
-      PetscStackPushExternal("ParMETIS_V3_RefineKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      ierr = ParMETIS_V3_RefineKway((PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      PetscCallParMETIS(ParMETIS_V3_RefineKway, (PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_RefineKway()");
     } else {
-      PetscStackPushExternal("ParMETIS_V3_PartKway");
       PetscCall(PetscLogEventBegin(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      ierr = ParMETIS_V3_PartKway((PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+      PetscCallParMETIS(ParMETIS_V3_PartKway, (PetscInt *)cumSumVertices, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt, NULL, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscCall(PetscLogEventEnd(DMPLEX_RebalPartition, 0, 0, 0, 0));
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
     }
     PetscCall(MatRestoreRowIJ(A, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &numRows, &xadj, &adjncy, &done));
     PetscCall(PetscFree(options));
@@ -1917,13 +1913,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       }
 
       PetscCall(PetscMalloc1(64, &options));
-      ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
+      PetscCallMETIS(METIS_SetDefaultOptions, options);
       options[METIS_OPTION_CONTIG] = 1;
-      PetscStackPushExternal("METIS_PartGraphKway");
-      ierr = METIS_PartGraphKway(&numRows_g, &ncon, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
-      PetscStackPop;
-      PetscCheck(ierr == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
+      PetscCallMETIS(METIS_PartGraphKway, &numRows_g, &ncon, (idx_t *)xadj, (idx_t *)adjncy, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscCall(PetscFree(options));
       PetscCall(PetscFree(vtxwgt_g));
       PetscCall(MatRestoreRowIJ(As, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, &numRows_g, &xadj, &adjncy, &done));
@@ -1960,7 +1952,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   failed = (PetscInt)(part[0] != rank);
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &failed, 1, MPIU_INT, MPI_SUM, comm));
   if (failed > 0) {
-    PetscCheck(failed <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
+    PetscCheck(failed <= 0, comm, PETSC_ERR_LIB, "METIS/ParMETIS returned a bad partition");
     PetscCall(PetscFree(vtxwgt));
     PetscCall(PetscFree(toBalance));
     PetscCall(PetscFree(isLeaf));

@@ -32,7 +32,7 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../GKlib')
-    # force metis/parmetis to use a portable random number generator that will produce the same partitioning results on all systems
+    # force METIS/ParMETIS to use a portable random number generator that will produce the same partitioning results on all systems
     args.append('-DGKRAND=1')
     if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DSHARED=1')
@@ -53,10 +53,10 @@ class Configure(config.package.CMakePackage):
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     if not self.checkCompile('#include "metis.h"', '#if (IDXTYPEWIDTH != '+ str(self.getDefaultIndexSize())+')\n#error incompatible IDXTYPEWIDTH\n#endif\n'):
       if self.defaultIndexSize == 64:
-        msg= '--with-64-bit-indices option requires a metis build with IDXTYPEWIDTH=64.\n'
+        msg= '--with-64-bit-indices option requires a METIS build with IDXTYPEWIDTH=64.\n'
       else:
-        msg= 'IDXTYPEWIDTH=64 metis build appears to be specified for a default 32-bit-indices build of PETSc.\n'
-      raise RuntimeError('Metis specified is incompatible!\n'+msg+'Suggest using --download-metis for a compatible metis')
+        msg= 'IDXTYPEWIDTH=64 METIS build appears to be specified for a default 32-bit-indices build of PETSc.\n'
+      raise RuntimeError('METIS specified is incompatible!\n'+msg+'Suggest using --download-metis for a compatible METIS')
 
     self.compilers.CPPFLAGS = oldFlags
     return

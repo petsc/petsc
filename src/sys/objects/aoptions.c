@@ -172,69 +172,69 @@ static PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems PetscOptionsObject)
   PetscOptionsObject->pprefix = PetscOptionsObject->prefix; /* SAWs will change this, so cannot pass prefix directly */
 
   PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", "_title"));
-  PetscCallSAWs(SAWs_Register, (dir, &PetscOptionsObject->title, 1, SAWs_READ, SAWs_STRING));
+  PetscCallSAWs(SAWs_Register, dir, &PetscOptionsObject->title, 1, SAWs_READ, SAWs_STRING);
   PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", "prefix"));
-  PetscCallSAWs(SAWs_Register, (dir, &PetscOptionsObject->pprefix, 1, SAWs_READ, SAWs_STRING));
-  PetscCallSAWs(SAWs_Register, ("/PETSc/Options/ChangedMethod", &changedmethod, 1, SAWs_WRITE, SAWs_BOOLEAN));
-  PetscCallSAWs(SAWs_Register, ("/PETSc/Options/StopAsking", &stopasking, 1, SAWs_WRITE, SAWs_BOOLEAN));
+  PetscCallSAWs(SAWs_Register, dir, &PetscOptionsObject->pprefix, 1, SAWs_READ, SAWs_STRING);
+  PetscCallSAWs(SAWs_Register, "/PETSc/Options/ChangedMethod", &changedmethod, 1, SAWs_WRITE, SAWs_BOOLEAN);
+  PetscCallSAWs(SAWs_Register, "/PETSc/Options/StopAsking", &stopasking, 1, SAWs_WRITE, SAWs_BOOLEAN);
 
   while (next) {
     PetscCall(PetscSNPrintf(manname, PETSC_STATIC_ARRAY_LENGTH(manname), "_man_%d", mancount));
     PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", manname));
-    PetscCallSAWs(SAWs_Register, (dir, &next->man, 1, SAWs_READ, SAWs_STRING));
+    PetscCallSAWs(SAWs_Register, dir, &next->man, 1, SAWs_READ, SAWs_STRING);
     PetscCall(PetscSNPrintf(textname, PETSC_STATIC_ARRAY_LENGTH(textname), "_text_%d", mancount++));
     PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", textname));
-    PetscCallSAWs(SAWs_Register, (dir, &next->text, 1, SAWs_READ, SAWs_STRING));
+    PetscCallSAWs(SAWs_Register, dir, &next->text, 1, SAWs_READ, SAWs_STRING);
 
     switch (next->type) {
     case OPTION_HEAD:
       break;
     case OPTION_INT_ARRAY:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, next->arraylength, SAWs_WRITE, SAWs_INT));
+      PetscCallSAWs(SAWs_Register, dir, next->data, next->arraylength, SAWs_WRITE, SAWs_INT);
       break;
     case OPTION_REAL_ARRAY:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, next->arraylength, SAWs_WRITE, SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register, dir, next->data, next->arraylength, SAWs_WRITE, SAWs_DOUBLE);
       break;
     case OPTION_INT:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, 1, SAWs_WRITE, SAWs_INT));
+      PetscCallSAWs(SAWs_Register, dir, next->data, 1, SAWs_WRITE, SAWs_INT);
       break;
     case OPTION_REAL:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, 1, SAWs_WRITE, SAWs_DOUBLE));
+      PetscCallSAWs(SAWs_Register, dir, next->data, 1, SAWs_WRITE, SAWs_DOUBLE);
       break;
     case OPTION_BOOL:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, 1, SAWs_WRITE, SAWs_BOOLEAN));
+      PetscCallSAWs(SAWs_Register, dir, next->data, 1, SAWs_WRITE, SAWs_BOOLEAN);
       break;
     case OPTION_BOOL_ARRAY:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, next->arraylength, SAWs_WRITE, SAWs_BOOLEAN));
+      PetscCallSAWs(SAWs_Register, dir, next->data, next->arraylength, SAWs_WRITE, SAWs_BOOLEAN);
       break;
     case OPTION_STRING:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, &next->data, 1, SAWs_WRITE, SAWs_STRING));
+      PetscCallSAWs(SAWs_Register, dir, &next->data, 1, SAWs_WRITE, SAWs_STRING);
       break;
     case OPTION_STRING_ARRAY:
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, next->data, next->arraylength, SAWs_WRITE, SAWs_STRING));
+      PetscCallSAWs(SAWs_Register, dir, next->data, next->arraylength, SAWs_WRITE, SAWs_STRING);
       break;
     case OPTION_FLIST: {
       PetscInt ntext;
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, &next->data, 1, SAWs_WRITE, SAWs_STRING));
+      PetscCallSAWs(SAWs_Register, dir, &next->data, 1, SAWs_WRITE, SAWs_STRING);
       PetscCall(PetscFunctionListGet(next->flist, (const char ***)&next->edata, &ntext));
-      PetscCallSAWs(SAWs_Set_Legal_Variable_Values, (dir, ntext, next->edata));
+      PetscCallSAWs(SAWs_Set_Legal_Variable_Values, dir, ntext, next->edata);
     } break;
     case OPTION_ELIST: {
       PetscInt ntext = next->nlist;
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-      PetscCallSAWs(SAWs_Register, (dir, &next->data, 1, SAWs_WRITE, SAWs_STRING));
+      PetscCallSAWs(SAWs_Register, dir, &next->data, 1, SAWs_WRITE, SAWs_STRING);
       PetscCall(PetscMalloc1(ntext + 1, (char ***)&next->edata));
       PetscCall(PetscMemcpy(next->edata, next->list, ntext * sizeof(char *)));
-      PetscCallSAWs(SAWs_Set_Legal_Variable_Values, (dir, ntext, next->edata));
+      PetscCallSAWs(SAWs_Set_Legal_Variable_Values, dir, ntext, next->edata);
     } break;
     default:
       break;
@@ -243,17 +243,17 @@ static PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems PetscOptionsObject)
   }
 
   /* wait until accessor has unlocked the memory */
-  PetscCallSAWs(SAWs_Push_Header, ("index.html", OptionsHeader));
-  PetscCallSAWs(SAWs_Push_Body, ("index.html", 2, OptionsBodyBottom));
+  PetscCallSAWs(SAWs_Push_Header, "index.html", OptionsHeader);
+  PetscCallSAWs(SAWs_Push_Body, "index.html", 2, OptionsBodyBottom);
   PetscCall(PetscSAWsBlock());
-  PetscCallSAWs(SAWs_Pop_Header, ("index.html"));
-  PetscCallSAWs(SAWs_Pop_Body, ("index.html", 2));
+  PetscCallSAWs(SAWs_Pop_Header, "index.html");
+  PetscCallSAWs(SAWs_Pop_Body, "index.html", 2);
 
   /* determine if any values have been set in GUI */
   next = PetscOptionsObject->next;
   while (next) {
     PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
-    PetscCallSAWs(SAWs_Selected, (dir, (int *)&next->set));
+    PetscCallSAWs(SAWs_Selected, dir, (int *)&next->set);
     next = next->next;
   }
 
@@ -265,7 +265,7 @@ static PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems PetscOptionsObject)
     PetscOptionsObject->count = 0; //do not ask for same thing again
   }
 
-  PetscCallSAWs(SAWs_Delete, ("/PETSc/Options"));
+  PetscCallSAWs(SAWs_Delete, "/PETSc/Options");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #else

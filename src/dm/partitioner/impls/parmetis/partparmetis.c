@@ -1,11 +1,12 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
-
+#include <petsc/private/matmetisimpl.h>
 #if PetscDefined(HAVE_PARMETIS)
+  #include <petsc/private/matparmetisimpl.h>
   #include <parmetis.h>
 #endif
 
-PetscBool  ParMetisPartitionerCite       = PETSC_FALSE;
-const char ParMetisPartitionerCitation[] = "@article{KarypisKumar98,\n"
+PetscBool  ParMETISPartitionerCite       = PETSC_FALSE;
+const char ParMETISPartitionerCitation[] = "@article{KarypisKumar98,\n"
                                            "  author  = {George Karypis and Vipin Kumar},\n"
                                            "  title   = {A Parallel Algorithm for Multilevel Graph Partitioning and Sparse Matrix Ordering},\n"
                                            "  journal = {Journal of Parallel and Distributed Computing},\n"
@@ -21,13 +22,13 @@ typedef struct {
   PetscReal imbalanceRatio;
   PetscInt  debugFlag;
   PetscInt  randomSeed;
-} PetscPartitioner_ParMetis;
+} PetscPartitioner_ParMETIS;
 
 static const char *ptypes[] = {"kway", "rb"};
 
-static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
+static PetscErrorCode PetscPartitionerDestroy_ParMETIS(PetscPartitioner part)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&p->pcomm));
@@ -35,13 +36,13 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer)
+static PetscErrorCode PetscPartitionerView_ParMETIS_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "ParMETIS type: %s\n", ptypes[p->ptype]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double)p->imbalanceRatio));
   PetscCall(PetscViewerASCIIPrintf(viewer, "debug flag %" PetscInt_FMT "\n", p->debugFlag));
   PetscCall(PetscViewerASCIIPrintf(viewer, "random seed %" PetscInt_FMT "\n", p->randomSeed));
@@ -49,7 +50,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
+static PetscErrorCode PetscPartitionerView_ParMETIS(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool isascii;
 
@@ -57,16 +58,16 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) PetscCall(PetscPartitionerView_ParMetis_ASCII(part, viewer));
+  if (isascii) PetscCall(PetscPartitionerView_ParMETIS_ASCII(part, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_ParMETIS(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
-  PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *p = (PetscPartitioner_ParMETIS *)part->data;
 
   PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMetis Options");
+  PetscOptionsHeadBegin(PetscOptionsObject, "PetscPartitioner ParMETIS Options");
   PetscCall(PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL));
   PetscCall(PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL));
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL));
@@ -75,10 +76,10 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+static PetscErrorCode PetscPartitionerPartition_ParMETIS(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection edgeSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
 #if PetscDefined(HAVE_PARMETIS)
-  PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *)part->data;
+  PetscPartitioner_ParMETIS *pm = (PetscPartitioner_ParMETIS *)part->data;
   MPI_Comm                   comm;
   PetscInt                   nvtxs = numVertices;     /* The number of vertices in full graph */
   PetscInt                  *vtxdist;                 /* Distribution of vertices across processes */
@@ -157,29 +158,18 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   for (p = 0; !vtxdist[p + 1] && p < size; ++p);
   if (vtxdist[p + 1] == vtxdist[size]) {
     if (rank == p) {
-      int err;
-      err                          = METIS_SetDefaultOptions(options); /* initialize all defaults */
+      PetscCallMETIS(METIS_SetDefaultOptions, options);
       options[METIS_OPTION_DBGLVL] = pm->debugFlag;
       options[METIS_OPTION_SEED]   = pm->randomSeed;
-      PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
-      if (metis_ptype == 1) {
-        PetscStackPushExternal("METIS_PartGraphRecursive");
-        err = METIS_PartGraphRecursive(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
-        PetscStackPop;
-        PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphRecursive()");
-      } else {
-        /*
-         It would be nice to activate the two options below, but they would need some actual testing.
-         - Turning on these options may exercise path of the METIS code that have bugs and may break production runs.
-         - If CONTIG is set to 1, METIS will exit with error if the graph is disconnected, despite the manual saying the option is ignored in such case.
-        */
-        /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
-        /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
-        PetscStackPushExternal("METIS_PartGraphKway");
-        err = METIS_PartGraphKway(&nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
-        PetscStackPop;
-        PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
-      }
+      /*
+        It would be nice to activate the two METIS_PartGraphKway() options below, but they would need some actual testing.
+        - Turning on these options may exercise path of the METIS code that have bugs and may break production runs.
+        - If CONTIG is set to 1, METIS will exit with error if the graph is disconnected, despite the manual saying the option is ignored in such case.
+      */
+      /* options[METIS_OPTION_CONTIG]  = 1; */ /* try to produce partitions that are contiguous */
+      /* options[METIS_OPTION_MINCONN] = 1; */ /* minimize the maximum degree of the subdomain graph */
+      if (metis_ptype == 1) PetscCallMETIS(METIS_PartGraphRecursive, &nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
+      else PetscCallMETIS(METIS_PartGraphKway, &nvtxs, &ncon, xadj, adjncy, vwgt, NULL, adjwgt, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment);
     }
   } else {
     MPI_Comm pcomm = pm->pcomm;
@@ -188,7 +178,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     options[1] = pm->debugFlag;
     options[2] = (pm->randomSeed == -1) ? 15 : pm->randomSeed; /* default is GLOBAL_SEED=15 from `libparmetis/defs.h` */
 
-    if (hasempty) { /* parmetis does not support empty graphs on some of the processes */
+    if (hasempty) { /* ParMETIS does not support empty graphs on some of the processes */
       PetscInt cnt;
 
       PetscCallMPI(MPI_Comm_split(pm->pcomm, !!nvtxs, rank, &pcomm));
@@ -199,13 +189,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
         }
       }
     }
-    if (nvtxs) {
-      int err;
-      PetscStackPushExternal("ParMETIS_V3_PartKway");
-      err = ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
-      PetscStackPop;
-      PetscCheck(err == METIS_OK, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
-    }
+    if (nvtxs) PetscCallParMETIS(ParMETIS_V3_PartKway, vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &part->edgeCut, assignment, &pcomm);
     if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
   }
 
@@ -228,14 +212,14 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 #endif
 }
 
-static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
+static PetscErrorCode PetscPartitionerInitialize_ParMETIS(PetscPartitioner part)
 {
   PetscFunctionBegin;
   part->noGraph             = PETSC_FALSE;
-  part->ops->view           = PetscPartitionerView_ParMetis;
-  part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMetis;
-  part->ops->destroy        = PetscPartitionerDestroy_ParMetis;
-  part->ops->partition      = PetscPartitionerPartition_ParMetis;
+  part->ops->view           = PetscPartitionerView_ParMETIS;
+  part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMETIS;
+  part->ops->destroy        = PetscPartitionerDestroy_ParMETIS;
+  part->ops->partition      = PetscPartitionerPartition_ParMETIS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -255,9 +239,9 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMETIS(PetscPartitioner part)
 {
-  PetscPartitioner_ParMetis *p;
+  PetscPartitioner_ParMETIS *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
@@ -270,7 +254,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
   p->debugFlag      = 0;
   p->randomSeed     = -1; /* defaults to GLOBAL_SEED=15 from `libparmetis/defs.h` */
 
-  PetscCall(PetscPartitionerInitialize_ParMetis(part));
-  PetscCall(PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionerCite));
+  PetscCall(PetscPartitionerInitialize_ParMETIS(part));
+  PetscCall(PetscCitationsRegister(ParMETISPartitionerCitation, &ParMETISPartitionerCite));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

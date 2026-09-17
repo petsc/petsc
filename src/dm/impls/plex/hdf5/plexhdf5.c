@@ -382,15 +382,15 @@ PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM dm, const char seqname[], Pe
   PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", seqname, groupname);
 
   PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file, &group));
-  PetscCallHDF5Return(dset, H5Dopen2, (group, seqname, H5P_DEFAULT));
-  PetscCallHDF5Return(dspace, H5Dget_space, (dset));
-  PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, (dspace, NULL, NULL));
+  PetscCallHDF5Return(dset, H5Dopen2, group, seqname, H5P_DEFAULT);
+  PetscCallHDF5Return(dspace, H5Dget_space, dset);
+  PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, dspace, NULL, NULL);
   PetscCall(PetscMalloc1(rdim, &dims));
-  PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, (dspace, dims, NULL));
+  PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, dspace, dims, NULL);
   *seqlen = (PetscInt)dims[0];
   PetscCall(PetscFree(dims));
-  PetscCallHDF5(H5Dclose, (dset));
-  PetscCallHDF5(H5Gclose, (group));
+  PetscCallHDF5(H5Dclose, dset);
+  PetscCallHDF5(H5Gclose, group);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1873,7 +1873,7 @@ static herr_t ReadLabelStratumHDF5_Static(hid_t g_id, const char *vname, const H
   if (ctx->sfXC) {
     IS newStratumIS;
 
-    PetscCallHDF5(ReadLabelStratumHDF5_Distribute_Private, (stratumIS, ctx, &newStratumIS));
+    PetscCallHDF5(ReadLabelStratumHDF5_Distribute_Private, stratumIS, ctx, &newStratumIS);
     PetscCall(ISDestroy(&stratumIS));
     stratumIS = newStratumIS;
   }
@@ -1906,7 +1906,7 @@ static herr_t ReadLabelHDF5_Static(hid_t g_id, const char *lname, const H5L_info
   ierr = PetscViewerHDF5PushGroup(ctx->viewer, lname);
   if (ierr) return (herr_t)ierr;
   /* Iterate over the label's strata */
-  PetscCallHDF5Return(err, H5Literate_by_name, (g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0));
+  PetscCallHDF5Return(err, H5Literate_by_name, g_id, lname, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelStratumHDF5_Static, op_data, 0);
   ierr = PetscViewerHDF5PopGroup(ctx->viewer);
   if (ierr) return (herr_t)ierr;
   return err;
@@ -1939,8 +1939,8 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 
     PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &fileId, &groupId));
     /* Iterate over labels */
-    PetscCallHDF5(H5Literate, (groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx));
-    PetscCallHDF5(H5Gclose, (groupId));
+    PetscCallHDF5(H5Literate, groupId, H5_INDEX_NAME, H5_ITER_NATIVE, &idx, ReadLabelHDF5_Static, ctx);
+    PetscCallHDF5(H5Gclose, groupId);
   }
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(LoadLabelsCtxDestroy(&ctx));

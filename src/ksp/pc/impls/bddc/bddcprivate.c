@@ -2428,7 +2428,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
     PetscCall(DMPlexGetCellNumbering(dm, &cellNumbering));
     PetscCall(ISGetIndices(cellNumbering, &cellNum));
     for (n = 0, p = pStart; p < pEnd; p++) {
-      /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+      /* Skip non-owned cells in parallel (ParMETIS expects no overlap) */
       if (nroots > 0) {
         if (cellNum[p] < 0) continue;
       }

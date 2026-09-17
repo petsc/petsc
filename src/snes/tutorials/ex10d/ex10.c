@@ -151,7 +151,7 @@ int main(int argc, char **argv)
      we will put an example that shows the style that should be
      used in a real application, where partitioning will be done
      dynamically by calling partitioning routines (at present, we have
-     a  ready interface to ParMeTiS).
+     a  ready interface to ParMETIS).
    */
   fptr = fopen("adj.in", "r");
   PetscCheck(fptr, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Could not open adj.in");

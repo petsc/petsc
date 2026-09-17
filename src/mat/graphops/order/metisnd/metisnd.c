@@ -1,5 +1,6 @@
 #include <petscmat.h>
 #include <petsc/private/matorderimpl.h>
+#include <petsc/private/matmetisimpl.h>
 #include <metis.h>
 
 /*
@@ -9,7 +10,6 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type
 {
   PetscInt        i, j, iptr, ival, nrow, *xadj, *adjncy, *perm, *iperm;
   const PetscInt *ia, *ja;
-  int             status;
   Mat             B = NULL;
   idx_t           options[METIS_NOPTIONS];
   PetscBool       done;
@@ -20,7 +20,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type
     PetscCall(MatConvert(mat, MATSEQAIJ, MAT_INITIAL_MATRIX, &B));
     PetscCall(MatGetRowIJ(B, 0, PETSC_TRUE, PETSC_TRUE, &nrow, &ia, &ja, &done));
   }
-  METIS_SetDefaultOptions(options);
+  PetscCallMETIS(METIS_SetDefaultOptions, options);
   options[METIS_OPTION_NUMBERING] = 0;
   PetscOptionsBegin(PetscObjectComm((PetscObject)mat), ((PetscObject)mat)->prefix, "METISND Options", "Mat");
 
@@ -54,19 +54,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type
     xadj[j + 1] = iptr;
   }
 
-  status = METIS_NodeND(&nrow, (idx_t *)xadj, (idx_t *)adjncy, NULL, options, (idx_t *)perm, (idx_t *)iperm);
-  switch (status) {
-  case METIS_OK:
-    break;
-  case METIS_ERROR:
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS returned with an unspecified error");
-  case METIS_ERROR_INPUT:
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS received an invalid input");
-  case METIS_ERROR_MEMORY:
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MEM, "METIS could not compute ordering");
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "Unexpected return value");
-  }
+  PetscCallMETIS(METIS_NodeND, &nrow, (idx_t *)xadj, (idx_t *)adjncy, NULL, options, (idx_t *)perm, (idx_t *)iperm);
 
   if (B) {
     PetscCall(MatRestoreRowIJ(B, 0, PETSC_TRUE, PETSC_TRUE, NULL, &ia, &ja, &done));

@@ -148,6 +148,6 @@ int main(int argc, char **args)
    test:
       nsize: 4
       requires: parmetis
-      TODO: tests cannot use parmetis because it produces different results on different machines
+      TODO: tests cannot use ParMETIS because it produces different results on different machines
 
 TEST*/

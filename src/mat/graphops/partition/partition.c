@@ -16,7 +16,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part, IS *par
   if (part->n != size) {
     const char *prefix;
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)part, &prefix));
-    SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type parmetis or chaco or ptscotch for more than one subdomain per processor", prefix ? prefix : "");
+    SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -%smat_partitioning_type (parmetis|chaco|ptscotch) for more than one subdomain per processor", prefix ? prefix : "");
   }
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)part), &rank));
 
@@ -105,7 +105,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* gets as input the "sizes" array computed by ParMetis_*_NodeND and returns
+/* gets as input the "sizes" array computed by ParMETIS_*_NodeND and returns
        seps[  0 :         2*p) : the start and end node of each subdomain
        seps[2*p : 2*p+2*(p-1)) : the start and end node of each separator
      levels[  0 :         p-1) : level in the tree for each separator (-1 root, -2 and -3 first level and so on)
@@ -205,7 +205,7 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
 
   Example Usage:
 .vb
-   MatMeshToCellGraphRegister("metis", MatMeshToCellGraph_Metis);
+   MatMeshToCellGraphRegister("metis", MatMeshToCellGraph_METIS);
 .ve
 
   Then, the converter can be selected at runtime via the option `-mat_mesh_to_cell_graph_type metis`
@@ -369,8 +369,8 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
 . partitioning - the partitioning. For each local node this tells the MPI rank that that node is assigned to.
 
   Options Database Keys:
-+ -mat_partitioning_type type - set the partitioning package or algorithm to use
-- -mat_partitioning_view      - display information about the partitioning object
++ -mat_partitioning_type (current|average|square|parmetis|chaco|party|ptscotch|hierarch) - set the partitioning package or algorithm to use, see `MatPartitioningType`
+- -mat_partitioning_view                                                                 - display information about the partitioning object
 
   Level: beginner
 
@@ -779,7 +779,7 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 - type - a known method
 
   Options Database Key:
-. -mat_partitioning_type type - (for instance, parmetis), see `MatPartitioningType`
+. -mat_partitioning_type (current|average|square|parmetis|chaco|party|ptscotch|hierarch) - see `MatPartitioningType`
 
   Level: intermediate
 
@@ -823,13 +823,13 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
 . part - the partitioning context.
 
   Options Database Keys:
-+ -mat_partitioning_type type - (for instance, parmetis), use -help for a list of available methods
-- -mat_partitioning_nparts    - number of subgraphs
++ -mat_partitioning_type (current|average|square|parmetis|chaco|party|ptscotch|hierarch) - see `MatPartitioningType`
+- -mat_partitioning_nparts                                                               - number of subgraphs
 
   Level: beginner
 
   Note:
-  If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
+  If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMETIS. If there are
   no installed partitioners it does no repartioning.
 
 .seealso: [](ch_matrices), `Mat`, `MatPartitioning`

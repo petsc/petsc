@@ -34,13 +34,13 @@ typedef ego PetscGeom;
 
   Synopsis:
   #include <petscdmplexegads.h>
-  void PetscCallEGADS(func, args)
+  void PetscCallEGADS(func, ...)
 
   Not Collective
 
   Input Parameters:
 + func - any EGADS function that returns an error code
-- args - the arguments to the function
+- ...  - the arguments to the function
 
   Level: beginner
 
@@ -48,11 +48,11 @@ typedef ego PetscGeom;
           `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`, `CHKERRA()`,
           `CHKERRMPI()`, `PetscCallBack()`, `PetscCallAbort()`, `PetscCallVoid()`, `PetscCallNull()`
 M*/
-#define PetscCallEGADS(func, args) \
+#define PetscCallEGADS(func, ...) \
   do { \
     int _status; \
     PetscStackPushExternal(#func); \
-    _status = func args; \
+    _status = func(__VA_ARGS__); \
     PetscStackPop; \
     PetscCheck(_status >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in EGADS call %s() Status %d", #func, (int)_status); \
   } while (0)

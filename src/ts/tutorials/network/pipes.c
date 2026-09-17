@@ -692,7 +692,7 @@ int main(int argc, char **argv)
     PetscCall(DMNetworkGetPlex(networkdm, &plexdm));
     PetscCall(DMPlexGetPartitioner(plexdm, &part));
     PetscCall(PetscPartitionerSetType(part, PETSCPARTITIONERSIMPLE));
-    PetscCall(PetscOptionsSetValue(NULL, "-dm_plex_csr_alg", "mat")); /* for parmetis */
+    PetscCall(PetscOptionsSetValue(NULL, "-dm_plex_csr_alg", "mat")); /* for ParMETIS */
   }
 
   /* Set up DM for use */

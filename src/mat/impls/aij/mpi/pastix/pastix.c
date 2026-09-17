@@ -329,7 +329,7 @@ static PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
   -mat_pastix_itermax <integer>           - Maximum number of iterations during refinement
   -mat_pastix_epsilon_refinement <double> - Epsilon for refinement
   -mat_pastix_epsilon_magn_ctrl <double>  - Epsilon for magnitude control
-  -mat_pastix_ordering <0,1>              - Ordering (Scotch or Metis)
+  -mat_pastix_ordering <0,1>              - Ordering (Scotch or METIS)
   -mat_pastix_thread_nbr <integer>        - Set the numbers of threads for each MPI process
   -mat_pastix_scheduler <0,1,2,3,4>       - Scheduler (sequential, static, parsec, starpu, dynamic)
   -mat_pastix_compress_when <0,1,2,3>     - When to compress (never, minimal-theory, just-in-time, supernodes)

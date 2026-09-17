@@ -24,7 +24,7 @@ class Configure(config.package.CMakePackage):
     self.deps          = [self.mpi, self.metis, self.mathlib]
 
   def formCMakeConfigureArgs(self):
-    '''Requires the same CMake options as Metis'''
+    '''Requires the same CMake options as METIS'''
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DGKLIB_PATH=../headers')
     args.append('-DMETIS_PATH='+self.metis.directory)

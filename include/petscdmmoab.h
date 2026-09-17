@@ -29,7 +29,7 @@
 
   Synopsis:
   #include <petscdmmoab.h>
-  void PetscCallMOAB(MOABFunction(args))
+  void PetscCallMOAB(MOABFunction(...))
 
   Not Collective
 

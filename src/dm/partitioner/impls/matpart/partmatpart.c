@@ -99,7 +99,7 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   PetscCall(PetscObjectGetComm((PetscObject)part, &comm));
 
   /* TODO: MatCreateMPIAdj should maybe take global number of ROWS */
-  /* TODO: And vertex distribution in PetscPartitionerPartition_ParMetis should be done using PetscSplitOwnership */
+  /* TODO: And vertex distribution in PetscPartitionerPartition_ParMETIS should be done using PetscSplitOwnership */
   numVerticesGlobal = PETSC_DECIDE;
   PetscCall(PetscSplitOwnership(comm, &numVertices, &numVerticesGlobal));
 

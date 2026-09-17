@@ -804,7 +804,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Multistage(PetscPartitioner
   `PETSCPARTITIONER_MS_STRATEGY_MSECTION` is more for testing purposes.
 
   Options for single stage partitioners are prefixed by `-petscpartitioner_multistage_levels_`.
-  For example, to use parmetis in all stages, `-petscpartitioner_multistage_levels_petscpartitioner_type parmetis`
+  For example, to use ParMETIS in all stages, `-petscpartitioner_multistage_levels_petscpartitioner_type parmetis`
 
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/

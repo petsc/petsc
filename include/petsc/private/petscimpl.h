@@ -959,12 +959,12 @@ M*/
 
   Synopsis:
    #include "petsc/private/petscimpl.h"
-   PetscUseTypeMethod(obj, method, other_args)
+   PetscUseTypeMethod(obj, method, ...)
 
    Input Parameters:
-+   obj - the object, for example a `Mat`, that does not need to be cast to `PetscObject`
++   obj    - the object, for example a `Mat`, that does not need to be cast to `PetscObject`
 .   method - the name of the method, for example, mult for the PETSc routine `MatMult()`
--   other_args - the other arguments for the method, `obj` is the first argument
+-   ...    - the other arguments for the method, `obj` is the first argument
 
    Level: developer
 
@@ -987,12 +987,12 @@ M*/
 
   Synopsis:
    #include "petsc/private/petscimpl.h"
-   PetscTryTypeMethod(obj, method, other_args)
+   PetscTryTypeMethod(obj, method, ...)
 
    Input Parameters:
-+   obj - the object, for example a `Mat`, that does not need to be cast to `PetscObject`
++   obj    - the object, for example a `Mat`, that does not need to be cast to `PetscObject`
 .   method - the name of the method, for example, mult for the PETSc routine `MatMult()`
--   other_args - the other arguments for the method, `obj` is the first argument
+-   ...    - the other arguments for the method, `obj` is the first argument
 
    Level: developer
 
