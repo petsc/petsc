@@ -388,19 +388,19 @@ cdef PetscErrorCode PetscViewerCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonSetType_C",
-            <PetscVoidFunction>PetscViewerPythonSetType_PYTHON))
+            <PetscVoidFn*>PetscViewerPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonGetType_C",
-            <PetscVoidFunction>PetscViewerPythonGetType_PYTHON))
+            <PetscVoidFn*>PetscViewerPythonGetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerFileSetName_C",
-            <PetscVoidFunction>PetscViewerPythonSetFilename_PYTHON))
+            <PetscVoidFn*>PetscViewerPythonSetFilename_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerFileGetName_C",
-            <PetscVoidFunction>PetscViewerPythonGetFilename_PYTHON))
+            <PetscVoidFn*>PetscViewerPythonGetFilename_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonViewObject_C",
-            <PetscVoidFunction>PetscViewerPythonViewObject_PYTHON))
+            <PetscVoidFn*>PetscViewerPythonViewObject_PYTHON))
     #
     cdef ctx = PyVwr(NULL)
     viewer.data = <void*> ctx
@@ -425,19 +425,19 @@ cdef PetscErrorCode PetscViewerDestroy_Python(
     FunctionBegin(b"PetscViewerDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerFileSetName_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerFileGetName_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>viewer, b"PetscViewerPythonViewObject_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): PetscViewerDestroy_Python_inner(viewer)
     return FunctionEnd()
@@ -692,13 +692,13 @@ cdef PetscErrorCode MatCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonSetType_C",
-            <PetscVoidFunction>MatPythonSetType_PYTHON))
+            <PetscVoidFn*>MatPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonGetType_C",
-            <PetscVoidFunction>MatPythonGetType_PYTHON))
+            <PetscVoidFn*>MatPythonGetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
-            <PetscVoidFunction>MatProductSetFromOptions_Python))
+            <PetscVoidFn*>MatProductSetFromOptions_Python))
     CHKERR(PetscObjectChangeTypeName(
             <PetscObject>mat, MATPYTHON))
     #
@@ -725,13 +725,13 @@ cdef PetscErrorCode MatDestroy_Python(
     FunctionBegin(b"MatDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectChangeTypeName(
             <PetscObject>mat, NULL))
 
@@ -1480,10 +1480,10 @@ cdef PetscErrorCode PCCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
-            <PetscVoidFunction>PCPythonSetType_PYTHON))
+            <PetscVoidFn*>PCPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonGetType_C",
-            <PetscVoidFunction>PCPythonGetType_PYTHON))
+            <PetscVoidFn*>PCPythonGetType_PYTHON))
     #
     cdef ctx = PyPC(NULL)
     pc.data = <void*> ctx
@@ -1508,10 +1508,10 @@ cdef PetscErrorCode PCDestroy_Python(
     FunctionBegin(b"PCDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>pc, b"PCPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): PCDestroy_Python_inner(pc)
     return FunctionEnd()
@@ -1771,10 +1771,10 @@ cdef PetscErrorCode KSPCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
-            <PetscVoidFunction>KSPPythonSetType_PYTHON))
+            <PetscVoidFn*>KSPPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonGetType_C",
-            <PetscVoidFunction>KSPPythonGetType_PYTHON))
+            <PetscVoidFn*>KSPPythonGetType_PYTHON))
     #
     cdef ctx = PyKSP(NULL)
     ksp.data = <void*> ctx
@@ -1812,10 +1812,10 @@ cdef PetscErrorCode KSPDestroy_Python(
     FunctionBegin(b"KSPDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ksp, b"KSPPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): KSPDestroy_Python_inner(ksp)
     return FunctionEnd()
@@ -2114,10 +2114,10 @@ cdef PetscErrorCode SNESCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
-            <PetscVoidFunction>SNESPythonSetType_PYTHON))
+            <PetscVoidFn*>SNESPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonGetType_C",
-            <PetscVoidFunction>SNESPythonGetType_PYTHON))
+            <PetscVoidFn*>SNESPythonGetType_PYTHON))
     #
     cdef ctx = PySNES(NULL)
     snes.data = <void*> ctx
@@ -2146,10 +2146,10 @@ cdef PetscErrorCode SNESDestroy_Python(
     FunctionBegin(b"SNESDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>snes, b"SNESPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): SNESDestroy_Python_inner(snes)
     return FunctionEnd()
@@ -2441,10 +2441,10 @@ cdef PetscErrorCode TSCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
-            <PetscVoidFunction>TSPythonSetType_PYTHON))
+            <PetscVoidFn*>TSPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonGetType_C",
-            <PetscVoidFunction>TSPythonGetType_PYTHON))
+            <PetscVoidFn*>TSPythonGetType_PYTHON))
     #
     ts.usessnes = PETSC_TRUE
     #
@@ -2471,10 +2471,10 @@ cdef PetscErrorCode TSDestroy_Python(
     FunctionBegin(b"TSDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>ts, b"TSPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): TSDestroy_Python_inner(ts)
     return FunctionEnd()
@@ -2835,10 +2835,10 @@ cdef PetscErrorCode TaoCreate_Python(
     #
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
-            <PetscVoidFunction>TaoPythonSetType_PYTHON))
+            <PetscVoidFn*>TaoPythonSetType_PYTHON))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonGetType_C",
-            <PetscVoidFunction>TaoPythonGetType_PYTHON))
+            <PetscVoidFn*>TaoPythonGetType_PYTHON))
     #
     CHKERR(TaoCreateDefaultLineSearch(tao))
     CHKERR(TaoCreateDefaultKSP(tao))
@@ -2866,10 +2866,10 @@ cdef PetscErrorCode TaoDestroy_Python(
     FunctionBegin(b"TaoDestroy_Python")
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonSetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     CHKERR(PetscObjectComposeFunction(
             <PetscObject>tao, b"TaoPythonGetType_C",
-            <PetscVoidFunction>NULL))
+            <PetscVoidFn*>NULL))
     #
     if Py_IsInitialized(): TaoDestroy_Python_inner(tao)
     return FunctionEnd()

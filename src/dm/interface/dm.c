@@ -3931,8 +3931,7 @@ PetscErrorCode DMGetApplicationContext(DM dm, PetscCtxRt ctx)
   Developer Note:
   Should be called `DMSetComputeVIBounds()` or something similar
 
-.seealso: [](ch_dmbase), `DM`, `DMComputeVariableBounds()`, `DMHasVariableBounds()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`,
-         `DMSetJacobian()`
+.seealso: [](ch_dmbase), `DM`, `DMComputeVariableBounds()`, `DMHasVariableBounds()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 @*/
 PetscErrorCode DMSetVariableBounds(DM dm, PetscErrorCode (*f)(DM dm, Vec lower, Vec upper))
 {

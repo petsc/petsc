@@ -2887,11 +2887,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
    MATSEQAIJCUSPARSE - MATAIJCUSPARSE = "(seq)aijcusparse" - A matrix type to be used for sparse matrices on NVIDIA GPUs.
 
    Options Database Keys:
-+  -mat_type aijcusparse                 - Sets the matrix type to "seqaijcusparse" during a call to `MatSetFromOptions()`
-.  -mat_cusparse_storage_format csr      - Sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
-                                           Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_cusparse_mult_storage_format csr - Sets the storage format of matrices (for `MatMult()`). Other options include ell (ellpack) or hyb (hybrid).
--  -mat_cusparse_use_cpu_solve           - Performs the `MatSolve()` on the CPU
++  -mat_type aijcusparse                           - Sets the matrix type to `MATSEQAIJCUSPARSE` during a call to `MatSetFromOptions()`
+.  -mat_cusparse_storage_format (csr|ell|hyb)      - Sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
+.  -mat_cusparse_mult_storage_format (csr|ell|hyb) - Sets the storage format of matrices (for `MatMult()`).
+-  -mat_cusparse_use_cpu_solve                     - Performs the `MatSolve()` on the CPU.
 
   Level: beginner
 

@@ -73,7 +73,7 @@ static PetscErrorCode ComputeDamping(TAO_BRGN *gn)
 
   Level: developer
 
-.seealso: [](ch_tao), `Tao`, `TAOBRGN`, `TaoBRGNRegularzationTypes`
+.seealso: [](ch_tao), `Tao`, `TAOBRGN`, `TaoBRGNRegularizationType`
 @*/
 PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d)
 {

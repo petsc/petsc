@@ -33,9 +33,9 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectCompose(PetscObject, char[], PetscObject)
     PetscErrorCode PetscObjectQuery(PetscObject, char[], PetscObject*)
 
-    ctypedef void (*PetscVoidFunction)()
-    PetscErrorCode PetscObjectComposeFunction(PetscObject, char[], PetscVoidFunction)
-    PetscErrorCode PetscObjectQueryFunction(PetscObject, char[], PetscVoidFunction*)
+    ctypedef void PetscVoidFn()
+    PetscErrorCode PetscObjectComposeFunction(PetscObject, char[], PetscVoidFn*)
+    PetscErrorCode PetscObjectQueryFunction(PetscObject, char[], PetscVoidFn**)
 
     PetscErrorCode PetscObjectIncrementTabLevel(PetscObject, PetscObject, PetscInt)
     PetscErrorCode PetscObjectGetTabLevel(PetscObject, PetscInt*)

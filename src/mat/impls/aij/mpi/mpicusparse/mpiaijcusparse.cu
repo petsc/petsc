@@ -273,10 +273,10 @@ PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Petsc
    MATMPIAIJCUSPARSE - A matrix type to be used for sparse matrices on NVIDIA GPUs.
 
    Options Database Keys:
-+  -mat_type mpiaijcusparse                      - sets the matrix type to `MATMPIAIJCUSPARSE`
-.  -mat_cusparse_storage_format csr              - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_cusparse_mult_diag_storage_format csr    - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
--  -mat_cusparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
++  -mat_type mpiaijcusparse                                - sets the matrix type to `MATMPIAIJCUSPARSE`.
+.  -mat_cusparse_storage_format (csr|ell|hyb)              - sets the storage format of diagonal and off-diagonal matrices.
+.  -mat_cusparse_mult_diag_storage_format (csr|ell|hyb)    - sets the storage format of diagonal matrix.
+-  -mat_cusparse_mult_offdiag_storage_format (csr|ell|hyb) - sets the storage format of off-diagonal matrix.
 
   Level: beginner
 

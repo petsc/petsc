@@ -794,13 +794,9 @@ tolerances, but they can be changed by using the routine
 the solver when the norm of the gradient function (or Lagrangian
 function for bound-constrained problems) is sufficiently close to zero.
 
-Other stopping criteria include a minimum trust-region radius or a
-maximum number of iterations. These parameters can be set with the
-routines `TaoSetTrustRegionTolerance()` and
-`TaoSetMaximumIterations()` Similarly, a maximum number of function
-evaluations can be set with the command
-`TaoSetMaximumFunctionEvaluations()`. `-tao_max_it`, and
-`-tao_max_funcs`.
+Other stopping criteria include a maximum number of iterations, set with
+`TaoSetMaximumIterations()` or `-tao_max_it`, and a maximum number of function
+evaluations, set with `TaoSetMaximumFunctionEvaluations()` or `-tao_max_funcs`.
 
 #### Viewing Status
 

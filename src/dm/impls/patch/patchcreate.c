@@ -1,18 +1,6 @@
 #include <petsc/private/dmpatchimpl.h> /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-static PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems PetscOptionsObject)
-{
-  /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
-
-  PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "DMPatch Options");
-  /* Handle associated vectors */
-  /* Handle viewing */
-  PetscOptionsHeadEnd();
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* External function declarations here */
 extern PetscErrorCode DMSetUp_Patch(DM dm);
 extern PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer);
@@ -25,7 +13,6 @@ static PetscErrorCode DMInitialize_Patch(DM dm)
 {
   PetscFunctionBegin;
   dm->ops->view                    = DMView_Patch;
-  dm->ops->setfromoptions          = DMSetFromOptions_Patch;
   dm->ops->setup                   = DMSetUp_Patch;
   dm->ops->createglobalvector      = DMCreateGlobalVector_Patch;
   dm->ops->createlocalvector       = DMCreateLocalVector_Patch;
@@ -69,23 +56,22 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
 }
 
 /*@
-  DMPatchCreate - Creates a DMPatch object, which is a collections of DMs called patches.
+  DMPatchCreate - Creates a `DMPATCH` object, which is a collection of `DM`s called patches.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the DMPatch object
+. comm - The communicator for the `DMPATCH` object
 
   Output Parameter:
-. mesh - The DMPatch object
-
-  Notes:
-
-  This code is incomplete and not used by other parts of PETSc.
+. mesh - The `DMPATCH` object
 
   Level: beginner
 
-.seealso: `DMPatchZoom()`
+  Notes:
+  This code is incomplete and not used by other parts of PETSc.
+
+.seealso: `DMPATCH`, `DMPatchZoom()`, `DMPatchCreateGrid()`
 @*/
 PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 {
@@ -103,7 +89,7 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
 
   Input Parameters:
 + comm      - the MPI communicator
-. dim       - the spatial dimension (1, 2, or 3); unused dimensions of `gridSize` and `patchSize` are forced to 1
+. dim       - the spatial dimension (1, 2, or 3); unused dimensions of `gridSize` and `patchSize` are set to 1
 . patchSize - `MatStencil` giving the size of each patch in cells
 . commSize  - `MatStencil` giving the process grid used per patch (see `DMPatchSetCommSize()`)
 - gridSize  - `MatStencil` giving the global cell count of the underlying `DMDA` in each dimension
@@ -150,3 +136,14 @@ PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSi
   PetscCall(DMPatchSetCommSize(*dm, commSize));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*MC
+  DMPATCH = "patch" - A `DM` object that is a collection of other `DM`s patched together
+
+  Level: intermediate
+
+  Note:
+  Not currently enabled, see `DMPatchCreateGrid()` and `DMPatchCreate()`.
+
+.seealso: `DMType`, `DMPatchCreateGrid()`, `DMPatchCreate()`, `DMCOMPOSITE`, `DMSTAG`, `DMPLEX`, `DMDA`, `DMDACreate()`, `DMCreate()`, `DMSetType()`
+M*/

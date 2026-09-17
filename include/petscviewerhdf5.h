@@ -44,7 +44,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
   Note:
   Used internally by PETSc's HDF5 viewer routines when computing dataset dimensions and offsets.
 
-.seealso: `PetscViewerHDF5`, `PetscIntCast()`, `PetscMPIIntCast()`
+.seealso: `PETSCVIEWERHDF5`, `PetscIntCast()`, `PetscMPIIntCast()`
 @*/
 static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
 {

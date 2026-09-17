@@ -807,7 +807,7 @@ PetscErrorCode DMPlexTransformGetTransformTypes(DMPlexTransform tr, DMLabel *trT
 
   Level: intermediate
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetTransformTypes()`, `DMPlexTransformGetActive())`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetTransformTypes()`, `DMPlexTransformGetActive()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformSetTransformTypes(DMPlexTransform tr, DMLabel trType)
 {

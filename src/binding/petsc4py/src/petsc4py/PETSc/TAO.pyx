@@ -283,6 +283,34 @@ cdef class TAO(Object):
         cdef PetscReal cradius = asReal(radius)
         CHKERR(TaoSetInitialTrustRegionRadius(self.tao, cradius))
 
+    def getInitialTrustRegionRadius(self) -> float:
+        """Return the initial trust region radius.
+
+        Not collective.
+
+        See Also
+        --------
+        setInitialTrustRegionRadius, petsc.TaoGetInitialTrustRegionRadius
+
+        """
+        cdef PetscReal radius = 0
+        CHKERR(TaoGetInitialTrustRegionRadius(self.tao, &radius))
+        return toReal(radius)
+
+    def getCurrentTrustRegionRadius(self) -> float:
+        """Return the trust region radius of the current iterate.
+
+        Not collective.
+
+        See Also
+        --------
+        getInitialTrustRegionRadius, petsc.TaoGetCurrentTrustRegionRadius
+
+        """
+        cdef PetscReal radius = 0
+        CHKERR(TaoGetCurrentTrustRegionRadius(self.tao, &radius))
+        return toReal(radius)
+
     # --------------
 
     def setAppCtx(self, appctx: Any) -> None:

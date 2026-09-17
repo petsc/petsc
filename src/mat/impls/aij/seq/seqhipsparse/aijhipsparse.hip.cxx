@@ -2879,18 +2879,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
 }
 
 /*MC
-   MATSEQAIJHIPSPARSE - MATAIJHIPSPARSE = "(seq)aijhipsparse" - A matrix type to be used for sparse matrices on AMD GPUs
+  MATSEQAIJHIPSPARSE - MATAIJHIPSPARSE = "(seq)aijhipsparse" - A matrix type to be used for sparse matrices on AMD GPUs
 
-   A matrix type whose data resides on AMD GPUs. These matrices can be in either
-   CSR, ELL, or Hybrid format.
-   All matrix calculations are performed on AMD/NVIDIA GPUs using the HIPSPARSE library.
+  A matrix type whose data resides on AMD GPUs. These matrices can be in either CSR, ELL, or Hybrid format.
+  All matrix calculations are performed on AMD/NVIDIA GPUs using the HIPSPARSE library.
 
-   Options Database Keys:
-+  -mat_type aijhipsparse - sets the matrix type to `MATSEQAIJHIPSPARSE`
-.  -mat_hipsparse_storage_format csr - sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
-                                       Other options include ell (ellpack) or hyb (hybrid).
-. -mat_hipsparse_mult_storage_format csr - sets the storage format of matrices (for `MatMult()`). Other options include ell (ellpack) or hyb (hybrid).
--  -mat_hipsparse_use_cpu_solve - Do `MatSolve()` on the CPU
+  Options Database Keys:
++ -mat_type aijhipsparse                           - sets the matrix type to `MATSEQAIJHIPSPARSE`
+. -mat_hipsparse_storage_format (csr|ell|hyb)      - sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
+. -mat_hipsparse_mult_storage_format (csr|ell|hyb) - sets the storage format of matrices (for `MatMult()`)
+- -mat_hipsparse_use_cpu_solve                     - do `MatSolve()` on the CPU
 
   Level: beginner
 

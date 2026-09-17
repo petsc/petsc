@@ -697,6 +697,19 @@ PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscHelpPrintfDefault - The default printer for help messages used by `PetscHelpPrintf()`
+
+  Not Collective
+
+  Input Parameters:
++ comm   - the communicator
+- format - the usual `printf()` format string
+
+  Level: intermediate
+
+.seealso: `PetscHelpPrintf()`, `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`, `PetscFFlush()`
+@*/
 PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
 {
   PetscMPIInt rank;

@@ -254,10 +254,10 @@ PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm comm, PetscInt m, PetscInt n, Pets
    the above preallocation routines for simplicity.
 
    Options Database Keys:
-+  -mat_type mpiaijhipsparse - sets the matrix type to `MATMPIAIJHIPSPARSE`
-.  -mat_hipsparse_storage_format csr - sets the storage format of diagonal and off-diagonal matrices. Other options include ell (ellpack) or hyb (hybrid).
-.  -mat_hipsparse_mult_diag_storage_format csr - sets the storage format of diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
--  -mat_hipsparse_mult_offdiag_storage_format csr - sets the storage format of off-diagonal matrix. Other options include ell (ellpack) or hyb (hybrid).
++  -mat_type mpiaijhipsparse                                - sets the matrix type to `MATMPIAIJHIPSPARSE`
+.  -mat_hipsparse_storage_format (csr|ell|hyb)              - sets the storage format of diagonal and off-diagonal matrices
+.  -mat_hipsparse_mult_diag_storage_format (csr|ell|hyb)    - sets the storage format of diagonal matrix
+-  -mat_hipsparse_mult_offdiag_storage_format (csr|ell|hyb) - sets the storage format of off-diagonal matrix
 
   Level: beginner
 

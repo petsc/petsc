@@ -765,7 +765,7 @@ can serve as templates for developing custom applications. We suggest
 that new PETSc users examine programs in the directories
 `$PETSC_DIR/src/<library>/tutorials` where `<library>` denotes any
 of the PETSc libraries (listed in the following section), such as
-`SNES` or `KSP`, `TS`, or `TAO`. The manual pages at
+`SNES` or `KSP`, `TS`, or `Tao`. The manual pages at
 <https://petsc.org/release/documentation/> provide links (organized by
 routine names and concepts) to the tutorial examples.
 

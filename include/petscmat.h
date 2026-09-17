@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat, MatFactorType);
 .seealso: `Mat`, `MatGetFactor()`, `MatSolverType`, `MatFactorType`, `MatSolverTypeRegister()`, `MatSolverTypeGet()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatSolverFn(Mat, MatFactorType, Mat *);
-PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction;
+PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatSolverFn*", );
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType, MatType, MatFactorType, MatSolverFn *);
 PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType, MatType, MatFactorType, PetscBool *, PetscBool *, MatSolverFn **);
@@ -2041,6 +2041,17 @@ PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalGetCoarseparts(MatPartiti
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNcoarseparts(MatPartitioning, PetscInt);
 PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitioning, PetscInt);
 
+/*J
+  MatMeshToCellGraphType - String with the name of registered algorithm that computes a cell graph from a mesh (graph containing
+  the coupling of vertices) representation.
+
+  Options Database Key:
+. -mat_mesh_to_cell_graph_type (parmetis|metis) - the conversion package to use; default is ParMETIS if available, otherwise METIS
+
+  Level: beginner
+
+.seealso: `Mat`, `MatMeshToCellGraph()`, `MatMeshToCellGraphRegister()`
+J*/
 typedef const char *MatMeshToCellGraphType;
 #define MATMESHTOCELLGRAPHMETIS    "metis"
 #define MATMESHTOCELLGRAPHPARMETIS "parmetis"
@@ -2455,10 +2466,32 @@ PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutMatrix(PetscViewer, PetscIn
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 
 #if PetscDefined(HAVE_H2OPUS)
-PETSC_EXTERN_TYPEDEF typedef PetscScalar(MatH2OpusKernelFn)(PetscInt, PetscReal[], PetscReal[], void *);
-PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel;
+/*S
+  MatH2OpusKernelFn - Function type for the user-supplied kernel callback used by `MATH2OPUS` (see `MatCreateH2OpusFromKernel()`)
+  to evaluate the dense matrix entries on demand
 
-PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, void *, PetscReal, PetscInt, PetscInt, Mat *);
+  Synopsis:
+  #include <petscmat.h>
+  PetscScalar MatH2OpusKernelFn(PetscInt spacedim, PetscReal target[], PetscReal source[], PetscCtx ctx)
+
+  Calling Sequence:
++ spacedim - spatial dimension, either 1, 2, or 3
+. target   - spatial coordinate of the target point, its length is `spacedim`
+. source   - spatial coordinate of the source point, its length is `spacedim`
+- ctx      - the optional application context passed with `MatCreateH2OpusFromKernel()`
+
+  Level: intermediate
+
+  Note:
+  Returns the matrix entry coupling the target and source points
+
+.seealso: `Mat`, `MATH2OPUS`, `MATHTOOL`, `MatCreateH2OpusFromKernel()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscScalar MatH2OpusKernelFn(PetscInt spacedim, PetscReal target[], PetscReal source[], PetscCtx ctx);
+
+PETSC_EXTERN_TYPEDEF typedef MatH2OpusKernelFn *MatH2OpusKernel PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatH2OpusKernelFn*", );
+
+PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernelFn *, PetscCtx, PetscReal, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateH2OpusFromMat(Mat, PetscInt, const PetscReal[], PetscBool, PetscReal, PetscInt, PetscInt, PetscInt, PetscReal, Mat *);
 PETSC_EXTERN PetscErrorCode MatH2OpusSetSamplingMat(Mat, Mat, PetscInt, PetscReal);
 PETSC_EXTERN PetscErrorCode MatH2OpusOrthogonalize(Mat);
@@ -2491,7 +2524,7 @@ PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 .seealso: `Mat`, `MATHTOOL`, `MatCreateHtoolFromKernel()`, `MatHtoolSetKernel()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
-PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
+PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "MatHtoolKernelFn*", );
 
 PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernelFn *, void *, Mat *);
 PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat, MatHtoolKernelFn *, void *);
