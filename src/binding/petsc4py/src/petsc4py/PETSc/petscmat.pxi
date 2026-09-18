@@ -568,6 +568,7 @@ cdef extern from * nogil: # custom.h
 cdef extern from * nogil:
     PetscErrorCode MatNullSpaceDestroy(PetscNullSpace*)
     PetscErrorCode MatNullSpaceView(PetscNullSpace, PetscViewer)
+    PetscErrorCode MatNullSpaceLoad(PetscViewer, PetscNullSpace*)
     PetscErrorCode MatNullSpaceCreate(MPI_Comm, PetscBool, PetscInt, PetscVec[],
                                       PetscNullSpace*)
     PetscErrorCode MatNullSpaceCreateRigidBody(PetscVec, PetscNullSpace*)

@@ -347,6 +347,7 @@ PETSC_EXTERN PetscClassId MAT_FDCOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_TRANSPOSECOLORING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_PARTITIONING_CLASSID;
 PETSC_EXTERN PetscClassId MAT_COARSEN_CLASSID;
+#define MAT_NULLSPACE_FILE_CLASSID 1211220
 PETSC_EXTERN PetscClassId MAT_NULLSPACE_CLASSID;
 PETSC_EXTERN PetscClassId MATMFFD_CLASSID;
 
@@ -2303,6 +2304,7 @@ PETSC_EXTERN PetscErrorCode MatGetNullSpaces(PetscInt, Mat[], MatNullSpace *[]);
 PETSC_EXTERN PetscErrorCode MatRestoreNullSpaces(PetscInt, Mat[], MatNullSpace *[]);
 PETSC_EXTERN PetscErrorCode MatNullSpaceTest(MatNullSpace, Mat, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceView(MatNullSpace, PetscViewer);
+PETSC_EXTERN PetscErrorCode MatNullSpaceLoad(PetscViewer, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceGetVecs(MatNullSpace, PetscBool *, PetscInt *, const Vec **);
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreateRigidBody(Vec, MatNullSpace *);
 

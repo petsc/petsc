@@ -171,11 +171,11 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `PetscViewer`, `MatNullSpaceCreate()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `PetscViewer`, `MatNullSpaceCreate()`, `MatNullSpaceLoad()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
 {
-  PetscBool isascii;
+  PetscBool isascii, isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);
@@ -184,19 +184,85 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
   PetscCheckSameComm(sp, 1, viewer, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   if (isascii) {
     PetscViewerFormat format;
-    PetscInt          i;
+
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp, viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Contains %" PetscInt_FMT " vector%s%s\n", sp->n, sp->n == 1 ? "" : "s", sp->has_cnst ? " and the constant" : ""));
     if (sp->remove) PetscCall(PetscViewerASCIIPrintf(viewer, "Has user-provided removal function\n"));
     if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
-      for (i = 0; i < sp->n; i++) PetscCall(VecView(sp->vecs[i], viewer));
+      for (PetscInt i = 0; i < sp->n; i++) PetscCall(VecView(sp->vecs[i], viewer));
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
+  } else if (isbinary) {
+    PetscBool skipHeader;
+
+    PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+    if (!skipHeader) {
+      PetscInt tr = MAT_NULLSPACE_FILE_CLASSID;
+
+      PetscCall(PetscViewerBinaryWrite(viewer, &tr, 1, PETSC_INT));
+    }
+    PetscCall(PetscViewerBinaryWrite(viewer, &sp->has_cnst, 1, PETSC_BOOL));
+    PetscCall(PetscViewerBinaryWrite(viewer, &sp->n, 1, PETSC_INT));
+    PetscCall(PetscViewerBinarySetSkipHeader(viewer, PETSC_FALSE));
+    for (PetscInt i = 0; i < sp->n; i++) PetscCall(VecView(sp->vecs[i], viewer));
+    PetscCall(PetscViewerBinarySetSkipHeader(viewer, skipHeader));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatNullSpaceLoad - Loads a `MatNullSpace` from a `PETSCVIEWERBINARY` that was saved by `MatNullSpaceView()`.
+
+  Collective
+
+  Input Parameter:
+. viewer - the binary viewer
+
+  Output Parameter:
+. sp - the null space
+
+  Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `PetscViewer`, `MatNullSpaceCreate()`, `MatNullSpaceView()`, `MatNullSpaceDestroy()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`
+@*/
+PetscErrorCode MatNullSpaceLoad(PetscViewer viewer, MatNullSpace *sp)
+{
+  MPI_Comm  comm;
+  Vec      *vecs;
+  PetscBool has_cnst, isbinary, skipHeader;
+  PetscInt  n;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(sp, 2);
+  comm = PetscObjectComm((PetscObject)viewer);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
+  PetscCheck(isbinary, comm, PETSC_ERR_SUP, "MatNullSpaceLoad() only supports binary viewers");
+  PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
+  if (!skipHeader) {
+    PetscInt tr;
+
+    PetscCall(PetscViewerBinaryRead(viewer, &tr, 1, NULL, PETSC_INT));
+    PetscCheck(tr == MAT_NULLSPACE_FILE_CLASSID, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Not a MatNullSpace next in file");
+  }
+  PetscCall(PetscViewerBinaryRead(viewer, &has_cnst, 1, NULL, PETSC_BOOL));
+  PetscCall(PetscViewerBinaryRead(viewer, &n, 1, NULL, PETSC_INT));
+  PetscCheck(n >= 0, comm, PETSC_ERR_FILE_UNEXPECTED, "Number of null space vectors in file (%" PetscInt_FMT ") cannot be negative", n);
+  PetscCall(PetscMalloc1(n, &vecs));
+  PetscCall(PetscViewerBinarySetSkipHeader(viewer, PETSC_FALSE));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscCall(VecCreate(comm, &vecs[i]));
+    PetscCall(VecLoad(vecs[i], viewer));
+  }
+  PetscCall(MatNullSpaceCreate(comm, has_cnst, n, vecs, sp));
+  for (PetscInt i = 0; i < n; i++) PetscCall(VecDestroy(&vecs[i]));
+  PetscCall(PetscFree(vecs));
+  PetscCall(PetscViewerBinarySetSkipHeader(viewer, skipHeader));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
