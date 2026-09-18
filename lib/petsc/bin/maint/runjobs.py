@@ -99,7 +99,7 @@ with open('.gitlab-ci.yml','w') as fd:
     if not alljobs:
       if a.startswith('# job for analyzing the coverage results '): break
       if a.find('CONFIG_OPTS: ') > -1: continue
-      if a.find('petsc4py-') > -1: continue
+      if a.startswith('petsc4py-'): continue
       if a.find('check-each-commit:') > -1: continue
       if a.find('petsc-dist:') > -1: continue
       test_arch =  a.find('TEST_ARCH: ')
