@@ -29,6 +29,7 @@
 - Add interface to LIBXSMM
 - Add package-version comparisons to test harness `requires`, such as `superlu_dist_version_ge(9,0,0)` or `PETSC_PKG_SUPERLU_DIST_VERSION_GE(9,0,0)`, using the versions recorded by configure
 - Add `--with-cuda-nvml`, off by default, so a CUDA build no longer depends at runtime on the driver-provided libnvidia-ml and its libraries run on machines without an NVIDIA driver; configure with `--with-cuda-nvml=1` (requires CUDA 12.2 or later) for GPU power and energy monitoring (`-log_view_gpu_energy`, `-log_view_gpu_energy_meter`)
+- Add detection of NVIDIA NVPL BLAS/LAPACK (for `aarch64`) so `--with-blaslapack-dir` pointing at an NVPL library directory works without listing the libraries by hand
 
 ## Sys
 

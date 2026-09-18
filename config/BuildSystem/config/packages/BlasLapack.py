@@ -451,6 +451,16 @@ class Configure(config.package.Package):
       # NEC
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), [os.path.join(dir, 'lib', 'liblapack.a'), os.path.join(dir, 'lib', 'libasl_sequential.a')], 'unknown', 'unknown')
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
+      # Check NVIDIA NVPL (NVIDIA Performance Libraries for aarch64). The interface layer (nvpl_blas/nvpl_lapack
+      # with the lp64/ilp64 integer interface and the gomp/seq threading model) requires its matching core layer.
+      nvplthreads = [('gomp', 'yes'), ('seq', 'no')] if self.openmp.found else [('seq', 'no')]
+      for libdir in ['lib', 'lib64', '']:
+        if os.path.exists(os.path.join(dir, libdir)):
+          for (nvplthread, nvplomp) in nvplthreads:
+            yield ('User specified NVIDIA NVPL',
+                   [os.path.join(dir, libdir, 'libnvpl_blas'+ILP64+'_'+nvplthread+'.so'), os.path.join(dir, libdir, 'libnvpl_blas_core.so')],
+                   [os.path.join(dir, libdir, 'libnvpl_lapack'+ILP64+'_'+nvplthread+'.so'), os.path.join(dir, libdir, 'libnvpl_lapack_core.so')],
+                   known, nvplomp)
       # Search for FlexiBLAS
       for libdir in ['lib64', 'lib', '']:
         if os.path.exists(os.path.join(dir,libdir)):
