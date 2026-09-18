@@ -89,6 +89,7 @@
 
 ## Mat
 
+- Fix an invalid free in `MatColoringDestroy()` for weights supplied with `MatColoringSetWeights()`
 - Add `MATPRODUCT_PtAP` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL`
 - Add `MATPRODUCT_AB` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL` with any matrix type
 - Add `MatSeqAIJGetKokkosView()`, `MatSeqAIJRestoreKokkosView()`, `MatSeqAIJGetKokkosViewWrite()` and `MatSeqAIJRestoreKokkosViewWrite()` to the public API
@@ -235,6 +236,11 @@
 - Add `DMPlexDrawCell()`
 - Add `DMPlexLabelCompleteStar()`
 - Add `DMPlexTransformCreateSplitCellLabel()` to mark the cells of a transformed mesh whose source cell was genuinely split
+- Add `DMPlexCreateColoringLabel()` to color a labeled subset of a stratum
+- Add `-dm_plex_coloring_ordering_type` to order the points with `MatGetOrdering()` before coloring them
+- Add `-dm_plex_coloring_local` to color the points each process owns by themselves, without communicating
+- Change the `distance` argument of `DMPlexCreateColoring()` to count applications of the adjacency through the mesh rather than hops in the graph of the stratum; the two agree at depth zero but differ elsewhere, most visibly at the cell stratum with finite-element adjacency
+- Change `DMPlexCreateColoring()` to weight the points lexically rather than randomly, which uses the optimal four colors for the vertices of a structured quadrilateral grid instead of seven
 - Add `DMPlexVecGetClosureAtDepth()`
 - Add an extra communicator argument to `DMPlexFilter()` to allow extracting local meshes
 - Add `DMPlexCopyFlags()`

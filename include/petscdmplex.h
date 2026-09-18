@@ -284,6 +284,7 @@ PETSC_EXTERN PetscErrorCode DMPlexStratifyMigrationSF(DM, PetscSF, PetscSF *);
 
 /* Mesh coloring */
 PETSC_EXTERN PetscErrorCode DMPlexCreateColoring(DM, PetscInt, PetscInt, ISColoring *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateColoringLabel(DM, PetscInt, PetscInt, DMLabel, PetscInt, ISColoring *);
 
 /* Submesh Support */
 PETSC_EXTERN PetscErrorCode DMPlexCreateSubmesh(DM, DMLabel, PetscInt, PetscBool, DM *);

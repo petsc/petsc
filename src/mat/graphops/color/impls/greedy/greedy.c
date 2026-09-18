@@ -107,7 +107,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
         }
         if (mo) {
           ncols = mo_i[idx + 1] - mo_i[idx];
-          cidx  = &(mo_j[mo_i[idx]]);
+          cidx  = PetscSafePointerPlusOffset(mo_j, mo_i[idx]);
           for (j = 0; j < ncols; j++) {
             if (ocolors[cidx[j]] != maxcolors) {
               ccol = ocolors[cidx[j]];
@@ -141,7 +141,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
       /* check for conflicts -- this is merely checking if any adjacent off-processor rows have the same color and marking the ones that are lower weight locally for changing */
       for (i = 0; i < n; i++) {
         ncols = mo_i[i + 1] - mo_i[i];
-        cidx  = &(mo_j[mo_i[i]]);
+        cidx  = PetscSafePointerPlusOffset(mo_j, mo_i[i]);
         for (j = 0; j < ncols; j++) {
           /* in the case of conflicts, the highest weight one stays and the others go */
           if ((ocolors[cidx[j]] == lcolors[i]) && (owts[cidx[j]] > wts[i]) && lcolors[i] < maxcolors) {
