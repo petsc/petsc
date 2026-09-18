@@ -67,6 +67,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCheck(DMPlexTransform, DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform, PetscInt, DMPolytopeType *, DMPolytopeType *, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreateSplitCellLabel(DMPlexTransform, DM, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
