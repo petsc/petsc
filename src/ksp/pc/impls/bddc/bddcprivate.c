@@ -8865,6 +8865,8 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
   } else { /* primal space is unchanged, so we can reuse coarse matrix */
     coarse_reuse = PETSC_TRUE;
   }
+  /* allow override of coarse reuse: diagnostic option */
+  PetscCall(PetscOptionsGetBool(((PetscObject)pc)->options, ((PetscObject)pc)->prefix, "-pc_bddc_coarse_reuse", &coarse_reuse, NULL));
 
   if (coarse_reuse && pcbddc->coarse_ksp) {
     PetscCall(KSPGetOperators(pcbddc->coarse_ksp, &coarse_mat, NULL));
@@ -9146,6 +9148,20 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
   }
   if (coarse_mat_is || coarse_mat) {
     if (!multilevel_allowed) {
+      if (coarse_mat_reuse == MAT_REUSE_MATRIX) {
+        MatState *state;
+
+        /* HACK: Reuse preserves the local pattern and entry ordering, but the temporary
+           MATIS may contain a different local matrix object. */
+        PetscCall(PetscObjectContainerQuery((PetscObject)coarse_mat, "_MatIS_IS_XAIJ_lstate", &state));
+        if (state) {
+          Mat local_mat;
+
+          PetscCall(MatISGetLocalMat(coarse_mat_is, &local_mat));
+          PetscCall(MatGetState(local_mat, state));
+          PetscCall(MatISRestoreLocalMat(coarse_mat_is, &local_mat));
+        }
+      }
       PetscCall(MatConvert(coarse_mat_is, MATAIJ, coarse_mat_reuse, &coarse_mat));
     } else {
       /* if this matrix is present, it means we are not reusing the coarse matrix */

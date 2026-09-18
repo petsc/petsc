@@ -19,6 +19,23 @@ static PetscErrorCode MatSetValuesLocal_IS(Mat, PetscInt, const PetscInt *, Pets
 static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat, PetscInt, const PetscInt *, PetscInt, const PetscInt *, const PetscScalar *, InsertMode);
 static PetscErrorCode MatISSetUpScatters_Private(Mat);
 
+static PetscErrorCode MatISUpdateState_Private(Mat A)
+{
+  Mat_IS   *a = (Mat_IS *)A->data;
+  MatState  state;
+  PetscBool changed[2];
+
+  PetscFunctionBegin;
+  PetscCall(MatGetState(a->A, &state));
+  changed[0] = (PetscBool)(state.id != a->localstate.id || state.state != a->localstate.state);
+  changed[1] = (PetscBool)(state.id != a->localstate.id || state.nonzerostate != a->localstate.nonzerostate);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, changed, 2, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+  if (changed[0] || changed[1]) PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  if (changed[1]) A->nonzerostate++;
+  a->localstate = state;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatISContainerDestroyPtAP_Private(PetscCtxRt ptr)
 {
   MatISPtAP ptap = *(MatISPtAP *)ptr;
@@ -1269,6 +1286,7 @@ static PetscErrorCode MatDiagonalSet_IS(Mat A, Vec D, InsertMode insmode)
   }
   PetscCall(VecPointwiseDivide(is->y, is->y, is->counter));
   PetscCall(MatDiagonalSet(is->A, is->y, insmode));
+  PetscCall(MatISUpdateState_Private(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1528,7 +1546,7 @@ static PetscErrorCode MatCopy_IS(Mat A, Mat B, MatStructure str)
   PetscCheck(ismatis, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Need to be implemented");
   b = (Mat_IS *)B->data;
   PetscCall(MatCopy(a->A, b->A, str));
-  PetscCall(PetscObjectStateIncrease((PetscObject)B));
+  PetscCall(MatISUpdateState_Private(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1841,6 +1859,8 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
 {
   Mat_IS            *matis     = (Mat_IS *)mat->data;
   Mat                local_mat = NULL, MT;
+  MatState          *coostate  = NULL;
+  MatState           lstate;
   PetscInt           rbs, cbs, rows, cols, lrows, lcols;
   PetscInt           local_rows, local_cols;
   PetscBool          isseqdense, isseqsbaij, isseqaij, isseqbaij;
@@ -1946,6 +1966,7 @@ general_assembly:
     PetscCheck(bb[0] || bb[1] || bb[2] || bb[3], PETSC_COMM_SELF, PETSC_ERR_SUP, "Local matrices must have the same type");
   }
 
+  PetscCall(MatGetState(matis->A, &lstate));
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCount ncoo;
     PetscInt  *coo_i, *coo_j;
@@ -1991,8 +2012,13 @@ general_assembly:
     }
     PetscCall(MatSetPreallocationCOOLocal(MT, ncoo, coo_i, coo_j));
     PetscCall(PetscFree2(coo_i, coo_j));
+    PetscCall(PetscNew(&coostate));
+    PetscCall(MatStateInvalidate(*coostate));
+    PetscCall(PetscObjectContainerCompose((PetscObject)MT, "_MatIS_IS_XAIJ_lstate", coostate, PetscCtxDestroyDefault));
   } else {
-    PetscInt mrbs, mcbs, mrows, mcols, mlrows, mlcols;
+    PetscContainer container;
+    PetscInt       mrbs, mcbs, mrows, mcols, mlrows, mlcols;
+    PetscBool      valid[3] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
 
     /* some checks */
     MT = *M;
@@ -2005,6 +2031,17 @@ general_assembly:
     PetscCheck(mlcols == lcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse matrix. Wrong number of local cols (%" PetscInt_FMT " != %" PetscInt_FMT ")", lcols, mlcols);
     PetscCheck(mrbs == rbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse matrix. Wrong row block size (%" PetscInt_FMT " != %" PetscInt_FMT ")", rbs, mrbs);
     PetscCheck(mcbs == cbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse matrix. Wrong col block size (%" PetscInt_FMT " != %" PetscInt_FMT ")", cbs, mcbs);
+    PetscCall(PetscObjectQuery((PetscObject)MT, "_MatIS_IS_XAIJ_lstate", (PetscObject *)&container));
+    valid[0] = (PetscBool)(container != NULL);
+    if (container) {
+      PetscCall(PetscContainerGetPointer(container, &coostate));
+      valid[1] = (PetscBool)(coostate->id == lstate.id);
+      valid[2] = (PetscBool)(coostate->nonzerostate == lstate.nonzerostate);
+    }
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, valid, 3, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCheck(valid[0], PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse matrix. Missing COO state from the initial MATIS conversion");
+    PetscCheck(valid[1], PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse matrix. The local matrix is a different object");
+    PetscCheck(valid[2], PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot reuse matrix. The local matrix has changed nonzero structure");
     PetscCall(MatZeroEntries(MT));
     if (!isseqaij && !isseqdense) {
       PetscCall(MatConvert(matis->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &local_mat));
@@ -2027,6 +2064,7 @@ general_assembly:
   PetscCall(MatDestroy(&local_mat));
   PetscCall(MatAssemblyBegin(MT, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(MT, MAT_FINAL_ASSEMBLY));
+  *coostate = lstate;
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(mat, &MT));
   } else if (reuse == MAT_INITIAL_MATRIX) {
@@ -2738,7 +2776,8 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
   }
 
   /* Clean up */
-  is->lnnzstate = 0;
+  PetscCall(MatStateInvalidate(is->localstate));
+  PetscCall(MatStateInvalidate(is->assembledstate));
   PetscCall(MatDestroy(&is->dA));
   PetscCall(MatDestroy(&is->assembledA));
   PetscCall(MatDestroy(&is->A));
@@ -2977,6 +3016,7 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A, PetscInt n, const Pet
     if (matis->sf_leafdata[i]) lrows[nr++] = i;
   PetscCall(MatISZeroRowsColumnsLocal_Private(A, nr, lrows, diag, columns));
   PetscCall(PetscFree(lrows));
+  PetscCall(MatISUpdateState_Private(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3038,8 +3078,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetBlockSizeFromMapping_Private(MPI_
 
 static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
 {
-  Mat_IS   *is = (Mat_IS *)A->data;
-  PetscBool lnnz;
+  Mat_IS *is = (Mat_IS *)A->data;
 
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd(is->A, type));
@@ -3115,10 +3154,7 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
     PetscCall(ISDestroy(&nzc));
     is->locempty = PETSC_FALSE;
   }
-  lnnz          = (PetscBool)(is->A->nonzerostate == is->lnnzstate);
-  is->lnnzstate = is->A->nonzerostate;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lnnz, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
-  if (!lnnz) A->nonzerostate++;
+  PetscCall(MatISUpdateState_Private(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3157,6 +3193,9 @@ static PetscErrorCode MatISRestoreLocalMat_IS(Mat mat, Mat *local)
   of the `MatSetValues()` operation.
 
   Call `MatISRestoreLocalMat()` when finished with the local matrix.
+  If its entries or nonzero structure were changed, call `MatAssemblyBegin()` and `MatAssemblyEnd()`
+  on `mat` afterward, even if the local matrix is already assembled. All processes sharing `mat`
+  must participate in this assembly, including those that did not change their local matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISRestoreLocalMat()`
 @*/
@@ -3179,6 +3218,10 @@ PetscErrorCode MatISGetLocalMat(Mat mat, Mat *local)
 - local - the local matrix
 
   Level: intermediate
+
+  Notes:
+  This call does not update the state of `mat`. After changing the local matrix entries or nonzero
+  structure, call `MatAssemblyBegin()` and `MatAssemblyEnd()` on `mat` to propagate the change.
 
 .seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISGetLocalMat()`
 @*/
@@ -3245,7 +3288,6 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
   PetscCall(MatGetType(is->A, &mtype));
   PetscCall(MatISSetLocalMatType(mat, mtype));
   if (!sametype && !is->islocalref) PetscCall(MatISSetUpScatters_Private(mat));
-  is->lnnzstate = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3260,7 +3302,14 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`
+  Notes:
+  This call does not update the state of `mat`. After replacing the local matrix, call
+  `MatAssemblyBegin()` and `MatAssemblyEnd()` on `mat` before using it, even if `local` is already
+  assembled. All processes sharing `mat` must participate in this assembly, including those that
+  did not replace their local matrix. Assembly propagates the change and invalidates cached
+  diagonal blocks and assembled views.
+
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatISSetLocalMatType`, `MatISGetLocalMat()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
 @*/
 PetscErrorCode MatISSetLocalMat(Mat mat, Mat local)
 {
@@ -3326,6 +3375,7 @@ static PetscErrorCode MatAXPY_IS(Mat Y, PetscScalar a, Mat X, MatStructure str)
   }
   x = (Mat_IS *)X->data;
   PetscCall(MatAXPY(y->A, a, x->A, str));
+  PetscCall(MatISUpdateState_Private(Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3573,19 +3623,15 @@ static PetscErrorCode MatSetPreallocationCOO_IS(Mat A, PetscCount ncoo, PetscInt
 
 static PetscErrorCode MatISGetAssembled_Private(Mat A, Mat *tA)
 {
-  Mat_IS          *a = (Mat_IS *)A->data;
-  PetscObjectState Astate, aAstate       = PETSC_INT_MIN;
-  PetscObjectState Annzstate, aAnnzstate = PETSC_INT_MIN;
+  Mat_IS  *a = (Mat_IS *)A->data;
+  MatState state;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectStateGet((PetscObject)A, &Astate));
-  Annzstate = A->nonzerostate;
-  if (a->assembledA) {
-    PetscCall(PetscObjectStateGet((PetscObject)a->assembledA, &aAstate));
-    aAnnzstate = a->assembledA->nonzerostate;
-  }
-  if (aAnnzstate != Annzstate) PetscCall(MatDestroy(&a->assembledA));
-  if (Astate != aAstate || !a->assembledA) {
+  PetscCall(MatGetState(A, &state));
+  // Invalidate dA before advancing the shared snapshot, since another operation may refresh assembledA first.
+  if (state.id != a->assembledstate.id || state.state != a->assembledstate.state) PetscCall(MatDestroy(&a->dA));
+  if (state.id != a->assembledstate.id || state.nonzerostate != a->assembledstate.nonzerostate) PetscCall(MatDestroy(&a->assembledA));
+  if (!a->assembledA || state.state != a->assembledstate.state) {
     MatType     aAtype;
     PetscMPIInt size;
     PetscInt    rbs, cbs, bs;
@@ -3601,8 +3647,7 @@ static PetscErrorCode MatISGetAssembled_Private(Mat A, Mat *tA)
     else aAtype = bs > 1 ? MATSEQBAIJ : MATSEQAIJ;
 
     PetscCall(MatConvert(A, aAtype, a->assembledA ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, &a->assembledA));
-    PetscCall(PetscObjectStateSet((PetscObject)a->assembledA, Astate));
-    a->assembledA->nonzerostate = Annzstate;
+    a->assembledstate = state;
   }
   PetscCall(PetscObjectReference((PetscObject)a->assembledA));
   *tA = a->assembledA;
@@ -3619,17 +3664,17 @@ static PetscErrorCode MatISRestoreAssembled_Private(Mat A, Mat *tA)
 
 static PetscErrorCode MatGetDiagonalBlock_IS(Mat A, Mat *dA)
 {
-  Mat_IS          *a = (Mat_IS *)A->data;
-  PetscObjectState Astate, dAstate = PETSC_INT_MIN;
+  Mat_IS   *a = (Mat_IS *)A->data;
+  MatState  state;
+  PetscBool same;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectStateGet((PetscObject)A, &Astate));
-  if (a->dA) PetscCall(PetscObjectStateGet((PetscObject)a->dA, &dAstate));
-  if (Astate != dAstate) {
+  PetscCall(MatGetState(A, &state));
+  PetscCall(MatStateCompare(state, a->assembledstate, &same));
+  if (!a->dA || !same) {
     Mat     tA;
     MatType ltype;
 
-    PetscCall(MatDestroy(&a->dA));
     PetscCall(MatISGetAssembled_Private(A, &tA));
     PetscCall(MatGetDiagonalBlock(tA, &a->dA));
     PetscCall(MatPropagateSymmetryOptions(tA, a->dA));
@@ -3637,7 +3682,6 @@ static PetscErrorCode MatGetDiagonalBlock_IS(Mat A, Mat *dA)
     PetscCall(MatConvert(a->dA, ltype, MAT_INPLACE_MATRIX, &a->dA));
     PetscCall(PetscObjectReference((PetscObject)a->dA));
     PetscCall(MatISRestoreAssembled_Private(A, &tA));
-    PetscCall(PetscObjectStateSet((PetscObject)a->dA, Astate));
   }
   *dA = a->dA;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3765,6 +3809,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&a));
+  PetscCall(MatStateInvalidate(a->localstate));
+  PetscCall(MatStateInvalidate(a->assembledstate));
   PetscCall(PetscStrallocpy(MATAIJ, &a->lmattype));
   A->data = (void *)a;
 
