@@ -271,6 +271,12 @@ static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_GETROW_UPPERTRIANGULAR:
     a->getrow_utriangular = flg;
     break;
+  case MAT_STRUCTURE_ONLY:
+    if (flg) {
+      PetscCall(MatXAIJDeallocatea(A, &a->a));
+      a->a = NULL;
+    }
+    break;
   default:
     break;
   }

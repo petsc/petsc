@@ -1335,6 +1335,12 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_FORM_EXPLICIT_TRANSPOSE:
     A->form_explicit_transpose = flg;
     break;
+  case MAT_STRUCTURE_ONLY:
+    if (flg) {
+      PetscCall(MatXAIJDeallocatea(A, &a->a));
+      a->a = NULL;
+    }
+    break;
   default:
     break;
   }
@@ -4522,7 +4528,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCount           k, p, q, nneg, nnz, start, end; /* Index the coo array, so use PetscCount as their type */
   PetscInt            *Ai;                             /* Change to PetscCount once we use it for row pointers */
   PetscInt            *Aj;
-  PetscScalar         *Aa;
+  PetscScalar         *Aa     = NULL;
   Mat_SeqAIJ          *seqaij = (Mat_SeqAIJ *)mat->data;
   MatType              rtype;
   PetscCount          *perm, *jmap;
@@ -4683,11 +4689,14 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   }
 
   PetscCall(MatGetRootType_Private(mat, &rtype));
-  PetscCall(PetscShmgetAllocateArray(nnz, sizeof(PetscScalar), (void **)&Aa));
-  PetscCall(PetscArrayzero(Aa, nnz));
+  if (!mat->structure_only) {
+    PetscCall(PetscShmgetAllocateArray(nnz, sizeof(PetscScalar), (void **)&Aa));
+    PetscCall(PetscArrayzero(Aa, nnz));
+  }
   PetscCall(MatSetSeqAIJWithArrays_private(PETSC_COMM_SELF, M, N, Ai, Aj, Aa, rtype, mat));
 
-  seqaij->free_a = seqaij->free_ij = PETSC_TRUE; /* Let newmat own Ai, Aj and Aa */
+  seqaij->free_a  = (PetscBool)!mat->structure_only;
+  seqaij->free_ij = PETSC_TRUE; /* Let mat own Ai, Aj and any allocated Aa */
 
   // Put the COO struct in a container and then attach that to the matrix
   PetscCall(PetscMalloc1(1, &coo));

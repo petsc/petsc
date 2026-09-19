@@ -6676,11 +6676,13 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   }
 
   /* Create new submatrices for on-process and off-process coupling                  */
-  PetscScalar *Aa, *Ba;
+  PetscScalar *Aa = NULL, *Ba = NULL;
   MatType      rtype;
   Mat_SeqAIJ  *a, *b;
-  PetscCall(PetscCalloc1(Annz, &Aa)); /* Zero matrix on device */
-  PetscCall(PetscCalloc1(Bnnz, &Ba));
+  if (!mat->structure_only) {
+    PetscCall(PetscCalloc1(Annz, &Aa)); /* Zero matrix on device */
+    PetscCall(PetscCalloc1(Bnnz, &Ba));
+  }
   /* make Aj[] local, i.e, based off the start column of the diagonal portion */
   if (cstart) {
     for (k = 0; k < Annz; k++) Aj[k] -= cstart;
@@ -6709,9 +6711,9 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   a          = (Mat_SeqAIJ *)mpiaij->A->data;
   b          = (Mat_SeqAIJ *)mpiaij->B->data;
-  a->free_a  = PETSC_TRUE;
+  a->free_a  = (PetscBool)!mat->structure_only;
   a->free_ij = PETSC_TRUE;
-  b->free_a  = PETSC_TRUE;
+  b->free_a  = (PetscBool)!mat->structure_only;
   b->free_ij = PETSC_TRUE;
   a->maxnz   = a->nz;
   b->maxnz   = b->nz;
@@ -6748,7 +6750,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   coo->Bperm2  = Bperm2;
   coo->Cperm1  = Cperm1;
   // Allocate in preallocation. If not used, it has zero cost on host
-  PetscCall(PetscMalloc2(coo->sendlen, &coo->sendbuf, coo->recvlen, &coo->recvbuf));
+  if (!mat->structure_only) PetscCall(PetscMalloc2(coo->sendlen, &coo->sendbuf, coo->recvlen, &coo->recvbuf));
+  else coo->sendbuf = coo->recvbuf = NULL;
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, coo));
   PetscCall(PetscContainerSetCtxDestroy(container, MatCOOStructDestroy_MPIAIJ));

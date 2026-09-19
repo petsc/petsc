@@ -804,6 +804,8 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 
   `MatAssemblyBegin()` and `MatAssemblyEnd()` do not need to be called after this routine. It automatically handles the assembly process.
 
+  If the `MAT_STRUCTURE_ONLY` option is set to true, the values are ignored and only the assembly process is performed.
+
 .seealso: [](ch_matrices), `Mat`, `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
@@ -819,12 +821,10 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSetValuesCOO_C", &f));
   PetscCall(PetscLogEventBegin(MAT_SetVCOO, A, 0, 0, 0));
   if (f) {
-    PetscCall((*f)(A, coo_v, imode)); // all known COO implementations do not use MatStash. They do their own off-proc communication
+    if (!A->structure_only) PetscCall((*f)(A, coo_v, imode)); // all known COO implementations do not use MatStash. They do their own off-proc communication
     PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &oldFlg));
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE)); // set A->nooffprocentries to avoid costly MatStash scatter in MatAssembly
-  } else {
-    PetscCall(MatSetValuesCOO_Basic(A, coo_v, imode)); // fall back to MatSetValues, which might use MatStash
-  }
+    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));                // set A->nooffprocentries to avoid costly MatStash scatter in MatAssembly
+  } else if (!A->structure_only) PetscCall(MatSetValuesCOO_Basic(A, coo_v, imode)); // fall back to MatSetValues, which might use MatStash
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (f) PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, oldFlg));

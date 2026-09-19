@@ -1583,6 +1583,12 @@ static PetscErrorCode MatSetOption_SeqBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
     a->nounused = (flg ? -1 : 0);
     break;
+  case MAT_STRUCTURE_ONLY:
+    if (flg) {
+      PetscCall(MatXAIJDeallocatea(A, &a->a));
+      a->a = NULL;
+    }
+    break;
   default:
     break;
   }

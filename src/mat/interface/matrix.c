@@ -6484,6 +6484,8 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
   are thus ignored by others. Other options are not supported by
   certain matrix types and will generate an error message if set.
 
+  Once `MAT_STRUCTURE_ONLY` has been set to `PETSC_TRUE`, it cannot be set back to `PETSC_FALSE`.
+
   If using Fortran to compute a matrix, one may need to
   use the column-oriented option (or convert to the row-oriented
   format).
@@ -6627,6 +6629,7 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
     }
     break;
   case MAT_STRUCTURE_ONLY:
+    PetscCheck(flg || !mat->structure_only, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot set MAT_STRUCTURE_ONLY to PETSC_FALSE after it has been set to PETSC_TRUE");
     mat->structure_only = flg;
     break;
   case MAT_SORTED_FULL:
