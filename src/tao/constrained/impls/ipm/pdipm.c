@@ -155,6 +155,7 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
 
   PetscFunctionBegin;
   /* Creates upper and lower bounds vectors on x, if not created already */
+  PetscCheck((tao->XL && tao->XU) || tao->ops->computebounds, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOPDIPM requires lower and upper variable bounds; set them with TaoSetVariableBounds() or TaoSetVariableBoundsRoutine()");
   PetscCall(TaoComputeVariableBounds(tao));
 
   PetscCall(VecGetLocalSize(tao->XL, &n));
@@ -763,7 +764,7 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, PetscCtx c
   else dot = 0.0;
 
   /* if (PetscAbsReal(pdipm->gradL) < 0.9*pdipm->mu)  */
-  pdipm->mu = pdipm->mu_update_factor * dot / pdipm->Nci;
+  pdipm->mu = pdipm->Nci ? pdipm->mu_update_factor * dot / pdipm->Nci : 0.;
 
   /* Update F; get tao->residual and tao->cnorm */
   PetscCall(TaoSNESFunction_PDIPM_residual(snes, X, F, (void *)tao));
@@ -1420,7 +1421,11 @@ static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems PetscOpt
 
   Level: beginner
 
-.seealso: `TAOPDIPM`, `Tao`, `TaoType`
+  Note:
+  Variable bounds are required; set them with `TaoSetVariableBounds()` or `TaoSetVariableBoundsRoutine()`, using
+  `PETSC_NINFINITY` and `PETSC_INFINITY` entries for unbounded variables.
+
+.seealso: `TAOPDIPM`, `Tao`, `TaoType`, `TaoSetVariableBounds()`, `TaoSetVariableBoundsRoutine()`
 M*/
 
 PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
