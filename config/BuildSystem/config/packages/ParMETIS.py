@@ -7,7 +7,7 @@ class Configure(config.package.CMakePackage):
     self.versionname      = 'PARMETIS_MAJOR_VERSION.PARMETIS_MINOR_VERSION.PARMETIS_SUBMINOR_VERSION'
     self.gitcommit         = 'v'+self.version+'-p9'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-parmetis.git','https://bitbucket.org/petsc/pkg-parmetis/get/'+self.gitcommit+'.tar.gz']
-    self.functions         = ['ParMETIS_V3_PartKway']
+    self.functions         = ['ParMETIS_V3_PartKway', 'ParMETIS_V3_AdaptiveRepart']
     self.includes          = ['parmetis.h']
     self.liblist           = [['libparmetis.a']]
     self.hastests          = 1
