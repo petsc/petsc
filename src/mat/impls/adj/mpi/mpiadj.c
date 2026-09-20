@@ -396,7 +396,7 @@ static PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A, PetscInt oshift, PetscBool s
 static PetscErrorCode MatConvertFrom_MPIAdj(Mat A, MatType type, MatReuse reuse, Mat *newmat)
 {
   Mat                B;
-  PetscInt           i, m, N, nzeros = 0, *ia, *ja, len, rstart, cnt, j, *a;
+  PetscInt           i, m, N, nzeros = 0, *ia, *ja, len, rstart, cnt, j, *a = NULL;
   const PetscInt    *rj;
   const PetscScalar *ra;
   MPI_Comm           comm;
@@ -420,22 +420,22 @@ static PetscErrorCode MatConvertFrom_MPIAdj(Mat A, MatType type, MatReuse reuse,
   }
 
   /* malloc space for nonzeros */
-  PetscCall(PetscMalloc1(nzeros + 1, &a));
+  if (!A->structure_only) PetscCall(PetscMalloc1(nzeros + 1, &a));
   PetscCall(PetscMalloc1(N + 1, &ia));
   PetscCall(PetscMalloc1(nzeros + 1, &ja));
 
   nzeros = 0;
   ia[0]  = 0;
   for (i = 0; i < m; i++) {
-    PetscCall(MatGetRow(A, i + rstart, &len, &rj, &ra));
+    PetscCall(MatGetRow(A, i + rstart, &len, &rj, A->structure_only ? NULL : &ra));
     cnt = 0;
     for (j = 0; j < len; j++) {
       if (rj[j] != i + rstart) { /* if not diagonal */
-        a[nzeros + cnt]    = (PetscInt)PetscAbsScalar(ra[j]);
+        if (a) a[nzeros + cnt] = (PetscInt)PetscAbsScalar(ra[j]);
         ja[nzeros + cnt++] = rj[j];
       }
     }
-    PetscCall(MatRestoreRow(A, i + rstart, &len, &rj, &ra));
+    PetscCall(MatRestoreRow(A, i + rstart, &len, &rj, A->structure_only ? NULL : &ra));
     nzeros += cnt;
     ia[i + 1] = nzeros;
   }

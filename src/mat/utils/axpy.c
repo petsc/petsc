@@ -86,9 +86,8 @@ static PetscErrorCode MatAXPY_BasicWithTypeCompare(Mat Y, PetscScalar a, Mat X, 
       Vec d_X;
 
       PetscCall(MatDiagonalGetDiagonal(X, &d_X));
-      if (a == 1.0) {
-        PetscCall(MatDiagonalSet(Y, d_X, ADD_VALUES));
-      } else {
+      if (a == 1.0) PetscCall(MatDiagonalSet(Y, d_X, ADD_VALUES));
+      else {
         Vec d_Y;
 
         PetscCall(PetscObjectQuery((PetscObject)Y, "__MatAXPY_BasicWithTypeCompare_Diagonal", (PetscObject *)&d_Y));
@@ -123,6 +122,10 @@ static PetscErrorCode MatAXPY_BasicWithTypeCompare(Mat Y, PetscScalar a, Mat X, 
 
   Level: intermediate
 
+  Note:
+  If `Y` `MAT_STRUCTURE_ONLY` option is set to true, only the union of the nonzero patterns is computed, without accessing numerical values.
+  As with numerical matrices, `a` equal to zero leaves `Y` unchanged.
+
 .seealso: [](ch_matrices), `Mat`, `MatAYPX()`
  @*/
 PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -144,26 +147,24 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscCheck(m1 == m2 && n1 == n2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Non conforming matrix add: local sizes X %" PetscInt_FMT " x %" PetscInt_FMT ", Y %" PetscInt_FMT " x %" PetscInt_FMT, m1, n1, m2, n2);
   PetscCheck(Y->assembled, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix (Y)");
   PetscCheck(X->assembled, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix (X)");
-  if (a == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (a == 0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(!X->structure_only || Y->structure_only, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_INCOMP, "Cannot add a structure-only matrix to a matrix with numerical values");
+  if (Y->structure_only && (Y == X || str == SAME_NONZERO_PATTERN || str == SUBSET_NONZERO_PATTERN)) PetscFunctionReturn(PETSC_SUCCESS);
   if (Y == X) {
     PetscCall(MatScale(Y, 1.0 + a));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscObjectObjectTypeCompare((PetscObject)X, (PetscObject)Y, &sametype));
   PetscCall(PetscLogEventBegin(MAT_AXPY, Y, 0, 0, 0));
-  if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) {
-    PetscUseTypeMethod(Y, axpy, a, X, str);
-  } else {
+  if (Y->structure_only) PetscCall(MatAXPY_Basic(Y, a, X, str));
+  else if (Y->ops->axpy && (sametype || X->ops->axpy == Y->ops->axpy)) PetscUseTypeMethod(Y, axpy, a, X, str);
+  else {
     PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
-    if (transpose) {
-      PetscCall(MatTransposeAXPY_Private(Y, a, X, str, X));
-    } else {
+    if (transpose) PetscCall(MatTransposeAXPY_Private(Y, a, X, str, X));
+    else {
       PetscCall(PetscObjectTypeCompareAny((PetscObject)Y, &transpose, MATTRANSPOSEVIRTUAL, MATHERMITIANTRANSPOSEVIRTUAL, ""));
-      if (transpose) {
-        PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
-      } else {
-        PetscCall(MatAXPY_BasicWithTypeCompare(Y, a, X, str));
-      }
+      if (transpose) PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
+      else PetscCall(MatAXPY_BasicWithTypeCompare(Y, a, X, str));
     }
   }
   PetscCall(PetscLogEventEnd(MAT_AXPY, Y, 0, 0, 0));
@@ -177,11 +178,11 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
   PetscFunctionBegin;
   /* look for any available faster alternative to the general preallocator */
   PetscCall(PetscObjectQueryFunction((PetscObject)Y, "MatAXPYGetPreallocation_C", &preall));
-  if (preall) {
-    PetscCall((*preall)(Y, X, B));
-  } else { /* Use MatPrellocator, assumes same row-col distribution */
+  if (preall) PetscCall((*preall)(Y, X, B));
+  else {
+    /* use MatPrellocator, assumes same row-col distribution */
     Mat      preallocator;
-    PetscInt r, rstart, rend;
+    PetscInt rstart, rend;
     PetscInt m, n, M, N;
 
     PetscCall(MatGetRowUpperTriangular(Y));
@@ -193,17 +194,16 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     PetscCall(MatSetLayouts(preallocator, Y->rmap, Y->cmap));
     PetscCall(MatSetUp(preallocator));
     PetscCall(MatGetOwnershipRange(preallocator, &rstart, &rend));
-    for (r = rstart; r < rend; ++r) {
-      PetscInt           ncols;
-      const PetscInt    *row;
-      const PetscScalar *vals;
+    for (PetscInt r = rstart; r < rend; ++r) {
+      PetscInt        ncols;
+      const PetscInt *row;
 
-      PetscCall(MatGetRow(Y, r, &ncols, &row, &vals));
-      PetscCall(MatSetValues(preallocator, 1, &r, ncols, row, vals, INSERT_VALUES));
-      PetscCall(MatRestoreRow(Y, r, &ncols, &row, &vals));
-      PetscCall(MatGetRow(X, r, &ncols, &row, &vals));
-      PetscCall(MatSetValues(preallocator, 1, &r, ncols, row, vals, INSERT_VALUES));
-      PetscCall(MatRestoreRow(X, r, &ncols, &row, &vals));
+      PetscCall(MatGetRow(Y, r, &ncols, &row, NULL));
+      PetscCall(MatSetValues(preallocator, 1, &r, ncols, row, NULL, INSERT_VALUES));
+      PetscCall(MatRestoreRow(Y, r, &ncols, &row, NULL));
+      PetscCall(MatGetRow(X, r, &ncols, &row, NULL));
+      PetscCall(MatSetValues(preallocator, 1, &r, ncols, row, NULL, INSERT_VALUES));
+      PetscCall(MatRestoreRow(X, r, &ncols, &row, NULL));
     }
     PetscCall(MatSetOption(preallocator, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     PetscCall(MatAssemblyBegin(preallocator, MAT_FINAL_ASSEMBLY));
@@ -214,6 +214,7 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
     PetscCall(MatCreate(PetscObjectComm((PetscObject)Y), B));
     PetscCall(MatSetType(*B, ((PetscObject)Y)->type_name));
     PetscCall(MatSetLayouts(*B, Y->rmap, Y->cmap));
+    PetscCall(MatSetOption(*B, MAT_STRUCTURE_ONLY, Y->structure_only));
     PetscCall(MatPreallocatorPreallocate(preallocator, PETSC_FALSE, *B));
     PetscCall(MatDestroy(&preallocator));
   }
@@ -231,7 +232,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     if (isdense) str = SUBSET_NONZERO_PATTERN;
   }
   if (str != DIFFERENT_NONZERO_PATTERN && str != UNKNOWN_NONZERO_PATTERN) {
-    PetscInt           i, start, end, j, ncols, m, n;
+    PetscInt           start, end, ncols, m, n;
     const PetscInt    *row;
     PetscScalar       *val;
     const PetscScalar *vals;
@@ -241,7 +242,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     PetscCall(MatGetOwnershipRange(X, &start, &end));
     PetscCall(MatGetRowUpperTriangular(X));
     if (a == 1.0) {
-      for (i = start; i < end; i++) {
+      for (PetscInt i = start; i < end; i++) {
         PetscCall(MatGetRow(X, i, &ncols, &row, &vals));
         PetscCall(MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES));
         PetscCall(MatRestoreRow(X, i, &ncols, &row, &vals));
@@ -250,13 +251,13 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
       PetscInt vs = 100;
       /* realloc if needed, as this function may be used in parallel */
       PetscCall(PetscMalloc1(vs, &val));
-      for (i = start; i < end; i++) {
+      for (PetscInt i = start; i < end; i++) {
         PetscCall(MatGetRow(X, i, &ncols, &row, &vals));
         if (vs < ncols) {
           vs = PetscMin(2 * ncols, n);
           PetscCall(PetscRealloc(vs * sizeof(*val), &val));
         }
-        for (j = 0; j < ncols; j++) val[j] = a * vals[j];
+        for (PetscInt j = 0; j < ncols; j++) val[j] = a * vals[j];
         PetscCall(MatSetValues(Y, 1, &i, ncols, row, val, ADD_VALUES));
         PetscCall(MatRestoreRow(X, i, &ncols, &row, &vals));
       }
@@ -280,7 +281,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
 
 PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
-  PetscInt           i, start, end, j, ncols, m, n;
+  PetscInt           start, end, ncols, m, n;
   const PetscInt    *row;
   PetscScalar       *val;
   const PetscScalar *vals;
@@ -291,8 +292,19 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   PetscCall(MatGetOwnershipRange(X, &start, &end));
   PetscCall(MatGetRowUpperTriangular(Y));
   PetscCall(MatGetRowUpperTriangular(X));
-  if (a == 1.0) {
-    for (i = start; i < end; i++) {
+  if (Y->structure_only) {
+    PetscCall(MatSetOption(B, MAT_STRUCTURE_ONLY, PETSC_TRUE));
+    for (PetscInt i = start; i < end; i++) {
+      PetscCall(MatGetRow(Y, i, &ncols, &row, NULL));
+      PetscCall(MatSetValues(B, 1, &i, ncols, row, NULL, INSERT_VALUES));
+      PetscCall(MatRestoreRow(Y, i, &ncols, &row, NULL));
+
+      PetscCall(MatGetRow(X, i, &ncols, &row, NULL));
+      PetscCall(MatSetValues(B, 1, &i, ncols, row, NULL, INSERT_VALUES));
+      PetscCall(MatRestoreRow(X, i, &ncols, &row, NULL));
+    }
+  } else if (a == 1.0) {
+    for (PetscInt i = start; i < end; i++) {
       PetscCall(MatGetRow(Y, i, &ncols, &row, &vals));
       PetscCall(MatSetValues(B, 1, &i, ncols, row, vals, ADD_VALUES));
       PetscCall(MatRestoreRow(Y, i, &ncols, &row, &vals));
@@ -303,9 +315,10 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
     }
   } else {
     PetscInt vs = 100;
+
     /* realloc if needed, as this function may be used in parallel */
     PetscCall(PetscMalloc1(vs, &val));
-    for (i = start; i < end; i++) {
+    for (PetscInt i = start; i < end; i++) {
       PetscCall(MatGetRow(Y, i, &ncols, &row, &vals));
       PetscCall(MatSetValues(B, 1, &i, ncols, row, vals, ADD_VALUES));
       PetscCall(MatRestoreRow(Y, i, &ncols, &row, &vals));
@@ -315,7 +328,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
         vs = PetscMin(2 * ncols, n);
         PetscCall(PetscRealloc(vs * sizeof(*val), &val));
       }
-      for (j = 0; j < ncols; j++) val[j] = a * vals[j];
+      for (PetscInt j = 0; j < ncols; j++) val[j] = a * vals[j];
       PetscCall(MatSetValues(B, 1, &i, ncols, row, val, ADD_VALUES));
       PetscCall(MatRestoreRow(X, i, &ncols, &row, &vals));
     }
