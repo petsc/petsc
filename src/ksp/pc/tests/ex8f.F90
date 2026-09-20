@@ -1,25 +1,40 @@
 !
-!   Tests PCMGSetResidual and PCMGSetResidualTranspose
+!   Tests PCMGSetResidual() and PCMGSetResidualTranspose(), including on a MATSHELL with a Fortran MatMult()
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
 module ex8fmodule
   use petscksp
   implicit none
+  PetscInt :: nmult = 0, nresidual = 0, nresidualt = 0
 
 contains
+  subroutine MyMult(S, x, y, ierr)
+    Mat S
+    Vec x, y
+    PetscErrorCode, intent(out) :: ierr
+    nmult = nmult + 1
+    PetscCall(VecCopy(x, y, ierr))
+  end
+
   subroutine MyResidual(A, b, x, r, ierr)
     Mat A
     Vec b, x, r
-    integer, intent(out) :: ierr
-    ierr = 0
+    PetscErrorCode, intent(out) :: ierr
+    PetscScalar, parameter :: mone = -1.0
+    nresidual = nresidual + 1
+    PetscCall(MatMult(A, x, r, ierr))
+    PetscCall(VecAYPX(r, mone, b, ierr))
   end
 
   subroutine MyResidualTranspose(A, b, x, r, ierr)
     Mat A
     Vec b, x, r
-    integer, intent(out) :: ierr
-    ierr = 0
+    PetscErrorCode, intent(out) :: ierr
+    PetscScalar, parameter :: mone = -1.0
+    nresidualt = nresidualt + 1
+    PetscCall(MatMultTranspose(A, x, r, ierr))
+    PetscCall(VecAYPX(r, mone, b, ierr))
   end
 
 end module ex8fmodule
@@ -42,15 +57,16 @@ program main
 !     rctx     - random number context
 !
 
-  Mat A
+  Mat A, S, P
   Vec x, b, u
   PC pc
-  PetscInt, parameter :: n = 6, dim = n**2
+  PetscInt, parameter :: n = 6, dim = n**2, dimc = dim/2
   PetscInt i, j, jj, ii, istart, iend
   PetscErrorCode ierr
   PetscScalar v
   PetscScalar, parameter :: pfive = .5
-  KSP ksp
+  KSP ksp, sksp
+  PC spc
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -143,20 +159,62 @@ program main
   PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
   PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetType(pc, PCMG, ierr))
-  PetscCallA(PCMGSetLevels(pc, 1_PETSC_INT_KIND, PETSC_NULL_MPI_COMM, ierr))
-  PetscCallA(PCMGSetResidual(pc, 0_PETSC_INT_KIND, MyResidual, A, ierr))
-  PetscCallA(PCMGSetResidualTranspose(pc, 0_PETSC_INT_KIND, MyResidualTranspose, A, ierr))
+  PetscCallA(PCMGSetLevels(pc, 2_PETSC_INT_KIND, PETSC_NULL_MPI_COMM, ierr))
+  PetscCallA(PCMGSetGalerkin(pc, PC_MG_GALERKIN_BOTH, ierr))
+
+!  Piecewise constant interpolation from pairs of fine points
+
+  PetscCallA(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, dim, dimc, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, 1_PETSC_INT_KIND, PETSC_NULL_INTEGER_ARRAY, P, ierr))
+  PetscCallA(MatGetOwnershipRange(P, Istart, Iend, ierr))
+  v = 1.0
+  do II = Istart, Iend - 1
+    JJ = II/2
+    PetscCallA(MatSetValues(P, 1_PETSC_INT_KIND, [II], 1_PETSC_INT_KIND, [JJ], [v], INSERT_VALUES, ierr))
+  end do
+  PetscCallA(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(PCMGSetInterpolation(pc, 1_PETSC_INT_KIND, P, ierr))
+
+!  The residual routines set on a MATSHELL must not replace its Fortran MatMult
+
+  PetscCallA(MatCreateShell(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, dim, dim, PETSC_NULL_INTEGER, S, ierr))
+  PetscCallA(MatShellSetOperation(S, MATOP_MULT, MyMult, ierr))
+  PetscCallA(PCMGSetResidual(pc, 1_PETSC_INT_KIND, MyResidual, S, ierr))
+  PetscCallA(PCMGSetResidualTranspose(pc, 1_PETSC_INT_KIND, MyResidualTranspose, S, ierr))
+  PetscCallA(MatMult(S, u, x, ierr))
+  PetscCheckA(nmult == 1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'The MatMult of the MATSHELL was not called')
+
+  PetscCallA(PCMGSetResidual(pc, 1_PETSC_INT_KIND, MyResidual, A, ierr))
+  PetscCallA(PCMGSetResidualTranspose(pc, 1_PETSC_INT_KIND, MyResidualTranspose, A, ierr))
+
+!  Smoothers whose transpose can be applied
+
+  PetscCallA(PCMGGetSmoother(pc, 1_PETSC_INT_KIND, sksp, ierr))
+  PetscCallA(KSPSetType(sksp, KSPRICHARDSON, ierr))
+  PetscCallA(KSPGetPC(sksp, spc, ierr))
+  PetscCallA(PCSetType(spc, PCJACOBI, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix used to construct the preconditioner.
 
   PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+  PetscCallA(KSPSetUp(ksp, ierr))
 
+!  Both residual routines must be called by the cycles
+
+  PetscCallA(PCApply(pc, b, x, ierr))
+  PetscCheckA(nresidual > 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'The residual routine was not called')
+  PetscCheckA(nresidualt == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'The transposed residual routine was called by PCApply()')
+  PetscCallA(PCApplyTranspose(pc, b, x, ierr))
+  PetscCheckA(nresidualt > 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'The transposed residual routine was not called')
+
+  PetscCallA(MatDestroy(P, ierr))
   PetscCallA(KSPDestroy(ksp, ierr))
   PetscCallA(VecDestroy(u, ierr))
   PetscCallA(VecDestroy(x, ierr))
   PetscCallA(VecDestroy(b, ierr))
   PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(MatDestroy(S, ierr))
 
   PetscCallA(PetscFinalize(ierr))
 end
