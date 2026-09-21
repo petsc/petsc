@@ -84,7 +84,7 @@ static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext d
   state = PetscObjectCast(dctx)->state;
   // technically state can never be less than event->dctx_state (only equal) but we include
   // it in the check just in case
-  if ((id == event->dctx_id) && (state <= event->dctx_state)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (id == event->dctx_id && state <= event->dctx_state) PetscFunctionReturn(PETSC_SUCCESS);
   if (dctx->ops->recordevent) {
     // REVIEW ME:
     // TODO maybe move this to impls, as they can determine whether they can interoperate with
@@ -598,7 +598,7 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
   auto  update_object_dependencies = true;
 
   PetscFunctionBegin;
-  if ((marked.mode == PETSC_MEMORY_ACCESS_READ) && (mode == PETSC_MEMORY_ACCESS_READ)) {
+  if (marked.mode == PETSC_MEMORY_ACCESS_READ && mode == PETSC_MEMORY_ACCESS_READ) {
     PetscCall(MarkFromID_CompatibleModes(marked, dctx, id, mode, frame, name, &update_object_dependencies));
   } else {
     PetscCall(MarkFromID_IncompatibleModes(marked, dctx, id, mode, frame, name, &update_object_dependencies));

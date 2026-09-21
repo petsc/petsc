@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   for (unsigned int i = 0; i < n_local_dofs; ++i) {
     for (std::set<unsigned int>::iterator iter = sparsity[i + first_local_index].begin(); iter != sparsity[i + first_local_index].end(); iter++) {
       unsigned int dof = *iter;
-      if ((dof >= first_local_index) && (dof < last_local_index)) n_nz[i]++;
+      if (dof >= first_local_index && dof < last_local_index) n_nz[i]++;
       else n_oz[i]++;
     }
   }

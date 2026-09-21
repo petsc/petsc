@@ -57,7 +57,7 @@ static PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscIn
 
     key.i = rows[r];
     if (key.i < 0) continue;
-    if ((key.i < rStart) || (key.i >= rEnd)) {
+    if (key.i < rStart || key.i >= rEnd) {
       PetscCall(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
     } else { /* Hash table is for blocked rows/cols */
       key.i = rows[r] / bs;
@@ -66,7 +66,7 @@ static PetscErrorCode MatSetValues_Preallocator(Mat A, PetscInt m, const PetscIn
         if (key.j < 0) continue;
         PetscCall(PetscHSetIJQueryAdd(p->ht, key, &missing));
         if (missing) {
-          if ((key.j >= cStart / bs) && (key.j < cEnd / bs)) {
+          if (key.j >= cStart / bs && key.j < cEnd / bs) {
             ++p->dnz[key.i - rStart / bs];
             if (key.j >= key.i) ++p->dnzu[key.i - rStart / bs];
           } else {

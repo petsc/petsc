@@ -122,7 +122,7 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t); /* PETSC
         const hipsolverStatus_t _p_hipsolver_stat__ = __VA_ARGS__; \
         if (PetscUnlikely(_p_hipsolver_stat__ != HIPSOLVER_STATUS_SUCCESS)) { \
           const char *name = PetscHIPSolverGetErrorName(_p_hipsolver_stat__); \
-          if (((_p_hipsolver_stat__ == HIPSOLVER_STATUS_NOT_INITIALIZED) || (_p_hipsolver_stat__ == HIPSOLVER_STATUS_ALLOC_FAILED) || (_p_hipsolver_stat__ == HIPSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_HIP)) { \
+          if ((_p_hipsolver_stat__ == HIPSOLVER_STATUS_NOT_INITIALIZED || _p_hipsolver_stat__ == HIPSOLVER_STATUS_ALLOC_FAILED || _p_hipsolver_stat__ == HIPSOLVER_STATUS_INTERNAL_ERROR) && PetscDeviceInitialized(PETSC_DEVICE_HIP)) { \
             SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
                     "hipSolver error %d (%s). " \
                     "This indicates the GPU may have run out resources", \

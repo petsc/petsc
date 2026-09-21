@@ -514,7 +514,7 @@ PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, PetscCtx ctx)
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, reskeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {
-        if ((reskeys[k].label != reskeys[kp].label) || (reskeys[k].value != reskeys[kp].value)) {
+        if (reskeys[k].label != reskeys[kp].label || reskeys[k].value != reskeys[kp].value) {
           ++k;
           if (kp != k) reskeys[k] = reskeys[kp];
         }
@@ -629,7 +629,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, PetscCtx 
       PetscCheck(off == Nk, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of keys %" PetscInt_FMT " should be %" PetscInt_FMT, off, Nk);
       PetscCall(PetscFormKeySort(Nk, jackeys));
       for (k = 0, kp = 1; kp < Nk; ++kp) {
-        if ((jackeys[k].label != jackeys[kp].label) || (jackeys[k].value != jackeys[kp].value)) {
+        if (jackeys[k].label != jackeys[kp].label || jackeys[k].value != jackeys[kp].value) {
           ++k;
           if (kp != k) jackeys[k] = jackeys[kp];
         }
@@ -1121,7 +1121,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     PetscCall(VecDestroy(&r));
     PetscCall(VecDestroy(&du));
     for (v = 0; v < Nv; ++v) {
-      if ((tol >= 0) && (errors[v] > tol)) break;
+      if (tol >= 0 && errors[v] > tol) break;
       else if (errors[v] > PETSC_SMALL) break;
     }
     if (v == Nv) isLin = PETSC_TRUE;

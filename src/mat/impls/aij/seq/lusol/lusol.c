@@ -238,7 +238,7 @@ static PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo
 
     if (nnz < lusol->luparm[12]) {
       nnz = (int)(lusol->luroom * lusol->luparm[12]);
-    } else if ((factorizations > 0) && (lusol->luroom < 6)) {
+    } else if (factorizations > 0 && lusol->luroom < 6) {
       lusol->luroom += 0.1;
     }
 

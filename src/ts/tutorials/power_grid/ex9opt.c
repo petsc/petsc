@@ -53,7 +53,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
   /*  The next three lines allow us to access the entries of the vectors directly */
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArray(F, &f));
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (t > ctx->tf && t < ctx->tcl) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   f[0] = ctx->omega_b * (u[1] - ctx->omega_s);
@@ -75,7 +75,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCt
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(U, &u));
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (t > ctx->tf && t < ctx->tcl) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else Pmax = ctx->Pmax;
 
   J[0][0] = 0;

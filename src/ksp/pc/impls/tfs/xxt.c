@@ -630,9 +630,9 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle)
           /* number of unmarked dofs on node */
           ct++;
           /* number of dofs to be marked on lhs hc */
-          if ((id < mask) && (lhs[i] != 0.0)) sum[0]++;
+          if (id < mask && lhs[i] != 0.0) sum[0]++;
           /* number of dofs to be marked on rhs hc */
-          if ((id >= mask) && (rhs[i] != 0.0)) sum[1]++;
+          if (id >= mask && rhs[i] != 0.0) sum[1]++;
         }
       }
 

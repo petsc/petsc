@@ -173,7 +173,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
               tau = tl->gamma2_i;
             } else if (tau_max < tl->gamma1_i) {
               tau = tl->gamma1_i;
-            } else if ((tau_min < tl->gamma1_i) && (tau_max >= 1.0)) {
+            } else if (tau_min < tl->gamma1_i && tau_max >= 1.0) {
               tau = tl->gamma1_i;
             } else if ((tau_1 >= tl->gamma1_i) && (tau_1 < 1.0) && ((tau_2 < tl->gamma1_i) || (tau_2 >= 1.0))) {
               tau = tau_1;
@@ -397,7 +397,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
               tao->trust = tl->gamma2 * PetscMin(tao->trust, norm_d);
             } else if (tau_max < tl->gamma1) {
               tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
-            } else if ((tau_min < tl->gamma1) && (tau_max >= 1.0)) {
+            } else if (tau_min < tl->gamma1 && tau_max >= 1.0) {
               tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
             } else if ((tau_1 >= tl->gamma1) && (tau_1 < 1.0) && ((tau_2 < tl->gamma1) || (tau_2 >= 1.0))) {
               tao->trust = tau_1 * PetscMin(tao->trust, norm_d);

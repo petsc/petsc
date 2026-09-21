@@ -136,7 +136,7 @@ static PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
       col     = (i_c - i_start_ghost_c);
       cols[0] = idx_c[col];
       Ni[0]   = 1.0;
-      if ((li == 0) || (li == nxi - 1)) {
+      if (li == 0 || li == nxi - 1) {
         PetscCall(MatSetValue(mat, row, cols[0], Ni[0], INSERT_VALUES));
         continue;
       }
@@ -434,8 +434,8 @@ static PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
         col     = (m_ghost_c * (j_c - j_start_ghost_c) + (i_c - i_start_ghost_c));
         cols[0] = col_shift + idx_c[col]; /* left, below */
         Ni[0]   = 1.0;
-        if ((li == 0) || (li == nxi - 1)) {
-          if ((lj == 0) || (lj == neta - 1)) {
+        if (li == 0 || li == nxi - 1) {
+          if (lj == 0 || lj == neta - 1) {
             PetscCall(MatSetValue(mat, row, cols[0], Ni[0], INSERT_VALUES));
             continue;
           }
@@ -947,9 +947,9 @@ static PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
           col     = (m_ghost_c * n_ghost_c * (l_c - l_start_ghost_c) + m_ghost_c * (j_c - j_start_ghost_c) + (i_c - i_start_ghost_c));
           cols[0] = idx_c[col];
           Ni[0]   = 1.0;
-          if ((li == 0) || (li == nxi - 1)) {
-            if ((lj == 0) || (lj == neta - 1)) {
-              if ((lk == 0) || (lk == nzeta - 1)) {
+          if (li == 0 || li == nxi - 1) {
+            if (lj == 0 || lj == neta - 1) {
+              if (lk == 0 || lk == nzeta - 1) {
                 PetscCall(MatSetValue(mat, row, cols[0], Ni[0], INSERT_VALUES));
                 continue;
               }

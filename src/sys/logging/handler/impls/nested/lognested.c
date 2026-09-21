@@ -155,7 +155,7 @@ static PetscErrorCode PetscLogHandlerNestedEventEnd(PetscLogHandler h, NestedId 
     PetscCall(PetscIntStackPop(nested->nested_stack, &nested_event));
     PetscCall(PetscIntStackPop(nested->orig_stack, &nested_id));
     if (PetscDefined(USE_DEBUG)) PetscCall(PetscLogNestedCheckNested(h, nested_id, nested_event));
-    if ((pop_count > 1) && (c + 1 < pop_count)) {
+    if (pop_count > 1 && c + 1 < pop_count) {
       if (nested_id > 0) {
         PetscLogEvent     event_id = NestedIdToEvent(nested_id);
         PetscLogState     state;

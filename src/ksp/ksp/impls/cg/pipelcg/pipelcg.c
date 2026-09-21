@@ -285,7 +285,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
       for (j = 0; j < it + 2; ++j) PetscCall((*U[0]->ops->dot_local)(U[0], Z[l - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */
       PetscCall(PetscMPIIntCast(it + 2, &mpin));
       PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), mpin, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
-    } else if ((it >= l) && (it < max_it)) {
+    } else if (it >= l && it < max_it) {
       middle = it - l + 2;
       end    = it + 2;
       PetscCall((*U[0]->ops->dot_local)(U[0], V[0], &G(it - l + 1, it + 1)));                                      /* dot-product (U[0],V[0]) */

@@ -651,7 +651,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   PetscCallBLAS("LAPACKstebz", LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol, cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu, e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
-  if ((0 != info) || (1 != e_valus)) {
+  if (0 != info || 1 != e_valus) {
     /* Calculation of the minimum eigenvalue failed.  Return the             */
     /* Steihaug-Toint direction.                                             */
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n"));
@@ -704,7 +704,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* The step is within the trust region; check if we are in the hard case */
     /* and need to move to the boundary by following a direction of negative */
     /* curvature.                                                            */
-    if ((e_valu[0] <= 0.0) && (norm_t < cg->radius)) {
+    if (e_valu[0] <= 0.0 && norm_t < cg->radius) {
       /* This is the hard case; compute the eigenvector associated with the  */
       /* minimum eigenvalue and move along this direction to the boundary.   */
       PetscCallBLAS("LAPACKstein", LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu, e_iblk, e_splt, e_vect, &nldb, e_rwrk, e_iwrk, e_iwrk + t_size, &info));

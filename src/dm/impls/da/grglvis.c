@@ -299,7 +299,7 @@ PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
           PetscCall(PetscArraycpy(fname_i + cur_len, dafname, len + 1));
           cur_len += len + 1;
           // don't add for final iteration of the loop
-          if ((b + 1) < bss_i) fname_i[cur_len++] = '-';
+          if (b + 1 < bss_i) fname_i[cur_len++] = '-';
         }
         fname_i[cur_len] = '\0';
         fieldname[i]     = fname_i;

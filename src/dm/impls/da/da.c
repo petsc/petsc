@@ -69,11 +69,11 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   if (da->dim == 2) {
     PetscMPIInt size;
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da), &size));
-    if ((dd->m > 0) && (dd->n < 0)) {
+    if (dd->m > 0 && dd->n < 0) {
       dd->n = size / dd->m;
       PetscCheck(dd->n * dd->m == size, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " processes in X direction not divisible into comm size %d", m, size);
     }
-    if ((dd->n > 0) && (dd->m < 0)) {
+    if (dd->n > 0 && dd->m < 0) {
       dd->m = size / dd->n;
       PetscCheck(dd->n * dd->m == size, PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " processes in Y direction not divisible into comm size %d", n, size);
     }

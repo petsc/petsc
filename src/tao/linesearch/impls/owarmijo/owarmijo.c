@@ -143,13 +143,13 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   if (armP->alpha < 1) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: alpha (%g) < 1\n", (double)armP->alpha));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
-  } else if ((armP->beta <= 0) || (armP->beta >= 1)) {
+  } else if (armP->beta <= 0 || armP->beta >= 1) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: beta (%g) invalid\n", (double)armP->beta));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
-  } else if ((armP->beta_inf <= 0) || (armP->beta_inf >= 1)) {
+  } else if (armP->beta_inf <= 0 || armP->beta_inf >= 1) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: beta_inf (%g) invalid\n", (double)armP->beta_inf));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
-  } else if ((armP->sigma <= 0) || (armP->sigma >= 0.5)) {
+  } else if (armP->sigma <= 0 || armP->sigma >= 0.5) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: sigma (%g) invalid\n", (double)armP->sigma));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   } else if (armP->memorySize < 1) {
@@ -158,7 +158,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
   } else if ((armP->referencePolicy != REFERENCE_MAX) && (armP->referencePolicy != REFERENCE_AVE) && (armP->referencePolicy != REFERENCE_MEAN)) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: reference_policy invalid\n"));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
-  } else if ((armP->replacementPolicy != REPLACE_FIFO) && (armP->replacementPolicy != REPLACE_MRU)) {
+  } else if (armP->replacementPolicy != REPLACE_FIFO && armP->replacementPolicy != REPLACE_MRU) {
     PetscCall(PetscInfo(ls, "OWArmijo line search error: replacement_policy invalid\n"));
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   } else if (PetscIsInfOrNanReal(*f)) {

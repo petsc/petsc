@@ -3238,7 +3238,7 @@ PetscErrorCode DMLocalToGlobalBegin(DM dm, Vec l, InsertMode mode, Vec g)
 
           PetscCall(PetscSectionGetConstraintIndices(s, p, &cdofs));
           for (d = 0, e = 0; d < dof; ++d) {
-            if ((cind < cdof) && (d == cdofs[cind])) {
+            if (cind < cdof && d == cdofs[cind]) {
               ++cind;
               continue;
             }
@@ -4787,7 +4787,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 
         PetscCall(PetscFindInt(offset, size + 1, ranges, &r));
         if (r < 0) r = -(r + 2);
-        if ((r < 0) || (r >= size)) {
+        if (r < 0 || r >= size) {
           PetscCall(PetscSynchronizedPrintf(comm, "[%d]Point %" PetscInt_FMT " mapped to invalid process %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, p, r, gdof, goff));
           valid = PETSC_FALSE;
           break;
@@ -6334,7 +6334,7 @@ PetscErrorCode DMCreateDS(DM dm)
       }
       /* We allow people to have placeholder fields and construct the Section by hand */
       PetscCall(PetscObjectGetClassId(disc, &id));
-      if ((id != PETSCFE_CLASSID) && (id != PETSCFV_CLASSID)) doSetup = PETSC_FALSE;
+      if (id != PETSCFE_CLASSID && id != PETSCFV_CLASSID) doSetup = PETSC_FALSE;
     }
     PetscCall(ISRestoreIndices(fields, &fld));
   }

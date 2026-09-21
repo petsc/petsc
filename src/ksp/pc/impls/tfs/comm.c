@@ -52,7 +52,7 @@ PetscErrorCode PCTFS_comm_init(void)
   PCTFS_floor_num_nodes >>= 1;
   modfl_num_nodes = (PCTFS_num_nodes - PCTFS_floor_num_nodes);
 
-  if ((PCTFS_my_id > 0) && (PCTFS_my_id <= modfl_num_nodes)) edge_not_pow_2 = ((PCTFS_my_id | PCTFS_floor_num_nodes) - 1);
+  if (PCTFS_my_id > 0 && PCTFS_my_id <= modfl_num_nodes) edge_not_pow_2 = ((PCTFS_my_id | PCTFS_floor_num_nodes) - 1);
   else if (PCTFS_my_id >= PCTFS_floor_num_nodes) edge_not_pow_2 = ((PCTFS_my_id ^ PCTFS_floor_num_nodes) + 1);
   else edge_not_pow_2 = 0;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1664,7 +1664,7 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
   }
   if (c->sub_cbegin != cbegin || c->sub_cend != cend) {
     // special optimization: check if all columns are owned by rank 0, in which case no communication is necessary
-    if ((cend - cbegin != a->cmat->cmap->N) || (A->cmap->range[1] != A->cmap->N)) {
+    if (cend - cbegin != a->cmat->cmap->N || A->cmap->range[1] != A->cmap->N) {
       PetscCall(PetscLayoutDestroy(&a->cmat->cmap));
       PetscCall(PetscLayoutCreate(comm, &a->cmat->cmap));
       PetscCall(PetscLayoutSetLocalSize(a->cmat->cmap, pcend - pcbegin));

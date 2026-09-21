@@ -763,7 +763,7 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
       PetscInt      *closure = NULL;
       PetscInt       closureSize;
 
-      if ((face < fStart) || (face >= fEnd)) continue;
+      if (face < fStart || face >= fEnd) continue;
       PetscCall(DMPlexGetTransitiveClosure(dm, face, PETSC_FALSE, &closureSize, &closure));
       for (PetscInt cl = closureSize - 1; cl > 0; --cl) {
         const PetscInt cell = closure[cl * 2];
@@ -1326,7 +1326,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
       PetscCall(PetscFindInt(faces[f], nleaves, leaves, &loc));
       PetscCall(DMPlexGetTreeChildren(dm, faces[f], &numChildren, NULL));
       if (loc >= 0 || numChildren) continue;
-      if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
+      if (faces[f] < fStart || faces[f] >= fEnd) continue;
       PetscCall(DMPlexGetSupportSize(dm, faces[f], &size));
       PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DM has boundary face %" PetscInt_FMT " with %" PetscInt_FMT " support cells", faces[f], size);
       PetscCall(DMPlexSetSupportSize(gdm, faces[f] + Ng, 2));
@@ -1353,7 +1353,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
       PetscCall(PetscFindInt(faces[f], nleaves, leaves, &loc));
       PetscCall(DMPlexGetTreeChildren(dm, faces[f], &numChildren, NULL));
       if (loc >= 0 || numChildren) continue;
-      if ((faces[f] < fStart) || (faces[f] >= fEnd)) continue;
+      if (faces[f] < fStart || faces[f] >= fEnd) continue;
       PetscCall(DMPlexSetCone(gdm, ghostCell, &newFace));
       PetscCall(DMPlexInsertSupport(gdm, newFace, 1, ghostCell));
       ++ghostCell;
@@ -1461,7 +1461,7 @@ static PetscErrorCode DivideCells_Private(DM dm, DMLabel label, DMPlexPointQueue
         const PetscInt clp = closure[cl];
         PetscInt       clval;
 
-        if ((clp < pStart[d]) || (clp >= pEnd[d])) continue;
+        if (clp < pStart[d] || clp >= pEnd[d]) continue;
         PetscCall(DMLabelGetValue(label, clp, &clval));
         if (clval == -1) {
           const PetscInt *cone;
@@ -1710,7 +1710,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   for (sp = 0; sp < numSP; ++sp) {
     const PetscInt dep = values[sp];
 
-    if ((dep < 0) || (dep > depth)) continue;
+    if (dep < 0 || dep > depth) continue;
     PetscCall(DMLabelGetStratumIS(label, dep, &splitIS[dep]));
     if (splitIS[dep]) {
       PetscCall(ISGetLocalSize(splitIS[dep], &numSplitPoints[dep]));
@@ -2315,7 +2315,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   for (sp = 0; sp < numSP; ++sp) {
     const PetscInt dep = values[sp];
 
-    if ((dep < 0) || (dep > depth)) continue;
+    if (dep < 0 || dep > depth) continue;
     if (splitIS[dep]) PetscCall(ISRestoreIndices(splitIS[dep], &splitPoints[dep]));
     PetscCall(ISDestroy(&splitIS[dep]));
     if (unsplitIS[dep]) PetscCall(ISRestoreIndices(unsplitIS[dep], &unsplitPoints[dep]));
@@ -2805,7 +2805,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
       PetscCall(DMLabelGetValue(blabel, point, &bval));
       if (bval >= 0) {
         PetscCall(DMLabelGetValue(label, point, &val));
-        if ((val < 0) || (val > dim)) {
+        if (val < 0 || val > dim) {
           /* This could be a point added from splitting a vertex on an adjacent fault, otherwise its just wrong */
           PetscCall(DMLabelClearValue(blabel, point, bval));
         }
@@ -3172,7 +3172,7 @@ static PetscErrorCode DMPlexCheckValidSubmesh_Private(DM dm, DMLabel label, DM s
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       PetscInt value = 0;
 
-      if ((closure[cl] < vStart) || (closure[cl] >= vEnd)) continue;
+      if (closure[cl] < vStart || closure[cl] >= vEnd) continue;
       PetscCall(DMLabelGetValue(label, closure[cl], &value));
       if (value == defaultValue) {
         invalidCell = PETSC_FALSE;

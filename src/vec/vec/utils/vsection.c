@@ -144,7 +144,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const 
       PetscCall(PetscSectionGetConstraintIndices(s, point, &cDof));
       if (doInsert) {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {
+          if (cInd < cDim && i == cDof[cInd]) {
             if (doBC) array[i] = values[i]; /* Constrained update */
             ++cInd;
             continue;
@@ -153,7 +153,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const 
         }
       } else {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {
+          if (cInd < cDim && i == cDof[cInd]) {
             if (doBC) array[i] += values[i]; /* Constrained update */
             ++cInd;
             continue;
@@ -176,7 +176,7 @@ PetscErrorCode VecSetValuesSection(Vec v, PetscSection s, PetscInt point, const 
         PetscInt       cInd = 0, i, k;
 
         for (i = 0, k = dim + offset - 1; i < dim; ++i, ++j, --k) {
-          if ((cInd < sDim) && (j == cDof[cInd + cOffset])) {
+          if (cInd < sDim && j == cDof[cInd + cOffset]) {
             ++cInd;
             continue;
           }

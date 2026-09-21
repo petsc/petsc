@@ -48,7 +48,7 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArrayRead(Udot, &udot));
   PetscCall(VecGetArray(F, &f));
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (t > ctx->tf && t < ctx->tcl) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else if (t >= ctx->tcl) Pmax = ctx->E / 0.745;
   else Pmax = ctx->Pmax;
   f[0] = udot[0] - ctx->omega_s * (u[1] - 1.0);
@@ -72,7 +72,7 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(U, &u));
   PetscCall(VecGetArrayRead(Udot, &udot));
-  if ((t > ctx->tf) && (t < ctx->tcl)) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
+  if (t > ctx->tf && t < ctx->tcl) Pmax = 0.0; /* A short-circuit on the generator terminal that drives the electrical power output (Pmax*sin(delta)) to 0 */
   else if (t >= ctx->tcl) Pmax = ctx->E / 0.745;
   else Pmax = ctx->Pmax;
 

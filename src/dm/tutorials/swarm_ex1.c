@@ -62,7 +62,7 @@ PetscErrorCode ex1_1(void)
     PetscCall(DMSwarmGetLocalSize(dms, &npoints_orig[0]));
     PetscCall(DMSwarmGetSize(dms, &npoints_orig[1]));
     PetscCall(DMSwarmGetField(dms, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-    if ((rank == 0) && (size > 1)) {
+    if (rank == 0 && size > 1) {
       rankval[0] = 1;
       rankval[3] = 1;
     }

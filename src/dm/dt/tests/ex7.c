@@ -326,7 +326,7 @@ int main(int argc, char **argv)
         if (verbose) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "(u wedge):\n"));
           PetscCall(PetscViewerASCIIPushTab(viewer));
-          if ((Nk * Njk) > 0) PetscCall(PetscRealView(Nk * Njk, uWwmat, viewer));
+          if (Nk * Njk > 0) PetscCall(PetscRealView(Nk * Njk, uWwmat, viewer));
           PetscCall(PetscViewerASCIIPopTab(viewer));
         }
         diff = 0.;
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
         PetscCall(CheckPullback(M, N, L, k, w, x, verbose, viewer));
         if (M != N) PetscCall(CheckPullback(N, M, L, k, u, v, PETSC_FALSE, viewer));
         PetscCall(PetscViewerASCIIPopTab(viewer));
-        if ((k % N) && (N > 1)) {
+        if ((k % N) && N > 1) {
           if (verbose) PetscCall(PetscViewerASCIIPrintf(viewer, "negative pullback M = %" PetscInt_FMT ":\n", M));
           PetscCall(PetscViewerASCIIPushTab(viewer));
           PetscCall(CheckPullback(M, N, L, -k, w, x, verbose, viewer));

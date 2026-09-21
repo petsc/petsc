@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   if (!testall) {
     if (!flg) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Problem number must be specified with -prob_id");
-    } else if ((prob_id < 1) || (prob_id > 53)) {
+    } else if (prob_id < 1 || prob_id > 53) {
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Problem number must be between 1 and 53!");
     } else {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Running problem %d\n", prob_id));

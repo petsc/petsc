@@ -566,7 +566,7 @@ PetscErrorCode DMSwarmPreallocateMassMatrix(DM dmc, DM dmf, Mat mass, PetscInt *
                 if (key.i < 0) continue;
                 PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
                 PetscCheck(missing, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
-                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - *rStart];
+                if (key.j >= colStart && key.j < colEnd) ++dnz[key.i - *rStart];
                 else ++onz[key.i - *rStart];
               }
             }
@@ -881,8 +881,8 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
               if (key.j < 0) continue;
               PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
               if (missing) {
-                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
-                else                                         ++onz[key.i - rStart];
+                if (key.j >= colStart && key.j < colEnd) ++dnz[key.i - rStart];
+                else ++onz[key.i - rStart];
               }
             }
           }

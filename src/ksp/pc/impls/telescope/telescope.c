@@ -492,7 +492,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
 
   /* subcomm definition */
   if (!pc->setupcalled) {
-    if ((sr_type == TELESCOPE_DEFAULT) || (sr_type == TELESCOPE_DMDA)) {
+    if (sr_type == TELESCOPE_DEFAULT || sr_type == TELESCOPE_DMDA) {
       if (!sred->psubcomm) {
         PetscCall(PetscSubcommCreate(comm, &sred->psubcomm));
         PetscCall(PetscSubcommSetNumber(sred->psubcomm, sred->redfactor));

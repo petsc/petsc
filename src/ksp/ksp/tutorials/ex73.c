@@ -122,7 +122,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i, PetscInt j, 
   pi = pj = -1;
   if (_pi) {
     for (n = 0; n < Mp; n++) {
-      if ((i >= start_i[n]) && (i < start_i[n] + span_i[n])) {
+      if (i >= start_i[n] && i < start_i[n] + span_i[n]) {
         pi = n;
         break;
       }
@@ -133,7 +133,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i, PetscInt j, 
 
   if (_pj) {
     for (n = 0; n < Np; n++) {
-      if ((j >= start_j[n]) && (j < start_j[n] + span_j[n])) {
+      if (j >= start_j[n] && j < start_j[n] + span_j[n]) {
         pj = n;
         break;
       }

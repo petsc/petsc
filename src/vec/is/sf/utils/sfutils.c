@@ -177,7 +177,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       cdof = 0; /* Ignore constraints */
     }
     for (d = 0, c = 0; d < dof; ++d) {
-      if ((c < cdof) && (cind[c] == d)) {
+      if (c < cdof && cind[c] == d) {
         ++c;
         continue;
       }
@@ -469,7 +469,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     PetscInt localPoint = localPoints ? localPoints[i] : i;
     PetscInt dof;
 
-    if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
+    if (localPoint >= lpStart && localPoint < lpEnd) {
       PetscCall(PetscSectionGetDof(leafSection, localPoint, &dof));
       numIndices += dof < 0 ? 0 : dof;
     }
@@ -481,7 +481,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
     PetscInt localPoint = localPoints ? localPoints[i] : i;
     PetscInt rank       = remotePoints[i].rank;
 
-    if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
+    if (localPoint >= lpStart && localPoint < lpEnd) {
       PetscInt remoteOffset = remoteOffsets[localPoint - lpStart];
       PetscInt loff, dof, d;
 

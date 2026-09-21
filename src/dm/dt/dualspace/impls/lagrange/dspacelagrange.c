@@ -1710,7 +1710,7 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDua
 
     PetscCall(MatGetRow(allMat, f, &ncols, &cols, &vals));
     for (c = 1, nNodesf = 1; c < ncols; c++) {
-      if ((cols[c] / Nc) != (cols[c - 1] / Nc)) nNodesf++;
+      if (cols[c] / Nc != cols[c - 1] / Nc) nNodesf++;
     }
     PetscCall(PetscMalloc1(dim * nNodesf, &nodesf));
     PetscCall(PetscMalloc1(Nc * nNodesf, &weightsf));

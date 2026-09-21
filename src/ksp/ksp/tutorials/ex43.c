@@ -1274,8 +1274,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
           element_props[j][i].fx[p]  = 0.0;
           element_props[j][i].fy[p]  = 0.0;
 
-          if ((coord_x > -0.5 * opts_dx + 0.5) && (coord_x < 0.5 * opts_dx + 0.5)) {
-            if ((coord_y > -0.5 * opts_dy + 0.5) && (coord_y < 0.5 * opts_dy + 0.5)) {
+          if (coord_x > -0.5 * opts_dx + 0.5 && coord_x < 0.5 * opts_dx + 0.5) {
+            if (coord_y > -0.5 * opts_dy + 0.5 && coord_y < 0.5 * opts_dy + 0.5) {
               element_props[j][i].eta[p] = opts_eta1;
               element_props[j][i].fx[p]  = 0.0;
               element_props[j][i].fy[p]  = -1.0;

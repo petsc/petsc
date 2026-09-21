@@ -304,7 +304,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
   PetscCall(PetscSpaceGetNumVariables(sp, &dim));
   PetscCheck(height <= dim && height >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Asked for space at height %" PetscInt_FMT " for dimension %" PetscInt_FMT " space", height, dim);
   if (!pt->subspaces) PetscCall(PetscCalloc1(dim, &pt->subspaces));
-  if ((dim - height) <= PetscAbsInt(pt->formDegree)) {
+  if (dim - height <= PetscAbsInt(pt->formDegree)) {
     if (!pt->subspaces[height - 1]) {
       PetscInt    Nc, degree, Nf, Ncopies, Nfsub;
       PetscSpace  sub;

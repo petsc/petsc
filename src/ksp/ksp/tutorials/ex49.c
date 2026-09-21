@@ -930,8 +930,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
           element_props[j][i].E[p]  = opts_E0;
           element_props[j][i].nu[p] = opts_nu0;
         }
-        if ((ci >= opts_t) && (ci < opts_t + opts_w)) {
-          if ((cj >= opts_t) && (cj < opts_t + opts_w)) {
+        if (ci >= opts_t && ci < opts_t + opts_w) {
+          if (cj >= opts_t && cj < opts_t + opts_w) {
             for (p = 0; p < GAUSS_POINTS; p++) {
               element_props[j][i].E[p]  = opts_E1;
               element_props[j][i].nu[p] = opts_nu1;

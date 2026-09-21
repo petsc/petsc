@@ -270,7 +270,7 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   // check again for init type, since the device count may have changed it
   if (initType.first == PETSC_DEVICE_INIT_NONE) {
     // id < 0 (excluding PETSC_DECIDE) indicates an error has occurred during setup
-    if ((initId.first > 0) || (initId.first == PETSC_DECIDE)) initId.first = PETSC_CUPM_DEVICE_NONE;
+    if (initId.first > 0 || initId.first == PETSC_DECIDE) initId.first = PETSC_CUPM_DEVICE_NONE;
     // initType overrides initView
     initView.first = PETSC_FALSE;
   } else {

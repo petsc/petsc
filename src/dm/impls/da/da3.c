@@ -107,7 +107,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
     PetscDrawCollectiveBegin(draw);
     /*Go through and draw for each plane*/
     for (k = 0; k < dd->P; k++) {
-      if ((k >= dd->zs) && (k < dd->ze)) {
+      if (k >= dd->zs && k < dd->ze) {
         /* draw my box */
         ymin = dd->ys;
         ymax = dd->ye - 1;
@@ -142,7 +142,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
     PetscDrawCollectiveBegin(draw);
     for (k = 0 - dd->s; k < dd->P + dd->s; k++) {
       /* Go through and draw for each plane */
-      if ((k >= dd->Zs) && (k < dd->Ze)) {
+      if (k >= dd->Zs && k < dd->Ze) {
         /* overlay ghost numbers, useful for error checking */
         base = (dd->Xe - dd->Xs) * (dd->Ye - dd->Ys) * (k - dd->Zs) / dd->w;
         PetscCall(ISLocalToGlobalMappingGetBlockIndices(da->ltogmap, &idx));
@@ -647,87 +647,87 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
     n26 = (m * n) - (size - rank) + m + 1;
   }
 
-  if ((xs == 0) && (zs == 0)) { /* Assume an edge, not corner */
+  if (xs == 0 && zs == 0) { /* Assume an edge, not corner */
     n0 = size - m * n + rank + m - 1 - m;
     n3 = size - m * n + rank + m - 1;
     n6 = size - m * n + rank + m - 1 + m;
   }
 
-  if ((xs == 0) && (ze == P)) { /* Assume an edge, not corner */
+  if (xs == 0 && ze == P) { /* Assume an edge, not corner */
     n18 = m * n - (size - rank) + m - 1 - m;
     n21 = m * n - (size - rank) + m - 1;
     n24 = m * n - (size - rank) + m - 1 + m;
   }
 
-  if ((xs == 0) && (ys == 0)) { /* Assume an edge, not corner */
+  if (xs == 0 && ys == 0) { /* Assume an edge, not corner */
     n0  = rank + m * n - 1 - m * n;
     n9  = rank + m * n - 1;
     n18 = rank + m * n - 1 + m * n;
   }
 
-  if ((xs == 0) && (ye == N)) { /* Assume an edge, not corner */
+  if (xs == 0 && ye == N) { /* Assume an edge, not corner */
     n6  = rank - m * (n - 1) + m - 1 - m * n;
     n15 = rank - m * (n - 1) + m - 1;
     n24 = rank - m * (n - 1) + m - 1 + m * n;
   }
 
-  if ((xe == M) && (zs == 0)) { /* Assume an edge, not corner */
+  if (xe == M && zs == 0) { /* Assume an edge, not corner */
     n2 = size - (m * n - rank) - (m - 1) - m;
     n5 = size - (m * n - rank) - (m - 1);
     n8 = size - (m * n - rank) - (m - 1) + m;
   }
 
-  if ((xe == M) && (ze == P)) { /* Assume an edge, not corner */
+  if (xe == M && ze == P) { /* Assume an edge, not corner */
     n20 = m * n - (size - rank) - (m - 1) - m;
     n23 = m * n - (size - rank) - (m - 1);
     n26 = m * n - (size - rank) - (m - 1) + m;
   }
 
-  if ((xe == M) && (ys == 0)) { /* Assume an edge, not corner */
+  if (xe == M && ys == 0) { /* Assume an edge, not corner */
     n2  = rank + m * (n - 1) - (m - 1) - m * n;
     n11 = rank + m * (n - 1) - (m - 1);
     n20 = rank + m * (n - 1) - (m - 1) + m * n;
   }
 
-  if ((xe == M) && (ye == N)) { /* Assume an edge, not corner */
+  if (xe == M && ye == N) { /* Assume an edge, not corner */
     n8  = rank - m * n + 1 - m * n;
     n17 = rank - m * n + 1;
     n26 = rank - m * n + 1 + m * n;
   }
 
-  if ((ys == 0) && (zs == 0)) { /* Assume an edge, not corner */
+  if (ys == 0 && zs == 0) { /* Assume an edge, not corner */
     n0 = size - m + rank - 1;
     n1 = size - m + rank;
     n2 = size - m + rank + 1;
   }
 
-  if ((ys == 0) && (ze == P)) { /* Assume an edge, not corner */
+  if (ys == 0 && ze == P) { /* Assume an edge, not corner */
     n18 = m * n - (size - rank) + m * (n - 1) - 1;
     n19 = m * n - (size - rank) + m * (n - 1);
     n20 = m * n - (size - rank) + m * (n - 1) + 1;
   }
 
-  if ((ye == N) && (zs == 0)) { /* Assume an edge, not corner */
+  if (ye == N && zs == 0) { /* Assume an edge, not corner */
     n6 = size - (m * n - rank) - m * (n - 1) - 1;
     n7 = size - (m * n - rank) - m * (n - 1);
     n8 = size - (m * n - rank) - m * (n - 1) + 1;
   }
 
-  if ((ye == N) && (ze == P)) { /* Assume an edge, not corner */
+  if (ye == N && ze == P) { /* Assume an edge, not corner */
     n24 = rank - (size - m) - 1;
     n25 = rank - (size - m);
     n26 = rank - (size - m) + 1;
   }
 
   /* Check for Corners */
-  if ((xs == 0) && (ys == 0) && (zs == 0)) n0 = size - 1;
-  if ((xs == 0) && (ys == 0) && (ze == P)) n18 = m * n - 1;
-  if ((xs == 0) && (ye == N) && (zs == 0)) n6 = (size - 1) - m * (n - 1);
-  if ((xs == 0) && (ye == N) && (ze == P)) n24 = m - 1;
-  if ((xe == M) && (ys == 0) && (zs == 0)) n2 = size - m;
-  if ((xe == M) && (ys == 0) && (ze == P)) n20 = m * n - m;
-  if ((xe == M) && (ye == N) && (zs == 0)) n8 = size - m * n;
-  if ((xe == M) && (ye == N) && (ze == P)) n26 = 0;
+  if (xs == 0 && ys == 0 && zs == 0) n0 = size - 1;
+  if (xs == 0 && ys == 0 && ze == P) n18 = m * n - 1;
+  if (xs == 0 && ye == N && zs == 0) n6 = (size - 1) - m * (n - 1);
+  if (xs == 0 && ye == N && ze == P) n24 = m - 1;
+  if (xe == M && ys == 0 && zs == 0) n2 = size - m;
+  if (xe == M && ys == 0 && ze == P) n20 = m * n - m;
+  if (xe == M && ye == N && zs == 0) n8 = size - m * n;
+  if (xe == M && ye == N && ze == P) n26 = 0;
 
   /* Check for when not X,Y, and Z Periodic */
 
@@ -1093,7 +1093,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
     n26 = sn26;
   }
 
-  if ((stencil_type == DMDA_STENCIL_STAR) || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz)) {
+  if (stencil_type == DMDA_STENCIL_STAR || (bx != DM_BOUNDARY_PERIODIC && bx) || (by != DM_BOUNDARY_PERIODIC && by) || (bz != DM_BOUNDARY_PERIODIC && bz)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers.

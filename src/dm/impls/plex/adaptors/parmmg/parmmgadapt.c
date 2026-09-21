@@ -142,7 +142,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
     PetscInt *closure = NULL, closureSize, cl;
 
     PetscCall(DMLabelHasPoint(bdLabel, f, &hasPoint));
-    if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
+    if (!hasPoint || f < fStart || f >= fEnd) continue;
 
     /* Only faces adjacent to an owned (non-leaf) cell are included */
     PetscInt        nnbrs;
@@ -156,7 +156,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
+      if (closure[cl] >= vStart && closure[cl] < vEnd) ++bdSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
   }
@@ -168,7 +168,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = vertexNumber[closure[cl] - vStart];
+      if (closure[cl] >= vStart && closure[cl] < vEnd) bdFaces[bdSize++] = vertexNumber[closure[cl] - vStart];
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     PetscCall(DMLabelGetValue(bdLabel, f, &faceTags[numFaceTags++]));

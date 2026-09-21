@@ -1210,7 +1210,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
     for (ctO = 0; ctO < DM_NUM_POLYTOPES; ++ctO) {
       PetscInt ctS = tr->ctStart[ctO], ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO] + 1]];
 
-      if ((rtS >= ctS) && (rtS < ctE)) break;
+      if (rtS >= ctS && rtS < ctE) break;
     }
     PetscCheck(ctO != DM_NUM_POLYTOPES, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine a cell type for refinement type %" PetscInt_FMT, rt);
   } else {
@@ -2010,7 +2010,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
         for (cl = 0; cl < clSize * 2; cl += 2) {
           const PetscInt sv = closure[cl];
 
-          if ((sv >= vStart) && (sv < vEnd)) tr->trSubVerts[ct][rct[n]][r][Nv++] = sv - vStart;
+          if (sv >= vStart && sv < vEnd) tr->trSubVerts[ct][rct[n]][r][Nv++] = sv - vStart;
         }
         PetscCall(DMPlexRestoreTransitiveClosure(trdm, pNew, PETSC_TRUE, &clSize, &closure));
         PetscCheck(Nv == DMPolytopeTypeGetNumVertices(rct[n]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of vertices %" PetscInt_FMT " != %" PetscInt_FMT " for %s subcell %" PetscInt_FMT " from cell %s", Nv, DMPolytopeTypeGetNumVertices(rct[n]), DMPolytopeTypes[rct[n]], r, DMPolytopeTypes[ct]);
@@ -2601,7 +2601,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
             PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], c, r, &cNew));
             PetscCall(DMPlexGetTransitiveClosure(rdm, cNew, PETSC_TRUE, &clSize, &closure));
             for (cl = 0; cl < clSize * 2; cl += 2) {
-              if ((closure[cl] >= vStartNew) && (closure[cl] < vEndNew)) ++Nv;
+              if (closure[cl] >= vStartNew && closure[cl] < vEndNew) ++Nv;
             }
             PetscCall(DMPlexRestoreTransitiveClosure(rdm, cNew, PETSC_TRUE, &clSize, &closure));
             PetscCall(PetscSectionSetDof(coordSectionCellNew, cNew, Nv * dE));

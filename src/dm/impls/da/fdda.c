@@ -1446,7 +1446,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
     for (j = 0; j < nc; j++) {
       ocols[cnt] = ((rank == (size - 1)) ? 0 : (i - nx + s + 1) * (ofill[j + 1] - ofill[j]));
       cols[cnt]  = dfill[j + 1] - dfill[j] + (s + nx - i - 1) * (ofill[j + 1] - ofill[j]);
-      if ((rank == size - 1) && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+      if (rank == size - 1 && dd->bx == DM_BOUNDARY_PERIODIC) {
         if (size > 1) ocols[cnt] += (i - nx + s + 1) * (ofill[j + 1] - ofill[j]);
         else cols[cnt] += (i - nx + s + 1) * (ofill[j + 1] - ofill[j]);
       }
@@ -1531,7 +1531,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
             for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i + s - l) * nc + ofill[k];
           }
         }
-        if ((rank == size - 1) && (dd->bx == DM_BOUNDARY_PERIODIC)) {
+        if (rank == size - 1 && dd->bx == DM_BOUNDARY_PERIODIC) {
           for (l = 0; l < s; l++) {
             for (k = ofill[j]; k < ofill[j + 1]; k++) cols[cnt++] = (i - s - l - m + 2) * nc + ofill[k];
           }

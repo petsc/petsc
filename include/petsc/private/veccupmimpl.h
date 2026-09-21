@@ -580,7 +580,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::GetArray(Vec v, PetscScalar **a, Petsc
   PetscCheckTypeNames(v, VECSEQCUPM(), VECMPICUPM());
   if (PetscMemoryAccessRead(access)) {
     // READ or READ_WRITE
-    if (((oldmask == PETSC_OFFLOAD_GPU) && hostmem) || ((oldmask == PETSC_OFFLOAD_CPU) && !hostmem)) {
+    if ((oldmask == PETSC_OFFLOAD_GPU && hostmem) || (oldmask == PETSC_OFFLOAD_CPU && !hostmem)) {
       // if we move the data we should set the flag to synchronize later on
       should_sync = true;
     }

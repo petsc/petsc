@@ -71,7 +71,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf, char *filename)
   for (i = 0; i < line_counter; i++) {
     PetscCheck(fgets(line, MAXLINE, fp), PETSC_COMM_SELF, PETSC_ERR_SUP, "File is incorrectly formatted");
 
-    if ((i >= bus_start_line) && (i < bus_end_line)) {
+    if (i >= bus_start_line && i < bus_end_line) {
       double gl, bl, vm, va, basekV;
       int    bus_i, ide, area;
       /* Bus data */

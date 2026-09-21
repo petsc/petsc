@@ -911,9 +911,9 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not handled by ExodusII viewer", dim);
       }
-      if ((degree == 2) && (type[cs] == SEGMENT)) numNodes += csSize;
-      if ((degree == 2) && (type[cs] == QUAD)) numNodes += csSize;
-      if ((degree == 2) && (type[cs] == HEX)) {
+      if (degree == 2 && type[cs] == SEGMENT) numNodes += csSize;
+      if (degree == 2 && type[cs] == QUAD) numNodes += csSize;
+      if (degree == 2 && type[cs] == HEX) {
         numNodes += csSize;
         numNodes += numFaces;
       }

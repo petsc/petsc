@@ -255,7 +255,7 @@ PetscErrorCode PCMGRecomputeLevelOperators_Internal(PC pc, PetscInt l)
   PetscCall(KSPGetOperators(fsmooth, &fA, &fB));
   PetscCall(PCMGGetInterpolation(pc, l + 1, &Interp));
   PetscCall(PCMGGetRestriction(pc, l + 1, &Restrc));
-  if ((galerkin == PC_MG_GALERKIN_PMAT) || (galerkin == PC_MG_GALERKIN_BOTH)) doB = PETSC_TRUE;
+  if (galerkin == PC_MG_GALERKIN_PMAT || galerkin == PC_MG_GALERKIN_BOTH) doB = PETSC_TRUE;
   if ((galerkin == PC_MG_GALERKIN_MAT) || ((galerkin == PC_MG_GALERKIN_BOTH) && (fA != fB))) doA = PETSC_TRUE;
   if (doA) PetscCall(MatGalerkin(Restrc, fA, Interp, reuse, 1.0, &A));
   if (doB) PetscCall(MatGalerkin(Restrc, fB, Interp, reuse, 1.0, &B));

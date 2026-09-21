@@ -208,7 +208,7 @@ static PetscErrorCode solve(TAO_DF *df)
                 are zero. The lagrange multiplier for ineq. const. is then
                 defined as below
         */
-        if ((x[i] > DELTAsv) && (x[i] < c - DELTAsv)) {
+        if (x[i] > DELTAsv && x[i] < c - DELTAsv) {
           ipt[it++] = i;
           kktlam    = kktlam - a[i] * g[i];
         } else uv[luv++] = i;

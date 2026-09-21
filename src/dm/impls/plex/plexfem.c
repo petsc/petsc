@@ -1083,7 +1083,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec face
       const PetscInt   face = faces[f], *cells;
       PetscFVFaceGeom *fg;
 
-      if ((face < fStart) || (face >= fEnd)) continue; /* Refinement adds non-faces to labels */
+      if (face < fStart || face >= fEnd) continue; /* Refinement adds non-faces to labels */
       PetscCall(PetscFindInt(face, nleaves, (PetscInt *)leaves, &loc));
       if (loc >= 0) continue;
       PetscCall(DMPlexPointLocalRead(dmFace, face, facegeom, &fg));
@@ -2219,7 +2219,7 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
       PetscReal      vol  = 0.0;
       PetscInt       foff = 0;
 
-      if ((cell < cStart) || (cell >= cEnd)) continue;
+      if (cell < cStart || cell >= cEnd) continue;
       PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
       PetscCall(DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x));
       for (f = 0; f < Nf; ++f) {
@@ -2352,7 +2352,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
       PetscScalar   *x    = NULL;
       PetscReal      vol  = 0.0;
 
-      if ((cell < cStart) || (cell >= cEnd)) continue;
+      if (cell < cStart || cell >= cEnd) continue;
       PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
       PetscCall(DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x));
       for (field = 0, fieldOffset = 0; field < numFields; ++field) {
@@ -3492,7 +3492,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, PetscCtx
                 if (key.j < 0) continue;
                 PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
                 if (missing) {
-                  if ((key.j >= rStart) && (key.j < rEnd)) ++dnz[key.i - rStart];
+                  if (key.j >= rStart && key.j < rEnd) ++dnz[key.i - rStart];
                   else ++onz[key.i - rStart];
                 }
               }
@@ -3765,7 +3765,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, PetscCtx
   for (c = cStart; c < cEnd; ++c) {
     PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, c, cellCIndices, cellFIndices));
     for (d = 0; d < cTotDim; ++d) {
-      if ((cellCIndices[d] < startC) || (cellCIndices[d] >= endC)) continue;
+      if (cellCIndices[d] < startC || cellCIndices[d] >= endC) continue;
       PetscCheck(!(findices[cellCIndices[d] - startC] >= 0) || !(findices[cellCIndices[d] - startC] != cellFIndices[cmap[d]]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " Coarse dof %" PetscInt_FMT " maps to both %" PetscInt_FMT " and %" PetscInt_FMT, c, cindices[cellCIndices[d] - startC], findices[cellCIndices[d] - startC], cellFIndices[cmap[d]]);
       cindices[cellCIndices[d] - startC] = cellCIndices[d];
       findices[cellCIndices[d] - startC] = cellFIndices[cmap[d]];

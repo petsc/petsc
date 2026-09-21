@@ -42,7 +42,7 @@ PetscErrorCode MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse 
     col = aij->garray[i]; /* blocked column index */
     for (subRank = 0; subRank < subCommSize; subRank++) {
       rank = commRankMap[subRank];
-      if ((col >= mat->cmap->range[rank] / bs) && (col < mat->cmap->range[rank + 1] / bs)) {
+      if (col >= mat->cmap->range[rank] / bs && col < mat->cmap->range[rank + 1] / bs) {
         garrayCMap[i] = (((*subMat)->cmap->range[subRank] - mat->cmap->range[rank]) / bs + col + 1);
         break;
       }

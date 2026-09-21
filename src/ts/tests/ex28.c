@@ -86,7 +86,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
       for (d = 0; d < dim; ++d) {
         coords[c * dim + d] = centroid[d];
-        if ((coords[c * dim + d] >= -1) && (coords[c * dim + d] <= 1)) {
+        if (coords[c * dim + d] >= -1 && coords[c * dim + d] <= 1) {
           vals[c] = 1.0;
         } else {
           vals[c] = 0.;

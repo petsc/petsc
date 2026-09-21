@@ -150,7 +150,7 @@ struct Printer {
 // the visibility of that class is higher than the one of those fields.
 //
 // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80947
-  #if ((__GNUC__ == 6) && (__GNUC_MINOR__ >= 4)) || ((__GNUC__ == 7) && (__GNUC_MINOR__ <= 5))
+  #if (__GNUC__ == 6 && __GNUC_MINOR__ >= 4) || ((__GNUC__ == 7) && (__GNUC_MINOR__ <= 5))
     #define PETSC_GCC_LAMBDA_VISIBILITY_WORKAROUND 1
   #endif
 #endif

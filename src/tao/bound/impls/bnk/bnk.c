@@ -216,7 +216,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
                 tau = bnk->gamma2_i;
               } else if (tau_max < bnk->gamma1_i) {
                 tau = bnk->gamma1_i;
-              } else if ((tau_min < bnk->gamma1_i) && (tau_max >= 1.0)) {
+              } else if (tau_min < bnk->gamma1_i && tau_max >= 1.0) {
                 tau = bnk->gamma1_i;
               } else if ((tau_1 >= bnk->gamma1_i) && (tau_1 < 1.0) && ((tau_2 < bnk->gamma1_i) || (tau_2 >= 1.0))) {
                 tau = tau_1;
@@ -504,7 +504,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   /* Make sure the BFGS preconditioner is healthy */
   if (bnk->M) {
     PetscCall(MatLMVMGetUpdateCount(bnk->M, &bfgsUpdates));
-    if ((KSP_DIVERGED_INDEFINITE_PC == *ksp_reason) && (bfgsUpdates > 0)) {
+    if (KSP_DIVERGED_INDEFINITE_PC == *ksp_reason && bfgsUpdates > 0) {
       /* Preconditioner is numerically indefinite; reset the approximation. */
       PetscCall(MatLMVMReset(bnk->M, PETSC_FALSE));
       PetscCall(MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient));
@@ -925,7 +925,7 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
               tao->trust = bnk->gamma2 * PetscMin(tao->trust, bnk->dnorm);
             } else if (tau_max < bnk->gamma1) {
               tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
-            } else if ((tau_min < bnk->gamma1) && (tau_max >= 1.0)) {
+            } else if (tau_min < bnk->gamma1 && tau_max >= 1.0) {
               tao->trust = bnk->gamma1 * PetscMin(tao->trust, bnk->dnorm);
             } else if ((tau_1 >= bnk->gamma1) && (tau_1 < 1.0) && ((tau_2 < bnk->gamma1) || (tau_2 >= 1.0))) {
               tao->trust = tau_1 * PetscMin(tao->trust, bnk->dnorm);

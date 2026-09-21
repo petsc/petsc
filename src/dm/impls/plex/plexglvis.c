@@ -71,7 +71,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
       totc++;
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &numPoints, &points));
       for (i = 0; i < numPoints * 2; i += 2) {
-        if ((points[i] >= vStart) && (points[i] < vEnd)) PetscCall(PetscBTSet(vown, points[i] - vStart));
+        if (points[i] >= vStart && points[i] < vEnd) PetscCall(PetscBTSet(vown, points[i] - vStart));
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &numPoints, &points));
     }
@@ -292,7 +292,7 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
   if (!dof) {
     PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &numPoints, &points));
     for (i = 0, q = 0; i < numPoints * 2; i += 2)
-      if ((points[i] >= vStart) && (points[i] < vEnd)) vids[q++] = points[i] - vStart + off;
+      if (points[i] >= vStart && points[i] < vEnd) vids[q++] = points[i] - vStart + off;
     PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &numPoints, &points));
   } else {
     PetscCall(PetscSectionGetOffset(csec, p, &off));

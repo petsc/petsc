@@ -119,7 +119,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 
       PetscCall(PetscSectionGetDof(gSection, p, &dof));
       PetscCall(PetscSectionGetOffset(gSection, p, &off));
-      if ((dof > 0) && (off >= 0)) ++ssize;
+      if (dof > 0 && off >= 0) ++ssize;
     }
     PetscCall(PetscMalloc3(ssize, &spoints, Nl, &sortleaves, Nl, &indices));
     for (p = 0; p < Nl; ++p) {
@@ -132,7 +132,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 
       PetscCall(PetscSectionGetDof(gSection, p, &dof));
       PetscCall(PetscSectionGetOffset(gSection, p, &off));
-      if ((dof > 0) && (off >= 0)) {
+      if (dof > 0 && off >= 0) {
         PetscCall(PetscFindInt(p, Nl, sortleaves, &loc));
         PetscCheck(loc >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " with nonzero dof is not a leaf of the migration SF", p);
         spoints[ssize++] = indices[loc];

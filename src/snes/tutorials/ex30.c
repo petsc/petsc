@@ -735,7 +735,7 @@ static inline PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, Petsc
     pC   = x[j][i].p;
 
   } else { /* on cell corner */
-    if ((i == ilim) || (j == jlim)) return EPS_ZERO;
+    if (i == ilim || j == jlim) return EPS_ZERO;
 
     TC = param->potentialT * TInterp(x, i, j) * PetscExpScalar(j * dz * z_scale);
     if (ivisc >= VISC_DISL) epsC = CalcSecInv(x, i, j, CELL_CORNER, user);

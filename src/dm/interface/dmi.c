@@ -63,7 +63,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
     PetscInt dof;
 
     PetscCall(PetscSectionGetDof(section, p, &dof));
-    if ((blockSize < 0) && (dof > 0)) blockSize = dof;
+    if (blockSize < 0 && dof > 0) blockSize = dof;
     if (dof > 0) blockSize = PetscGCD(dof, blockSize);
   }
   PetscCall(PetscSectionGetStorageSize(section, &localSize));

@@ -39,7 +39,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
   pi = pj = pk = -1;
   if (_pi) {
     for (n = 0; n < Mp; n++) {
-      if ((i >= start_i[n]) && (i < start_i[n] + span_i[n])) {
+      if (i >= start_i[n] && i < start_i[n] + span_i[n]) {
         pi = n;
         break;
       }
@@ -50,7 +50,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
 
   if (_pj) {
     for (n = 0; n < Np; n++) {
-      if ((j >= start_j[n]) && (j < start_j[n] + span_j[n])) {
+      if (j >= start_j[n] && j < start_j[n] + span_j[n]) {
         pj = n;
         break;
       }
@@ -61,7 +61,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
 
   if (_pk) {
     for (n = 0; n < Pp; n++) {
-      if ((k >= start_k[n]) && (k < start_k[n] + span_k[n])) {
+      if (k >= start_k[n] && k < start_k[n] + span_k[n]) {
         pk = n;
         break;
       }

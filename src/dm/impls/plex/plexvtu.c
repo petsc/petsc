@@ -86,7 +86,7 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       for (v = 0; v < closureSize * 2; v += 2) {
-        if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+        if (closure[v] >= vStart && closure[v] < vEnd) {
           if (!localized) PetscCall(PetscVTKIntCast(closure[v] - vStart, &conn[countconn++]));
           else PetscCall(PetscVTKIntCast(startoffset + nC, &conn[countconn++]));
           ++nC;
@@ -220,7 +220,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       for (v = 0; v < closureSize * 2; v += 2) {
-        if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+        if (closure[v] >= vStart && closure[v] < vEnd) {
           piece.nconn++;
           if (localized) piece.nvertices++;
         }
@@ -271,7 +271,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscInt     bs      = 1, nfields, field;
         const char  *vecname = "";
         PetscSection section;
-        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_CELL_FIELD && link->ft != PETSC_VTK_CELL_VECTOR_FIELD) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           PetscCall(PetscObjectGetName((PetscObject)X, &vecname));
         }
@@ -365,7 +365,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscInt     bs      = 1, nfields, field;
         const char  *vecname = "";
         PetscSection section;
-        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_POINT_FIELD && link->ft != PETSC_VTK_POINT_VECTOR_FIELD) continue;
         if (((PetscObject)X)->name || link != vtk->link) { /* If the object is already named, use it. If it is past the first link, name it to disambiguate. */
           PetscCall(PetscObjectGetName((PetscObject)X, &vecname));
         }
@@ -467,7 +467,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
 
                 PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
                 for (v = 0; v < closureSize * 2; v += 2) {
-                  if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+                  if (closure[v] >= vStart && closure[v] < vEnd) {
                     PetscCall(PetscSectionGetOffset(coordSection, closure[v], &off));
                     if (dimEmbed != 3) {
                       y[cnt * 3 + 0] = (PetscVTUReal)PetscRealPart(x[off + 0]);
@@ -540,7 +540,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscInt           bs      = 1, nfields, field;
         PetscSection       section = NULL;
 
-        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_CELL_FIELD && link->ft != PETSC_VTK_CELL_VECTOR_FIELD) continue;
         PetscCall(VecGetDM(X, &dmX));
         if (!dmX) dmX = dm;
         PetscCall(PetscObjectQuery(link->vec, "section", (PetscObject *)&section));
@@ -632,7 +632,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscInt           bs      = 1, nfields, field;
         PetscSection       section = NULL;
 
-        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_POINT_FIELD && link->ft != PETSC_VTK_POINT_VECTOR_FIELD) continue;
         PetscCall(VecGetDM(X, &dmX));
         if (!dmX) dmX = dm;
         PetscCall(PetscObjectQuery(link->vec, "section", (PetscObject *)&section));
@@ -672,7 +672,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
 
                   PetscCall(DMPlexGetTransitiveClosure(dmX, c, PETSC_TRUE, &closureSize, &closure));
                   for (v = 0, off = 0; v < closureSize * 2; v += 2) {
-                    if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+                    if (closure[v] >= vStart && closure[v] < vEnd) {
                       PetscInt           voff;
                       const PetscScalar *xpoint;
 
@@ -714,7 +714,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
 
                     PetscCall(DMPlexGetTransitiveClosure(dmX, c, PETSC_TRUE, &closureSize, &closure));
                     for (v = 0, off = 0; v < closureSize * 2; v += 2) {
-                      if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
+                      if (closure[v] >= vStart && closure[v] < vEnd) {
                         PetscInt           voff;
                         const PetscScalar *xpoint;
 
@@ -750,7 +750,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         DM           dmX;
         PetscSection section = NULL;
 
-        if ((link->ft != PETSC_VTK_CELL_FIELD) && (link->ft != PETSC_VTK_CELL_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_CELL_FIELD && link->ft != PETSC_VTK_CELL_VECTOR_FIELD) continue;
         PetscCall(VecGetDM(X, &dmX));
         if (!dmX) dmX = dm;
         PetscCall(PetscObjectQuery(link->vec, "section", (PetscObject *)&section));
@@ -799,7 +799,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscInt     bs      = 1, nfields, field;
         PetscSection section = NULL;
 
-        if ((link->ft != PETSC_VTK_POINT_FIELD) && (link->ft != PETSC_VTK_POINT_VECTOR_FIELD)) continue;
+        if (link->ft != PETSC_VTK_POINT_FIELD && link->ft != PETSC_VTK_POINT_VECTOR_FIELD) continue;
         PetscCall(VecGetDM(X, &dmX));
         if (!dmX) dmX = dm;
         PetscCall(PetscObjectQuery(link->vec, "section", (PetscObject *)&section));

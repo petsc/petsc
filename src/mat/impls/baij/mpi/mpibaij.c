@@ -1756,7 +1756,7 @@ static PetscErrorCode MatCopy_MPIBAIJ(Mat A, Mat B, MatStructure str)
 
   PetscFunctionBegin;
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
-  if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
+  if (str != SAME_NONZERO_PATTERN || A->ops->copy != B->ops->copy) {
     PetscCall(MatCopy_Basic(A, B, str));
   } else {
     PetscCall(MatCopy(a->A, b->A, str));

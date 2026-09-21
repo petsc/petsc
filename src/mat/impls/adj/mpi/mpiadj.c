@@ -345,7 +345,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) *flg = PETSC_FALSE;
+  if (A->rmap->n != B->rmap->n || a->nz != b->nz) *flg = PETSC_FALSE;
 
   /* if the a->i are the same */
   PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, flg));
@@ -474,7 +474,7 @@ static PetscErrorCode MatSetValues_MPIAdj(Mat A, PetscInt m, const PetscInt *row
 
     key.i = rows[r];
     if (key.i < 0) continue;
-    if ((key.i < rStart) || (key.i >= rEnd)) {
+    if (key.i < rStart || key.i >= rEnd) {
       PetscCall(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
     } else {
       for (PetscInt c = 0; c < n; ++c) {

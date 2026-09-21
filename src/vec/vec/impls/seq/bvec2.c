@@ -209,7 +209,7 @@ PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z)
         const PetscReal tmp = PetscAbsScalar(xx[i]);
 
         /* check special case of tmp == NaN */
-        if ((tmp > ztmp[0]) || (tmp != tmp)) {
+        if (tmp > ztmp[0] || tmp != tmp) {
           ztmp[0] = tmp;
           if (tmp != tmp) break;
         }

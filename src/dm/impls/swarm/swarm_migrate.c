@@ -119,7 +119,7 @@ static PetscErrorCode DMSwarmMigrate_DMNeighborScatter(DM dm, DM dmcell, PetscBo
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (r = 0; r < nneighbors; r++) {
     _rank = neighbourranks[r];
-    if ((_rank != rank) && (_rank > 0)) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, _rank));
+    if (_rank != rank && _rank > 0) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, _rank));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   PetscCall(DMSwarmDataExTopologyGetNeighbours(de, &mynneigh, &myneigh));
@@ -490,19 +490,19 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
   }
   PetscCall(DMSwarmDataExTopologyInitialize(de));
   for (p = 0; p < neighbour_cells; p++) {
-    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, dmneighborranks[p]));
+    if (dmneighborranks[p] >= 0 && dmneighborranks[p] != rank) PetscCall(DMSwarmDataExTopologyAddNeighbour(de, dmneighborranks[p]));
   }
   PetscCall(DMSwarmDataExTopologyFinalize(de));
   PetscCall(DMSwarmDataExInitializeSendCount(de));
   for (p = 0; p < neighbour_cells; p++) {
-    if ((dmneighborranks[p] >= 0) && (dmneighborranks[p] != rank)) PetscCall(DMSwarmDataExAddToSendCount(de, dmneighborranks[p], 1));
+    if (dmneighborranks[p] >= 0 && dmneighborranks[p] != rank) PetscCall(DMSwarmDataExAddToSendCount(de, dmneighborranks[p], 1));
   }
   PetscCall(DMSwarmDataExFinalizeSendCount(de));
   /* send bounding boxes */
   PetscCall(DMSwarmDataExPackInitialize(de, sizeof_bbox_ctx));
   for (p = 0; p < neighbour_cells; p++) {
     nrank = dmneighborranks[p];
-    if ((nrank >= 0) && (nrank != rank)) {
+    if (nrank >= 0 && nrank != rank) {
       /* insert bbox buffer into DMSwarmDataExchanger */
       PetscCall(DMSwarmDataExPackData(de, nrank, 1, bbox));
     }
@@ -526,8 +526,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
     PetscCall(DMSwarmGetField(dm, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dm, "coory", NULL, NULL, (void **)&array_y));
     for (p = 0; p < npoints; p++) {
-      if ((array_x[p] >= recv_bbox[pk].min[0]) && (array_x[p] <= recv_bbox[pk].max[0])) {
-        if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1])) PetscCall(DMSwarmDataExAddToSendCount(de, recv_bbox[pk].owner_rank, 1));
+      if (array_x[p] >= recv_bbox[pk].min[0] && array_x[p] <= recv_bbox[pk].max[0]) {
+        if (array_y[p] >= recv_bbox[pk].min[1] && array_y[p] <= recv_bbox[pk].max[1]) PetscCall(DMSwarmDataExAddToSendCount(de, recv_bbox[pk].owner_rank, 1));
       }
     }
     PetscCall(DMSwarmRestoreField(dm, "coory", NULL, NULL, (void **)&array_y));
@@ -542,8 +542,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm, PetscInt *glob
     PetscCall(DMSwarmGetField(dm, "coorx", NULL, NULL, (void **)&array_x));
     PetscCall(DMSwarmGetField(dm, "coory", NULL, NULL, (void **)&array_y));
     for (p = 0; p < npoints; p++) {
-      if ((array_x[p] >= recv_bbox[pk].min[0]) && (array_x[p] <= recv_bbox[pk].max[0])) {
-        if ((array_y[p] >= recv_bbox[pk].min[1]) && (array_y[p] <= recv_bbox[pk].max[1])) {
+      if (array_x[p] >= recv_bbox[pk].min[0] && array_x[p] <= recv_bbox[pk].max[0]) {
+        if (array_y[p] >= recv_bbox[pk].min[1] && array_y[p] <= recv_bbox[pk].max[1]) {
           /* copy point into buffer */
           PetscCall(DMSwarmDataBucketFillPackedArray(swarm->db, p, point_buffer));
           /* insert point buffer into DMSwarmDataExchanger */
