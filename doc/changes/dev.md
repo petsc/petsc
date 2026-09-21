@@ -21,6 +21,7 @@
   `PetscCallP4estReturn()` to be variadic and take the function arguments directly without requiring the parentheses that previously wrapped the function
   arguments. For functions that take no arguments, a trailing comma after the function name is required per previous C standards
 - Change all use of Metis in the PETSc API to use METIS
+- Change `make clang-tidy` to require `--with-mpi=0`; add `PETSC_CLANG_TIDY_FIX=--fix` to apply fixits
 
 ## Configure/Build
 
