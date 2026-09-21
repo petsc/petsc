@@ -2138,6 +2138,101 @@ class CMakePackage(Package):
           raise RuntimeError('Error running pip install on '+self.pkgname)
     return self.installDir
 
+class MesonPackage(Package):
+  def __init__(self, framework):
+    Package.__init__(self, framework)
+    self.minMesonVersion = (0,55,0)
+    self.mesonBackend = None
+
+  def setupHelp(self, help):
+    import nargs
+    Package.setupHelp(self, help)
+    help.addArgument(self.PACKAGE, '-download-'+self.package+'-meson-arguments=string', nargs.ArgString(None, '', 'Additional Meson arguments for the build of '+self.name))
+
+  def setupDependencies(self, framework):
+    Package.setupDependencies(self, framework)
+    self.meson = framework.require('config.packages.meson', self)
+    if self.argDB['download-'+self.downloadname.lower()]:
+      self.meson.maxminMesonVersion = max(self.minMesonVersion, self.meson.maxminMesonVersion)
+    self.ninja = framework.require('config.packages.ninja', self)
+    self.odeps = [self.meson, self.ninja]
+
+  def formMesonConfigureArgs(self):
+    import shlex
+    binaries = []
+    options = []
+    for language, name in [('C', 'c'), ('Cxx', 'cpp'), ('FC', 'fortran')]:
+      if language not in self.buildLanguages:
+        continue
+      self.pushLanguage(language)
+      compiler = shlex.split(self.getCompiler())
+      flags = self.getCompilerFlags()
+      if language == 'C':
+        flags = self.updatePackageCFlags(flags)
+      elif language == 'Cxx':
+        flags = self.updatePackageCxxFlags(flags)
+      else:
+        flags = self.updatePackageFFlags(flags)
+      binaries.append(name+' = '+repr(compiler))
+      options.append(name+'_args = '+repr(shlex.split(flags)))
+      options.append(name+'_link_args = '+repr(shlex.split(self.getLinkerFlags())))
+      self.popLanguage()
+    native = os.path.join(self.packageDir, self.package+'.native')
+    with open(native, 'w') as out:
+      out.write('[binaries]\n'+'\n'.join(binaries)+'\n[built-in options]\n'+'\n'.join(options)+'\n')
+
+    args = ['--prefix='+self.installDir, '--libdir=lib', '--buildtype=plain', '--native-file='+native]
+    if self.mesonBackend:
+      args.append('--backend='+self.mesonBackend)
+    return args
+
+  def updateControlFiles(self):
+    # Override to change build control files
+    return
+
+  def Install(self):
+    import shlex
+    import shutil
+    args = self.formMesonConfigureArgs()
+    if self.download and 'download-'+self.package+'-meson-arguments' in self.framework.clArgDB:
+      args.extend(shlex.split(self.argDB['download-'+self.package+'-meson-arguments']))
+    conffile = os.path.join(self.packageDir, self.package+'.petscconf')
+    with open(os.path.join(self.packageDir, self.package+'.native')) as source, open(conffile, 'w') as out:
+      out.write(source.read()+repr(args)+'\n')
+    if not self.installNeeded(conffile):
+      return self.installDir
+
+    if not self.meson.found:
+      raise RuntimeError('Meson is needed to build '+self.name+'. Use --download-meson or --with-meson-exec.')
+    self.updateControlFiles()
+    builddir = os.path.join(self.packageDir, 'petsc-build')
+    if os.path.isdir(builddir):
+      shutil.rmtree(builddir)
+    env = os.environ.copy()
+    if self.ninja.found:
+      env['NINJA'] = self.ninja.ninja
+    meson = [self.meson.meson]
+    try:
+      self.logPrintBox('Configuring '+self.PACKAGE+' with Meson; this may take several minutes')
+      self.executeShellCommand(meson+['setup', builddir, self.packageDir]+args, env=env, timeout=900, log=self.log)
+    except RuntimeError as e:
+      self.logPrint('Error configuring '+self.PACKAGE+' with Meson: '+str(e))
+      logfile = os.path.join(builddir, 'meson-logs', 'meson-log.txt')
+      if os.path.isfile(logfile):
+        with open(logfile) as source:
+          self.logPrint('Output in meson-log.txt for '+self.PACKAGE+':\n'+source.read())
+      raise RuntimeError('Error configuring '+self.PACKAGE+' with Meson')
+    try:
+      self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
+      jobs = self.make.make_np if self.parallelMake else 1
+      self.executeShellCommand(meson+['compile', '-C', builddir, '-j', str(jobs)], env=env, timeout=3000, log=self.log)
+      self.executeShellCommand(meson+['install', '-C', builddir, '--no-rebuild'], env=env, timeout=300, log=self.log)
+    except RuntimeError as e:
+      self.logPrint('Error compiling or installing '+self.PACKAGE+' with Meson: '+str(e))
+      raise RuntimeError('Error compiling or installing '+self.PACKAGE+' with Meson')
+    self.postInstall(conffile)
+    return self.installDir
+
 class PythonPackage(Package):
   def __init__(self, framework):
     Package.__init__(self, framework)
