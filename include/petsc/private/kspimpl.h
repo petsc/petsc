@@ -563,16 +563,16 @@ M*/
 #define KSPCheckDot(ksp, beta) \
   do { \
     if (PetscIsInfOrNanScalar(beta)) { \
-      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to infinity or NaN inner product"); \
+      PetscCheck(!(ksp)->errorifnotconverged, PetscObjectComm((PetscObject)(ksp)), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to infinity or NaN inner product"); \
       { \
         PCFailedReason pcreason; \
-        PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
-        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
+        PetscCall(PCReduceFailedReason((ksp)->pc)); \
+        PetscCall(PCGetFailedReason((ksp)->pc, &pcreason)); \
+        PetscCall(VecFlag((ksp)->vec_sol, pcreason)); \
         if (pcreason) { \
-          ksp->reason = KSP_DIVERGED_PC_FAILED; \
+          (ksp)->reason = KSP_DIVERGED_PC_FAILED; \
         } else { \
-          ksp->reason = KSP_DIVERGED_NANORINF; \
+          (ksp)->reason = KSP_DIVERGED_NANORINF; \
         } \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
@@ -604,18 +604,18 @@ M*/
 #define KSPCheckNorm(ksp, beta) \
   do { \
     if (PetscIsInfOrNanReal(beta)) { \
-      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to infinity or NaN norm"); \
+      PetscCheck(!(ksp)->errorifnotconverged, PetscObjectComm((PetscObject)(ksp)), PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged due to infinity or NaN norm"); \
       { \
         PCFailedReason pcreason; \
-        PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
-        PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
+        PetscCall(PCReduceFailedReason((ksp)->pc)); \
+        PetscCall(PCGetFailedReason((ksp)->pc, &pcreason)); \
+        PetscCall(VecFlag((ksp)->vec_sol, pcreason)); \
         if (pcreason) { \
-          ksp->reason = KSP_DIVERGED_PC_FAILED; \
+          (ksp)->reason = KSP_DIVERGED_PC_FAILED; \
         } else { \
-          ksp->reason = KSP_DIVERGED_NANORINF; \
+          (ksp)->reason = KSP_DIVERGED_NANORINF; \
         } \
-        ksp->rnorm = beta; \
+        (ksp)->rnorm = beta; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
