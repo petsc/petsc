@@ -1,0 +1,20 @@
+CUTEst problem ROSENBR: 2 variables
+
+CUTEst solve summary
+  Solver:                    snesls
+  Variables:                 2
+  Termination reason:        CONVERGED_GATOL
+  SNES termination reason:   CONVERGED_FNORM_ABS
+  Iterations:                26
+
+                             Initial          Final
+  Objective:                 2.42000000e+01   2.36421791e-21
+  Gradient norm (2-norm):    2.32867688e+02   2.12829029e-09
+
+  Objective evaluations:     89
+  Gradient evaluations:      27
+  Hessian evaluations:       26
+  Hessian-vector products:   104
+  CUTEst Hessian products:   104
+  Rejected steps:            0
+  Solve time (seconds):

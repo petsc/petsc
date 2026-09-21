@@ -85,6 +85,7 @@
 ```{rubric} TAO:
 ```
 
+- Add support for CUTEst unconstrained problems in TAO tutorials and tests
 - Map `TAOSNES` convergence and divergence reasons with the public `TaoConvergedReasonFromSNES()`, and add `TaoSNESGetSNES()` to access the underlying solver
 
 ```{rubric} TaoTerm:

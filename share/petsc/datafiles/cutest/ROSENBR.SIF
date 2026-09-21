@@ -1,0 +1,54 @@
+NAME          ROSENBR
+* f(x,y) = 100 (y - x*x)^2 + (1 - x)^2, starting at (-1.2, 1).
+* Minimal unconstrained problem for the TAO CUTEst driver tests.
+
+VARIABLES
+    X
+    Y
+
+GROUPS
+ N  RESIDUAL  Y         1.0
+ N  RESIDUAL  'SCALE'   0.01
+ N  LINEAR    X         1.0
+
+CONSTANTS
+    ROSENBR   LINEAR    1.0
+
+BOUNDS
+ FR ROSENBR   'DEFAULT'
+
+START POINT
+    ROSENBR   X         -1.2
+    ROSENBR   Y          1.0
+
+ELEMENT TYPE
+ EV SQUARE    U
+
+ELEMENT USES
+ T  XSQUARED  SQUARE
+ V  XSQUARED  U                        X
+
+GROUP TYPE
+ GV SQUARE    T
+
+GROUP USES
+ T  'DEFAULT' SQUARE
+ XE RESIDUAL  XSQUARED  -1.0
+
+ENDATA
+
+ELEMENTS      ROSENBR
+INDIVIDUALS
+ T  SQUARE
+ F                      U * U
+ G  U                   2.0 * U
+ H  U         U         2.0
+ENDATA
+
+GROUPS        ROSENBR
+INDIVIDUALS
+ T  SQUARE
+ F                      T * T
+ G                      2.0 * T
+ H                      2.0
+ENDATA

@@ -1,0 +1,62 @@
+NAME          COOHESS
+* f = X1**4 + (X1*X3)**2 + (X2*X3)**2 + X4; X5 is unused.
+* Nonadjacent off-diagonals, a zero Hessian at the origin, and missing diagonals.
+
+VARIABLES
+    X1
+    X2
+    X3
+    X4
+    X5
+
+GROUPS
+ N  FOURTH
+ N  CROSS1
+ N  CROSS2
+ N  LINEAR    X4        1.0
+
+BOUNDS
+ FR COOHESS   'DEFAULT'
+
+START POINT
+    COOHESS   X1        1.0
+    COOHESS   X2        -2.0
+    COOHESS   X3        0.5
+    COOHESS   X4        3.0
+    COOHESS   X5        -1.0
+
+ELEMENT TYPE
+ EV QUARTIC   U
+ EV PRODUCT   U                        V
+
+ELEMENT USES
+ T  X1FOURTH  QUARTIC
+ V  X1FOURTH  U                        X1
+ T  X1X3      PRODUCT
+ V  X1X3      U                        X1
+ V  X1X3      V                        X3
+ T  X2X3      PRODUCT
+ V  X2X3      U                        X2
+ V  X2X3      V                        X3
+
+GROUP USES
+ E  FOURTH    X1FOURTH
+ E  CROSS1    X1X3
+ E  CROSS2    X2X3
+
+ENDATA
+
+ELEMENTS      COOHESS
+INDIVIDUALS
+ T  QUARTIC
+ F                      U**4
+ G  U                   4.0 * U**3
+ H  U         U         12.0 * U * U
+ T  PRODUCT
+ F                      U * U * V * V
+ G  U                   2.0 * U * V * V
+ G  V                   2.0 * V * U * U
+ H  U         U         2.0 * V * V
+ H  U         V         4.0 * U * V
+ H  V         V         2.0 * U * U
+ENDATA
