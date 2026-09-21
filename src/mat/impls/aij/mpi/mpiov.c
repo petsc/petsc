@@ -1215,33 +1215,28 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
   Mat_MPIAIJ     *c = (Mat_MPIAIJ *)C->data;
   Mat             submat, A = c->A, B = c->B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data, *subc;
-  PetscInt       *ai = a->i, *aj = a->j, *bi = b->i, *bj = b->j, nzA, nzB;
-  PetscInt        cstart = C->cmap->rstart, cend = C->cmap->rend, rstart = C->rmap->rstart, *bmap = c->garray;
+  Mat_SubSppt    *smatis1;
   const PetscInt *icol, *irow;
-  PetscInt        nrow, ncol, start;
-  PetscMPIInt     rank, size, *req_source1, *req_source2, tag1, tag2, tag3, tag4, *w1, *w2, nrqr, nrqs = 0, proc, *pa;
-  PetscInt      **sbuf1, **sbuf2, k, ct1, ct2, ct3, **rbuf1, row;
-  PetscInt        msz, **ptr, *req_size, *ctr, *tmp, tcol, *iptr;
-  PetscInt      **rbuf3, **sbuf_aj, **rbuf2, max1, nnz;
-  PetscInt       *lens, rmax, ncols, *cols, Crow;
+  PetscInt        cstart = C->cmap->rstart, cend = C->cmap->rend, rstart = C->rmap->rstart;
+  PetscInt        nzA, nzB, nrow, ncol, start, k, ct1, ct2, ct3, row, msz, tcol, max1, nnz, rmax, ncols, Crow, ctr_j, kmax, jcnt, lwrite, ib, jb;
+  PetscInt       *ai = a->i, *aj = a->j, *bi = b->i, *bj = b->j, *bmap = c->garray;
+  PetscInt       *req_size, *ctr, *tmp, *iptr, *lens, *cols, *sbuf1_j, *sbuf_aj_i, *rbuf1_i, *sbuf1_i, *rbuf2_i, *rbuf3_i, *cworkB, *subcols;
+  PetscInt      **sbuf1, **sbuf2, **rbuf1, **ptr, **rbuf3, **sbuf_aj, **rbuf2;
 #if PetscDefined(USE_CTABLE)
-  PetscHMapI cmap, rmap;
   PetscInt  *cmap_loc, *rmap_loc;
+  PetscHMapI cmap, rmap;
 #else
   PetscInt *cmap, *rmap;
 #endif
-  PetscInt      ctr_j, *sbuf1_j, *sbuf_aj_i, *rbuf1_i, kmax, *sbuf1_i, *rbuf2_i, *rbuf3_i, jcnt;
-  PetscInt     *cworkB, lwrite, *subcols, ib, jb;
-  PetscScalar  *vworkA, *vworkB, *a_a, *b_a, *subvals = NULL;
-  MPI_Request  *s_waits1, *r_waits1, *s_waits2, *r_waits2, *r_waits3;
-  MPI_Request  *r_waits4, *s_waits3 = NULL, *s_waits4;
-  MPI_Status   *r_status1, *r_status2, *s_status1, *s_status3 = NULL, *s_status2;
-  MPI_Status   *r_status3 = NULL, *r_status4, *s_status4;
-  MPI_Comm      comm;
-  PetscScalar **rbuf4, **sbuf_aa, *vals, *sbuf_aa_i, *rbuf4_i;
-  PetscMPIInt  *onodes1, *olengths1, idex, end, *row2proc;
-  Mat_SubSppt  *smatis1;
-  PetscBool     isrowsorted, iscolsorted;
+  PetscMPIInt      rank, size, tag1, tag2, tag3, tag4, nrqr, nrqs = 0, proc, idex, end;
+  PetscMPIInt     *req_source1, *req_source2, *w1, *w2, *pa, *onodes1, *olengths1, *row2proc;
+  PetscScalar     *vworkA, *vworkB, *a_a, *b_a, *subvals = NULL, *suba = NULL, *vals, *sbuf_aa_i, *rbuf4_i;
+  PetscScalar    **rbuf4, **sbuf_aa;
+  PetscBool        isrowsorted, iscolsorted, direct_csr_reuse = PETSC_FALSE;
+  PetscObjectState submat_nonzerostate;
+  MPI_Request     *s_waits1, *r_waits1, *s_waits2, *r_waits2, *r_waits3, *r_waits4, *s_waits3 = NULL, *s_waits4;
+  MPI_Status      *r_status1, *r_status2, *s_status1, *s_status3 = NULL, *s_status2, *r_status3 = NULL, *r_status4, *s_status4;
+  MPI_Comm         comm;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(C, ismax, 2);
@@ -1687,6 +1682,83 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     rmap_loc = smatis1->rmap_loc;
     cmap_loc = smatis1->cmap_loc;
 #endif
+    PetscCall(MatGetNonzeroState(submat, &submat_nonzerostate));
+    // User changes to the submatrix graph invalidate the cached CSR positions.
+    direct_csr_reuse = (PetscBool)(iscolsorted && !allcolumns && submat_nonzerostate == smatis1->nonzerostate);
+    // Build owned-row maps only when reuse first needs them and the initial graph still matches.
+    if (direct_csr_reuse && !smatis1->csrcached) {
+      PetscInt nlocal_a = 0, nlocal_b = 0;
+
+      for (PetscInt j = 0; j < nrow; j++) {
+        row = irow[j];
+        if (row2proc[j] != rank) continue;
+        Crow = row - rstart;
+        for (PetscInt k = ai[Crow]; k < ai[Crow + 1]; k++) {
+#if PetscDefined(USE_CTABLE)
+          tcol = cmap_loc[aj[k]];
+#else
+          tcol = cmap[aj[k] + cstart];
+#endif
+          if (tcol) nlocal_a++;
+        }
+        for (PetscInt k = bi[Crow]; k < bi[Crow + 1]; k++) {
+#if PetscDefined(USE_CTABLE)
+          PetscCall(PetscHMapIGetWithDefault(cmap, bmap[bj[k]] + 1, 0, &tcol));
+#else
+          tcol = cmap[bmap[bj[k]]];
+#endif
+          if (tcol) nlocal_b++;
+        }
+      }
+      PetscCall(PetscMalloc2(nlocal_a, &smatis1->local_a_parent, nlocal_a, &smatis1->local_a_sub));
+      PetscCall(PetscMalloc2(nlocal_b, &smatis1->local_b_parent, nlocal_b, &smatis1->local_b_sub));
+      smatis1->nlocal_a = 0;
+      smatis1->nlocal_b = 0;
+      for (PetscInt j = 0; j < nrow; j++) {
+        PetscInt subrow_start, subrow_nnz;
+
+        row = irow[j];
+        if (row2proc[j] != rank) continue;
+        Crow = row - rstart;
+#if PetscDefined(USE_CTABLE)
+        row = rmap_loc[Crow];
+#else
+        row = rmap[row];
+#endif
+        subrow_start = subc->i[row];
+        subrow_nnz   = subc->i[row + 1] - subrow_start;
+        for (PetscInt k = ai[Crow]; k < ai[Crow + 1]; k++) {
+          PetscInt loc;
+
+#if PetscDefined(USE_CTABLE)
+          tcol = cmap_loc[aj[k]];
+#else
+          tcol = cmap[aj[k] + cstart];
+#endif
+          if (!tcol) continue;
+          PetscCall(PetscFindInt(tcol - 1, subrow_nnz, subc->j + subrow_start, &loc));
+          PetscCheck(loc >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Owned diagonal entry is missing from reused submatrix graph");
+          smatis1->local_a_parent[smatis1->nlocal_a] = k;
+          smatis1->local_a_sub[smatis1->nlocal_a++]  = subrow_start + loc;
+        }
+        for (PetscInt k = bi[Crow]; k < bi[Crow + 1]; k++) {
+          PetscInt loc;
+
+#if PetscDefined(USE_CTABLE)
+          PetscCall(PetscHMapIGetWithDefault(cmap, bmap[bj[k]] + 1, 0, &tcol));
+#else
+          tcol = cmap[bmap[bj[k]]];
+#endif
+          if (!tcol) continue;
+          PetscCall(PetscFindInt(tcol - 1, subrow_nnz, subc->j + subrow_start, &loc));
+          PetscCheck(loc >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Owned off-diagonal entry is missing from reused submatrix graph");
+          smatis1->local_b_parent[smatis1->nlocal_b] = k;
+          smatis1->local_b_sub[smatis1->nlocal_b++]  = subrow_start + loc;
+        }
+      }
+      PetscCheck(smatis1->nlocal_a == nlocal_a && smatis1->nlocal_b == nlocal_b, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cached submatrix CSR map size changed during construction");
+      smatis1->csrcached = PETSC_TRUE;
+    }
   }
 
   /* Post recv matrix values */
@@ -1744,9 +1816,14 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
   /* Assemble submat */
   /* First assemble the local rows */
-  for (PetscInt j = 0; j < nrow; j++) {
-    row = irow[j];
-    if (row2proc[j] == rank) {
+  if (direct_csr_reuse) {
+    PetscCall(MatSeqAIJGetArray(submat, &suba));
+    for (PetscInt j = 0; j < smatis1->nlocal_a; j++) suba[smatis1->local_a_sub[j]] = a_a[smatis1->local_a_parent[j]];
+    for (PetscInt j = 0; j < smatis1->nlocal_b; j++) suba[smatis1->local_b_sub[j]] = b_a[smatis1->local_b_parent[j]];
+  } else {
+    for (PetscInt j = 0; j < nrow; j++) {
+      row = irow[j];
+      if (row2proc[j] != rank) continue;
       Crow = row - rstart; /* local row index of C */
 #if PetscDefined(USE_CTABLE)
       row = rmap_loc[Crow]; /* row index of submat */
@@ -1887,12 +1964,14 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
           nnz = subc->i[row + 1] - subc->i[row]; /* num of submat entries in this row */
           for (PetscInt l = 0; l < nnz; l++) {
-            ct2             = rbuf3_i[ct3++]; /* index of rbuf4_i[] which needs to be inserted into submat */
-            subvals[idex++] = rbuf4_i[ct2];
+            ct2 = rbuf3_i[ct3++]; /* index of rbuf4_i[] which needs to be inserted into submat */
+            if (direct_csr_reuse) suba[subc->i[row] + idex++] = rbuf4_i[ct2];
+            else subvals[idex++] = rbuf4_i[ct2];
           }
-
-          bj = subc->j + subc->i[row]; /* sorted column indices */
-          PetscCall(MatSetValues_SeqAIJ(submat, 1, &row, nnz, bj, subvals, INSERT_VALUES));
+          if (!direct_csr_reuse) {
+            bj = subc->j + subc->i[row]; /* sorted column indices */
+            PetscCall(MatSetValues_SeqAIJ(submat, 1, &row, nnz, bj, subvals, INSERT_VALUES));
+          }
         }
       } else {              /* allcolumns */
         nnz = rbuf2_i[ct1]; /* num of C entries in this row */
@@ -1908,8 +1987,11 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     PetscCall(PetscFree4(r_waits4, s_waits4, r_status4, s_status4));
   }
 
+  if (direct_csr_reuse) PetscCall(MatSeqAIJRestoreArray(submat, &suba));
   PetscCall(MatAssemblyBegin(submat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(submat, MAT_FINAL_ASSEMBLY));
+  // Preserve the initial graph state even when no reuse maps have been built.
+  if (scall == MAT_INITIAL_MATRIX && !C->structure_only && iscolsorted && !allcolumns) PetscCall(MatGetNonzeroState(submat, &smatis1->nonzerostate));
   submats[0] = submat;
 
   /* Restore the indices */
