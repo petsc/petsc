@@ -4097,10 +4097,8 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
 
 static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-
   PetscFunctionBeginHot;
-  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+  if (PetscDefined(USE_DEBUG) || ((DM_Plex *)dm->data)->tr) {
     if (useCone) {
       PetscCall(DMPlexGetConeSize(dm, p, size));
       PetscCall(DMPlexGetOrientedCone(dm, p, arr, ornt));
@@ -4109,6 +4107,8 @@ static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, Petsc
       PetscCall(DMPlexGetSupport(dm, p, arr));
     }
   } else {
+    DM_Plex *mesh = (DM_Plex *)dm->data;
+
     if (useCone) {
       const PetscSection s   = mesh->coneSection;
       const PetscInt     ps  = p - s->pStart;
@@ -4131,10 +4131,8 @@ static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, Petsc
 
 static inline PetscErrorCode DMPlexRestoreTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-
   PetscFunctionBeginHot;
-  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+  if (PetscDefined(USE_DEBUG) || ((DM_Plex *)dm->data)->tr) {
     if (useCone) PetscCall(DMPlexRestoreOrientedCone(dm, p, arr, ornt));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
