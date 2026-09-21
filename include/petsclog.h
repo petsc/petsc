@@ -14,7 +14,7 @@
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);
 #if PetscDefined(USE_INFO)
-  #define PetscInfo(A, ...) PetscInfo_Private(PETSC_FUNCTION_NAME, ((PetscObject)A), __VA_ARGS__)
+  #define PetscInfo(A, ...) PetscInfo_Private(PETSC_FUNCTION_NAME, ((PetscObject)(A)), __VA_ARGS__)
 #else
   #define PetscInfo(A, ...) PETSC_SUCCESS
 #endif
@@ -164,7 +164,7 @@ PETSC_EXTERN PetscErrorCode PetscLogHandlerCreateLegacy(MPI_Comm, PetscErrorCode
 .seealso: `PetscLogState`, `PetscLogStage`, `PetscLogEvent`, `PetscLogStateEventCurrentlyActive()`, `PetscLogStateStageGetActive()`
 M*/
 /* All events are inactive if an invalid stage is set, like if there have been more stage pops than stage pushes */
-#define PetscLogStateStageEventIsActive(state, stage, event) ((stage >= 0) && PetscBTLookup((state)->active, (stage)) && PetscBTLookup((state)->active, (stage) + (event + 1) * (state)->bt_num_stages))
+#define PetscLogStateStageEventIsActive(state, stage, event) (((stage) >= 0) && PetscBTLookup((state)->active, (stage)) && PetscBTLookup((state)->active, (stage) + ((event) + 1) * (state)->bt_num_stages))
 
 /*MC
   PetscLogStateEventCurrentlyActive - Returns whether a specific `PetscLogEvent` is active in the currently active stage of a `PetscLogState`

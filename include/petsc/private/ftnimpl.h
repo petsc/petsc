@@ -63,8 +63,8 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
   do { \
     if (flg) { \
       PETSC_FORTRAN_CHARLEN_T __i; \
-      for (__i = 0; __i < n && a[__i] != 0; __i++) { }; \
-      for (; __i < n; __i++) a[__i] = ' '; \
+      for (__i = 0; __i < (n) && (a)[__i] != 0; __i++) { }; \
+      for (; __i < (n); __i++) (a)[__i] = ' '; \
     } \
   } while (0)
 
@@ -72,19 +72,19 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
     The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
     will not complain about these comparisons. It is not know if this works for all compilers
 */
-#define FORTRANNULLINTEGERPOINTER(a) (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_POINTER_Fortran)
-#define FORTRANNULLSCALARPOINTER(a)  (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_POINTER_Fortran)
-#define FORTRANNULLREALPOINTER(a)    (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_POINTER_Fortran)
-#define FORTRANNULLINTEGER(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_ARRAY_Fortran)
-#define FORTRANNULLSCALAR(a)         (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_ARRAY_Fortran)
-#define FORTRANNULLREAL(a)           (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_ARRAY_Fortran)
-#define FORTRANNULLDOUBLE(a)         (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLBOOL(a)           (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
-#define FORTRANNULLENUM(a)           ((((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)a) == (void *)-50))
-#define FORTRANNULLCHARACTER(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_CHARACTER_Fortran)
-#define FORTRANNULLFUNCTION(a)       (((PetscFortranCallbackFn *)(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
-#define FORTRANNULLOBJECT(a)         (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
-#define FORTRANNULLMPICOMM(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
+#define FORTRANNULLINTEGERPOINTER(a) (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_INTEGER_POINTER_Fortran)
+#define FORTRANNULLSCALARPOINTER(a)  (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_SCALAR_POINTER_Fortran)
+#define FORTRANNULLREALPOINTER(a)    (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_POINTER_Fortran)
+#define FORTRANNULLINTEGER(a)        (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_INTEGER_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_INTEGER_ARRAY_Fortran)
+#define FORTRANNULLSCALAR(a)         (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_SCALAR_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_SCALAR_ARRAY_Fortran)
+#define FORTRANNULLREAL(a)           (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_ARRAY_Fortran)
+#define FORTRANNULLDOUBLE(a)         (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLBOOL(a)           (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_BOOL_Fortran)
+#define FORTRANNULLENUM(a)           ((((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)(a)) == (void *)-50))
+#define FORTRANNULLCHARACTER(a)      (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_CHARACTER_Fortran)
+#define FORTRANNULLFUNCTION(a)       (((PetscFortranCallbackFn *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLOBJECT(a)         (*(void **)(PETSC_UINTPTR_T)(a) == (void *)0)
+#define FORTRANNULLMPICOMM(a)        (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_MPI_COMM_Fortran)
 
 /*
     A Fortran object with a value of (void*) 0 is indicated in Fortran by PETSC_NULL_XXXX, it is passed to routines to indicate the argument value is not requested or provided
@@ -158,7 +158,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 
 #define CHKFORTRANNULLOBJECT(a) \
   do { \
-    if (!(*(void **)a)) { \
+    if (!(*(void **)(a))) { \
       a = PETSC_NULLPTR; \
     } else if (FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
       *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_XXX where XXX is the name of a particular object class"); \
@@ -203,7 +203,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 /* In the beginning of Fortran XxxCreate() ensure object is not NULL or already created */
 #define PETSC_FORTRAN_OBJECT_CREATE(a) \
   do { \
-    if (!(*(void **)a)) { \
+    if (!(*(void **)(a))) { \
       *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot create PETSC_NULL_XXX object"); \
       *ierr = PETSC_ERR_ARG_WRONG; \
       return; \
@@ -220,7 +220,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 */
 #define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) \
   do { \
-    if (!*(void **)a || *((void **)(a)) == PETSC_FORTRAN_TYPE_INITIALIZE || *((void **)(a)) == PETSC_FORTRAN_TYPE_NULL_RETURN) { \
+    if (!*(void **)(a) || *((void **)(a)) == PETSC_FORTRAN_TYPE_INITIALIZE || *((void **)(a)) == PETSC_FORTRAN_TYPE_NULL_RETURN) { \
       *ierr = PETSC_SUCCESS; \
       return; \
     } \
@@ -356,7 +356,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
     if (!((PetscObject)(obj))->fortran_func_pointers) { \
       *ierr = PetscCalloc((N) * sizeof(PetscFortranCallbackFn *), &((PetscObject)(obj))->fortran_func_pointers); \
       if (*ierr) return; \
-      ((PetscObject)obj)->num_fortran_func_pointers = (N); \
+      ((PetscObject)(obj))->num_fortran_func_pointers = (N); \
     } \
   } while (0)
 

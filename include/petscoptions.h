@@ -296,7 +296,7 @@ M*/
     do { \
       struct _n_PetscOptionItems PetscOptionsObjectBase; \
       PetscOptionItems           PetscOptionsObject = &PetscOptionsObjectBase; \
-      PetscOptionsObject->options                   = ((PetscObject)obj)->options; \
+      PetscOptionsObject->options                   = ((PetscObject)(obj))->options; \
       for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
         PetscCall(PetscObjectOptionsBegin_Private(obj, PetscOptionsObject))
 
@@ -421,7 +421,7 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 M*/
   #define PetscOptionsHeadBegin(PetscOptionsObject, head) \
     do { \
-      if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
+      if ((PetscOptionsObject)->printhelp && (PetscOptionsObject)->count == 1 && !(PetscOptionsObject)->alreadyprinted) PetscCall((*PetscHelpPrintf)((PetscOptionsObject)->comm, "  %s\n", head)); \
     } while (0)
 
   #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO(3, 18, 0, "PetscOptionsHeadBegin()", ) PetscOptionsHeadBegin(__VA_ARGS__)

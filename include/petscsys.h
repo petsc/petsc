@@ -1451,8 +1451,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectCompareId(PetscObject, PetscObjectId, Pet
 M*/
 #define PetscObjectParameterSetDefault(obj, NAME, value) \
   do { \
-    if (obj->NAME == obj->default_##NAME) obj->NAME = value; \
-    obj->default_##NAME = value; \
+    if ((obj)->NAME == (obj)->default_##NAME) (obj)->NAME = value; \
+    (obj)->default_##NAME = value; \
   } while (0)
 
 /*MC
@@ -2841,9 +2841,9 @@ PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[
 */
   #define PetscMPIIntCast_Internal(a, b) \
     do { \
-      *b = 0; \
-      if (PetscUnlikely(a > (MPIU_Count)PETSC_MPI_INT_MAX)) return MPI_ERR_COUNT; \
-      *b = (PetscMPIInt)a; \
+      *(b) = 0; \
+      if (PetscUnlikely((a) > (MPIU_Count)PETSC_MPI_INT_MAX)) return MPI_ERR_COUNT; \
+      *(b) = (PetscMPIInt)(a); \
     } while (0)
 
 static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype, PetscCount *count)
@@ -2945,9 +2945,9 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, M
   /* on 32 bit systems MPI_Count maybe 64-bit while PetscCount is 32-bit */
   #define PetscCountCast_Internal(a, b) \
     do { \
-      *b = 0; \
-      if (PetscUnlikely(a > (MPI_Count)PETSC_COUNT_MAX)) return MPI_ERR_COUNT; \
-      *b = (PetscMPIInt)a; \
+      *(b) = 0; \
+      if (PetscUnlikely((a) > (MPI_Count)PETSC_COUNT_MAX)) return MPI_ERR_COUNT; \
+      *(b) = (PetscMPIInt)(a); \
     } while (0)
 
 static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype, PetscCount *count)

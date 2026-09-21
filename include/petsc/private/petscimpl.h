@@ -390,7 +390,7 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
 .seealso: `PetscObject`, `PetscHeaderCreate()`
 M*/
-#define PetscHeaderDestroy(h) PetscHeaderDestroy_Function((PetscObject *)h)
+#define PetscHeaderDestroy(h) PetscHeaderDestroy_Function((PetscObject *)(h))
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
@@ -410,7 +410,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, c
 #if PetscDefined(HAVE_SETJMP_H)
 PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
 #else
-  #define PetscCheckPointer(ptr, data_type) (ptr ? PETSC_TRUE : PETSC_FALSE)
+  #define PetscCheckPointer(ptr, data_type) ((ptr) ? PETSC_TRUE : PETSC_FALSE)
 #endif
 
 #if PetscDefined(CLANG_STATIC_ANALYZER)
@@ -777,7 +777,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
     #define PetscValidLogicalCollectiveIntComm(a, b, arg) \
       do { \
         PetscInt b1[2]; \
-        b1[0] = -b; \
+        b1[0] = -(b); \
         b1[1] = b; \
         PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPIU_INT, MPI_MAX, a)); \
         PetscCheck(-b1[0] == b1[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
@@ -937,7 +937,7 @@ M*/
     do { \
       PetscErrorCode ierr_p_; \
       PetscStackUpdateLine; \
-      PetscCheck((obj)->ops->OP, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", PetscStringize(OP), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
+      PetscCheck((obj)->ops->OP, PetscObjectComm((PetscObject)(obj)), PETSC_ERR_SUP, "No method %s for %s of type %s", PetscStringize(OP), ((PetscObject)(obj))->class_name, ((PetscObject)(obj))->type_name); \
       ierr_p_ = (*(obj)->ops->OP)(obj, __VA_ARGS__); \
       PetscCall(ierr_p_); \
     } while (0)
@@ -977,8 +977,8 @@ M*/
 M*/
   #define PetscUseTypeMethod(obj, ...) \
     do { \
-      PetscCheck((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)), PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "No method %s for %s of type %s", \
-                 PetscStringize(PETSC_FIRST_ARG((__VA_ARGS__,unused))), ((PetscObject)obj)->class_name, ((PetscObject)obj)->type_name); \
+      PetscCheck((obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)), PetscObjectComm((PetscObject)(obj)), PETSC_ERR_SUP, "No method %s for %s of type %s", \
+                 PetscStringize(PETSC_FIRST_ARG((__VA_ARGS__,unused))), ((PetscObject)(obj))->class_name, ((PetscObject)(obj))->type_name); \
       PetscCall((*(obj)->ops->PETSC_FIRST_ARG((__VA_ARGS__, unused)))(obj PETSC_REST_ARG(__VA_ARGS__))); \
     } while (0)
 
