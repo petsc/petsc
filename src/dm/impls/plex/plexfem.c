@@ -6443,16 +6443,14 @@ PetscErrorCode DMPlexComputeJacobianByKey(DM dm, PetscFormKey key, IS cellIS, Pe
   /* Compute boundary integrals */
   PetscCall(DMPlexComputeBdJacobian_Internal(dm, locX, locX_t, t, X_tShift, Jac, JacP, ctx));
   /* Assemble matrix */
-end: {
-  PetscBool gassOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE;
-
-  if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gassOp, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
-  if (hasJac && hasPrec) {
-    PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+end:
+  {
+    if (dmAux) PetscCall(DMDestroy(&plex));
+    if (hasJac && hasPrec) {
+      PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+    }
   }
-}
   PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogEventEnd(DMPLEX_JacobianFEM, dm, 0, 0, 0));
@@ -6690,16 +6688,14 @@ PetscErrorCode DMPlexComputeJacobianByKeyGeneral(DM dmr, DM dmc, PetscFormKey ke
   /* Compute boundary integrals */
   PetscCall(DMPlexComputeBdJacobian_Internal(dmr, locX, locX_t, t, X_tShift, Jac, JacP, ctx));
   /* Assemble matrix */
-end: {
-  PetscBool gassOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE;
-
-  if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gassOp, 1, MPI_C_BOOL, MPI_LOR, comm));
-  if (hasJac && hasPrec) {
-    PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+end:
+  {
+    if (dmAux) PetscCall(DMDestroy(&plex));
+    if (hasJac && hasPrec) {
+      PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
+    }
   }
-}
   PetscCall(MatAssemblyBegin(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JacP, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogEventEnd(DMPLEX_JacobianFEM, dmr, 0, 0, 0));

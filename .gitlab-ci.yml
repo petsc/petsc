@@ -275,7 +275,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-coverage-exec=0 --with-syclc=0 --with-hipc=0 --with-cudac=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-mkl_sparse_optimize=0 --with-mkl_sparse=0 --with-debugging=0
     - vermin --version
     - make vermin
-    - PATH=/nfs/gce/projects/petsc/soft/LLVM-22.1.4-Linux-X64/bin:$PATH make checkclangformat checkfprettifyformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/LLVM-23.1.0-Linux-X64/bin:$PATH make checkclangformat checkfprettifyformat SHELL=bash
     - make checkbadSource SHELL=bash
     - if [ -n "$CI_MERGE_REQUEST_DIFF_BASE_SHA" ] && ! git cat-file -e "$CI_MERGE_REQUEST_DIFF_BASE_SHA^{commit}"; then git fetch -q --no-tags --depth=1 origin "$CI_MERGE_REQUEST_DIFF_BASE_SHA"; fi
     - make checkbadFileChange CHECKBADFILECHANGE_BASE="$CI_MERGE_REQUEST_DIFF_BASE_SHA" SHELL=bash
@@ -1067,7 +1067,7 @@ check-each-commit:
   variables:
     GIT_DEPTH: 0  # non-shallow clone
   script:
-    - export PATH=/nfs/gce/projects/petsc/soft/LLVM-22.1.4-Linux-X64/bin:$PATH
+    - export PATH=/nfs/gce/projects/petsc/soft/LLVM-23.1.0-Linux-X64/bin:$PATH
     - lib/petsc/bin/maint/check-each-commit.sh
   except:
     variables:

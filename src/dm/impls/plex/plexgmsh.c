@@ -1376,15 +1376,15 @@ static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
 }
 
 #define DM_POLYTOPE_VERTEX DM_POLYTOPE_POINT
-static const DMPolytopeType DMPolytopeMap[] = {
-  /* GMSH_VTX */ DM_POLYTOPE_VERTEX,
-  /* GMSH_SEG */ DM_POLYTOPE_SEGMENT,
-  /* GMSH_TRI */ DM_POLYTOPE_TRIANGLE,
-  /* GMSH_QUA */ DM_POLYTOPE_QUADRILATERAL,
-  /* GMSH_TET */ DM_POLYTOPE_TETRAHEDRON,
-  /* GMSH_HEX */ DM_POLYTOPE_HEXAHEDRON,
-  /* GMSH_PRI */ DM_POLYTOPE_TRI_PRISM,
-  /* GMSH_PYR */ DM_POLYTOPE_PYRAMID,       DM_POLYTOPE_UNKNOWN};
+static const DMPolytopeType DMPolytopeMap[] = {DM_POLYTOPE_VERTEX,        /* GMSH_VTX */
+                                               DM_POLYTOPE_SEGMENT,       /* GMSH_SEG */
+                                               DM_POLYTOPE_TRIANGLE,      /* GMSH_TRI */
+                                               DM_POLYTOPE_QUADRILATERAL, /* GMSH_QUA */
+                                               DM_POLYTOPE_TETRAHEDRON,   /* GMSH_TET */
+                                               DM_POLYTOPE_HEXAHEDRON,    /* GMSH_HEX */
+                                               DM_POLYTOPE_TRI_PRISM,     /* GMSH_PRI */
+                                               DM_POLYTOPE_PYRAMID,       /* GMSH_PYR */
+                                               DM_POLYTOPE_UNKNOWN};
 
 static inline DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType)
 {
