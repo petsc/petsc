@@ -19,7 +19,11 @@ typedef struct {   /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and M
   PetscMPIInt *req_source1, *req_source2;
   PetscBool    allcolumns, allrows;
   PetscBool    singleis;
-  PetscMPIInt *row2proc; /* row to process (MPI rank) map */
+  PetscBool    csrcached;                    /* owned-row maps have been built, including a valid empty cache */
+  PetscMPIInt *row2proc;                     /* row to process (MPI rank) map */
+  PetscInt     nlocal_a, nlocal_b;           /* cached entries from the parent diagonal and off-diagonal blocks */
+  PetscInt    *local_a_parent, *local_a_sub; /* positions in the parent diagonal and submatrix value arrays */
+  PetscInt    *local_b_parent, *local_b_sub; /* positions in the parent off-diagonal and submatrix value arrays */
   PetscInt     nstages;
 #if PetscDefined(USE_CTABLE)
   PetscHMapI cmap, rmap;
@@ -27,6 +31,7 @@ typedef struct {   /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and M
 #else
   PetscInt *cmap, *rmap;
 #endif
+  PetscObjectState nonzerostate; /* initial submatrix graph state; cached positions require it unchanged */
   PetscErrorCode (*destroy)(Mat);
 } Mat_SubSppt;
 

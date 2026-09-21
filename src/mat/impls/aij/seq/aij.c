@@ -2641,6 +2641,8 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
     for (i = 0; i < submatj->nrqs; ++i) PetscCall(PetscFree(submatj->rbuf3[i]));
     PetscCall(PetscFree3(submatj->req_source2, submatj->rbuf2, submatj->rbuf3));
     PetscCall(PetscFree(submatj->pa));
+    PetscCall(PetscFree2(submatj->local_a_parent, submatj->local_a_sub));
+    PetscCall(PetscFree2(submatj->local_b_parent, submatj->local_b_sub));
   }
 
 #if PetscDefined(USE_CTABLE)
