@@ -9,11 +9,15 @@ static PetscBool verbose = PETSC_FALSE;
 
 /* sequence of unique absolute paths */
 #define nap 9
-static const char *apaths[nap] = {
-  /* 0 */
-  "/", "/g1", "/g1/g2", "/g1/nonExistingGroup1", "/g1/g3",
-  /* 5 */
-  "/g1/g3/g4", "/g1/nonExistingGroup2", "/g1/nonExistingGroup2/g5", "/g1/g6/g7"};
+static const char *apaths[nap] = {/* 0 */ "/",
+                                  "/g1",
+                                  "/g1/g2",
+                                  "/g1/nonExistingGroup1",
+                                  "/g1/g3",
+                                  /* 5 */ "/g1/g3/g4",
+                                  "/g1/nonExistingGroup2",
+                                  "/g1/nonExistingGroup2/g5",
+                                  "/g1/g6/g7"};
 
 #define np 21
 /* sequence of paths (absolute or relative); "<" encodes Pop */
