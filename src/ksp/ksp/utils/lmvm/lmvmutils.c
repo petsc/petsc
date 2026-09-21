@@ -1043,7 +1043,6 @@ static PetscErrorCode MatLMVMUpdateOpDiffVecs(Mat B, LMBasis Y, PetscScalar alph
 PETSC_INTERN PetscErrorCode MatLMVMGetUpdatedBasis(Mat B, MatLMVMBasisType type, LMBasis *basis_p, MatLMVMBasisType *returned_type, PetscScalar *scale)
 {
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
-  LMBasis     basis;
   PetscBool   is_scalar;
   PetscScalar scale_;
 
@@ -1067,6 +1066,7 @@ PETSC_INTERN PetscErrorCode MatLMVMGetUpdatedBasis(Mat B, MatLMVMBasisType type,
       *scale         = (type == LMBASIS_B0S) ? scale_ : (1.0 / scale_);
     } else {
       LMBasis orig_basis = (type == LMBASIS_B0S) ? lmvm->basis[LMBASIS_S] : lmvm->basis[LMBASIS_Y];
+      LMBasis basis;
 
       *returned_type = type;
       *scale         = 1.0;
@@ -1079,7 +1079,7 @@ PETSC_INTERN PetscErrorCode MatLMVMGetUpdatedBasis(Mat B, MatLMVMBasisType type,
   case LMBASIS_S_MINUS_H0Y:
   case LMBASIS_Y_MINUS_B0S: {
     MatLMVMBasisType op_basis_t = (type == LMBASIS_S_MINUS_H0Y) ? LMBASIS_H0Y : LMBASIS_B0S;
-    LMBasis          op_basis;
+    LMBasis          op_basis, basis;
 
     if (returned_type) *returned_type = type;
     if (scale) *scale = 1.0;
@@ -1092,7 +1092,6 @@ PETSC_INTERN PetscErrorCode MatLMVMGetUpdatedBasis(Mat B, MatLMVMBasisType type,
   default:
     PetscUnreachable();
   }
-  basis = *basis_p;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1269,7 +1268,7 @@ PETSC_INTERN PetscErrorCode MatLMVMBasisGEMV(Mat B, MatLMVMBasisType type, Petsc
 {
   Mat_LMVM *lmvm              = (Mat_LMVM *)B->data;
   PetscBool cache_J0_products = lmvm->do_not_cache_J0_products ? PETSC_FALSE : PETSC_TRUE;
-  LMBasis   basis;
+  LMBasis   basis             = NULL; // g++-9.4 reports a false -Wmaybe-uninitialized without this
 
   PetscFunctionBegin;
   if (cache_J0_products || type == LMBASIS_S || type == LMBASIS_Y) {

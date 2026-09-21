@@ -526,8 +526,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscReal                 auk, tauk, gfnorm, gfnorm_k, ycnorm, gTBg, objmin = 0.0, beta_k = 1.0;
   PC                        pc;
   Mat                       J, Jp;
-  PetscBool                 already_done = PETSC_FALSE, on_boundary, use_cauchy;
-  PetscBool                 clear_converged_test, step_ok, has_objective;
+  PetscBool                 already_done = PETSC_FALSE, on_boundary = PETSC_FALSE, use_cauchy;
+  PetscBool                 clear_converged_test, step_ok           = PETSC_FALSE, has_objective;
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
   SNESObjectiveFn          *objective;
@@ -586,7 +586,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
 
   /* test convergence */
-  step_ok = PETSC_FALSE;
   PetscCall(SNESConverged(snes, 0, 0.0, 0.0, fnorm));
   PetscCall(SNESMonitor(snes, 0, fnorm));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
@@ -672,8 +671,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     ycnorm = auk * gfnorm;
     PetscCall(VecAXPBY(Yc, auk, 0.0, GradF));
 
-    on_boundary = PETSC_FALSE;
-    use_cauchy  = (PetscBool)(tauk == 1.0 && has_objective);
+    use_cauchy = (PetscBool)(tauk == 1.0 && has_objective);
     if (!use_cauchy) {
       KSPConvergedReason reason;
 

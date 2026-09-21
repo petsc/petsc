@@ -494,7 +494,6 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                   col_scale[0] = 1.;
                 } else {
                   idx = -idx - 1;
-                  nc  = maps[grid].num_face;
                   for (q = 0, nc = 0; q < maps[grid].num_face; q++, nc++) {
                     if (maps[grid].c_maps[idx][q].gid < 0) break;
                     cols0[q]     = maps[grid].c_maps[idx][q].gid;

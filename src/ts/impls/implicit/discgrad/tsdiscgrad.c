@@ -327,7 +327,6 @@ static PetscErrorCode TSStep_DiscGrad(TS ts)
     PetscCall(TSAdaptCheckStage(adapt, ts, dg->stage_time, dg->X, &stageok));
     if (!stageok) goto reject_step;
 
-    status = TS_STEP_PENDING;
     PetscCall(VecAXPBYPCZ(dg->Xdot, -shift, shift, 0, dg->X0, dg->X));
     PetscCall(VecAXPY(ts->vec_sol, ts->time_step, dg->Xdot));
     PetscCall(TSAdaptChoose(adapt, ts, ts->time_step, NULL, &next_time_step, &accept));

@@ -1610,7 +1610,6 @@ static inline PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx, const
       if (lnk[next] == entry + 1) { /* combine two contiguous strings */
         lnk[prev + 1] += lnk[next + 1];
         lnk[prev + 2] = lnk[next + 2];
-        next          = lnk[next + 2];
         lnk[0]--;
       }
       continue;
@@ -1620,7 +1619,6 @@ static inline PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx, const
       lnk[next]--;
       lnk[next + 1]++;
       prev = next;
-      next = lnk[prev + 2];
       continue;
     }
     /*  add entry into lnk */
