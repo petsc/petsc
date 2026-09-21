@@ -259,7 +259,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
               #endif /* PETSC_HAVE_RTLD_GLOBAL */
             #endif /* !PETSC_HAVE_RTLD_DEFAULT */
             #if PetscDefined(HAVE_DLERROR)
-              if (!(PETSC_RUNNING_ON_VALGRIND)) dlerror(); /* clear any previous error, valgrind does not like this */
+              if (!PETSC_RUNNING_ON_VALGRIND) dlerror(); /* clear any previous error, valgrind does not like this */
             #endif /* PETSC_HAVE_DLERROR */
             #if PetscDefined(HAVE_RTLD_DEFAULT)
               dlhandle = RTLD_DEFAULT;

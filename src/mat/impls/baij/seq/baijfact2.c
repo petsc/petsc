@@ -362,7 +362,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
     b->icol = isicol;
     PetscCall(PetscObjectReference((PetscObject)isrow));
     PetscCall(PetscObjectReference((PetscObject)iscol));
-    b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
+    b->pivotinblocks = info->pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
 
     PetscCall(PetscMalloc1((n + 1) * bs, &b->solve_work));
     PetscFunctionReturn(PETSC_SUCCESS);

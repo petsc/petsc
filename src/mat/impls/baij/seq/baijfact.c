@@ -471,7 +471,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B, Mat A, const MatFactorInfo *i
     sctx.shift_top = info->zeropivot;
     for (i = 0; i < n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      d  = (aa)[ddiag[i]];
+      d  = aa[ddiag[i]];
       rs = -PetscAbsScalar(d) - PetscRealPart(d);
       v  = aa + ai[i];
       nz = ai[i + 1] - ai[i];

@@ -167,7 +167,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C, PetscInt imax, IS is[])
 
     for (PetscInt i = 0; i < imax; i++) {
       table[i] = t_p + (Mbs / PETSC_BITS_PER_BYTE + 1) * i;
-      data[i]  = d_p + (Mbs)*i;
+      data[i]  = d_p + Mbs * i;
     }
   }
 
@@ -570,7 +570,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
     PetscCall(PetscCalloc1(ismax + nstages, submat));
   } else { /* MAT_REUSE_MATRIX */
     if (ismax) {
-      subc = (Mat_SeqBAIJ *)((*submat)[0]->data);
+      subc = (Mat_SeqBAIJ *)(*submat)[0]->data;
       smat = subc->submatis1;
     } else { /* (*submat)[0] is a dummy matrix */
       smat = (Mat_SubSppt *)(*submat)[0]->data;
@@ -596,7 +596,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
 
   if (scall == MAT_INITIAL_MATRIX && ismax) {
     /* save nstages for reuse */
-    subc          = (Mat_SeqBAIJ *)((*submat)[0]->data);
+    subc          = (Mat_SeqBAIJ *)(*submat)[0]->data;
     smat          = subc->submatis1;
     smat->nstages = nstages;
   }
@@ -1261,7 +1261,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ_local(Mat C, PetscInt ismax, const I
           /* load the column values for this row into vals*/
           vals = PetscSafePointerPlusOffset(sbuf_aa_i, ct2 * bs2);
           for (l = 0; l < nzB; l++) {
-            if ((bmap[cworkB[l]]) < cstart) PetscCall(PetscArraycpy(vals + l * bs2, vworkB + l * bs2, bs2));
+            if (bmap[cworkB[l]] < cstart) PetscCall(PetscArraycpy(vals + l * bs2, vworkB + l * bs2, bs2));
             else break;
           }
           imark = l;

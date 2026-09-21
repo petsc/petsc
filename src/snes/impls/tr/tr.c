@@ -437,7 +437,7 @@ static PetscErrorCode SNESNewtonTRQuadraticDelta(SNES snes, Mat J, PetscBool has
   if (has_objective) PetscCall(VecDotRealPart(Y, W, &yTHy));
   else PetscCall(VecDotRealPart(W, W, &yTHy)); /* Gauss-Newton approximation J^t * J */
   PetscCall(VecDotRealPart(GradF, Y, &gTy));
-  *deltaqm = -(-(gTy) + 0.5 * (yTHy)); /* difference in quadratic model, -gTy because SNES solves it this way */
+  *deltaqm = -(-gTy + 0.5 * yTHy); /* difference in quadratic model, -gTy because SNES solves it this way */
   if (yTHy_) *yTHy_ = yTHy;
   if (gTy_) *gTy_ = gTy;
   PetscFunctionReturn(PETSC_SUCCESS);

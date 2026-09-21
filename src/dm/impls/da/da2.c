@@ -95,7 +95,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
     PetscCall(PetscDrawLine(draw, xmin, ymax, xmax, ymax, PETSC_DRAW_RED));
     PetscCall(PetscDrawLine(draw, xmax, ymin, xmax, ymax, PETSC_DRAW_RED));
     /* put in numbers */
-    base = (dd->base) / dd->w;
+    base = dd->base / dd->w;
     for (y = ymin; y <= ymax; y++) {
       for (x = xmin; x <= xmax; x++) {
         PetscCall(PetscSNPrintf(node, sizeof(node), "%" PetscInt_FMT, base++));
@@ -568,7 +568,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m];
       /* y_t = y; */
-      s_t = bases[n5] + (i)*x_t;
+      s_t = bases[n5] + i * x_t;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     } else if (bx == DM_BOUNDARY_MIRROR) {
       for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + x * (i + 1) - 2 - j;
@@ -579,7 +579,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m];
       /* y_t = ly[n6 / m]; */
-      s_t = bases[n6] + (i)*x_t - s_x;
+      s_t = bases[n6] + i * x_t - s_x;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
 
@@ -670,7 +670,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       if (n5 >= 0) { /* directly right */
         x_t = lx[n5 % m];
         /* y_t = y; */
-        s_t = bases[n5] + (i)*x_t;
+        s_t = bases[n5] + i * x_t;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (Xe - xe > 0) {
         if (bx == DM_BOUNDARY_MIRROR) {
@@ -685,7 +685,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m];
         /* y_t = ly[n6 / m]; */
-        s_t = bases[n6] + (i)*x_t - s_x;
+        s_t = bases[n6] + i * x_t - s_x;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (xs - Xs > 0 && Ye - ye > 0) {
         for (j = 0; j < s_x; j++) idx[nn++] = -1;

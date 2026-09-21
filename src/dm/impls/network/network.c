@@ -1682,7 +1682,7 @@ static inline PetscErrorCode SetSubnetIdLookupBT(DM dm, PetscInt v, PetscInt Nsu
 
 static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF, DM newDM)
 {
-  DM_Network              *newDMnetwork = (DM_Network *)((newDM)->data), *newCoordnetwork, *oldCoordnetwork;
+  DM_Network              *newDMnetwork = (DM_Network *)newDM->data, *newCoordnetwork, *oldCoordnetwork;
   DM                       cdm, newcdm;
   PetscInt                 cdim, bs, p, pStart, pEnd, offset;
   Vec                      oldCoord, newCoord;
@@ -1765,7 +1765,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
 {
   MPI_Comm                 comm;
   PetscMPIInt              size;
-  DM_Network              *oldDMnetwork = (DM_Network *)((*dm)->data), *newDMnetwork;
+  DM_Network              *oldDMnetwork = (DM_Network *)(*dm)->data, *newDMnetwork;
   PetscSF                  pointsf      = NULL;
   DM                       newDM;
   PetscInt                 j, e, v, offset, *subnetvtx, *subnetedge, Nsubnet, gidx, svtx_idx, nv, net;

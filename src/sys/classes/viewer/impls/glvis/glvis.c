@@ -613,7 +613,7 @@ PetscErrorCode PetscViewerGLVisOpen(MPI_Comm comm, PetscViewerGLVisType type, co
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERGLVIS));
 
-  socket       = (PetscViewerGLVis)((*viewer)->data);
+  socket       = (PetscViewerGLVis)(*viewer)->data;
   socket->type = type;
   if (type == PETSC_VIEWER_GLVIS_DUMP || name) {
     PetscCall(PetscFree(socket->name));

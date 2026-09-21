@@ -56,12 +56,12 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
 
     /* reuse diag block with the new submat */
     PetscCall(MatDestroy(&((Mat_MPIAIJ *)((*subMat)->data))->A));
-    ((Mat_MPIAIJ *)((*subMat)->data))->A = aij->A;
+    ((Mat_MPIAIJ *)(*subMat)->data)->A = aij->A;
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   } else if (((Mat_MPIAIJ *)(*subMat)->data)->A != aij->A) {
-    PetscObject obj = (PetscObject)((Mat_MPIAIJ *)((*subMat)->data))->A;
+    PetscObject obj = (PetscObject)((Mat_MPIAIJ *)(*subMat)->data)->A;
     PetscCall(PetscObjectReference(obj));
-    ((Mat_MPIAIJ *)((*subMat)->data))->A = aij->A;
+    ((Mat_MPIAIJ *)(*subMat)->data)->A = aij->A;
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   }
 

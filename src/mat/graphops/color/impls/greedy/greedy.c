@@ -89,7 +89,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
       idx = lperm[i];
       if (lcolors[idx] == maxcolors) {
         ncols = md_i[idx + 1] - md_i[idx];
-        cidx  = &(md_j[md_i[idx]]);
+        cidx  = &md_j[md_i[idx]];
         for (j = 0; j < ncols; j++) {
           if (lcolors[cidx[j]] != maxcolors) {
             ccol = lcolors[cidx[j]];
@@ -282,7 +282,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         /* diagonal distance-one rows */
         nd1cols = 0;
         ncols   = rmd_i[idx + 1] - rmd_i[idx];
-        cidx    = &(rmd_j[rmd_i[idx]]);
+        cidx    = &rmd_j[rmd_i[idx]];
         for (j = 0; j < ncols; j++) {
           d1cols[nd1cols] = cidx[j];
           nd1cols++;
@@ -303,7 +303,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         /* off-diagonal distance-one rows */
         if (mo) {
           ncols = rmo_i[idx + 1] - rmo_i[idx];
-          cidx  = &(rmo_j[rmo_i[idx]]);
+          cidx  = &rmo_j[rmo_i[idx]];
           for (j = 0; j < ncols; j++) {
             ccol = ocolors[cidx[j]];
             if (ccol != maxcolors) {
@@ -323,7 +323,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         /* diagonal distance-two rows */
         for (j = 0; j < nd1cols; j++) {
           ncols = md_i[d1cols[j] + 1] - md_i[d1cols[j]];
-          cidx  = &(md_j[md_i[d1cols[j]]]);
+          cidx  = &md_j[md_i[d1cols[j]]];
           for (l = 0; l < ncols; l++) {
             ccol = dcolors[cidx[l]];
             if (ccol != maxcolors) {
@@ -344,7 +344,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         if (mo) {
           for (j = 0; j < nd1cols; j++) {
             ncols = mo_i[d1cols[j] + 1] - mo_i[d1cols[j]];
-            cidx  = &(mo_j[mo_i[d1cols[j]]]);
+            cidx  = &mo_j[mo_i[d1cols[j]]];
             for (l = 0; l < ncols; l++) {
               ccol = ocolors[cidx[l]];
               if (ccol != maxcolors) {
@@ -385,7 +385,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
       for (i = 0; i < no; i++) oconf[i] = PETSC_FALSE;
       for (i = 0; i < n; i++) {
         ncols = mo_i[i + 1] - mo_i[i];
-        cidx  = &(mo_j[mo_i[i]]);
+        cidx  = &mo_j[mo_i[i]];
         if (ncols > 0) {
           /* fill in the mask */
           for (j = 0; j < mcol + 1; j++) colorweights[j] = 0;
@@ -399,7 +399,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           }
           /* fill in the on-diagonal part of the mask */
           ncols = md_i[i + 1] - md_i[i];
-          cidx  = &(md_j[md_i[i]]);
+          cidx  = &md_j[md_i[i]];
           for (j = 0; j < ncols; j++) {
             ccol = dcolors[cidx[j]];
             if (ccol < maxcolors) {
@@ -408,7 +408,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
           }
           /* go back through and set up on and off-diagonal conflict vectors */
           ncols = md_i[i + 1] - md_i[i];
-          cidx  = &(md_j[md_i[i]]);
+          cidx  = &md_j[md_i[i]];
           for (j = 0; j < ncols; j++) {
             ccol = dcolors[cidx[j]];
             if (ccol < maxcolors) {
@@ -416,7 +416,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
             }
           }
           ncols = mo_i[i + 1] - mo_i[i];
-          cidx  = &(mo_j[mo_i[i]]);
+          cidx  = &mo_j[mo_i[i]];
           for (j = 0; j < ncols; j++) {
             ccol = ocolors[cidx[j]];
             if (ccol < maxcolors) {

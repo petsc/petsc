@@ -1253,7 +1253,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   adpd->force_diagonals = C->force_diagonals;
   PetscCall(MatProductSymbolic(adpd));
 
-  adpd_seq = (Mat_SeqAIJ *)((adpd)->data);
+  adpd_seq = (Mat_SeqAIJ *)adpd->data;
   adpdi    = adpd_seq->i;
   adpdj    = adpd_seq->j;
   p_off    = (Mat_SeqAIJ *)p->B->data;
@@ -1302,7 +1302,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   PetscCall(MatAppendOptionsPrefix(a->B, "inner_offdiag_"));
   PetscCall(MatCreate(PETSC_COMM_SELF, &aopoth));
   PetscCall(MatMatMultSymbolic_SeqAIJ_SeqAIJ(a->B, ptap->P_oth, fill, aopoth));
-  aopoth_seq = (Mat_SeqAIJ *)((aopoth)->data);
+  aopoth_seq = (Mat_SeqAIJ *)aopoth->data;
   aopothi    = aopoth_seq->i;
   aopothj    = aopoth_seq->j;
 
@@ -1742,7 +1742,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   PetscInt            *adj;
   PetscInt             i, j, k, anz, pnz, row, *cj, nexta;
   MatScalar           *ada, *ca, valtmp;
-  PetscInt             am = A->rmap->n, cm = C->rmap->n, pon = (p->B)->cmap->n;
+  PetscInt             am = A->rmap->n, cm = C->rmap->n, pon = p->B->cmap->n;
   MPI_Comm             comm;
   PetscMPIInt          size, rank, taga, *len_s, proc;
   PetscInt            *owners, nrows, **buf_ri_k, **nextrow, **nextci;
@@ -1950,7 +1950,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* determine symbolic Co=(p->B)^T*A - send to others */
   PetscCall(MatGetSymbolicTranspose_SeqAIJ(p->A, &pdti, &pdtj));
   PetscCall(MatGetSymbolicTranspose_SeqAIJ(p->B, &poti, &potj));
-  pon = (p->B)->cmap->n; /* total num of rows to be sent to other processors
+  pon = p->B->cmap->n; /* total num of rows to be sent to other processors
                          >= (num of nonzero rows of C_seq) - pn */
   PetscCall(PetscMalloc1(pon + 1, &coi));
   coi[0] = 0;

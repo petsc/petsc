@@ -190,7 +190,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat, PetscInt n, c
       PetscCall(MatCreateMPIAdj(scomm_row, irow_n, icol_n, sxadj, sadjncy, svalues, submat[i]));
     } else {
       Mat         sadj = *submat[i];
-      Mat_MPIAdj *sa   = (Mat_MPIAdj *)((sadj)->data);
+      Mat_MPIAdj *sa   = (Mat_MPIAdj *)sadj->data;
       PetscCall(PetscObjectGetComm((PetscObject)sadj, &scomm_mat));
       PetscCallMPI(MPI_Comm_compare(scomm_row, scomm_mat, &issame));
       PetscCheck(issame == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "submatrix  must have the same comm as the col index set");

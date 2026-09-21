@@ -8529,8 +8529,8 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     psum     = 0;
     for (i = 0; i < n_recvs; i++) {
       for (j = 0; j < nis; j++) {
-        PetscInt plen = *(ptr_idxs); /* first element is the local size of IS's indices */
-        count_is[j] += plen;         /* increment counting of buffer for j-th IS */
+        PetscInt plen = *ptr_idxs; /* first element is the local size of IS's indices */
+        count_is[j] += plen;       /* increment counting of buffer for j-th IS */
         psum += plen;
         ptr_idxs += plen + 1; /* shift pointer to received data */
       }
@@ -8542,7 +8542,7 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     ptr_idxs = recv_buffer_idxs_is;
     for (i = 0; i < n_recvs; i++) {
       for (j = 0; j < nis; j++) {
-        PetscInt plen = *(ptr_idxs); /* first element is the local size of IS's indices */
+        PetscInt plen = *ptr_idxs; /* first element is the local size of IS's indices */
         PetscCall(PetscArraycpy(&temp_idxs[j][count_is[j]], ptr_idxs + 1, plen));
         count_is[j] += plen;  /* increment starting point of buffer for j-th IS */
         ptr_idxs += plen + 1; /* shift pointer to received data */

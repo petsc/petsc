@@ -458,7 +458,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
       for (j = 0; j < n; j++) {
         if (!mat->structure_only) {
           /* If NumCol = 1 then a copy is not required */
-          if ((roworiented) && (n == 1)) {
+          if (roworiented && (n == 1)) {
             barray = (MatScalar *)v + i * bs2;
           } else if ((!roworiented) && (m == 1)) {
             barray = (MatScalar *)v + j * bs2;
@@ -3630,7 +3630,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
       row = im[i] - rstart;
       for (j = 0; j < n; j++) {
         /* If NumCol = 1 then a copy is not required */
-        if ((roworiented) && (n == 1)) {
+        if (roworiented && (n == 1)) {
           barray = (MatScalar *)v + i * bs2;
         } else if ((!roworiented) && (m == 1)) {
           barray = (MatScalar *)v + j * bs2;

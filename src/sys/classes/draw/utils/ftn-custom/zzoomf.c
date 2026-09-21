@@ -13,7 +13,7 @@ static PetscErrorCode ourdrawzoom(PetscDraw draw, PetscCtx ctx)
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
 
-  (*(void (*)(PetscDraw *, void *, PetscErrorCode *))(((PetscObject)draw)->fortran_func_pointers[0]))(&draw, ctx, &ierr);
+  (*(void (*)(PetscDraw *, void *, PetscErrorCode *))((PetscObject)draw)->fortran_func_pointers[0])(&draw, ctx, &ierr);
   return ierr;
 }
 

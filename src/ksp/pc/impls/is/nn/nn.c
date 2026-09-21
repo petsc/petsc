@@ -373,7 +373,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   }
 
   /*  Set the variable pcnn->factor_coarse_rhs. */
-  pcnn->factor_coarse_rhs = (pcis->pure_neumann) ? 1.0 : 0.0;
+  pcnn->factor_coarse_rhs = pcis->pure_neumann ? 1.0 : 0.0;
 
   /* See historical note 02, at the bottom of this file. */
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -865,7 +865,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
             }
           }
         }
-        rows[k] = k + nc * (slot);
+        rows[k] = k + nc * slot;
       }
       PetscCall(MatPreallocateSetLocal(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
     }
@@ -903,7 +903,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
               }
             }
           }
-          rows[k] = k + nc * (slot);
+          rows[k] = k + nc * slot;
         }
         PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, values, INSERT_VALUES));
       }
@@ -971,7 +971,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
               }
             }
           }
-          rows[l] = l + nc * (slot);
+          rows[l] = l + nc * slot;
         }
         PetscCall(MatPreallocateSetLocal(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
       }
@@ -1013,7 +1013,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
                 }
               }
             }
-            rows[l] = l + nc * (slot);
+            rows[l] = l + nc * slot;
           }
           PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, values, INSERT_VALUES));
         }
@@ -1084,7 +1084,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
             }
           }
         }
-        rows[k] = k + nc * (slot);
+        rows[k] = k + nc * slot;
       }
       if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
       else PetscCall(MatPreallocateSetLocal(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
@@ -1125,7 +1125,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
             }
           }
         }
-        for (k = 0; k < nc; k++) rows[k] = k + nc * (slot);
+        for (k = 0; k < nc; k++) rows[k] = k + nc * slot;
         PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, NULL, INSERT_VALUES));
       }
     }
@@ -1205,7 +1205,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
             }
           }
         }
-        row    = k + nc * (slot);
+        row    = k + nc * slot;
         maxcnt = PetscMax(maxcnt, cnt);
         if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog, 1, &row, ltog, cnt, cols, dnz, onz));
         else PetscCall(MatPreallocateSetLocal(ltog, 1, &row, ltog, cnt, cols, dnz, onz));
@@ -1250,7 +1250,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
               }
             }
           }
-          row = k + nc * (slot);
+          row = k + nc * slot;
           PetscCall(MatSetValuesLocal(J, 1, &row, cnt, cols, NULL, INSERT_VALUES));
         }
       }
@@ -1327,7 +1327,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
               }
             }
           }
-          rows[l] = l + nc * (slot);
+          rows[l] = l + nc * slot;
         }
         if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
         else PetscCall(MatPreallocateSetLocal(ltog, nc, rows, ltog, cnt, cols, dnz, onz));
@@ -1373,7 +1373,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
               }
             }
           }
-          rows[0] = nc * (slot);
+          rows[0] = nc * slot;
           for (l = 1; l < nc; l++) rows[l] = 1 + rows[l - 1];
           PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, NULL, INSERT_VALUES));
         }
@@ -1599,7 +1599,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
           cnt++;
         }
       }
-      rows[0] = nc * (slot);
+      rows[0] = nc * slot;
       for (l = 1; l < nc; l++) rows[l] = 1 + rows[l - 1];
       PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, NULL, INSERT_VALUES));
     }
@@ -1661,7 +1661,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J)
           cnt++;
         }
       }
-      rows[0] = nc * (slot);
+      rows[0] = nc * slot;
       for (l = 1; l < nc; l++) rows[l] = 1 + rows[l - 1];
       PetscCall(MatSetValuesLocal(J, nc, rows, cnt, cols, NULL, INSERT_VALUES));
     }
@@ -2165,7 +2165,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
               }
             }
           }
-          row    = l + nc * (slot);
+          row    = l + nc * slot;
           maxcnt = PetscMax(maxcnt, cnt);
           if (removedups) PetscCall(MatPreallocateSetLocalRemoveDups(ltog, 1, &row, ltog, cnt, cols, dnz, onz));
           else PetscCall(MatPreallocateSetLocal(ltog, 1, &row, ltog, cnt, cols, dnz, onz));
@@ -2216,7 +2216,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
                 }
               }
             }
-            row = l + nc * (slot);
+            row = l + nc * slot;
             PetscCall(MatSetValuesLocal(J, 1, &row, cnt, cols, values, INSERT_VALUES));
           }
         }

@@ -243,7 +243,7 @@ static PetscErrorCode TronGradientProjections(Tao tao, TAO_TRON *tron)
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < tron->maxgpits; ++i) {
-    if (-actred <= (tron->pg_ftol) * actred_max) break;
+    if (-actred <= tron->pg_ftol * actred_max) break;
 
     ++tron->gp_iterates;
     ++tron->total_gp_its;

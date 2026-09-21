@@ -76,13 +76,13 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
     rx_lx = rx - lx;
     if (rx > lx) {
       for (xx = lx; xx <= rx; xx++) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscDrawXiSetColor(win, c);
         XDrawPoint(win->disp, PetscDrawXiDrawable(win), win->gc.set, xx, y);
       }
     } else if (rx < lx) {
       for (xx = lx; xx >= rx; xx--) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscDrawXiSetColor(win, c);
         XDrawPoint(win->disp, PetscDrawXiDrawable(win), win->gc.set, xx, y);
       }
@@ -126,13 +126,13 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
     rx_lx = rx - lx;
     if (rx > lx) {
       for (xx = lx; xx <= rx; xx++) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscDrawXiSetColor(win, c);
         XDrawPoint(win->disp, PetscDrawXiDrawable(win), win->gc.set, xx, y);
       }
     } else if (rx < lx) {
       for (xx = lx; xx >= rx; xx--) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscDrawXiSetColor(win, c);
         XDrawPoint(win->disp, PetscDrawXiDrawable(win), win->gc.set, xx, y);
       }

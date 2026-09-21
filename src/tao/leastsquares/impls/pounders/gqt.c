@@ -326,7 +326,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscRe
 
         /* Test to decide if the negative curvature step produces a larger reduction than with z=0 */
         rznorm = PetscAbs(alpha) * rznorm;
-        if ((rznorm * rznorm + par * xnorm * xnorm) / (delta2) <= par) rednc = 1;
+        if ((rznorm * rznorm + par * xnorm * xnorm) / delta2 <= par) rednc = 1;
         /* Test for convergence */
         if (p5 * rznorm * rznorm / delta2 <= rtol * (1.0 - p5 * rtol) * (par + rxnorm * rxnorm / delta2)) {
           info = 1;

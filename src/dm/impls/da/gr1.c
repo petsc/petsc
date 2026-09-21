@@ -51,9 +51,9 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
     for (i = 0; i < isize; i++) coors[i] = xmin + hx * (i + istart);
     PetscCall(VecRestoreArray(xcoor, &coors));
   } else if (dim == 2) {
-    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / (M);
+    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / M;
     else hx = (xmax - xmin) / (M - 1);
-    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax - ymin) / (N);
+    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax - ymin) / N;
     else hy = (ymax - ymin) / (N - 1);
     PetscCall(VecGetArray(xcoor, &coors));
     cnt = 0;
@@ -65,11 +65,11 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
     }
     PetscCall(VecRestoreArray(xcoor, &coors));
   } else if (dim == 3) {
-    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / (M);
+    if (bx == DM_BOUNDARY_PERIODIC) hx = (xmax - xmin) / M;
     else hx = (xmax - xmin) / (M - 1);
-    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax - ymin) / (N);
+    if (by == DM_BOUNDARY_PERIODIC) hy = (ymax - ymin) / N;
     else hy = (ymax - ymin) / (N - 1);
-    if (bz == DM_BOUNDARY_PERIODIC) hz_ = (zmax - zmin) / (P);
+    if (bz == DM_BOUNDARY_PERIODIC) hz_ = (zmax - zmin) / P;
     else hz_ = (zmax - zmin) / (P - 1);
     PetscCall(VecGetArray(xcoor, &coors));
     cnt = 0;

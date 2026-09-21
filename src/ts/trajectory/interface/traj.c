@@ -584,7 +584,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
   if ((*tj)->transformdestroy) PetscCall((*(*tj)->transformdestroy)(&(*tj)->transformctx));
   PetscTryTypeMethod(*tj, destroy);
-  if (!((*tj)->keepfiles)) {
+  if (!(*tj)->keepfiles) {
     PetscMPIInt rank;
     MPI_Comm    comm;
 

@@ -1626,7 +1626,7 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, Petsc
   case MATOP_ZERO_ROWS_LOCAL:
   case MATOP_ZERO_ROWS_COLUMNS_LOCAL:
     PetscCheck(!shell->managescalingshifts, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
-    (((PetscErrorCodeFn **)mat->ops)[op]) = f;
+    ((PetscErrorCodeFn **)mat->ops)[op] = f;
     break;
   case MATOP_GET_DIAGONAL:
     if (shell->managescalingshifts) {
@@ -1674,7 +1674,7 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, Petsc
     }
     break;
   default:
-    (((PetscErrorCodeFn **)mat->ops)[op]) = f;
+    ((PetscErrorCodeFn **)mat->ops)[op] = f;
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1702,30 +1702,30 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, Petsc
   case MATOP_AXPY:
   case MATOP_ZERO_ROWS:
   case MATOP_ZERO_ROWS_COLUMNS:
-    *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   case MATOP_GET_DIAGONAL:
     if (shell->ops->getdiagonal) *f = (PetscErrorCodeFn *)shell->ops->getdiagonal;
-    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    else *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   case MATOP_GET_DIAGONAL_BLOCK:
     if (shell->ops->getdiagonalblock) *f = (PetscErrorCodeFn *)shell->ops->getdiagonalblock;
-    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    else *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   case MATOP_MULT:
     if (shell->ops->mult) *f = (PetscErrorCodeFn *)shell->ops->mult;
-    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    else *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   case MATOP_MULT_TRANSPOSE:
     if (shell->ops->multtranspose) *f = (PetscErrorCodeFn *)shell->ops->multtranspose;
-    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    else *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   case MATOP_MULT_HERMITIAN_TRANSPOSE:
     if (shell->ops->multhermitiantranspose) *f = (PetscErrorCodeFn *)shell->ops->multhermitiantranspose;
-    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    else *f = ((PetscErrorCodeFn **)mat->ops)[op];
     break;
   default:
-    *f = (((PetscErrorCodeFn **)mat->ops)[op]);
+    *f = ((PetscErrorCodeFn **)mat->ops)[op];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

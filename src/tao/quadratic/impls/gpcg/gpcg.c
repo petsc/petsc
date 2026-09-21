@@ -217,7 +217,7 @@ static PetscErrorCode GPCGGradProjections(Tao tao)
   */
   PetscFunctionBegin;
   for (PetscInt i = 0; i < gpcg->maxgpits; i++) {
-    if (-actred <= (gpcg->pg_ftol) * actred_max) break;
+    if (-actred <= gpcg->pg_ftol * actred_max) break;
     PetscCall(VecBoundGradientProjection(G, X, XL, XU, DX));
     PetscCall(VecScale(DX, -1.0));
     PetscCall(VecDot(DX, G, &gdx));

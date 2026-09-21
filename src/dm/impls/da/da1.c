@@ -249,14 +249,14 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
       else idx[nn++] = (xe + i) - M;
     }
   } else if (bx == DM_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
-    for (i = 0; i < (sDist); i++) {      /* Left ghost points */
+    for (i = 0; i < sDist; i++) {        /* Left ghost points */
       if ((xs - sDist + i) >= 0) idx[nn++] = xs - sDist + i;
       else idx[nn++] = sDist - i;
     }
 
     for (i = 0; i < x; i++) idx[nn++] = xs + i; /* Non-ghost points */
 
-    for (i = 0; i < (sDist); i++) { /* Right ghost points */
+    for (i = 0; i < sDist; i++) { /* Right ghost points */
       if ((xe + i) < M) idx[nn++] = xe + i;
       else idx[nn++] = M - (i + 2);
     }

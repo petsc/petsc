@@ -63,7 +63,7 @@ PetscErrorCode PCTFS_ivec_min(PetscInt *arg1, PetscInt *arg2, PetscInt n)
 {
   PetscFunctionBegin;
   while (n--) {
-    *(arg1) = PetscMin(*arg1, *arg2);
+    *arg1 = PetscMin(*arg1, *arg2);
     arg1++;
     arg2++;
   }

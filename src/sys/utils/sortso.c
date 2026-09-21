@@ -142,13 +142,13 @@ static inline PetscErrorCode PetscGallopSearchLeft_Private(const char *arr, size
     *m = r;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if ((*cmp)(x, (arr) + l * size, ctx) < 0 || PetscUnlikely(!(r - l))) PetscFunctionReturn(PETSC_SUCCESS);
+  if ((*cmp)(x, arr + l * size, ctx) < 0 || PetscUnlikely(!(r - l))) PetscFunctionReturn(PETSC_SUCCESS);
   while (PETSC_TRUE) {
     if (PetscUnlikely(cur > r)) {
       cur = r;
       break;
     }
-    if ((*cmp)(x, (arr) + cur * size, ctx) < 0) break;
+    if ((*cmp)(x, arr + cur * size, ctx) < 0) break;
     last = cur;
     cur += (k <<= 1) + 1;
     ++k;
@@ -156,7 +156,7 @@ static inline PetscErrorCode PetscGallopSearchLeft_Private(const char *arr, size
   /* standard binary search but take last 0 mid 0 cur 1 into account*/
   while (cur > last + 1) {
     mid = last + ((cur - last) >> 1);
-    if ((*cmp)(x, (arr) + mid * size, ctx) < 0) {
+    if ((*cmp)(x, arr + mid * size, ctx) < 0) {
       cur = mid;
     } else {
       last = mid;
@@ -179,13 +179,13 @@ static inline PetscErrorCode PetscGallopSearchRight_Private(const char *arr, siz
     *m = l;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if ((*cmp)(x, (arr) + r * size, ctx) > 0 || PetscUnlikely(!(r - l))) PetscFunctionReturn(PETSC_SUCCESS);
+  if ((*cmp)(x, arr + r * size, ctx) > 0 || PetscUnlikely(!(r - l))) PetscFunctionReturn(PETSC_SUCCESS);
   while (PETSC_TRUE) {
     if (PetscUnlikely(cur < l)) {
       cur = l;
       break;
     }
-    if ((*cmp)(x, (arr) + cur * size, ctx) > 0) break;
+    if ((*cmp)(x, arr + cur * size, ctx) > 0) break;
     last = cur;
     cur -= (k <<= 1) + 1;
     ++k;
@@ -193,7 +193,7 @@ static inline PetscErrorCode PetscGallopSearchRight_Private(const char *arr, siz
   /* standard binary search but take last r-1 mid r-1 cur r-2 into account*/
   while (last > cur + 1) {
     mid = last - ((last - cur) >> 1);
-    if ((*cmp)(x, (arr) + mid * size, ctx) > 0) {
+    if ((*cmp)(x, arr + mid * size, ctx) > 0) {
       cur = mid;
     } else {
       last = mid;
@@ -231,7 +231,7 @@ static inline PetscErrorCode PetscTimSortMergeLo_Private(char *arr, char *tarr, 
           /* search right for temp[i], can move up to that many of right into arr */
           PetscCall(PetscGallopSearchLeft_Private(arr, size, cmp, ctx, j, right, tarr + (i * size), &l2));
           diff2 = l2 - j;
-          Petsc_memmove((arr) + k * size, (arr) + j * size, diff2 * size);
+          Petsc_memmove(arr + k * size, arr + j * size, diff2 * size);
           k += diff2;
           j = l2;
           if (i >= llen || j > right) break;
@@ -339,10 +339,10 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
   const PetscInt rlen = right - mid + 1;
 
   PetscFunctionBegin;
-  Petsc_memcpy(tarr, (arr) + mid * size, rlen * size);
+  Petsc_memcpy(tarr, arr + mid * size, rlen * size);
   while ((i >= 0) && (j >= left)) {
-    if ((*cmp)((tarr) + i * size, (arr) + j * size, ctx) > 0) {
-      Petsc_memcpy((arr) + k * size, (tarr) + i * size, size);
+    if ((*cmp)(tarr + i * size, arr + j * size, ctx) > 0) {
+      Petsc_memcpy(arr + k * size, tarr + i * size, size);
       --k;
       gallopleft = 0;
       if (--i >= 0 && ++gallopright >= MIN_GALLOP_GLOBAL) {
@@ -352,13 +352,13 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
           /* search temp for left[j], can copy up to that many of temp into arr */
           PetscCall(PetscGallopSearchRight_Private(tarr, size, cmp, ctx, 0, i, (arr) + j * size, &l1));
           diff1 = i - l1;
-          Petsc_memcpy((arr) + (k - diff1 + 1) * size, (tarr) + (l1 + 1) * size, diff1 * size);
+          Petsc_memcpy(arr + (k - diff1 + 1) * size, tarr + (l1 + 1) * size, diff1 * size);
           k -= diff1;
           i = l1;
           /* search left for temp[i], can move up to that many of left up arr */
           PetscCall(PetscGallopSearchRight_Private(arr, size, cmp, ctx, left, j, (tarr) + i * size, &l2));
           diff2 = j - l2;
-          Petsc_memmove((arr) + (k - diff2 + 1) * size, (arr) + (l2 + 1) * size, diff2 * size);
+          Petsc_memmove(arr + (k - diff2 + 1) * size, arr + (l2 + 1) * size, diff2 * size);
           k -= diff2;
           j = l2;
           if (i < 0 || j < left) break;
@@ -366,7 +366,7 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
         ++MIN_GALLOP_GLOBAL;
       }
     } else {
-      Petsc_memmove((arr) + k * size, (arr) + j * size, size);
+      Petsc_memmove(arr + k * size, arr + j * size, size);
       --k;
       gallopright = 0;
       if (--j >= left && ++gallopleft >= MIN_GALLOP_GLOBAL) {
@@ -376,13 +376,13 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
           /* search left for temp[i], can move up to that many of left up arr */
           PetscCall(PetscGallopSearchRight_Private(arr, size, cmp, ctx, left, j, (tarr) + i * size, &l2));
           diff2 = j - l2;
-          Petsc_memmove((arr) + (k - diff2 + 1) * size, (arr) + (l2 + 1) * size, diff2 * size);
+          Petsc_memmove(arr + (k - diff2 + 1) * size, arr + (l2 + 1) * size, diff2 * size);
           k -= diff2;
           j = l2;
           /* search temp for left[j], can copy up to that many of temp into arr */
           PetscCall(PetscGallopSearchRight_Private(tarr, size, cmp, ctx, 0, i, (arr) + j * size, &l1));
           diff1 = i - l1;
-          Petsc_memcpy((arr) + (k - diff1 + 1) * size, (tarr) + (l1 + 1) * size, diff1 * size);
+          Petsc_memcpy(arr + (k - diff1 + 1) * size, tarr + (l1 + 1) * size, diff1 * size);
           k -= diff1;
           i = l1;
           if (i < 0 || j < left) break;
@@ -391,7 +391,7 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
       }
     }
   }
-  if (i >= 0) Petsc_memcpy((arr) + left * size, tarr, (i + 1) * size);
+  if (i >= 0) Petsc_memcpy(arr + left * size, tarr, (i + 1) * size);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -401,10 +401,10 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
   const PetscInt rlen = right - mid + 1;
 
   PetscFunctionBegin;
-  Petsc_memcpy2(atarr, (arr) + mid * asize, rlen * asize, btarr, (barr) + mid * bsize, rlen * bsize);
+  Petsc_memcpy2(atarr, arr + mid * asize, rlen * asize, btarr, barr + mid * bsize, rlen * bsize);
   while ((i >= 0) && (j >= left)) {
-    if ((*cmp)((atarr) + i * asize, (arr) + j * asize, ctx) > 0) {
-      Petsc_memcpy2((arr) + k * asize, (atarr) + i * asize, asize, (barr) + k * bsize, (btarr) + i * bsize, bsize);
+    if ((*cmp)(atarr + i * asize, arr + j * asize, ctx) > 0) {
+      Petsc_memcpy2(arr + k * asize, atarr + i * asize, asize, barr + k * bsize, btarr + i * bsize, bsize);
       --k;
       gallopleft = 0;
       if (--i >= 0 && ++gallopright >= MIN_GALLOP_GLOBAL) {
@@ -414,13 +414,13 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
           /* search temp for left[j], can copy up to that many of temp into arr */
           PetscCall(PetscGallopSearchRight_Private(atarr, asize, cmp, ctx, 0, i, (arr) + j * asize, &l1));
           diff1 = i - l1;
-          Petsc_memcpy2((arr) + (k - diff1 + 1) * asize, (atarr) + (l1 + 1) * asize, diff1 * asize, (barr) + (k - diff1 + 1) * bsize, (btarr) + (l1 + 1) * bsize, diff1 * bsize);
+          Petsc_memcpy2(arr + (k - diff1 + 1) * asize, atarr + (l1 + 1) * asize, diff1 * asize, barr + (k - diff1 + 1) * bsize, btarr + (l1 + 1) * bsize, diff1 * bsize);
           k -= diff1;
           i = l1;
           /* search left for temp[i], can move up to that many of left up arr */
           PetscCall(PetscGallopSearchRight_Private(arr, asize, cmp, ctx, left, j, (atarr) + i * asize, &l2));
           diff2 = j - l2;
-          Petsc_memmove2((arr) + (k - diff2 + 1) * asize, (arr) + (l2 + 1) * asize, diff2 * asize, (barr) + (k - diff2 + 1) * bsize, (barr) + (l2 + 1) * bsize, diff2 * bsize);
+          Petsc_memmove2(arr + (k - diff2 + 1) * asize, arr + (l2 + 1) * asize, diff2 * asize, barr + (k - diff2 + 1) * bsize, barr + (l2 + 1) * bsize, diff2 * bsize);
           k -= diff2;
           j = l2;
           if (i < 0 || j < left) break;
@@ -428,7 +428,7 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
         ++MIN_GALLOP_GLOBAL;
       }
     } else {
-      Petsc_memmove2((arr) + k * asize, (arr) + j * asize, asize, (barr) + k * bsize, (barr) + j * bsize, bsize);
+      Petsc_memmove2(arr + k * asize, arr + j * asize, asize, barr + k * bsize, barr + j * bsize, bsize);
       --k;
       gallopright = 0;
       if (--j >= left && ++gallopleft >= MIN_GALLOP_GLOBAL) {
@@ -438,13 +438,13 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
           /* search left for temp[i], can move up to that many of left up arr */
           PetscCall(PetscGallopSearchRight_Private(arr, asize, cmp, ctx, left, j, (atarr) + i * asize, &l2));
           diff2 = j - l2;
-          Petsc_memmove2((arr) + (k - diff2 + 1) * asize, (arr) + (l2 + 1) * asize, diff2 * asize, (barr) + (k - diff2 + 1) * bsize, (barr) + (l2 + 1) * bsize, diff2 * bsize);
+          Petsc_memmove2(arr + (k - diff2 + 1) * asize, arr + (l2 + 1) * asize, diff2 * asize, barr + (k - diff2 + 1) * bsize, barr + (l2 + 1) * bsize, diff2 * bsize);
           k -= diff2;
           j = l2;
           /* search temp for left[j], can copy up to that many of temp into arr */
           PetscCall(PetscGallopSearchRight_Private(atarr, asize, cmp, ctx, 0, i, (arr) + j * asize, &l1));
           diff1 = i - l1;
-          Petsc_memcpy2((arr) + (k - diff1 + 1) * asize, (atarr) + (l1 + 1) * asize, diff1 * asize, (barr) + (k - diff1 + 1) * bsize, (btarr) + (l1 + 1) * bsize, diff1 * bsize);
+          Petsc_memcpy2(arr + (k - diff1 + 1) * asize, atarr + (l1 + 1) * asize, diff1 * asize, barr + (k - diff1 + 1) * bsize, btarr + (l1 + 1) * bsize, diff1 * bsize);
           k -= diff1;
           i = l1;
           if (i < 0 || j < left) break;
@@ -453,7 +453,7 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
       }
     }
   }
-  if (i >= 0) Petsc_memcpy2((arr) + left * asize, atarr, (i + 1) * asize, (barr) + left * bsize, btarr, (i + 1) * bsize);
+  if (i >= 0) Petsc_memcpy2(arr + left * asize, atarr, (i + 1) * asize, barr + left * bsize, btarr, (i + 1) * bsize);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -467,11 +467,11 @@ static inline PetscErrorCode PetscInsertionSort_Private(char *arr, char *tarr, s
   for (; i <= right; ++i) {
     PetscInt j = i - 1;
     Petsc_memcpy(tarr, arr + (i * size), size);
-    while ((j >= left) && ((*cmp)(tarr, (arr) + j * size, ctx) < 0)) {
+    while ((j >= left) && ((*cmp)(tarr, arr + j * size, ctx) < 0)) {
       COPYSWAPPY(arr + (j + 1) * size, arr + j * size, tarr + size, size);
       --j;
     }
-    Petsc_memcpy((arr) + (j + 1) * size, tarr, size);
+    Petsc_memcpy(arr + (j + 1) * size, tarr, size);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -572,7 +572,7 @@ static inline PetscErrorCode PetscTimSortForceCollapse_Private(char *arr, size_t
   PetscFunctionBegin;
   for (; stacksize; --stacksize) {
     /* A = stack[i-1], B = stack[i], if A[-1] <= B[0] means sorted */
-    if ((*cmp)(arr + (stack[stacksize].start - 1) * size, arr + (stack[stacksize].start) * size, ctx) > 0) {
+    if ((*cmp)(arr + (stack[stacksize].start - 1) * size, arr + stack[stacksize].start * size, ctx) > 0) {
       PetscInt l, m = stack[stacksize].start, r;
       /* Search A for B[0] insertion */
       PetscCall(PetscGallopSearchLeft_Private(arr, size, cmp, ctx, stack[stacksize - 1].start, stack[stacksize].start - 1, (arr) + (stack[stacksize].start) * size, &l));
@@ -597,7 +597,7 @@ static inline PetscErrorCode PetscTimSortForceCollapseWithArray_Private(char *ar
   PetscFunctionBegin;
   for (; stacksize; --stacksize) {
     /* A = stack[i-1], B = stack[i], if A[-1] <= B[0] means sorted */
-    if ((*cmp)(arr + (stack[stacksize].start - 1) * asize, arr + (stack[stacksize].start) * asize, ctx) > 0) {
+    if ((*cmp)(arr + (stack[stacksize].start - 1) * asize, arr + stack[stacksize].start * asize, ctx) > 0) {
       PetscInt l, m = stack[stacksize].start, r;
       /* Search A for B[0] insertion */
       PetscCall(PetscGallopSearchLeft_Private(arr, asize, cmp, ctx, stack[stacksize - 1].start, stack[stacksize].start - 1, (arr) + (stack[stacksize].start) * asize, &l));
@@ -631,7 +631,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t
       /* A = stack[i-1], B = stack[i] */
       if (stack[i - 1].size < stack[i].size) {
         /* if A[-1] <= B[0] then sorted */
-        if ((*cmp)(arr + (stack[i].start - 1) * size, arr + (stack[i].start) * size, ctx) > 0) {
+        if ((*cmp)(arr + (stack[i].start - 1) * size, arr + stack[i].start * size, ctx) > 0) {
           m = stack[i].start;
           /* Search A for B[0] insertion */
           PetscCall(PetscGallopSearchLeft_Private(arr, size, cmp, ctx, stack[i - 1].start, stack[i].start - 1, (arr) + stack[i].start * size, &l));
@@ -655,7 +655,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t
       if (stack[i - 2].size <= stack[i - 1].size + stack[i].size) {
         if (stack[i - 2].size < stack[i].size) {
           /* merge B into A, but if A[-1] <= B[0] then already sorted */
-          if ((*cmp)(arr + (stack[i - 1].start - 1) * size, arr + (stack[i - 1].start) * size, ctx) > 0) {
+          if ((*cmp)(arr + (stack[i - 1].start - 1) * size, arr + stack[i - 1].start * size, ctx) > 0) {
             m = stack[i - 1].start;
             /* Search A for B[0] insertion */
             PetscCall(PetscGallopSearchLeft_Private(arr, size, cmp, ctx, stack[i - 2].start, stack[i - 1].start - 1, (arr) + (stack[i - 1].start) * size, &l));
@@ -678,7 +678,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t
         /* merge C into B */
         mergeBC:
           /* If B[-1] <= C[0] then... you know the drill */
-          if ((*cmp)(arr + (stack[i].start - 1) * size, arr + (stack[i].start) * size, ctx) > 0) {
+          if ((*cmp)(arr + (stack[i].start - 1) * size, arr + stack[i].start * size, ctx) > 0) {
             m = stack[i].start;
             /* Search B for C[0] insertion */
             PetscCall(PetscGallopSearchLeft_Private(arr, size, cmp, ctx, stack[i - 1].start, stack[i].start - 1, arr + stack[i].start * size, &l));
@@ -719,7 +719,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *ar
       /* A = stack[i-1], B = stack[i] */
       if (stack[i - 1].size < stack[i].size) {
         /* if A[-1] <= B[0] then sorted */
-        if ((*cmp)(arr + (stack[i].start - 1) * asize, arr + (stack[i].start) * asize, ctx) > 0) {
+        if ((*cmp)(arr + (stack[i].start - 1) * asize, arr + stack[i].start * asize, ctx) > 0) {
           m = stack[i].start;
           /* Search A for B[0] insertion */
           PetscCall(PetscGallopSearchLeft_Private(arr, asize, cmp, ctx, stack[i - 1].start, stack[i].start - 1, (arr) + stack[i].start * asize, &l));
@@ -745,7 +745,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *ar
       if (stack[i - 2].size <= stack[i - 1].size + stack[i].size) {
         if (stack[i - 2].size < stack[i].size) {
           /* merge B into A, but if A[-1] <= B[0] then already sorted */
-          if ((*cmp)(arr + (stack[i - 1].start - 1) * asize, arr + (stack[i - 1].start) * asize, ctx) > 0) {
+          if ((*cmp)(arr + (stack[i - 1].start - 1) * asize, arr + stack[i - 1].start * asize, ctx) > 0) {
             m = stack[i - 1].start;
             /* Search A for B[0] insertion */
             PetscCall(PetscGallopSearchLeft_Private(arr, asize, cmp, ctx, stack[i - 2].start, stack[i - 1].start - 1, (arr) + (stack[i - 1].start) * asize, &l));
@@ -770,7 +770,7 @@ static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *ar
         /* merge C into B */
         mergeBC:
           /* If B[-1] <= C[0] then... you know the drill */
-          if ((*cmp)(arr + (stack[i].start - 1) * asize, arr + (stack[i].start) * asize, ctx) > 0) {
+          if ((*cmp)(arr + (stack[i].start - 1) * asize, arr + stack[i].start * asize, ctx) > 0) {
             m = stack[i].start;
             /* Search B for C[0] insertion */
             PetscCall(PetscGallopSearchLeft_Private(arr, asize, cmp, ctx, stack[i - 1].start, stack[i].start - 1, arr + stack[i].start * asize, &l));
@@ -815,10 +815,10 @@ static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr,
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* guess whether run is ascending or descending and tally up the longest consecutive run. essentially a coinflip for random data */
-  if ((*cmp)((arr) + (ri + 1) * size, (arr) + ri * size, ctx) < 0) {
+  if ((*cmp)(arr + (ri + 1) * size, arr + ri * size, ctx) < 0) {
     ++ri;
     while (ri < n - 1) {
-      if ((*cmp)((arr) + (ri + 1) * size, (arr) + ri * size, ctx) >= 0) break;
+      if ((*cmp)(arr + (ri + 1) * size, arr + ri * size, ctx) >= 0) break;
       ++ri;
     }
     {
@@ -828,7 +828,7 @@ static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr,
   } else {
     ++ri;
     while (ri < n - 1) {
-      if ((*cmp)((arr) + (ri + 1) * size, (arr) + ri * size, ctx) < 0) break;
+      if ((*cmp)(arr + (ri + 1) * size, arr + ri * size, ctx) < 0) break;
       ++ri;
     }
   }
@@ -857,10 +857,10 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* guess whether run is ascending or descending and tally up the longest consecutive run. essentially a coinflip for random data */
-  if ((*cmp)((arr) + (ri + 1) * asize, arr + (ri * asize), ctx) < 0) {
+  if ((*cmp)(arr + (ri + 1) * asize, arr + (ri * asize), ctx) < 0) {
     ++ri;
     while (ri < n - 1) {
-      if ((*cmp)((arr) + (ri + 1) * asize, (arr) + ri * asize, ctx) >= 0) break;
+      if ((*cmp)(arr + (ri + 1) * asize, arr + ri * asize, ctx) >= 0) break;
       ++ri;
     }
     {
@@ -870,7 +870,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
   } else {
     ++ri;
     while (ri < n - 1) {
-      if ((*cmp)((arr) + (ri + 1) * asize, (arr) + ri * asize, ctx) < 0) break;
+      if ((*cmp)(arr + (ri + 1) * asize, arr + ri * asize, ctx) < 0) break;
       ++ri;
     }
   }

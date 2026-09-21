@@ -2046,10 +2046,10 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     else tjsch->max_units_ram = tjsch->max_cps_ram;
     if (tjsch->max_units_disk) tjsch->max_cps_disk = tjsch->max_units_disk;
   } else {
-    if (tjsch->max_units_ram) tjsch->max_cps_ram = (ts->stifflyaccurate) ? tjsch->max_units_ram / numY : tjsch->max_units_ram / (numY + 1);
-    else tjsch->max_units_ram = (ts->stifflyaccurate) ? numY * tjsch->max_cps_ram : (numY + 1) * tjsch->max_cps_ram;
-    if (tjsch->max_units_disk) tjsch->max_cps_disk = (ts->stifflyaccurate) ? tjsch->max_units_disk / numY : tjsch->max_units_disk / (numY + 1);
-    else tjsch->max_units_disk = (ts->stifflyaccurate) ? numY * tjsch->max_cps_disk : (numY + 1) * tjsch->max_cps_disk;
+    if (tjsch->max_units_ram) tjsch->max_cps_ram = ts->stifflyaccurate ? tjsch->max_units_ram / numY : tjsch->max_units_ram / (numY + 1);
+    else tjsch->max_units_ram = ts->stifflyaccurate ? numY * tjsch->max_cps_ram : (numY + 1) * tjsch->max_cps_ram;
+    if (tjsch->max_units_disk) tjsch->max_cps_disk = ts->stifflyaccurate ? tjsch->max_units_disk / numY : tjsch->max_units_disk / (numY + 1);
+    else tjsch->max_units_disk = ts->stifflyaccurate ? numY * tjsch->max_cps_disk : (numY + 1) * tjsch->max_cps_disk;
   }
   if (tjsch->max_cps_ram > 0) stack->stacksize = tjsch->max_units_ram; /* maximum stack size. Could be overallocated. */
 

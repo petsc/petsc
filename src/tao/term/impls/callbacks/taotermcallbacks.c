@@ -442,7 +442,7 @@ PETSC_INTERN PetscErrorCode TaoTermCreateCallbacks(Tao tao, TaoTerm *term)
   PetscCall(TaoTermCreate(PetscObjectComm((PetscObject)tao), term));
   PetscCall(TaoTermSetType(*term, TAOTERMCALLBACKS));
   {
-    TaoTerm_Callbacks *tt = (TaoTerm_Callbacks *)((*term)->data);
+    TaoTerm_Callbacks *tt = (TaoTerm_Callbacks *)(*term)->data;
 
     tt->tao = tao; // weak reference, do not increment reference count
   }

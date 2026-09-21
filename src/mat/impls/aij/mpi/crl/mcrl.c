@@ -65,7 +65,7 @@ static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
     }
     for (; j < rmax; j++) { /* empty column entries */
       acols[j * m + i] = 0.0;
-      icols[j * m + i] = (j) ? icols[(j - 1) * m + i] : 0; /* handle case where row is EMPTY */
+      icols[j * m + i] = j ? icols[(j - 1) * m + i] : 0; /* handle case where row is EMPTY */
     }
   }
   PetscCall(PetscInfo(A, "Percentage of 0's introduced for vectorized multiply %g\n", 1.0 - ((double)aijcrl->nz) / PetscMax((double)rmax * m, 1)));

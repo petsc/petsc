@@ -902,10 +902,10 @@ static PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer, MPI_Comm
   ovascii->fileunit  = vascii->fileunit;
   ovascii->closefile = PETSC_FALSE;
 
-  vascii->sviewer                                      = *outviewer;
-  (*outviewer)->format                                 = viewer->format;
-  ((PetscViewer_ASCII *)((*outviewer)->data))->bviewer = viewer;
-  (*outviewer)->ops->destroy                           = PetscViewerDestroy_ASCII_SubViewer;
+  vascii->sviewer                                    = *outviewer;
+  (*outviewer)->format                               = viewer->format;
+  ((PetscViewer_ASCII *)(*outviewer)->data)->bviewer = viewer;
+  (*outviewer)->ops->destroy                         = PetscViewerDestroy_ASCII_SubViewer;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1224,15 +1224,15 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer, void *data, PetscInt num
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   PetscCheck(rank == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only be called from process 0 in the PetscViewer");
   for (i = 0; i < num; i++) {
-    if (dtype == PETSC_CHAR) ret = fscanf(fd, "%c", &(((char *)data)[i]));
-    else if (dtype == PETSC_STRING) ret = fscanf(fd, "%s", &(((char *)data)[i]));
-    else if (dtype == PETSC_INT) ret = fscanf(fd, "%" PetscInt_FMT, &(((PetscInt *)data)[i]));
-    else if (dtype == PETSC_ENUM) ret = fscanf(fd, "%d", &(((int *)data)[i]));
-    else if (dtype == PETSC_INT64) ret = fscanf(fd, "%" PetscInt64_FMT, &(((PetscInt64 *)data)[i]));
-    else if (dtype == PETSC_LONG) ret = fscanf(fd, "%ld", &(((long *)data)[i]));
-    else if (dtype == PETSC_COUNT) ret = fscanf(fd, "%" PetscCount_FMT, &(((PetscCount *)data)[i]));
-    else if (dtype == PETSC_FLOAT) ret = fscanf(fd, "%f", &(((float *)data)[i]));
-    else if (dtype == PETSC_DOUBLE) ret = fscanf(fd, "%lg", &(((double *)data)[i]));
+    if (dtype == PETSC_CHAR) ret = fscanf(fd, "%c", &((char *)data)[i]);
+    else if (dtype == PETSC_STRING) ret = fscanf(fd, "%s", &((char *)data)[i]);
+    else if (dtype == PETSC_INT) ret = fscanf(fd, "%" PetscInt_FMT, &((PetscInt *)data)[i]);
+    else if (dtype == PETSC_ENUM) ret = fscanf(fd, "%d", &((int *)data)[i]);
+    else if (dtype == PETSC_INT64) ret = fscanf(fd, "%" PetscInt64_FMT, &((PetscInt64 *)data)[i]);
+    else if (dtype == PETSC_LONG) ret = fscanf(fd, "%ld", &((long *)data)[i]);
+    else if (dtype == PETSC_COUNT) ret = fscanf(fd, "%" PetscCount_FMT, &((PetscCount *)data)[i]);
+    else if (dtype == PETSC_FLOAT) ret = fscanf(fd, "%f", &((float *)data)[i]);
+    else if (dtype == PETSC_DOUBLE) ret = fscanf(fd, "%lg", &((double *)data)[i]);
 #if PetscDefined(USE_REAL___FLOAT128)
     else if (dtype == PETSC___FLOAT128) {
       double tmp;

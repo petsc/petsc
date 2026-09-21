@@ -821,7 +821,7 @@ static inline PetscErrorCode MatPivotCheck_nz(PETSC_UNUSED Mat mat, const MatFac
     if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
     else sctx->shift_amount *= 2.0;
     sctx->newshift = PETSC_TRUE;
-    (sctx->nshift)++;
+    sctx->nshift++;
   } else {
     sctx->newshift = PETSC_FALSE;
   }

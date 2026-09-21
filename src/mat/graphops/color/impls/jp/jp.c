@@ -93,14 +93,14 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
     /* check for on-diagonal greater weights */
     for (i = 0; i < dn; i++) {
       ncols = di[i + 1] - di[i];
-      cols  = &(dj[di[i]]);
+      cols  = &dj[di[i]];
       for (j = 0; j < ncols; j++) {
         if (dwts[cols[j]] > maxweights[i]) maxweights[i] = dwts[cols[j]];
       }
       /* check for off-diagonal greater weights */
       if (oG) {
         ncols = oi[i + 1] - oi[i];
-        cols  = &(oj[oi[i]]);
+        cols  = &oj[oi[i]];
         for (j = 0; j < ncols; j++) {
           if (owts[cols[j]] > maxweights[i]) maxweights[i] = owts[cols[j]];
         }
@@ -180,7 +180,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
         continue;
       }
       ncols = di[i + 1] - di[i];
-      cols  = &(dj[di[i]]);
+      cols  = &dj[di[i]];
       for (j = 0; j < ncols; j++) {
         bidx++;
         seen[cols[j]] = i;
@@ -197,7 +197,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
             break;
           }
           ncols = di[idx + 1] - di[idx];
-          cols  = &(dj[di[idx]]);
+          cols  = &dj[di[idx]];
           for (j = 0; j < ncols; j++) {
             if (seen[cols[j]] != i) {
               bidx++;
@@ -217,7 +217,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
     if (!boundary[cidx]) {
       bidx  = -1;
       ncols = di[cidx + 1] - di[cidx];
-      cols  = &(dj[di[cidx]]);
+      cols  = &dj[di[cidx]];
       for (j = 0; j < ncols; j++) {
         bidx++;
         seen[cols[j]] = cidx;
@@ -232,7 +232,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
         if (colors[idx] < IS_COLORING_MAX) colormask[colors[idx]] = cidx;
         if (dist < distance) {
           ncols = di[idx + 1] - di[idx];
-          cols  = &(dj[di[idx]]);
+          cols  = &dj[di[idx]];
           for (j = 0; j < ncols; j++) {
             if (seen[cols[j]] != cidx) {
               bidx++;
@@ -275,7 +275,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
 
   PetscFunctionBegin;
   maskradix  = sizeof(PetscInt) * 8;
-  maskrounds = 1 + maxcolor / (maskradix);
+  maskrounds = 1 + maxcolor / maskradix;
   maskbase   = 0;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)G, MATSEQAIJ, &isSeq));
   PetscCall(PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPI));
@@ -334,11 +334,11 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
       /* fill in the on-and-off diagonal mask */
       for (i = 0; i < dn; i++) {
         ncols = di[i + 1] - di[i];
-        cols  = &(dj[di[i]]);
+        cols  = &dj[di[i]];
         for (j = 0; j < ncols; j++) cmask[i] = cmask[i] | dmask[cols[j]];
         if (oG) {
           ncols = oi[i + 1] - oi[i];
-          cols  = &(oj[oi[i]]);
+          cols  = &oj[oi[i]];
           for (j = 0; j < ncols; j++) cmask[i] = cmask[i] | omask[cols[j]];
         }
       }

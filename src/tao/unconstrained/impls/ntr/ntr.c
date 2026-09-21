@@ -277,7 +277,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       }
       PetscCall(VecScale(tao->stepdirection, -1.0));
       PetscCall(KSPGetConvergedReason(tao->ksp, &ksp_reason));
-      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && (tr->bfgs_pre)) {
+      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && tr->bfgs_pre) {
         /* Preconditioner is numerically indefinite; reset the
            approximate if using BFGS preconditioning. */
         PetscCall(MatLMVMReset(tr->M, PETSC_FALSE));
