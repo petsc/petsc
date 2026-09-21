@@ -106,4 +106,4 @@ Tao Object: 1 MPI process
   total number of function evaluations=13,                  (max: unlimited)
   total number of gradient evaluations=5,                  (max: unlimited)
   total number of Hessian evaluations=4
-  Solution converged:    User Terminated
+  Solution converged:    ||g(X)||/||g(X0)|| <= gttol

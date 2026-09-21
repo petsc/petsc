@@ -77,6 +77,8 @@
 ```{rubric} TAO:
 ```
 
+- Map `TAOSNES` convergence and divergence reasons with the public `TaoConvergedReasonFromSNES()`, and add `TaoSNESGetSNES()` to access the underlying solver
+
 ```{rubric} TaoTerm:
 ```
 

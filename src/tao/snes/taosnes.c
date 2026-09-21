@@ -7,14 +7,15 @@ typedef struct {
 
 static PetscErrorCode TaoSolve_SNES(Tao tao)
 {
-  Tao_SNES *taosnes = (Tao_SNES *)tao->data;
-  PetscInt  its;
+  Tao_SNES           *taosnes = (Tao_SNES *)tao->data;
+  SNESConvergedReason reason;
+  PetscInt            its;
 
   PetscFunctionBegin;
   /* TODO SNES fails if KSP reaches max_it, while TAO accepts whatever we got */
   PetscCall(SNESSolve(taosnes->snes, NULL, tao->solution));
-  /* TODO REASONS */
-  tao->reason = TAO_CONVERGED_USER;
+  PetscCall(SNESGetConvergedReason(taosnes->snes, &reason));
+  tao->reason = TaoConvergedReasonFromSNES(reason);
   PetscCall(SNESGetIterationNumber(taosnes->snes, &its));
   PetscCall(TaoSetIterationNumber(tao, its));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -26,6 +27,7 @@ static PetscErrorCode TaoDestroy_SNES(Tao tao)
 
   PetscFunctionBegin;
   PetscCall(SNESDestroy(&taosnes->snes));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoSNESGetSNES_C", NULL));
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -110,12 +112,53 @@ static PetscErrorCode TaoView_SNES(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TaoSNESGetSNES_SNES(Tao tao, SNES *snes)
+{
+  Tao_SNES *taosnes = (Tao_SNES *)tao->data;
+
+  PetscFunctionBegin;
+  *snes = taosnes->snes;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TaoSNESGetSNES - Gets the nonlinear solver used by `TAOSNES`.
+
+  Not Collective
+
+  Input Parameter:
+. tao - the `Tao` solver
+
+  Output Parameter:
+. snes - the underlying nonlinear solver
+
+  Level: advanced
+
+  Notes:
+  The `Tao` type must be `TAOSNES`. The returned object is owned by `tao` and must not be destroyed by the caller.
+
+  Use `SNESGetConvergedReason()` to obtain the precise nonlinear termination reason.
+  `TAOSNES` maps reasons with a `TaoConvergedReason` equivalent to that value; other reasons map to
+  `TAO_CONVERGED_USER` or `TAO_DIVERGED_USER` according to their sign.
+  The mapped reasons refer to the tolerances and limits of the underlying `SNES`.
+
+.seealso: [](ch_tao), `Tao`, `TAOSNES`, `TaoGetConvergedReason()`, `TaoConvergedReasonFromSNES()`, `SNESGetType()`, `SNESGetConvergedReason()`
+@*/
+PetscErrorCode TaoSNESGetSNES(Tao tao, SNES *snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  PetscAssertPointer(snes, 2);
+  PetscUseMethod(tao, "TaoSNESGetSNES_C", (Tao, SNES *), (tao, snes));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
   TAOSNES - nonlinear solver using SNES
 
    Level: advanced
 
-.seealso: `TaoCreate()`, `Tao`, `TaoSetType()`, `TaoType`
+.seealso: `TaoCreate()`, `Tao`, `TaoSetType()`, `TaoType`, `TaoSNESGetSNES()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_SNES(Tao tao)
 {
@@ -140,5 +183,6 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SNES(Tao tao)
     PetscCall(SNESSetDM(taosnes->snes, dm));
   }
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)taosnes->snes, (PetscObject)tao, 1));
+  PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoSNESGetSNES_C", TaoSNESGetSNES_SNES));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
