@@ -1594,111 +1594,184 @@ This indicates that the generalized eigenvector associated with that eigenvalue 
 <hr>
 ```
 
+(sec_bddc)=
+
 ### Balancing Domain Decomposition by Constraints
 
-PETSc provides the Balancing Domain Decomposition by Constraints (`PCBDDC`)
-method for preconditioning parallel finite element problems stored in
-unassembled format (see `MATIS`). `PCBDDC` is a 2-level non-overlapping
-domain decomposition method which can be easily adapted to different
-problems and discretizations by means of few user customizations. The
-application of the preconditioner to a vector consists in the static
-condensation of the residual at the interior of the subdomains by means
-of local Dirichlet solves, followed by an additive combination of Neumann
-local corrections and the solution of a global coupled coarse problem.
-Command line options for the underlying `KSP` objects are prefixed by
-`-pc_bddc_dirichlet`, `-pc_bddc_neumann`, and `-pc_bddc_coarse`
-respectively.
+`PCBDDC` implements Balancing Domain Decomposition by Constraints (BDDC),
+a nonoverlapping domain decomposition preconditioner for finite element
+problems. The PETSc implementation and its customization are described in
+{cite}`zampini2016pcbddc`. The default method has two levels: local subdomain
+solves and a global coarse problem defined by primal constraints. Multilevel
+variants apply BDDC recursively to the coarse problem.
 
-The implementation supports any kind of linear system, and
-assumes a one-to-one mapping between subdomains and MPI processes.
-Complex numbers are supported as well. For non-symmetric problems, use
-the runtime option `-pc_bddc_symmetric 0`.
+#### Matrix representation and local solvers
 
-Unlike conventional non-overlapping methods that iterates just on the
-degrees of freedom at the interface between subdomain, `PCBDDC`
-iterates on the whole set of degrees of freedom, allowing the use of
-approximate subdomain solvers. When using approximate solvers, the
-command line switches `-pc_bddc_dirichlet_approximate` and/or
-`-pc_bddc_neumann_approximate` should be used to inform `PCBDDC`. If
-any of the local problems is singular, the nullspace of the local
-operator should be attached to the local matrix via
-`MatSetNullSpace()`.
+`PCBDDC` requires the preconditioning matrix to have type `MATIS`. This format
+retains the local subdomain matrices and their local-to-global maps; see
+`MatCreateIS()` and `MatISGetLocalMat()`. Select the preconditioner with
+`-pc_type bddc`. The implementation supports real and complex arithmetic,
+nonsymmetric and indefinite systems, and multiple subdomains per MPI process.
+For nonsymmetric systems, use `-pc_bddc_symmetric false` when constructing the
+primal basis functions. If a local matrix contains disconnected subdomains,
+`-pc_bddc_detect_disconnected` enables their detection. Detection is automatic
+when the `MATIS` local-to-global map permits repeated entries through
+`MatISSetAllowRepeated()`.
 
-At the basis of the method there’s the analysis of the connected
-components of the interface for the detection of vertices, edges and
-faces equivalence classes. Additional information on the degrees of
-freedom can be supplied to `PCBDDC` by using the following functions:
+Applying the preconditioner combines local Dirichlet solves, which eliminate
+subdomain interior unknowns, with constrained local Neumann corrections and
+a global coarse solve. The underlying `KSP` objects accept the following
+option prefixes, preceded by any prefix set on the parent `PC`:
 
-- `PCBDDCSetDofsSplitting()`
-- `PCBDDCSetLocalAdjacencyGraph()`
-- `PCBDDCSetPrimalVerticesLocalIS()`
-- `PCBDDCSetNeumannBoundaries()`
-- `PCBDDCSetDirichletBoundaries()`
-- `PCBDDCSetNeumannBoundariesLocal()`
-- `PCBDDCSetDirichletBoundariesLocal()`
+| Solver | Prefix |
+| --- | --- |
+| Local Dirichlet problem | `-pc_bddc_dirichlet_` |
+| Local Neumann correction | `-pc_bddc_neumann_` |
+| Coarse problem | `-pc_bddc_coarse_` |
 
-Crucial for the convergence of the iterative process is the
-specification of the primal constraints to be imposed at the interface
-between subdomains. `PCBDDC` uses by default vertex continuities and
-edge arithmetic averages, which are enough for the three-dimensional
-Poisson problem with constant coefficients. The user can switch on and
-off the usage of vertices, edges or face constraints by using the
-command line switches `-pc_bddc_use_vertices`, `-pc_bddc_use_edges`,
-`-pc_bddc_use_faces`. A customization of the constraints is available
-by attaching a `MatNullSpace` object to the  matrix used to compute the preconditioner via
-`MatSetNearNullSpace()`. The vectors of the `MatNullSpace` object
-should represent the constraints in the form of quadrature rules;
-quadrature rules for different classes of the interface can be listed in
-the same vector. The number of vectors of the `MatNullSpace` object
-corresponds to the maximum number of constraints that can be imposed for
-each class. Once all the quadrature rules for a given interface class
-have been extracted, an SVD operation is performed to retain the
-non-singular modes. As an example, the rigid body modes represent an
-effective choice for elasticity, even in the almost incompressible case.
-For particular problems, e.g. edge-based discretization with Nedelec
-elements, a user defined change of basis of the degrees of freedom can
-be beneficial for `PCBDDC`; use `PCBDDCSetChangeOfBasisMat()` to
-customize the change of basis.
+The local solvers default to `KSPPREONLY` with a direct factorization.
+`PCBDDC` acts on all degrees of freedom, including subdomain interiors,
+which also permits approximate local solvers {cite}`dohrmann2007approximate`.
+Use `-pc_bddc_dirichlet_approximate` or `-pc_bddc_neumann_approximate` to request
+the corresponding nullspace corrections. For example,
 
-The `PCBDDC` method is usually robust with respect to jumps in the material
-parameters aligned with the interface; for PDEs with more than one
-material parameter you may also consider to use the so-called deluxe
-scaling, available via the command line switch
-`-pc_bddc_use_deluxe_scaling`. Other scalings are available, see
-`PCISSetSubdomainScalingFactor()`,
-`PCISSetSubdomainDiagonalScaling()` or
-`PCISSetUseStiffnessScaling()`. However, the convergence properties of
-the `PCBDDC` method degrades in presence of large jumps in the material
-coefficients not aligned with the interface; for such cases, PETSc has
-the capability of adaptively computing the primal constraints. Adaptive
-selection of constraints could be requested by specifying a threshold
-value at command line by using `-pc_bddc_adaptive_threshold x`. Valid
-values for the threshold `x` ranges from 1 to infinity, with smaller
-values corresponding to more robust preconditioners. For SPD problems in
-2D, or in 3D with only face degrees of freedom (like in the case of
-Raviart-Thomas or Brezzi-Douglas-Marini elements), such a threshold is a
-very accurate estimator of the condition number of the resulting
-preconditioned operator. Since the adaptive selection of constraints for
-`PCBDDC` methods is still an active topic of research, its implementation is
-currently limited to SPD problems; moreover, because the technique
-requires the explicit knowledge of the local Schur complements, it needs
-the external package MUMPS.
+```text
+-pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate
+```
 
-When solving problems decomposed in thousands of subdomains or more, the
-solution of the `PCBDDC` coarse problem could become a bottleneck; in order
-to overcome this issue, the user could either consider to solve the
-parallel coarse problem on a subset of the communicator associated with
-`PCBDDC` by using the command line switch
-`-pc_bddc_coarse_redistribute`, or instead use a multilevel approach.
-The latter can be requested by specifying the number of requested level
-at command line (`-pc_bddc_levels`) or by using `PCBDDCSetLevels()`.
-An additional parameter (see `PCBDDCSetCoarseningRatio()`) controls
-the number of subdomains that will be generated at the next level; the
-larger the coarsening ratio, the lower the number of coarser subdomains.
+selects an approximate Dirichlet solver. Supply the relevant local nullspace
+or near-nullspace information with `MatSetNullSpace()` or
+`MatSetNearNullSpace()` on the local matrix obtained from `MatISGetLocalMat()`.
 
-For further details, see the example
-<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex59.c">KSP Tutorial ex59</a>
-and the online documentation for `PCBDDC`.
+#### Interface information and primal constraints
+
+BDDC identifies interface vertices, edges, and faces from the local-to-global
+map and the local connectivity graph. These are algebraic equivalence
+classes of degrees of freedom shared by the same subdomains. Field and
+boundary information can be supplied before `PCSetUp()` using either global
+numbering or the numbering of the local matrix inside `MATIS`:
+
+| Information | Global numbering | Local numbering |
+| --- | --- | --- |
+| Fields | `PCBDDCSetDofsSplitting()` | `PCBDDCSetDofsSplittingLocal()` |
+| Primal vertices | `PCBDDCSetPrimalVerticesIS()` | `PCBDDCSetPrimalVerticesLocalIS()` |
+| Dirichlet boundary | `PCBDDCSetDirichletBoundaries()` | `PCBDDCSetDirichletBoundariesLocal()` |
+| Neumann boundary | `PCBDDCSetNeumannBoundaries()` | `PCBDDCSetNeumannBoundariesLocal()` |
+
+`PCBDDCSetLocalAdjacencyGraph()` supplies a custom graph in local numbering.
+The boundary setters describe the discretized problem; they do not impose
+boundary conditions on the matrix or right-hand side.
+
+Primal constraints determine the coarse space and are essential to
+convergence. By default, BDDC enforces continuity at vertices and uses edge
+averages. Control these choices with `-pc_bddc_use_vertices (true|false)`,
+`-pc_bddc_use_edges (true|false)`, and `-pc_bddc_use_faces (true|false)`.
+To customize the constraints, attach a `MatNullSpace` to the preconditioning
+matrix with `MatSetNearNullSpace()`. Its vectors supply candidate quadrature
+weights on the interface components; one vector can contain weights for
+several components. BDDC restricts these vectors to each component and uses
+a singular value decomposition to retain independent modes. Rigid body
+modes are a useful choice for elasticity. `-pc_bddc_use_nnsp_true` uses the
+supplied vectors directly, without this orthonormalization.
+
+A change of basis can turn primal constraints into explicit degrees of
+freedom {cite}`klawonn2006dual`. Enable the internal construction on edges
+with `-pc_bddc_use_change_of_basis`, and also on faces with
+`-pc_bddc_use_change_on_faces`. An application can supply its own matrix
+through `PCBDDCSetChangeOfBasisMat()`.
+
+For Nedelec discretizations of $H(\mathrm{curl})$ problems,
+`PCBDDCSetDiscreteGradient()` supplies the discrete gradient used to analyze
+subdomain edges and construct a change of basis. For $H(\mathrm{div})$ and
+mixed formulations, `PCBDDCSetDivergenceMat()` supplies the discrete
+divergence used to compute no-net-flux constraints. Its matrix must also
+have type `MATIS`, with local velocity numbering consistent with the
+preconditioning matrix or an explicit local index map. For saddle-point
+problems with discontinuous pressure spaces, `-pc_bddc_benign_trick` enables
+the benign subspace approach described in {cite}`zampinitu2017`.
+
+#### Scaling and adaptive coarse spaces
+
+Scaling controls how subdomain corrections are averaged across the
+interface. Deluxe scaling, selected with `-pc_bddc_use_deluxe_scaling`, uses
+local Schur complement information and is useful for problems with strongly
+varying coefficients. Other choices are available through
+`PCISSetSubdomainScalingFactor()`, `PCISSetSubdomainDiagonalScaling()`, and
+`PCISSetUseStiffnessScaling()`.
+
+When coefficient jumps are not aligned with subdomain interfaces, adaptive
+constraints can improve robustness by enriching the coarse space. For a
+symmetric positive definite problem, a typical configuration is
+
+```text
+-pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 5
+```
+
+The threshold controls which modes of local generalized eigenvalue problems
+are retained. Values greater than one are usual for SPD problems; smaller
+values generally add constraints and improve convergence at the cost of a
+larger coarse problem. The resulting condition-number bounds depend on the
+problem and decomposition; the threshold is not a universal estimate of the
+condition number. Adaptive deluxe methods for Raviart-Thomas fields are
+analyzed in {cite}`ohwidlundzampinidohrmann2017`, and their multilevel extension
+to mixed Darcy problems in {cite}`zampinitu2017`.
+
+Adaptive selection requires MUMPS or MKL_PARDISO to form the explicit Schur
+complements. Select an available backend with
+`-sub_schurs_mat_solver_type (mumps|mkl_pardiso)`. The options
+`-pc_bddc_adaptive_nmin count` and `-pc_bddc_adaptive_nmax count` bound the
+number of constraints per interface component. Use
+`-pc_bddc_adaptive_userdefined` to retain user-supplied near-nullspace
+constraints in addition to the adaptive ones. The economic deluxe option
+`-pc_bddc_schur_layers layers` limits the interior layers used to compute
+Schur complement principal minors; the default value -1 uses all interior
+degrees of freedom.
+
+#### Multilevel methods and coarse problem distribution
+
+The coarse solve can become a bottleneck when many subdomains contribute
+primal constraints. `-pc_bddc_coarse_eqs_per_proc neq` sets the target number
+of equations per process at the coarsest level; increasing it concentrates
+the coarse problem on fewer processes, and a negative value uses one
+process. This controls redistribution independently of the coarse solver
+selected with the `-pc_bddc_coarse_` prefix.
+
+For a multilevel method {cite}`mandel2008multispace`, use
+`-pc_bddc_levels levels` or `PCBDDCSetLevels()`. The value is the maximum
+number of additional BDDC levels: 0 gives the default two-level method, and
+1 allows BDDC on the first coarse problem. Set the target aggregation size
+with `-pc_bddc_coarsening_ratio ratio` or `PCBDDCSetCoarseningRatio()`; its
+default is 8. For process subdomains, this is the target number of subdomains
+per coarse aggregate. When a local `MATIS` matrix stores multiple elements,
+it is the target number of local elements per aggregate. Larger ratios
+produce fewer aggregates. `-pc_bddc_coarse_eqs_limit neq` stops adding levels
+once the coarse problem has at most the specified number of equations.
+
+Process subdomains are partitioned with `MatPartitioning`, and local element
+aggregates are constructed with `PetscPartitioner`. At level `n`, the
+aggregation prefix is `-pc_bddc_aggregator_n_`. For example,
+`-pc_bddc_aggregator_0_mat_partitioning_type parmetis` selects the process
+partitioner at the finest level, when ParMETIS is available. The options
+`-pc_bddc_aggregator_mat_partitioning_type type` and
+`-pc_bddc_aggregator_petscpartitioner_type type` apply a choice to all levels
+through numeric-prefix fallback.
+
+Level 0 is the finest BDDC level. For level `N` > 0, its local and coarse
+solvers use `-pc_bddc_dirichlet_lN_`, `-pc_bddc_neumann_lN_`, and
+`-pc_bddc_coarse_lN_`. Options for the coarse-level `PCBDDC` itself use its
+inherited coarse-solver prefix. For example,
+
+```text
+-pc_bddc_levels 1 -pc_bddc_coarse_pc_bddc_use_deluxe_scaling -pc_bddc_coarse_pc_bddc_adaptive_threshold 5
+```
+
+requests one additional BDDC level and adaptive deluxe constraints at that
+level. Any user prefix on the original `PC` precedes these prefixes.
+
+Use `-pc_bddc_check_level level` for setup diagnostics, and see
+`PCBDDCSaveCustomization()` and `PCBDDCLoadCustomization()` for saving and
+restoring customization data. The `PCBDDC` manual page lists further options.
+The related dual-primal FETI-DP solver is available through `KSPFETIDP`.
 
 ### Shell Preconditioners
 

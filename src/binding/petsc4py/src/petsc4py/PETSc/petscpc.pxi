@@ -281,6 +281,8 @@ cdef extern from * nogil:
     PetscErrorCode PCBDDCSetPrimalVerticesLocalIS(PetscPC, PetscIS)
     PetscErrorCode PCBDDCSetCoarseningRatio(PetscPC, PetscInt)
     PetscErrorCode PCBDDCSetLevels(PetscPC, PetscInt)
+    PetscErrorCode PCBDDCLoadCustomization(PetscPC, const char[], PetscInt)
+    PetscErrorCode PCBDDCSaveCustomization(PetscPC, const char[], PetscInt)
     PetscErrorCode PCBDDCSetDirichletBoundaries(PetscPC, PetscIS)
     PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PetscPC, PetscIS)
     PetscErrorCode PCBDDCSetNeumannBoundaries(PetscPC, PetscIS)

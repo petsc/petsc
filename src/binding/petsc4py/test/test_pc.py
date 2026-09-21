@@ -1,4 +1,6 @@
 from petsc4py import PETSc
+from pathlib import Path
+import tempfile
 import unittest
 
 
@@ -55,6 +57,55 @@ class TestFIELDSPLITPC(BaseTestPC, unittest.TestCase):
 
 class TestMG(BaseTestPC, unittest.TestCase):
     PC_TYPE = PETSc.PC.Type.MG
+
+
+class TestBDDCPC(BaseTestPC, unittest.TestCase):
+    PC_TYPE = PETSc.PC.Type.BDDC
+
+    def get_matis(self):
+        local_mat = PETSc.Mat().createAIJ([3, 3], nnz=1, comm=PETSc.COMM_SELF)
+        for i in range(3):
+            local_mat.setValue(i, i, 2)
+        local_mat.assemble()
+        mat = PETSc.Mat().createIS([3, 3], comm=PETSc.COMM_SELF)
+        mat.setISLocalMat(local_mat)
+        local_mat.destroy()
+        mat.assemble()
+        return mat
+
+    def testLoadSaveCustomization(self):
+        mat = self.get_matis()
+        boundary = PETSc.IS().createGeneral([0], comm=PETSc.COMM_SELF)
+        self.pc.setOperators(mat)
+        self.pc.setBDDCDirichletBoundariesLocal(boundary)
+        boundary.destroy()
+        self.pc.setUp()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for version in (PETSc.DECIDE, 0, 1):
+                saved = Path(tmpdir) / f'bddc-customization-{version}.dat'
+                resaved = Path(tmpdir) / f'bddc-customization-resaved-{version}.dat'
+                if version == PETSc.DECIDE:
+                    self.pc.saveBDDCCustomization(str(saved))
+                else:
+                    self.pc.saveBDDCCustomization(str(saved), version=version)
+
+                loaded = PETSc.PC().create(PETSc.COMM_SELF)
+                loaded.setType(PETSc.PC.Type.BDDC)
+                loaded.setOperators(mat)
+                if version == PETSc.DECIDE:
+                    loaded.loadBDDCCustomization(str(saved))
+                else:
+                    loaded.loadBDDCCustomization(str(saved), version=version)
+                loaded.setUp()
+                if version == PETSc.DECIDE:
+                    loaded.saveBDDCCustomization(str(resaved))
+                else:
+                    loaded.saveBDDCCustomization(str(resaved), version=version)
+
+                self.assertEqual(saved.read_bytes(), resaved.read_bytes())
+                loaded.destroy()
+        mat.destroy()
 
 
 class TestASMPC(BaseTestPC, unittest.TestCase):

@@ -22,11 +22,12 @@ typedef struct {
   char        *lmattype;
   PetscScalar *bdiag; /* Used by MatInvertBlockDiagonal_IS */
 
-  PetscObjectState lnnzstate; /* nonzero state of local matrix */
+  MatState localstate; /* local matrix state last propagated to the parent */
 
-  PetscBool keepassembled; /* store assembled form if needed */
-  Mat       assembledA;    /* assembled operator */
-  Mat       dA;            /* For MatGetDiagonalBlock_IS */
+  PetscBool keepassembled;  /* store assembled form if needed */
+  Mat       assembledA;     /* assembled operator */
+  MatState  assembledstate; /* parent state represented by assembledA and dA */
+  Mat       dA;             /* For MatGetDiagonalBlock_IS */
 
   /* Support for negative or repeated entries in l2map
      These maps can be different than the ones passed in by the user via

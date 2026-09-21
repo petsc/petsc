@@ -6744,6 +6744,26 @@ cdef class NullSpace(Object):
         if viewer is not None: vwr = viewer.vwr
         CHKERR(MatNullSpaceView(self.nsp, vwr))
 
+    def load(self, Viewer viewer) -> Self:
+        """Load a null space.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A binary `Viewer`.
+
+        See Also
+        --------
+        view, petsc.MatNullSpaceLoad
+
+        """
+        cdef PetscNullSpace newnsp = NULL
+        CHKERR(MatNullSpaceLoad(viewer.vwr, &newnsp))
+        CHKERR(PetscCLEAR(self.obj)); self.nsp = newnsp
+        return self
+
     def destroy(self) -> Self:
         """Destroy the null space.
 

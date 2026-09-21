@@ -122,6 +122,7 @@
   `MatPartitioningParMETISSetRepartition()`, `MatPartitioningParMETISSetCoarseSequential()`, and `MatPartitioningParMETISGetEdgeCut()`
 - Deprecate `MatSolverFunction`, `MatHtoolKernel` and `MatH2OpusKernel` in favor of `MatSolverFn *`, `MatHtoolKernelFn *` and `MatH2OpusKernelFn *`
 - Change the application context argument of `MatCreateH2OpusFromKernel()` and of the `MatH2OpusKernelFn` callback from `void *` to `PetscCtx`; no user source changes are required
+- Add `MatNullSpaceLoad()` to load a `MatNullSpace` object dump in binary with `MatNullSpaceView()`
 
 ## MatCoarsen
 
@@ -139,6 +140,7 @@
 - Add `PCMatApplyRichardson()`, `PCMatApplyRichardsonExists()`, and `PCShellSetMatApplyRichardson()`, the block analogs of `PCApplyRichardson()`, `PCApplyRichardsonExists()`, and `PCShellSetApplyRichardson()`
 - Add the missing Fortran binding for `PCShellSetMatApply()`
 - Remove `PCSetDiagonalScale()`, `PCGetDiagonalScale()`, `PCDiagonalScaleLeft()`, and `PCDiagonalScaleRight()`
+- Add `PCBDDCLoadCustomization()` and `PCBDDCSaveCustomization()` to ease debugging of `PCBDDC`
 
 ## KSP
 

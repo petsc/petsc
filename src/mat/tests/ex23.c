@@ -4,6 +4,7 @@ static char help[] = "Tests the use of interface functions for MATIS matrices an
 
 PetscErrorCode TestMatZeroRows(Mat, Mat, PetscBool, IS, PetscScalar, PetscBool);
 PetscErrorCode CheckMat(Mat, Mat, PetscBool, const char *);
+PetscErrorCode CheckVariableBlockSizes(Mat);
 PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping, IS, IS *);
 
 int main(int argc, char **args)
@@ -27,6 +28,7 @@ int main(int argc, char **args)
   PetscBool              testT, squaretest, isaij;
   PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE, allow_repeated = PETSC_TRUE;
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric, test_matlab = PETSC_FALSE, test_setvalues = PETSC_TRUE;
+  PetscBool              test_variableblocksizes = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -43,6 +45,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-allow_repeated", &allow_repeated, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matlab", &test_matlab, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_setvalues", &test_setvalues, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_variableblocksizes", &test_variableblocksizes, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-rbs", &rbs, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-cbs", &cbs, NULL));
   PetscCheck(size == 1 || m >= 4, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Number of rows should be larger or equal 4 for parallel runs");
@@ -132,10 +135,16 @@ int main(int argc, char **args)
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &squaretest, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   }
   if (negmap && repmap) squaretest = PETSC_FALSE;
+  PetscCheck(squaretest || !test_variableblocksizes, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Variable block size test only for square matrices");
 
   /* test MatISGetLocalMat */
   PetscCall(MatISGetLocalMat(A, &B));
   PetscCall(MatGetType(B, &lmtype));
+  if (test_variableblocksizes) {
+    PetscInt bsizes[2] = {rbs, lm - rbs};
+
+    PetscCall(MatSetVariableBlockSizes(B, PETSC_STATIC_ARRAY_LENGTH(bsizes), bsizes));
+  }
 
   /* test MatGetInfo */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatGetInfo\n"));
@@ -237,6 +246,7 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from world\n"));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "world_is", FILE_MODE_READ, &view));
     PetscCall(MatLoad(A2, view));
+    if (test_variableblocksizes) PetscCall(CheckVariableBlockSizes(A2));
     PetscCall(CheckMat(A, A2, PETSC_TRUE, "Load"));
     PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerDestroy(&view));
@@ -245,6 +255,7 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from self\n"));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "seq_is_0", FILE_MODE_READ, &view));
     PetscCall(MatLoad(A2, view));
+    if (test_variableblocksizes) PetscCall(CheckVariableBlockSizes(A2));
     PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerDestroy(&view));
 
@@ -252,6 +263,7 @@ int main(int argc, char **args)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatLoad from subcomm\n"));
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "color_is_0", FILE_MODE_READ, &view));
     PetscCall(MatLoad(A2, view));
+    if (test_variableblocksizes) PetscCall(CheckVariableBlockSizes(A2));
     PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerDestroy(&view));
 
@@ -266,6 +278,7 @@ int main(int argc, char **args)
       PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm), PETSC_VIEWER_ASCII_INFO_DETAIL));
       PetscCall(PetscViewerBinaryOpen(comm, "world_is", FILE_MODE_READ, &view));
       PetscCall(MatLoad(A2, view));
+      if (test_variableblocksizes) PetscCall(CheckVariableBlockSizes(A2));
       PetscCall(MatView(A2, PETSC_VIEWER_STDOUT_(comm)));
       PetscCall(PetscViewerDestroy(&view));
       PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm)));
@@ -989,6 +1002,22 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode CheckVariableBlockSizes(Mat A)
+{
+  Mat             lA;
+  const PetscInt *bsizes;
+  PetscInt        m, nblocks, sum = 0;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatISGetLocalMat(A, &lA));
+  PetscCall(MatGetLocalSize(lA, &m, NULL));
+  PetscCall(MatGetVariableBlockSizes(lA, &nblocks, &bsizes));
+  for (PetscInt i = 0; i < nblocks; i++) sum += bsizes[i];
+  PetscCheck(sum == m && (!m || nblocks), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid variable block sizes on loaded local matrix");
+  PetscCall(MatISRestoreLocalMat(A, &lA));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag, PetscBool local)
 {
   Mat                    B, Bcheck, B2 = NULL, lB;
@@ -1164,7 +1193,7 @@ PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping mapping, IS is, IS *newis)
    test:
       suffix: 5
       nsize: 6
-      args: -m 12 -n 12 -test_trans -nr 3 -nc 1 -rbs 2
+      args: -m 12 -n 12 -test_trans -nr 3 -nc 1 -rbs 2 -test_variableblocksizes -mat_is_view_variableblocksizes
 
    test:
       suffix: 6

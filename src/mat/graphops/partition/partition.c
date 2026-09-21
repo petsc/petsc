@@ -353,7 +353,7 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
   PetscCall(PetscLogEventEnd(MAT_PartitioningND, matp, 0, 0, 0));
 
   PetscCall(MatPartitioningViewFromOptions(matp, NULL, "-mat_partitioning_view"));
-  PetscCall(ISViewFromOptions(*partitioning, NULL, "-mat_partitioning_view"));
+  PetscCall(ISViewFromOptions(*partitioning, (PetscObject)matp, "-mat_partitioning_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -394,7 +394,7 @@ PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
   PetscCall(PetscLogEventEnd(MAT_Partitioning, matp, 0, 0, 0));
 
   PetscCall(MatPartitioningViewFromOptions(matp, NULL, "-mat_partitioning_view"));
-  PetscCall(ISViewFromOptions(*partitioning, NULL, "-mat_partitioning_view"));
+  PetscCall(ISViewFromOptions(*partitioning, (PetscObject)matp, "-mat_partitioning_view"));
 
   PetscObjectOptionsBegin((PetscObject)matp);
   viewbalance = PETSC_FALSE;

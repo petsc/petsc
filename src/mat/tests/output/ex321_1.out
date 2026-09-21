@@ -1,0 +1,8 @@
+local (Neumann): 2. 1. 4. 2.
+local (Neumann): 2. 1. 4. 2.
+assembled (MAT_REUSE_MATRIX): 2. 1. 4. 4.
+assembled (MAT_REUSE_MATRIX): 1. 4. 2.
+assembled (MAT_INITIAL_MATRIX): 2. 1. 4. 4.
+assembled (MAT_INITIAL_MATRIX): 1. 4. 2.
+diagonal block: 2. 1. 4. 4.
+diagonal block: 1. 4. 2.

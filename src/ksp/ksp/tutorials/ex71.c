@@ -113,6 +113,7 @@ typedef struct {
   PetscBool    test;
   PetscScalar *elemMat;
   PetscBool    use_composite_pc;
+  PetscBool    test_reuse;
   PetscBool    random_initial_guess;
   PetscBool    random_real;
 } AppCtx;
@@ -137,6 +138,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->per[1]               = PETSC_FALSE;
   options->per[2]               = PETSC_FALSE;
   options->use_composite_pc     = PETSC_FALSE;
+  options->test_reuse           = PETSC_FALSE;
   options->random_initial_guess = PETSC_FALSE;
   options->random_real          = PETSC_FALSE;
 
@@ -151,6 +153,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-multi_element", "Use multi-element BDDC", __FILE__, options->multi_element, &options->multi_element, NULL));
   PetscCall(PetscOptionsBool("-dirichlet", "Use dirichlet BC", __FILE__, options->dirbc, &options->dirbc, NULL));
   PetscCall(PetscOptionsBool("-use_composite_pc", "Multiplicative composite with BDDC + Richardson/Jacobi", __FILE__, options->use_composite_pc, &options->use_composite_pc, NULL));
+  PetscCall(PetscOptionsBool("-test_reuse", "Set up the preconditioner again with new matrix values", __FILE__, options->test_reuse, &options->test_reuse, NULL));
   PetscCall(PetscOptionsBool("-random_initial_guess", "Solve A x = 0 with random initial guess, instead of A x = b with random b", __FILE__, options->random_initial_guess, &options->random_initial_guess, NULL));
   PetscCall(PetscOptionsBool("-random_real", "Use real-valued b (or x, if -random_initial_guess) instead of default scalar type", __FILE__, options->random_real, &options->random_real, NULL));
   PetscOptionsEnd();
@@ -483,6 +486,10 @@ int main(int argc, char **args)
   PetscCall(PetscLogStagePush(stages[0]));
   PetscCall(KSPSetUp(ksp));
   PetscCall(PetscLogStagePop());
+  if (user.test_reuse) {
+    PetscCall(MatScale(A, 2.0));
+    PetscCall(KSPSetUp(ksp));
+  }
 
   PetscCall(MatCreateVecs(A, &x, &b));
   if (user.random_initial_guess) {
@@ -555,7 +562,7 @@ int main(int argc, char **args)
    requires: !single
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_elast_4lev
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 2 -pc_bddc_coarsening_ratio 2 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection -pc_bddc_coarse_l1_pc_bddc_corner_selection -mat_partitioning_type average -options_left 0
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 2 -pc_bddc_coarsening_ratio 2 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_bddc_corner_selection -pc_bddc_coarse_l1_pc_bddc_corner_selection -pc_bddc_aggregator_mat_partitioning_type average -options_left 0 -pc_bddc_aggregator_mat_partitioning_view
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
@@ -749,6 +756,19 @@ int main(int argc, char **args)
 
 # Multi-Element tests
  test:
+   suffix: bddc_multielement_empty
+   output_file: output/ex71_bddc_multi_element.out
+   nsize: 6
+   args: -cells 2,2 -dim 2 -ksp_error_if_not_converged -multi_element -pde_type Poisson -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 2 -pc_bddc_coarse_eqs_limit 0 -ksp_converged_reason
+
+ test:
+   requires: mumps
+   suffix: bddc_multielement_adaptive_reuse
+   filter: sed -e "s/CONVERGED_RTOL iterations 3/CONVERGED_RTOL iterations 2/g"
+   nsize: 2
+   args: -test_reuse -cells 4,4 -dim 2 -ksp_error_if_not_converged -multi_element -pde_type Poisson -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 2 -pc_bddc_aggregator_petscpartitioner_type simple -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2 -sub_schurs_mat_solver_type mumps -ksp_converged_reason
+
+ test:
    nsize: {{1 2 3}}
    suffix: bddc_multi_element
    args: -cells 3,3,3 -dim 3 -ksp_error_if_not_converged -multi_element -pde_type {{Poisson Elasticity}} -ksp_converged_reason
@@ -757,5 +777,14 @@ int main(int argc, char **args)
    suffix: bddc_multi_square
    output_file: output/ex71_bddc_multi_element.out
    args: -cells 2,2 -dim 2 -ksp_error_if_not_converged -multi_element -pc_bddc_local_mat_graph_square 4 -ksp_converged_reason
+
+ test:
+   suffix: bddc_multielement_5lev_2d
+   filter: sed -e "s/CONVERGED_RTOL iterations 4/CONVERGED_RTOL iterations 3/g"
+   args: -test_reuse -cells 4,4 -dim 2 -ksp_error_if_not_converged -multi_element -pde_type Poisson -pc_bddc_levels 3 -pc_bddc_coarsening_ratio 2 -pc_bddc_aggregator_petscpartitioner_type simple -ksp_converged_reason -pc_bddc_aggregator_petscpartitioner_view -pc_bddc_aggregator_petscpartitioner_view_graph
+
+ test:
+   suffix: bddc_multielement_5lev_3d
+   args: -test_reuse -cells 3,3,3 -dim 3 -ksp_error_if_not_converged -multi_element -pde_type Poisson -pc_bddc_levels 3 -pc_bddc_coarsening_ratio 3 -pc_bddc_aggregator_petscpartitioner_type simple -ksp_converged_reason -pc_bddc_aggregator_petscpartitioner_view -pc_bddc_aggregator_petscpartitioner_view_graph
 
 TEST*/

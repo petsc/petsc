@@ -2354,6 +2354,61 @@ cdef class PC(Object):
         cdef PetscInt plevels = asInt(levels)
         CHKERR(PCBDDCSetLevels(self.pc, plevels))
 
+    def loadBDDCCustomization(
+        self, filename: str | None = None, version: int = DECIDE
+    ) -> None:
+        """Load user-defined BDDC customization data from a binary file.
+
+        Collective.
+
+        This method is normally called before `setUp`.
+
+        Parameters
+        ----------
+        filename
+            Name of the binary file, or `None` to use ``bddc_dump.dat``.
+        version
+            File format version, or `DECIDE` to detect the version
+            from the file.
+
+        See Also
+        --------
+        saveBDDCCustomization, setUp, petsc.PCBDDCLoadCustomization
+
+        """
+        cdef const char *cfilename = NULL
+        cdef PetscInt pversion = asInt(version)
+        filename = str2bytes(filename, &cfilename)
+        CHKERR(PCBDDCLoadCustomization(self.pc, cfilename, pversion))
+
+    def saveBDDCCustomization(
+        self, filename: str | None = None, version: int = DECIDE
+    ) -> None:
+        """Save user-defined BDDC customization data to a binary file.
+
+        Collective.
+
+        Call `setUp` before this method so that global customization data has
+        been converted to the local representation stored in the file.
+
+        Parameters
+        ----------
+        filename
+            Name of the binary file, or `None` to use ``bddc_dump.dat``.
+        version
+            File format version, or `DECIDE` to use the latest
+            version.
+
+        See Also
+        --------
+        loadBDDCCustomization, setUp, petsc.PCBDDCSaveCustomization
+
+        """
+        cdef const char *cfilename = NULL
+        cdef PetscInt pversion = asInt(version)
+        filename = str2bytes(filename, &cfilename)
+        CHKERR(PCBDDCSaveCustomization(self.pc, cfilename, pversion))
+
     def setBDDCDirichletBoundaries(self, IS bndr) -> None:
         """Set the `IS` defining Dirichlet boundaries for the global problem.
 

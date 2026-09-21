@@ -38,7 +38,7 @@ static PetscErrorCode PCApply_BDDC(PC, Vec, Vec);
 static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
-  PetscInt  nt, i;
+  PetscInt  nt, i, load_version = PETSC_DECIDE;
   char      load[PETSC_MAX_PATH_LEN] = {'\0'};
   PetscBool flg;
 
@@ -46,11 +46,12 @@ static PetscErrorCode PCSetFromOptions_BDDC(PC pc, PetscOptionItems PetscOptions
   PetscOptionsHeadBegin(PetscOptionsObject, "BDDC options");
   /* Load customization from binary file (debugging) */
   PetscCall(PetscOptionsString("-pc_bddc_load", "Load customization from file (intended for debug)", "none", load, load, sizeof(load), &flg));
+  PetscCall(PetscOptionsInt("-pc_bddc_load_version", "Version of the customization file to load", "none", load_version, &load_version, NULL));
   if (flg) {
     size_t len;
 
     PetscCall(PetscStrlen(load, &len));
-    PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_TRUE, len ? load : NULL));
+    PetscCall(PCBDDCLoadCustomization(pc, len ? load : NULL, load_version));
   }
   /* Verbose debugging */
   PetscCall(PetscOptionsInt("-pc_bddc_check_level", "Verbose output for PCBDDC (intended for debug)", "none", pcbddc->dbg_flag, &pcbddc->dbg_flag, NULL));
@@ -289,20 +290,22 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   Input Parameters:
 + pc         - the preconditioning context
 . G          - the discrete gradient matrix (in `MATAIJ` format)
-. order      - the order of the Nedelec space (1 for the lowest order)
-. field      - the field id of the Nedelec dofs (not used if the fields have not been specified)
-. global     - the type of global ordering for the rows of `G`
-- conforming - whether the mesh is conforming or not
+. order      - the order of the Nedelec space (1 for the lowest order, 0 for variable order)
+. field      - the field index of the Nedelec degrees of freedom, or `PETSC_DECIDE` to infer the field
+. global     - `PETSC_TRUE` if the rows of `G` use the global numbering of all degrees of freedom, `PETSC_FALSE` for the Nedelec field only
+- conforming - `PETSC_TRUE` if the mesh is conforming
 
   Level: advanced
 
-  Note:
-  The discrete gradient matrix `G` is used to analyze the subdomain edges, and it should not contain any zero entry.
-  For variable order spaces, the order should be set to zero.
-  If `global` is `PETSC_TRUE`, the rows of `G` should be given in global ordering for the whole dofs;
-  if `PETSC_FALSE`, the ordering should be global for the Nedelec field.
-  In the latter case, it should hold gid[i] < gid[j] iff geid[i] < geid[j], with gid the global orderding for all the dofs
-  and geid the one for the Nedelec field.
+  Notes:
+  The discrete gradient matrix `G` is used to analyze the subdomain edges and should not contain explicitly stored zero entries.
+
+  If `global` is `PETSC_FALSE`, the numbering of the Nedelec field must preserve the relative order of its degrees of freedom
+  in the global numbering of all fields. That is, `gid[i] < gid[j]` if and only if `geid[i] < geid[j]`, where `gid` is the global
+  numbering of all degrees of freedom and `geid` is the global numbering of the Nedelec field.
+
+  The `field` index is not used if no field splitting has been specified.
+  If `field` is `PETSC_DECIDE`, `global` must be `PETSC_TRUE`; the Nedelec field is inferred from the rows of `G` with more than one nonzero.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
 @*/
@@ -329,33 +332,32 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
   PetscCall(MatDestroy(&pcbddc->divudotp));
   pcbddc->divudotp          = divudotp;
   pcbddc->divudotp_trans    = trans;
-  pcbddc->compute_nonetflux = PETSC_TRUE;
-  if (vl2l) {
-    PetscCall(PetscObjectReference((PetscObject)vl2l));
-    PetscCall(ISDestroy(&pcbddc->divudotp_vl2l));
-    pcbddc->divudotp_vl2l = vl2l;
-  }
+  pcbddc->compute_nonetflux = (PetscBool)(divudotp != NULL);
+  PetscCall(PetscObjectReference((PetscObject)vl2l));
+  PetscCall(ISDestroy(&pcbddc->divudotp_vl2l));
+  pcbddc->divudotp_vl2l = vl2l;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  PCBDDCSetDivergenceMat - Sets the linear operator representing \int_\Omega \div {\bf u} \cdot p dx for the `PCBDDC` preconditioner
+  PCBDDCSetDivergenceMat - Sets the discrete divergence operator used by `PCBDDC` to compute net-flux constraints
 
   Collective
 
   Input Parameters:
 + pc       - the preconditioning context
 . divudotp - the matrix (must be of type `MATIS`)
-. trans    - if `PETSC_FALSE` (resp. `PETSC_TRUE`), then pressures are in the test (trial) space and velocities are in the trial (test) space.
-- vl2l     - optional index set describing the local (wrt the local matrix in `divudotp`) to local (wrt the local matrix
-             in the matrix used to construct the preconditioner) map for the velocities
+. trans    - `PETSC_FALSE` if pressures are in the test space and velocities are in the trial space, `PETSC_TRUE` for the transpose
+- vl2l     - optional index set mapping local velocity indices in `divudotp` to local indices in the preconditioning matrix, or `NULL`
 
   Level: advanced
 
   Notes:
-  This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
+  The operator represents $\int_\Omega (\nabla \cdot \mathbf{u}) p\,dx$ and is used to compute quadrature weights
+  representing the net flux across subdomain boundaries. See {cite}`zampinitu2017` for their use in mixed formulations of Darcy flow.
 
-  If `vl2l` is `NULL`, the local ordering for velocities in `divudotp` should match that of the matrix used to construct the preconditioner
+  Local indices refer to the local matrices inside the `MATIS` objects. If `vl2l` is `NULL`, the local velocity numbering in
+  `divudotp` must match that of the preconditioning matrix.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDiscreteGradient()`
 @*/
@@ -388,14 +390,14 @@ static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change, PetscBoo
 }
 
 /*@
-  PCBDDCSetChangeOfBasisMat - Set user defined change of basis for dofs
+  PCBDDCSetChangeOfBasisMat - Sets a user-defined change of basis for `PCBDDC`
 
   Collective
 
   Input Parameters:
 + pc       - the preconditioning context
-. change   - the change of basis matrix
-- interior - whether or not the change of basis modifies interior dofs
+. change   - the change-of-basis matrix, with the same global and local sizes as the operator
+- interior - `PETSC_TRUE` if the change of basis modifies interior degrees of freedom
 
   Level: intermediate
 
@@ -438,7 +440,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
 }
 
 /*@
-  PCBDDCSetPrimalVerticesIS - Set additional user defined primal vertices in `PCBDDC`
+  PCBDDCSetPrimalVerticesIS - Sets additional user-defined primal vertices in global numbering for `PCBDDC`
 
   Collective
 
@@ -449,7 +451,7 @@ static PetscErrorCode PCBDDCSetPrimalVerticesIS_BDDC(PC pc, IS PrimalVertices)
   Level: intermediate
 
   Note:
-  Any process can list any global node
+  Any process can list any global degree of freedom.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
 @*/
@@ -473,9 +475,9 @@ static PetscErrorCode PCBDDCGetPrimalVerticesIS_BDDC(PC pc, IS *is)
 }
 
 /*@
-  PCBDDCGetPrimalVerticesIS - Get user defined primal vertices set with `PCBDDCSetPrimalVerticesIS()`
+  PCBDDCGetPrimalVerticesIS - Gets the user-defined primal vertices in global numbering
 
-  Collective
+  Not Collective
 
   Input Parameter:
 . pc - the preconditioning context
@@ -484,6 +486,9 @@ static PetscErrorCode PCBDDCGetPrimalVerticesIS_BDDC(PC pc, IS *is)
 . is - index set of primal vertices in global numbering (`NULL` if not set)
 
   Level: intermediate
+
+  Note:
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`, `PCBDDCGetPrimalVerticesLocalIS()`
 @*/
@@ -512,13 +517,13 @@ static PetscErrorCode PCBDDCSetPrimalVerticesLocalIS_BDDC(PC pc, IS PrimalVertic
 }
 
 /*@
-  PCBDDCSetPrimalVerticesLocalIS - Set additional user defined primal vertices in `PCBDDC`
+  PCBDDCSetPrimalVerticesLocalIS - Sets additional user-defined primal vertices in local numbering for `PCBDDC`
 
   Collective
 
   Input Parameters:
 + pc             - the preconditioning context
-- PrimalVertices - index set of primal vertices in local numbering (can be empty)
+- PrimalVertices - index set of primal vertices in the numbering of the local `MATIS` matrix (can be empty)
 
   Level: intermediate
 
@@ -544,17 +549,22 @@ static PetscErrorCode PCBDDCGetPrimalVerticesLocalIS_BDDC(PC pc, IS *is)
 }
 
 /*@
-  PCBDDCGetPrimalVerticesLocalIS - Get user defined primal vertices set with `PCBDDCSetPrimalVerticesLocalIS()`
+  PCBDDCGetPrimalVerticesLocalIS - Gets the user-defined primal vertices in local numbering
 
-  Collective
+  Not Collective
 
   Input Parameter:
 . pc - the preconditioning context
 
   Output Parameter:
-. is - index set of primal vertices in local numbering (`NULL` if not set)
+. is - index set of primal vertices in the numbering of the local `MATIS` matrix, or `NULL` if unavailable
 
   Level: intermediate
+
+  Notes:
+  The index set is supplied by `PCBDDCSetPrimalVerticesLocalIS()` or obtained from `PCBDDCSetPrimalVerticesIS()` during `PCSetUp()`.
+
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCGetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`
 @*/
@@ -577,21 +587,22 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 }
 
 /*@
-  PCBDDCSetCoarseningRatio - Set coarsening ratio used in the multi-level version of `PCBDDC`
+  PCBDDCSetCoarseningRatio - Sets the coarsening ratio used by multilevel `PCBDDC`
 
   Logically Collective
 
   Input Parameters:
 + pc - the preconditioning context
-- k  - coarsening ratio (H/h at the coarser level)
+- k  - target number of process subdomains or local elements per aggregate
 
   Options Database Key:
-. -pc_bddc_coarsening_ratio k - Set the coarsening ratio used in multi-level coarsening
+. -pc_bddc_coarsening_ratio k - set the coarsening ratio used in multilevel coarsening
 
   Level: intermediate
 
   Note:
-  Approximately `k` subdomains at the finer level will be aggregated into a single subdomain at the coarser level
+  Approximately `k` subdomains at the finer level are aggregated into a single subdomain at the coarser level.
+  When a local `MATIS` matrix stores multiple elements, `k` is the target number of local elements per aggregate.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetLevels()`
 @*/
@@ -658,15 +669,15 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
 
   Input Parameters:
 + pc     - the preconditioning context
-- levels - the maximum number of levels
+- levels - the maximum number of additional levels
 
   Options Database Key:
-. -pc_bddc_levels levels - Set maximum number of levels for multilevel
+. -pc_bddc_levels levels - set the maximum number of additional levels for multilevel BDDC
 
   Level: intermediate
 
   Note:
-  The default value is 0, that gives the classical two-levels BDDC algorithm
+  The default value is 0, which gives the classical two-level BDDC algorithm.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetCoarseningRatio()`
 @*/
@@ -676,6 +687,264 @@ PetscErrorCode PCBDDCSetLevels(PC pc, PetscInt levels)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, levels, 2);
   PetscTryMethod(pc, "PCBDDCSetLevels_C", (PC, PetscInt), (pc, levels));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+#define PCBDDC_CUSTOMIZATION_VERSION_LEGACY     0
+#define PCBDDC_CUSTOMIZATION_VERSION_LATEST     1
+#define PCBDDC_CUSTOMIZATION_HEADER_SIZE_LEGACY 11
+#define PCBDDC_CUSTOMIZATION_HEADER_SIZE        32
+
+static PetscErrorCode PCBDDCLoadOrSaveCustomization_Private(PC pc, PetscBool load, const char *outfile, PetscInt version)
+{
+  PetscInt    header_storage[PCBDDC_CUSTOMIZATION_HEADER_SIZE] = {0};
+  PetscInt   *header;
+  PetscInt    nheader;
+  PC_BDDC    *pcbddc = (PC_BDDC *)pc->data;
+  PetscViewer viewer;
+  MPI_Comm    comm = PetscObjectComm((PetscObject)pc);
+
+  PetscFunctionBegin;
+  if (!load && version == PETSC_DECIDE) version = PCBDDC_CUSTOMIZATION_VERSION_LATEST;
+  if (version == PCBDDC_CUSTOMIZATION_VERSION_LEGACY) {
+    header  = header_storage;
+    nheader = PCBDDC_CUSTOMIZATION_HEADER_SIZE_LEGACY;
+  } else {
+    header  = header_storage + 1;
+    nheader = PCBDDC_CUSTOMIZATION_HEADER_SIZE;
+  }
+  PetscCall(PetscViewerBinaryOpen(comm, outfile ? outfile : "bddc_dump.dat", load ? FILE_MODE_READ : FILE_MODE_WRITE, &viewer));
+  if (load) {
+    IS  is;
+    Mat A;
+
+    PetscCall(PetscViewerBinaryRead(viewer, header_storage, nheader, NULL, PETSC_INT));
+    if (version == PETSC_DECIDE) version = header_storage[0];
+    PetscCheck(header[0] == 0 || header[0] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[1] == 0 || header[1] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[2] >= 0, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[3] == 0 || header[3] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[4] == 0 || header[4] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[5] >= 0, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[7] == 0 || header[7] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[8] == 0 || header[8] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[9] == 0 || header[9] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    PetscCheck(header[10] == 0 || header[10] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    if (version >= 1) {
+      PetscCheck(header[11] == 0 || header[11] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+      PetscCheck(header[12] == 0 || header[12] == 1, comm, PETSC_ERR_FILE_UNEXPECTED, "Not a BDDC dump next in file");
+    }
+    if (header[0]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetDirichletBoundaries(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[1]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetNeumannBoundaries(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[2]) {
+      IS *isarray;
+
+      PetscCall(PetscMalloc1(header[2], &isarray));
+      for (PetscInt i = 0; i < header[2]; i++) {
+        PetscCall(ISCreate(comm, &isarray[i]));
+        PetscCall(ISLoad(isarray[i], viewer));
+      }
+      PetscCall(PCBDDCSetDofsSplitting(pc, header[2], isarray));
+      for (PetscInt i = 0; i < header[2]; i++) PetscCall(ISDestroy(&isarray[i]));
+      PetscCall(PetscFree(isarray));
+    }
+    if (header[3]) {
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PCBDDCSetPrimalVerticesIS(pc, is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[4]) {
+      PetscCall(MatCreate(comm, &A));
+      PetscCall(MatSetType(A, MATAIJ));
+      PetscCall(MatLoad(A, viewer));
+      PetscCall(PCBDDCSetDiscreteGradient(pc, A, header[5], header[6], (PetscBool)header[7], (PetscBool)header[8]));
+      PetscCall(MatDestroy(&A));
+    }
+    if (header[9]) {
+      PetscCall(MatCreate(comm, &A));
+      PetscCall(MatSetType(A, MATIS));
+      PetscCall(MatLoad(A, viewer));
+      PetscCall(PCBDDCSetDivergenceMat(pc, A, (PetscBool)header[10], NULL));
+      PetscCall(MatDestroy(&A));
+    }
+    if (header[11]) {
+      PetscCheck(pcbddc->discretegradient, comm, PETSC_ERR_ARG_CORRUPT, "Missing discrete gradient");
+      PetscCall(ISCreate(comm, &is));
+      PetscCall(ISLoad(is, viewer));
+      PetscCall(PetscObjectCompose((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject)is));
+      PetscCall(ISDestroy(&is));
+    }
+    if (header[12]) {
+      MatNullSpace nsp;
+
+      PetscCheck(pcbddc->discretegradient, comm, PETSC_ERR_ARG_CORRUPT, "Missing discrete gradient");
+      PetscCall(MatNullSpaceLoad(viewer, &nsp));
+      PetscCall(MatSetNullSpace(pcbddc->discretegradient, nsp));
+      PetscCall(MatNullSpaceDestroy(&nsp));
+    }
+    if (header[13]) {
+      PetscReal *coords;
+      PetscInt   cdim, nl;
+      PetscCount nc;
+
+      PetscCheck(pc->pmat, comm, PETSC_ERR_ORDER, "Need to set the matrix first with PCSetOperators()");
+      PetscCall(PetscLayoutGetLocalSize(pc->pmat->rmap, &nl));
+      cdim = header[13];
+      nc   = (PetscCount)cdim * nl;
+
+      PetscCall(PetscMalloc1(nc, &coords));
+      PetscCall(PetscViewerBinaryReadAll(viewer, coords, nc, PETSC_DECIDE, PETSC_DECIDE, PETSC_REAL));
+      PetscCall(PCSetCoordinates(pc, cdim, nl, coords));
+      PetscCall(PetscFree(coords));
+    }
+  } else {
+    if (version != PCBDDC_CUSTOMIZATION_VERSION_LEGACY) header_storage[0] = version;
+    header[0]  = (PetscInt)!!pcbddc->DirichletBoundariesLocal;
+    header[1]  = (PetscInt)!!pcbddc->NeumannBoundariesLocal;
+    header[2]  = pcbddc->n_ISForDofsLocal;
+    header[3]  = (PetscInt)!!pcbddc->user_primal_vertices_local;
+    header[4]  = (PetscInt)!!pcbddc->discretegradient;
+    header[5]  = pcbddc->nedorder;
+    header[6]  = pcbddc->nedfield;
+    header[7]  = (PetscInt)pcbddc->nedglobal;
+    header[8]  = (PetscInt)pcbddc->conforming;
+    header[9]  = (PetscInt)!!pcbddc->divudotp;
+    header[10] = (PetscInt)pcbddc->divudotp_trans;
+    if (header[4]) header[3] = 0;
+
+    if (version >= 1) {
+      if (pcbddc->discretegradient) {
+        IS           is;
+        MatNullSpace nsp;
+
+        PetscCall(PetscObjectQuery((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject *)&is));
+        header[11] = (PetscBool)!!is;
+        PetscCall(MatGetNullSpace(pcbddc->discretegradient, &nsp));
+        header[12] = (PetscBool)!!nsp;
+      }
+      header[13] = pcbddc->mat_graph->cdim;
+    }
+
+    PetscCall(PetscViewerBinaryWrite(viewer, header_storage, nheader, PETSC_INT));
+    if (header[0]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->DirichletBoundariesLocal, viewer));
+    if (header[1]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->NeumannBoundariesLocal, viewer));
+    for (PetscInt i = 0; i < header[2]; i++) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->ISForDofsLocal[i], viewer));
+    if (header[3]) PetscCall(PCBDDCViewGlobalIS(pc, pcbddc->user_primal_vertices_local, viewer));
+    if (header[4]) PetscCall(MatView(pcbddc->discretegradient, viewer));
+    if (header[9]) PetscCall(MatView(pcbddc->divudotp, viewer));
+    if (header[11]) {
+      IS is;
+
+      PetscCall(PetscObjectQuery((PetscObject)pcbddc->discretegradient, "_elements_corners", (PetscObject *)&is));
+      PetscCall(ISView(is, viewer));
+    }
+    if (header[12]) {
+      MatNullSpace nsp;
+
+      PetscCall(MatGetNullSpace(pcbddc->discretegradient, &nsp));
+      PetscCall(MatNullSpaceView(nsp, viewer));
+    }
+    if (header[13]) {
+      PetscReal *coords = pcbddc->mat_graph->coords;
+      PetscCount nc     = (PetscCount)pcbddc->mat_graph->cdim * pc->pmat->rmap->n;
+
+      if (pcbddc->mat_graph->cloc) {
+        Mat_IS      *matis = (Mat_IS *)pc->pmat->data;
+        PetscMPIInt  cdimi;
+        MPI_Datatype dimrealtype;
+
+        PetscCall(PetscMalloc1(nc, &coords));
+        PetscCall(PetscMPIIntCast(pcbddc->mat_graph->cdim, &cdimi));
+        PetscCallMPI(MPI_Type_contiguous(cdimi, MPIU_REAL, &dimrealtype));
+        PetscCallMPI(MPI_Type_commit(&dimrealtype));
+        PetscCall(PetscSFReduceBegin(matis->sf, dimrealtype, pcbddc->mat_graph->coords, coords, MPI_REPLACE));
+        PetscCall(PetscSFReduceEnd(matis->sf, dimrealtype, pcbddc->mat_graph->coords, coords, MPI_REPLACE));
+        PetscCallMPI(MPI_Type_free(&dimrealtype));
+      }
+      PetscCall(PetscViewerBinaryWriteAll(viewer, coords, nc, PETSC_DECIDE, PETSC_DECIDE, PETSC_REAL));
+      if (pcbddc->mat_graph->cloc) PetscCall(PetscFree(coords));
+    }
+  }
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCBDDCLoadCustomization_BDDC(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscCall(PCBDDCLoadOrSaveCustomization_Private(pc, PETSC_TRUE, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCBDDCLoadCustomization - Loads user-defined customization data for `PCBDDC` from a binary file
+
+  Collective
+
+  Input Parameters:
++ pc       - the preconditioning context
+. filename - path to the binary file, or `NULL` for `bddc_dump.dat`
+- version  - file format version, or `PETSC_DECIDE` to detect the version from the file
+
+  Level: advanced
+
+  Note:
+  This routine is normally called before `PCSetUp()`.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSaveCustomization()`, `PCSetUp()`
+@*/
+PetscErrorCode PCBDDCLoadCustomization(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (filename) PetscAssertPointer(filename, 2);
+  PetscValidLogicalCollectiveInt(pc, version, 3);
+  PetscTryMethod(pc, "PCBDDCLoadCustomization_C", (PC, const char[], PetscInt), (pc, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCBDDCSaveCustomization_BDDC(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscCall(PCBDDCLoadOrSaveCustomization_Private(pc, PETSC_FALSE, filename, version));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCBDDCSaveCustomization - Saves user-defined customization data for `PCBDDC` to a binary file
+
+  Collective
+
+  Input Parameters:
++ pc       - the preconditioning context
+. filename - path to the binary file, or `NULL` for `bddc_dump.dat`
+- version  - file format version, or `PETSC_DECIDE` to use the latest version
+
+  Level: advanced
+
+  Note:
+  Call `PCSetUp()` before this routine so that global customization data has been converted to the local representation stored in the file.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCLoadCustomization()`, `PCSetUp()`
+@*/
+PetscErrorCode PCBDDCSaveCustomization(PC pc, const char filename[], PetscInt version)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (filename) PetscAssertPointer(filename, 2);
+  PetscValidLogicalCollectiveInt(pc, version, 3);
+  PetscTryMethod(pc, "PCBDDCSaveCustomization_C", (PC, const char[], PetscInt), (pc, filename, version));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -696,20 +965,21 @@ static PetscErrorCode PCBDDCSetDirichletBoundaries_BDDC(PC pc, IS DirichletBound
 }
 
 /*@
-  PCBDDCSetDirichletBoundaries - Set the `IS` defining Dirichlet boundaries for the global problem.
+  PCBDDCSetDirichletBoundaries - Sets the Dirichlet boundary degrees of freedom in global numbering
 
   Collective
 
   Input Parameters:
 + pc                  - the preconditioning context
-- DirichletBoundaries - parallel `IS` defining the Dirichlet boundaries
+- DirichletBoundaries - index set of Dirichlet boundary degrees of freedom in global numbering
 
   Level: intermediate
 
   Note:
-  Provide the information if you used `MatZeroRows()` or `MatZeroRowsColumns()`. Any process can list any global node
+  Provide this information when Dirichlet conditions have been imposed with `MatZeroRows()` or `MatZeroRowsColumns()`.
+  Any process can list any global degree of freedom.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundariesLocal()`, `MatZeroRows()`, `MatZeroRowsColumns()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundariesLocal()`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundaries(PC pc, IS DirichletBoundaries)
 {
@@ -738,17 +1008,17 @@ static PetscErrorCode PCBDDCSetDirichletBoundariesLocal_BDDC(PC pc, IS Dirichlet
 }
 
 /*@
-  PCBDDCSetDirichletBoundariesLocal - Set the `IS` defining Dirichlet boundaries for the global problem in local ordering.
+  PCBDDCSetDirichletBoundariesLocal - Sets the Dirichlet boundary degrees of freedom in local numbering
 
   Collective
 
   Input Parameters:
 + pc                  - the preconditioning context
-- DirichletBoundaries - parallel `IS` defining the Dirichlet boundaries (in local ordering)
+- DirichletBoundaries - index set of Dirichlet boundary degrees of freedom in the numbering of the local `MATIS` matrix
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundaries()`, `MatZeroRows()`, `MatZeroRowsColumns()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetDirichletBoundariesLocal()`, `PCBDDCSetDirichletBoundaries()`, `MatZeroRows()`, `MatZeroRowsColumns()`
 @*/
 PetscErrorCode PCBDDCSetDirichletBoundariesLocal(PC pc, IS DirichletBoundaries)
 {
@@ -777,20 +1047,20 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc, IS NeumannBoundarie
 }
 
 /*@
-  PCBDDCSetNeumannBoundaries - Set the `IS` defining Neumann boundaries for the global problem.
+  PCBDDCSetNeumannBoundaries - Sets the Neumann boundary degrees of freedom in global numbering
 
   Collective
 
   Input Parameters:
 + pc                - the preconditioning context
-- NeumannBoundaries - parallel `IS` defining the Neumann boundaries
+- NeumannBoundaries - index set of Neumann boundary degrees of freedom in global numbering
 
   Level: intermediate
 
   Note:
-  Any process can list any global node
+  Any process can list any global degree of freedom.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundariesLocal()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal()`
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundaries(PC pc, IS NeumannBoundaries)
 {
@@ -819,17 +1089,17 @@ static PetscErrorCode PCBDDCSetNeumannBoundariesLocal_BDDC(PC pc, IS NeumannBoun
 }
 
 /*@
-  PCBDDCSetNeumannBoundariesLocal - Set the `IS` defining Neumann boundaries for the global problem in local ordering.
+  PCBDDCSetNeumannBoundariesLocal - Sets the Neumann boundary degrees of freedom in local numbering
 
   Collective
 
   Input Parameters:
 + pc                - the preconditioning context
-- NeumannBoundaries - parallel `IS` defining the subdomain part of Neumann boundaries (in local ordering)
+- NeumannBoundaries - index set of Neumann boundary degrees of freedom in the numbering of the local `MATIS` matrix
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetNeumannBoundariesLocal()`, `PCBDDCSetNeumannBoundaries()`
 @*/
 PetscErrorCode PCBDDCSetNeumannBoundariesLocal(PC pc, IS NeumannBoundaries)
 {
@@ -851,22 +1121,24 @@ static PetscErrorCode PCBDDCGetDirichletBoundaries_BDDC(PC pc, IS *DirichletBoun
 }
 
 /*@
-  PCBDDCGetDirichletBoundaries - Get parallel `IS` for Dirichlet boundaries
+  PCBDDCGetDirichletBoundaries - Gets the Dirichlet boundary degrees of freedom in global numbering
 
-  Collective
+  Not Collective
 
   Input Parameter:
 . pc - the preconditioning context
 
   Output Parameter:
-. DirichletBoundaries - index set defining the Dirichlet boundaries
+. DirichletBoundaries - index set of Dirichlet boundary degrees of freedom in global numbering, or `NULL` if not set
 
   Level: intermediate
 
-  Note:
-  The `IS` returned (if any) is the same passed in earlier by the user with `PCBDDCSetDirichletBoundaries()`
+  Notes:
+  The returned `IS`, if any, is the one supplied to `PCBDDCSetDirichletBoundaries()`.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundaries()`
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundaries()`, `PCBDDCGetDirichletBoundariesLocal()`
 @*/
 PetscErrorCode PCBDDCGetDirichletBoundaries(PC pc, IS *DirichletBoundaries)
 {
@@ -886,24 +1158,25 @@ static PetscErrorCode PCBDDCGetDirichletBoundariesLocal_BDDC(PC pc, IS *Dirichle
 }
 
 /*@
-  PCBDDCGetDirichletBoundariesLocal - Get parallel `IS` for Dirichlet boundaries (in local ordering)
+  PCBDDCGetDirichletBoundariesLocal - Gets the Dirichlet boundary degrees of freedom in local numbering
 
-  Collective
+  Not Collective
 
   Input Parameter:
 . pc - the preconditioning context
 
   Output Parameter:
-. DirichletBoundaries - index set defining the subdomain part of Dirichlet boundaries
+. DirichletBoundaries - index set of Dirichlet boundary degrees of freedom in the numbering of the local `MATIS` matrix, or `NULL` if unavailable
 
   Level: intermediate
 
-  Note:
-  The `IS` returned could be the same passed in earlier by the user (if provided with `PCBDDCSetDirichletBoundariesLocal()`)
-  or a global-to-local map of the global `IS` (if provided with `PCBDDCSetDirichletBoundaries()`).
-  In the latter case, the `IS` will be available only after `PCSetUp()`.
+  Notes:
+  The index set is supplied by `PCBDDCSetDirichletBoundariesLocal()` or obtained from `PCBDDCSetDirichletBoundaries()` during `PCSetUp()`.
+  Setup may update the local index set to make the boundary information consistent across shared degrees of freedom.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDirichletBoundariesLocal()`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
 @*/
 PetscErrorCode PCBDDCGetDirichletBoundariesLocal(PC pc, IS *DirichletBoundaries)
 {
@@ -923,7 +1196,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc, IS *NeumannBoundari
 }
 
 /*@
-  PCBDDCGetNeumannBoundaries - Get parallel `IS` for Neumann boundaries
+  PCBDDCGetNeumannBoundaries - Gets the Neumann boundary degrees of freedom in global numbering
 
   Not Collective
 
@@ -931,14 +1204,16 @@ static PetscErrorCode PCBDDCGetNeumannBoundaries_BDDC(PC pc, IS *NeumannBoundari
 . pc - the preconditioning context
 
   Output Parameter:
-. NeumannBoundaries - index set defining the Neumann boundaries
+. NeumannBoundaries - index set of Neumann boundary degrees of freedom in global numbering, or `NULL` if not set
 
   Level: intermediate
 
-  Note:
-  The `IS` returned (if any) is the same passed in earlier by the user with `PCBDDCSetNeumannBoundaries()`
+  Notes:
+  The returned `IS`, if any, is the one supplied to `PCBDDCSetNeumannBoundaries()`.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetDirichletBoundaries()`, `PCBDDCSetDirichletBoundaries()`
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCGetNeumannBoundariesLocal()`
 @*/
 PetscErrorCode PCBDDCGetNeumannBoundaries(PC pc, IS *NeumannBoundaries)
 {
@@ -958,7 +1233,7 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc, IS *NeumannBou
 }
 
 /*@
-  PCBDDCGetNeumannBoundariesLocal - Get parallel `IS` for Neumann boundaries (in local ordering)
+  PCBDDCGetNeumannBoundariesLocal - Gets the Neumann boundary degrees of freedom in local numbering
 
   Not Collective
 
@@ -966,14 +1241,15 @@ static PetscErrorCode PCBDDCGetNeumannBoundariesLocal_BDDC(PC pc, IS *NeumannBou
 . pc - the preconditioning context
 
   Output Parameter:
-. NeumannBoundaries - index set defining the subdomain part of Neumann boundaries
+. NeumannBoundaries - index set of Neumann boundary degrees of freedom in the numbering of the local `MATIS` matrix, or `NULL` if unavailable
 
   Level: intermediate
 
-  Note:
-  The `IS` returned could be the same passed in earlier by the user (if provided with `PCBDDCSetNeumannBoundariesLocal()`
-  or a global-to-local map of the global `IS` (if provided with `PCBDDCSetNeumannBoundaries()`).
-  In the latter case, the `IS` will be available after `PCSetUp()`.
+  Notes:
+  The index set is supplied by `PCBDDCSetNeumannBoundariesLocal()` or obtained from `PCBDDCSetNeumannBoundaries()` during `PCSetUp()`.
+  Setup may update the local index set to make the boundary information consistent across shared degrees of freedom.
+
+  The returned `IS` is owned by `pc`; the caller must not destroy it.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetNeumannBoundariesLocal()`, `PCBDDCGetNeumannBoundaries()`
 @*/
@@ -1033,21 +1309,29 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, c
 }
 
 /*@
-  PCBDDCSetLocalAdjacencyGraph - Set adjacency structure (CSR graph) of the local degrees of freedom.
+  PCBDDCSetLocalAdjacencyGraph - Sets the adjacency graph of the local degrees of freedom in CSR format
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ pc       - the preconditioning context.
-. nvtxs    - number of local vertices of the graph (i.e., the number of local dofs).
-. xadj     - CSR format row pointers for the connectivity of the dofs
-. adjncy   - CSR format column pointers for the connectivity of the dofs
-- copymode - supported modes are `PETSC_COPY_VALUES`, `PETSC_USE_POINTER` or `PETSC_OWN_POINTER`.
++ pc       - the preconditioning context
+. nvtxs    - number of local graph vertices, equal to the number of local degrees of freedom
+. xadj     - CSR row offsets, of length `nvtxs` + 1
+. adjncy   - CSR column indices, of length `xadj[nvtxs]`
+- copymode - `PETSC_COPY_VALUES`, `PETSC_USE_POINTER`, or `PETSC_OWN_POINTER`
 
   Level: intermediate
 
-  Note:
-  A dof is considered connected with all local dofs if xadj[dof+1]-xadj[dof] == 1 and adjncy[xadj[dof]] is negative.
+  Notes:
+  Graph vertices use the numbering of the local `MATIS` matrix. The CSR arrays use zero-based indexing.
+  A degree of freedom `i` is considered connected to all local degrees of freedom if `xadj[i+1] - xadj[i] == 1`
+  and `adjncy[xadj[i]]` is negative.
+
+  With `PETSC_COPY_VALUES`, the arrays are copied. With `PETSC_OWN_POINTER`, ownership of the arrays is transferred to `pc`;
+  the arrays must have been allocated with `PetscMalloc()`. With `PETSC_USE_POINTER`, the caller must keep the arrays valid
+  and unchanged until the graph is replaced or the preconditioner is reset or destroyed.
+
+  Passing `nvtxs` equal to 0 clears the user-defined graph.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PetscCopyMode`
 @*/
@@ -1104,19 +1388,19 @@ static PetscErrorCode PCBDDCSetDofsSplittingLocal_BDDC(PC pc, PetscInt n_is, IS 
 }
 
 /*@
-  PCBDDCSetDofsSplittingLocal - Set the `IS` defining fields of the local subdomain matrix
+  PCBDDCSetDofsSplittingLocal - Sets the fields of the local subdomain matrix
 
   Collective
 
   Input Parameters:
 + pc        - the preconditioning context
 . n_is      - number of index sets defining the fields, must be the same on all MPI processes
-- ISForDofs - array of `IS` describing the fields in local ordering
+- ISForDofs - array of `n_is` index sets describing the fields in the numbering of the local `MATIS` matrix
 
   Level: intermediate
 
   Note:
-  Not all nodes need to be listed, unlisted nodes will belong to the complement field.
+  Degrees of freedom not listed in any index set belong to the complement field.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`
 @*/
@@ -1168,19 +1452,19 @@ static PetscErrorCode PCBDDCSetDofsSplitting_BDDC(PC pc, PetscInt n_is, IS ISFor
 }
 
 /*@
-  PCBDDCSetDofsSplitting - Set the `IS` defining fields of the global matrix
+  PCBDDCSetDofsSplitting - Sets the fields of the global matrix
 
   Collective
 
   Input Parameters:
 + pc        - the preconditioning context
-. n_is      - number of index sets defining the fields
-- ISForDofs - array of `IS` describing the fields in global ordering
+. n_is      - number of index sets defining the fields, must be the same on all MPI processes
+- ISForDofs - array of `n_is` index sets describing the fields in global numbering
 
   Level: intermediate
 
   Note:
-  Any process can list any global node. Not all nodes need to be listed: unlisted nodes will belong to the complement field.
+  Any process can list any global degree of freedom. Degrees of freedom not listed in any index set belong to the complement field.
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplittingLocal()`
 @*/
@@ -1679,15 +1963,17 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   }
 
   { /* Dump customization */
+    PetscInt  save_version = PETSC_DECIDE;
     PetscBool flg;
     char      save[PETSC_MAX_PATH_LEN] = {'\0'};
 
     PetscCall(PetscOptionsGetString(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save", save, sizeof(save), &flg));
+    PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)pc)->prefix, "-pc_bddc_save_version", &save_version, NULL));
     if (flg) {
       size_t len;
 
       PetscCall(PetscStrlen(save, &len));
-      PetscCall(PCBDDCLoadOrViewCustomization(pc, PETSC_FALSE, len ? save : NULL));
+      PetscCall(PCBDDCSaveCustomization(pc, len ? save : NULL, save_version));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2049,6 +2335,8 @@ static PetscErrorCode PCDestroy_BDDC(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevel_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetUseExactDirichlet_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevels_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCLoadCustomization_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSaveCustomization_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundaries_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundariesLocal_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetNeumannBoundaries_C", NULL));
@@ -2186,16 +2474,16 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
 }
 
 /*@
-  PCBDDCMatFETIDPGetRHS - Compute the right-hand side for a FETI-DP linear system using the physical right-hand side
+  PCBDDCMatFETIDPGetRHS - Computes the right-hand side of a FETI-DP system from the physical right-hand side
 
   Collective
 
   Input Parameters:
-+ fetidp_mat   - the FETI-DP matrix object obtained by a call to `PCBDDCCreateFETIDPOperators()`
++ fetidp_mat   - the FETI-DP matrix obtained from `PCBDDCCreateFETIDPOperators()`
 - standard_rhs - the right-hand side of the original linear system
 
   Output Parameter:
-. fetidp_flux_rhs - the right-hand side for the FETI-DP linear system
+. fetidp_flux_rhs - vector in which to store the right-hand side of the FETI-DP system
 
   Level: developer
 
@@ -2371,16 +2659,16 @@ static PetscErrorCode PCDestroy_BDDCIPC(PC pc)
 }
 
 /*@
-  PCBDDCMatFETIDPGetSolution - Compute the physical solution using the solution of the FETI-DP linear system
+  PCBDDCMatFETIDPGetSolution - Computes the physical solution from the solution of a FETI-DP system
 
   Collective
 
   Input Parameters:
-+ fetidp_mat      - the FETI-DP matrix obtained by a call to `PCBDDCCreateFETIDPOperators()`
-- fetidp_flux_sol - the solution of the FETI-DP linear system`
++ fetidp_mat      - the FETI-DP matrix obtained from `PCBDDCCreateFETIDPOperators()`
+- fetidp_flux_sol - the solution of the FETI-DP linear system
 
   Output Parameter:
-. standard_sol - the solution defined on the physical domain
+. standard_sol - vector in which to store the solution on the physical domain
 
   Level: developer
 
@@ -2677,24 +2965,26 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
 }
 
 /*@
-  PCBDDCCreateFETIDPOperators - Create FETI-DP operators
+  PCBDDCCreateFETIDPOperators - Creates the FETI-DP matrix and its Dirichlet preconditioner
 
   Collective
 
   Input Parameters:
-+ pc              - the `PCBDDC` preconditioning context (setup should have been called before)
-. fully_redundant - true for a fully redundant set of Lagrange multipliers
-- prefix          - optional options database prefix for the objects to be created (can be `NULL`)
++ pc              - the `PCBDDC` preconditioning context, after `PCSetUp()` has been called
+. fully_redundant - `PETSC_TRUE` for a fully redundant set of Lagrange multipliers
+- prefix          - options database prefix for the objects to be created, or `NULL`
 
   Output Parameters:
-+ fetidp_mat - shell FETI-DP matrix object
-- fetidp_pc  - shell Dirichlet preconditioner for FETI-DP matrix
++ fetidp_mat - the FETI-DP shell matrix
+- fetidp_pc  - the shell Dirichlet preconditioner for the FETI-DP matrix
 
   Level: developer
 
   Notes:
   Most users should employ the `KSP` interface for linear solvers and create a solver of type `KSPFETIDP`.
-  Currently the only operations provided for the FETI-DP matrix are `MatMult()` and `MatMultTranspose()`
+  The FETI-DP matrix supports `MatMult()` and `MatMultTranspose()`.
+
+  The caller must destroy the returned objects with `MatDestroy()` and `PCDestroy()`.
 
 .seealso: [](ch_ksp), `KSPFETIDP`, `PCBDDC`, `PCBDDCMatFETIDPGetRHS()`, `PCBDDCMatFETIDPGetSolution()`
 @*/
@@ -2708,77 +2998,121 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 }
 
 /*MC
-   PCBDDC - Balancing Domain Decomposition by Constraints preconditioners, {cite}`dohrmann2007approximate`, {cite}`klawonn2006dual`, {cite}`mandel2008multispace`
+  PCBDDC - Balancing Domain Decomposition by Constraints preconditioner
 
-   Requires `MATIS` matrices (Pmat) with local matrices (inside the `MATIS`) of type `MATSEQAIJ`, `MATSEQBAIJ` or `MATSEQSBAIJ`
+  Options Database Keys:
++ -pc_bddc_use_vertices (true|false)                - include vertices in the primal space
+. -pc_bddc_use_edges (true|false)                   - include edge constraints in the primal space
+. -pc_bddc_use_faces (true|false)                   - include face constraints in the primal space
+. -pc_bddc_vertex_size size                         - classify connected components of at most this size as primal vertices
+. -pc_bddc_corner_selection (true|false)            - select corners using subdomain faces and coordinates
+. -pc_bddc_use_local_mat_graph (true|false)         - use the local matrix adjacency graph for interface analysis
+. -pc_bddc_local_mat_graph_square count             - number of times to square the local matrix graph before interface analysis
+. -pc_bddc_graph_maxcount count                     - classify components shared by more than this many neighboring subdomains as primal vertices
+. -pc_bddc_detect_disconnected (true|false)         - detect disconnected local subdomains
+. -pc_bddc_detect_disconnected_filter (true|false)  - filter small local matrix entries when detecting disconnected subdomains
+. -pc_bddc_monolithic (true|false)                  - discard information about splitting degrees of freedom into fields
+. -pc_bddc_use_nnsp (true|false)                    - use the matrix near nullspace to construct constraints
+. -pc_bddc_use_nnsp_true (true|false)               - use the supplied near-nullspace vectors directly, without orthonormalization
+. -pc_bddc_constraint_near_null_space_tol tol       - discard near-nullspace vectors whose restriction to a connected component has norm at most tol
+. -pc_bddc_constraint_singular_tol tol              - relative tolerance for retaining independent constraint modes
+. -pc_bddc_symmetric (true|false)                   - compute primal basis functions assuming symmetry; use false for nonsymmetric problems
+. -pc_bddc_use_change_of_basis (true|false)         - construct a change of basis on edges
+. -pc_bddc_use_change_on_faces (true|false)         - construct the requested change of basis on faces
+. -pc_bddc_interface_ext_type (dirichlet|lump)      - select how interface corrections are extended to subdomain interiors
+. -pc_bddc_dirichlet_approximate (true|false)       - enable nullspace corrections for approximate Dirichlet solvers
+. -pc_bddc_dirichlet_approximate_scale (true|false) - scale the approximate Dirichlet solver when applying nullspace corrections
+. -pc_bddc_neumann_approximate (true|false)         - enable nullspace corrections for approximate Neumann solvers
+. -pc_bddc_neumann_approximate_scale (true|false)   - scale the approximate Neumann solver when applying nullspace corrections
+. -pc_bddc_switch_static (true|false)               - switch from the default $M_2$ operator to $M_3$ in {cite}`dohrmann2007approximate`
+. -pc_bddc_levels levels                            - maximum number of additional levels (default 0)
+. -pc_bddc_coarsening_ratio ratio                   - target number of process subdomains or local elements per aggregate (default 8)
+. -pc_bddc_coarse_eqs_per_proc neq                  - target number of equations per process at the coarsest level; a negative value uses one process
+. -pc_bddc_coarse_eqs_limit neq                     - stop adding coarse levels when the coarse problem has at most this many equations
+. -pc_bddc_coarse_adj nprocs                        - number of processes used to hold the coarse adjacency graph for partitioning
+. -pc_bddc_use_coarse_estimates (true|false)        - use estimated eigenvalues to configure an iterative coarse solver
+. -pc_bddc_use_deluxe_scaling (true|false)          - use deluxe scaling
+. -pc_bddc_deluxe_zerorows (true|false)             - zero rows and columns of deluxe operators associated with primal degrees of freedom
+. -pc_bddc_deluxe_singlemat (true|false)            - combine the deluxe scaling operations into one matrix per interface component
+. -pc_bddc_schur_rebuild (true|false)               - rebuild the interface graph without adjacency information for computing Schur complement principal minors
+. -pc_bddc_schur_layers layers                      - number of layers used for economic deluxe scaling; -1 uses all degrees of freedom
+. -pc_bddc_schur_use_useradj (true|false)           - use the graph supplied with `PCBDDCSetLocalAdjacencyGraph()` to select Schur complement layers
+. -pc_bddc_schur_exact (true|false)                 - use the full Schur complement, including components of size one, for adaptive constraint selection
+. -pc_bddc_adaptive_threshold thresholds            - one or two comma-separated thresholds for adaptive constraint selection; one value sets both thresholds
+. -pc_bddc_adaptive_nmin count                      - minimum number of adaptive constraints per connected component
+. -pc_bddc_adaptive_nmax count                      - maximum number of adaptive constraints per connected component
+. -pc_bddc_adaptive_userdefined (true|false)        - retain constraints from `MatSetNearNullSpace()` in addition to adaptive constraints
+. -pc_bddc_benign_trick (true|false)                - use the benign subspace approach for saddle-point problems with discontinuous spaces
+. -pc_bddc_nonetflux (true|false)                   - compute quadrature weights for no-net-flux constraints automatically
+. -pc_bddc_nedelec_field_primal (true|false)        - make Nedelec degrees of freedom shared by more than two subdomains primal
+. -pc_bddc_nedelec_order order                      - override the Nedelec order for testing; 0 selects variable order
+. -pc_bddc_nedelec_print (true|false)               - print Nedelec setup diagnostics
+. -pc_bddc_load filename                            - load BDDC customization from a binary file for debugging
+. -pc_bddc_load_version version                     - version of the customization file to load
+. -pc_bddc_save filename                            - save BDDC customization to a binary file after setup for debugging
+. -pc_bddc_save_version version                     - version of the customization file to write
+. -pc_bddc_check_level level                        - verbosity level of debugging output
 
-   Works with unsymmetric and indefinite problems.
+  Level: intermediate
 
-   Unlike 'conventional' interface preconditioners, `PCBDDC` iterates over all degrees of freedom, not just those on the interface. This allows the use
-   of approximate solvers on the subdomains.
+  Notes:
+  `PCBDDC` requires `MATIS` matrices and supports nonsymmetric and indefinite problems.
+  The implementation and its customization are described in {cite}`zampini2016pcbddc`; see also [](sec_bddc).
+  See {cite}`dohrmann2007approximate`, {cite}`klawonn2006dual`, and {cite}`mandel2008multispace` for the underlying methods.
 
-   Approximate local solvers are automatically adapted (see {cite}`dohrmann2007approximate`,) if the user has attached a nullspace object to the subdomain matrices, and informed
-   `PCBDDC` of using approximate solvers (via the command line).
+  `PCBDDC` acts on all degrees of freedom, including subdomain interiors. This allows approximate subdomain solvers.
+  Approximate local solvers are automatically adapted as described in {cite}`dohrmann2007approximate` when a nullspace object
+  is attached to the subdomain matrices and approximate solvers are selected through the options database.
 
-   Boundary nodes are split into vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes.
-   The latter can be customized by using `PCBDDCSetLocalAdjacencyGraph()`
+  Interface nodes are classified as vertices, edges, or faces using the local-to-global mapping of degrees of freedom
+  and the local connectivity graph. The graph can be customized with `PCBDDCSetLocalAdjacencyGraph()`.
+  Additional information about degrees of freedom can be supplied with `PCBDDCSetDofsSplitting()`, `PCBDDCSetDirichletBoundaries()`,
+  `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, and their local counterparts.
 
-   Additional information on dofs can be provided by using `PCBDDCSetDofsSplitting()`, `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, and
-   `PCBDDCSetPrimalVerticesIS()` and their local counterparts.
+  Support for $H(\mathrm{div})$ and $H(\mathrm{curl})$ problems is provided through `PCBDDCSetDivergenceMat()` and `PCBDDCSetDiscreteGradient()`.
 
-   Constraints can be customized by attaching a `MatNullSpace` object to the `MATIS` matrix via `MatSetNearNullSpace()`. Non-singular modes are retained via SVD.
+  Constraints can be customized by attaching a `MatNullSpace` object to the `MATIS` matrix with `MatSetNearNullSpace()`.
+  Linearly independent modes are retained using a singular value decomposition.
 
-   Change of basis is performed similarly to {cite}`klawonn2006dual` when requested. When more than one constraint is present on a single connected component
-   (i.e. an edge or a face), a robust method based on local QR factorizations is used.
-   User defined change of basis can be passed to `PCBDDC` with `PCBDDCSetChangeOfBasisMat()`
+  When requested, a change of basis is performed as in {cite}`klawonn2006dual`. Local QR factorizations are used when more than
+  one constraint is present on a connected component, such as an edge or a face. A user-defined change of basis can be supplied
+  with `PCBDDCSetChangeOfBasisMat()`.
 
-   The PETSc implementation also supports multilevel `PCBDDC` {cite}`mandel2008multispace`. Coarse grids are partitioned using a `MatPartitioning` object.
+  Multilevel `PCBDDC` is supported as described in {cite}`mandel2008multispace`. Process subdomains are partitioned using a `MatPartitioning` object.
+  When a local `MATIS` matrix stores multiple elements, their local coarse contributions are first aggregated using a `PetscPartitioner` object.
+  In this case, the coarsening ratio is the target number of local elements per aggregate.
 
-   Adaptive selection of primal constraints is supported for SPD systems with high-contrast in the coefficients if MUMPS or MKL_PARDISO are present.
+  Adaptive selection of primal constraints is supported for symmetric positive definite systems with high contrast in the coefficients
+  when MUMPS or MKL_PARDISO is available. See {cite}`ohwidlundzampinidohrmann2017` for adaptive deluxe methods for Raviart-Thomas fields.
+  The benign subspace approach for saddle-point problems with discontinuous spaces is described in {cite}`zampinitu2017`.
 
-   Options Database Keys:
-+    -pc_bddc_use_vertices (true|false)        - use or not vertices in primal space
-.    -pc_bddc_use_edges (true|false)           - use or not edges in primal space
-.    -pc_bddc_use_faces (true|false)           - use or not faces in primal space
-.    -pc_bddc_symmetric (true|false)           - symmetric computation of primal basis functions. Specify false for unsymmetric problems
-.    -pc_bddc_use_change_of_basis (true|false) - use change of basis approach (on edges only)
-.    -pc_bddc_use_change_on_faces (true|false) - use change of basis approach on faces if change of basis has been requested
-.    -pc_bddc_switch_static (true|false)       - switches from M_2 (default) to M_3 operator (see reference article [1])
-.    -pc_bddc_levels 0                         - maximum number of levels for multilevel
-.    -pc_bddc_coarsening_ratio 8               - number of subdomains which will be aggregated together at the coarser level (e.g. H/h ratio at the coarser level, significative only in the multilevel case)
-.    -pc_bddc_coarse_redistribute 0            - size of a subset of processors where the coarse problem will be remapped (the value is ignored if not at the coarsest level)
-.    -pc_bddc_use_deluxe_scaling (true|false)  - use deluxe scaling
-.    -pc_bddc_schur_layers \-1                 - select the economic version of deluxe scaling by specifying the number of layers (-1 corresponds to the original deluxe scaling)
-.    -pc_bddc_adaptive_threshold 0.0           - when a value different than zero is specified, adaptive selection of constraints is performed on edges and faces (requires deluxe scaling and MUMPS or MKL_PARDISO installed)
--    -pc_bddc_check_level 0                    - set verbosity level of debugging output
-
-   Options for Dirichlet, Neumann or coarse solver can be set using the appropriate options prefix
+  Options for the Dirichlet, Neumann, coarse solver, and aggregation objects use the following prefixes, preceded by any user prefix:
 .vb
-      -pc_bddc_dirichlet_
-      -pc_bddc_neumann_
-      -pc_bddc_coarse_
+    -pc_bddc_dirichlet_
+    -pc_bddc_neumann_
+    -pc_bddc_coarse_
+    -pc_bddc_aggregator_n_
 .ve
-   e.g. -pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg. `PCBDDC` uses by default `KSPPREONLY` and `PCLU`.
+  For example, `-pc_bddc_dirichlet_ksp_type richardson -pc_bddc_dirichlet_pc_type gamg` selects an approximate Dirichlet solver.
+  By default, local solvers use `KSPPREONLY` with a direct factorization.
+  At level `n`, the aggregator prefix is `pc_bddc_aggregator_n_`. Numeric-prefix fallback allows
+  `-pc_bddc_aggregator_mat_partitioning_type type` and `-pc_bddc_aggregator_petscpartitioner_type type` to configure all levels.
 
-   When using a multilevel approach, solvers' options at the N-th level (N > 1) can be specified using the options prefix
+  For BDDC level `N` > 0, the solver prefixes are:
 .vb
-      -pc_bddc_dirichlet_lN_
-      -pc_bddc_neumann_lN_
-      -pc_bddc_coarse_lN_
+    -pc_bddc_dirichlet_lN_
+    -pc_bddc_neumann_lN_
+    -pc_bddc_coarse_lN_
 .ve
-   Note that level number ranges from the finest (0) to the coarsest (N).
-   In order to specify options for the `PCBDDC` operators at the coarser levels (and not for the solvers), prepend -pc_bddc_coarse_ or -pc_bddc_coarse_l
-   to the option, e.g.
+  Level 0 is the finest level. A coarse-level `PCBDDC` inherits the corresponding coarse-solver prefix. For example,
 .vb
-     -pc_bddc_coarse_pc_bddc_adaptive_threshold 5 -pc_bddc_coarse_l1_pc_bddc_redistribute 3
+    -pc_bddc_coarse_pc_bddc_adaptive_threshold 5
 .ve
-   will use a threshold of 5 for constraints' selection at the first coarse level and will redistribute the coarse problem of the first coarse level on 3 processors
-
-   Level: intermediate
+  sets the adaptive constraint threshold to 5 for the first coarse-level `PCBDDC`.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `KSPFETIDP`, `PCLU`, `PCGAMG`, `PCBDDCSetLocalAdjacencyGraph()`, `PCBDDCSetDofsSplitting()`,
           `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, `PCBDDCSetPrimalVerticesIS()`, `MatNullSpace`, `MatSetNearNullSpace()`,
-          `PCBDDCSetChangeOfBasisMat()`, `PCBDDCCreateFETIDPOperators()`, `PCNN`
+          `PCBDDCSetChangeOfBasisMat()`, `PCBDDCSetDivergenceMat()`, `PCBDDCSetDiscreteGradient()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
@@ -2840,6 +3174,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevel_C", PCBDDCSetLevel_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetUseExactDirichlet_C", PCBDDCSetUseExactDirichlet_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetLevels_C", PCBDDCSetLevels_BDDC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCLoadCustomization_C", PCBDDCLoadCustomization_BDDC));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSaveCustomization_C", PCBDDCSaveCustomization_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundaries_C", PCBDDCSetDirichletBoundaries_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDirichletBoundariesLocal_C", PCBDDCSetDirichletBoundariesLocal_BDDC));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetNeumannBoundaries_C", PCBDDCSetNeumannBoundaries_BDDC));
@@ -2860,10 +3196,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
 }
 
 /*@
-  PCBDDCInitializePackage - This function initializes everything in the `PCBDDC` package. It is called
-  from `PCInitializePackage()`.
+  PCBDDCInitializePackage - Initializes the `PCBDDC` package
+
+  Not Collective
 
   Level: developer
+
+  Note:
+  This routine is called by `PCInitializePackage()`.
 
 .seealso: [](ch_ksp), `PetscInitialize()`, `PCBDDCFinalizePackage()`
 @*/
@@ -2927,10 +3267,14 @@ PetscErrorCode PCBDDCInitializePackage(void)
 }
 
 /*@
-  PCBDDCFinalizePackage - This function frees everything from the `PCBDDC` package. It is
-  called from `PetscFinalize()` automatically.
+  PCBDDCFinalizePackage - Finalizes the `PCBDDC` package
+
+  Not Collective
 
   Level: developer
+
+  Note:
+  This routine is called automatically by `PetscFinalize()`.
 
 .seealso: [](ch_ksp), `PetscFinalize()`, `PCBDDCInitializePackage()`
 @*/

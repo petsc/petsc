@@ -1,3 +1,43 @@
+MatPartitioning Object: (pc_bddc_aggregator_0_) 8 MPI processes
+  type: average
+IS Object: 8 MPI processes
+  type: general
+[0] Number of indices in set 1
+[0] 0 0
+[1] Number of indices in set 1
+[1] 0 0
+[2] Number of indices in set 1
+[2] 0 1
+[3] Number of indices in set 1
+[3] 0 1
+[4] Number of indices in set 1
+[4] 0 2
+[5] Number of indices in set 1
+[5] 0 2
+[6] Number of indices in set 1
+[6] 0 3
+[7] Number of indices in set 1
+[7] 0 3
+MatPartitioning Object: (pc_bddc_aggregator_1_) 4 MPI processes
+  type: average
+IS Object: 4 MPI processes
+  type: general
+[0] Number of indices in set 1
+[0] 0 0
+[1] Number of indices in set 1
+[1] 0 0
+[2] Number of indices in set 1
+[2] 0 1
+[3] Number of indices in set 1
+[3] 0 1
+MatPartitioning Object: (pc_bddc_aggregator_2_) 2 MPI processes
+  type: average
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 1
+[0] 0 0
+[1] Number of indices in set 1
+[1] 0 1
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero

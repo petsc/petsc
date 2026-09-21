@@ -7,9 +7,6 @@
 PETSC_INTERN PetscErrorCode PCBDDCAnalyzeInterface(PC);
 PETSC_INTERN PetscErrorCode PCBDDCConstraintsSetUp(PC);
 
-/* load or dump customization */
-PETSC_EXTERN PetscErrorCode PCBDDCLoadOrViewCustomization(PC, PetscBool, const char *);
-
 /* reset functions */
 PETSC_EXTERN PetscErrorCode PCBDDCResetTopography(PC);
 PETSC_EXTERN PetscErrorCode PCBDDCResetSolvers(PC);
@@ -28,6 +25,8 @@ PETSC_EXTERN PetscErrorCode    PCBDDCGraphComputeConnectedComponentsLocal(PCBDDC
 PETSC_EXTERN PetscErrorCode    PCBDDCGraphASCIIView(PCBDDCGraph, PetscInt, PetscViewer);
 PETSC_EXTERN PetscErrorCode    PCBDDCGraphGetCandidatesIS(PCBDDCGraph, PetscInt *, IS *[], PetscInt *, IS *[], IS *);
 PETSC_EXTERN PetscErrorCode    PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph, PetscInt *, IS *[], PetscInt *, IS *[], IS *);
+PETSC_EXTERN PetscErrorCode    PCBDDCGraphCreateLocalSubdomainAdjacency(PCBDDCGraph, PetscInt *, PetscInt **, PetscInt **);
+PETSC_INTERN PetscErrorCode    PCBDDCGraphPartitionLocalSubdomains(PCBDDCGraph, const char *, PetscInt *, PetscInt, PetscInt *, PetscInt *, IS *);
 PETSC_EXTERN PetscErrorCode    PCBDDCGraphGetDirichletDofs(PCBDDCGraph, IS *);
 PETSC_EXTERN PetscErrorCode    PCBDDCGraphGetDirichletDofsB(PCBDDCGraph, IS *);
 PETSC_EXTERN PetscCtxDestroyFn PCBDDCDestroyGraphCandidatesIS;
@@ -49,6 +48,7 @@ PETSC_INTERN PetscErrorCode PCBDDCSetUpLocalScatters(PC);
 PETSC_INTERN PetscErrorCode PCBDDCSetUpLocalSolvers(PC, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCBDDCSetUpCorrection(PC, Mat *);
 PETSC_INTERN PetscErrorCode PCBDDCSetUpCoarseSolver(PC, Mat);
+PETSC_INTERN PetscErrorCode PCBDDCAggregateLocalCoarseMat(PC, Mat, IS, PetscInt, MatReuse, Vec *, Mat *);
 PETSC_INTERN PetscErrorCode PCBDDCComputePrimalNumbering(PC, PetscInt *, PetscInt **);
 PETSC_INTERN PetscErrorCode PCBDDCScatterCoarseDataBegin(PC, InsertMode, ScatterMode);
 PETSC_INTERN PetscErrorCode PCBDDCScatterCoarseDataEnd(PC, InsertMode, ScatterMode);
@@ -67,6 +67,7 @@ PETSC_INTERN PetscErrorCode PCBDDCNullSpaceCreate(MPI_Comm, PetscBool, PetscInt,
 PETSC_INTERN PetscErrorCode PCBDDCNedelecSupport(PC);
 PETSC_INTERN PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC, IS);
 PETSC_INTERN PetscErrorCode PCBDDCComputeFakeChange(PC, PetscBool, PCBDDCGraph, PCBDDCSubSchurs, Mat *, IS *, IS *, PetscBool *);
+PETSC_INTERN PetscErrorCode PCBDDCViewGlobalIS(PC, IS, PetscViewer);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrixUnsorted(Mat, IS, IS, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJCompress(Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatNullSpacePropagateAny_Private(Mat, IS, Mat);

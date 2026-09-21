@@ -2,8 +2,103 @@
 #include <petsc/private/pcbddcprivateimpl.h>
 #include <petsc/private/pcbddcstructsimpl.h>
 #include <petsc/private/hashmapi.h>
+#include <petsc/private/hashmapijk.h>
+#include <petsc/private/hashsetij.h>
 #include <petsc/private/pcbddcgraphhashmap.h>
+#include <petscpartitioner.h>
 #include <petscsf.h>
+
+typedef enum {
+  PCBDDCGRAPH_COMPONENT_VERTEX,
+  PCBDDCGRAPH_COMPONENT_EDGE,
+  PCBDDCGRAPH_COMPONENT_FACE
+} PCBDDCGraphComponentType;
+
+typedef struct {
+  PetscInt repdof;
+  PetscInt ndofs;
+  PetscInt subset;
+} PCBDDCGraphLocalEntity;
+
+/* Unlike PCBDDCGraphNodeHash(), Dirichlet reconstruction must retain the local incidence of MPI-shared dofs. */
+static inline PetscHash_t PCBDDCGraphDirichletNodeHash_Private(const PCBDDCGraphNode *node)
+{
+  PetscHash_t hash;
+
+  hash = PetscHashCombine(PetscHashInt(node->count), PetscHashInt(node->which_dof));
+  for (PetscInt i = 0; i < node->count; i++) hash = PetscHashCombine(hash, PetscHashInt(node->neighbours_set[i]));
+  hash = PetscHashCombine(hash, PetscHashInt(node->local_groups_count));
+  for (PetscInt i = 0; i < node->local_groups_count; i++) hash = PetscHashCombine(hash, PetscHashInt(node->local_groups[i]));
+  return hash;
+}
+
+static inline int PCBDDCGraphDirichletNodeEqual_Private(const PCBDDCGraphNode *a, const PCBDDCGraphNode *b)
+{
+  if (a->count != b->count || a->which_dof != b->which_dof || a->local_groups_count != b->local_groups_count) return 0;
+  for (PetscInt i = 0; i < a->count; i++)
+    if (a->neighbours_set[i] != b->neighbours_set[i]) return 0;
+  for (PetscInt i = 0; i < a->local_groups_count; i++)
+    if (a->local_groups[i] != b->local_groups[i]) return 0;
+  return 1;
+}
+
+PETSC_HASH_MAP(HMapPCBDDCDirichletNode, PCBDDCGraphNode *, PetscInt, PCBDDCGraphDirichletNodeHash_Private, PCBDDCGraphDirichletNodeEqual_Private, -1)
+
+static PCBDDCGraphComponentType PCBDDCGraphClassifyEntity_Private(PCBDDCGraph graph, const PCBDDCGraphNode *node, PetscInt ndofs)
+{
+  if (ndofs <= graph->custom_minimal_size || node->count > graph->maxcount) return PCBDDCGRAPH_COMPONENT_VERTEX;
+  if (!graph->twodim && node->count == 2 && node->special_dof != PCBDDCGRAPH_NEUMANN_MARK) return PCBDDCGRAPH_COMPONENT_FACE;
+  return PCBDDCGRAPH_COMPONENT_EDGE;
+}
+
+static PCBDDCGraphComponentType PCBDDCGraphGetComponentType_Private(PCBDDCGraph graph, PetscInt cc)
+{
+  const PetscInt repdof = graph->queue[graph->cptr[cc]];
+  const PetscInt ccsize = graph->cptr[cc + 1] - graph->cptr[cc];
+
+  return PCBDDCGraphClassifyEntity_Private(graph, &graph->nodes[repdof], ccsize);
+}
+
+static PetscBool PCBDDCGraphNodeIsCanonical_Private(const PCBDDCGraphNode *node)
+{
+  return (PetscBool)(node->local_groups_count > 1 && node->local_sub == node->local_groups[0]);
+}
+
+static PetscBool PCBDDCGraphIncidenceStrictSubset_Private(PetscInt na, const PetscInt a[], PetscInt nb, const PetscInt b[])
+{
+  PetscInt ia = 0, ib = 0;
+
+  if (na >= nb) return PETSC_FALSE;
+  while (ia < na && ib < nb) {
+    if (a[ia] == b[ib]) {
+      ia++;
+      ib++;
+    } else if (a[ia] > b[ib]) ib++;
+    else return PETSC_FALSE;
+  }
+  return (PetscBool)(ia == na);
+}
+
+static PetscErrorCode PCBDDCGraphAddAdjacencyEvidence_Private(PetscHMapIJK evidence, PetscInt threshold, PetscHSetIJ adjacency)
+{
+  PetscHashIter   iter;
+  PetscHashIJKKey key;
+  PetscInt        count;
+
+  PetscFunctionBegin;
+  PetscHashIterBegin(evidence, iter);
+  while (!PetscHashIterAtEnd(evidence, iter)) {
+    PetscHashIterGetKey(evidence, iter, key);
+    PetscHashIterGetVal(evidence, iter, count);
+    if (count >= threshold) {
+      PetscHashIJKey pair = {key.i, key.j};
+
+      PetscCall(PetscHSetIJAdd(adjacency, pair));
+    }
+    PetscHashIterNext(evidence, iter);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 PetscErrorCode PCBDDCDestroyGraphCandidatesIS(PetscCtxRt ctx)
 {
@@ -213,15 +308,14 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   nec = 0;
   nvc = 0;
   for (i = 0; i < graph->ncc; i++) {
-    PetscInt repdof = graph->queue[graph->cptr[i]];
-    if (graph->cptr[i + 1] - graph->cptr[i] > graph->custom_minimal_size && graph->nodes[repdof].count <= graph->maxcount) {
-      if (!graph->twodim && graph->nodes[repdof].count == 2 && graph->nodes[repdof].special_dof != PCBDDCGRAPH_NEUMANN_MARK) {
-        nfc++;
-        mark[i] = 2;
-      } else {
-        nec++;
-        mark[i] = 1;
-      }
+    const PCBDDCGraphComponentType type = PCBDDCGraphGetComponentType_Private(graph, i);
+
+    if (type == PCBDDCGRAPH_COMPONENT_FACE) {
+      nfc++;
+      mark[i] = 2;
+    } else if (type == PCBDDCGRAPH_COMPONENT_EDGE) {
+      nec++;
+      mark[i] = 1;
     } else {
       nvc += graph->cptr[i + 1] - graph->cptr[i];
     }
@@ -277,6 +371,279 @@ PetscErrorCode PCBDDCGraphGetCandidatesIS(PCBDDCGraph graph, PetscInt *n_faces, 
   if (n_edges) *n_edges = nec;
   if (EdgesIS) *EdgesIS = ISForEdges;
   if (VerticesIS) *VerticesIS = ISForVertices;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PCBDDCGraphCreateLocalSubdomainAdjacency(PCBDDCGraph graph, PetscInt *n_subs, PetscInt **xadj, PetscInt **adjncy)
+{
+  PetscHMapPCBDDCDirichletNode dirichlet_nodes;
+  PetscHMapIJK                 edge_evidence, vertex_evidence, entity_pair_seen;
+  PetscHSetIJ                  adjacency;
+  PCBDDCGraphLocalEntity      *entities;
+  PetscInt                    *cursor, *sub_entity_ptr, *sub_entities, *sub_entity_cursor;
+  PetscInt                     n_local_subs = graph->n_local_subs, n_entities, n_dirichlet_entities = 0;
+  PetscBool                    two_dimensional = graph->twodim;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(n_subs, 2);
+  PetscAssertPointer(xadj, 3);
+  PetscAssertPointer(adjncy, 4);
+  PetscCheck(graph->setupcalled, PetscObjectComm((PetscObject)graph->l2gmap), PETSC_ERR_ORDER, "PCBDDCGraphSetUp() should be called first");
+  PetscCheck(graph->multi_element, PetscObjectComm((PetscObject)graph->l2gmap), PETSC_ERR_ARG_WRONGSTATE, "Local subdomain adjacency is only available for multi-element graphs");
+  PetscCheck(!graph->nvtxs || graph->local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing local subdomain information");
+  *n_subs = n_local_subs;
+
+  /*
+    The dof connected components provide topological evidence for adjacency of local subdomains. Each component carries a sorted incidence set in
+    node->local_groups. Incidence to exactly two subdomains proves adjacency directly. For larger incidence sets, one field must provide enough
+    distinct lower-dimensional entities: one edge or two vertices in 2D, and three edges or vertices in 3D. The original subset number is used as
+    the topological-entity identity, so multiple dofs or components for the same entity are not counted twice. Dirichlet dofs are absent from the
+    component queues; their equivalence classes are reconstructed first and then treated by the same rules.
+  */
+  PetscCall(PetscHMapIJKCreate(&edge_evidence));
+  PetscCall(PetscHMapIJKCreate(&vertex_evidence));
+  PetscCall(PetscHMapIJKCreate(&entity_pair_seen));
+  PetscCall(PetscHSetIJCreate(&adjacency));
+  PetscCall(PetscMalloc1(graph->ncc + graph->nvtxs, &entities));
+  for (PetscInt cc = 0; cc < graph->ncc; cc++) {
+    const PetscInt repdof = graph->queue[graph->cptr[cc]];
+
+    entities[cc].repdof = repdof;
+    entities[cc].ndofs  = graph->cptr[cc + 1] - graph->cptr[cc];
+    entities[cc].subset = graph->nodes[repdof].subset;
+  }
+  PetscCall(PetscHMapPCBDDCDirichletNodeCreate(&dirichlet_nodes));
+  for (PetscInt i = 0; i < graph->nvtxs; i++) {
+    PCBDDCGraphNode *node = &graph->nodes[i];
+    PetscHashIter    iter;
+    PetscInt         entity;
+    PetscBool        missing;
+
+    if (node->special_dof != PCBDDCGRAPH_DIRICHLET_MARK || !PCBDDCGraphNodeIsCanonical_Private(node)) continue;
+    PetscCall(PetscHMapPCBDDCDirichletNodePut(dirichlet_nodes, node, &iter, &missing));
+    if (missing) {
+      entity = graph->ncc + n_dirichlet_entities++;
+      PetscCall(PetscHMapPCBDDCDirichletNodeIterSet(dirichlet_nodes, iter, entity));
+      entities[entity].repdof = i;
+      entities[entity].ndofs  = 0;
+      entities[entity].subset = graph->n_subsets + n_dirichlet_entities;
+    } else PetscCall(PetscHMapPCBDDCDirichletNodeIterGet(dirichlet_nodes, iter, &entity));
+    entities[entity].ndofs++;
+  }
+  PetscCall(PetscHMapPCBDDCDirichletNodeDestroy(&dirichlet_nodes));
+  n_entities = graph->ncc + n_dirichlet_entities;
+
+  /* Invert entity incidence for the containment and Dirichlet corrections below. */
+  PetscCall(PetscCalloc1(n_local_subs + 1, &sub_entity_ptr));
+  for (PetscInt entity = 0; entity < n_entities; entity++) {
+    const PetscInt         repdof = entities[entity].repdof;
+    const PCBDDCGraphNode *node   = &graph->nodes[repdof];
+
+    if (!PCBDDCGraphNodeIsCanonical_Private(node)) continue;
+    for (PetscInt i = 0; i < node->local_groups_count; i++) {
+      const PetscInt group = node->local_groups[i];
+
+      PetscCheck(group >= 0 && group < n_local_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid local subdomain index %" PetscInt_FMT " not in [0,%" PetscInt_FMT ")", group, n_local_subs);
+      sub_entity_ptr[group + 1]++;
+    }
+  }
+  for (PetscInt i = 0; i < n_local_subs; i++) sub_entity_ptr[i + 1] += sub_entity_ptr[i];
+  PetscCall(PetscMalloc2(sub_entity_ptr[n_local_subs], &sub_entities, n_local_subs, &sub_entity_cursor));
+  PetscCall(PetscArraycpy(sub_entity_cursor, sub_entity_ptr, n_local_subs));
+  for (PetscInt entity = 0; entity < n_entities; entity++) {
+    const PetscInt         repdof = entities[entity].repdof;
+    const PCBDDCGraphNode *node   = &graph->nodes[repdof];
+
+    if (!PCBDDCGraphNodeIsCanonical_Private(node)) continue;
+    for (PetscInt i = 0; i < node->local_groups_count; i++) sub_entities[sub_entity_cursor[node->local_groups[i]]++] = entity;
+  }
+  /* Fold a Dirichlet fragment back into an unconstrained component with the same field and incidence. */
+  for (PetscInt entity = graph->ncc; entity < n_entities; entity++) {
+    const PCBDDCGraphNode *node   = &graph->nodes[entities[entity].repdof];
+    const PetscInt        *groups = node->local_groups;
+    const PetscInt         ng     = node->local_groups_count;
+
+    for (PetscInt p = sub_entity_ptr[groups[0]]; p < sub_entity_ptr[groups[0] + 1]; p++) {
+      const PetscInt         other = sub_entities[p];
+      const PCBDDCGraphNode *onode;
+      PetscBool              same;
+
+      if (other >= graph->ncc) continue;
+      onode = &graph->nodes[entities[other].repdof];
+      if (node->which_dof != onode->which_dof || ng != onode->local_groups_count) continue;
+      PetscCall(PetscArraycmp(groups, onode->local_groups, ng, &same));
+      if (same) {
+        entities[other].ndofs += entities[entity].ndofs;
+        entities[entity].subset = entities[other].subset;
+        entities[entity].ndofs  = 0;
+        break;
+      }
+    }
+  }
+  for (PetscInt entity = 0; entity < n_entities; entity++) {
+    const PetscInt           repdof = entities[entity].repdof;
+    const PCBDDCGraphNode   *node   = &graph->nodes[repdof];
+    PCBDDCGraphComponentType type   = PCBDDCGraphClassifyEntity_Private(graph, node, entities[entity].ndofs);
+    const PetscInt          *groups = node->local_groups;
+    const PetscInt           ng     = node->local_groups_count;
+
+    if (!entities[entity].ndofs || !PCBDDCGraphNodeIsCanonical_Private(node)) continue;
+    if (type == PCBDDCGRAPH_COMPONENT_VERTEX && ng > 2) {
+      PetscInt container_subset = -1;
+
+      /* A one-dof high-order edge looks like a vertex by size; its incidence lies in two distinct endpoint subsets. */
+      for (PetscInt p = sub_entity_ptr[groups[0]]; p < sub_entity_ptr[groups[0] + 1]; p++) {
+        const PetscInt         other   = sub_entities[p];
+        const PetscInt         orepdof = entities[other].repdof;
+        const PCBDDCGraphNode *onode   = &graph->nodes[orepdof];
+
+        if (!entities[other].ndofs) continue;
+        if (node->which_dof == onode->which_dof && PCBDDCGraphIncidenceStrictSubset_Private(ng, groups, onode->local_groups_count, onode->local_groups)) {
+          if (container_subset < 0) container_subset = entities[other].subset;
+          else if (entities[other].subset != container_subset) {
+            type = PCBDDCGRAPH_COMPONENT_EDGE;
+            break;
+          }
+        }
+      }
+    }
+    for (PetscInt i = 0; i < ng; i++) {
+      for (PetscInt j = i + 1; j < ng; j++) {
+        PetscHashIJKey pair = {groups[i], groups[j]};
+
+        if (ng == 2) PetscCall(PetscHSetIJAdd(adjacency, pair));
+        else {
+          PetscHMapIJK    evidence;
+          PetscHashIJKKey entity_pair = {groups[i], groups[j], entities[entity].subset};
+          PetscHashIJKKey field_pair  = {groups[i], groups[j], node->which_dof};
+          PetscHashIter   iter;
+          PetscInt        count;
+          PetscBool       missing;
+
+          PetscCall(PetscHMapIJKPut(entity_pair_seen, entity_pair, &iter, &missing));
+          if (!missing) continue;
+          evidence = type == PCBDDCGRAPH_COMPONENT_EDGE ? edge_evidence : vertex_evidence;
+          PetscCall(PetscHMapIJKGetWithDefault(evidence, field_pair, 0, &count));
+          PetscCall(PetscHMapIJKSet(evidence, field_pair, count + 1));
+        }
+      }
+    }
+  }
+  PetscCall(PetscFree2(sub_entities, sub_entity_cursor));
+  PetscCall(PetscFree(sub_entity_ptr));
+  PetscCall(PetscFree(entities));
+
+  /* With only vertex dofs, the usual component-size test cannot distinguish 2D from 3D. */
+  if (two_dimensional) {
+    PetscHashIter iter;
+
+    PetscHashIterBegin(vertex_evidence, iter);
+    while (!PetscHashIterAtEnd(vertex_evidence, iter)) {
+      PetscInt count;
+
+      PetscHashIterGetVal(vertex_evidence, iter, count);
+      if (count >= 3) {
+        two_dimensional = PETSC_FALSE;
+        break;
+      }
+      PetscHashIterNext(vertex_evidence, iter);
+    }
+  }
+  PetscCall(PCBDDCGraphAddAdjacencyEvidence_Private(edge_evidence, two_dimensional ? 1 : 3, adjacency));
+  PetscCall(PCBDDCGraphAddAdjacencyEvidence_Private(vertex_evidence, two_dimensional ? 2 : 3, adjacency));
+  PetscCall(PetscHMapIJKDestroy(&edge_evidence));
+  PetscCall(PetscHMapIJKDestroy(&vertex_evidence));
+  PetscCall(PetscHMapIJKDestroy(&entity_pair_seen));
+
+  /* Convert the undirected pair set to symmetric CSR. */
+  PetscCall(PetscCalloc1(n_local_subs + 1, xadj));
+  PetscCall(PetscMalloc1(n_local_subs, &cursor));
+  {
+    PetscHashIter  iter;
+    PetscHashIJKey key;
+
+    PetscHashIterBegin(adjacency, iter);
+    while (!PetscHashIterAtEnd(adjacency, iter)) {
+      PetscHashIterGetKey(adjacency, iter, key);
+      (*xadj)[key.i + 1]++;
+      (*xadj)[key.j + 1]++;
+      PetscHashIterNext(adjacency, iter);
+    }
+  }
+  for (PetscInt i = 0; i < n_local_subs; i++) (*xadj)[i + 1] += (*xadj)[i];
+  PetscCall(PetscMalloc1((*xadj)[n_local_subs], adjncy));
+  PetscCall(PetscArraycpy(cursor, *xadj, n_local_subs));
+  {
+    PetscHashIter  iter;
+    PetscHashIJKey key;
+
+    PetscHashIterBegin(adjacency, iter);
+    while (!PetscHashIterAtEnd(adjacency, iter)) {
+      PetscHashIterGetKey(adjacency, iter, key);
+      (*adjncy)[cursor[key.i]++] = key.j;
+      (*adjncy)[cursor[key.j]++] = key.i;
+      PetscHashIterNext(adjacency, iter);
+    }
+  }
+  PetscCall(PetscHSetIJDestroy(&adjacency));
+  PetscCall(PetscFree(cursor));
+  for (PetscInt i = 0; i < n_local_subs; i++) PetscCall(PetscSortInt((*xadj)[i + 1] - (*xadj)[i], PetscSafePointerPlusOffset(*adjncy, (*xadj)[i])));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PCBDDCGraphPartitionLocalSubdomains(PCBDDCGraph graph, const char *prefix, PetscInt *nparts, PetscInt n_subs, PetscInt *xadj, PetscInt *adjncy, IS *partition)
+{
+  PetscPartitioner part;
+  PetscSection     part_section;
+  IS               point_partition;
+  const PetscInt  *points;
+  PetscInt        *labels;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(prefix, 2);
+  PetscAssertPointer(nparts, 3);
+  PetscAssertPointer(partition, 7);
+  PetscCheck(n_subs >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of local subdomains must be non-negative, got %" PetscInt_FMT, n_subs);
+  PetscCheck(n_subs == graph->n_local_subs, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of local subdomains %" PetscInt_FMT " does not match graph value %" PetscInt_FMT, n_subs, graph->n_local_subs);
+  if (!n_subs) {
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, partition));
+    *nparts = 0;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscAssertPointer(xadj, 5);
+  if (xadj[n_subs]) PetscAssertPointer(adjncy, 6);
+  *nparts = PetscMin(PetscMax(*nparts, 1), n_subs);
+  if (*nparts == n_subs) {
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, n_subs, 0, 1, partition));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  PetscCall(PetscPartitionerCreate(PETSC_COMM_SELF, &part));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)part, prefix));
+  PetscCall(PetscPartitionerSetFromOptions(part));
+  PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &part_section));
+  PetscCall(PetscPartitionerPartition(part, *nparts, n_subs, xadj, adjncy, NULL, NULL, NULL, part_section, &point_partition));
+  PetscCall(PetscMalloc1(n_subs, &labels));
+  for (PetscInt i = 0; i < n_subs; i++) labels[i] = -1;
+  PetscCall(ISGetIndices(point_partition, &points));
+  for (PetscInt p = 0; p < *nparts; p++) {
+    PetscInt dof, offset;
+
+    PetscCall(PetscSectionGetDof(part_section, p, &dof));
+    PetscCall(PetscSectionGetOffset(part_section, p, &offset));
+    for (PetscInt i = 0; i < dof; i++) {
+      const PetscInt point = points[offset + i];
+
+      PetscCheck(point >= 0 && point < n_subs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid partition point %" PetscInt_FMT " not in [0,%" PetscInt_FMT ")", point, n_subs);
+      labels[point] = p;
+    }
+  }
+  PetscCall(ISRestoreIndices(point_partition, &points));
+  for (PetscInt i = 0; i < n_subs; i++) PetscCheck(labels[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Partition point %" PetscInt_FMT " was not assigned", i);
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n_subs, labels, PETSC_OWN_POINTER, partition));
+  PetscCall(ISDestroy(&point_partition));
+  PetscCall(PetscSectionDestroy(&part_section));
+  PetscCall(PetscPartitionerDestroy(&part));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

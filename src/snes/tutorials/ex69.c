@@ -3655,6 +3655,13 @@ int main(int argc, char **argv)
       # no native support for saddle point factorizations from PETSc
       args: -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd
     test:
+      requires: double
+      suffix: benign_card_multilevel
+      # no native support for saddle point factorizations from PETSc
+      args: -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd \
+            -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 2 -pc_bddc_coarse_eqs_limit 0 \
+            -pc_bddc_dirichlet_l1_pc_type svd -pc_bddc_neumann_l1_pc_type svd -pc_bddc_coarse_l1_redundant_pc_type svd -options_left 0
+    test:
       requires: mumps double
       suffix: benign_deluxe_mumps
       args: -pc_bddc_use_deluxe_scaling -pc_bddc_deluxe_zerorows -sub_schurs_mat_solver_type mumps -sub_schurs_mat_mumps_icntl_14 1000
