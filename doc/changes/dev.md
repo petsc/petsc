@@ -260,6 +260,7 @@
 - Add `DM_SHAPE_DIIID`
 - Add `DMPlexTriangleSetAngleBound()`, `DMPlexTriangleGetAngleBound()`, `DMPlexTetgenSetRadiusEdgeBound()`, `DMPlexTetgenGetRadiusEdgeBound()`, `DMPlexTetgenSetDihedralBound()`, `DMPlexTetgenGetDihedralBound()`
 - Remove `DMPlex_Surface_Grad()`, superseded by `DMPlexGeomDataAndGrads()`
+- Fix quadrature component indexing in `DMPlexComputeGradientClementInterpolant()` for multi-component fields
 
 ## FE/FV
 

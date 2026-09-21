@@ -2334,7 +2334,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     numComponents += Nc;
   }
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
-  PetscCheck(!(qNc != 1) || !(qNc != numComponents), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
+  PetscCheck((qNc == 1) || (qNc == numComponents), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_SIZ, "Quadrature components %" PetscInt_FMT " != %" PetscInt_FMT " field components", qNc, numComponents);
   PetscCall(PetscMalloc6(coordDim * numComponents * 2, &gradsum, coordDim * numComponents, &interpolant, coordDim * Nq, &coords, Nq, &fegeom.detJ, coordDim * coordDim * Nq, &fegeom.J, coordDim * coordDim * Nq, &fegeom.invJ));
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
@@ -2347,6 +2347,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
     PetscCall(DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star));
     for (st = 0; st < starSize * 2; st += 2) {
       const PetscInt cell = star[st];
+      PetscInt       qc   = 0;
       PetscScalar   *grad = &gradsum[coordDim * numComponents];
       PetscScalar   *x    = NULL;
       PetscReal      vol  = 0.0;
@@ -2357,7 +2358,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
       for (field = 0, fieldOffset = 0; field < numFields; ++field) {
         PetscObject  obj;
         PetscClassId id;
-        PetscInt     Nb, Nc, q, qc = 0;
+        PetscInt     Nb, Nc, q;
 
         PetscCall(PetscArrayzero(grad, coordDim * numComponents));
         PetscCall(DMGetField(dm, field, NULL, &obj));
@@ -2380,14 +2381,14 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
           PetscCheck(id == PETSCFE_CLASSID, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
           PetscCall(PetscFEInterpolateGradient_Static((PetscFE)obj, 1, &x[fieldOffset], &qgeom, q, interpolant));
           for (fc = 0; fc < Nc; ++fc) {
-            const PetscReal wt = quadWeights[q * qNc + qc];
+            const PetscReal wt = quadWeights[q * qNc + (qNc == 1 ? 0 : qc + fc)];
 
             for (d = 0; d < coordDim; ++d) grad[fc * coordDim + d] += interpolant[fc * dim + d] * wt * fegeom.detJ[q];
           }
           vol += quadWeights[q * qNc] * fegeom.detJ[q];
         }
         fieldOffset += Nb;
-        qc += Nc;
+        if (qNc > 1) qc += Nc;
       }
       PetscCall(DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x));
       for (fc = 0; fc < numComponents; ++fc) {

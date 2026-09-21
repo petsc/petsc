@@ -944,7 +944,7 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor,
       PetscFEGeom      fegeom;
       const PetscReal *quadWeights;
       PetscReal       *coords;
-      PetscInt         Nb, Nq, qNc;
+      PetscInt         Nb, Nq, qNc, qc = 0;
 
       fegeom.dim      = dim;
       fegeom.dimEmbed = cdim;
@@ -959,21 +959,19 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor,
       PetscCall(PetscArrayzero(gradient, cdim * Nc));
       PetscCall(DMPlexVecGetClosure(plex, NULL, locX, cell, NULL, &x));
       for (PetscInt f = 0; f < Nf; ++f) {
-        PetscInt qc = 0;
-
         PetscCall(PetscDSGetDiscretization(ds, f, &obj));
         PetscCall(PetscArrayzero(interpolant, Nc));
         PetscCall(PetscArrayzero(interpolantGrad, cdim * Nc));
         for (PetscInt q = 0; q < Nq; ++q) {
           PetscCall(PetscFEInterpolateFieldAndGradient_Static((PetscFE)obj, 1, x, &fegeom, q, interpolant, interpolantGrad));
           for (PetscInt fc = 0; fc < Nc; ++fc) {
-            const PetscReal wt = quadWeights[q * qNc + qc + fc];
+            const PetscReal wt = quadWeights[q * qNc + (qNc > 1 ? qc + fc : 0)];
 
             field[fc] += interpolant[fc] * wt * fegeom.detJ[q];
             for (PetscInt d = 0; d < cdim; ++d) gradient[fc * cdim + d] += interpolantGrad[fc * dim + d] * wt * fegeom.detJ[q];
           }
         }
-        qc += Nc;
+        if (qNc > 1) qc += Nc;
       }
       PetscCall(PetscFree2(interpolant, interpolantGrad));
       PetscCall(DMPlexVecRestoreClosure(plex, NULL, locX, cell, NULL, &x));
