@@ -111,14 +111,14 @@ MC*/
 #define SNESLineSearchCheckFunctionDomainError(snes, ls, fnorm) \
   do { \
     if (PetscIsInfOrNanReal(fnorm)) { \
-      PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)ls), PETSC_ERR_NOT_CONVERGED, "SNES line search failure due to infinity or NaN norm"); \
+      PetscCheck(!(snes)->errorifnotconverged, PetscObjectComm((PetscObject)(ls)), PETSC_ERR_NOT_CONVERGED, "SNES line search failure due to infinity or NaN norm"); \
       { \
         PetscBool functiondomainerror; \
-        PetscCallMPI(MPIU_Allreduce(&snes->functiondomainerror, &functiondomainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ls))); \
+        PetscCallMPI(MPIU_Allreduce(&(snes)->functiondomainerror, &functiondomainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(ls)))); \
         if (functiondomainerror) { \
-          ls->reason                = SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN; \
-          snes->functiondomainerror = PETSC_FALSE; \
-        } else ls->reason = SNES_LINESEARCH_FAILED_NANORINF; \
+          (ls)->reason                = SNES_LINESEARCH_FAILED_FUNCTION_DOMAIN; \
+          (snes)->functiondomainerror = PETSC_FALSE; \
+        } else (ls)->reason = SNES_LINESEARCH_FAILED_NANORINF; \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
@@ -153,16 +153,16 @@ MC*/
 MC*/
 #define SNESLineSearchCheckObjectiveDomainError(snes, fobj) \
   do { \
-    if (snes->errorifnotconverged) { \
-      PetscCheck(!snes->objectivedomainerror, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due objective domain error"); \
-      PetscCheck(!PetscIsInfOrNanReal(fobj), PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to infinity or NaN norm"); \
+    if ((snes)->errorifnotconverged) { \
+      PetscCheck(!(snes)->objectivedomainerror, PetscObjectComm((PetscObject)(snes)), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due objective domain error"); \
+      PetscCheck(!PetscIsInfOrNanReal(fobj), PetscObjectComm((PetscObject)(snes)), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to infinity or NaN norm"); \
     } \
-    if (snes->objectivedomainerror) { \
-      snes->linesearch->reason   = SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN; \
-      snes->objectivedomainerror = PETSC_FALSE; \
+    if ((snes)->objectivedomainerror) { \
+      (snes)->linesearch->reason   = SNES_LINESEARCH_FAILED_OBJECTIVE_DOMAIN; \
+      (snes)->objectivedomainerror = PETSC_FALSE; \
       PetscFunctionReturn(PETSC_SUCCESS); \
     } else if (PetscIsInfOrNanReal(fobj)) { \
-      snes->linesearch->reason = SNES_LINESEARCH_FAILED_NANORINF; \
+      (snes)->linesearch->reason = SNES_LINESEARCH_FAILED_NANORINF; \
       PetscFunctionReturn(PETSC_SUCCESS); \
     } \
   } while (0)
@@ -192,13 +192,13 @@ MC*/
 MC*/
 #define SNESLineSearchCheckJacobianDomainError(snes, ls) \
   do { \
-    if (snes->checkjacdomainerror) { \
+    if ((snes)->checkjacdomainerror) { \
       PetscBool jacobiandomainerror; \
-      PetscCallMPI(MPIU_Allreduce(&snes->jacobiandomainerror, &jacobiandomainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ls))); \
+      PetscCallMPI(MPIU_Allreduce(&(snes)->jacobiandomainerror, &jacobiandomainerror, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(ls)))); \
       if (jacobiandomainerror) { \
-        ls->reason                = SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN; \
-        snes->jacobiandomainerror = PETSC_FALSE; \
-        PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)ls), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
+        (ls)->reason                = SNES_LINESEARCH_FAILED_JACOBIAN_DOMAIN; \
+        (snes)->jacobiandomainerror = PETSC_FALSE; \
+        PetscCheck(!(snes)->errorifnotconverged, PetscObjectComm((PetscObject)(ls)), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
         PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
