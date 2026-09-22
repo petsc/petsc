@@ -286,3 +286,5 @@
 - Add `PetscWeakFormGetKeys()`
 
 ## Fortran
+
+- Remove the `PetscOffset` datatype and the undocumented `PetscOffsetFortran()` routine; both were needed by the removed Fortran bindings that returned an array together with a separate index offset

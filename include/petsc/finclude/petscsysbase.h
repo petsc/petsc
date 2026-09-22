@@ -18,10 +18,8 @@
 #define PetscBool logical(kind=C_BOOL)
 
 #if (PETSC_SIZEOF_VOID_P == 8)
-#define PetscOffset integer8
 #define PetscFortranAddr integer8
 #else
-#define PetscOffset integer4
 #define PetscFortranAddr integer4
 #endif
 

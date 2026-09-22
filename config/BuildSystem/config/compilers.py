@@ -1273,7 +1273,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     self.generateDependencies       = {}
     self.dependenciesGenerationFlag = {}
     if not self.argDB['with-dependencies'] :
-      self.logPrint("Skip checking dependency compiler options on user request")
+      self.logPrint('Skip checking dependency compiler options on user request')
       return
     languages = ['C']
     if hasattr(self, 'CXX'):

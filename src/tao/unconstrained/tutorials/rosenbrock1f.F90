@@ -97,10 +97,6 @@ contains
     PetscReal v(0:1, 0:1)
     PetscBool assembled
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
     PetscReal, pointer :: x_v(:)
     PetscInt i, nn, ind(0:1)

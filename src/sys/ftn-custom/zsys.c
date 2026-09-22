@@ -2,12 +2,10 @@
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define chkmemfortran_                     CHKMEMFORTRAN
-  #define petscoffsetfortran_                PETSCOFFSETFORTRAN
   #define petscobjectstateincrease_          PETSCOBJECTSTATEINCREASE
   #define petsccienabledportableerroroutput_ PETSCCIENABLEDPORTABLEERROROUTPUT
 #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define chkmemfortran_                     chkmemfortran
-  #define petscoffsetfortran_                petscoffsetfortran
   #define petscobjectstateincrease_          petscobjectstateincrease
   #define petsccienabledportableerroroutput_ petsccienabledportableerroroutput
 #endif
@@ -20,12 +18,6 @@ PETSC_EXTERN void petsccienabledportableerroroutput_(PetscMPIInt *cienabled)
 PETSC_EXTERN void petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr)
 {
   *ierr = PetscObjectStateIncrease(*obj);
-}
-
-PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x, PetscScalar *y, size_t *shift, PetscErrorCode *ierr)
-{
-  *ierr  = PETSC_SUCCESS;
-  *shift = y - x;
 }
 
 /*
