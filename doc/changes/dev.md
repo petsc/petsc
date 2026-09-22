@@ -18,6 +18,8 @@
 ```{rubric} Event Logging:
 ```
 
+- Change the `CpuToGpu Count` and `GpuToCpu Count` columns of `-log_view` to report the maximum over the processes instead of the average, which rounded to 0 whenever the total number of copies was less than half the number of processes; the size columns remain averages
+
 ```{rubric} PetscViewer:
 ```
 
