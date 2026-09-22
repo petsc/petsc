@@ -83,6 +83,7 @@ cdef extern from * nogil:
         KSP_DIVERGED_INDEFINITE_MAT
         KSP_DIVERGED_PC_FAILED
         KSP_DIVERGED_USER
+        KSP_DIVERGED_INNER_SOLVE_FAILED
 
     ctypedef enum PetscKSPDMActive "KSPDMActive":
         KSP_DMACTIVE_OPERATOR = 1

@@ -852,7 +852,8 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_DIVERGED_NANORINF`               - a not a number of infinity was detected in a vector during the computation
 .  `KSP_DIVERGED_INDEFINITE_MAT`         - the operator was indefinite for a `KSPType` that requires it be definite, such as `KSPCG`
 .  `KSP_DIVERGED_PC_FAILED`              - the action of the preconditioner failed for some reason
--  `KSP_DIVERGED_USER`                   - the user has indicated divergence for an arbitrary reason
+.  `KSP_DIVERGED_USER`                   - the user has indicated divergence for an arbitrary reason
+-  `KSP_DIVERGED_INNER_SOLVE_FAILED`     - the inner `KSPSolve()` failed for some reason
 
    Level: beginner
 
@@ -893,6 +894,7 @@ typedef enum { /* converged */
   KSP_DIVERGED_PC_FAILED                 = -11,
   KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED = -11,
   KSP_DIVERGED_USER                      = -12,
+  KSP_DIVERGED_INNER_SOLVE_FAILED        = -13,
 
   KSP_CONVERGED_ITERATING = 0
 } KSPConvergedReason;
@@ -1007,6 +1009,25 @@ M*/
    KSP_DIVERGED_PC_FAILED - It was not possible to build or use the requested preconditioner. This is usually due to a
    zero pivot in a factorization. It can also result from a failure in a subpreconditioner inside a nested preconditioner
    such as `PCFIELDSPLIT`.
+
+   Level: beginner
+
+   Note:
+   Run with `-ksp_error_if_not_converged` to stop the program when the error is detected and print an error message with details.
+
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
+M*/
+
+/*MC
+   KSP_DIVERGED_USER - The user has indicated divergence for an arbitrary reason.
+
+   Level: beginner
+
+.seealso: [](ch_ksp), `KSPSolve()`, `KSPGetConvergedReason()`, `KSPConvergedReason`, `KSPSetTolerances()`
+M*/
+
+/*MC
+   KSP_DIVERGED_INNER_SOLVE_FAILED - It was not possible to solve an inner linear system in solvers such as `KSPEKSM`.
 
    Level: beginner
 
