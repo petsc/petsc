@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version                = '5.0.10'
+    self.version                = '5.0.11'
     self.download               = ['https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-'+self.version+'.tar.gz',
                                    'https://web.cels.anl.gov/projects/petsc/download/externalpackages/openmpi-'+self.version+'.tar.gz']
     self.download_git           = ['git://https://github.com/open-mpi/ompi.git']
