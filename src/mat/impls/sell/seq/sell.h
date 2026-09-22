@@ -89,26 +89,26 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
 
 #define MatSeqXSELLReallocateSELL(Amat, AM, BS2, WIDTH, SIDX, SH, SID, ROW, COL, COLIDX, VAL, CP, VP, NONEW, datatype, MUL) \
   do { \
-    if (WIDTH >= (SIDX[SID + 1] - SIDX[SID]) / SH) { \
-      Mat_SeqSELL *Ain = (Mat_SeqSELL *)Amat->data; \
+    if ((WIDTH) >= ((SIDX)[(SID) + 1] - (SIDX)[SID]) / (SH)) { \
+      Mat_SeqSELL *Ain = (Mat_SeqSELL *)(Amat)->data; \
       /* there is no extra room in row, therefore enlarge 1 slice column */ \
-      PetscInt  new_size = Ain->maxallocmat + SH * MUL, *new_colidx; \
+      PetscInt  new_size = Ain->maxallocmat + (SH) * (MUL), *new_colidx; \
       datatype *new_val; \
 \
       PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscMalloc2(BS2 * new_size, &new_val, BS2 * new_size, &new_colidx)); \
+      PetscCall(PetscMalloc2((BS2) * new_size, &new_val, (BS2) * new_size, &new_colidx)); \
 \
       /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-      PetscCall(PetscArraycpy(new_val, VAL, SIDX[SID + 1])); \
-      PetscCall(PetscArraycpy(new_colidx, COLIDX, SIDX[SID + 1])); \
-      PetscCall(PetscArraycpy(new_val + SIDX[SID + 1] + SH * MUL, VAL + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
-      PetscCall(PetscArraycpy(new_colidx + SIDX[SID + 1] + SH * MUL, COLIDX + SIDX[SID + 1], SIDX[Ain->totalslices] - SIDX[SID + 1])); \
+      PetscCall(PetscArraycpy(new_val, VAL, (SIDX)[(SID) + 1])); \
+      PetscCall(PetscArraycpy(new_colidx, COLIDX, (SIDX)[(SID) + 1])); \
+      PetscCall(PetscArraycpy(new_val + (SIDX)[(SID) + 1] + (SH) * (MUL), (VAL) + (SIDX)[(SID) + 1], (SIDX)[Ain->totalslices] - (SIDX)[(SID) + 1])); \
+      PetscCall(PetscArraycpy(new_colidx + (SIDX)[(SID) + 1] + (SH) * (MUL), (COLIDX) + (SIDX)[(SID) + 1], (SIDX)[Ain->totalslices] - (SIDX)[(SID) + 1])); \
       /* update slice_idx */ \
-      for (ii = SID + 1; ii <= Ain->totalslices; ii++) SIDX[ii] += SH * MUL; \
+      for (ii = (SID) + 1; ii <= Ain->totalslices; ii++) (SIDX)[ii] += (SH) * (MUL); \
       /* update pointers. Notice that they point to the FIRST position of the row */ \
-      CP = new_colidx + SIDX[SID] + (ROW % SH); \
-      VP = new_val + SIDX[SID] + (ROW % SH); \
+      CP = new_colidx + (SIDX)[SID] + ((ROW) % (SH)); \
+      VP = new_val + (SIDX)[SID] + ((ROW) % (SH)); \
       /* free up old matrix storage */ \
       PetscCall(MatSeqXSELLFreeSELL(A, &Ain->val, &Ain->colidx)); \
       Ain->val          = new_val; \
@@ -117,28 +117,28 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       Ain->maxallocmat  = new_size; \
       Ain->reallocs++; \
       A->nonzerostate++; \
-      if (WIDTH >= Ain->maxallocrow) Ain->maxallocrow += MUL; \
-      if (WIDTH >= Ain->rlenmax) Ain->rlenmax++; \
+      if ((WIDTH) >= Ain->maxallocrow) Ain->maxallocrow += MUL; \
+      if ((WIDTH) >= Ain->rlenmax) Ain->rlenmax++; \
     } \
   } while (0)
 
 #define MatSetValue_SeqSELL_Private(A, row, col, value, addv, orow, ocol, notdiag, cp, vp, lastcol, low, high) \
   do { \
-    Mat_SeqSELL *a = (Mat_SeqSELL *)A->data; \
+    Mat_SeqSELL *a = (Mat_SeqSELL *)(A)->data; \
     found          = PETSC_FALSE; \
-    if (col <= lastcol) low = 0; \
+    if ((col) <= lastcol) low = 0; \
     else high = a->rlen[row]; \
     lastcol = col; \
-    while (high - low > 5) { \
-      t = (low + high) / 2; \
-      if (*(cp + a->sliceheight * t) > col) high = t; \
+    while ((high) - (low) > 5) { \
+      t = ((low) + (high)) / 2; \
+      if (*((cp) + a->sliceheight * t) > (col)) high = t; \
       else low = t; \
     } \
-    for (_i = low; _i < high; _i++) { \
-      if (*(cp + a->sliceheight * _i) > col) break; \
-      if (*(cp + a->sliceheight * _i) == col) { \
-        if (addv == ADD_VALUES) *(vp + a->sliceheight * _i) += value; \
-        else *(vp + a->sliceheight * _i) = value; \
+    for (_i = low; _i < (high); _i++) { \
+      if (*((cp) + a->sliceheight * _i) > (col)) break; \
+      if (*((cp) + a->sliceheight * _i) == col) { \
+        if (addv == ADD_VALUES) *((vp) + a->sliceheight * _i) += value; \
+        else *((vp) + a->sliceheight * _i) = value; \
         found = PETSC_TRUE; \
         break; \
       } \
@@ -149,7 +149,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
        MatDisAssemble_MPISELL() rebuilds the off-diagonal block without it. */ \
     if (!found && !(value == 0.0 && ignorezeroentries && (notdiag)) && a->nonew != 1) { \
       PetscCheck(a->nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", orow, ocol); \
-      if (a->rlen[row] >= (a->sliidx[row / a->sliceheight + 1] - a->sliidx[row / a->sliceheight]) / a->sliceheight) { \
+      if (a->rlen[row] >= (a->sliidx[(row) / a->sliceheight + 1] - a->sliidx[(row) / a->sliceheight]) / a->sliceheight) { \
         /* there is no extra room in row, therefore enlarge 1 slice column */ \
         if (a->maxallocmat < a->sliidx[a->totalslices] + a->sliceheight) { \
           /* allocates a larger array for the XSELL matrix types; only extend the current slice by one more column. */ \
@@ -159,13 +159,13 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           /* malloc new storage space */ \
           PetscCall(PetscMalloc2(new_size, &new_val, new_size, &new_colidx)); \
           /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
-          PetscCall(PetscArraycpy(new_val, a->val, a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraycpy(new_colidx, a->colidx, a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraycpy(new_val + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->val, a->sliidx[row / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraycpy(new_colidx + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->colidx, a->sliidx[row / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_val, a->val, a->sliidx[(row) / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_colidx, a->colidx, a->sliidx[(row) / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_val + a->sliidx[(row) / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->val, a->sliidx[(row) / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[(row) / a->sliceheight + 1])); \
+          PetscCall(PetscArraycpy(new_colidx + a->sliidx[(row) / a->sliceheight + 1] + a->sliceheight, PetscSafePointerPlusOffset(a->colidx, a->sliidx[(row) / a->sliceheight + 1]), a->sliidx[a->totalslices] - a->sliidx[(row) / a->sliceheight + 1])); \
           /* update pointers. Notice that they point to the FIRST position of the row */ \
-          cp = new_colidx + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
-          vp = new_val + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
+          cp = new_colidx + a->sliidx[(row) / a->sliceheight] + ((row) % a->sliceheight); \
+          vp = new_val + a->sliidx[(row) / a->sliceheight] + ((row) % a->sliceheight); \
           /* free up old matrix storage */ \
           PetscCall(MatSeqXSELLFreeSELL(A, &a->val, &a->colidx)); \
           a->val          = new_val; \
@@ -175,26 +175,26 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           a->reallocs++; \
         } else { \
           /* no need to reallocate, just shift the following slices to create space for the added slice column */ \
-          PetscCall(PetscArraymove(a->val + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->val + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
-          PetscCall(PetscArraymove(a->colidx + a->sliidx[row / a->sliceheight + 1] + a->sliceheight, a->colidx + a->sliidx[row / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[row / a->sliceheight + 1])); \
+          PetscCall(PetscArraymove(a->val + a->sliidx[(row) / a->sliceheight + 1] + a->sliceheight, a->val + a->sliidx[(row) / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[(row) / a->sliceheight + 1])); \
+          PetscCall(PetscArraymove(a->colidx + a->sliidx[(row) / a->sliceheight + 1] + a->sliceheight, a->colidx + a->sliidx[(row) / a->sliceheight + 1], a->sliidx[a->totalslices] - a->sliidx[(row) / a->sliceheight + 1])); \
         } \
         /* update slice_idx */ \
-        for (ii = row / a->sliceheight + 1; ii <= a->totalslices; ii++) a->sliidx[ii] += a->sliceheight; \
+        for (ii = (row) / a->sliceheight + 1; ii <= a->totalslices; ii++) a->sliidx[ii] += a->sliceheight; \
         if (a->rlen[row] >= a->maxallocrow) a->maxallocrow++; \
         if (a->rlen[row] >= a->rlenmax) a->rlenmax++; \
       } \
       /* shift up all the later entries in this row */ \
       for (ii = a->rlen[row] - 1; ii >= _i; ii--) { \
-        *(cp + a->sliceheight * (ii + 1)) = *(cp + a->sliceheight * ii); \
-        *(vp + a->sliceheight * (ii + 1)) = *(vp + a->sliceheight * ii); \
+        *((cp) + a->sliceheight * (ii + 1)) = *((cp) + a->sliceheight * ii); \
+        *((vp) + a->sliceheight * (ii + 1)) = *((vp) + a->sliceheight * ii); \
       } \
-      *(cp + a->sliceheight * _i) = col; \
-      *(vp + a->sliceheight * _i) = value; \
+      *((cp) + a->sliceheight * _i) = col; \
+      *((vp) + a->sliceheight * _i) = value; \
       a->nz++; \
       a->rlen[row]++; \
-      A->nonzerostate++; \
+      (A)->nonzerostate++; \
       low = _i + 1; \
-      high++; \
+      (high)++; \
       found = PETSC_TRUE; \
     } \
   } while (0)

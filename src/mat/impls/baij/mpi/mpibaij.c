@@ -170,14 +170,14 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
 
 #define MatSetValues_SeqBAIJ_A_Private(row, col, value, addv, orow, ocol) \
   do { \
-    brow = row / bs; \
+    brow = (row) / bs; \
     rp   = PetscSafePointerPlusOffset(aj, ai[brow]); \
     if (!A->structure_only) ap = PetscSafePointerPlusOffset(aa, bs2 * ai[brow]); \
     rmax = aimax[brow]; \
     nrow = ailen[brow]; \
-    bcol = col / bs; \
-    ridx = row % bs; \
-    cidx = col % bs; \
+    bcol = (col) / bs; \
+    ridx = (row) % bs; \
+    cidx = (col) % bs; \
     low  = 0; \
     high = nrow; \
     while (high - low > 3) { \
@@ -214,14 +214,14 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
 
 #define MatSetValues_SeqBAIJ_B_Private(row, col, value, addv, orow, ocol) \
   do { \
-    brow = row / bs; \
+    brow = (row) / bs; \
     rp   = PetscSafePointerPlusOffset(bj, bi[brow]); \
     if (!B->structure_only) ap = PetscSafePointerPlusOffset(ba, bs2 * bi[brow]); \
     rmax = bimax[brow]; \
     nrow = bilen[brow]; \
-    bcol = col / bs; \
-    ridx = row % bs; \
-    cidx = col % bs; \
+    bcol = (col) / bs; \
+    ridx = (row) % bs; \
+    cidx = (col) % bs; \
     low  = 0; \
     high = nrow; \
     while (high - low > 3) { \
@@ -515,7 +515,7 @@ static PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const Pet
 }
 
 #define HASH_KEY             0.6180339887
-#define HASH(size, key, tmp) (tmp = (key) * HASH_KEY, (PetscInt)((size) * (tmp - (PetscInt)tmp)))
+#define HASH(size, key, tmp) (tmp = (key) * HASH_KEY, (PetscInt)((size) * ((tmp) - (PetscInt)(tmp))))
 /* #define HASH(size,key) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 /* #define HASH(size,key,tmp) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
 static PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)

@@ -6,7 +6,7 @@
 #define MIS_NOT_DONE       -2
 #define MIS_DELETED        -1
 #define MIS_REMOVED        -3
-#define MIS_IS_SELECTED(s) (s >= 0)
+#define MIS_IS_SELECTED(s) ((s) >= 0)
 
 /* edge for priority queue */
 typedef struct edge_tag {

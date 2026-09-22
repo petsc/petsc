@@ -11,15 +11,15 @@
 
 #if PetscDefined(USE_64BIT_INDICES)
   #define klu_K_defaults                        klu_l_defaults
-  #define klu_K_analyze(a, b, c, d)             klu_l_analyze((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, d)
-  #define klu_K_analyze_given(a, b, c, d, e, f) klu_l_analyze_given((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, (SuiteSparse_long *)d, (SuiteSparse_long *)e, f)
+  #define klu_K_analyze(a, b, c, d)             klu_l_analyze((SuiteSparse_long)(a), (SuiteSparse_long *)(b), (SuiteSparse_long *)(c), d)
+  #define klu_K_analyze_given(a, b, c, d, e, f) klu_l_analyze_given((SuiteSparse_long)(a), (SuiteSparse_long *)(b), (SuiteSparse_long *)(c), (SuiteSparse_long *)(d), (SuiteSparse_long *)(e), f)
   #define klu_K_free_symbolic                   klu_l_free_symbolic
   #define klu_K_free_numeric                    klu_l_free_numeric
   #define klu_K_common                          klu_l_common
   #define klu_K_symbolic                        klu_l_symbolic
   #define klu_K_numeric                         klu_l_numeric
   #if PetscDefined(USE_COMPLEX)
-    #define klu_K_factor(a, b, c, d, e)       klu_zl_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
+    #define klu_K_factor(a, b, c, d, e)       klu_zl_factor((SuiteSparse_long *)(a), (SuiteSparse_long *)(b), c, d, e);
     #define klu_K_solve                       klu_zl_solve
     #define klu_K_tsolve(a, b, c, d, e, f, g) klu_zl_tsolve((a), (b), (c), (d), (PetscReal *)(e), (f), (g))
     #define klu_K_refactor                    klu_zl_refactor
@@ -30,7 +30,7 @@
     #define klu_K_rcond                       klu_zl_rcond
     #define klu_K_scale                       klu_zl_scale
   #else
-    #define klu_K_factor(a, b, c, d, e)       klu_l_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
+    #define klu_K_factor(a, b, c, d, e)       klu_l_factor((SuiteSparse_long *)(a), (SuiteSparse_long *)(b), c, d, e);
     #define klu_K_solve                       klu_l_solve
     #define klu_K_tsolve(a, b, c, d, e, f, g) klu_l_tsolve((a), (b), (c), (d), (e), (g))
     #define klu_K_refactor                    klu_l_refactor

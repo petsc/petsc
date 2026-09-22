@@ -8,25 +8,25 @@
 #if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
     do { \
-      if (nnz > 0) { \
-        PetscInt nnz2 = nnz, rem = nnz & 0x3; \
+      if ((nnz) > 0) { \
+        PetscInt nnz2 = nnz, rem = (nnz) & 0x3; \
         switch (rem) { \
         case 3: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
         case 2: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
         case 1: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
           nnz2 -= rem; \
         } \
         while (nnz2 > 0) { \
-          sum += xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-          xv += 4; \
-          xi += 4; \
+          (sum) += (xv)[0] * (r)[(xi)[0]] + (xv)[1] * (r)[(xi)[1]] + (xv)[2] * (r)[(xi)[2]] + (xv)[3] * (r)[(xi)[3]]; \
+          (xv) += 4; \
+          (xi) += 4; \
           nnz2 -= 4; \
         } \
-        xv -= nnz; \
-        xi -= nnz; \
+        (xv) -= nnz; \
+        (xi) -= nnz; \
       } \
     } while (0)
 
@@ -34,19 +34,19 @@
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
-      for (__i = 0; __i < nnz - 1; __i += 2) { \
-        __i1 = xi[__i]; \
-        __i2 = xi[__i + 1]; \
-        sum += (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
+      for (__i = 0; __i < (nnz) - 1; __i += 2) { \
+        __i1 = (xi)[__i]; \
+        __i2 = (xi)[__i + 1]; \
+        (sum) += ((xv)[__i] * (r)[__i1] + (xv)[__i + 1] * (r)[__i2]); \
       } \
-      if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
+      if ((nnz) & 0x1) (sum) += (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 
 #else
   #define PetscSparseDensePlusDot_no_function(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i; \
-      for (__i = 0; __i < nnz; __i++) sum += xv[__i] * r[xi[__i]]; \
+      for (__i = 0; __i < (nnz); __i++) (sum) += (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 #endif
 
