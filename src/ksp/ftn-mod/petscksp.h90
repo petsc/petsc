@@ -1,5 +1,5 @@
 interface
-  subroutine KSPRestoreConvergenceHistory(ksp, r, na, ierr)
+  subroutine KSPRestoreResidualHistory(ksp, r, na, ierr)
     use, intrinsic :: ISO_C_binding
     import tKSP
     KSP ksp
@@ -55,7 +55,7 @@ interface
 end interface
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT::KSPRestoreConvergenceHistory
+!DEC$ ATTRIBUTES DLLEXPORT::KSPRestoreResidualHistory
 !DEC$ ATTRIBUTES DLLEXPORT::PCBJacobiRestoreSubKSP
 !DEC$ ATTRIBUTES DLLEXPORT::PCASMRestoreSubKSP
 !DEC$ ATTRIBUTES DLLEXPORT::PCGASMRestoreSubKSP

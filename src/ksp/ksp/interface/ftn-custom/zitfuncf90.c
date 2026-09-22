@@ -2,9 +2,11 @@
 #include <petsc/private/ftnimpl.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
-  #define kspgetresidualhistory_ KSPGETRESIDUALHISTORY
+  #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
+  #define ksprestoreresidualhistory_ KSPRESTORERESIDUALHISTORY
 #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
-  #define kspgetresidualhistory_ kspgetresidualhistory
+  #define kspgetresidualhistory_     kspgetresidualhistory
+  #define ksprestoreresidualhistory_ ksprestoreresidualhistory
 #endif
 
 PETSC_EXTERN void kspgetresidualhistory_(KSP *ksp, F90Array1d *indices, PetscInt *n, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -17,5 +19,5 @@ PETSC_EXTERN void kspgetresidualhistory_(KSP *ksp, F90Array1d *indices, PetscInt
 
 PETSC_EXTERN void ksprestoreresidualhistory_(KSP *ksp, F90Array1d *indices, PetscInt *n, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = F90Array1dDestroy(indices, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(indices, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrd));
 }
