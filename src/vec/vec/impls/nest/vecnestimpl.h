@@ -17,8 +17,8 @@ typedef struct {
       PetscCheckTypeName(x, VECNEST); \
       PetscCheckTypeName(y, VECNEST); \
       PetscCheckSameComm(x, xarg, y, yarg); \
-      PetscCheck(((Vec_Nest *)(x)->data)->setup_called, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
-      PetscCheck(((Vec_Nest *)(y)->data)->setup_called, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
+      PetscCheck(((Vec_Nest *)(x)->data)->setup_called, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", xarg); \
+      PetscCheck(((Vec_Nest *)(y)->data)->setup_called, PetscObjectComm((PetscObject)(y)), PETSC_ERR_ARG_WRONG, "Nest vector argument %d not setup.", yarg); \
       PetscCheck(((Vec_Nest *)(x)->data)->nb == ((Vec_Nest *)(y)->data)->nb, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_WRONG, "Nest vector arguments %d and %d have different numbers of blocks.", xarg, yarg); \
     } while (0)
 
