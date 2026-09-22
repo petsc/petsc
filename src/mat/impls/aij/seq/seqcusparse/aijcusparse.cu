@@ -1879,6 +1879,9 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   /* if C is of type MATSEQDENSE (CPU), perform the operation on the GPU and then copy on the CPU */
   PetscCall(PetscObjectTypeCompare((PetscObject)C, MATSEQDENSE, &cisdense));
   PetscCall(MatSetType(C, MATSEQDENSECUDA));
+  /* keep the VecType of B, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if B is a MATSEQDENSECUDA like C, since the VecType of a MATSEQDENSE B, e.g. VECSTANDARD, is not valid for C */
+  PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSECUDA, &flg));
+  if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
 
   /* product data */
   PetscCall(PetscNew(&mmdata));

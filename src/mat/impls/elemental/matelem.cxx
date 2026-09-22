@@ -399,6 +399,7 @@ static PetscErrorCode MatMatMultSymbolic_Elemental_MPIDense(Mat A, Mat B, PetscR
   PetscFunctionBegin;
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetType(C, MATMPIDENSE));
+  PetscCall(MatSetVecType(C, B->defaultvectype));
   PetscCall(MatSetUp(C));
   C->ops->matmultnumeric = MatMatMultNumeric_Elemental_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);

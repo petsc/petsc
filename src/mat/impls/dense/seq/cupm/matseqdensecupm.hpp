@@ -2151,6 +2151,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetSubMatrix(Mat A, PetscInt rbegin,
       PetscCall(PlaceArray(cmat, device_array));
     } else {
       PetscCall(MatCreateSeqDenseCUPM<T>(PetscObjectComm(PetscObjectCast(A)), n, m, device_array, &cmat, dctx));
+      PetscCall(MatSetVecType(cmat, A->defaultvectype));
     }
   }
   PetscCall(MatDenseSetLDA(cmat, mimpl->lda));

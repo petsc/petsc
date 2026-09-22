@@ -972,6 +972,7 @@ static PetscErrorCode MatProductSymbolic_SchurComplement_Dense(Mat C)
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)C, &flg, MATSEQDENSE, MATMPIDENSE, ""));
   if (!flg) {
     PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+    PetscCall(MatSetVecType(C, B->defaultvectype));
     C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
   }
   PetscCall(MatSetUp(C));

@@ -1142,7 +1142,10 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqDense(Mat C)
   }
   PetscCall(MatSetSizes(C, m, n, m, n));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATSEQDENSE, &cisdense));
-  if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+  if (!cisdense) {
+    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
+    PetscCall(MatSetVecType(C, B->defaultvectype));
+  }
   PetscCall(MatSetUp(C));
 
   PetscCallCXX(product->data = new MatProductCtx_SeqAIJKokkosDense());

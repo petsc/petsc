@@ -4226,7 +4226,10 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, 
   PetscCall(MatSetSizes(C, m, n, m, n));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, MATSEQDENSEHIP, ""));
-  if (!cisdense) PetscCall(MatSetType(C, MATDENSE));
+  if (!cisdense) {
+    PetscCall(MatSetType(C, MATDENSE));
+    PetscCall(MatSetVecType(C, A->defaultvectype));
+  }
   PetscCall(MatSetUp(C));
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
