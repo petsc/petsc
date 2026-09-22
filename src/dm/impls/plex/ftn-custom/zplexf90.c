@@ -234,7 +234,6 @@ PETSC_EXTERN void dmplexgetfullmeet_(DM *dm, PetscInt *numPoints, PetscInt *poin
   PetscInt        n;
 
   CHKFORTRANNULL(numCoveredPoints);
-  if (*ierr) return;
   *ierr = DMPlexGetFullMeet(*dm, *numPoints, points, &n, &fa);
   if (*ierr) return;
   *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, n, coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
