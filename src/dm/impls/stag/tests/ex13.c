@@ -122,7 +122,7 @@ static PetscErrorCode Test1(DM dm)
 }
 
 /* Test function with positive values for positive arguments */
-#define TEST_FUNCTION(i, j, k, idx, c) (8.33 * i + 7.343 * j + 1.234 * idx + 99.011 * c)
+#define TEST_FUNCTION(i, j, k, idx, c) (8.33 * (i) + 7.343 * (j) + 1.234 * (idx) + 99.011 * (c))
 
 /* Helper function to check */
 static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt c, PetscScalar val, PetscScalar valRef)

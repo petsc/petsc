@@ -770,8 +770,8 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
     const PetscInt *B = (const PetscInt *)b; \
     int             i; \
     PetscInt        diff = 0; \
-    for (i = 0; i < N; i++) { \
-      diff = A[N - i] - B[N - i]; \
+    for (i = 0; i < (N); i++) { \
+      diff = A[(N) - i] - B[(N) - i]; \
       if (diff) break; \
     } \
     return (diff <= 0) ? (diff < 0) ? -1 : 0 : 1; \

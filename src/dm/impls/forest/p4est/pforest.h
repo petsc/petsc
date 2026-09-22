@@ -100,7 +100,7 @@ static int DMRefinePattern_Fractal(p4est_t *p4est, p4est_topidx_t which_tree, p4
 }
 
   /* simplified from MurmurHash3 by Austin Appleby */
-  #define DMPROT32(x, y) ((x << y) | (x >> (32 - y)))
+  #define DMPROT32(x, y) (((x) << (y)) | ((x) >> (32 - (y))))
 static uint32_t DMPforestHash(const uint32_t *blocks, uint32_t nblocks)
 {
   uint32_t c1   = 0xcc9e2d51;

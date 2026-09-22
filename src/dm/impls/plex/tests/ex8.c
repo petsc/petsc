@@ -141,7 +141,7 @@ static PetscErrorCode ChangeCoordinates(DM dm, PetscInt spaceDim, PetscScalar ve
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define RelativeError(a, b) PetscAbs(a - b) / (1.0 + PetscMax(PetscAbs(a), PetscAbs(b)))
+#define RelativeError(a, b) PetscAbs((a) - (b)) / (1.0 + PetscMax(PetscAbs(a), PetscAbs(b)))
 
 static PetscErrorCode CheckFEMGeometry(DM dm, PetscInt cell, PetscInt spaceDim, PetscReal v0Ex[], PetscReal JEx[], PetscReal invJEx[], PetscReal detJEx)
 {

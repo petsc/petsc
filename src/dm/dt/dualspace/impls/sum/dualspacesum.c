@@ -1106,7 +1106,7 @@ static PetscErrorCode PetscDualSpaceSumGetInterleave_Sum(PetscDualSpace sp, Pets
 
 #define PetscDualSpaceSumPassthrough(sp, func, ...) \
   do { \
-    PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data; \
+    PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)(sp)->data; \
     PetscBool           is_uniform; \
     PetscCall(PetscDualSpaceSumIsUniform(sp, &is_uniform)); \
     if (is_uniform && sum->numSumSpaces > 0) { \

@@ -7,19 +7,20 @@
 /* Use macro instead of inlined function to avoid annoying warnings like: 'dof' may be used uninitialized in this function [-Wmaybe-uninitialized] */
 #define DMDA_VEC_GET_SHAPE(da, vec, xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof) \
   do { \
-    PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm)); \
-    PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm)); \
-    PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL)); \
+    PetscCall(DMDAGetCorners(da, &(xs), &(ys), &(zs), &(xm), &(ym), &(zm))); \
+    PetscCall(DMDAGetGhostCorners(da, &(gxs), &(gys), &(gzs), &(gxm), &(gym), &(gzm))); \
+    PetscCall(DMDAGetInfo(da, &(dim), NULL, NULL, NULL, NULL, NULL, NULL, &(dof), NULL, NULL, NULL, NULL, NULL)); \
     /* Handle case where user passes in global vector as opposed to local */ \
-    PetscCall(VecGetLocalSize(vec, &N)); \
-    if (N == xm * ym * zm * dof) { \
+    PetscCall(VecGetLocalSize(vec, &(N))); \
+    if (N == (xm) * (ym) * (zm) * (dof)) { \
       gxm = xm; \
       gym = ym; \
       gzm = zm; \
       gxs = xs; \
       gys = ys; \
       gzs = zs; \
-    } else PetscCheck(N == gxm * gym * gzm * dof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, xm * ym * zm * dof, gxm * gym * gzm * dof); \
+    } else \
+      PetscCheck(N == (gxm) * (gym) * (gzm) * (dof), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Vector local size %" PetscInt_FMT " is not compatible with DMDA local sizes %" PetscInt_FMT " %" PetscInt_FMT, N, (xm) * (ym) * (zm) * (dof), (gxm) * (gym) * (gzm) * (dof)); \
   } while (0)
 
 /* -------------------- 1D ---------------- */

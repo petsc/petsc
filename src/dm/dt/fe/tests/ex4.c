@@ -44,7 +44,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
 
 #define CheckVals(a, b, rtol, atol, msg) \
   do { \
-    if (!PetscIsCloseAtTolScalar(a, b, rtol, atol)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s: %g (%g - %g)\n", msg, (double)PetscAbsScalar(a - b), (double)PetscAbsScalar(a), (double)PetscAbsScalar(b))); \
+    if (!PetscIsCloseAtTolScalar(a, b, rtol, atol)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s: %g (%g - %g)\n", msg, (double)PetscAbsScalar((a) - (b)), (double)PetscAbsScalar(a), (double)PetscAbsScalar(b))); \
   } while (0)
 
 int main(int argc, char **argv)
