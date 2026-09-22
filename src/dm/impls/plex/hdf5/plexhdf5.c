@@ -483,13 +483,13 @@ static PetscErrorCode DMPlexCreateCutVertexLabel_Private(DM dm, DMLabel cutLabel
     PetscCall(ISGetIndices(cutcells, &cutc));
     PetscCall(ISGetLocalSize(cutcells, &n));
     for (c = 0; c < n; ++c) {
-      if ((cutc[c] >= cStart) && (cutc[c] < cEnd)) {
+      if (cutc[c] >= cStart && cutc[c] < cEnd) {
         PetscInt *closure = NULL;
         PetscInt  closureSize, cl, value;
 
         PetscCall(DMPlexGetTransitiveClosure(dm, cutc[c], PETSC_TRUE, &closureSize, &closure));
         for (cl = 0; cl < closureSize * 2; cl += 2) {
-          if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) {
+          if (closure[cl] >= vStart && closure[cl] < vEnd) {
             PetscCall(DMLabelGetValue(cutLabel, closure[cl], &value));
             if (value == 1) PetscCall(DMLabelSetValue(*cutVertexLabel, closure[cl], 1));
           }
@@ -1102,7 +1102,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     if (gcell[cell] < 0) continue;
     PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     for (v = 0; v < closureSize * 2; v += 2) {
-      if ((closure[v] >= vStart) && (closure[v] < vEnd)) ++Nc;
+      if (closure[v] >= vStart && closure[v] < vEnd) ++Nc;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     conesSize += Nc;
@@ -1151,7 +1151,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     replace = (value == 2) ? PETSC_TRUE : PETSC_FALSE;
     PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &closureSize, &closure));
     for (p = 0; p < closureSize * 2; p += 2) {
-      if ((closure[p] >= vStart) && (closure[p] < vEnd)) closure[Nc++] = closure[p];
+      if (closure[p] >= vStart && closure[p] < vEnd) closure[Nc++] = closure[p];
     }
     PetscCall(DMPlexReorderCell(dm, cell, closure));
     for (p = 0; p < Nc; ++p) {
@@ -1392,7 +1392,7 @@ static PetscErrorCode DMPlexCoordinatesView_HDF5_XDMF_Private(DM dm, PetscViewer
         ncoords[coordSize++] = PetscSinReal(2.0 * PETSC_PI * PetscRealPart(coords[off + 1]) / L[1]) * (L[1] / (2.0 * PETSC_PI));
         ncoords[coordSize++] = -PetscCosReal(2.0 * PETSC_PI * PetscRealPart(coords[off + 1]) / L[1]) * (L[1] / (2.0 * PETSC_PI));
 #if 0
-      } else if ((bd[0] == DM_BOUNDARY_TWIST)) {
+      } else if (bd[0] == DM_BOUNDARY_TWIST) {
         PetscReal phi, r, R;
         /* Mobius strip */
         /* Suppose its an x-z circle, then

@@ -37,7 +37,7 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
     col = aij->garray[i];
     for (subRank = 0; subRank < subCommSize; subRank++) {
       rank = commRankMap[subRank];
-      if ((col >= mat->cmap->range[rank]) && (col < mat->cmap->range[rank + 1])) {
+      if (col >= mat->cmap->range[rank] && col < mat->cmap->range[rank + 1]) {
         garrayCMap[i] = (*subMat)->cmap->range[subRank] + col - mat->cmap->range[rank] + 1;
         break;
       }
@@ -56,12 +56,12 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
 
     /* reuse diag block with the new submat */
     PetscCall(MatDestroy(&((Mat_MPIAIJ *)((*subMat)->data))->A));
-    ((Mat_MPIAIJ *)((*subMat)->data))->A = aij->A;
+    ((Mat_MPIAIJ *)(*subMat)->data)->A = aij->A;
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   } else if (((Mat_MPIAIJ *)(*subMat)->data)->A != aij->A) {
-    PetscObject obj = (PetscObject)((Mat_MPIAIJ *)((*subMat)->data))->A;
+    PetscObject obj = (PetscObject)((Mat_MPIAIJ *)(*subMat)->data)->A;
     PetscCall(PetscObjectReference(obj));
-    ((Mat_MPIAIJ *)((*subMat)->data))->A = aij->A;
+    ((Mat_MPIAIJ *)(*subMat)->data)->A = aij->A;
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   }
 

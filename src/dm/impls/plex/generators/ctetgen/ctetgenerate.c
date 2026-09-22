@@ -106,7 +106,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
       PetscCall(DMPlexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
         const PetscInt point = points[p];
-        if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
+        if (point >= vStart && point < vEnd) points[numVertices++] = point;
       }
 
       poly                   = in->facetlist[idx].polygonlist;
@@ -368,7 +368,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
       PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
         const PetscInt point = points[p];
-        if ((point >= vStart) && (point < vEnd)) in->trifacelist[tf * 3 + Nv++] = point - vStart;
+        if (point >= vStart && point < vEnd) in->trifacelist[tf * 3 + Nv++] = point - vStart;
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       PetscCheck(Nv == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " has %" PetscInt_FMT " vertices, not 3", f, Nv);

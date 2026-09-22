@@ -3481,7 +3481,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   PetscCall(MatSetSizes(*submat, nrl, ncl, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSizes(*submat, rbs, cbs));
   PetscCall(MatSetType(*submat, MATIS));
-  matis             = (Mat_IS *)((*submat)->data);
+  matis             = (Mat_IS *)(*submat)->data;
   matis->islocalref = A;
   matis->blockedref = blocked;
   PetscCall(MatSetLocalToGlobalMapping(*submat, rl2g, cl2g));

@@ -94,12 +94,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     PetscInt *closure = NULL, closureSize, cl;
 
     PetscCall(DMLabelHasPoint(bdLabel, f, &hasPoint));
-    if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
+    if (!hasPoint || f < fStart || f >= fEnd) continue;
     numFaceTags++;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
+      if (closure[cl] >= vStart && closure[cl] < vEnd) ++bdSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
   }
@@ -109,11 +109,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     PetscInt *closure = NULL, closureSize, cl;
 
     PetscCall(DMLabelHasPoint(bdLabel, f, &hasPoint));
-    if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
+    if (!hasPoint || f < fStart || f >= fEnd) continue;
 
     PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart + 1;
+      if (closure[cl] >= vStart && closure[cl] < vEnd) bdFaces[bdSize++] = closure[cl] - vStart + 1;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     PetscCall(DMLabelGetValue(bdLabel, f, &faceTags[numFaceTags++]));

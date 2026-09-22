@@ -548,10 +548,10 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           PetscCall(ISGetIndices(tmp, &idx));
           if (isFE[field]) {
             for (p = 0; p < n; ++p)
-              if ((idx[p] < cStart) || (idx[p] >= cEnd)) ++newn;
+              if (idx[p] < cStart || idx[p] >= cEnd) ++newn;
           } else {
             for (p = 0; p < n; ++p)
-              if ((idx[p] >= cStart) || (idx[p] < cEnd)) ++newn;
+              if (idx[p] >= cStart || idx[p] < cEnd) ++newn;
           }
           PetscCall(ISRestoreIndices(tmp, &idx));
           PetscCall(ISDestroy(&tmp));
@@ -568,10 +568,10 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
           PetscCall(ISGetIndices(tmp, &idx));
           if (isFE[field]) {
             for (p = 0; p < n; ++p)
-              if ((idx[p] < cStart) || (idx[p] >= cEnd)) newidx[newn++] = idx[p];
+              if (idx[p] < cStart || idx[p] >= cEnd) newidx[newn++] = idx[p];
           } else {
             for (p = 0; p < n; ++p)
-              if ((idx[p] >= cStart) || (idx[p] < cEnd)) newidx[newn++] = idx[p];
+              if (idx[p] >= cStart || idx[p] < cEnd) newidx[newn++] = idx[p];
           }
           PetscCall(ISRestoreIndices(tmp, &idx));
           PetscCall(ISDestroy(&tmp));

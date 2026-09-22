@@ -318,7 +318,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)hist), &rank));
 
-  if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (hist->xmin >= hist->xmax || hist->ymin >= hist->ymax) PetscFunctionReturn(PETSC_SUCCESS);
   if (hist->numValues < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   color = hist->color;
@@ -402,9 +402,9 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
       binLeft  = xmin + binSize * i;
       binRight = xmin + binSize * (i + 1);
       for (p = 0; p < numValues; p++) {
-        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i] += weights[p];
+        if (values[p] >= binLeft && values[p] < binRight) bins[i] += weights[p];
         /* Handle last bin separately */
-        if ((i == numBins - 1) && (values[p] == binRight)) bins[i] += weights[p];
+        if (i == numBins - 1 && values[p] == binRight) bins[i] += weights[p];
         if (!i) {
           mean += values[p] * weights[p];
           var += values[p] * values[p] * weights[p];
@@ -499,7 +499,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
 
-  if ((hist->xmin > hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (hist->xmin > hist->xmax || hist->ymin >= hist->ymax) PetscFunctionReturn(PETSC_SUCCESS);
   if (hist->numValues < 1) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist), &viewer));
@@ -545,9 +545,9 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
       binLeft  = xmin + binSize * i;
       binRight = xmin + binSize * (i + 1);
       for (p = 0; p < numValues; p++) {
-        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i] += weights[p];
+        if (values[p] >= binLeft && values[p] < binRight) bins[i] += weights[p];
         /* Handle last bin separately */
-        if ((i == numBins - 1) && (values[p] == binRight)) bins[i] += weights[p];
+        if (i == numBins - 1 && values[p] == binRight) bins[i] += weights[p];
         if (!i) {
           mean += values[p] * weights[p];
           var += values[p] * values[p] * weights[p];

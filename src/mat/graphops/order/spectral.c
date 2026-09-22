@@ -46,7 +46,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
         hasdiag = PETSC_TRUE;
         ++dnnz[r - rStart];
       } else if (PetscAbsScalar(vals[c]) >= tol) {
-        if ((cols[c] >= rStart) && (cols[c] < rEnd)) ++dnnz[r - rStart];
+        if (cols[c] >= rStart && cols[c] < rEnd) ++dnnz[r - rStart];
         else ++onnz[r - rStart];
         ++newcols;
       }

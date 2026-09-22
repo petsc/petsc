@@ -458,10 +458,7 @@ static PetscErrorCode TaoTermView_Sum(TaoTerm term, PetscViewer viewer)
           PetscCall(PetscViewerASCIIPrintf(viewer, "%sgradient", preceding ? ", " : ""));
           preceding = PETSC_TRUE;
         }
-        if (TaoTermHessianMasked(mask)) {
-          PetscCall(PetscViewerASCIIPrintf(viewer, "%shessian", preceding ? ", " : ""));
-          preceding = PETSC_TRUE;
-        }
+        if (TaoTermHessianMasked(mask)) PetscCall(PetscViewerASCIIPrintf(viewer, "%shessian", preceding ? ", " : ""));
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
         PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
       }

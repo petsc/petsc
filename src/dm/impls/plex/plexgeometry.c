@@ -429,7 +429,7 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_1D_Internal(DM dm, const PetscSc
   PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ));
   xi = invJ * (x - v0);
 
-  if ((xi >= -eps) && (xi <= 2. + eps)) *cell = c;
+  if (xi >= -eps && xi <= 2. + eps) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -500,7 +500,7 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Linear_Internal(DM dm, const Pet
     PetscReal x_j = PetscRealPart(coords[faces[2 * f + 1] * embedDim + 0]);
     PetscReal y_j = PetscRealPart(coords[faces[2 * f + 1] * embedDim + 1]);
 
-    if ((x == x_j) && (y == y_j)) {
+    if (x == x_j && y == y_j) {
       // point is a corner
       crossings = 1;
       break;

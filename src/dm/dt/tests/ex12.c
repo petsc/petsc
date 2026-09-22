@@ -55,9 +55,9 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, i, f[i], 0, NULL));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, j, f[j], 0, NULL));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, k, f[k], 0, NULL));
@@ -73,9 +73,9 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, 0, NULL, i, f[i]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, 0, NULL, j, f[j]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, 0, NULL, k, f[k]));
@@ -91,9 +91,9 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, i, f[i], i, f[i]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, j, f[j], j, f[j]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, k, f[k], k, f[k]));
@@ -109,9 +109,9 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, l, f[l], i, f[i]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, k, f[k], j, f[j]));
           PetscCall(PetscWeakFormSetIndexResidual(wf, key.label, key.value, key.field, key.part, j, f[j], k, f[k]));
@@ -145,9 +145,9 @@ static PetscErrorCode TestAdd(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[i], NULL));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[j], NULL));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[k], NULL));
@@ -167,9 +167,9 @@ static PetscErrorCode TestAdd(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, NULL, f[i]));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, NULL, f[j]));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, NULL, f[k]));
@@ -189,9 +189,9 @@ static PetscErrorCode TestAdd(PetscWeakForm wf)
     for (j = 0; j < 4; ++j) {
       if (j == i) continue;
       for (k = 0; k < 4; ++k) {
-        if ((k == i) || (k == j)) continue;
+        if (k == i || k == j) continue;
         for (l = 0; l < 4; ++l) {
-          if ((l == i) || (l == j) || (l == k)) continue;
+          if (l == i || l == j || l == k) continue;
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[i], f[i]));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[j], f[j]));
           PetscCall(PetscWeakFormAddResidual(wf, key.label, key.value, key.field, key.part, f[k], f[k]));

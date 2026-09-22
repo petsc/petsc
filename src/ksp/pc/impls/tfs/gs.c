@@ -783,10 +783,10 @@ static PetscErrorCode set_tree(PCTFS_gs_id *gs)
 
   /* how many via tree */
   gs->tree_nel = n = ntree;
-  gs->tree_elms = tree_elms = iptr_in = tree_buf;
-  gs->tree_buf                        = (PetscScalar *)malloc(sizeof(PetscScalar) * n * vec_sz);
-  gs->tree_work                       = (PetscScalar *)malloc(sizeof(PetscScalar) * n * vec_sz);
-  j                                   = gs->tree_map_sz;
+  gs->tree_elms = tree_elms = tree_buf;
+  gs->tree_buf              = (PetscScalar *)malloc(sizeof(PetscScalar) * n * vec_sz);
+  gs->tree_work             = (PetscScalar *)malloc(sizeof(PetscScalar) * n * vec_sz);
+  j                         = gs->tree_map_sz;
   gs->tree_map_in = iptr_in = (PetscInt *)malloc(sizeof(PetscInt) * (j + 1));
   gs->tree_map_out = iptr_out = (PetscInt *)malloc(sizeof(PetscInt) * (j + 1));
 

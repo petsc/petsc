@@ -95,7 +95,8 @@ endif
 
 concatlang = $(foreach lang, $(langs), $(srcs-$(1).$(lang):%.$(lang)=$(OBJDIR)/%.o))
 srcs.o := $(foreach pkg, $(pkgs), $(call concatlang,$(pkg)))
-srcs.tidy := $(foreach pkg, $(pkgs), $(srcs-$(pkg).c:%.c=$(OBJDIR)/%.tidy))
+# ftn/ is generated; perfstubs is external source PETSc does not format or lint, see GITSRCEXCL
+srcs.tidy := $(filter-out $(OBJDIR)/ftn/% $(OBJDIR)/src/sys/perfstubs/%, $(foreach pkg, $(pkgs), $(srcs-$(pkg).c:%.c=$(OBJDIR)/%.tidy)))
 concatlangsrc = $(foreach lang, $(langs), $(srcs-$(1).$(lang)))
 csrc := $(foreach pkg, $(pkgs),  $(srcs-$(pkg).c))
 showcsrc:
@@ -247,9 +248,13 @@ endif
 	-@$(GFORTRAN_DEP_CLEANUP)
 
 # Combine with Jacob's massive lint project?
-# Only works with ./configure --with-mpi=0 since clang-tidy cannot find MPI include files (love MPI compiler wrappers, the worse thing to come from MPI)
-$(OBJDIR)/%.tidy : %.c | $$(@D)/.DIR
-	@clang-tidy --checks='clang-diagnostic-*,-clang-analyzer-*,-clang-analyzer-security.insecureAPI.rand,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,clang-analyzer-deadcode.DeadStores,bugprone-too-small-loop-variable'  $(abspath $<) -- ${CCPPFLAGS}
+$(OBJDIR)/%.tidy : %.c | $$(@D)/.DIR clang-tidy-ready-to-use
+	@clang-tidy ${PETSC_CLANG_TIDY_FIX} $(abspath $<) -- -std=gnu23 ${CCPPFLAGS}
+
+# clang-tidy cannot locate the MPI include files behind the MPI compiler wrappers, hence the --with-mpi=0 requirement
+clang-tidy-ready-to-use:
+	@grep -q MPIUNI ${PETSC_ARCH}/include/petscconf.h || { echo "Run ./configure --with-mpi=0 before make clang-tidy"; exit 1; }
+	@clang-tidy -h >/dev/null 2>&1 || { echo >&2 "clang-tidy is not installed or in your path. You may need to install llvm."; exit 1; }
 
 clang-tidy: $(srcs.tidy)
 
@@ -275,7 +280,7 @@ $(OBJDIR)/src/sys/classes/bag/ftn-src/bagenum.o  : $(OBJDIR)/src/sys/ftn-mod/pet
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)
 
-.PHONY: clean all print clang-tidy
+.PHONY: clean all print clang-tidy clang-tidy-ready-to-use
 
 clean:
 	${RM} -r $(OBJDIR) $(LIBDIR)/libpetsc* $(MODDIR)/petsc*.mod $(MPIUNI_MOD) $(generated)

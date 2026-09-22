@@ -145,7 +145,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
     for (PetscInt i = 0; i < l; i++) {
       PetscCall(VecNormEnd(D, NORM_2, &ngmres->xnorms[i]));
       dcurnorm = ngmres->xnorms[i];
-      if ((dcurnorm < dmin) || (dmin < 0.0)) dmin = dcurnorm;
+      if (dcurnorm < dmin || dmin < 0.0) dmin = dcurnorm;
     }
     *dminnorm = dmin;
   }

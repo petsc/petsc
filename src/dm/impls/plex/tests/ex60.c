@@ -94,9 +94,9 @@ int main(int argc, char **argv)
         PetscInt   off = closure[cl];
         PetscReal *x;
 
-        if ((off < vStart) || (off >= vEnd)) continue;
+        if (off < vStart || off >= vEnd) continue;
         PetscCall(DMPlexPointLocalRead(cdm, off, coords, &x));
-        if ((x[0] < 0.5 - eps) || (x[0] > 0.5 + eps)) flg = PETSC_FALSE;
+        if (x[0] < 0.5 - eps || x[0] > 0.5 + eps) flg = PETSC_FALSE;
       }
       if (flg) PetscCall(DMLabelSetValue(bdLabel, f, 2));
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));

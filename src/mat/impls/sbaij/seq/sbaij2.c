@@ -139,14 +139,14 @@ static PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS is
   /* Create and fill new matrix */
   if (scall == MAT_REUSE_MATRIX) {
     if (sym) {
-      c = (Mat_SeqSBAIJ *)((*B)->data);
+      c = (Mat_SeqSBAIJ *)(*B)->data;
 
       PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
       PetscCall(PetscArraycmp(c->ilen, lens, c->mbs, &flag));
       PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");
       PetscCall(PetscArrayzero(c->ilen, c->mbs));
     } else {
-      d = (Mat_SeqBAIJ *)((*B)->data);
+      d = (Mat_SeqBAIJ *)(*B)->data;
 
       PetscCheck(d->mbs == nrows && d->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
       PetscCall(PetscArraycmp(d->ilen, lens, d->mbs, &flag));

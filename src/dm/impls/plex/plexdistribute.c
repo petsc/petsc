@@ -534,7 +534,7 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
   for (p = pStart; p < pEnd; ++p) {
     PetscInt adjSize = PETSC_DETERMINE, neighbors = 0, noff, n, a;
 
-    if ((p >= sStart) && (p < sEnd)) {
+    if (p >= sStart && p < sEnd) {
       /* Some leaves share a root with other leaves on different processes */
       PetscCall(PetscSectionGetDof(leafSection, p, &neighbors));
       if (neighbors) {
@@ -695,7 +695,7 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
     for (PetscInt i = 0; i < n; ++i) {
       const PetscInt p = points[i];
 
-      if ((p >= sStart) && (p < sEnd)) {
+      if (p >= sStart && p < sEnd) {
         PetscInt loc, adjSize = PETSC_DETERMINE;
 
         /* Handle leaves: shared with the root point */

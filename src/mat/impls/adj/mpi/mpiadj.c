@@ -190,7 +190,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIAdj_Private(Mat mat, PetscInt n, c
       PetscCall(MatCreateMPIAdj(scomm_row, irow_n, icol_n, sxadj, sadjncy, svalues, submat[i]));
     } else {
       Mat         sadj = *submat[i];
-      Mat_MPIAdj *sa   = (Mat_MPIAdj *)((sadj)->data);
+      Mat_MPIAdj *sa   = (Mat_MPIAdj *)sadj->data;
       PetscCall(PetscObjectGetComm((PetscObject)sadj, &scomm_mat));
       PetscCallMPI(MPI_Comm_compare(scomm_row, scomm_mat, &issame));
       PetscCheck(issame == MPI_IDENT, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "submatrix  must have the same comm as the col index set");
@@ -345,7 +345,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
 
   PetscFunctionBegin;
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((A->rmap->n != B->rmap->n) || (a->nz != b->nz)) *flg = PETSC_FALSE;
+  if (A->rmap->n != B->rmap->n || a->nz != b->nz) *flg = PETSC_FALSE;
 
   /* if the a->i are the same */
   PetscCall(PetscArraycmp(a->i, b->i, A->rmap->n + 1, flg));
@@ -474,7 +474,7 @@ static PetscErrorCode MatSetValues_MPIAdj(Mat A, PetscInt m, const PetscInt *row
 
     key.i = rows[r];
     if (key.i < 0) continue;
-    if ((key.i < rStart) || (key.i >= rEnd)) {
+    if (key.i < rStart || key.i >= rEnd) {
       PetscCall(MatStashValuesRow_Private(&A->stash, key.i, n, cols, values, PETSC_FALSE));
     } else {
       for (PetscInt c = 0; c < n; ++c) {

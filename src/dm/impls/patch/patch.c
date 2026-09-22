@@ -113,16 +113,16 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
   }
   q = 0;
   for (k = szb; k < szb + mzb; ++k) {
-    if ((k < szr) || (k >= ezr)) continue;
+    if (k < szr || k >= ezr) continue;
     for (j = syb; j < syb + myb; ++j) {
-      if ((j < syr) || (j >= eyr)) continue;
+      if (j < syr || j >= eyr) continue;
       for (i = sxb; i < sxb + mxb; ++i) {
         for (l = 0; l < dof; l++) {
           const PetscInt lp = l + dof * (((k - szb) * rN + (j - syb)) * rM + i - sxb);
           PetscMPIInt    r;
           PetscInt       ir;
 
-          if ((i < sxr) || (i >= exr)) continue;
+          if (i < sxr || i >= exr) continue;
           localPoints[q] = lp;
           PetscCall(PetscFindInt(indices[q], size + 1, ranges, &ir));
           PetscCall(PetscMPIIntCast(ir, &r));

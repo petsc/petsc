@@ -44,8 +44,8 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell)
 
     cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
 
-    if ((mj >= sj) && (mj < sj + mjlocal)) {
-      if ((mi >= si) && (mi < si + milocal)) cellidx[p] = (mi - si) + (mj - sj) * milocal;
+    if (mj >= sj && mj < sj + mjlocal) {
+      if (mi >= si && mi < si + milocal) cellidx[p] = (mi - si) + (mj - sj) * milocal;
     }
     if (coorx < -1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;
     if (coorx > 1.0) cellidx[p] = DMLOCATEPOINT_POINT_NOT_FOUND;

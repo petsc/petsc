@@ -538,7 +538,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
       PetscCall(DMPlexPointLocalRef(ex->dmNormal, v, a, &normal));
       for (PetscInt st = 0; st < starSize * 2; st += 2) {
         const PetscInt face = star[st];
-        if ((face >= pStart) && (face < pEnd)) {
+        if (face >= pStart && face < pEnd) {
           PetscReal       cnormal[3] = {0, 0, 0};
           const PetscInt *supp;
           PetscInt        suppSize, floc = -1;
@@ -828,7 +828,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &starSize, &star));
     for (PetscInt st = 0; st < starSize * 2; st += 2) {
-      if ((star[st] >= cStart) && (star[st] < cEnd)) {
+      if (star[st] >= cStart && star[st] < cEnd) {
         PetscReal cnormal[3] = {0, 0, 0};
 
         PetscCall(DMPlexComputeCellGeometryFVM(dm, star[st], NULL, NULL, cnormal));

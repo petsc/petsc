@@ -83,7 +83,7 @@ static PetscErrorCode oursor(Mat mat, Vec b, PetscReal omega, MatSORType flg, Pe
 {
   PetscErrorCode ierr = PETSC_SUCCESS;
 
-  (*(void (*)(Mat *, Vec *, PetscReal *, MatSORType *, PetscReal *, PetscInt *, PetscInt *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_SOR]))(&mat, &b, &omega, &flg, &shift, &its, &lits, &x, &ierr);
+  (*(void (*)(Mat *, Vec *, PetscReal *, MatSORType *, PetscReal *, PetscInt *, PetscInt *, Vec *, PetscErrorCode *))((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_SOR])(&mat, &b, &omega, &flg, &shift, &its, &lits, &x, &ierr);
   return ierr;
 }
 
@@ -196,7 +196,7 @@ static PetscErrorCode ourassemblyend(Mat mat, MatAssemblyType type)
 
 static PetscErrorCode ourduplicate(Mat mat, MatDuplicateOption op, Mat *M)
 {
-  *((void **)(M)) = (void *)-2; // Initialize matrix since it will be passed to Fortran
+  *((void **)M) = (void *)-2; // Initialize matrix since it will be passed to Fortran
   PetscCallFortranVoidFunction((*(void (*)(Mat *, MatDuplicateOption *, Mat *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE]))(&mat, &op, M, &ierr));
   return PETSC_SUCCESS;
 }

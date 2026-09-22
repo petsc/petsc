@@ -84,7 +84,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees
     if (gidx[i] >= e || gidx[i] < s) continue;
     bidx   = -1;
     ncols  = Gi[i + 1] - Gi[i];
-    cols   = &(Gj[Gi[i]]);
+    cols   = &Gj[Gi[i]];
     degree = 0;
     /* place the distance-one neighbors on the queue */
     for (j = 0; j < ncols; j++) {
@@ -101,7 +101,7 @@ PetscErrorCode MatColoringGetDegrees(Mat G, PetscInt distance, PetscInt *degrees
       degree++;
       if (dist < distance) {
         ncols = Gi[idx + 1] - Gi[idx];
-        cols  = &(Gj[Gi[idx]]);
+        cols  = &Gj[Gi[idx]];
         for (j = 0; j < ncols; j++) {
           if (seen[cols[j]] != i) {
             bidx++;
@@ -192,7 +192,7 @@ static PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, Petsc
   for (i = 0; i < ln; i++) {
     bidx   = -1;
     ncols  = Gi[i + 1] - Gi[i];
-    cols   = &(Gj[Gi[i]]);
+    cols   = &Gj[Gi[i]];
     degree = 0;
     /* place the distance-one neighbors on the queue */
     for (j = 0; j < ncols; j++) {
@@ -209,7 +209,7 @@ static PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, Petsc
       degree++;
       if (dist < distance) {
         ncols = Gi[idx + 1] - Gi[idx];
-        cols  = &(Gj[Gi[idx]]);
+        cols  = &Gj[Gi[idx]];
         for (j = 0; j < ncols; j++) {
           if (seen[cols[j]] != i) {
             bidx++;
@@ -258,7 +258,7 @@ static PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, Petsc
         degb[i]      = llnext[cur];
         bidx         = -1;
         ncols        = Gi[cur + 1] - Gi[cur];
-        cols         = &(Gj[Gi[cur]]);
+        cols         = &Gj[Gi[cur]];
         /* place the distance-one neighbors on the queue */
         for (j = 0; j < ncols; j++) {
           if (cols[j] != cur) {
@@ -291,7 +291,7 @@ static PetscErrorCode MatColoringCreateSmallestLastWeights(MatColoring mc, Petsc
             degb[degrees[idx]] = idx;
             if (dist < distance) {
               ncols = Gi[idx + 1] - Gi[idx];
-              cols  = &(Gj[Gi[idx]]);
+              cols  = &Gj[Gi[idx]];
               for (j = 0; j < ncols; j++) {
                 if (seen[cols[j]] != i) {
                   bidx++;

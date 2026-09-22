@@ -523,7 +523,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         const PetscInt rcomp = lorntComp[face].index;
 
         for (n = 0; n < numNeighbors[comp]; ++n)
-          if ((rrank == rpoints[neighbors[comp][n]].rank) && (rcomp == lorntComp[lpoints[neighbors[comp][n]]].index)) break;
+          if (rrank == rpoints[neighbors[comp][n]].rank && rcomp == lorntComp[lpoints[neighbors[comp][n]]].index) break;
         if (n >= numNeighbors[comp]) {
           PetscInt supportSize;
 

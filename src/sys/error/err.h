@@ -10,20 +10,31 @@ static inline PetscErrorCode PetscErrorMemoryMessage(PetscErrorCode n)
 
   if (n == PETSC_ERR_MEM) {
     ierr = (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
+    if (ierr) return ierr;
     ierr = (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
+    if (ierr) return ierr;
     ierr = (*PetscErrorPrintf)("destroying unneeded objects.\n");
+    if (ierr) return ierr;
   } else {
     ierr = (*PetscErrorPrintf)("Memory leaked due to not properly destroying\n");
+    if (ierr) return ierr;
     ierr = (*PetscErrorPrintf)("unneeded objects.\n");
+    if (ierr) return ierr;
   }
   ierr = PetscMallocGetCurrentUsage(&mem);
+  if (ierr) return ierr;
   ierr = PetscMemoryGetCurrentUsage(&rss);
+  if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL, NULL, "-on_error_malloc_dump", &flg1, NULL);
+  if (ierr) return ierr;
   ierr = PetscOptionsGetBool(NULL, NULL, "-malloc_view", &flg2, NULL);
+  if (ierr) return ierr;
   ierr = PetscOptionsHasName(NULL, NULL, "-malloc_view_threshold", &flg3);
+  if (ierr) return ierr;
   if (flg2 || flg3) ierr = PetscMallocView(stdout);
   else {
     ierr = (*PetscErrorPrintf)("Memory allocated %.0f Memory used by process %.0f\n", mem, rss);
+    if (ierr) return ierr;
     if (flg1) ierr = PetscMallocDump(stdout);
     else ierr = (*PetscErrorPrintf)("Try running with -on_error_malloc_dump or -malloc_view for info.\n");
   }

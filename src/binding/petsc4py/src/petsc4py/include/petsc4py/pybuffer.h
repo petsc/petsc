@@ -38,7 +38,7 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
                            int readonly, int flags)
 {
   if (view == NULL) return 0;
-  if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) && (readonly == 1)) {
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE && readonly == 1) {
     PyErr_SetString(PyExc_BufferError, "Object is not writable.");
     return -1;
   }

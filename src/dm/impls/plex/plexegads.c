@@ -160,7 +160,7 @@ PetscErrorCode DMPlex_EGADS_EDGE_XYZtoUV_Internal(const PetscScalar coords[], eg
       lambda *= 2.0;
     }
 
-    if ((tt[0] == range[0]) || (tt[0] == range[1])) break;
+    if (tt[0] == range[0] || tt[0] == range[1]) break;
     if (fabs(delta) < target) {
       tolr = obj_old;
       break;
@@ -246,7 +246,7 @@ PetscErrorCode DMPlex_Geom_EDGE_XYZtoUV_Internal(const PetscScalar coords[], ego
       lambda *= 2.0;
     }
 
-    if ((tt[0] == range[0]) || (tt[0] == range[1])) break;
+    if (tt[0] == range[0] || tt[0] == range[1]) break;
     if (fabs(delta) < target) {
       tolr = obj_old;
       break;

@@ -909,8 +909,8 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
 
   for (i = 0; i < s; i++) {
     for (k = 0; k < i + 1; k++) {
-      t->GammaExplicitCorr[i * s + k] = (t->GammaExplicitCorr[i * s + k]) * (t->GammaInv[k * s + k]);
-      for (j = k + 1; j < i + 1; j++) t->GammaExplicitCorr[i * s + k] += (t->GammaExplicitCorr[i * s + j]) * (t->GammaInv[j * s + k]);
+      t->GammaExplicitCorr[i * s + k] = t->GammaExplicitCorr[i * s + k] * t->GammaInv[k * s + k];
+      for (j = k + 1; j < i + 1; j++) t->GammaExplicitCorr[i * s + k] += t->GammaExplicitCorr[i * s + j] * t->GammaInv[j * s + k];
     }
   }
 

@@ -1692,7 +1692,7 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscInfoDestroy());
 
 #if !PetscDefined(HAVE_THREADSAFETY)
-  if (!(PETSC_RUNNING_ON_VALGRIND)) {
+  if (!PETSC_RUNNING_ON_VALGRIND) {
     char  fname[PETSC_MAX_PATH_LEN];
     char  sname[PETSC_MAX_PATH_LEN];
     FILE *fd;

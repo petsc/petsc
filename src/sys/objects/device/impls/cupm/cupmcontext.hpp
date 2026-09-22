@@ -129,7 +129,7 @@ private:
       for (auto i = 0; i < 3; ++i) {
         const auto cerr = cupmSolverCreate(&handle);
         if (PetscLikely(cerr == CUPMSOLVER_STATUS_SUCCESS)) break;
-        if ((cerr != CUPMSOLVER_STATUS_NOT_INITIALIZED) && (cerr != CUPMSOLVER_STATUS_ALLOC_FAILED)) PetscCallCUPMSOLVER(cerr);
+        if (cerr != CUPMSOLVER_STATUS_NOT_INITIALIZED && cerr != CUPMSOLVER_STATUS_ALLOC_FAILED) PetscCallCUPMSOLVER(cerr);
         if (i < 2) {
           PetscCall(PetscSleep(3));
           continue;

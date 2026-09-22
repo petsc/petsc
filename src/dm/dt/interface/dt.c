@@ -3136,7 +3136,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscR
       PetscCall(PetscDTComputeJacobi(0., 0., p, gllnodes[i], &Li));
       PetscCall(PetscDTComputeJacobi(0., 0., p, gllnodes[j], &Lj));
       if (i != j) A[i][j] = Li / (Lj * (gllnodes[i] - gllnodes[j]));
-      if ((j == i) && (i == 0)) A[i][j] = -d0;
+      if (j == i && i == 0) A[i][j] = -d0;
       if (j == i && i == p) A[i][j] = d0;
       if (AT) AT[j][i] = A[i][j];
     }
@@ -3345,7 +3345,7 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
   for (s = 0, subtotal = 1, nexttotal = 1; c > 0;) {
     /* subtotal is the number of ways to have a tuple of length c with sum s */
     /* nexttotal is the number of ways to have a tuple of length c-1 with sum s */
-    if ((index + subtotal) >= total) {
+    if (index + subtotal >= total) {
       coord[--c] = sum - s;
       index -= (total - subtotal);
       sum       = s;

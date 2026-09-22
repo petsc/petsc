@@ -111,7 +111,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
 
     PetscCall(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     for (PetscInt cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
+      if (closure[cl] >= vStart && closure[cl] < vEnd) ++bdSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
   }
@@ -122,7 +122,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
 
     PetscCall(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     for (PetscInt cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
+      if (closure[cl] >= vStart && closure[cl] < vEnd) bdFaces[bdSize++] = closure[cl] - vStart;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     if (bdLabel) PetscCall(DMLabelGetValue(bdLabel, bdFacesFull[f], &bdFaceIds[f]));

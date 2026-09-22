@@ -358,7 +358,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, 
   bi[0] = 0;
   for (PetscInt i = 0; i < mbs; i++) {
     aj = a->j + adiag[i];
-    av = a->a + (adiag[i]) * bs2;
+    av = a->a + adiag[i] * bs2;
     for (PetscInt j = 0; j < browlengths[i]; j++) {
       *bj = *aj;
       bj++;

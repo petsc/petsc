@@ -96,7 +96,7 @@ static PetscErrorCode spbas_allocate_data(spbas_matrix *result)
   PetscInt  nnz   = result->nnz;
   PetscInt  nrows = result->nrows;
   PetscInt  r_nnz;
-  PetscBool do_values  = (result->values) ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool do_values  = result->values ? PETSC_TRUE : PETSC_FALSE;
   PetscBool block_data = result->block_data;
 
   PetscFunctionBegin;

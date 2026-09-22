@@ -39,7 +39,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
   pi = pj = pk = -1;
   if (_pi) {
     for (n = 0; n < Mp; n++) {
-      if ((i >= start_i[n]) && (i < start_i[n] + span_i[n])) {
+      if (i >= start_i[n] && i < start_i[n] + span_i[n]) {
         pi = n;
         break;
       }
@@ -50,7 +50,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
 
   if (_pj) {
     for (n = 0; n < Np; n++) {
-      if ((j >= start_j[n]) && (j < start_j[n] + span_j[n])) {
+      if (j >= start_j[n] && j < start_j[n] + span_j[n]) {
         pj = n;
         break;
       }
@@ -61,7 +61,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
 
   if (_pk) {
     for (n = 0; n < Pp; n++) {
-      if ((k >= start_k[n]) && (k < start_k[n] + span_k[n])) {
+      if (k >= start_k[n] && k < start_k[n] + span_k[n]) {
         pk = n;
         break;
       }
@@ -157,7 +157,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors2d(PC_Telescope sred, DM
   if (PCTelescope_isActiveRank(sred)) {
     for (j = sj; j < sj + nj; j++) {
       for (i = si; i < si + ni; i++) {
-        nidx                = (i) + (j)*M;
+        nidx                = i + j * M;
         fine_indices[c]     = 2 * nidx;
         fine_indices[c + 1] = 2 * nidx + 1;
         c                   = c + 2;
@@ -253,7 +253,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart_coors3d(PC_Telescope sred, DM
     for (k = sk; k < sk + nk; k++) {
       for (j = sj; j < sj + nj; j++) {
         for (i = si; i < si + ni; i++) {
-          nidx                = (i) + (j)*M + (k)*M * N;
+          nidx                = i + j * M + k * M * N;
           fine_indices[c]     = 3 * nidx;
           fine_indices[c + 1] = 3 * nidx + 1;
           fine_indices[c + 2] = 3 * nidx + 2;

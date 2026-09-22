@@ -71,7 +71,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
       totc++;
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &numPoints, &points));
       for (i = 0; i < numPoints * 2; i += 2) {
-        if ((points[i] >= vStart) && (points[i] < vEnd)) PetscCall(PetscBTSet(vown, points[i] - vStart));
+        if (points[i] >= vStart && points[i] < vEnd) PetscCall(PetscBTSet(vown, points[i] - vStart));
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &numPoints, &points));
     }
@@ -292,7 +292,7 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
   if (!dof) {
     PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &numPoints, &points));
     for (i = 0, q = 0; i < numPoints * 2; i += 2)
-      if ((points[i] >= vStart) && (points[i] < vEnd)) vids[q++] = points[i] - vStart + off;
+      if (points[i] >= vStart && points[i] < vEnd) vids[q++] = points[i] - vStart + off;
     PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &numPoints, &points));
   } else {
     PetscCall(PetscSectionGetOffset(csec, p, &off));
@@ -631,8 +631,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     if (localized && !hovec) { /* we need to generate a vector of L2 coordinates, as this is how MFEM handles periodic meshes */
       PetscInt     vpc = 0;
       char         fec[64];
-      PetscInt     vids[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-      PetscInt     hexv[8] = {0, 1, 3, 2, 4, 5, 7, 6}, tetv[4] = {0, 1, 2, 3};
+      PetscInt     vids[8]  = {0, 1, 2, 3, 4, 5, 6, 7};
+      PetscInt     hexv[8]  = {0, 1, 3, 2, 4, 5, 7, 6};
       PetscInt     quadv[8] = {0, 1, 3, 2}, triv[3] = {0, 1, 2};
       PetscInt    *dof = NULL;
       PetscScalar *array, *ptr;
@@ -664,8 +664,6 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         case 3:
           switch (fpc) {
           case 4: /* TODO: still need to understand L2 ordering for tets */
-            vpc = 4;
-            dof = tetv;
             SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled tethraedral case");
           case 6:
             PetscCheck(!cellvertex, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled case: vertices per cell %" PetscInt_FMT, fpc);

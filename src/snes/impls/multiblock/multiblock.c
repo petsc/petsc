@@ -397,7 +397,7 @@ static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes, PetscOptionItems 
   PetscCall(PetscOptionsEnum("-snes_multiblock_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum)mb->type, (PetscEnum *)&ctype, &flg));
   if (flg) PetscCall(SNESMultiblockSetType(snes, ctype));
   /* Only setup fields once */
-  if ((mb->bs > 0) && (mb->numBlocks == 0)) {
+  if (mb->bs > 0 && mb->numBlocks == 0) {
     /* only allow user to set fields from command line if bs is already known, otherwise user can set them in SNESMultiblockSetDefaults() */
     PetscCall(SNESMultiblockSetFieldsRuntime_Private(snes));
     if (mb->defined) PetscCall(PetscInfo(snes, "Blocks defined using the options database\n"));

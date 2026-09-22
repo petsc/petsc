@@ -1613,7 +1613,7 @@ static PetscErrorCode MatCopy_MPISBAIJ(Mat A, Mat B, MatStructure str)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &isbaij, MATSEQSBAIJ, MATMPISBAIJ, ""));
   PetscCheck(isbaij, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "Not for matrix type %s", ((PetscObject)B)->type_name);
   /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
-  if ((str != SAME_NONZERO_PATTERN) || (A->ops->copy != B->ops->copy)) {
+  if (str != SAME_NONZERO_PATTERN || A->ops->copy != B->ops->copy) {
     PetscCall(MatGetRowUpperTriangular(A));
     PetscCall(MatCopy_Basic(A, B, str));
     PetscCall(MatRestoreRowUpperTriangular(A));

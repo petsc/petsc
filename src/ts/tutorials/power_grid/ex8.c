@@ -127,7 +127,7 @@ PetscErrorCode PostStep(TS ts)
      results in initial conditions after fault in binaryoutput
   }*/
 
-  if ((t > user->tf) && (t < user->tcl)) user->Pmax = 0.0; /* A short-circuit that drives the electrical power output (Pmax*sin(delta)) to zero */
+  if (t > user->tf && t < user->tcl) user->Pmax = 0.0; /* A short-circuit that drives the electrical power output (Pmax*sin(delta)) to zero */
   else user->Pmax = user->Pmax_s;
 
   PetscCall(VecSum(X, &asum));

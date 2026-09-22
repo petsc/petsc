@@ -1379,7 +1379,7 @@ static PetscErrorCode DMPlexCreateSquareMesh_Simplex_CrissCross(DM dm, const Pet
         const PetscInt cone[] = {v0, v1};
 
         PetscCall(DMPlexSetCone(dm, edge, cone));
-        if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
+        if (bdX != DM_BOUNDARY_PERIODIC && bdX != DM_BOUNDARY_TWIST) {
           if (vx == numXVertices - 1) {
             PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight));
             PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
@@ -1404,7 +1404,7 @@ static PetscErrorCode DMPlexCreateSquareMesh_Simplex_CrissCross(DM dm, const Pet
         const PetscInt cone[] = {v0, v1};
 
         PetscCall(DMPlexSetCone(dm, edge, cone));
-        if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
+        if (bdY != DM_BOUNDARY_PERIODIC && bdY != DM_BOUNDARY_TWIST) {
           if (vy == numYVertices - 1) {
             PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop));
             PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
@@ -1793,7 +1793,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           cone[1] = vertexK;
           PetscCall(DMPlexSetCone(dm, edge, cone));
           if (dim == 2) {
-            if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
+            if (bdX != DM_BOUNDARY_PERIODIC && bdX != DM_BOUNDARY_TWIST) {
               if (vx == numXVertices - 1) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight));
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
@@ -1853,7 +1853,7 @@ static PetscErrorCode DMPlexCreateCubeMesh_Internal(DM dm, const PetscReal lower
           cone[1] = vertexR;
           PetscCall(DMPlexSetCone(dm, edge, cone));
           if (dim == 2) {
-            if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
+            if (bdY != DM_BOUNDARY_PERIODIC && bdY != DM_BOUNDARY_TWIST) {
               if (vy == numYVertices - 1) {
                 PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop));
                 PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));

@@ -9,7 +9,7 @@
 
 static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
 {
-  PetscInt       f0, f1, f2, f3, dof0, dof1, dof2, dof3, n_entries, k, d, cnt, n_fields, dim;
+  PetscInt       f0, f1 = 0, f2 = 0, f3 = 0, dof0, dof1, dof2, dof3, n_entries, k, d, cnt, n_fields, dim;
   DMStagStencil *stencil0, *stencil1, *stencil2, *stencil3;
 
   PetscFunctionBegin;
@@ -18,7 +18,6 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
   PetscCall(DMStagGetEntriesPerElement(dm, &n_entries));
 
   f0 = 1;
-  f1 = f2 = f3 = 0;
   if (dim == 1) {
     f1 = 1;
   } else if (dim == 2) {

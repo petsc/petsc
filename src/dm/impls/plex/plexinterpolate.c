@@ -1699,7 +1699,7 @@ PetscErrorCode DMPlexCopyCoordinates(DM dmA, DM dmB)
     PetscCall(DMGetField(cdmB, 0, NULL, &objB));
     PetscCall(PetscObjectGetClassId(objA, &idA));
     PetscCall(PetscObjectGetClassId(objB, &idB));
-    if ((idA == PETSCFE_CLASSID) && (idA != idB)) {
+    if (idA == PETSCFE_CLASSID && idA != idB) {
       PetscCall(DMSetField(cdmB, 0, NULL, objA));
       PetscCall(DMCreateDS(cdmB));
       PetscCall(DMGetDS(cdmA, &dsA));
@@ -1816,7 +1816,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       const PetscInt p = closure[cl];
 
-      if ((p >= vStart) && (p < vEnd)) ++coneSize;
+      if (p >= vStart && p < vEnd) ++coneSize;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     PetscCall(DMPlexSetConeSize(udm, c, coneSize));
@@ -1831,7 +1831,7 @@ PetscErrorCode DMPlexUninterpolate(DM dm, DM *dmUnint)
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       const PetscInt p = closure[cl];
 
-      if ((p >= vStart) && (p < vEnd)) cone[coneSize++] = p;
+      if (p >= vStart && p < vEnd) cone[coneSize++] = p;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     PetscCall(DMPlexSetCone(udm, c, cone));

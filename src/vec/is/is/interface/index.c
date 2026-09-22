@@ -785,7 +785,7 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   if (is->info_permanent[itype][(int)info]) {
     hasprop = (is->info[itype][(int)info] == IS_INFO_TRUE) ? PETSC_TRUE : PETSC_FALSE;
     infer   = PETSC_TRUE;
-  } else if ((itype == IS_LOCAL) && (is->info[IS_LOCAL][info] != IS_INFO_UNKNOWN)) {
+  } else if (itype == IS_LOCAL && is->info[IS_LOCAL][info] != IS_INFO_UNKNOWN) {
     /* we can cache local properties as long as we clear them when the IS changes */
     /* NOTE: we only cache local values because there is no ISAssemblyBegin()/ISAssemblyEnd(),
      so we have no way of knowing when a cached value has been invalidated by changes on a different process */

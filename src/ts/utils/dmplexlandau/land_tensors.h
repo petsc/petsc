@@ -94,12 +94,12 @@ PETSC_DEVICE_FUNC_DECL static void LandauTensor2D(const PetscReal x[], const Pet
   /* mask is needed here just for single precision */
   i2func   = 2. / ((1 - s) * sqrt_1s) * es;
   i1func   = 4. / (PetscSqr(s) * sqrt_1s + PETSC_MACHINE_EPSILON) * mask * (ks - (1. + s) * es);
-  i3func   = 2. / ((1 - s) * (s)*sqrt_1s + PETSC_MACHINE_EPSILON) * (es - (1 - s) * ks);
+  i3func   = 2. / ((1 - s) * s * sqrt_1s + PETSC_MACHINE_EPSILON) * (es - (1 - s) * ks);
   Ud[0][0] = -pi4pow * (rp2 * i1func + PetscSqr(zmzp) * i2func);
-  Ud[0][1] = Ud[1][0] = Uk[0][1] = pi4pow * (zmzp) * (r * i2func - rp * i3func);
-  Uk[1][1] = Ud[1][1] = -pi4pow * ((r2prp2)*i2func - 2 * r * rp * i3func) * mask;
+  Ud[0][1] = Ud[1][0] = Uk[0][1] = pi4pow * zmzp * (r * i2func - rp * i3func);
+  Uk[1][1] = Ud[1][1] = -pi4pow * (r2prp2 * i2func - 2 * r * rp * i3func) * mask;
   Uk[0][0]            = -pi4pow * (zmzp2 * i3func + r * rp * i1func);
-  Uk[1][0]            = pi4pow * (zmzp) * (r * i3func - rp * i2func); /* 48 mults + 21 + 21 = 90 mults and divs */
+  Uk[1][0]            = pi4pow * zmzp * (r * i3func - rp * i2func); /* 48 mults + 21 + 21 = 90 mults and divs */
 }
 #else
 /* integration point functions */

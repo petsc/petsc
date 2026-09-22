@@ -360,10 +360,10 @@ PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG lg, PetscReal x_min, PetscReal x
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
 
-  (lg)->xmin = x_min;
-  (lg)->xmax = x_max;
-  (lg)->ymin = y_min;
-  (lg)->ymax = y_max;
+  lg->xmin = x_min;
+  lg->xmax = x_max;
+  lg->ymin = y_min;
+  lg->ymax = y_max;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

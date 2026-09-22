@@ -91,7 +91,7 @@ M*/
       const cublasStatus_t _p_cublas_stat__ = __VA_ARGS__; \
       if (PetscUnlikely(_p_cublas_stat__ != CUBLAS_STATUS_SUCCESS)) { \
         const char *name = PetscCUBLASGetErrorName(_p_cublas_stat__); \
-        if (((_p_cublas_stat__ == CUBLAS_STATUS_NOT_INITIALIZED) || (_p_cublas_stat__ == CUBLAS_STATUS_ALLOC_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
+        if ((_p_cublas_stat__ == CUBLAS_STATUS_NOT_INITIALIZED || _p_cublas_stat__ == CUBLAS_STATUS_ALLOC_FAILED) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
                   "cuBLAS error %d (%s). " \
                   "Reports not initialized or alloc failed; " \
@@ -132,7 +132,7 @@ M*/
       const cusolverStatus_t _p_cusolver_stat__ = __VA_ARGS__; \
       if (PetscUnlikely(_p_cusolver_stat__ != CUSOLVER_STATUS_SUCCESS)) { \
         const char *name = PetscCUSolverGetErrorName(_p_cusolver_stat__); \
-        if (((_p_cusolver_stat__ == CUSOLVER_STATUS_NOT_INITIALIZED) || (_p_cusolver_stat__ == CUSOLVER_STATUS_ALLOC_FAILED) || (_p_cusolver_stat__ == CUSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
+        if ((_p_cusolver_stat__ == CUSOLVER_STATUS_NOT_INITIALIZED || _p_cusolver_stat__ == CUSOLVER_STATUS_ALLOC_FAILED || _p_cusolver_stat__ == CUSOLVER_STATUS_INTERNAL_ERROR) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
                   "cuSolver error %d (%s). " \
                   "This indicates the GPU may have run out resources", \
@@ -149,7 +149,7 @@ M*/
       const cufftResult_t _p_cufft_stat__ = __VA_ARGS__; \
       if (PetscUnlikely(_p_cufft_stat__ != CUFFT_SUCCESS)) { \
         const char *name = PetscCUFFTGetErrorName(_p_cufft_stat__); \
-        if (((_p_cufft_stat__ == CUFFT_SETUP_FAILED) || (_p_cufft_stat__ == CUFFT_ALLOC_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
+        if ((_p_cufft_stat__ == CUFFT_SETUP_FAILED || _p_cufft_stat__ == CUFFT_ALLOC_FAILED) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
                   "cuFFT error %d (%s). " \
                   "Reports not initialized or alloc failed; " \
@@ -166,7 +166,7 @@ M*/
     do { \
       const curandStatus_t _p_curand_stat__ = __VA_ARGS__; \
       if (PetscUnlikely(_p_curand_stat__ != CURAND_STATUS_SUCCESS)) { \
-        if (((_p_curand_stat__ == CURAND_STATUS_INITIALIZATION_FAILED) || (_p_curand_stat__ == CURAND_STATUS_ALLOCATION_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
+        if ((_p_curand_stat__ == CURAND_STATUS_INITIALIZATION_FAILED || _p_curand_stat__ == CURAND_STATUS_ALLOCATION_FAILED) && PetscDeviceInitialized(PETSC_DEVICE_CUDA)) { \
           SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
                   "cuRAND error %d. " \
                   "Reports not initialized or alloc failed; " \

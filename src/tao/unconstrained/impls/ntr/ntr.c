@@ -175,7 +175,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
               tau = tr->gamma2_i;
             } else if (tau_max < tr->gamma1_i) {
               tau = tr->gamma1_i;
-            } else if ((tau_min < tr->gamma1_i) && (tau_max >= 1.0)) {
+            } else if (tau_min < tr->gamma1_i && tau_max >= 1.0) {
               tau = tr->gamma1_i;
             } else if ((tau_1 >= tr->gamma1_i) && (tau_1 < 1.0) && ((tau_2 < tr->gamma1_i) || (tau_2 >= 1.0))) {
               tau = tau_1;
@@ -277,7 +277,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
       }
       PetscCall(VecScale(tao->stepdirection, -1.0));
       PetscCall(KSPGetConvergedReason(tao->ksp, &ksp_reason));
-      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && (tr->bfgs_pre)) {
+      if ((KSP_DIVERGED_INDEFINITE_PC == ksp_reason) && tr->bfgs_pre) {
         /* Preconditioner is numerically indefinite; reset the
            approximate if using BFGS preconditioning. */
         PetscCall(MatLMVMReset(tr->M, PETSC_FALSE));
@@ -391,7 +391,7 @@ static PetscErrorCode TaoSolve_NTR(Tao tao)
                 tao->trust = tr->gamma2 * PetscMin(tao->trust, norm_d);
               } else if (tau_max < tr->gamma1) {
                 tao->trust = tr->gamma1 * PetscMin(tao->trust, norm_d);
-              } else if ((tau_min < tr->gamma1) && (tau_max >= 1.0)) {
+              } else if (tau_min < tr->gamma1 && tau_max >= 1.0) {
                 tao->trust = tr->gamma1 * PetscMin(tao->trust, norm_d);
               } else if ((tau_1 >= tr->gamma1) && (tau_1 < 1.0) && ((tau_2 < tr->gamma1) || (tau_2 >= 1.0))) {
                 tao->trust = tau_1 * PetscMin(tao->trust, norm_d);

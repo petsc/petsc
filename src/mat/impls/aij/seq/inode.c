@@ -432,8 +432,6 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       }
       y[row++] = sum1;
       y[row++] = sum2;
-      v1       = v2; /* Since the next block to be processed starts there*/
-      idx += sz;
       break;
     case 3:
       sum1 = 0.;
@@ -464,8 +462,6 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       y[row++] = sum1;
       y[row++] = sum2;
       y[row++] = sum3;
-      v1       = v3; /* Since the next block to be processed starts there*/
-      idx += 2 * sz;
       break;
     case 4:
       sum1 = 0.;
@@ -502,8 +498,6 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       y[row++] = sum2;
       y[row++] = sum3;
       y[row++] = sum4;
-      v1       = v4; /* Since the next block to be processed starts there*/
-      idx += 3 * sz;
       break;
     case 5:
       sum1 = 0.;
@@ -546,8 +540,6 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       y[row++] = sum3;
       y[row++] = sum4;
       y[row++] = sum5;
-      v1       = v5; /* Since the next block to be processed starts there */
-      idx += 4 * sz;
       break;
     default:
       SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nsz);
@@ -793,7 +785,7 @@ static PetscErrorCode MatSolve_SeqAIJ_Inode_inplace(Mat A, Vec bb, Vec xx)
   aj   = a_j;
   ad   = a->diag;
 
-  for (i = 0, row = 0; i < node_max; ++i) {
+  for (i = 0; i < node_max; ++i) {
     row = ns[i];
     nsz = ns[i + 1] - ns[i];
     aii = ai[row];
@@ -1223,7 +1215,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
     sctx.shift_top = info->zeropivot;
     for (i = 0; i < n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      d  = (aa)[ddiag[i]];
+      d  = aa[ddiag[i]];
       rs = -PetscAbsScalar(d) - PetscRealPart(d);
       v  = aa + ai[i];
       nz = ai[i + 1] - ai[i];

@@ -19,7 +19,7 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
     PetscBool isdummy;
     PetscCall(PetscObjectTypeCompare((PetscObject)(*mat)[n], MATDUMMY, &isdummy));
     if (isdummy) {
-      Mat_SubSppt *smat = (Mat_SubSppt *)((*mat)[n]->data); /* singleis and nstages are saved in (*mat)[n]->data */
+      Mat_SubSppt *smat = (Mat_SubSppt *)(*mat)[n]->data; /* singleis and nstages are saved in (*mat)[n]->data */
 
       if (smat && !smat->singleis) {
         PetscInt i, nstages = smat->nstages;

@@ -702,7 +702,7 @@ static PetscErrorCode PCSetUp_Exotic(PC pc)
   Mat        A;
   PC_MG     *mg    = (PC_MG *)pc->data;
   PC_Exotic *ex    = (PC_Exotic *)mg->innerctx;
-  MatReuse   reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
+  MatReuse   reuse = ex->P ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
   PetscCheck(pc->dm, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Need to call PCSetDM() before using this PC");

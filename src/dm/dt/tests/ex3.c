@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     PetscReal integral;
 
     /* These can only be integrated accuractely using MPFR */
-    if ((f == 6) || (f == 7) || (f == 9) || (f == 11)) continue;
+    if (f == 6 || f == 7 || f == 9 || f == 11) continue;
     if (PetscDefined(USE_REAL_SINGLE) && f == 8) continue;
     PetscCall(PetscDTTanhSinhIntegrate(funcs[f], bounds[f * 2 + 0], bounds[f * 2 + 1], digits, NULL, &integral));
     if (PetscAbsReal(integral - analytic[f]) > PetscMax(epsilon, PetscPowRealInt(10.0, -digits)) || PetscIsInfOrNanScalar(integral - analytic[f])) {

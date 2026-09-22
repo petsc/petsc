@@ -312,7 +312,7 @@ static PetscErrorCode DMSwarmDataExCompleteCommunicationMap_Private(MPI_Comm com
   PetscCall(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 */
-  if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
+  if (n_new != NULL && proc_neighbours_new != NULL) {
     PetscCall(MatGetRow(A, rank_, &nc, &cols, &red_vals));
     PetscCall(PetscMPIIntCast(nc, &_n_new));
     PetscCall(PetscMalloc1(_n_new, &_proc_neighbours_new));

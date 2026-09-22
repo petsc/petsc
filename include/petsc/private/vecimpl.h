@@ -269,10 +269,10 @@ static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row
 {
   /* Check and see if we have sufficient memory */
   PetscFunctionBegin;
-  if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
-  (stash)->idx[(stash)->n]   = row;
-  (stash)->array[(stash)->n] = value;
-  (stash)->n++;
+  if ((stash->n + 1) > stash->nmax) PetscCall(VecStashExpand_Private(stash, 1));
+  stash->idx[stash->n]   = row;
+  stash->array[stash->n] = value;
+  stash->n++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -286,16 +286,16 @@ static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row
 */
 static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, PetscInt row, PetscScalar *values)
 {
-  PetscInt     stash_bs = (stash)->bs;
+  PetscInt     stash_bs = stash->bs;
   PetscScalar *array;
 
   PetscFunctionBegin;
-  if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
-  array                    = (stash)->array + stash_bs * (stash)->n;
-  (stash)->idx[(stash)->n] = row;
+  if ((stash->n + 1) > stash->nmax) PetscCall(VecStashExpand_Private(stash, 1));
+  array                = stash->array + stash_bs * stash->n;
+  stash->idx[stash->n] = row;
   if (values) PetscCall(PetscArraycpy(array, values, stash_bs));
   else PetscCall(PetscArrayzero(array, stash_bs));
-  (stash)->n++;
+  stash->n++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

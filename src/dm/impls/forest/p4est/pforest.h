@@ -3834,11 +3834,11 @@ static PetscErrorCode PforestQuadrantIsInterior(p4est_quadrant_t *quad, PetscBoo
 {
   PetscFunctionBegin;
   p4est_qcoord_t h = P4EST_QUADRANT_LEN(quad->level);
-  if ((quad->x > 0) && (quad->x + h < P4EST_ROOT_LEN)
+  if (quad->x > 0 && quad->x + h < P4EST_ROOT_LEN
   #if defined(P4_TO_P8)
-      && (quad->z > 0) && (quad->z + h < P4EST_ROOT_LEN)
+      && quad->z > 0 && quad->z + h < P4EST_ROOT_LEN
   #endif
-      && (quad->y > 0) && (quad->y + h < P4EST_ROOT_LEN)) {
+      && quad->y > 0 && quad->y + h < P4EST_ROOT_LEN) {
     *is_interior = PETSC_TRUE;
   } else {
     *is_interior = PETSC_FALSE;

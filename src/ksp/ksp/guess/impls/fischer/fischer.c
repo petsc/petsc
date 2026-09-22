@@ -220,7 +220,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
 #endif
     PetscCall(VecMDot(b, itg->curl, itg->btilde, itg->last_b_coefs));
     for (j = 0; j < m; ++j) {
-      for (i = 0; i < m; ++i) corr[m * j + i] = itg->corr[(itg->maxl) * j + i];
+      for (i = 0; i < m; ++i) corr[m * j + i] = itg->corr[itg->maxl * j + i];
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;

@@ -132,11 +132,11 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 
     if (actred > 0) {
       PetscCall(PetscInfo(ls, "Step resulted in ascent, rejecting.\n"));
-      ls->step = (ls->step) / 2;
+      ls->step = ls->step / 2;
     } else if (rho > ls->ftol) {
       break;
     } else {
-      ls->step = (ls->step) / 2;
+      ls->step = ls->step / 2;
     }
 
     /* Convergence testing */

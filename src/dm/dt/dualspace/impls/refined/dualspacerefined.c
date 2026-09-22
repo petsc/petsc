@@ -88,7 +88,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
       PetscCall(PetscDualSpaceGetUniform(sp->pointSpaces[c - pStart], &cUniform));
       if (!cUniform) break;
     }
-    if ((c > cStart) && sp->pointSpaces[c - pStart] != sp->pointSpaces[c - 1 - pStart]) break;
+    if (c > cStart && sp->pointSpaces[c - pStart] != sp->pointSpaces[c - 1 - pStart]) break;
   }
   if (c < cEnd) sp->uniform = PETSC_FALSE;
   for (PetscInt h = 0; h < depth; h++) {

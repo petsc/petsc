@@ -239,7 +239,7 @@ int main(int argc, char **argv)
         for (p = 0; p < closureSize; ++p) {
           /* Find depth of p */
           for (d = 0; d <= sdim; ++d) {
-            if ((closure[2 * p] >= pStartDepth[d]) && (closure[2 * p] < pEndDepth[d])) {
+            if (closure[2 * p] >= pStartDepth[d] && closure[2 * p] < pEndDepth[d]) {
               PetscCall(PetscSectionSetDof(section, closure[2 * p], dofU[d] + dofA[d] + dofS[d]));
               PetscCall(PetscSectionSetFieldDof(section, closure[2 * p], fieldU, dofU[d]));
               PetscCall(PetscSectionSetFieldDof(section, closure[2 * p], fieldA, dofA[d]));

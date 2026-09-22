@@ -403,8 +403,8 @@ static PetscErrorCode PetscLagNodeIndicesComputeVertexOrder(DM dm, PetscLagNodeI
     for (v = 0; v < nVerts; v++) idxOrder[v] = v;
     for (v = 0; v < nVerts; v++) {
       for (w = v + 1; w < nVerts; w++) {
-        const PetscInt *iv   = &(ni->nodeIdx[idxOrder[v] * nodeIdxDim]);
-        const PetscInt *iw   = &(ni->nodeIdx[idxOrder[w] * nodeIdxDim]);
+        const PetscInt *iv   = &ni->nodeIdx[idxOrder[v] * nodeIdxDim];
+        const PetscInt *iw   = &ni->nodeIdx[idxOrder[w] * nodeIdxDim];
         PetscInt        diff = 0;
 
         for (d = nodeIdxDim - 1; d >= 0; d--)
@@ -1710,7 +1710,7 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDua
 
     PetscCall(MatGetRow(allMat, f, &ncols, &cols, &vals));
     for (c = 1, nNodesf = 1; c < ncols; c++) {
-      if ((cols[c] / Nc) != (cols[c - 1] / Nc)) nNodesf++;
+      if (cols[c] / Nc != cols[c - 1] / Nc) nNodesf++;
     }
     PetscCall(PetscMalloc1(dim * nNodesf, &nodesf));
     PetscCall(PetscMalloc1(Nc * nNodesf, &weightsf));
@@ -2484,12 +2484,12 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
   PetscCall(PetscLagNodeIndicesGetPermutation(ni, &permOrnt));
   PetscCall(PetscMalloc1(nNodes, &nnz));
   for (n = 0, maxGroupSize = 0; n < nNodes;) { /* incremented in the loop */
-    PetscInt *nind = &(ni->nodeIdx[permOrnt[n] * nodeIdxDim]);
+    PetscInt *nind = &ni->nodeIdx[permOrnt[n] * nodeIdxDim];
     PetscInt  m, nEnd;
     PetscInt  groupSize;
     /* for each group of dofs that have the same nodeIdx coordinate */
     for (nEnd = n + 1; nEnd < nNodes; nEnd++) {
-      PetscInt *mind = &(ni->nodeIdx[permOrnt[nEnd] * nodeIdxDim]);
+      PetscInt *mind = &ni->nodeIdx[permOrnt[nEnd] * nodeIdxDim];
       PetscInt  d;
 
       /* compare the oriented permutation indices */
@@ -2503,10 +2503,10 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
      * to a group of dofs with the same size, otherwise we messed up */
     if (PetscDefined(USE_DEBUG)) {
       PetscInt  m;
-      PetscInt *nind = &(intNodeIndices->nodeIdx[perm[n] * nodeIdxDim]);
+      PetscInt *nind = &intNodeIndices->nodeIdx[perm[n] * nodeIdxDim];
 
       for (m = n + 1; m < nEnd; m++) {
-        PetscInt *mind = &(intNodeIndices->nodeIdx[perm[m] * nodeIdxDim]);
+        PetscInt *mind = &intNodeIndices->nodeIdx[perm[m] * nodeIdxDim];
         PetscInt  d;
 
         /* compare the oriented permutation indices */
@@ -2529,11 +2529,11 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
   PetscCall(PetscFree(nnz));
   PetscCall(PetscMalloc3(maxGroupSize * nodeVecDim, &V, maxGroupSize * nodeVecDim, &W, nodeVecDim * 2, &work));
   for (n = 0; n < nNodes;) { /* incremented in the loop */
-    PetscInt *nind = &(ni->nodeIdx[permOrnt[n] * nodeIdxDim]);
+    PetscInt *nind = &ni->nodeIdx[permOrnt[n] * nodeIdxDim];
     PetscInt  nEnd;
     PetscInt  groupSize;
     for (nEnd = n + 1; nEnd < nNodes; nEnd++) {
-      PetscInt *mind = &(ni->nodeIdx[permOrnt[nEnd] * nodeIdxDim]);
+      PetscInt *mind = &ni->nodeIdx[permOrnt[nEnd] * nodeIdxDim];
       PetscInt  d;
 
       /* compare the oriented permutation indices */

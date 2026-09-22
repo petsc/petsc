@@ -2014,7 +2014,7 @@ static PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A, MatType newtype, MatReu
   PetscCall(MatAssemblyBegin(*newmat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*newmat, MAT_FINAL_ASSEMBLY));
   {
-    Mat_SeqAIJ *a = (Mat_SeqAIJ *)((*newmat)->data);
+    Mat_SeqAIJ *a = (Mat_SeqAIJ *)(*newmat)->data;
     a->free_a     = PETSC_TRUE;
     a->free_ij    = PETSC_TRUE;
   }

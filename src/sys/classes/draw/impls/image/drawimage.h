@@ -175,12 +175,12 @@ static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int 
     rx_lx = rx - lx;
     if (rx > lx) {
       for (xx = lx; xx <= rx; xx++) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscImageDrawPixel(img, xx, y, c);
       }
     } else if (rx < lx) {
       for (xx = lx; xx >= rx; xx--) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscImageDrawPixel(img, xx, y, c);
       }
     } else {
@@ -219,12 +219,12 @@ static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int 
     rx_lx = rx - lx;
     if (rx > lx) {
       for (xx = lx; xx <= rx; xx++) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscImageDrawPixel(img, xx, y, c);
       }
     } else if (rx < lx) {
       for (xx = lx; xx >= rx; xx--) {
-        c = (((xx - lx) * (rc_lc)) / (rx_lx) + lc) >> SHIFT_VAL;
+        c = (((xx - lx) * rc_lc) / rx_lx + lc) >> SHIFT_VAL;
         PetscImageDrawPixel(img, xx, y, c);
       }
     } else {

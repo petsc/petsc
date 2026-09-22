@@ -612,9 +612,9 @@ PetscErrorCode PetscInfo_Private(const char func[], PetscObject obj, const char 
 
     if (comm != MPI_COMM_NULL) PetscCallMPI(MPI_Comm_size(comm, &size));
     /* If no self printing is allowed, and size too small, get out */
-    if ((PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF) && (size < 2)) PetscFunctionReturn(PETSC_SUCCESS);
+    if (PetscInfoCommFilter == PETSC_INFO_COMM_NO_SELF && size < 2) PetscFunctionReturn(PETSC_SUCCESS);
     /* If ONLY self printing, and size too big, get out */
-    if ((PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF) && (size > 1)) PetscFunctionReturn(PETSC_SUCCESS);
+    if (PetscInfoCommFilter == PETSC_INFO_COMM_ONLY_SELF && size > 1) PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Mute info messages within this function */
   {

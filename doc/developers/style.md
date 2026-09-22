@@ -417,6 +417,11 @@ Even with the use of `clang-format` there are still many decisions about code fo
     provide the Fortran bindings automatically for functions that take contexts. In Fortran,
     the context must be a Fortran derived type, `type(xxx)`.
 
+12. In the body of a function-like macro, parenthesize each argument where surrounding operators
+    could change its parse; a complete call argument needs none. Never parenthesize operands of
+    `#` or `##`, or an argument used as a type; see `PetscConcat_()` and
+    `PetscObjectParameterDeclare()`.
+
 (usage_of_petsc_functions_and_macros)=
 
 ### Usage of PETSc Functions and Macros

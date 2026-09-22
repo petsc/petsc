@@ -138,9 +138,9 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   if (field >= 0) {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[DM_NUM_POLYTOPES]));
+    if (vStart >= pStart && vStart < pEnd) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[DM_NUM_POLYTOPES]));
   } else {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[DM_NUM_POLYTOPES]));
+    if (vStart >= pStart && vStart < pEnd) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[DM_NUM_POLYTOPES]));
   }
 
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
@@ -158,9 +158,9 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
       if (dep != depth - cellHeight) continue;
     }
     if (field >= 0) {
-      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[c]));
+      if (cStart >= pStart && cStart < pEnd) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[c]));
     } else {
-      if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[c]));
+      if (cStart >= pStart && cStart < pEnd) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[c]));
     }
   }
 
@@ -228,11 +228,11 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   if (field >= 0) {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[0]));
-    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[1]));
+    if (vStart >= pStart && vStart < pEnd) PetscCall(PetscSectionGetFieldDof(section, vStart, field, &globalvcdof[0]));
+    if (cStart >= pStart && cStart < pEnd) PetscCall(PetscSectionGetFieldDof(section, cStart, field, &globalvcdof[1]));
   } else {
-    if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[0]));
-    if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[1]));
+    if (vStart >= pStart && vStart < pEnd) PetscCall(PetscSectionGetDof(section, vStart, &globalvcdof[0]));
+    if (cStart >= pStart && cStart < pEnd) PetscCall(PetscSectionGetDof(section, cStart, &globalvcdof[1]));
   }
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (globalvcdof[0]) {
@@ -1046,7 +1046,7 @@ PETSC_UNUSED static PetscErrorCode DMPlexView_Ascii_Geometry(DM dm, PetscViewer 
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       PetscInt point = closure[cl], depth, dof, off, d, p;
 
-      if ((point < pStart) || (point >= pEnd)) continue;
+      if (point < pStart || point >= pEnd) continue;
       PetscCall(PetscSectionGetDof(coordSection, point, &dof));
       if (!dof) continue;
       PetscCall(DMLabelGetValue(depthLabel, point, &depth));
@@ -1505,7 +1505,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
           for (p = 0; p < closureSize * 2; p += 2) {
             const PetscInt point = closure[p];
 
-            if ((point >= vStart) && (point < vEnd)) closure[Nv++] = point;
+            if (point >= vStart && point < vEnd) closure[Nv++] = point;
           }
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\\draw[color=%s] ", colors[rank % numColors]));
           for (v = 0; v <= Nv; ++v) {
@@ -4032,7 +4032,7 @@ PetscInt DMPolytopeConvertOldOrientation_Internal(DMPolytopeType ct, PetscInt o)
 {
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:
-    if ((o == -2) || (o == 1)) return -1;
+    if (o == -2 || o == 1) return -1;
     if (o == -1) return 0;
     break;
   case DM_POLYTOPE_TRIANGLE:
@@ -4073,7 +4073,7 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
       PetscCall(DMPlexGetCellType(dm, cone[c], &ct));
       switch (ct) {
       case DM_POLYTOPE_SEGMENT:
-        if ((o == -2) || (o == 1)) PetscCall(DMPlexInsertConeOrientation(dm, p, c, -1));
+        if (o == -2 || o == 1) PetscCall(DMPlexInsertConeOrientation(dm, p, c, -1));
         if (o == -1) PetscCall(DMPlexInsertConeOrientation(dm, p, c, 0));
         break;
       case DM_POLYTOPE_TRIANGLE:
@@ -4097,10 +4097,8 @@ PetscErrorCode DMPlexConvertOldOrientations_Internal(DM dm)
 
 static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-
   PetscFunctionBeginHot;
-  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+  if (PetscDefined(USE_DEBUG) || ((DM_Plex *)dm->data)->tr) {
     if (useCone) {
       PetscCall(DMPlexGetConeSize(dm, p, size));
       PetscCall(DMPlexGetOrientedCone(dm, p, arr, ornt));
@@ -4109,6 +4107,8 @@ static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, Petsc
       PetscCall(DMPlexGetSupport(dm, p, arr));
     }
   } else {
+    DM_Plex *mesh = (DM_Plex *)dm->data;
+
     if (useCone) {
       const PetscSection s   = mesh->coneSection;
       const PetscInt     ps  = p - s->pStart;
@@ -4131,10 +4131,8 @@ static inline PetscErrorCode DMPlexGetTransitiveClosure_Hot_Private(DM dm, Petsc
 
 static inline PetscErrorCode DMPlexRestoreTransitiveClosure_Hot_Private(DM dm, PetscInt p, PetscBool useCone, PetscInt *size, const PetscInt *arr[], const PetscInt *ornt[])
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-
   PetscFunctionBeginHot;
-  if (PetscDefined(USE_DEBUG) || mesh->tr) {
+  if (PetscDefined(USE_DEBUG) || ((DM_Plex *)dm->data)->tr) {
     if (useCone) PetscCall(DMPlexRestoreOrientedCone(dm, p, arr, ornt));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -5139,7 +5137,7 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
 
       PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
       for (i = offsets[p * (depth + 2) + d]; i < closureSize; ++i) {
-        if ((pStart > closures[p][i * 2]) || (pEnd <= closures[p][i * 2])) {
+        if (pStart > closures[p][i * 2] || pEnd <= closures[p][i * 2]) {
           offsets[p * (depth + 2) + d + 1] = i;
           break;
         }
@@ -5347,7 +5345,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
 
       PetscCall(DMPlexGetHeightStratum(dm, h, &pStart, &pEnd));
       for (i = offsets[p * (height + 2) + h]; i < closureSize; ++i) {
-        if ((pStart > closures[p][i * 2]) || (pEnd <= closures[p][i * 2])) {
+        if (pStart > closures[p][i * 2] || pEnd <= closures[p][i * 2]) {
           offsets[p * (height + 2) + h + 1] = i;
           break;
         }
@@ -5425,7 +5423,7 @@ PetscErrorCode DMPlexEqual(DM dmA, DM dmB, PetscBool *equal)
   if (depth != depthB) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetChart(dmA, &pStart, &pEnd));
   PetscCall(DMPlexGetChart(dmB, &pStartB, &pEndB));
-  if ((pStart != pStartB) || (pEnd != pEndB)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (pStart != pStartB || pEnd != pEndB) PetscFunctionReturn(PETSC_SUCCESS);
   for (p = pStart; p < pEnd; ++p) {
     const PetscInt *cone, *coneB, *ornt, *orntB, *support, *supportB;
     PetscInt        coneSize, coneSizeB, c, supportSize, supportSizeB, s;
@@ -6848,7 +6846,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
   PetscCall(DMPlexGetCone(dm, point, &cone));
   PetscCall(DMPlexGetConeOrientation(dm, point, &coneO));
   if (!values || !*values) {
-    if ((point >= pStart) && (point < pEnd)) {
+    if (point >= pStart && point < pEnd) {
       PetscInt dof;
 
       PetscCall(PetscSectionGetDof(section, point, &dof));
@@ -6858,7 +6856,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
       const PetscInt cp = cone[p];
       PetscInt       dof;
 
-      if ((cp < pStart) || (cp >= pEnd)) continue;
+      if (cp < pStart || cp >= pEnd) continue;
       PetscCall(PetscSectionGetDof(section, cp, &dof));
       size += dof;
     }
@@ -6872,7 +6870,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
   }
   size = 0;
   PetscCall(VecGetArrayRead(v, &vArray));
-  if ((point >= pStart) && (point < pEnd)) {
+  if (point >= pStart && point < pEnd) {
     PetscInt           dof, off, d;
     const PetscScalar *varr;
 
@@ -6888,7 +6886,7 @@ static inline PetscErrorCode DMPlexVecGetClosure_Depth1_Static(DM dm, PetscSecti
     PetscInt           dof, off, d;
     const PetscScalar *varr;
 
-    if ((cp < pStart) || (cp >= pEnd)) continue;
+    if (cp < pStart || cp >= pEnd) continue;
     PetscCall(PetscSectionGetDof(section, cp, &dof));
     PetscCall(PetscSectionGetOffset(section, cp, &off));
     varr = PetscSafePointerPlusOffset(vArray, off);
@@ -6919,7 +6917,7 @@ static inline PetscErrorCode CompressPoints_Private(PetscSection section, PetscI
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   for (p = 0, q = 0; p < np; ++p) {
     const PetscInt r = points[p * 2];
-    if ((r >= pStart) && (r < pEnd)) {
+    if (r >= pStart && r < pEnd) {
       points[q * 2]     = r;
       points[q * 2 + 1] = points[p * 2 + 1];
       ++q;
@@ -7474,7 +7472,7 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
     if (clperm) {
       if (perm) {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7482,7 +7480,7 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
         }
       } else {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7492,7 +7490,7 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
     } else {
       if (perm) {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7500,7 +7498,7 @@ static inline PetscErrorCode updatePoint_private(PetscSection section, PetscInt 
         }
       } else {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7528,14 +7526,14 @@ static inline PetscErrorCode updatePointBC_private(PetscSection section, PetscIn
     if (clperm) {
       if (perm) {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             fuse(&a[k], values[clperm[offset + perm[k]]] * (flip ? flip[perm[k]] : 1.));
             cind++;
           }
         }
       } else {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             fuse(&a[k], values[clperm[offset + k]] * (flip ? flip[k] : 1.));
             cind++;
           }
@@ -7544,14 +7542,14 @@ static inline PetscErrorCode updatePointBC_private(PetscSection section, PetscIn
     } else {
       if (perm) {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             fuse(&a[k], values[offset + perm[k]] * (flip ? flip[perm[k]] : 1.));
             cind++;
           }
         }
       } else {
         for (k = 0; k < dof; ++k) {
-          if ((cind < cdof) && (k == cdofs[cind])) {
+          if (cind < cdof && k == cdofs[cind]) {
             fuse(&a[k], values[offset + k] * (flip ? flip[k] : 1.));
             cind++;
           }
@@ -7593,7 +7591,7 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
     if (clperm) {
       if (perm) {
         for (b = 0; b < fdof; b++) {
-          if ((cind < fcdof) && (b == fcdofs[cind])) {
+          if (cind < fcdof && b == fcdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7601,7 +7599,7 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
         }
       } else {
         for (b = 0; b < fdof; b++) {
-          if ((cind < fcdof) && (b == fcdofs[cind])) {
+          if (cind < fcdof && b == fcdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7611,7 +7609,7 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
     } else {
       if (perm) {
         for (b = 0; b < fdof; b++) {
-          if ((cind < fcdof) && (b == fcdofs[cind])) {
+          if (cind < fcdof && b == fcdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7619,7 +7617,7 @@ static inline PetscErrorCode updatePointFields_private(PetscSection section, Pet
         }
       } else {
         for (b = 0; b < fdof; b++) {
-          if ((cind < fcdof) && (b == fcdofs[cind])) {
+          if (cind < fcdof && b == fcdofs[cind]) {
             ++cind;
             continue;
           }
@@ -7658,7 +7656,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ncind = (ncind + 1) % Ncc;
               ncSet = PETSC_TRUE;
             }
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               ++cind;
               fcSet = PETSC_TRUE;
             }
@@ -7666,7 +7664,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
           }
         } else {
           for (b = 0; b < fdof; b++) {
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               fuse(&a[b], values[clperm[foffset + perm[b]]] * (flip ? flip[perm[b]] : 1.));
               ++cind;
             }
@@ -7680,7 +7678,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ncind = (ncind + 1) % Ncc;
               ncSet = PETSC_TRUE;
             }
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               ++cind;
               fcSet = PETSC_TRUE;
             }
@@ -7688,7 +7686,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
           }
         } else {
           for (b = 0; b < fdof; b++) {
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               fuse(&a[b], values[clperm[foffset + b]] * (flip ? flip[b] : 1.));
               ++cind;
             }
@@ -7704,7 +7702,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ncind = (ncind + 1) % Ncc;
               ncSet = PETSC_TRUE;
             }
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               ++cind;
               fcSet = PETSC_TRUE;
             }
@@ -7712,7 +7710,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
           }
         } else {
           for (b = 0; b < fdof; b++) {
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               fuse(&a[b], values[foffset + perm[b]] * (flip ? flip[perm[b]] : 1.));
               ++cind;
             }
@@ -7726,7 +7724,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
               ncind = (ncind + 1) % Ncc;
               ncSet = PETSC_TRUE;
             }
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               ++cind;
               fcSet = PETSC_TRUE;
             }
@@ -7734,7 +7732,7 @@ static inline PetscErrorCode updatePointFieldsBC_private(PetscSection section, P
           }
         } else {
           for (b = 0; b < fdof; b++) {
-            if ((cind < fcdof) && (b == fcdofs[cind])) {
+            if (cind < fcdof && b == fcdofs[cind]) {
               fuse(&a[b], values[foffset + b] * (flip ? flip[b] : 1.));
               ++cind;
             }
@@ -7763,7 +7761,7 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
     const PetscInt cp = !p ? point : cone[p - 1];
     const PetscInt o  = !p ? 0 : coneO[p - 1];
 
-    if ((cp < pStart) || (cp >= pEnd)) {
+    if (cp < pStart || cp >= pEnd) {
       dof = 0;
       continue;
     }
@@ -7787,7 +7785,7 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
         PetscCall(PetscSectionGetConstraintIndices(section, cp, &cdofs));
         if (o >= 0) {
           for (k = 0; k < dof; ++k) {
-            if ((cind < cdof) && (k == cdofs[cind])) {
+            if (cind < cdof && k == cdofs[cind]) {
               ++cind;
               continue;
             }
@@ -7795,7 +7793,7 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
           }
         } else {
           for (k = 0; k < dof; ++k) {
-            if ((cind < cdof) && (k == cdofs[cind])) {
+            if (cind < cdof && k == cdofs[cind]) {
               ++cind;
               continue;
             }
@@ -8181,7 +8179,7 @@ PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection section, PetscBool is
       const PetscInt preind = perm ? *loff + perm[k] : *loff + k;
       const PetscInt ind    = indperm ? indperm[preind] : preind;
 
-      if ((cind < cdof) && (k == cdofs[cind])) {
+      if (cind < cdof && k == cdofs[cind]) {
         /* Insert check for returning constrained indices */
         indices[ind] = -(off + k + 1);
         ++cind;
@@ -8261,7 +8259,7 @@ PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection section, PetscB
         const PetscInt preind = perm ? foffs[f] + perm[b] : foffs[f] + b;
         const PetscInt ind    = indperm ? indperm[preind] : preind;
 
-        if ((cind < cfdof) && (b == fcdofs[cind])) {
+        if (cind < cfdof && b == fcdofs[cind]) {
           indices[ind] = -(off + foff + b + 1);
           ++cind;
         } else {
@@ -8312,7 +8310,7 @@ static PetscErrorCode DMPlexGetIndicesPointFieldsSplit_Internal(PetscSection sec
         const PetscInt preind = perm ? foffs[f] + perm[b] : foffs[f] + b;
         const PetscInt ind    = indperm ? indperm[preind] : preind;
 
-        if ((cind < cfdof) && (b == fcdofs[cind])) {
+        if (cind < cfdof && b == fcdofs[cind]) {
           indices[ind] = -(foff + b + 1);
           ++cind;
         } else {
@@ -9144,7 +9142,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
   /*   TODO: Squeeze out points with 0 dof as well */
   PetscCall(PetscSectionGetChart(csection, &pStart, &pEnd));
   for (p = 0, q = 0; p < numCPoints * 2; p += 2) {
-    if ((cpoints[p] >= pStart) && (cpoints[p] < pEnd)) {
+    if (cpoints[p] >= pStart && cpoints[p] < pEnd) {
       cpoints[q * 2]     = cpoints[p];
       cpoints[q * 2 + 1] = cpoints[p + 1];
       ++q;
@@ -9183,7 +9181,7 @@ PetscErrorCode DMPlexMatSetClosureRefined(DM dmf, PetscSection fsection, PetscSe
     /* Compress out points not in the section */
     PetscCall(PetscSectionGetChart(fsection, &pStart, &pEnd));
     for (p = 0; p < numFPoints * 2; p += 2) {
-      if ((fpoints[p] >= pStart) && (fpoints[p] < pEnd)) {
+      if (fpoints[p] >= pStart && fpoints[p] < pEnd) {
         PetscCall(PetscSectionGetDof(fsection, fpoints[p], &dof));
         if (!dof) continue;
         for (s = 0; s < q; ++s)
@@ -9330,7 +9328,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
   /*   TODO: Squeeze out points with 0 dof as well */
   PetscCall(PetscSectionGetChart(csection, &pStart, &pEnd));
   for (p = 0, q = 0; p < numCPoints * 2; p += 2) {
-    if ((cpoints[p] >= pStart) && (cpoints[p] < pEnd)) {
+    if (cpoints[p] >= pStart && cpoints[p] < pEnd) {
       cpoints[q * 2]     = cpoints[p];
       cpoints[q * 2 + 1] = cpoints[p + 1];
       ++q;
@@ -9369,7 +9367,7 @@ PetscErrorCode DMPlexMatGetClosureIndicesRefined(DM dmf, PetscSection fsection, 
     /* Compress out points not in the section */
     PetscCall(PetscSectionGetChart(fsection, &pStart, &pEnd));
     for (p = 0; p < numFPoints * 2; p += 2) {
-      if ((fpoints[p] >= pStart) && (fpoints[p] < pEnd)) {
+      if (fpoints[p] >= pStart && fpoints[p] < pEnd) {
         PetscCall(PetscSectionGetDof(fsection, fpoints[p], &dof));
         if (!dof) continue;
         for (s = 0; s < q; ++s)
@@ -9984,7 +9982,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
       for (s = 0; s < supportSize; ++s) {
         if (support[s] == p) break;
       }
-      if ((s >= supportSize) || (dup && (support[s + 1] != p))) {
+      if (s >= supportSize || (dup && support[s + 1] != p)) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "p: %" PetscInt_FMT " cone: ", p));
         for (s = 0; s < coneSize; ++s) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%" PetscInt_FMT ", ", cone[s]));
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
@@ -10125,7 +10123,7 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
     PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize * 2; cl += 2) {
       const PetscInt p = closure[cl];
-      if ((p >= vStart) && (p < vEnd)) ++Nv;
+      if (p >= vStart && p < vEnd) ++Nv;
     }
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     /* Special Case: Tensor faces with identified vertices */
@@ -10196,7 +10194,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       for (cl = 0; cl < closureSize * 2; cl += 2) {
         const PetscInt p = closure[cl];
-        if ((p >= vStart) && (p < vEnd)) closure[numCorners++] = p;
+        if (p >= vStart && p < vEnd) closure[numCorners++] = p;
       }
       PetscCall(DMPlexGetRawFaces_Internal(dm, ct, closure, &numFaces, &faceTypes, &faceSizes, &faces));
       PetscCheck(coneSize == numFaces, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " of type %s has %" PetscInt_FMT " faces but should have %" PetscInt_FMT, c, DMPolytopeTypes[ct], coneSize, numFaces);
@@ -10208,7 +10206,7 @@ PetscErrorCode DMPlexCheckFaces(DM dm, PetscInt cellHeight)
         PetscCall(DMPlexGetTransitiveClosure_Internal(dm, cone[f], ornt[f], PETSC_TRUE, &fclosureSize, &fclosure));
         for (cl = 0; cl < fclosureSize * 2; cl += 2) {
           const PetscInt p = fclosure[cl];
-          if ((p >= vStart) && (p < vEnd)) fclosure[fnumCorners++] = p;
+          if (p >= vStart && p < vEnd) fclosure[fnumCorners++] = p;
         }
         PetscCheck(fnumCorners == faceSizes[f], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " of type %s (cone idx %" PetscInt_FMT ") of cell %" PetscInt_FMT " of type %s has %" PetscInt_FMT " vertices but should have %" PetscInt_FMT, cone[f], DMPolytopeTypes[fct], f, c, DMPolytopeTypes[ct], fnumCorners, faceSizes[f]);
         for (v = 0; v < fnumCorners; ++v) {
@@ -10655,7 +10653,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
       for (cl = 0; cl < clSize * 2; cl += 2) {
         const PetscInt edge = closure[cl];
 
-        if ((edge >= eStart) && (edge < eEnd)) {
+        if (edge >= eStart && edge < eEnd) {
           PetscReal len;
 
           PetscCall(DMPlexComputeCellGeometryFVM(dm, edge, &len, NULL, NULL));

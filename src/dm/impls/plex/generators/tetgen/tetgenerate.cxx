@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
       PetscCall(DMPlexGetTransitiveClosure(boundary, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
         const PetscInt point = points[p];
-        if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
+        if (point >= vStart && point < vEnd) points[numVertices++] = point;
       }
 
       tetgenio::polygon *poly = in.facetlist[idx].polygonlist;
@@ -398,7 +398,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Tetgen(DM dm, double *maxVolumes, DM *d
       PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &numPoints, &points));
       for (p = 0; p < numPoints * 2; p += 2) {
         const PetscInt point = points[p];
-        if ((point >= vStart) && (point < vEnd)) points[numVertices++] = point;
+        if (point >= vStart && point < vEnd) points[numVertices++] = point;
       }
 
       tetgenio::polygon *poly = in.facetlist[idx].polygonlist;

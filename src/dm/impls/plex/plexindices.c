@@ -36,7 +36,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
 
     PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points));
     for (p = 0; p < numPoints * 2; p += 2) {
-      if ((points[p] >= sStart) && (points[p] < sEnd)) {
+      if (points[p] >= sStart && points[p] < sEnd) {
         PetscCall(PetscSectionGetDof(section, points[p], &dof));
         if (dof) cldof += 2;
       }
@@ -54,7 +54,7 @@ PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
     PetscCall(PetscSectionGetOffset(closureSection, point, &cloff));
     PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &numPoints, &points));
     for (p = 0, q = 0; p < numPoints * 2; p += 2) {
-      if ((points[p] >= sStart) && (points[p] < sEnd)) {
+      if (points[p] >= sStart && points[p] < sEnd) {
         PetscCall(PetscSectionGetDof(section, points[p], &dof));
         if (dof) {
           clPoints[cloff + q * 2]     = points[p];

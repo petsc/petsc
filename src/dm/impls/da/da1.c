@@ -238,26 +238,26 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
   nn = IXs - Xs;
   if (bx == DM_BOUNDARY_PERIODIC) { /* Handle all cases with periodic first */
     for (i = 0; i < sDist; i++) {   /* Left ghost points */
-      if ((xs - sDist + i) >= 0) idx[nn++] = xs - sDist + i;
+      if (xs - sDist + i >= 0) idx[nn++] = xs - sDist + i;
       else idx[nn++] = M + (xs - sDist + i);
     }
 
     for (i = 0; i < x; i++) idx[nn++] = xs + i; /* Non-ghost points */
 
     for (i = 0; i < sDist; i++) { /* Right ghost points */
-      if ((xe + i) < M) idx[nn++] = xe + i;
+      if (xe + i < M) idx[nn++] = xe + i;
       else idx[nn++] = (xe + i) - M;
     }
   } else if (bx == DM_BOUNDARY_MIRROR) { /* Handle all cases with periodic first */
-    for (i = 0; i < (sDist); i++) {      /* Left ghost points */
-      if ((xs - sDist + i) >= 0) idx[nn++] = xs - sDist + i;
+    for (i = 0; i < sDist; i++) {        /* Left ghost points */
+      if (xs - sDist + i >= 0) idx[nn++] = xs - sDist + i;
       else idx[nn++] = sDist - i;
     }
 
     for (i = 0; i < x; i++) idx[nn++] = xs + i; /* Non-ghost points */
 
-    for (i = 0; i < (sDist); i++) { /* Right ghost points */
-      if ((xe + i) < M) idx[nn++] = xe + i;
+    for (i = 0; i < sDist; i++) { /* Right ghost points */
+      if (xe + i < M) idx[nn++] = xe + i;
       else idx[nn++] = M - (i + 2);
     }
   } else { /* Now do all cases with no periodicity */
@@ -269,7 +269,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
 
     for (i = 0; i < x; i++) idx[nn++] = xs + i;
 
-    if ((xe + sDist) <= M) {
+    if (xe + sDist <= M) {
       for (i = 0; i < sDist; i++) idx[nn++] = xe + i;
     } else {
       for (i = xe; i < M; i++) idx[nn++] = i;

@@ -371,11 +371,11 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
       PetscCall(PetscOptionsGetBool(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_not_remove_nullspace_floating", &not_remove_nullspace_floating, NULL));
 
       if (pcis->pure_neumann) { /* floating subdomain */
-        if (!(not_damp_floating)) {
+        if (!not_damp_floating) {
           PetscCall(PCFactorSetShiftType(pc_ctx, MAT_SHIFT_NONZERO));
           PetscCall(PCFactorSetShiftAmount(pc_ctx, floating_factor));
         }
-        if (!(not_remove_nullspace_floating)) {
+        if (!not_remove_nullspace_floating) {
           MatNullSpace nullsp;
           PetscCall(MatNullSpaceCreate(PETSC_COMM_SELF, PETSC_TRUE, 0, NULL, &nullsp));
           PetscCall(MatSetNullSpace(matis->A, nullsp));

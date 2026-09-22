@@ -78,7 +78,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
   n = n / dim;
 
   for (i = 0; i < n; i++) {
-    if ((dim == 3) && (idx != 2)) {
+    if (dim == 3 && idx != 2) {
       PetscScalar Ni[8];
       PetscScalar xi   = XX[dim * i];
       PetscScalar eta  = XX[dim * i + 1];

@@ -100,7 +100,7 @@ static PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A, IS isrow, IS isc
   }
   /* Create and fill new matrix */
   if (scall == MAT_REUSE_MATRIX) {
-    c = (Mat_SeqBAIJ *)((*B)->data);
+    c = (Mat_SeqBAIJ *)(*B)->data;
 
     PetscCheck(c->mbs == nrows && c->nbs == ncols && (*B)->rmap->bs == bs, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Submatrix wrong size");
     PetscCall(PetscArraycmp(c->ilen, lens, c->mbs, &flag));
@@ -865,7 +865,7 @@ PetscErrorCode MatMult_SeqBAIJ_11(Mat A, Vec xx, Vec zz)
     sum11 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb = x + 11 * (idx[j]);
+      xb = x + 11 * idx[j];
 
       for (k = 0; k < 11; k++) {
         xv = xb[k];
@@ -950,7 +950,7 @@ PetscErrorCode MatMult_SeqBAIJ_12_ver1(Mat A, Vec xx, Vec zz)
     sum12 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb = x + 12 * (idx[j]);
+      xb = x + 12 * idx[j];
 
       for (k = 0; k < 12; k++) {
         xv = xb[k];
@@ -1039,7 +1039,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver1(Mat A, Vec xx, Vec yy, Vec zz)
     sum12 = y[11];
 
     for (j = 0; j < n; j++) {
-      xb = x + 12 * (idx[j]);
+      xb = x + 12 * idx[j];
 
       for (k = 0; k < 12; k++) {
         xv = xb[k];
@@ -1116,7 +1116,7 @@ PetscErrorCode MatMult_SeqBAIJ_12_ver2(Mat A, Vec xx, Vec zz)
 
     sum1 = sum2 = sum3 = sum4 = sum5 = sum6 = sum7 = sum8 = sum9 = sum10 = sum11 = sum12 = 0;
     for (j = 0; j < n; j++) {
-      xb = x + 12 * (idx[j]);
+      xb = x + 12 * idx[j];
       x1 = xb[0];
       x2 = xb[1];
       x3 = xb[2];
@@ -1244,7 +1244,7 @@ PetscErrorCode MatMultAdd_SeqBAIJ_12_ver2(Mat A, Vec xx, Vec yy, Vec zz)
     sum12 = y[11];
 
     for (j = 0; j < n; j++) {
-      xb = x + 12 * (idx[j]);
+      xb = x + 12 * idx[j];
       x1 = xb[0];
       x2 = xb[1];
       x3 = xb[2];
@@ -1537,7 +1537,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver1(Mat A, Vec xx, Vec zz)
     sum15 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb = x + 15 * (idx[j]);
+      xb = x + 15 * idx[j];
 
       for (k = 0; k < 15; k++) {
         xv = xb[k];
@@ -1633,7 +1633,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver2(Mat A, Vec xx, Vec zz)
     sum15 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb = x + 15 * (idx[j]);
+      xb = x + 15 * idx[j];
       x1 = xb[0];
       x2 = xb[1];
       x3 = xb[2];
@@ -1794,7 +1794,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver3(Mat A, Vec xx, Vec zz)
     sum15 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb = x + 15 * (idx[j]);
+      xb = x + 15 * idx[j];
       x1 = xb[0];
       x2 = xb[1];
       x3 = xb[2];
@@ -1920,7 +1920,7 @@ PetscErrorCode MatMult_SeqBAIJ_15_ver4(Mat A, Vec xx, Vec zz)
     sum15 = 0.0;
 
     for (j = 0; j < n; j++) {
-      xb  = x + 15 * (idx[j]);
+      xb  = x + 15 * idx[j];
       x1  = xb[0];
       x2  = xb[1];
       x3  = xb[2];

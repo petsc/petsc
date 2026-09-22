@@ -1325,7 +1325,7 @@ PetscErrorCode DMForestGetCellChart(DM dm, PetscInt *cStart, PetscInt *cEnd)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(cStart, 2);
   PetscAssertPointer(cEnd, 3);
-  if (((forest->cStart == PETSC_DETERMINE) || (forest->cEnd == PETSC_DETERMINE)) && forest->createcellchart) PetscCall(forest->createcellchart(dm, &forest->cStart, &forest->cEnd));
+  if ((forest->cStart == PETSC_DETERMINE || forest->cEnd == PETSC_DETERMINE) && forest->createcellchart) PetscCall(forest->createcellchart(dm, &forest->cStart, &forest->cEnd));
   *cStart = forest->cStart;
   *cEnd   = forest->cEnd;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1353,7 +1353,7 @@ PetscErrorCode DMForestGetCellSF(DM dm, PetscSF *cellSF)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(cellSF, 2);
-  if ((!forest->cellSF) && forest->createcellsf) PetscCall(forest->createcellsf(dm, &forest->cellSF));
+  if (!forest->cellSF && forest->createcellsf) PetscCall(forest->createcellsf(dm, &forest->cellSF));
   *cellSF = forest->cellSF;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

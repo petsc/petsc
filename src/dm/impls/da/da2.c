@@ -95,7 +95,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
     PetscCall(PetscDrawLine(draw, xmin, ymax, xmax, ymax, PETSC_DRAW_RED));
     PetscCall(PetscDrawLine(draw, xmax, ymin, xmax, ymax, PETSC_DRAW_RED));
     /* put in numbers */
-    base = (dd->base) / dd->w;
+    base = dd->base / dd->w;
     for (y = ymin; y <= ymax; y++) {
       for (x = xmin; x <= xmax; x++) {
         PetscCall(PetscSNPrintf(node, sizeof(node), "%" PetscInt_FMT, base++));
@@ -116,7 +116,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
     ymax = dd->Ye;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        if ((base % dd->w) == 0) {
+        if (base % dd->w == 0) {
           PetscCall(PetscSNPrintf(node, sizeof(node), "%d", (int)(idx[base / dd->w])));
           PetscCall(PetscDrawString(draw, x / dd->w, y, PETSC_DRAW_BLUE, node));
         }
@@ -467,40 +467,40 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   if (bx == DM_BOUNDARY_PERIODIC && by == DM_BOUNDARY_PERIODIC) {
     /* Modify for Periodic Cases */
     /* Handle all four corners */
-    if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m - 1;
-    if ((n8 < 0) && (n7 < 0) && (n5 < 0)) n8 = 0;
-    if ((n2 < 0) && (n5 < 0) && (n1 < 0)) n2 = size - m;
-    if ((n0 < 0) && (n3 < 0) && (n1 < 0)) n0 = size - 1;
+    if (n6 < 0 && n7 < 0 && n3 < 0) n6 = m - 1;
+    if (n8 < 0 && n7 < 0 && n5 < 0) n8 = 0;
+    if (n2 < 0 && n5 < 0 && n1 < 0) n2 = size - m;
+    if (n0 < 0 && n3 < 0 && n1 < 0) n0 = size - 1;
 
     /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = rank + m * (n - 1);
     if (n7 < 0) n7 = rank - m * (n - 1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (rank % m) - 1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (rank % m) + 1;
+    if (n3 >= 0 && n0 < 0) n0 = size - m + rank - 1;
+    if (n3 >= 0 && n6 < 0) n6 = (rank % m) - 1;
+    if (n5 >= 0 && n2 < 0) n2 = size - m + rank + 1;
+    if (n5 >= 0 && n8 < 0) n8 = (rank % m) + 1;
 
     /* Handle Left and Right Sides */
     if (n3 < 0) n3 = rank + (m - 1);
     if (n5 < 0) n5 = rank - (m - 1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = rank - 1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = rank - 2 * m + 1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = rank + 2 * m - 1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = rank + 1;
+    if (n1 >= 0 && n0 < 0) n0 = rank - 1;
+    if (n1 >= 0 && n2 < 0) n2 = rank - 2 * m + 1;
+    if (n7 >= 0 && n6 < 0) n6 = rank + 2 * m - 1;
+    if (n7 >= 0 && n8 < 0) n8 = rank + 1;
   } else if (by == DM_BOUNDARY_PERIODIC) { /* Handle Top and Bottom Sides */
     if (n1 < 0) n1 = rank + m * (n - 1);
     if (n7 < 0) n7 = rank - m * (n - 1);
-    if ((n3 >= 0) && (n0 < 0)) n0 = size - m + rank - 1;
-    if ((n3 >= 0) && (n6 < 0)) n6 = (rank % m) - 1;
-    if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
-    if ((n5 >= 0) && (n8 < 0)) n8 = (rank % m) + 1;
+    if (n3 >= 0 && n0 < 0) n0 = size - m + rank - 1;
+    if (n3 >= 0 && n6 < 0) n6 = (rank % m) - 1;
+    if (n5 >= 0 && n2 < 0) n2 = size - m + rank + 1;
+    if (n5 >= 0 && n8 < 0) n8 = (rank % m) + 1;
   } else if (bx == DM_BOUNDARY_PERIODIC) { /* Handle Left and Right Sides */
     if (n3 < 0) n3 = rank + (m - 1);
     if (n5 < 0) n5 = rank - (m - 1);
-    if ((n1 >= 0) && (n0 < 0)) n0 = rank - 1;
-    if ((n1 >= 0) && (n2 < 0)) n2 = rank - 2 * m + 1;
-    if ((n7 >= 0) && (n6 < 0)) n6 = rank + 2 * m - 1;
-    if ((n7 >= 0) && (n8 < 0)) n8 = rank + 1;
+    if (n1 >= 0 && n0 < 0) n0 = rank - 1;
+    if (n1 >= 0 && n2 < 0) n2 = rank - 2 * m + 1;
+    if (n7 >= 0 && n6 < 0) n6 = rank + 2 * m - 1;
+    if (n7 >= 0 && n8 < 0) n8 = rank + 1;
   }
 
   PetscCall(PetscMalloc1(9, &dd->neighbors));
@@ -568,7 +568,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     if (n5 >= 0) { /* directly right */
       x_t = lx[n5 % m];
       /* y_t = y; */
-      s_t = bases[n5] + (i)*x_t;
+      s_t = bases[n5] + i * x_t;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     } else if (bx == DM_BOUNDARY_MIRROR) {
       for (j = 0; j < s_x; j++) idx[nn++] = bases[rank] + x * (i + 1) - 2 - j;
@@ -579,7 +579,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     if (n6 >= 0) { /* left above */
       x_t = lx[n6 % m];
       /* y_t = ly[n6 / m]; */
-      s_t = bases[n6] + (i)*x_t - s_x;
+      s_t = bases[n6] + i * x_t - s_x;
       for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
     }
 
@@ -612,7 +612,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
     n8 = sn8;
   }
 
-  if ((stencil_type == DMDA_STENCIL_STAR) || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC)) {
+  if (stencil_type == DMDA_STENCIL_STAR || (bx && bx != DM_BOUNDARY_PERIODIC) || (by && by != DM_BOUNDARY_PERIODIC)) {
     /*
         Recompute the local to global mappings, this time keeping the
       information about the cross corner processor numbers and any ghosted
@@ -670,7 +670,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       if (n5 >= 0) { /* directly right */
         x_t = lx[n5 % m];
         /* y_t = y; */
-        s_t = bases[n5] + (i)*x_t;
+        s_t = bases[n5] + i * x_t;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (Xe - xe > 0) {
         if (bx == DM_BOUNDARY_MIRROR) {
@@ -685,7 +685,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       if (n6 >= 0) { /* left above */
         x_t = lx[n6 % m];
         /* y_t = ly[n6 / m]; */
-        s_t = bases[n6] + (i)*x_t - s_x;
+        s_t = bases[n6] + i * x_t - s_x;
         for (j = 0; j < s_x; j++) idx[nn++] = s_t++;
       } else if (xs - Xs > 0 && Ye - ye > 0) {
         for (j = 0; j < s_x; j++) idx[nn++] = -1;

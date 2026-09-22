@@ -479,7 +479,7 @@ PETSC_INTERN PetscErrorCode SymBroydenCompactDenseKernelUseB0S(Mat B, MatLMVMMod
   *use_B0S = PETSC_FALSE;
   PetscCall(MatLMVMGetJ0Scalar(B, &is_scalar, &J0_scale));
   B0S = lmvm->basis[is_scalar ? LMVMModeMap(LMBASIS_S, mode) : LMVMModeMap(LMBASIS_B0S, mode)];
-  if ((B0S->k < lmvm->k) || (B0S->cached_product == NULL)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (B0S->k < lmvm->k || B0S->cached_product == NULL) PetscFunctionReturn(PETSC_SUCCESS);
   if (!is_scalar) {
     PetscCall(PetscObjectGetId((PetscObject)J0, &id));
     PetscCall(PetscObjectStateGet((PetscObject)J0, &state));

@@ -857,7 +857,7 @@ PetscErrorCode DMLabelGetBounds(DMLabel label, PetscInt *pStart, PetscInt *pEnd)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
-  if ((label->pStart == -1) && (label->pEnd == -1)) PetscCall(DMLabelComputeIndex(label));
+  if (label->pStart == -1 && label->pEnd == -1) PetscCall(DMLabelComputeIndex(label));
   if (pStart) {
     PetscAssertPointer(pStart, 2);
     *pStart = label->pStart;

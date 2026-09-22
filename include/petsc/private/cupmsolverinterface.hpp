@@ -20,7 +20,7 @@ namespace impl
     PetscStackUpdateLine; \
     const cupmSolverError_t cupmsolver_stat_p_ = __VA_ARGS__; \
     if (PetscUnlikely(cupmsolver_stat_p_ != CUPMSOLVER_STATUS_SUCCESS)) { \
-      if (((cupmsolver_stat_p_ == CUPMSOLVER_STATUS_NOT_INITIALIZED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_ALLOC_FAILED) || (cupmsolver_stat_p_ == CUPMSOLVER_STATUS_INTERNAL_ERROR)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
+      if ((cupmsolver_stat_p_ == CUPMSOLVER_STATUS_NOT_INITIALIZED || cupmsolver_stat_p_ == CUPMSOLVER_STATUS_ALLOC_FAILED || cupmsolver_stat_p_ == CUPMSOLVER_STATUS_INTERNAL_ERROR) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
         __abort_fn__(__comm__, PETSC_ERR_GPU_RESOURCE, \
                      "%s error %d (%s). " \
                      "This indicates the GPU may have run out resources", \

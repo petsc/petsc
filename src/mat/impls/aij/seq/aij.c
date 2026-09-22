@@ -1909,7 +1909,7 @@ PetscErrorCode MatSOR_SeqAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, Pe
 
     /*  t = b - (2*E - D)x */
     v = aa;
-    for (i = 0; i < m; i++) t[i] = b[i] - scale * (v[*diag++]) * x[i];
+    for (i = 0; i < m; i++) t[i] = b[i] - scale * v[*diag++] * x[i];
 
     /*  t = (E + L)^{-1}t */
     ts   = t;
@@ -2481,7 +2481,7 @@ PetscErrorCode MatCreateSubMatrix_SeqAIJ(Mat A, IS isrow, IS iscol, PetscInt csi
     if (scall == MAT_REUSE_MATRIX) {
       PetscBool equal;
 
-      c = (Mat_SeqAIJ *)((*B)->data);
+      c = (Mat_SeqAIJ *)(*B)->data;
       PetscCheck((*B)->rmap->n == nrows && (*B)->cmap->n == ncols, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong size");
       PetscCall(PetscArraycmp(c->ilen, lens, (*B)->rmap->n, &equal));
       PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Cannot reuse matrix. wrong number of nonzeros");

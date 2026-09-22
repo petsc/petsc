@@ -262,7 +262,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   b->imax          = NULL;
   b->row           = isrow;
   b->col           = iscol;
-  b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
+  b->pivotinblocks = info->pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
 
   PetscCall(PetscObjectReference((PetscObject)isrow));
   PetscCall(PetscObjectReference((PetscObject)iscol));

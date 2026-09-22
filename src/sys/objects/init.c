@@ -253,7 +253,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkfunctionlist", &PetscPrintFunctionList, NULL));
 
 #if !PetscDefined(HAVE_THREADSAFETY)
-  if (!(PETSC_RUNNING_ON_VALGRIND)) {
+  if (!PETSC_RUNNING_ON_VALGRIND) {
     /*
       Setup the memory management; support for tracing malloc() usage
     */

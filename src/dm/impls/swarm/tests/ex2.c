@@ -493,7 +493,7 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
       PetscScalar   *grad = &gradsum[coordDim * numComponents];
       PetscScalar   *x    = NULL;
 
-      if ((cell < cStart) || (cell >= cEnd)) continue;
+      if (cell < cStart || cell >= cEnd) continue;
       PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
       PetscCall(DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x));
       for (field = 0, fieldOffset = 0; field < numFields; ++field) {

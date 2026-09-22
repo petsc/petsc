@@ -184,7 +184,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
     lval = PetscRealPart(*l++);
     uval = PetscRealPart(*u++);
 
-    if ((lval <= -PETSC_INFINITY) && (uval >= PETSC_INFINITY)) {
+    if (lval <= -PETSC_INFINITY && uval >= PETSC_INFINITY) {
       (*fb++) = -fval - mu * xval;
     } else if (lval <= -PETSC_INFINITY) {
       (*fb++) = -SFischer(uval - xval, -fval, mu);

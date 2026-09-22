@@ -170,7 +170,7 @@ PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
 
   PetscFunctionBegin;
   while (head) {
-    a = (head)->more_space;
+    a = head->more_space;
     PetscCall(PetscFree((head)->array_head));
     PetscCall(PetscFree(head));
     head = a;

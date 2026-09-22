@@ -1638,7 +1638,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   /* Mark ghost points with negative dof */
   for (p = pStart; p < pEnd; ++p) {
     for (e = 0; e < numExcludes; ++e) {
-      if ((p >= excludes[e * 2 + 0]) && (p < excludes[e * 2 + 1])) {
+      if (p >= excludes[e * 2 + 0] && p < excludes[e * 2 + 1]) {
         PetscCall(PetscSectionSetDof(*gsection, p, 0));
         break;
       }
@@ -2231,7 +2231,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
 
       PetscCall(PetscSectionGetNumFields(s[i], &nf));
       PetscCall(PetscSectionGetChart(s[i], &pStarti, &pEndi));
-      if ((p < pStarti) || (p >= pEndi)) continue;
+      if (p < pStarti || p >= pEndi) continue;
       for (fi = 0; fi < nf; ++fi, ++f) {
         PetscCall(PetscSectionGetFieldDof(s[i], p, fi, &fdof));
         PetscCall(PetscSectionAddFieldDof(*supers, p, f, fdof));
@@ -2263,7 +2263,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
 
           PetscCall(PetscSectionGetNumFields(s[i], &nf));
           PetscCall(PetscSectionGetChart(s[i], &pStarti, &pEndi));
-          if ((p < pStarti) || (p >= pEndi)) continue;
+          if (p < pStarti || p >= pEndi) continue;
           for (fi = 0; fi < nf; ++fi, ++f) {
             PetscCall(PetscSectionGetFieldDof(s[i], p, fi, &fdof));
             PetscCall(PetscSectionGetFieldConstraintDof(s[i], p, fi, &cfdof));
@@ -2880,7 +2880,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
       PetscCall(PetscSectionGetConstraintIndices(s, point, &cDof));
       if (mode == INSERT_VALUES) {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {
+          if (cInd < cDim && i == cDof[cInd]) {
             ++cInd;
             continue;
           }
@@ -2888,7 +2888,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
         }
       } else {
         for (i = 0; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {
+          if (cInd < cDim && i == cDof[cInd]) {
             ++cInd;
             continue;
           }
@@ -2909,7 +2909,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
         PetscInt       cInd = 0, i, k;
 
         for (i = 0, k = dim + offset - 1; i < dim; ++i, ++j, --k) {
-          if ((cInd < sDim) && (j == cDof[cInd + cOffset])) {
+          if (cInd < sDim && j == cDof[cInd + cOffset]) {
             ++cInd;
             continue;
           }
