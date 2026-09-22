@@ -9,15 +9,15 @@
   #define petscbagregisterstring_ petscbagregisterstring
 #endif
 
-PETSC_EXTERN void petscbagregisterstring_(PetscBag *bag, char *p, char *cs1, char *s1, char *s2, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T pl, PETSC_FORTRAN_CHARLEN_T cl1, PETSC_FORTRAN_CHARLEN_T l1, PETSC_FORTRAN_CHARLEN_T l2)
+PETSC_EXTERN void petscbagregisterstring_(PetscBag *bag, char *addr, char *mdefault, char *name, char *help, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T l_addr, PETSC_FORTRAN_CHARLEN_T l_mdefault, PETSC_FORTRAN_CHARLEN_T l_name, PETSC_FORTRAN_CHARLEN_T l_help)
 {
   char *t1, *t2, *ct1;
-  FIXCHAR(s1, l1, t1);
-  FIXCHAR(cs1, cl1, ct1);
-  FIXCHAR(s2, l2, t2);
-  *ierr = PetscBagRegisterString(*bag, (void *)p, (PetscInt)pl, ct1, t1, t2);
+  FIXCHAR(name, l_name, t1);
+  FIXCHAR(mdefault, l_mdefault, ct1);
+  FIXCHAR(help, l_help, t2);
+  *ierr = PetscBagRegisterString(*bag, (void *)addr, (PetscInt)l_addr, ct1, t1, t2);
   if (*ierr) return;
-  FREECHAR(cs1, ct1);
-  FREECHAR(s1, t1);
-  FREECHAR(s2, t2);
+  FREECHAR(mdefault, ct1);
+  FREECHAR(name, t1);
+  FREECHAR(help, t2);
 }

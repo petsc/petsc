@@ -23,13 +23,13 @@ PETSC_EXTERN void petscviewerstringsetstring_(PetscViewer *str, char *name, Pets
   *ierr           = PetscViewerStringSetString(v_a, name, len1);
 }
 
-PETSC_EXTERN void petscviewerstringgetstringread_(PetscViewer *a, char b[], PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T l_b)
+PETSC_EXTERN void petscviewerstringgetstringread_(PetscViewer *viewer, char string[], PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T l_string)
 {
   size_t      len;
-  char       *c_b = PETSC_NULLPTR;
-  PetscViewer v_a = PetscPatchDefaultViewers(a);
-  *ierr           = PetscViewerStringGetStringRead(v_a, (const char **)&c_b, &len);
+  char       *c_string = PETSC_NULLPTR;
+  PetscViewer v_viewer = PetscPatchDefaultViewers(viewer);
+  *ierr                = PetscViewerStringGetStringRead(v_viewer, (const char **)&c_string, &len);
   if (*ierr) return;
-  *ierr = PetscStrncpy((char *)b, c_b, l_b);
+  *ierr = PetscStrncpy((char *)string, c_string, l_string);
   if (*ierr) return;
 }

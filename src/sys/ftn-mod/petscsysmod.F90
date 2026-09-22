@@ -316,7 +316,7 @@ module petscsys
   end interface
 
   interface petscbinaryread
-    subroutine petscbinaryreadcomplex(fd, data, num, count, type, z)
+    subroutine petscbinaryreadcomplex(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -324,9 +324,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadcomplex
-    subroutine petscbinaryreadreal(fd, data, num, count, type, z)
+    subroutine petscbinaryreadreal(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -334,9 +334,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadreal
-    subroutine petscbinaryreadint(fd, data, num, count, type, z)
+    subroutine petscbinaryreadint(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -344,9 +344,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadint
-    subroutine petscbinaryreadcomplex1(fd, data, num, count, type, z)
+    subroutine petscbinaryreadcomplex1(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -354,9 +354,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadcomplex1
-    subroutine petscbinaryreadreal1(fd, data, num, count, type, z)
+    subroutine petscbinaryreadreal1(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -364,9 +364,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadreal1
-    subroutine petscbinaryreadint1(fd, data, num, count, type, z)
+    subroutine petscbinaryreadint1(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -374,9 +374,9 @@ module petscsys
       PetscInt num
       PetscInt count
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadint1
-    subroutine petscbinaryreadcomplexcnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadcomplexcnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -384,9 +384,9 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadcomplexcnt
-    subroutine petscbinaryreadrealcnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadrealcnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -394,9 +394,9 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadrealcnt
-    subroutine petscbinaryreadintcnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadintcnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -404,9 +404,9 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadintcnt
-    subroutine petscbinaryreadcomplex1cnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadcomplex1cnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -414,9 +414,9 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadcomplex1cnt
-    subroutine petscbinaryreadreal1cnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadreal1cnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -424,9 +424,9 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadreal1cnt
-    subroutine petscbinaryreadint1cnt(fd, data, num, count, type, z)
+    subroutine petscbinaryreadint1cnt(fd, data, num, count, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
@@ -434,64 +434,64 @@ module petscsys
       PetscInt num
       PetscInt count(1)
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinaryreadint1cnt
   end interface petscbinaryread
 
   interface petscbinarywrite
-    subroutine petscbinarywritecomplex(fd, data, num, type, z)
+    subroutine petscbinarywritecomplex(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscComplex data(*)
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywritecomplex
-    subroutine petscbinarywritereal(fd, data, num, type, z)
+    subroutine petscbinarywritereal(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscReal data(*)
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywritereal
-    subroutine petscbinarywriteint(fd, data, num, type, z)
+    subroutine petscbinarywriteint(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscInt data(*)
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywriteint
-    subroutine petscbinarywritecomplex1(fd, data, num, type, z)
+    subroutine petscbinarywritecomplex1(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscComplex data
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywritecomplex1
-    subroutine petscbinarywritereal1(fd, data, num, type, z)
+    subroutine petscbinarywritereal1(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscReal data
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywritereal1
-    subroutine petscbinarywriteint1(fd, data, num, type, z)
+    subroutine petscbinarywriteint1(fd, data, num, type, ierr)
       use, intrinsic :: ISO_C_binding
       import ePetscDataType
       integer4 fd
       PetscInt data
       PetscInt num
       PetscDataType type
-      PetscErrorCode z
+      PetscErrorCode ierr
     end subroutine petscbinarywriteint1
   end interface petscbinarywrite
 

@@ -26,25 +26,25 @@ PETSC_INTERN void f90array1dgetaddrmystruct_(void *array, PetscFortranAddr *addr
   *address = (PetscFortranAddr)array;
 }
 
-PETSC_INTERN void vecgetarraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_INTERN void vecgetarraymystruct_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     len, one = 1;
   if (!ptr) {
-    *__ierr = PetscError(((PetscObject)*x)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "ptr==NULL");
+    *ierr = PetscError(((PetscObject)*x)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "ptr==NULL");
     return;
   }
-  *__ierr = VecGetArray(*x, &fa);
-  if (*__ierr) return;
-  *__ierr = VecGetLocalSize(*x, &len);
-  if (*__ierr) return;
+  *ierr = VecGetArray(*x, &fa);
+  if (*ierr) return;
+  *ierr = VecGetLocalSize(*x, &len);
+  if (*ierr) return;
   f90array1dcreatemystruct_(fa, &one, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_INTERN void vecrestorearraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_INTERN void vecrestorearraymystruct_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   f90array1daccessmystruct_(ptr, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
   f90array1ddestroymystruct_(ptr PETSC_F90_2PTR_PARAM(ptrd));
-  *__ierr = VecRestoreArray(*x, &fa);
+  *ierr = VecRestoreArray(*x, &fa);
 }

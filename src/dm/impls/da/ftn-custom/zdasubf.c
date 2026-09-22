@@ -9,15 +9,15 @@
   #define dmdagetprocessorsubsets_ dmdagetprocessorsubsets
 #endif
 
-PETSC_EXTERN void dmdagetprocessorsubset_(DM *da, DMDirection *dir, PetscInt *gp, MPI_Fint *fcomm, int *__ierr)
+PETSC_EXTERN void dmdagetprocessorsubset_(DM *da, DMDirection *dir, PetscInt *gp, MPI_Fint *fcomm, int *ierr)
 {
   MPI_Comm comm;
-  *__ierr = DMDAGetProcessorSubset(*da, *dir, *gp, &comm);
-  *fcomm  = MPI_Comm_c2f(comm);
+  *ierr  = DMDAGetProcessorSubset(*da, *dir, *gp, &comm);
+  *fcomm = MPI_Comm_c2f(comm);
 }
-PETSC_EXTERN void dmdagetprocessorsubsets_(DM *da, DMDirection *dir, MPI_Fint *subfcomm, int *__ierr)
+PETSC_EXTERN void dmdagetprocessorsubsets_(DM *da, DMDirection *dir, MPI_Fint *subfcomm, int *ierr)
 {
   MPI_Comm subcomm;
-  *__ierr   = DMDAGetProcessorSubsets(*da, *dir, &subcomm);
+  *ierr     = DMDAGetProcessorSubsets(*da, *dir, &subcomm);
   *subfcomm = MPI_Comm_c2f(subcomm);
 }

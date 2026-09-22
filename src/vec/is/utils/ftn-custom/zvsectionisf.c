@@ -15,19 +15,19 @@
   #define petscsectionrestorefieldpointsyms_ petscsectionrestorefieldpointsyms
 #endif
 
-PETSC_EXTERN void petscsectiongetpointsyms_(PetscSection section, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr)
+PETSC_EXTERN void petscsectiongetpointsyms_(PetscSection section, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *ierr)
 {
-  *__ierr = PetscSectionGetPointSyms(section, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
+  *ierr = PetscSectionGetPointSyms(section, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
 }
-PETSC_EXTERN void petscsectionrestorepointsyms_(PetscSection section, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr)
+PETSC_EXTERN void petscsectionrestorepointsyms_(PetscSection section, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *ierr)
 {
-  *__ierr = PetscSectionRestorePointSyms(section, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
+  *ierr = PetscSectionRestorePointSyms(section, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
 }
-PETSC_EXTERN void petscsectiongetfieldpointsyms_(PetscSection section, PetscInt *field, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr)
+PETSC_EXTERN void petscsectiongetfieldpointsyms_(PetscSection section, PetscInt *field, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *ierr)
 {
-  *__ierr = PetscSectionGetFieldPointSyms(section, *field, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
+  *ierr = PetscSectionGetFieldPointSyms(section, *field, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
 }
-PETSC_EXTERN void petscsectionrestorefieldpointsyms_(PetscSection section, PetscInt *field, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *__ierr)
+PETSC_EXTERN void petscsectionrestorefieldpointsyms_(PetscSection section, PetscInt *field, PetscInt *numPoints, PetscInt *points, PetscInt ***perms, PetscScalar ***rots, int *ierr)
 {
-  *__ierr = PetscSectionRestoreFieldPointSyms(section, *field, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
+  *ierr = PetscSectionRestoreFieldPointSyms(section, *field, *numPoints, points, (const PetscInt ***)perms, (const PetscScalar ***)rots);
 }

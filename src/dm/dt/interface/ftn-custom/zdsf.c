@@ -19,10 +19,10 @@ static void ourriemannsolver(PetscInt dim, PetscInt Nf, const PetscReal x[], con
   if (func) (*func)(&dim, &Nf, x, n, uL, uR, &numConstants, constants, flux, _ctx);
 }
 
-PETSC_EXTERN void petscdssetriemannsolver_(PetscDS *prob, PetscInt *f, void (*rs)(PetscInt *, PetscInt *, PetscReal *, PetscReal *, PetscScalar *, PetscScalar *, PetscInt *, PetscScalar *, PetscScalar *, void *, PetscErrorCode *), PetscErrorCode *ierr)
+PETSC_EXTERN void petscdssetriemannsolver_(PetscDS *ds, PetscInt *f, void (*rs)(PetscInt *, PetscInt *, PetscReal *, PetscReal *, PetscScalar *, PetscScalar *, PetscInt *, PetscScalar *, PetscScalar *, void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*prob, PETSC_FORTRAN_CALLBACK_CLASS, &riemannsolver, (PetscFortranCallbackFn *)rs, NULL);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ds, PETSC_FORTRAN_CALLBACK_CLASS, &riemannsolver, (PetscFortranCallbackFn *)rs, NULL);
   if (*ierr) return;
-  *ierr = PetscDSSetRiemannSolver(*prob, *f, ourriemannsolver);
+  *ierr = PetscDSSetRiemannSolver(*ds, *f, ourriemannsolver);
   if (*ierr) return;
 }

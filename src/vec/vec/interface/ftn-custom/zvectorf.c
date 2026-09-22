@@ -10,18 +10,18 @@
   #define vecrestoreownershipranges_ vecrestoreownershipranges
 #endif
 
-PETSC_EXTERN void vecgetownershipranges_(Vec *v, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecgetownershipranges_(Vec *x, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt   *fa;
   PetscMPIInt size;
 
-  *ierr = VecGetOwnershipRanges(*v, (const PetscInt **)&fa);
+  *ierr = VecGetOwnershipRanges(*x, (const PetscInt **)&fa);
   if (*ierr) return;
-  MPI_Comm_size(PetscObjectComm((PetscObject)*v), &size);
+  MPI_Comm_size(PetscObjectComm((PetscObject)*x), &size);
   *ierr = F90Array1dCreate(fa, MPIU_INT, 1, size + 1, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void vecrestoreownershipranges_(Vec *v, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecrestoreownershipranges_(Vec *x, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }

@@ -7,11 +7,11 @@
   #define petscmatlabengineevaluate_ petscmatlabengineevaluate
 #endif
 
-PETSC_EXTERN void petscmatlabengineevaluate_(PetscMatlabEngine *e, char *m, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petscmatlabengineevaluate_(PetscMatlabEngine *mengine, char *string, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
 {
   char *ms;
-  FIXCHAR(m, len, ms);
-  *ierr = PetscMatlabEngineEvaluate(*e, ms);
+  FIXCHAR(string, len, ms);
+  *ierr = PetscMatlabEngineEvaluate(*mengine, ms);
   if (*ierr) return;
-  FREECHAR(m, ms);
+  FREECHAR(string, ms);
 }
