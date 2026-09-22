@@ -61,7 +61,7 @@ static PetscErrorCode MonitorTempature(TS, PetscInt, PetscReal, Vec, void *);
 
 #define PetscCallTC(ierr) \
   do { \
-    PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); \
+    PetscCheck(!(ierr), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); \
   } while (0)
 
 int main(int argc, char **argv)

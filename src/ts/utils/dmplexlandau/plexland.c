@@ -10,10 +10,10 @@
 /* relativistic terms */
 #if PetscDefined(USE_REAL_SINGLE)
   #define SPEED_OF_LIGHT 2.99792458e8F
-  #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
+  #define C_0(v0)        (SPEED_OF_LIGHT / (v0)) /* needed for relativistic tensor on all architectures */
 #else
   #define SPEED_OF_LIGHT 2.99792458e8
-  #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
+  #define C_0(v0)        (SPEED_OF_LIGHT / (v0)) /* needed for relativistic tensor on all architectures */
 #endif
 
 #include "land_tensors.h"

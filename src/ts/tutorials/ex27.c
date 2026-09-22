@@ -41,7 +41,7 @@ The following options are available:
 #define N_REACTIONS 1
 #define DIM         2
 
-#define stoich(i, j) ctx->stoichiometry[N_SPECIES * i + j]
+#define stoich(i, j) ctx->stoichiometry[N_SPECIES * (i) + (j)]
 
 typedef struct {
   PetscScalar sp[N_SPECIES];
