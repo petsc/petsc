@@ -63,6 +63,14 @@ def validate(inst, schema, path, errs):
             for i, el in enumerate(inst):
                 validate(el, schema["items"], f"{path}[{i}]", errs)
 
+def ref(src, src_key, dst, dst_key, label):
+    """Return a (label, ok) cross-reference check, or None when either endpoint
+    is absent — the referring key or the referent id. A study that omits an
+    optional artifact is skipped here rather than crashing the run."""
+    if src is not None and dst is not None and src_key in src and dst_key in dst:
+        return (label, src[src_key] == dst[dst_key])
+    return None
+
 def check_study(study):
     """Validate one worked study; return True if everything passed.
 
@@ -99,21 +107,15 @@ def check_study(study):
     rm  = loaded.get("results-manifest.json")
     na  = loaded.get("numerical-assessment.json")
     ar  = loaded.get("analysis-report.json")
-    checks = []
-    if np_ and ps and "problem_spec_id" in np_:
-        checks.append(("numerical-plan.problem_spec_id -> problem-spec.id", np_["problem_spec_id"] == ps["id"]))
-    if vs and ps and "problem_spec_id" in vs:
-        checks.append(("vis-spec.problem_spec_id -> problem-spec.id", vs["problem_spec_id"] == ps["id"]))
-    if vs and np_ and "numerical_plan_id" in vs:
-        checks.append(("vis-spec.numerical_plan_id -> numerical-plan.id", vs["numerical_plan_id"] == np_["id"]))
-    if rm and np_ and "numerical_plan_id" in rm:
-        checks.append(("results.numerical_plan_id -> numerical-plan.id", rm["numerical_plan_id"] == np_["id"]))
-    if rm and vs and "vis_spec_id" in rm:
-        checks.append(("results.vis_spec_id -> vis-spec.id", rm["vis_spec_id"] == vs["id"]))
-    if na and rm:
-        checks.append(("assessment.results_manifest_id -> results.id", na["results_manifest_id"] == rm["id"]))
-    if ar and rm:
-        checks.append(("analysis.results_manifest_id -> results.id", ar["results_manifest_id"] == rm["id"]))
+    checks = [c for c in (
+        ref(np_, "problem_spec_id",     ps,  "id", "numerical-plan.problem_spec_id -> problem-spec.id"),
+        ref(vs,  "problem_spec_id",     ps,  "id", "vis-spec.problem_spec_id -> problem-spec.id"),
+        ref(vs,  "numerical_plan_id",   np_, "id", "vis-spec.numerical_plan_id -> numerical-plan.id"),
+        ref(rm,  "numerical_plan_id",   np_, "id", "results.numerical_plan_id -> numerical-plan.id"),
+        ref(rm,  "vis_spec_id",         vs,  "id", "results.vis_spec_id -> vis-spec.id"),
+        ref(na,  "results_manifest_id", rm,  "id", "assessment.results_manifest_id -> results.id"),
+        ref(ar,  "results_manifest_id", rm,  "id", "analysis.results_manifest_id -> results.id"),
+    ) if c is not None]
     if not checks:
         print("  (no cross-references to check)")
     for name, good in checks:
@@ -151,9 +153,20 @@ def check_study(study):
             for i in range(1, len(levels)):
                 e0, e1 = levels[i-1]["errors"][norm], levels[i]["errors"][norm]
                 h0, h1 = levels[i-1]["h"], levels[i]["h"]
+                # The order is undefined when an error is non-positive (log(0) or a
+                # negative log argument) or the mesh scale repeats (log(h0/h1) == 0,
+                # e.g. a temporal-refinement study holding spatial h fixed). Skip
+                # such a pair rather than raise, matching the skip-rather-than-compare
+                # approach used for the D22 per-field case above.
+                if not (e0 > 0 and e1 > 0 and h0 > 0 and h1 > 0 and h0 != h1):
+                    print(f"    h {h0:.5f}->{h1:.5f}: order undefined (skipped)")
+                    continue
                 p = math.log(e0/e1) / math.log(h0/h1)
                 orders.append(p)
                 print(f"    h {h0:.5f}->{h1:.5f}: order = {p:.3f}")
+            if not orders:
+                print(f"    (no comparable level pair for norm {norm!r}; skipping)")
+                continue
             avg = sum(orders)/len(orders)
             claim_list = claims_by_norm.get(norm, [])
             if len(claim_list) == 1:
@@ -194,7 +207,15 @@ studies = sorted(
 if not studies:
     print("\nno worked studies under examples/ to validate")
 for study in studies:
-    ok = check_study(study) and ok
+    # The D18 drift gate must report every study, so an unexpected error is
+    # caught and recorded as a failure for that study rather than aborting the
+    # remaining validations with a traceback.
+    try:
+        ok = check_study(study) and ok
+    except Exception as e:
+        ok = False
+        print(f"\n### study: {study.name}")
+        print(f"[FAIL] unexpected error: {type(e).__name__}: {e}")
 
 print("\n=== DRY-RUN", "PASSED ===" if ok else "FAILED ===")
 sys.exit(0 if ok else 1)
