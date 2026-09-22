@@ -145,7 +145,7 @@ static PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow,
         PetscCall(MatRestoreRow(GE, i, &nz, &cols, &v));
       }
       for (PetscInt j = 0; j < csize; j++) orth2 += PetscSqr(PetscAbsScalar(orth[j]));
-      PetscCheck(PetscAbsReal(PetscSqrtReal(norm2) - 1.0) <= tol, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Nedelec complement column %" PetscInt_FMT " has norm %g", k, (double)PetscSqrtReal(norm2));
+      PetscCheck(PetscAbsReal(PetscSqrtReal(norm2) - PetscRealConstant(1.0)) <= tol, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Nedelec complement column %" PetscInt_FMT " has norm %g", k, (double)PetscSqrtReal(norm2));
       PetscCheck(PetscSqrtReal(orth2) <= tol * PetscMax(1.0, PetscSqrtReal(bnorm2)), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Nedelec complement column %" PetscInt_FMT " is not orthogonal to the edge gradient space: residual norm %g", k, (double)PetscSqrtReal(orth2));
     }
     PetscCall(MatDenseRestoreArrayRead(*GKins, &phi));
