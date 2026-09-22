@@ -16,20 +16,18 @@ def process(streamstype,fileoutput):
   ff.close()
 
   s = data.split('\n')
-  triads = {} # stream triad bandwidth data points
-  speedups = {}
-  size = 0
+  procs  = [] # nb of procs/threads
+  triads = [] # stream triad bandwidth data points
   for i in s[0:-1]:
       i = i.split()
-      triads[size] = float(i[1])/1000 # MB/s to GB/s
-      size = size + 1
+      procs.append(float(i[0]))
+      triads.append(float(i[1])/1000) # MB/s to GB/s
 
+  size = len(procs)
   if size < 2: return
 
-  triads = list(triads.values())
-  speedups = {}
-  for i in range(0,size):
-    speedups[i] = triads[i]/triads[0]
+  ideals   = [p/procs[0] for p in procs]
+  speedups = [t/triads[0] for t in triads]
 
   try:
     import matplotlib
@@ -49,29 +47,29 @@ def process(streamstype,fileoutput):
     fig, ax1 = plt.subplots(layout='constrained')
     plt.title(streamstype+' Perfect and Streams Speedup')
     ax2 = ax1.twinx()
-    ax1.set_autoscaley_on(False)
-
-    r = range(1,size+1)
-    speedups = speedups.values()
 
     # make sure that actual bandwidth values (as opposed to perfect speedup) takes
     # at least a third of the y axis
-    ymax = min(size, 3*max(speedups))
+    xmin = min(procs)
+    xmax = max(procs)
+    ymax = min(max(ideals), 3*max(speedups))
     ymin = min(1, min(speedups))
     if ymin < 1: ymin = 0
 
-    ax1.set_xlim(1,size)
+    ax1.set_autoscaley_on(False)
+    ax1.set_xlim(xmin,xmax)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.set_ylim([ymin,ymax])
+    ax1.set_ylim(ymin,ymax)
     ax1.set_xlabel('Number of processes/threads')
     ax1.set_ylabel('Achieved Speedup')
-    ax1.plot(r,r,'b',label='Ideal speedup')
-    ax1.plot(r,speedups,'r-o', label='Achieved speedup')
+    ax1.plot(procs,ideals,'b',label='Ideal speedup')
+    ax1.plot(procs,speedups,'r-o', label='Achieved speedup')
+
     ax2.set_autoscaley_on(False)
-    ax2.set_xlim([1,size])
-    ax2.set_ylim([min(triads),max(triads)])
+    ax2.set_xlim(xmin,xmax)
+    ax2.set_ylim(min(triads),max(triads))
     ax2.set_ylabel("Achieved Bandwidth (GB/s)")
-    ax2.plot(r,triads,'g-o', label='Achieved bandwidth')
+    ax2.plot(procs,triads,'g-o', label='Achieved bandwidth')
 
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
