@@ -1598,7 +1598,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
 
 #define PCGASMLocalSubdomainBounds2D(M, N, xleft, ylow, xright, yhigh, first, last, xleft_loc, ylow_loc, xright_loc, yhigh_loc, n) \
   do { \
-    PetscInt first_row = first / M, last_row = last / M + 1; \
+    PetscInt first_row = (first) / (M), last_row = (last) / (M) + 1; \
     /*                                                                                                    \
      Compute ylow_loc and yhigh_loc so that (ylow_loc,xleft) and (yhigh_loc,xright) are the corners       \
      of the bounding box of the intersection of the subdomain with the local ownership range (local       \
@@ -1607,20 +1607,20 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
      of the intersection.                                                                                 \
     */ \
     /* ylow_loc is the grid row containing the first element of the local sumbdomain */ \
-    *ylow_loc = PetscMax(first_row, ylow); \
+    *(ylow_loc) = PetscMax(first_row, ylow); \
     /* xleft_loc is the offset of first element of the local subdomain within its grid row (might actually be outside the local subdomain) */ \
-    *xleft_loc = *ylow_loc == first_row ? PetscMax(first % M, xleft) : xleft; \
+    *(xleft_loc) = *(ylow_loc) == first_row ? PetscMax((first) % (M), xleft) : xleft; \
     /* yhigh_loc is the grid row above the last local subdomain element */ \
-    *yhigh_loc = PetscMin(last_row, yhigh); \
+    *(yhigh_loc) = PetscMin(last_row, yhigh); \
     /* xright is the offset of the end of the  local subdomain within its grid row (might actually be outside the local subdomain) */ \
-    *xright_loc = *yhigh_loc == last_row ? PetscMin(xright, last % M) : xright; \
+    *(xright_loc) = *(yhigh_loc) == last_row ? PetscMin(xright, (last) % (M)) : xright; \
     /* Now compute the size of the local subdomain n. */ \
-    *n = 0; \
-    if (*ylow_loc < *yhigh_loc) { \
-      PetscInt width = xright - xleft; \
-      *n += width * (*yhigh_loc - *ylow_loc - 1); \
-      *n += PetscMin(PetscMax(*xright_loc - xleft, 0), width); \
-      *n -= PetscMin(PetscMax(*xleft_loc - xleft, 0), width); \
+    *(n) = 0; \
+    if (*(ylow_loc) < *(yhigh_loc)) { \
+      PetscInt width = (xright) - (xleft); \
+      *(n) += width * (*(yhigh_loc) - *(ylow_loc) - 1); \
+      *(n) += PetscMin(PetscMax(*(xright_loc) - (xleft), 0), width); \
+      *(n) -= PetscMin(PetscMax(*(xleft_loc) - (xleft), 0), width); \
     } \
   } while (0)
 

@@ -996,7 +996,7 @@ typedef PetscInt    NState;
 static const NState NOT_DONE = -2;
 static const NState DELETED  = -1;
 static const NState REMOVED  = -3;
-#define IS_SELECTED(s) (s != DELETED && s != NOT_DONE && s != REMOVED)
+#define IS_SELECTED(s) ((s) != DELETED && (s) != NOT_DONE && (s) != REMOVED)
 
 /*
    fixAggregatesWithSquare - greedy grab of with G1 (unsquared graph) -- AIJ specific -- change to fixAggregatesWithSquare -- TODD

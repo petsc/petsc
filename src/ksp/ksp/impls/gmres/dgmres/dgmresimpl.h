@@ -58,7 +58,7 @@ PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 #define VEC_OFFSET     2
 #define VEC_TEMP       dgmres->vecs[0]
 #define VEC_TEMP_MATOP dgmres->vecs[1]
-#define VEC_VV(i)      dgmres->vecs[VEC_OFFSET + i]
+#define VEC_VV(i)      dgmres->vecs[VEC_OFFSET + (i)]
 
 #define EIG_OFFSET            1
 #define DGMRES_DEFAULT_EIG    1
