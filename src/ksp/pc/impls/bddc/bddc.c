@@ -300,6 +300,10 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   Notes:
   The discrete gradient matrix `G` is used to analyze the subdomain edges and should not contain explicitly stored zero entries.
 
+  If `PCBDDCSetPrimalVerticesIS()` or `PCBDDCSetPrimalVerticesLocalIS()` specifies a Nedelec degree of freedom as primal,
+  all degrees of freedom on the same mesh edge are made primal before the analysis. These degrees of freedom retain
+  their original coordinates in the generated change of basis.
+
   If `global` is `PETSC_FALSE`, the numbering of the Nedelec field must preserve the relative order of its degrees of freedom
   in the global numbering of all fields. That is, `gid[i] < gid[j]` if and only if `geid[i] < geid[j]`, where `gid` is the global
   numbering of all degrees of freedom and `geid` is the global numbering of the Nedelec field.
@@ -307,7 +311,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   The `field` index is not used if no field splitting has been specified.
   If `field` is `PETSC_DECIDE`, `global` must be `PETSC_TRUE`; the Nedelec field is inferred from the rows of `G` with more than one nonzero.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
