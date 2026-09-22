@@ -21,8 +21,8 @@
   #define GetStockBrush(i) ((HBRUSH)GetStockObject(i))
 #endif
 
-#define XTRANS(draw, win, x) (int)(((win)->w) * ((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl))))
-#define YTRANS(draw, win, y) (int)(((win)->h) * (1.0 - (draw)->port_yl - (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl))))
+#define XTRANS(draw, win, x) (int)(((win)->w) * ((draw)->port_xl + ((((x) - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl))))
+#define YTRANS(draw, win, y) (int)(((win)->h) * (1.0 - (draw)->port_yl - ((((y) - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl))))
 
 HINSTANCE  hInst;
 HANDLE     g_hWindowListMutex = NULL;

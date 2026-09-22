@@ -7,8 +7,8 @@
 /*
      These macros transform from the users coordinates to the  X-window pixel coordinates.
 */
-#define XTRANS(draw, xwin, x) ((int)(((xwin)->w - 1) * ((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))))
-#define YTRANS(draw, xwin, y) (((xwin)->h - 1) - (int)(((xwin)->h - 1) * ((draw)->port_yl + (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl)))))
+#define XTRANS(draw, xwin, x) ((int)(((xwin)->w - 1) * ((draw)->port_xl + ((((x) - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))))
+#define YTRANS(draw, xwin, y) (((xwin)->h - 1) - (int)(((xwin)->h - 1) * ((draw)->port_yl + ((((y) - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl)))))
 
 #define ITRANS(draw, xwin, i) ((draw)->coor_xl + (((PetscReal)(i)) * ((draw)->coor_xr - (draw)->coor_xl) / ((xwin)->w - 1) - (draw)->port_xl) / ((draw)->port_xr - (draw)->port_xl))
 #define JTRANS(draw, xwin, j) ((draw)->coor_yl + (((PetscReal)(j)) / ((xwin)->h - 1) + (draw)->port_yl - 1) * ((draw)->coor_yr - (draw)->coor_yl) / ((draw)->port_yl - (draw)->port_yr))

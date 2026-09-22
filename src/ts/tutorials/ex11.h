@@ -25,13 +25,13 @@ typedef CeedInt PetscErrorCode;
   #undef PetscSqrtScalar
   #define PetscSqrtScalar(x) sqrt(x)
   #undef PetscSqr
-  #define PetscSqr(x)          (x * x)
-  #define PetscSqrReal(x)      (x * x)
+  #define PetscSqr(x)          ((x) * (x))
+  #define PetscSqrReal(x)      ((x) * (x))
   #define PetscAbsReal(x)      abs(x)
   #define PetscAbsScalar(x)    abs(x)
-  #define PetscMax(x, y)       x > y ? x : y
-  #define PetscMin(x, y)       x < y ? x : y
-  #define PetscRealPart(a)     a
+  #define PetscMax(x, y)       (((x) < (y)) ? (y) : (x))
+  #define PetscMin(x, y)       (((x) < (y)) ? (x) : (y))
+  #define PetscRealPart(a)     (a)
   #define PetscPowScalar(a, b) pow(a, b)
 #endif
 

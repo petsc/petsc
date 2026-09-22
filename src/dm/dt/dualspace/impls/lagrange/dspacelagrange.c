@@ -2629,9 +2629,9 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceGetBoundarySymmetries_Internal(PetscDu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define BaryIndex(perEdge, a, b, c) (((b) * (2 * perEdge + 1 - (b))) / 2) + (c)
+#define BaryIndex(perEdge, a, b, c) ((((b) * (2 * (perEdge) + 1 - (b))) / 2) + (c))
 
-#define CartIndex(perEdge, a, b) (perEdge * (a) + b)
+#define CartIndex(perEdge, a, b) ((perEdge) * (a) + (b))
 
 /* the existing interface for symmetries is insufficient for all cases:
  * - it should be sufficient for form degrees that are scalar (0 and n)

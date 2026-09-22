@@ -5,9 +5,9 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"  I*/
 #include <petsc/private/hashseti.h>
 
-#define MEDIAN3(v, a, b, c) (v[a] < v[b] ? (v[b] < v[c] ? (b) : (v[a] < v[c] ? (c) : (a))) : (v[c] < v[b] ? (b) : (v[a] < v[c] ? (a) : (c))))
+#define MEDIAN3(v, a, b, c) ((v)[a] < (v)[b] ? ((v)[b] < (v)[c] ? (b) : ((v)[a] < (v)[c] ? (c) : (a))) : ((v)[c] < (v)[b] ? (b) : ((v)[a] < (v)[c] ? (a) : (c))))
 
-#define MEDIAN(v, right) MEDIAN3(v, right / 4, right / 2, right / 4 * 3)
+#define MEDIAN(v, right) MEDIAN3(v, (right) / 4, (right) / 2, (right) / 4 * 3)
 
 /* Swap one, two or three pairs. Each pair can have its own type */
 #define SWAP1(a, b, t1) \
