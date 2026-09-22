@@ -70,15 +70,15 @@
     l = lo; \
     r = hi; \
     while (1) { \
-      while (X[l] < pivot) l++; \
-      while (X[r] > pivot) r--; \
-      if (l >= r) { \
-        r++; \
+      while ((X)[l] < (pivot)) (l)++; \
+      while ((X)[r] > (pivot)) (r)--; \
+      if ((l) >= (r)) { \
+        (r)++; \
         break; \
       } \
-      SWAP1(X[l], X[r], t1); \
-      l++; \
-      r--; \
+      SWAP1((X)[l], (X)[r], t1); \
+      (l)++; \
+      (r)--; \
     } \
   } while (0)
 
@@ -103,15 +103,15 @@
     l = lo; \
     r = hi; \
     while (1) { \
-      while (X[l] > pivot) l++; \
-      while (X[r] < pivot) r--; \
-      if (l >= r) { \
-        r++; \
+      while ((X)[l] > (pivot)) (l)++; \
+      while ((X)[r] < (pivot)) (r)--; \
+      if ((l) >= (r)) { \
+        (r)++; \
         break; \
       } \
-      SWAP1(X[l], X[r], t1); \
-      l++; \
-      r--; \
+      SWAP1((X)[l], (X)[r], t1); \
+      (l)++; \
+      (r)--; \
     } \
   } while (0)
 
@@ -120,15 +120,15 @@
     l = lo; \
     r = hi; \
     while (1) { \
-      while (X[l] < pivot) l++; \
-      while (X[r] > pivot) r--; \
-      if (l >= r) { \
-        r++; \
+      while ((X)[l] < (pivot)) (l)++; \
+      while ((X)[r] > (pivot)) (r)--; \
+      if ((l) >= (r)) { \
+        (r)++; \
         break; \
       } \
-      SWAP2(X[l], X[r], Y[l], Y[r], t1, t2); \
-      l++; \
-      r--; \
+      SWAP2((X)[l], (X)[r], (Y)[l], (Y)[r], t1, t2); \
+      (l)++; \
+      (r)--; \
     } \
   } while (0)
 
@@ -137,105 +137,105 @@
     l = lo; \
     r = hi; \
     while (1) { \
-      while (X[l] < pivot) l++; \
-      while (X[r] > pivot) r--; \
-      if (l >= r) { \
-        r++; \
+      while ((X)[l] < (pivot)) (l)++; \
+      while ((X)[r] > (pivot)) (r)--; \
+      if ((l) >= (r)) { \
+        (r)++; \
         break; \
       } \
-      SWAP3(X[l], X[r], Y[l], Y[r], Z[l], Z[r], t1, t2, t3); \
-      l++; \
-      r--; \
+      SWAP3((X)[l], (X)[r], (Y)[l], (Y)[r], (Z)[l], (Z)[r], t1, t2, t3); \
+      (l)++; \
+      (r)--; \
     } \
   } while (0)
 
 /* Templates for similar functions used below */
 #define QuickSort1(FuncName, X, n, pivot, t1) \
   do { \
-    PetscCount i, j, p, l, r, hi = n - 1; \
-    if (n < 8) { \
-      for (i = 0; i < n; i++) { \
-        pivot = X[i]; \
-        for (j = i + 1; j < n; j++) { \
-          if (pivot > X[j]) { \
-            SWAP1(X[i], X[j], t1); \
-            pivot = X[i]; \
+    PetscCount i, j, p, l, r, hi = (n) - 1; \
+    if ((n) < 8) { \
+      for (i = 0; i < (n); i++) { \
+        pivot = (X)[i]; \
+        for (j = i + 1; j < (n); j++) { \
+          if ((pivot) > (X)[j]) { \
+            SWAP1((X)[i], (X)[j], t1); \
+            pivot = (X)[i]; \
           } \
         } \
       } \
     } else { \
       p     = MEDIAN(X, hi); \
-      pivot = X[p]; \
+      pivot = (X)[p]; \
       TwoWayPartition1(X, pivot, t1, 0, hi, l, r); \
       PetscCall(FuncName(l, X)); \
-      PetscCall(FuncName(hi - r + 1, X + r)); \
+      PetscCall(FuncName(hi - r + 1, (X) + r)); \
     } \
   } while (0)
 
 /* Templates for similar functions used below */
 #define QuickSortReverse1(FuncName, X, n, pivot, t1) \
   do { \
-    PetscCount i, j, p, l, r, hi = n - 1; \
-    if (n < 8) { \
-      for (i = 0; i < n; i++) { \
-        pivot = X[i]; \
-        for (j = i + 1; j < n; j++) { \
-          if (pivot < X[j]) { \
-            SWAP1(X[i], X[j], t1); \
-            pivot = X[i]; \
+    PetscCount i, j, p, l, r, hi = (n) - 1; \
+    if ((n) < 8) { \
+      for (i = 0; i < (n); i++) { \
+        pivot = (X)[i]; \
+        for (j = i + 1; j < (n); j++) { \
+          if ((pivot) < (X)[j]) { \
+            SWAP1((X)[i], (X)[j], t1); \
+            pivot = (X)[i]; \
           } \
         } \
       } \
     } else { \
       p     = MEDIAN(X, hi); \
-      pivot = X[p]; \
+      pivot = (X)[p]; \
       TwoWayPartitionReverse1(X, pivot, t1, 0, hi, l, r); \
       PetscCall(FuncName(l, X)); \
-      PetscCall(FuncName(hi - r + 1, X + r)); \
+      PetscCall(FuncName(hi - r + 1, (X) + r)); \
     } \
   } while (0)
 
 #define QuickSort2(FuncName, X, Y, n, pivot, t1, t2) \
   do { \
-    PetscCount i, j, p, l, r, hi = n - 1; \
-    if (n < 8) { \
-      for (i = 0; i < n; i++) { \
-        pivot = X[i]; \
-        for (j = i + 1; j < n; j++) { \
-          if (pivot > X[j]) { \
-            SWAP2(X[i], X[j], Y[i], Y[j], t1, t2); \
-            pivot = X[i]; \
+    PetscCount i, j, p, l, r, hi = (n) - 1; \
+    if ((n) < 8) { \
+      for (i = 0; i < (n); i++) { \
+        pivot = (X)[i]; \
+        for (j = i + 1; j < (n); j++) { \
+          if ((pivot) > (X)[j]) { \
+            SWAP2((X)[i], (X)[j], (Y)[i], (Y)[j], t1, t2); \
+            pivot = (X)[i]; \
           } \
         } \
       } \
     } else { \
       p     = MEDIAN(X, hi); \
-      pivot = X[p]; \
+      pivot = (X)[p]; \
       TwoWayPartition2(X, Y, pivot, t1, t2, 0, hi, l, r); \
       PetscCall(FuncName(l, X, Y)); \
-      PetscCall(FuncName(hi - r + 1, X + r, Y + r)); \
+      PetscCall(FuncName(hi - r + 1, (X) + r, (Y) + r)); \
     } \
   } while (0)
 
 #define QuickSort3(FuncName, X, Y, Z, n, pivot, t1, t2, t3) \
   do { \
-    PetscCount i, j, p, l, r, hi = n - 1; \
-    if (n < 8) { \
-      for (i = 0; i < n; i++) { \
-        pivot = X[i]; \
-        for (j = i + 1; j < n; j++) { \
-          if (pivot > X[j]) { \
-            SWAP3(X[i], X[j], Y[i], Y[j], Z[i], Z[j], t1, t2, t3); \
-            pivot = X[i]; \
+    PetscCount i, j, p, l, r, hi = (n) - 1; \
+    if ((n) < 8) { \
+      for (i = 0; i < (n); i++) { \
+        pivot = (X)[i]; \
+        for (j = i + 1; j < (n); j++) { \
+          if ((pivot) > (X)[j]) { \
+            SWAP3((X)[i], (X)[j], (Y)[i], (Y)[j], (Z)[i], (Z)[j], t1, t2, t3); \
+            pivot = (X)[i]; \
           } \
         } \
       } \
     } else { \
       p     = MEDIAN(X, hi); \
-      pivot = X[p]; \
+      pivot = (X)[p]; \
       TwoWayPartition3(X, Y, Z, pivot, t1, t2, t3, 0, hi, l, r); \
       PetscCall(FuncName(l, X, Y, Z)); \
-      PetscCall(FuncName(hi - r + 1, X + r, Y + r, Z + r)); \
+      PetscCall(FuncName(hi - r + 1, (X) + r, (Y) + r, (Z) + r)); \
     } \
   } while (0)
 

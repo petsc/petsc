@@ -14,7 +14,7 @@
 #if PetscDefined(USE_DEBUG)
   #define PetscCheckIdentity(n, idx) \
     do { \
-      for (PetscInt i = 0; i < n; ++i) PetscCheck(idx[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be initialized to 0:%" PetscInt_FMT, n - 1); \
+      for (PetscInt i = 0; i < (n); ++i) PetscCheck((idx)[i] == i, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array needs to be initialized to 0:%" PetscInt_FMT, (n) - 1); \
     } while (0)
 #else
   #define PetscCheckIdentity(n, idx) (void)0
