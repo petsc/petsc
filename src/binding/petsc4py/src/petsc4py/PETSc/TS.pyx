@@ -851,12 +851,19 @@ cdef class TS(Object):
         Mat P=None,
         args : tuple[Any, ...] | None = None,
         kargs : dict[str, Any] | None = None) -> None:
-        """Set the function to compute the Jacobian.
+        r"""Set the function to compute the Jacobian.
 
         Logically collective.
 
-        Set the function to compute the matrix ``dF/dU + a*dF/dU_t`` where
-        ``F(t, U, U_t)`` is the function provided with `setIFunction`.
+        Set the function to compute the matrix
+
+        .. math::
+
+           J = \frac{\partial F}{\partial U}
+               + a \frac{\partial F}{\partial \dot U},
+
+        where :math:`F(t, U, \dot U)` is the function provided with
+        `setIFunction` and :math:`a` is the shift supplied to the callback.
 
         Parameters
         ----------
@@ -963,12 +970,16 @@ cdef class TS(Object):
     def computeIJacobian(self,
                          t: float, Vec x, Vec xdot, a: float,
                          Mat J, Mat P = None, imex: bool = False) -> None:
-        """Evaluate the Jacobian of the DAE.
+        r"""Evaluate the Jacobian of the DAE.
 
         Collective.
 
-        If ``F(t, U, Udot)=0`` is the DAE, the required Jacobian is
-        ``dF/dU + shift*dF/dUdot``
+        If :math:`F(t, U, \dot U) = 0` is the DAE, the required Jacobian is
+
+        .. math::
+
+           J = \frac{\partial F}{\partial U}
+               + a \frac{\partial F}{\partial \dot U}.
 
         Parameters
         ----------
@@ -1182,12 +1193,17 @@ cdef class TS(Object):
         a: float,
         Mat J,
         Mat P=None) -> None:
-        """Evaluate the Jacobian of the DAE.
+        r"""Evaluate the Jacobian of the DAE.
 
         Collective.
 
-        If ``F(t, U, V, A)=0`` is the DAE,
-        the required Jacobian is ``dF/dU + v dF/dV + a dF/dA``.
+        If :math:`F(t, U, V, A) = 0` is the DAE, the required Jacobian is
+
+        .. math::
+
+           J = \frac{\partial F}{\partial U}
+               + v \frac{\partial F}{\partial V}
+               + a \frac{\partial F}{\partial A}.
 
         Parameters
         ----------

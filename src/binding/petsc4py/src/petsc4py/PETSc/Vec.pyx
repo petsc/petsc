@@ -1790,11 +1790,12 @@ cdef class Vec(Object):
 
         Collective.
 
-        For complex numbers this computes yᴴ·x with ``self`` as x, ``vec``
-        as y and where yᴴ denotes the conjugate transpose of y.
+        For complex numbers this computes :math:`y^H x` with ``self`` as
+        :math:`x`, ``vec`` as :math:`y`, and :math:`y^H` denoting the
+        conjugate transpose of :math:`y`.
 
-        Use `tDot` for the indefinite form yᵀ·x where yᵀ denotes the
-        transpose of y.
+        Use `tDot` for the indefinite form :math:`y^T x`, where :math:`y^T`
+        denotes the transpose of :math:`y`.
 
         Parameters
         ----------
@@ -1849,8 +1850,8 @@ cdef class Vec(Object):
 
         Collective.
 
-        This computes yᵀ·x with ``self`` as x, ``vec``
-        as y and where yᵀ denotes the transpose of y.
+        This computes :math:`y^T x` with ``self`` as :math:`x`, ``vec`` as
+        :math:`y`, and :math:`y^T` denoting the transpose of :math:`y`.
 
         Parameters
         ----------

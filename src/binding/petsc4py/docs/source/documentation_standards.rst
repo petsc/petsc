@@ -81,6 +81,34 @@ the "See also" section, e.g. ``petsc.MatSetValues``.
 End docstring with an empty line - "closing three quotation marks must be on a
 line by itself, preferably preceded by a blank line"
 
+Mathematics and string literals
+...............................
+
+Use ``:math:`` for inline mathematics and ``.. math::`` for displayed
+equations, with LaTeX math syntax instead of dollar-sign delimiters.
+Displayed equations support ``&`` for alignment and ``\\`` for line breaks.
+See the
+`Sphinx math documentation
+<https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#math>`_
+for details.
+
+Use raw strings for docstrings containing backslashes:
+
+.. code-block:: python
+
+    r"""Return :math:`\frac{a}{b}`."""
+
+The source ``r`` prefix protects backslashes during Python/Cython parsing.
+In raw strings, do not double LaTeX backslashes, and use actual newlines
+instead of ``\n``.
+
+Generated docstrings use ``r"""..."""``. Their text must not contain an
+unescaped ``"""`` sequence or a literal NUL character. Do not place an
+unescaped double quote or an odd number of backslashes immediately before
+the closing delimiter. Keep multiline closing delimiters on their own line.
+These restrictions also apply to embedded code examples; use triple single
+quotes in those examples.
+
 Type hint standards
 -------------------
 

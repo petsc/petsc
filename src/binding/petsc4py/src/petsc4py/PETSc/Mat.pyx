@@ -4279,24 +4279,42 @@ cdef class Mat(Object):
     #
 
     def createSchurComplement(self, Mat A00, Mat Ap00, Mat A01, Mat A10, Mat A11=None) -> Self:
-        """Create a `Type.SCHURCOMPLEMENT` matrix.
+        r"""Create a `Type.SCHURCOMPLEMENT` matrix.
 
         Collective.
+
+        The original matrix has the block form
+
+        .. math::
+
+           A = \begin{pmatrix}
+               A_{00} & A_{01} \\
+               A_{10} & A_{11}
+               \end{pmatrix}.
+
+        Its Schur complement with respect to :math:`A_{00}` is
+
+        .. math::
+
+           S = A_{11} - A_{10} A_{00}^{-1} A_{01}.
+
+        The returned matrix applies this formula without explicitly forming
+        :math:`S`. A `KSP` solve with ``A00`` and preconditioning matrix
+        ``Ap00`` approximates the action of :math:`A_{00}^{-1}`.
 
         Parameters
         ----------
         A00
-            the upper-left block of the original matrix A = [A00 A01; A10 A11].
+            The upper-left block of :math:`A`.
         Ap00
-            used to construct the preconditioner used in ksp(A00,Ap00) to
-            approximate the action of A00^{-1}.
+            Used to construct the preconditioner in ``ksp(A00, Ap00)`` to
+            approximate the action of :math:`A_{00}^{-1}`.
         A01
-            the upper-right block of the original matrix A = [A00 A01; A10 A11].
+            The upper-right block of :math:`A`.
         A10
-            the lower-left block of the original matrix A = [A00 A01; A10 A11].
+            The lower-left block of :math:`A`.
         A11
-            Optional lower-right block of the original matrix
-            A = [A00 A01; A10 A11].
+            The optional lower-right block of :math:`A`, zero if `None`.
 
         See Also
         --------
@@ -4711,7 +4729,7 @@ cdef class Mat(Object):
         return toScalar(result)
 
     def aNorm(self, Vec x) -> float:
-        """Compute the induced norm of a vector, (x^H A x)^1/2.
+        r"""Compute the induced norm of a vector, :math:`\sqrt{x^H A x}`.
 
         Collective.
 
