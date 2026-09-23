@@ -6404,6 +6404,11 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   MatCOOStruct_MPIAIJ *coo;
 
   PetscFunctionBegin;
+  // The A and B blocks built below leave B with compacted column indices, which MatSetValues_MPI_Hash() cannot fill
+  if (mat->hash_active) {
+    mat->ops[0]      = mpiaij->cops;
+    mat->hash_active = PETSC_FALSE;
+  }
   PetscCall(PetscFree(mpiaij->garray));
   PetscCall(VecDestroy(&mpiaij->lvec));
 #if PetscDefined(USE_CTABLE)
