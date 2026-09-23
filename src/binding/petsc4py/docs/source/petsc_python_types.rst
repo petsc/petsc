@@ -58,8 +58,9 @@ pointwise multiplication of the inverse diagonal with the input vector.
 
 .. literalinclude:: ../../demo/python_types/pc.py
 
-We can run the script used to test our matrix class and use command line
-arguments to specify that our preconditioner should be used:
+From ``demo/python_types``, we can run the script used to test our matrix
+class and use command line arguments to specify that our preconditioner
+should be used:
 
 .. code-block:: console
 
@@ -87,6 +88,49 @@ PETSc Python linear solver type
 The protocol for the `petsc4py.PETSc.KSP.Type.PYTHON` Krylov solver is:
 
 .. literalinclude:: ../../demo/python_types/ksppython_protocol.py
+
+The following example implements one step of preconditioned Richardson
+iteration:
+
+.. math::
+
+  r_k = b - A x_k, \qquad z_k = P^{-1} r_k, \qquad
+  x_{k+1} = x_k + \omega z_k.
+
+The ``step()`` method updates the solution. By omitting ``solve()``, the context
+uses the default KSPPYTHON loop to compute residuals, check convergence, and
+call monitors. This example uses left preconditioning and the unpreconditioned
+residual norm. Work vectors are allocated in ``setUp()`` and released in
+``reset()`` and ``destroy()``. The relaxation factor defaults to :math:`\omega = 1`
+and can be changed with ``-ksp_richardson_scale omega`` as implemented in
+``setFromOptions()``.
+
+.. literalinclude:: ../../demo/python_types/ksp.py
+
+From ``demo/python_types``, we can run the matrix example with the Python
+Richardson solver and Jacobi preconditioning. The ``-ksp_view`` option displays
+the solver type, Python context, and relaxation factor reported by ``view()``:
+
+.. code-block:: console
+
+  $ python mat.py -ksp_type python -ksp_python_type ksp.Richardson \
+      -pc_type jacobi -ksp_view
+  KSP Object: 1 MPI process
+    type: python
+      Python: ksp.Richardson
+      relaxation factor: 1
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI process
+    type: jacobi
+      type DIAGONAL
+    linear system matrix, which is also used to construct the preconditioner:
+    Mat Object: 1 MPI process
+      type: python
+      rows=256, cols=256
+          Python: __main__.Poisson2D
 
 .. _petsc_python_snes:
 
