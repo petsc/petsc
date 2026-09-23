@@ -118,40 +118,20 @@ PETSc Python optimization solver type
 
 The protocol for the `petsc4py.PETSc.TAO.Type.PYTHON` TAO optimizer is:
 
-.. literalinclude:: ../../demo/python_types/tao.py
+.. literalinclude:: ../../demo/python_types/taopython_protocol.py
 
-In the example below, we create a simple gradient based (first order)
-optimization solver. A `petsc4py.PETSc.TAOLineSearch.Type.UNIT` line search
-with step size :math:`0.2` is used. Therefore the update becomes
+The following example implements a gradient descent solver to minimize
+:math:`f(x) = (x_0 - 1)^2 + (x_1 - 2)^2` on one process, starting from
+:math:`x = (0.5, 0.5)`.
+
+It uses a `petsc4py.PETSc.TAOLineSearch.Type.UNIT` line search with step size
+:math:`0.2`, giving the update
 
 .. math::
 
-  x^{k+1} = x^k + 0.2 \nabla f(x^k).
+  x^{k+1} = x^k - 0.2 \nabla f(x^k).
 
-
-.. note::
-
-  This setup is also well suited for non-linesearch-based quasi-Newton
-  optimization algorithms. It provides a general interface for using the TAO
-  provided state and functionality on a custom algorithm.
-
-The optimizer can be used from Python as
-
-.. code-block:: python
-
-  PETSc.TAO().createPython(myGradientDescent())
-
-or selected through the PETSc options as 
-
-.. code-block:: console
-
-  python tao.py -tao_type python -tao_python_type tao.myGradientDescent
-
-.. tip::
-
-  The prefix **tao** to **tao_python_type** is dependant on the Python module in
-  which the optimizer is located. It aligns with the fully qualified Python
-  module name.
+.. literalinclude:: ../../demo/python_types/tao.py
 
 .. _petsc_python_viewer:
 
