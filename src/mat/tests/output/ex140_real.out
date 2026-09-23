@@ -12,6 +12,7 @@ Testing with -enable mult
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -38,6 +39,7 @@ Testing with -enable mult
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -65,6 +67,7 @@ Testing with -enable multAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -91,6 +94,7 @@ Testing with -enable multAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -118,6 +122,7 @@ Testing with -enable multTranspose
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -144,6 +149,7 @@ Testing with -enable multTranspose
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -171,6 +177,7 @@ Testing with -enable multTransposeAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -197,6 +204,7 @@ Testing with -enable multTransposeAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -224,6 +232,7 @@ Testing with -enable solve
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -250,6 +259,7 @@ Testing with -enable solve
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -277,6 +287,7 @@ Testing with -enable solveAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -303,6 +314,7 @@ Testing with -enable solveAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -330,6 +342,7 @@ Testing with -enable solveTranspose
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -356,6 +369,7 @@ Testing with -enable solveTranspose
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -383,6 +397,7 @@ Testing with -enable solveTransposeAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -409,6 +424,7 @@ Testing with -enable solveTransposeAdd
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -436,6 +452,7 @@ Testing with -enable SOR
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -462,6 +479,7 @@ Testing with -enable SOR
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -489,6 +507,7 @@ Testing with -enable getDiagonal
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -515,6 +534,7 @@ Testing with -enable getDiagonal
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -542,6 +562,7 @@ Testing with -enable diagonalScale
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -568,6 +589,7 @@ Testing with -enable diagonalScale
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -595,6 +617,7 @@ Testing with -enable norm
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -621,6 +644,7 @@ Testing with -enable norm
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -648,6 +672,7 @@ Testing with -enable zeroEntries
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -674,6 +699,62 @@ Testing with -enable zeroEntries
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
+  Pass: getDiagonalBlock
+  Pass: duplicate
+  Pass: copy
+  Pass: scale
+  Pass: shift
+  Pass: setDiagonal
+  Pass: zeroRowsColumns
+  Pass: createSubMatrix
+  Pass: createVecs
+  Pass: conjugate
+  Pass: realPart
+  Pass: imagPart
+  Pass: multDiagonalBlock
+Testing with -enable zeroRows
+  Pass: mult
+  Pass: multAdd
+  Pass: multTranspose
+  Pass: multTransposeAdd
+  Pass: solve
+  Pass: solveAdd
+  Pass: solveTranspose
+  Pass: solveTransposeAdd
+  Pass: SOR
+  Pass: getDiagonal
+  Pass: diagonalScale
+  Pass: norm
+  Pass: zeroEntries
+  Pass: zeroRows
+  Pass: getDiagonalBlock
+  Pass: duplicate
+  Pass: copy
+  Pass: scale
+  Pass: shift
+  Pass: setDiagonal
+  Pass: zeroRowsColumns
+  Pass: createSubMatrix
+  Pass: createVecs
+  Pass: conjugate
+  Pass: realPart
+  Pass: imagPart
+  Pass: multDiagonalBlock
+  Pass: mult
+  Pass: multAdd
+  Pass: multTranspose
+  Pass: multTransposeAdd
+  Pass: solve
+  Pass: solveAdd
+  Pass: solveTranspose
+  Pass: solveTransposeAdd
+  Pass: SOR
+  Pass: getDiagonal
+  Pass: diagonalScale
+  Pass: norm
+  Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -701,6 +782,7 @@ Testing with -enable getDiagonalBlock
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -727,6 +809,7 @@ Testing with -enable getDiagonalBlock
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -754,6 +837,7 @@ Testing with -enable duplicate
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -780,6 +864,7 @@ Testing with -enable duplicate
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -807,6 +892,7 @@ Testing with -enable copy
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -833,6 +919,7 @@ Testing with -enable copy
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -860,6 +947,7 @@ Testing with -enable scale
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -886,6 +974,7 @@ Testing with -enable scale
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -913,6 +1002,7 @@ Testing with -enable shift
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -939,6 +1029,7 @@ Testing with -enable shift
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -966,6 +1057,7 @@ Testing with -enable setDiagonal
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -992,6 +1084,7 @@ Testing with -enable setDiagonal
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1019,6 +1112,7 @@ Testing with -enable zeroRowsColumns
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1045,6 +1139,7 @@ Testing with -enable zeroRowsColumns
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1072,6 +1167,7 @@ Testing with -enable createSubMatrix
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1098,6 +1194,7 @@ Testing with -enable createSubMatrix
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1125,6 +1222,7 @@ Testing with -enable createVecs
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1151,6 +1249,7 @@ Testing with -enable createVecs
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1178,6 +1277,7 @@ Testing with -enable conjugate
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1204,6 +1304,7 @@ Testing with -enable conjugate
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1231,6 +1332,7 @@ Testing with -enable realPart
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1257,6 +1359,7 @@ Testing with -enable realPart
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1284,6 +1387,7 @@ Testing with -enable imagPart
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1310,6 +1414,7 @@ Testing with -enable imagPart
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1337,6 +1442,7 @@ Testing with -enable multDiagonalBlock
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy
@@ -1363,6 +1469,7 @@ Testing with -enable multDiagonalBlock
   Pass: diagonalScale
   Pass: norm
   Pass: zeroEntries
+  Pass: zeroRows
   Pass: getDiagonalBlock
   Pass: duplicate
   Pass: copy

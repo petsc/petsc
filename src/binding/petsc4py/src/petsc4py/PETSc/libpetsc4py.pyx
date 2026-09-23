@@ -534,6 +534,7 @@ cdef extern from * nogil:
         PetscErrorCode (*assemblybegin)(PetscMat, PetscMatAssemblyType) except PETSC_ERR_PYTHON
         PetscErrorCode (*assemblyend)(PetscMat, PetscMatAssemblyType) except PETSC_ERR_PYTHON
         PetscErrorCode (*zeroentries)(PetscMat) except PETSC_ERR_PYTHON
+        PetscErrorCode (*zerorows)(PetscMat, PetscInt, PetscInt*, PetscScalar, PetscVec, PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*zerorowscolumns)(PetscMat, PetscInt, PetscInt*, PetscScalar, PetscVec, PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*scale)(PetscMat, PetscScalar) except PETSC_ERR_PYTHON
         PetscErrorCode (*shift)(PetscMat, PetscScalar) except PETSC_ERR_PYTHON
@@ -625,6 +626,7 @@ cdef dict dMatOps = {
                       18 : 'diagonalScale',
                       19 : 'norm',
                       23 : 'zeroEntries',
+                      24 : 'zeroRows',
                       32 : 'getDiagonalBlock',
                       34 : 'duplicate',
                       43 : 'copy',
@@ -658,6 +660,7 @@ cdef PetscErrorCode MatCreate_Python(
     ops.assemblybegin     = MatAssemblyBegin_Python
     ops.assemblyend       = MatAssemblyEnd_Python
     ops.zeroentries       = MatZeroEntries_Python
+    ops.zerorows          = MatZeroRows_Python
     ops.zerorowscolumns   = MatZeroRowsColumns_Python
     ops.scale             = MatScale_Python
     ops.shift             = MatShift_Python
@@ -912,6 +915,21 @@ cdef PetscErrorCode MatZeroEntries_Python(
     cdef zeroEntries = PyMat(mat).zeroEntries
     if zeroEntries is None: return UNSUPPORTED(b"zeroEntries")
     zeroEntries(Mat_(mat))
+    return FunctionEnd()
+
+cdef PetscErrorCode MatZeroRows_Python(
+    PetscMat mat,
+    PetscInt numRows,
+    const PetscInt* rows,
+    PetscScalar diag,
+    PetscVec x,
+    PetscVec b,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"MatZeroRows_Python")
+    cdef zeroRows = PyMat(mat).zeroRows
+    if zeroRows is None: return UNSUPPORTED(b"zeroRows")
+    cdef ndarray pyrows = array_i(numRows, rows)
+    zeroRows(Mat_(mat), pyrows, toScalar(diag), Vec_(x), Vec_(b))
     return FunctionEnd()
 
 cdef PetscErrorCode MatZeroRowsColumns_Python(
