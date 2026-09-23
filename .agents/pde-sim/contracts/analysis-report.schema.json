@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pde-sim/contracts/analysis-report.schema.json",
+  "title": "Analysis Report",
+  "description": "visualization's output: the artifacts produced plus FACTUAL diagnostics (no numerical interpretation — that is numerical-analysis's job). Returned to the orchestrator.",
+  "type": "object",
+  "required": ["schema_version", "id", "results_manifest_id", "visualizations_produced", "diagnostics"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string" },
+    "results_manifest_id": { "type": "string" },
+    "vis_spec_id": { "type": "string" },
+    "visualizations_produced": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "artifact_path"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string" },
+          "fields": { "type": "array", "items": { "type": "string" } },
+          "artifact_path": { "type": "string" },
+          "tool": { "type": "string" }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "description": "Factual findings only, e.g. 'NaN in field u at cell 1423, step 57' or 'field p exceeded nominal range [0,1] with max 3.2'.",
+      "items": {
+        "type": "object",
+        "required": ["type", "finding", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "type": "string", "enum": ["nan_inf", "range", "sanity_check", "conservation", "other"] },
+          "field": { "type": "string" },
+          "finding": { "type": "string" },
+          "location": { "type": "string" },
+          "severity": { "type": "string", "enum": ["info", "warning", "error"] }
+        }
+      }
+    },
+    "convergence_plots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "artifact_path"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "type": "string", "enum": ["solver_iterations", "mesh_refinement", "conservation_history", "other"] },
+          "artifact_path": { "type": "string" }
+        }
+      }
+    },
+    "post_processors": {
+      "type": "array",
+      "description": "Standalone post-processing scripts the visualization agent generated and ran against the output files.",
+      "items": {
+        "type": "object",
+        "required": ["script_path"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "script_path": { "type": "string" },
+          "command": { "type": "string" },
+          "tool": { "type": "string", "enum": ["pvpython", "paraview", "matplotlib", "pyvista", "other"] }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}
