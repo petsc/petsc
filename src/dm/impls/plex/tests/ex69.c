@@ -19,6 +19,44 @@ char              tri_2_cv[] = "\
 -2.0  1.0 0.0  1\n\
 -1.0  2.0 0.0 -1";
 
+PETSC_EXTERN char tri_3x3_cv[];
+char              tri_3x3_cv[] = "\
+2 18 16 3 0\n\
+0 1 5\n\
+0 5 4\n\
+1 2 6\n\
+1 6 5\n\
+2 3 7\n\
+2 7 6\n\
+4 5 9\n\
+4 9 8\n\
+5 6 10\n\
+5 10 9\n\
+6 7 11\n\
+6 11 10\n\
+8 9 13\n\
+8 13 12\n\
+9 10 14\n\
+9 14 13\n\
+10 11 15\n\
+10 15 14\n\
+0 0 0\n\
+1 0 0\n\
+2 0 0\n\
+3 0 0\n\
+0 1 0\n\
+1 1 0\n\
+2 1 0\n\
+3 1 0\n\
+0 2 0\n\
+1 2 0\n\
+2 2 0\n\
+3 2 0\n\
+0 3 0\n\
+1 3 0\n\
+2 3 0\n\
+3 3 0";
+
 /* List of test meshes
 
 Test tri_0: triangle
@@ -139,6 +177,25 @@ Test tri_3: tri_2, in parallel
                \|   |  |   |/
                 8---7  7---6
                  19      21
+
+Test tri_4: 3x3 triangles on 3 processes
+
+The fault is the horizontal line y = 1. The fault is oriented after distribution, so each process holds
+only part of it.
+
+ +-----+-----+-----+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +-----+-----+-----+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +=====+=====+=====+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +-----+-----+-----+
 
 Test quad_0: quadrilateral
 
@@ -1417,6 +1474,21 @@ int main(int argc, char **argv)
       args: -dm_plex_file_contents dat:tri_2_cv -dm_plex_cohesive_label_fault 11,15 \
               -petscpartitioner_type shell -petscpartitioner_shell_sizes 2,2 \
               -petscpartitioner_shell_points 0,3,1,2
+
+  testset:
+    requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)
+    nsize: 3
+    args: -dm_plex_file_contents dat:tri_3x3_cv -dm_plex_cohesive_label_fault 37,42,46 -petscpartitioner_type shell \
+          -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
+            -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_solution_view -local_residual_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    # The owner of a shared fault vertex holds no fault edge next to it
+    test:
+      suffix: tri_4
+      args: -petscpartitioner_shell_sizes 4,5,9 -petscpartitioner_shell_points 6,7,10,15,0,1,3,8,16,2,4,5,9,11,12,13,14,17
 
   testset:
     requires: triangle

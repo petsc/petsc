@@ -5572,6 +5572,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       if (!flg) break;
       PetscCall(DMGetLabel(dm, name, &label));
       PetscCall(DMPlexOrientLabel(dm, label));
+      if (PetscDefined(USE_DEBUG)) PetscCall(DMPlexCheckOrientationLabel(dm, label));
       PetscCall(DMPlexLabelCohesiveComplete(dm, label, NULL, 1, PETSC_FALSE, NULL));
     }
   }

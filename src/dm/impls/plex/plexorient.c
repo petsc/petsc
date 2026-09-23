@@ -1346,161 +1346,150 @@ end:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexCheckOrientation_Internal(DM dm, IS cellIS, IS faceIS)
+// A local cell next to a face, with the orientation that it induces on the face
+typedef struct {
+  PetscInt    rank;  // process holding the cell
+  PetscInt    comp;  // connected component of the cell on that process
+  PetscInt    ornt;  // orientation of the face in the cell, 1 or -1, or 0 if there is no cell
+  PetscSFNode owner; // owner of the cell, which identifies the copies of the cell on other processes
+} FaceSample;
+
+// Copies of the same cell induce the same orientation on a face, and two different cells induce opposite orientations
+static PetscBool FaceSamplesMatch(const FaceSample *a, const FaceSample *b)
 {
-  const PetscInt     debug  = ((DM_Plex *)dm->data)->printOrient;
-  PetscViewer        viewer = NULL, selfviewer = NULL;
+  const PetscBool same = a->owner.rank == b->owner.rank && a->owner.index == b->owner.index ? PETSC_TRUE : PETSC_FALSE;
+
+  return (a->ornt == b->ornt) == same ? PETSC_TRUE : PETSC_FALSE;
+}
+
+/*
+  DMPlexGetFaceSamples_Private - Collect on the owner of each face the samples from all processes that hold the face
+
+  Collective
+
+  Each process samples the local cells of cellIS next to each face of faceIS, with the orientation of cellFlip. For each
+  face faces[f] that this process owns, the samples are samples[off[f]] to samples[off[f + 1]]. With overlap, a cell can
+  have copies on several processes, so a face can have more than two samples.
+*/
+static PetscErrorCode DMPlexGetFaceSamples_Private(DM dm, IS cellIS, IS faceIS, const PetscInt cellComp[], PetscBT cellFlip, PetscInt **off, FaceSample **samples)
+{
   PetscSF            sf;
-  const PetscInt    *lpoints, *rootdegree = NULL;
+  const PetscInt    *lpoints, *rootdegree = NULL, *cells = NULL, *faces = NULL;
   const PetscSFNode *rpoints;
-  const PetscInt    *cells = NULL, *faces = NULL;
-  PetscSFNode       *oornt, *rornt, *lornt;
-  PetscInt           cStart = 0, cEnd = 0, fStart = 0, fEnd = 0;
-  PetscInt           pdepth, Nr, Nl;
-  PetscBool          faceIsVertex = PETSC_FALSE, valid = PETSC_TRUE;
-  MPI_Comm           comm;
-  PetscMPIInt        size, rank;
+  FaceSample        *local, *remote = NULL;
+  PetscInt          *roff;
+  PetscInt           cStart = 0, cEnd = 0, fStart = 0, fEnd = 0, pEnd, Nr, Nl;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (debug) {
-    viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)dm));
-    PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
-  }
-
-  PetscCall(DMGetPointSF(dm, &sf));
-  PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &lpoints, &rpoints));
-  if (Nr >= 0) {
-    PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegree));
-    PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegree));
-  } else {
-    sf = NULL;
-    Nr = 0;
-    Nl = 0;
-  }
-  PetscCall(PetscCalloc3(Nr, &oornt, Nr, &rornt, Nl, &lornt));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   if (cellIS) PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   if (faceIS) PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
-  PetscCall(DMPlexGetPointDepth(dm, faces ? faces[fStart] : fStart, &pdepth));
-  if (!pdepth) faceIsVertex = PETSC_TRUE;
-  if (debug) {
-    PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Checking orientation of %" PetscInt_FMT " cells and %" PetscInt_FMT " faces\n", rank, cEnd - cStart, fEnd - fStart));
-    PetscCall(PetscViewerASCIIPushTab(selfviewer));
+  PetscCall(DMPlexGetChart(dm, NULL, &pEnd));
+  PetscCall(DMGetPointSF(dm, &sf));
+  PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &lpoints, &rpoints));
+  if (Nr < 0) {
+    sf = NULL;
+    Nl = 0;
   }
+  PetscCall(PetscCalloc2(2 * pEnd, &local, pEnd + 1, &roff));
   for (PetscInt f = fStart; f < fEnd; ++f) {
-    const PetscInt  face  = faces ? faces[f] : f;
-    const PetscBool owner = rootdegree && rootdegree[face] ? PETSC_TRUE : PETSC_FALSE;
+    const PetscInt  face = faces ? faces[f] : f;
     const PetscInt *supp;
-    PetscInt        neighbors[2], o[2] = {0, 0};
-    PetscInt        lsS = 0, sS;
+    PetscInt        sS, depth, n = 0;
 
-    PetscCall(DMPlexGetSupport(dm, face, &supp));
+    PetscCall(DMPlexGetPointDepth(dm, face, &depth));
     PetscCall(DMPlexGetSupportSize(dm, face, &sS));
-    // Filter support for local cells
+    PetscCall(DMPlexGetSupport(dm, face, &supp));
     for (PetscInt s = 0; s < sS; ++s) {
-      PetscInt ind;
-
-      ind = GetPointIndex(supp[s], cStart, cEnd, cells);
-      if (ind >= 0) {
-        neighbors[PetscMin(lsS, 1)] = supp[s];
-        ++lsS;
-      }
-    }
-    PetscCheck(lsS < 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " has support size %" PetscInt_FMT " > 2", face, lsS);
-    // Extract orientations
-    for (PetscInt s = 0; s < lsS; ++s) {
+      const PetscInt  cind = GetPointIndex(supp[s], cStart, cEnd, cells);
+      const PetscInt  l    = GetPointIndex(supp[s], 0, Nl, lpoints);
+      FaceSample     *fs   = &local[2 * face + n];
       const PetscInt *cone, *ornt;
-      PetscInt        cS;
+      PetscInt        cS, c;
 
-      PetscCall(DMPlexGetConeSize(dm, neighbors[s], &cS));
-      PetscCall(DMPlexGetOrientedCone(dm, neighbors[s], &cone, &ornt));
-      for (PetscInt c = 0; c < cS; ++c) {
-        if (cone[c] == face) {
-          if (faceIsVertex) o[s] = c * 2 - 1;
-          else o[s] = ornt[c] < 0 ? -1 : 1;
-          break;
-        }
+      if (cind < 0) continue;
+      PetscCheck(n < 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " separates more than two cells", face);
+      PetscCall(DMPlexGetConeSize(dm, supp[s], &cS));
+      PetscCall(DMPlexGetOrientedCone(dm, supp[s], &cone, &ornt));
+      for (c = 0; c < cS; ++c)
+        if (cone[c] == face) break;
+      // A vertex is oriented by its position in the cone of an edge
+      fs->ornt = depth ? (ornt[c] < 0 ? -1 : 1) : 2 * c - 1;
+      PetscCall(DMPlexRestoreOrientedCone(dm, supp[s], &cone, &ornt));
+      if (cellFlip && PetscBTLookup(cellFlip, cind)) fs->ornt = -fs->ornt;
+      fs->rank = rank;
+      fs->comp = cellComp ? cellComp[cind] : 0;
+      if (l >= 0) fs->owner = rpoints[l];
+      else {
+        fs->owner.rank  = rank;
+        fs->owner.index = supp[s];
       }
-      PetscCall(DMPlexRestoreOrientedCone(dm, neighbors[s], &cone, &ornt));
+      ++n;
     }
-    if (lsS == 2) {
-      // Check internal face
-      if (o[0] * o[1] >= 0) {
+  }
+  if (sf) {
+    MPI_Datatype MPIU_10INT;
+
+    PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegree));
+    PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegree));
+    for (PetscInt p = 0; p < pEnd; ++p) roff[p + 1] = roff[p] + (p < Nr ? rootdegree[p] : 0);
+    PetscCall(PetscMalloc1(2 * roff[pEnd], &remote));
+    PetscCallMPI(MPI_Type_contiguous(10, MPIU_INT, &MPIU_10INT));
+    PetscCallMPI(MPI_Type_commit(&MPIU_10INT));
+    PetscCall(PetscSFGatherBegin(sf, MPIU_10INT, local, remote));
+    PetscCall(PetscSFGatherEnd(sf, MPIU_10INT, local, remote));
+    PetscCallMPI(MPI_Type_free(&MPIU_10INT));
+  }
+  // An owned face has its local samples, and two from each process holding a copy of it
+  PetscCall(PetscMalloc1(fEnd - fStart + 1, off));
+  (*off)[0] = 0;
+  for (PetscInt f = fStart; f < fEnd; ++f) {
+    const PetscInt face = faces ? faces[f] : f;
+
+    (*off)[f - fStart + 1] = (*off)[f - fStart] + (GetPointIndex(face, 0, Nl, lpoints) < 0 ? 2 * (1 + roff[face + 1] - roff[face]) : 0);
+  }
+  PetscCall(PetscMalloc1((*off)[fEnd - fStart], samples));
+  for (PetscInt f = fStart; f < fEnd; ++f) {
+    const PetscInt face = faces ? faces[f] : f;
+    FaceSample    *fs   = PetscSafePointerPlusOffset(*samples, (*off)[f - fStart]);
+
+    if ((*off)[f - fStart + 1] == (*off)[f - fStart]) continue;
+    PetscCall(PetscArraycpy(fs, &local[2 * face], 2));
+    if (remote) PetscCall(PetscArraycpy(&fs[2], &remote[2 * roff[face]], 2 * (roff[face + 1] - roff[face])));
+  }
+  PetscCall(PetscFree(remote));
+  PetscCall(PetscFree2(local, roff));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Every pair of samples of a face must match
+static PetscErrorCode DMPlexCheckOrientation_Internal(DM dm, IS cellIS, IS faceIS)
+{
+  const PetscInt  debug  = ((DM_Plex *)dm->data)->printOrient;
+  const PetscInt *faces  = NULL;
+  PetscInt        fStart = 0, fEnd = 0, *off;
+  FaceSample     *samples;
+  PetscBool       valid = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  if (faceIS) PetscCall(ISGetPointRange(faceIS, &fStart, &fEnd, &faces));
+  PetscCall(DMPlexGetFaceSamples_Private(dm, cellIS, faceIS, NULL, NULL, &off, &samples));
+  for (PetscInt f = 0; f < fEnd - fStart; ++f) {
+    for (PetscInt i = off[f]; i < off[f + 1]; ++i) {
+      for (PetscInt j = i + 1; j < off[f + 1]; ++j) {
+        if (!samples[i].ornt || !samples[j].ornt || FaceSamplesMatch(&samples[i], &samples[j])) continue;
         valid = PETSC_FALSE;
         if (debug)
-          PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Internal Face %" PetscInt_FMT " is mismatched: cell %" PetscInt_FMT " (%" PetscInt_FMT ") ~ cell %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, face, neighbors[0], o[0], neighbors[1], o[1]));
-      } else if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Internal Face %" PetscInt_FMT " valid\n", rank, face));
-    } else {
-      // Check shared and boundary faces
-      PetscInt l;
-
-      PetscCall(PetscFindInt(face, Nl, lpoints, &l));
-      // Boundary face
-      if (l < 0 && !owner) {
-        if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Boundary Face %" PetscInt_FMT " valid\n", rank, face));
-        continue;
-      }
-      if (l >= 0) {
-        lornt[l].index = neighbors[0];
-        lornt[l].rank  = o[0];
-        if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Ghost Face %" PetscInt_FMT " (%" PetscInt_FMT ") was stored\n", rank, face, o[0]));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "Face %" PetscInt_FMT " is mismatched: cell (%" PetscInt_FMT ", %" PetscInt_FMT ") (%" PetscInt_FMT ") ~ cell (%" PetscInt_FMT ", %" PetscInt_FMT ") (%" PetscInt_FMT ")\n", faces ? faces[fStart + f] : fStart + f,
+                                samples[i].owner.rank, samples[i].owner.index, samples[i].ornt, samples[j].owner.rank, samples[j].owner.index, samples[j].ornt));
       }
     }
-    if (owner) {
-      // Store shared face orientation and cell from owner
-      oornt[face].index = neighbors[0];
-      oornt[face].rank  = o[0];
-      if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Owned Face %" PetscInt_FMT " (%" PetscInt_FMT ") was stored\n", rank, face, o[0]));
-    }
   }
-  // Communicate shared face orientations from owner
-  if (sf) {
-    PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, oornt, rornt, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_SF_NODE, oornt, rornt, MPI_REPLACE));
-  }
-  // Check unowned shared faces
-  for (PetscInt l = 0; l < Nl; ++l) {
-    const PetscInt face = lpoints ? lpoints[l] : l;
-    PetscBool      flip = PETSC_FALSE;
-    PetscInt       ind, cl, o[2] = {0, 0};
-
-    // Filter for local faces
-    ind = GetPointIndex(face, fStart, fEnd, faces);
-    if (ind < 0) continue;
-    // Check for shared cell
-    PetscCall(PetscFindInt(lornt[l].index, Nl, lpoints, &cl));
-    if (cl >= 0) {
-      if (rpoints[cl].index == rornt[face].index) {
-        flip = PETSC_TRUE;
-        if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "Shared cell %" PetscInt_FMT " maps to %" PetscInt_FMT " (%" PetscInt_FMT ") so we reverse the orientation check\n", lornt[l].index, rpoints[cl].index, rpoints[cl].rank));
-      } else {
-        if (debug > 1)
-          PetscCall(PetscViewerASCIIPrintf(selfviewer, "Shared cell %" PetscInt_FMT " maps to %" PetscInt_FMT " (%" PetscInt_FMT ") instead of %" PetscInt_FMT " so we do not reverse the orientation check\n", lornt[l].index, rpoints[cl].index,
-                                           rpoints[cl].rank, rornt[face].index));
-      }
-    }
-    o[0] = lornt[l].rank;
-    o[1] = rornt[face].rank;
-    // This was not a shared face
-    if (!o[0]) continue;
-    if ((o[0] * o[1] >= 0 && !flip) || (o[0] * o[1] < 0 && flip)) {
-      valid = PETSC_FALSE;
-      if (debug)
-        PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Ghost Face %" PetscInt_FMT " (%" PetscInt_FMT ") does not match face %" PetscInt_FMT " rank %" PetscInt_FMT " (%" PetscInt_FMT ")\n", rank, face, o[0], rpoints[l].index, rpoints[l].rank, o[1]));
-    } else if (debug > 1) PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]Ghost Face %" PetscInt_FMT " matches %" PetscInt_FMT " (%" PetscInt_FMT ") valid\n", rank, face, rpoints[l].index, rpoints[l].rank));
-  }
-  // Cleanup
-  PetscCall(PetscFree3(oornt, rornt, lornt));
-  if (debug) {
-    PetscCall(PetscViewerASCIIPopTab(selfviewer));
-    PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &selfviewer));
-    PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  }
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPI_C_BOOL, MPI_LAND, comm));
-  PetscCheck(valid, comm, PETSC_ERR_ARG_WRONGSTATE, "Mesh was not properly oriented");
+  PetscCall(PetscFree(off));
+  PetscCall(PetscFree(samples));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)dm)));
+  PetscCheck(valid, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Mesh was not properly oriented");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
