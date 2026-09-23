@@ -7,35 +7,48 @@ from petsc4py.PETSc import Viewer
 
 
 class TAOPythonProtocol:
-    def setFromOptions(self, tao: TAO):
-        """Parse the command line options."""
+    def create(self, tao: TAO) -> None:
+        """Initialize resources when the context is attached to the TAO."""
         ...
 
-    def setUp(self, tao: TAO):
+    def destroy(self, tao: TAO) -> None:
+        """Release resources when the context is detached from the TAO."""
+        ...
+
+    def setFromOptions(self, tao: TAO) -> None:
+        """Process options from the options database."""
+        ...
+
+    def setUp(self, tao: TAO) -> None:
         """Set up the optimizer."""
         ...
 
-    def solve(self, tao):
-        """Solve the optimisation problem.
+    def solve(self, tao: TAO) -> None:
+        """Solve the optimization problem with a user-defined routine.
 
-        Note:
-            Do not override if you want to rely on the default solve routine, using step, preStep and postStep.
+        Implement this method to control the complete solve and set its
+        convergence reason. Omit it to use step(), preStep(), and postStep()
+        to customize the default solve.
 
         """
         ...
 
-    def step(self, tao: TAO, x: Vec, g: Vec, s: Vec):
-        """Given current iterate x compute gradient g and step s."""
+    def step(self, tao: TAO, x: Vec, g: Vec | None, s: Vec | None) -> None:
+        """Compute gradient g and search direction s at x.
+
+        Both g and s are None when the optimizer has no gradient routine.
+
+        """
         ...
 
-    def preStep(self, tao: TAO):
-        """Invoked before step."""
+    def preStep(self, tao: TAO) -> None:
+        """Process the optimizer state before a default step."""
         ...
 
-    def postStep(self, tao: TAO):
-        """Invoked after step."""
+    def postStep(self, tao: TAO) -> None:
+        """Process the optimizer state after a default step."""
         ...
 
-    def view(self, tao: TAO, viewer: Viewer):
+    def view(self, tao: TAO, viewer: Viewer) -> None:
         """View the optimizer."""
         ...

@@ -3,13 +3,24 @@
 PETSc Python types
 ==================
 
-Here we discuss details about Python-aware PETSc types that can be used within the library.
-
-In particular, we discuss matrices, preconditioners, Krylov solvers, nonlinear solvers, ODE integrators and viewers.
+PETSc supports Python implementations of matrices, preconditioners, Krylov
+solvers, nonlinear solvers, ODE integrators, optimizers, and viewers.
 
 The low-level, Cython implementation exposing the Python methods is in `src/petsc4py/PETSc/libpetsc4py.pyx <https://gitlab.com/petsc/petsc/-/tree/release/src/binding/petsc4py/src/petsc4py/PETSc/libpetsc4py.pyx>`_.
 
 The scripts used here can be found at `demo/python_types <https://gitlab.com/petsc/petsc/-/tree/release/src/binding/petsc4py/demo/python_types>`_.
+
+Each implementation is a Python object, called a *context*, whose methods PETSc
+calls to perform the supported operations. The protocol classes below describe
+the callback signatures; they are not base classes to inherit from. Implement
+only the callbacks your context needs, and omit unused methods. An empty method
+still counts as an implementation and can override PETSc's default behavior.
+
+The optional ``create(obj)`` callback runs when the context is attached to a
+PETSc object. The optional ``destroy(obj)`` callback releases resources before
+the context is replaced or removed, including when the PETSc object is
+destroyed. These callbacks are distinct from ``setUp(obj)`` and, where
+supported, ``reset(obj)``, which prepare and reset an object for reuse.
 
 .. _petsc_python_mat:
 

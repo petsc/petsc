@@ -6,16 +6,24 @@ from petsc4py.PETSc import Viewer
 
 
 class PetscViewerPythonProtocol:
+    def create(self, viewer: Viewer) -> None:
+        """Initialize resources when the context is attached to the viewer."""
+        ...
+
+    def destroy(self, viewer: Viewer) -> None:
+        """Release resources when the context is detached from the viewer."""
+        ...
+
     def viewObject(self, viewer: Viewer, obj: Object) -> None:
         """View a generic object."""
         ...
 
     def setUp(self, viewer: Viewer) -> None:
-        """Setup the viewer."""
+        """Set up the viewer."""
         ...
 
     def setFromOptions(self, viewer: Viewer) -> None:
-        """Process command line for customization."""
+        """Process options from the options database."""
         ...
 
     def flush(self, viewer: Viewer) -> None:

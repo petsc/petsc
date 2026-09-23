@@ -9,47 +9,56 @@ from petsc4py.PETSc import Viewer
 
 
 class PCPythonProtocol:
+    def create(self, pc: PC) -> None:
+        """Initialize resources when the context is attached to the PC."""
+        ...
+
+    def destroy(self, pc: PC) -> None:
+        """Release resources when the context is detached from the PC."""
+        ...
+
     def apply(self, pc: PC, b: Vec, x: Vec) -> None:
-        """Apply the preconditioner on vector b, return in x."""
+        """Apply the preconditioner to b, storing the result in x."""
         ...
 
     def applySymmetricLeft(self, pc: PC, b: Vec, x: Vec) -> None:
-        """Apply the symmetric left part of the preconditioner on vector b, return in x."""
+        """Apply the symmetric left part to b, storing the result in x."""
         ...
 
     def applySymmetricRight(self, pc: PC, b: Vec, x: Vec) -> None:
-        """Apply the symmetric right part of the preconditioner on vector b, return in x."""
+        """Apply the symmetric right part to b, storing the result in x."""
         ...
 
     def applyTranspose(self, pc: PC, b: Vec, x: Vec) -> None:
-        """Apply the transposed preconditioner on vector b, return in x."""
+        """Apply the transpose to b, storing the result in x."""
         ...
 
-    def applyMat(self, pc: PC, B: Mat, X: Mat) -> None:
-        """Apply the preconditioner on a block of right-hand sides B, return in X."""
+    def matApply(self, pc: PC, B: Mat, X: Mat) -> None:
+        """Apply the preconditioner to B, storing the result in X."""
         ...
 
     def preSolve(self, pc: PC, ksp: KSP, b: Vec, x: Vec) -> None:
-        """Callback called at the beginning of a Krylov method.
+        """Prepare for a Krylov solve.
 
-        This method is allowed to modify the right-hand side b and the initial guess x.
+        This method may modify the right-hand side b and initial guess x.
 
         """
         ...
 
     def postSolve(self, pc: PC, ksp: KSP, b: Vec, x: Vec) -> None:
-        """Callback called at the end of a Krylov method.
+        """Postprocess a Krylov solve.
 
-        This method is allowed to modify the right-hand side b and the solution x.
+        This method may modify the right-hand side b and solution x.
 
         """
+        ...
 
     def view(self, pc: PC, viewer: Viewer) -> None:
         """View the preconditioner."""
         ...
 
     def setFromOptions(self, pc: PC) -> None:
-        """Process command line for customization."""
+        """Process options from the options database."""
         ...
 
     def setUp(self, pc: PC) -> None:

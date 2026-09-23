@@ -7,18 +7,26 @@ from petsc4py.PETSc import Viewer
 
 
 class SNESPythonProtocol:
+    def create(self, snes: SNES) -> None:
+        """Initialize resources when the context is attached to the SNES."""
+        ...
+
+    def destroy(self, snes: SNES) -> None:
+        """Release resources when the context is detached from the SNES."""
+        ...
+
     def solve(self, snes: SNES, b: Vec | None, x: Vec) -> None:
         """Solve the nonlinear system with a user-defined routine.
 
-        Implement this method to control the complete solve. Use step, preStep,
-        and postStep to customize the default solve routine instead. Return the
-        solution in x.
+        Implement this method to control the complete solve and set its
+        convergence reason. Omit it to use step(), preStep(), and postStep()
+        to customize the default solve. Store the solution in x.
 
         """
         ...
 
     def step(self, snes: SNES, x: Vec, f: Vec, y: Vec) -> None:
-        """Compute update y from solution x and residual f in the default solve."""
+        """Compute update y from x and residual f in the default solve."""
         ...
 
     def preStep(self, snes: SNES) -> None:
@@ -34,7 +42,7 @@ class SNESPythonProtocol:
         ...
 
     def setFromOptions(self, snes: SNES) -> None:
-        """Process command line for customization."""
+        """Process options from the options database."""
         ...
 
     def setUp(self, snes: SNES) -> None:
