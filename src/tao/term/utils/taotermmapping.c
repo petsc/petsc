@@ -415,7 +415,7 @@ static PetscErrorCode TaoTermMappingCreatePtAP(Mat unmapped_H, Mat map, Mat *H)
     PetscCall(MatSetLayouts(*H, rlayout, rlayout));
     PetscCall(MatSetType(*H, MATAIJ));
     PetscCall(MatSetUp(*H));
-  } else if ((is_map_diag && !is_uH_diag && !is_uH_cdiag)) {
+  } else if (is_map_diag && !is_uH_diag && !is_uH_cdiag) {
     PetscCall(MatDuplicate(unmapped_H, MAT_DO_NOT_COPY_VALUES, H));
   } else if (is_map_cdiag && is_uH_diag) {
     // MatDiagonal does not support setvalues, thus AIJ

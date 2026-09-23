@@ -2606,7 +2606,7 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
       }
       PetscCall(PetscMalloc1(myownedv * numComp, &fields));
       for (int d = 0; d < numComp; ++d) {
-        PetscCallCGNSRead(cg_field_info(cgid, B, z, isol, (d + 1), &datatype, buffer), V, viewer);
+        PetscCallCGNSRead(cg_field_info(cgid, B, z, isol, d + 1, &datatype, buffer), V, viewer);
         PetscCheck(datatype == CGNS_ENUMV(RealDouble), PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Field %s in file is not of type double", buffer);
       }
       PetscCallCGNSReadData(cgp_field_multi_read_data(cgid, B, z, isol, field_ids, range_min, range_max, numComp, (void **)fields_CGNS), V, viewer);

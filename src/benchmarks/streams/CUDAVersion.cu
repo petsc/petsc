@@ -871,8 +871,8 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
   for (k = 0; k < NTIMES; ++k) {
     for (j = 0; j < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(avgtime); ++j) {
       avgtime[j] = avgtime[j] + (1.e-03f * times[j][k]); // millisec --> sec
-      mintime[j] = MIN(mintime[j], (1.e-03f * times[j][k]));
-      maxtime[j] = MAX(maxtime[j], (1.e-03f * times[j][k]));
+      mintime[j] = MIN(mintime[j], 1.e-03f * times[j][k]);
+      maxtime[j] = MAX(maxtime[j], 1.e-03f * times[j][k]);
     }
   }
   for (j = 0; j < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(avgtime); ++j) avgtime[j] = avgtime[j] / (float)(NTIMES - 1);

@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   PetscTime(&x);
   PetscCall(PetscSleep(10));
   PetscTime(&y);
-  fprintf(stdout, "%-15s : %e sec - Slept for 10 sec \n", "PetscTime", (y - x));
+  fprintf(stdout, "%-15s : %e sec - Slept for 10 sec \n", "PetscTime", y - x);
   PetscCall(PetscFinalize());
   return 0;
 }
