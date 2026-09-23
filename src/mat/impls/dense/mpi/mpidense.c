@@ -49,6 +49,11 @@ static PetscErrorCode MatCopy_MPIDense(Mat A, Mat B, MatStructure s)
   Mat_MPIDense *Bmat = (Mat_MPIDense *)B->data;
 
   PetscFunctionBegin;
+  /* If the two matrices don't have the same copy implementation, they aren't compatible for fast copy. */
+  if (A->ops->copy != B->ops->copy) {
+    PetscCall(MatCopy_Basic(A, B, s));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(MatCopy(Amat->A, Bmat->A, s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
