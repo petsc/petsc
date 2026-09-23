@@ -300,6 +300,10 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   Notes:
   The discrete gradient matrix `G` is used to analyze the subdomain edges and should not contain explicitly stored zero entries.
 
+  If `PCBDDCSetPrimalVerticesIS()` or `PCBDDCSetPrimalVerticesLocalIS()` specifies a Nedelec degree of freedom as primal,
+  all degrees of freedom on the same mesh edge are made primal before the analysis. These degrees of freedom retain
+  their original coordinates in the generated change of basis.
+
   If `global` is `PETSC_FALSE`, the numbering of the Nedelec field must preserve the relative order of its degrees of freedom
   in the global numbering of all fields. That is, `gid[i] < gid[j]` if and only if `geid[i] < geid[j]`, where `gid` is the global
   numbering of all degrees of freedom and `geid` is the global numbering of the Nedelec field.
@@ -307,7 +311,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
   The `field` index is not used if no field splitting has been specified.
   If `field` is `PETSC_DECIDE`, `global` must be `PETSC_TRUE`; the Nedelec field is inferred from the rows of `G` with more than one nonzero.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDofsSplitting()`, `PCBDDCSetDofsSplittingLocal()`, `MATAIJ`, `PCBDDCSetDivergenceMat()`, `PCBDDCSetPrimalVerticesIS()`, `PCBDDCSetPrimalVerticesLocalIS()`
 @*/
 PetscErrorCode PCBDDCSetDiscreteGradient(PC pc, Mat G, PetscInt order, PetscInt field, PetscBool global, PetscBool conforming)
 {
@@ -2168,8 +2172,8 @@ static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
       - pcis->vec1_D for the Dirichlet part (if needed, i.e. pcbddc->switch_static == PETSC_TRUE)
       - pcis->vec1_B the interface part of the global vector z
     */
+    PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
     if (n_D) {
-      PetscCall(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPSolveTranspose(pcbddc->ksp_D, pcis->vec1_D, pcis->vec2_D));
       PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(KSPCheckSolve(pcbddc->ksp_D, pc, pcis->vec2_D));
@@ -2193,6 +2197,7 @@ static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
         PetscCall(MatMultTranspose(pcis->A_IB, pcis->vec2_D, pcis->vec1_B));
       }
     } else {
+      PetscCall(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][0], pc, 0, 0, 0));
       PetscCall(VecSet(pcis->vec1_B, zero));
     }
     PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_B, z, ADD_VALUES, SCATTER_REVERSE));

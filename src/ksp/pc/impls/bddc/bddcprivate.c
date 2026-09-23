@@ -375,6 +375,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lrc[1], 1, MPI_C_BOOL, MPI_LOR, comm));
   if (!lrc[1]) PetscFunctionReturn(PETSC_SUCCESS);
 
+  /* Share user vertices before expanding them to all dofs on the same mesh edge. */
+  if (pcbddc->user_primal_vertices_local && !pcbddc->user_primal_vertices) PetscCall(PCBDDCConsistencyCheckIS(pc, MPI_LOR, &pcbddc->user_primal_vertices_local));
+
   /* Get Nedelec field */
   PetscCheck(!pcbddc->n_ISForDofsLocal || field < pcbddc->n_ISForDofsLocal, comm, PETSC_ERR_USER, "Invalid field for Nedelec %" PetscInt_FMT ": number of fields is %" PetscInt_FMT, field, pcbddc->n_ISForDofsLocal);
   if (pcbddc->n_ISForDofsLocal && field >= 0) {
@@ -435,7 +438,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     }
     PetscCall(VecRestoreArrayRead(matis->counter, (const PetscScalar **)&vals));
     PetscCall(ISCreateGeneral(comm, cum, eidxs, PETSC_COPY_VALUES, &enedfieldlocal));
-    PetscCall(PCBDDCSetPrimalVerticesLocalIS(pc, enedfieldlocal));
+    PetscCall(PCBDDCAddPrimalVerticesLocalIS(pc, enedfieldlocal));
     PetscCall(PetscFree(eidxs));
     PetscCall(ISDestroy(&nedfieldlocal));
     PetscCall(ISDestroy(&enedfieldlocal));
@@ -686,14 +689,56 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     if ((ecount[i] > 2 && !PetscBTLookup(btbd, i)) || (ecount[i] == 2 && PetscBTLookup(btb, i))) PetscCall(PetscBTSet(btee, i));
   }
   PetscCall(PetscMalloc1(ne, &marks));
-  if (!conforming) {
+  if (!conforming || pcbddc->user_primal_vertices_local) {
     PetscCall(MatTranspose(lGe, MAT_INITIAL_MATRIX, &lGt));
     PetscCall(MatGetRowIJ(lGt, 0, PETSC_FALSE, PETSC_FALSE, &i, &iit, &jjt, &done));
   }
   PetscCall(MatGetRowIJ(lGe, 0, PETSC_FALSE, PETSC_FALSE, &i, &ii, &jj, &done));
+  /* handle user defined primal dofs */
+  if (pcbddc->user_primal_vertices_local) {
+    IS        is;
+    PetscInt  np;
+    PetscInt *tmarks;
+
+    if (fl2g) PetscCall(ISGlobalToLocalMappingApplyIS(fl2g, IS_GTOLM_DROP, pcbddc->user_primal_vertices_local, &is));
+    else {
+      is = pcbddc->user_primal_vertices_local;
+      PetscCall(PetscObjectReference((PetscObject)is));
+    }
+    PetscCall(PetscCalloc1(ne, &tmarks));
+    PetscCall(ISGetLocalSize(is, &np));
+    PetscCall(ISGetIndices(is, &idxs));
+    /* dofs on the same mesh edge share more than one nodal dof. */
+    for (i = 0; i < np; i++) {
+      PetscInt e = idxs[i];
+
+      if (e < 0 || e >= ne || PetscBTLookup(bte, e)) continue;
+      PetscCall(PetscBTSet(bte, e));
+      for (j = ii[e]; j < ii[e + 1]; j++) {
+        PetscInt v = jj[j];
+
+        for (PetscInt k = iit[v]; k < iit[v + 1]; k++)
+          if (++tmarks[jjt[k]] == 2) PetscCall(PetscBTSet(bte, jjt[k]));
+      }
+      for (j = ii[e]; j < ii[e + 1]; j++) {
+        PetscInt v = jj[j];
+
+        for (PetscInt k = iit[v]; k < iit[v + 1]; k++) tmarks[jjt[k]] = 0;
+      }
+    }
+    PetscCall(ISRestoreIndices(is, &idxs));
+    PetscCall(ISDestroy(&is));
+    PetscCall(PetscFree(tmarks));
+  }
   PetscCall(MatSeqAIJGetArray(lGe, &vals));
   cum = 0;
   for (i = 0; i < ne; i++) {
+    /* remove complete primal mesh edges before identifying corners and splitpoints. */
+    if (PetscBTLookup(bte, i)) {
+      marks[cum++] = i;
+      for (j = ii[i]; j < ii[i + 1]; j++) PetscCall(PetscBTSet(btv, jj[j]));
+      continue;
+    }
     /* eliminate rows corresponding to edge dofs belonging to coarse faces */
     if (!PetscBTLookup(btee, i)) {
       marks[cum++] = i;
@@ -738,7 +783,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   PetscCall(PetscBTDestroy(&btee));
   PetscCall(MatSeqAIJRestoreArray(lGe, &vals));
   PetscCall(MatRestoreRowIJ(lGe, 0, PETSC_FALSE, PETSC_FALSE, &i, &ii, &jj, &done));
-  if (!conforming) {
+  if (!conforming || pcbddc->user_primal_vertices_local) {
     PetscCall(MatRestoreRowIJ(lGt, 0, PETSC_FALSE, PETSC_FALSE, &i, &iit, &jjt, &done));
     PetscCall(MatDestroy(&lGt));
   }
@@ -1010,8 +1055,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscCall(ISView(primals, NULL));
   }
   PetscCall(PetscBTDestroy(&bte));
-  /* TODO: what if the user passed in some of them ?  */
-  PetscCall(PCBDDCSetPrimalVerticesLocalIS(pc, primals));
+  PetscCall(PCBDDCAddPrimalVerticesLocalIS(pc, primals));
   PetscCall(ISDestroy(&primals));
 
   /* Compute edge connectivity */
@@ -1277,6 +1321,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
                   PetscInt k3, ee2 = jjt[k2];
                   if (print) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Connected edge dof set to primal %" PetscInt_FMT "\n", ee2));
                   newprimals[cum++] = ee2;
+                  marks[ee2]        = 0;
                   /* finally set the new corners */
                   for (k3 = ii[ee2]; k3 < ii[ee2 + 1]; k3++) {
                     if (print) PetscCall(PetscPrintf(PETSC_COMM_SELF, "      Connected nodal dof set to vertex %" PetscInt_FMT "\n", jj[k3]));
@@ -1323,7 +1368,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscCall(PCBDDCGraphRestoreCandidatesIS(pcbddc->mat_graph, NULL, NULL, &nee, &alleedges, &allprimals));
     PetscCall(ISCreateGeneral(comm, cum, newprimals, PETSC_COPY_VALUES, &primals));
     PetscCall(PetscFree(newprimals));
-    PetscCall(PCBDDCSetPrimalVerticesLocalIS(pc, primals));
+    PetscCall(PCBDDCAddPrimalVerticesLocalIS(pc, primals));
     PetscCall(ISDestroy(&primals));
     PetscCall(PCBDDCAnalyzeInterface(pc));
     pcbddc->mat_graph->twodim = PETSC_FALSE;
@@ -1503,7 +1548,9 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* Compress extrows */
   cum = 0;
   for (i = 0; i < nee; i++) {
-    PetscInt size = extrowcum[i], *start = extrow + i * extmem;
+    PetscInt  size  = extrowcum[i];
+    PetscInt *start = PetscSafePointerPlusOffset(extrow, i * extmem);
+
     PetscCall(PetscSortRemoveDupsInt(&size, start));
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, size, start, PETSC_USE_POINTER, &extrows[i]));
     cum = PetscMax(cum, size);
@@ -1601,6 +1648,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       PetscInt j;
 
       PetscCall(ISGetLocalSize(eedges[i], &j));
+      /* Coarse edges of complementary fields have no Nedelec dofs. */
+      if (!j && nedfieldlocal) continue;
       PetscCheck(j, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero sized edge %" PetscInt_FMT, i);
       cum += j - 1;
     }
@@ -1611,6 +1660,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       PetscInt        j;
 
       PetscCall(ISGetLocalSize(eedges[i], &j));
+      if (!j && nedfieldlocal) continue;
       PetscCall(ISGetIndices(eedges[i], &idxs));
       PetscCall(PetscArraycpy(eedgesidxs + cum, idxs, j - 1)); /* last on the edge is primal */
       PetscCall(ISRestoreIndices(eedges[i], &idxs));
@@ -1633,7 +1683,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     for (i = 0, cum = 0; i < pc->pmat->rmap->n; i++)
       if (evals[i] == 0.0) eedgesidxs[cum++] = i + pc->pmat->rmap->rstart;
     PetscCall(VecRestoreArrayRead(E, &evals));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cum, eedgesidxs, PETSC_COPY_VALUES, &is_E_to_zero));
+    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)E), cum, eedgesidxs, PETSC_COPY_VALUES, &is_E_to_zero));
     PetscCall(PetscFree(eedgesidxs));
 
     PetscCall(PetscObjectCompose((PetscObject)nnsp_vscat, "__V_Vec", (PetscObject)V));
@@ -1985,23 +2035,29 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
 
 PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC pc, IS primalv)
 {
-  PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
+  PC_BDDC  *pcbddc = (PC_BDDC *)pc->data;
+  IS        newp;
+  PetscBool isequal = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (primalv) {
-    if (pcbddc->user_primal_vertices_local) {
-      IS list[2], newp;
+  if (!primalv) PetscFunctionReturn(PETSC_SUCCESS);
+  if (pcbddc->user_primal_vertices_local) {
+    IS list[2];
 
-      list[0] = primalv;
-      list[1] = pcbddc->user_primal_vertices_local;
-      PetscCall(ISConcatenate(PetscObjectComm((PetscObject)pc), 2, list, &newp));
-      PetscCall(ISSortRemoveDups(newp));
-      PetscCall(ISDestroy(&list[1]));
-      pcbddc->user_primal_vertices_local = newp;
-    } else {
-      PetscCall(PCBDDCSetPrimalVerticesLocalIS(pc, primalv));
-    }
+    list[0] = primalv;
+    list[1] = pcbddc->user_primal_vertices_local;
+    PetscCall(ISConcatenate(PetscObjectComm((PetscObject)pc), 2, list, &newp));
+    PetscCall(ISSortRemoveDups(newp));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)primalv));
+    newp = primalv;
   }
+  // Retaining the global user input skips the consistency check in PCBDDCAnalyzeInterface().
+  PetscCall(PCBDDCConsistencyCheckIS(pc, MPI_LOR, &newp));
+  if (pcbddc->user_primal_vertices_local) PetscCall(ISEqual(newp, pcbddc->user_primal_vertices_local, &isequal));
+  PetscCall(ISDestroy(&pcbddc->user_primal_vertices_local));
+  pcbddc->user_primal_vertices_local = newp;
+  if (!isequal) pcbddc->recompute_topography = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

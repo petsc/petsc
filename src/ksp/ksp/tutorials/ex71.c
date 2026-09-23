@@ -209,14 +209,14 @@ int main(int argc, char **args)
   Mat                    A;
   DM                     da;
   Vec                    x, b, xcoor, xcoorl;
-  IS                     zero;
+  IS                     zero, test_primal = NULL;
   ISLocalToGlobalMapping map;
   MatNullSpace           nullsp = NULL;
   PetscInt               i;
   PetscInt               nel, nen;     /* Number of elements & element nodes */
   const PetscInt        *e_loc;        /* Local indices of element nodes (in local element order) */
   PetscInt              *e_glo = NULL; /* Global indices of element nodes (in local element order) */
-  PetscInt               nodes[3];
+  PetscInt               nodes[3], test_primal_vertex = -1;
   PetscBool              ismatis, flg;
   PetscLogStage          stages[2];
 
@@ -483,12 +483,62 @@ int main(int argc, char **args)
     }
   }
   PetscCall(KSPSetFromOptions(ksp));
+
+  /* test user-defined primal vertices API */
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_primal_vertex", &test_primal_vertex, NULL));
+  if (test_primal_vertex >= 0) {
+    PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, PetscGlobalRank ? 0 : 1, &test_primal_vertex, PETSC_COPY_VALUES, &test_primal));
+    PetscCall(PCBDDCSetPrimalVerticesIS(pc, test_primal));
+  }
+
   PetscCall(PetscLogStagePush(stages[0]));
   PetscCall(KSPSetUp(ksp));
   PetscCall(PetscLogStagePop());
   if (user.test_reuse) {
     PetscCall(MatScale(A, 2.0));
     PetscCall(KSPSetUp(ksp));
+  }
+
+  /* test that user-defined primal vertices are respected */
+  if (test_primal) {
+    IS                     stored, corners;
+    Mat                    lA;
+    ISLocalToGlobalMapping l2g, l2l;
+    const PetscInt        *idx;
+    PetscInt               n, localvertex, pos;
+
+    PetscCall(PCBDDCGetPrimalVerticesIS(pc, &stored));
+    PetscCheck(stored, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Global user primal vertices were lost during setup");
+    PetscCall(ISEqual(test_primal, stored, &flg));
+    PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Global user primal vertices changed during setup");
+    PetscCall(ISDestroy(&test_primal));
+    PetscCall(PCBDDCGetPrimalVerticesLocalIS(pc, &stored));
+    PetscCheck(stored, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Missing local primal vertices");
+    PetscCall(MatGetLocalToGlobalMapping(A, &l2g, NULL));
+    PetscCall(ISGlobalToLocalMappingApply(l2g, IS_GTOLM_MASK, 1, &test_primal_vertex, NULL, &localvertex));
+    if (localvertex >= 0) {
+      PetscCall(ISLocate(stored, localvertex, &pos));
+      PetscCheck(pos >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing user primal vertex in local numbering");
+    }
+    /* Automatic DMDA corners must be retained alongside the user vertex. */
+    PetscCall(DMDAGetSubdomainCornersIS(da, &corners));
+    PetscCall(MatISGetLocalMat(A, &lA));
+    PetscCall(MatGetLocalToGlobalMapping(lA, &l2l, NULL));
+    PetscCheck(corners && l2l, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing DMDA corner data");
+    PetscCall(ISGetLocalSize(corners, &n));
+    PetscCall(ISGetIndices(corners, &idx));
+    for (PetscInt c = 0; c < n; c++) {
+      for (PetscInt d = 0; d < user.dof; d++) {
+        PetscInt corner = user.dof * idx[c] + d;
+
+        PetscCall(ISLocalToGlobalMappingApply(l2l, 1, &corner, &localvertex));
+        PetscCall(ISLocate(stored, localvertex, &pos));
+        PetscCheck(pos >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing automatic DMDA corner in local primal vertices");
+      }
+    }
+    PetscCall(ISRestoreIndices(corners, &idx));
+    PetscCall(MatISRestoreLocalMat(A, &lA));
+    PetscCall(DMDARestoreSubdomainCornersIS(da, &corners));
   }
 
   PetscCall(MatCreateVecs(A, &x, &b));
@@ -524,6 +574,12 @@ int main(int argc, char **args)
 }
 
 /*TEST
+
+ test:
+   suffix: bddc_global_primal
+   nsize: 4
+   output_file: output/empty.out
+   args: -dim 2 -cells 4,4 -pde_type Poisson -da_processors_x 2 -da_processors_y 2 -test_primal_vertex 5 -test_reuse -ksp_error_if_not_converged -pc_bddc_coarse_redundant_pc_type svd
 
  test:
    nsize: 8
