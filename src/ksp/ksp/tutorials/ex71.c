@@ -548,8 +548,8 @@ int main(int argc, char **args)
  testset:
    nsize: 8
    requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-   # on some architectures, this test will converge in 19 or 21 iterations
-   filter: grep -v "variant HERMITIAN" | grep -v " tolerance"  | sed -e "s/CONVERGED_RTOL iterations [1-2][91]\{0,1\}$/CONVERGED_RTOL iterations 20/g"
+   # on some architectures, this test will converge in slightly different numbers of iterations
+   filter: grep -v "variant HERMITIAN" | grep -v " tolerance"  | sed -E "s/CONVERGED_RTOL iterations (1[8-9]|2[0-1])$/CONVERGED_RTOL iterations 20/g"
    args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_levels 1 -pc_bddc_coarsening_ratio 1 -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_use_faces -pc_bddc_coarse_pc_type hpddm -prefix_push pc_bddc_coarse_ -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 6 -pc_hpddm_levels_1_st_pc_factor_shift_type INBLOCKS -prefix_pop -ksp_type fgmres -ksp_max_it 50 -ksp_converged_reason
    test:
      args: -pc_bddc_coarse_pc_hpddm_coarse_mat_type baij -options_left no
