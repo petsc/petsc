@@ -29,6 +29,10 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 /*@
   PetscDrawScalePopup - draws a contour scale window.
 
@@ -85,6 +89,9 @@ PetscErrorCode PetscDrawScalePopup(PetscDraw popup, PetscReal min, PetscReal max
   PetscCall(PetscDrawSave(popup));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
 
 typedef struct {
   int        m, n;

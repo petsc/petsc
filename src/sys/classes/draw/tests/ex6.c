@@ -16,6 +16,10 @@ static PetscReal Peaks(PetscReal x, PetscReal y)
   return 3 * Pow(1 - x, 2) * Exp(-Pow(x, 2) - Pow(y + 1, 2)) - 10 * (x / 5 - Pow(x, 3) - Pow(y, 5)) * Exp(-Pow(x, 2) - Pow(y, 2)) - 1. / 3 * Exp(-Pow(x + 1, 2) - Pow(y, 2));
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 static PetscErrorCode DrawFunction(PetscDraw draw, PetscCtx ctx)
 {
   int         i, j, w, h;
@@ -49,6 +53,9 @@ static PetscErrorCode DrawFunction(PetscDraw draw, PetscCtx ctx)
   PetscCall(PetscDrawScalePopup(popup, -8, +8));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
 
 int main(int argc, char **argv)
 {

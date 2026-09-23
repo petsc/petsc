@@ -46,6 +46,10 @@ static PetscErrorCode PetscP4estFinalize(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 PetscErrorCode PetscP4estInitialize(void)
 {
   PetscBool psc_catch_signals    = PETSC_FALSE;
@@ -107,3 +111,6 @@ PetscErrorCode PetscP4estInitialize(void)
   PetscCall(PetscRegisterFinalize(PetscP4estFinalize));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif

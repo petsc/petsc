@@ -141,6 +141,10 @@ PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields)
 
 #include <petscdraw.h>
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v)
 {
   DM                  da;
@@ -281,3 +285,6 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v)
   PetscCall(VecRestoreArrayRead(xin, &array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif

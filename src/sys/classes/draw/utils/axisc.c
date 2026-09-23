@@ -227,6 +227,10 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wclobbered"
+#endif
 /*@
   PetscDrawAxisDraw - draws an axis.
 
@@ -384,6 +388,9 @@ finally:
   PetscCall(PetscDrawSetCoordinates(draw, coors[0], coors[1], coors[2], coors[3]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
 
 /*
     Removes all zeros but one from .0000
