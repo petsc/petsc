@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
 /*@
   VecHIPGetArray - Provides access to the device buffer inside a vector
 
-  Logically Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -180,10 +180,16 @@ PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
   If the device memory hasn't been allocated previously it will be allocated as part of this
   routine.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecHIPRestoreArray()`.
+
 .seealso: [](ch_vectors), `VecHIPRestoreArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`, `VecGetArrayWrite()`
 @*/
-PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
+PetscErrorCode VecHIPGetArray(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync<DeviceType::HIP>(v, a));
@@ -194,7 +200,7 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
 /*@
   VecHIPRestoreArray - Restore a device buffer previously acquired with `VecHIPGetArray()`.
 
-  Logically Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -207,10 +213,15 @@ PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
   host data as out of date. Subsequent access to the vector data on the host side via
   `VecGetArray()` will incur a (synchronous) data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
+PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync<DeviceType::HIP>(v, a));
@@ -221,7 +232,7 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
 /*@
   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Not Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -242,10 +253,16 @@ PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
   host is up to date. Accessing data on the host side does not incur a device to host data
   transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecHIPRestoreArrayRead()`.
+
 .seealso: [](ch_vectors), `VecHIPRestoreArrayRead()`, `VecHIPGetArray()`, `VecHIPGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`
 @*/
-PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
+PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayReadAsync<DeviceType::HIP>(v, a));
@@ -257,7 +274,7 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayRead()`.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Not Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -269,10 +286,15 @@ PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
   This routine does not modify the corresponding array on the host in any way. The pointer is
   invalid after this function returns.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
+PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayReadAsync<DeviceType::HIP>(v, a));
@@ -283,7 +305,7 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
 /*@
   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
 
-   Logically Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -303,10 +325,16 @@ PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
   released the host data of the vector is marked as out of data. Subsequent access of the host
   data with e.g. `VecGetArray()` incurs a device to host data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecHIPRestoreArrayWrite()`.
+
 .seealso: [](ch_vectors), `VecHIPRestoreArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
           `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
+PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayWriteAsync<DeviceType::HIP>(v, a));
@@ -318,7 +346,7 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with
   `VecHIPGetArrayWrite()`.
 
-  Logically Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -330,10 +358,15 @@ PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
   Data on the host will be marked as out of date. Subsequent access of the data on the host
   side e.g. with `VecGetArray()` will incur a device to host data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`,
           `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
+PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayWriteAsync<DeviceType::HIP>(v, a));
