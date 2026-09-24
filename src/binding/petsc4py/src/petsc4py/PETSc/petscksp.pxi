@@ -50,6 +50,7 @@ cdef extern from * nogil:
     PetscKSPType KSPFETIDP
     PetscKSPType KSPHPDDM
     PetscKSPType KSPIDR
+    PetscKSPType KSPEKSM
 
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_DEFAULT
@@ -83,6 +84,7 @@ cdef extern from * nogil:
         KSP_DIVERGED_INDEFINITE_MAT
         KSP_DIVERGED_PC_FAILED
         KSP_DIVERGED_USER
+        KSP_DIVERGED_INNER_SOLVE_FAILED
 
     ctypedef enum PetscKSPDMActive "KSPDMActive":
         KSP_DMACTIVE_OPERATOR = 1
@@ -235,6 +237,13 @@ cdef extern from * nogil:
     PetscErrorCode KSPIDRGetCosine(PetscKSP, PetscReal*)
     PetscErrorCode KSPIDRSetRandom(PetscKSP, PetscRandom)
     PetscErrorCode KSPIDRGetRandom(PetscKSP, PetscRandom*)
+
+    PetscErrorCode KSPEKSMSetHapTol(PetscKSP, PetscReal)
+    PetscErrorCode KSPEKSMGetHapTol(PetscKSP, PetscReal*)
+    PetscErrorCode KSPEKSMSetKSP(PetscKSP, PetscKSP, PetscKSP)
+    PetscErrorCode KSPEKSMGetKSP(PetscKSP, PetscKSP*, PetscKSP*)
+    PetscErrorCode KSPEKSMSetShift(PetscKSP, PetscScalar)
+    PetscErrorCode KSPEKSMGetShift(PetscKSP, PetscScalar*)
 
     PetscErrorCode KSPCGGetObjFcn(PetscKSP, PetscReal*)
 

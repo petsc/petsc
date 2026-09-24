@@ -168,6 +168,8 @@ class KSPType(object):
     `IDR`
         Induced Dimension Reduction method for general nonsymmetric
         linear systems
+    `EKSM`
+        Extended Krylov Subspace Method for shifted linear systems
 
     See Also
     --------
@@ -223,6 +225,7 @@ class KSPType(object):
     FETIDP     = S_(KSPFETIDP)
     HPDDM      = S_(KSPHPDDM)
     IDR        = S_(KSPIDR)
+    EKSM       = S_(KSPEKSM)
 
 
 class KSPNormType(object):
@@ -326,6 +329,9 @@ class KSPConvergedReason(object):
         `PC.Type.FIELDSPLIT`.
     `DIVERGED_USER`
         The user has indicated divergence for an arbitrary reason.
+    `DIVERGED_INNER_SOLVE_FAILED`
+        It was not possible to solve an inner linear system in solvers
+        such as `Type.EKSM`.
 
     See Also
     --------
@@ -346,17 +352,18 @@ class KSPConvergedReason(object):
     CONVERGED_HAPPY_BREAKDOWN = KSP_CONVERGED_HAPPY_BREAKDOWN
     CONVERGED_USER            = KSP_CONVERGED_USER
     # diverged
-    DIVERGED_NULL             = KSP_DIVERGED_NULL
-    DIVERGED_MAX_IT           = KSP_DIVERGED_MAX_IT
-    DIVERGED_DTOL             = KSP_DIVERGED_DTOL
-    DIVERGED_BREAKDOWN        = KSP_DIVERGED_BREAKDOWN
-    DIVERGED_BREAKDOWN_BICG   = KSP_DIVERGED_BREAKDOWN_BICG
-    DIVERGED_NONSYMMETRIC     = KSP_DIVERGED_NONSYMMETRIC
-    DIVERGED_INDEFINITE_PC    = KSP_DIVERGED_INDEFINITE_PC
-    DIVERGED_NANORINF         = KSP_DIVERGED_NANORINF
-    DIVERGED_INDEFINITE_MAT   = KSP_DIVERGED_INDEFINITE_MAT
-    DIVERGED_PCSETUP_FAILED   = KSP_DIVERGED_PC_FAILED
-    DIVERGED_USER             = KSP_DIVERGED_USER
+    DIVERGED_NULL               = KSP_DIVERGED_NULL
+    DIVERGED_MAX_IT             = KSP_DIVERGED_MAX_IT
+    DIVERGED_DTOL               = KSP_DIVERGED_DTOL
+    DIVERGED_BREAKDOWN          = KSP_DIVERGED_BREAKDOWN
+    DIVERGED_BREAKDOWN_BICG     = KSP_DIVERGED_BREAKDOWN_BICG
+    DIVERGED_NONSYMMETRIC       = KSP_DIVERGED_NONSYMMETRIC
+    DIVERGED_INDEFINITE_PC      = KSP_DIVERGED_INDEFINITE_PC
+    DIVERGED_NANORINF           = KSP_DIVERGED_NANORINF
+    DIVERGED_INDEFINITE_MAT     = KSP_DIVERGED_INDEFINITE_MAT
+    DIVERGED_PCSETUP_FAILED     = KSP_DIVERGED_PC_FAILED
+    DIVERGED_USER               = KSP_DIVERGED_USER
+    DIVERGED_INNER_SOLVE_FAILED = KSP_DIVERGED_INNER_SOLVE_FAILED
 
 
 class KSPHPDDMType(object):
@@ -2337,6 +2344,128 @@ cdef class KSP(Object):
         CHKERR(KSPIDRGetRandom(self.ksp, &rnd.rnd))
         CHKERR(PetscINCREF(rnd.obj))
         return rnd
+
+    # --- EKSM ---
+
+    def setEKSMHapTol(self, tol: float) -> None:
+        """Set the tolerance for detecting a happy breakdown in EKSM.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        tol
+            Tolerance for determining happy breakdown.
+
+        See Also
+        --------
+        getEKSMHapTol, petsc.KSPEKSMSetHapTol
+
+        """
+        cdef PetscReal rval = asReal(tol)
+        CHKERR(KSPEKSMSetHapTol(self.ksp, rval))
+
+    def getEKSMHapTol(self) -> float:
+        """Get tolerance for detecting a happy breakdown in EKSM.
+
+        Not collective.
+
+        Returns
+        -------
+        tol: float
+            Tolerance for happy breakdown.
+
+        See Also
+        --------
+        setEKSMHapTol, petsc.KSPEKSMGetHapTol
+
+        """
+        cdef PetscReal rval = 0
+        CHKERR(KSPEKSMGetHapTol(self.ksp, &rval))
+        return toReal(rval)
+
+    def setEKSMKSP(self, KSP ksps=None, KSP kspm=None) -> None:
+        """Set the `KSP` objects to be used internally by EKSM.
+
+        Not collective.
+
+        Parameters
+        ----------
+        ksps
+            Linear solver for ``K + s M``.
+        kspm
+            Linear solver for ``M``.
+
+        See Also
+        --------
+        getEKSMKSP, setEKSMShift, petsc.KSPEKSMSetKSP
+
+        """
+        cdef PetscKSP ksp_s=NULL
+        if ksps is not None: ksp_s = ksps.ksp
+        cdef PetscKSP ksp_m=NULL
+        if kspm is not None: ksp_m = kspm.ksp
+        CHKERR(KSPEKSMSetKSP(self.ksp, ksp_s, ksp_m))
+
+    def getEKSMKSP(self) -> tuple[KSP, KSP]:
+        """Return the internal `KSP` objects.
+
+        Not collective.
+
+        Returns
+        -------
+        ksps: KSP
+            Linear solver for ``K + s M``.
+        kspm: KSP
+            Linear solver for ``M``.
+
+        See Also
+        --------
+        setEKSMKSP, setEKSMShift, petsc.KSPEKSMGetKSP
+
+        """
+        cdef KSP ksps = KSP(), kspm = KSP()
+        CHKERR(KSPEKSMGetKSP(self.ksp, &ksps.ksp, &kspm.ksp))
+        CHKERR(PetscINCREF(ksps.obj))
+        CHKERR(PetscINCREF(kspm.obj))
+        return (ksps, kspm)
+
+    def setEKSMShift(self, shift: Scalar) -> None:
+        """Set the value of the shift used internally in EKSM.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        shift
+            The value of the shift.
+
+        See Also
+        --------
+        getEKSMShift, petsc.KSPEKSMSetShift
+
+        """
+        cdef PetscScalar sval = asScalar(shift)
+        CHKERR(KSPEKSMSetShift(self.ksp, sval))
+
+    def getEKSMShift(self) -> Scalar:
+        """Get the value of the shift used internally in EKSM.
+
+        Not collective.
+
+        Returns
+        -------
+        shift: Scalar
+            The value of the shift.
+
+        See Also
+        --------
+        setEKSMShift, petsc.KSPEKSMGetShift
+
+        """
+        cdef PetscScalar sval = 0
+        CHKERR(KSPEKSMGetShift(self.ksp, &sval))
+        return toScalar(sval)
 
     # --- Python ---
 

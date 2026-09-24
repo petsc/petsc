@@ -112,7 +112,7 @@ int main(int argc, char **args)
   }
   count = m + 1; /* left side */
   for (i = m + 1; i < m * (m + 1); i += m + 1) rows[count++] = i;
-  count = 2 * m; /* left side */
+  count = 2 * m; /* right side */
   for (i = 2 * m + 1; i < m * (m + 1); i += m + 1) rows[count++] = i;
   for (i = 0; i < 4 * m; i++) {
     y = h * (rows[i] / (m + 1));

@@ -614,6 +614,11 @@ ______________________________________________________________________
      - ---
      - X
      - X
+   * - Extended Krylov Subspace Method for multiple shifted systems
+     - ``KSPEKSM``
+     - ---
+     - X
+     - X
    * - Conjugate Residual
      - ``KSPCR``
      - ---
