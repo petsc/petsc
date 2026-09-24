@@ -9,11 +9,19 @@ from petsc4py.PETSc import Viewer
 
 
 class TSPythonProtocol:
+    def create(self, ts: TS) -> None:
+        """Initialize resources when the context is attached to the TS."""
+        ...
+
+    def destroy(self, ts: TS) -> None:
+        """Release resources when the context is detached from the TS."""
+        ...
+
     def step(self, ts: TS) -> None:
         """Advance the solution with a user-defined time-stepping routine.
 
-        Implement this method to control the complete time step. Use solveStep
-        and adaptStep to customize the default time-stepping routine instead.
+        Implement this method to control the complete time step. Omit it to
+        use solveStep() and adaptStep() to customize the default routine.
 
         """
         ...
@@ -35,7 +43,7 @@ class TSPythonProtocol:
         ...
 
     def formSNESFunction(self, snes: SNES, x: Vec, f: Vec, ts: TS) -> None:
-        """Form the residual f for the SNES solve at the candidate solution x."""
+        """Form the SNES residual f at the candidate solution x."""
         ...
 
     def formSNESJacobian(self, snes: SNES, x: Vec, A: Mat, B: Mat, ts: TS) -> None:
@@ -46,10 +54,15 @@ class TSPythonProtocol:
         """Solve for the candidate solution x at time t."""
         ...
 
-    def adaptStep(self, ts: TS, t: float, x: Vec) -> tuple[float, bool]:
+    def adaptStep(
+        self, ts: TS, t: float, x: Vec
+    ) -> tuple[float, bool] | float | bool | None:
         """Choose the next time-step size and whether to accept x.
 
-        Return the next time-step size and True to accept x or False to reject it.
+        Return the next time-step size and a flag: True to accept x, or False
+        to reject it. A float accepts x and sets the next time-step size.
+        A bool accepts or rejects x without changing the time-step size.
+        None accepts x without changing the time-step size.
 
         """
         ...
@@ -59,7 +72,7 @@ class TSPythonProtocol:
         ...
 
     def setFromOptions(self, ts: TS) -> None:
-        """Process command line for customization."""
+        """Process options from the options database."""
         ...
 
     def setUp(self, ts: TS) -> None:

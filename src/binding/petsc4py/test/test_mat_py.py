@@ -359,6 +359,35 @@ class TestMatrix(unittest.TestCase):
         f = self.A.zeroEntries
         self.assertRaises(PETSc.Error, f)
 
+    def testZeroRows(self):
+        def zeroRows(mat, rows, diag, x, b):
+            self.assertEqual(mat, self.A)
+            self.assertIsInstance(rows, np.ndarray)
+            self.assertEqual(rows.dtype, PETSc.IntType)
+            self.assertEqual(diag, 3)
+            received.append(rows)
+
+        start, end = self.A.getOwnershipRange()
+        for method in ('zeroRows', 'zeroRowsColumns'):
+            with self.subTest(method=method):
+                received = []
+                setattr(self._getCtx(), method, zeroRows)
+                zero = getattr(self.A, method)
+                indices = np.arange(start, end, 2, dtype=PETSc.IntType)
+                expected = indices.copy()
+                zero(indices, diag=3)
+                indices.fill(-1)
+                np.testing.assert_array_equal(received[-1], expected)
+
+                rows = PETSc.IS().createGeneral(expected, comm=self.A.getComm())
+                zero(rows, diag=3)
+                rows.destroy()
+                np.testing.assert_array_equal(received[-1], expected)
+
+                zero([], diag=3)
+                self.assertEqual(len(received), 3)
+                self.assertEqual(received[-1].size, 0)
+
     def testMult(self):
         x, y = self.A.createVecs()
         f = lambda: self.A.mult(x, y)
