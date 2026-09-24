@@ -46,6 +46,7 @@ int main(int argc, char **args)
   PetscMPIInt size;
   PetscBool   flg;
   PetscBool   user_subdomains = PETSC_FALSE;
+  PCASMType   asmtype;
   PetscScalar v, one = 1.0;
   PetscReal   e;
 
@@ -256,6 +257,52 @@ int main(int argc, char **args)
     PetscCall(KSPSetFromOptions(ksp));
   }
 
+  /*
+     PC_ASM_WEIGHTED scales each subdomain correction by user-supplied diagonal weights, so
+     unlike the other PCASMType values it cannot be selected from the options database alone.
+     The weights follow the overlapping subdomain ordering, which is only final after setup,
+     hence the KSPSetUp() below. Unit weights reproduce PC_ASM_BASIC exactly.
+  */
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &flg));
+  if (flg) PetscCall(PCASMGetType(pc, &asmtype));
+  if (flg && asmtype == PC_ASM_WEIGHTED) {
+    Mat     *submat;
+    Vec     *scaling, *stored;
+    PetscInt nsub, nstored;
+
+    PetscCall(KSPSetUp(ksp));
+
+    /* the PC is set up but no weights have been supplied, so the getter must report an empty array */
+    PetscCall(PCASMWeightedGetScaling(pc, &nstored, &stored));
+    PetscCheck(!nstored && !stored, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCASMWeightedGetScaling() reported weights before any were supplied");
+
+    PetscCall(PCASMGetLocalSubmatrices(pc, &nsub, &submat));
+    PetscCall(PetscMalloc1(nsub, &scaling));
+    for (i = 0; i < nsub; i++) PetscCall(MatCreateVecs(submat[i], &scaling[i], NULL));
+
+    /*
+       A vanishing partition of unity must annihilate the correction. This is applied with
+       PCApply() rather than KSPSolve() because a zero preconditioner makes no progress.
+    */
+    flg = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_zero_weights", &flg, NULL));
+    if (flg) {
+      for (i = 0; i < nsub; i++) PetscCall(VecSet(scaling[i], 0.0));
+      PetscCall(PCASMWeightedSetScaling(pc, nsub, scaling));
+      PetscCall(PCApply(pc, b, x));
+      PetscCall(VecNorm(x, NORM_INFINITY, &e));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Zero weights annihilate the correction: %s\n", PetscBools[e == 0.0]));
+    }
+
+    /* installing a second time also exercises replacing the weights on an already set up PC */
+    for (i = 0; i < nsub; i++) PetscCall(VecSet(scaling[i], 1.0));
+    PetscCall(PCASMWeightedSetScaling(pc, nsub, scaling));
+    PetscCall(PCASMWeightedGetScaling(pc, &nstored, &stored));
+    PetscCheck(nstored == nsub && stored, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCASMWeightedGetScaling() did not return the supplied weights");
+    for (i = 0; i < nsub; i++) PetscCall(VecDestroy(&scaling[i]));
+    PetscCall(PetscFree(scaling));
+  }
+
   /* -------------------------------------------------------------------
                       Solve the linear system
      ------------------------------------------------------------------- */
@@ -299,5 +346,15 @@ int main(int argc, char **args)
    test:
       suffix: 1
       args: -print_error
+
+   test:
+      suffix: weighted
+      nsize: 2
+      args: -ksp_converged_reason -mat_partitioning_type current -pc_asm_blocks 4 -pc_asm_type {{basic weighted}shared output}
+
+   test:
+      suffix: weighted_zero
+      nsize: 2
+      args: -pc_asm_blocks 4 -pc_asm_type weighted -check_zero_weights
 
 TEST*/

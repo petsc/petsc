@@ -318,7 +318,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     PetscCall(MatCreateVecs(pc->pmat, &vec, NULL));
 
     PetscCheck(!osm->is_local || osm->n_local_true == 1 || (osm->type != PC_ASM_INTERPOLATE && osm->type != PC_ASM_NONE), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot use interpolate or none PCASMType if is_local was provided to PCASMSetLocalSubdomains() with more than a single subdomain");
-    if (osm->is_local && osm->type != PC_ASM_BASIC && osm->loctype == PC_COMPOSITE_ADDITIVE) PetscCall(PetscMalloc1(osm->n_local_true, &osm->lprolongation));
+    if (osm->is_local && osm->type != PC_ASM_BASIC && osm->type != PC_ASM_WEIGHTED && osm->loctype == PC_COMPOSITE_ADDITIVE) PetscCall(PetscMalloc1(osm->n_local_true, &osm->lprolongation));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->lrestriction));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->x));
     PetscCall(PetscMalloc1(osm->n_local_true, &osm->y));
@@ -412,6 +412,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     PetscCall(MatSetOptionsPrefix(osm->pmat[i], prefix));
     if (!pc->setupcalled) PetscCall(KSPSetFromOptions(osm->ksp[i]));
   }
+  if (osm->type == PC_ASM_WEIGHTED && osm->computescaling) {
+    if (!osm->scaling) PetscCall(PetscCalloc1(osm->n_local_true, &osm->scaling));
+    for (i = 0; i < osm->n_local_true; i++) {
+      if (!osm->scaling[i]) PetscCall(VecDuplicate(osm->x[i], &osm->scaling[i]));
+      PetscCallBack("PCASMWeightedComputeScalingFn", (*osm->computescaling)(pc, i, osm->scaling[i], osm->computescalingctx));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -432,21 +439,23 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
 
 static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
 {
-  PC_ASM     *osm = (PC_ASM *)pc->data;
+  PC_ASM     *osm  = (PC_ASM *)pc->data;
+  PCASMType   type = osm->type == PC_ASM_WEIGHTED ? PC_ASM_BASIC : osm->type; /* PC_ASM_WEIGHTED scatters like PC_ASM_BASIC, then applies the PCASMWeightedSetScaling() weights */
   PetscInt    i, n_local_true = osm->n_local_true;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
+  PetscCheck(osm->type != PC_ASM_WEIGHTED || osm->scaling, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Call PCASMWeightedSetScaling() after PCSetUp() before applying PC_ASM_WEIGHTED");
   /*
      support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
   */
-  if (!(osm->type & PC_ASM_RESTRICT)) {
+  if (!(type & PC_ASM_RESTRICT)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if (!(osm->type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
+  if (!(type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
 
   PetscCheck(osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   /* zero the global and the local solutions */
@@ -468,8 +477,9 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
     PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+    if (osm->type == PC_ASM_WEIGHTED) PetscCall(VecPointwiseMult(osm->y[i], osm->scaling[i], osm->y[i]));
 
-    if (osm->lprolongation && osm->type != PC_ASM_INTERPOLATE) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
+    if (osm->lprolongation && !(type & PC_ASM_INTERPOLATE)) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
       PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping i-block solution to the local solution */
@@ -497,7 +507,8 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
 
 static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
 {
-  PC_ASM     *osm = (PC_ASM *)pc->data;
+  PC_ASM     *osm  = (PC_ASM *)pc->data;
+  PCASMType   type = osm->type == PC_ASM_WEIGHTED ? PC_ASM_BASIC : osm->type; /* PC_ASM_WEIGHTED scatters like PC_ASM_BASIC, then applies the PCASMWeightedSetScaling() weights */
   Mat         Z, W;
   Vec         x;
   PetscInt    i, m, N;
@@ -505,16 +516,17 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
 
   PetscFunctionBegin;
   PetscCheck(osm->n_local_true <= 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
+  PetscCheck(osm->type != PC_ASM_WEIGHTED || osm->scaling, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Call PCASMWeightedSetScaling() after PCSetUp() before applying PC_ASM_WEIGHTED");
   /*
      support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
   */
-  if ((!transpose && !(osm->type & PC_ASM_RESTRICT)) || (transpose && !(osm->type & PC_ASM_INTERPOLATE))) {
+  if ((!transpose && !(type & PC_ASM_RESTRICT)) || (transpose && !(type & PC_ASM_INTERPOLATE))) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if ((!transpose && !(osm->type & PC_ASM_INTERPOLATE)) || (transpose && !(osm->type & PC_ASM_RESTRICT))) reverse = SCATTER_REVERSE_LOCAL;
+  if ((!transpose && !(type & PC_ASM_INTERPOLATE)) || (transpose && !(type & PC_ASM_RESTRICT))) reverse = SCATTER_REVERSE_LOCAL;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
@@ -544,17 +556,19 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
     PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   } else {
+    if (osm->type == PC_ASM_WEIGHTED) PetscCall(MatDiagonalScale(Z, osm->scaling[0], NULL));
     PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[0], Z, W, 0));
     PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
     PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[0], Z, W, 0));
   }
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
+  if (!transpose && osm->type == PC_ASM_WEIGHTED) PetscCall(MatDiagonalScale(W, osm->scaling[0], NULL));
   PetscCall(MatDestroy(&Z));
 
   for (i = 0; i < N; ++i) {
     PetscCall(VecSet(osm->ly, 0.0));
     PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if (osm->lprolongation && ((!transpose && osm->type != PC_ASM_INTERPOLATE) || (transpose && osm->type != PC_ASM_RESTRICT))) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
+    if (osm->lprolongation && ((!transpose && !(type & PC_ASM_INTERPOLATE)) || (transpose && !(type & PC_ASM_RESTRICT)))) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
       PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping 0-block solution to the local solution */
@@ -589,12 +603,14 @@ static PetscErrorCode PCMatApplyTranspose_ASM(PC pc, Mat X, Mat Y)
 
 static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
 {
-  PC_ASM     *osm = (PC_ASM *)pc->data;
+  PC_ASM     *osm  = (PC_ASM *)pc->data;
+  PCASMType   type = osm->type == PC_ASM_WEIGHTED ? PC_ASM_BASIC : osm->type; /* PC_ASM_WEIGHTED scatters like PC_ASM_BASIC, then applies the PCASMWeightedSetScaling() weights */
   PetscInt    i, n_local_true = osm->n_local_true;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
   PetscCheck(osm->n_local_true <= 1 || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
+  PetscCheck(osm->type != PC_ASM_WEIGHTED || osm->scaling, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Call PCASMWeightedSetScaling() after PCSetUp() before applying PC_ASM_WEIGHTED");
   /*
      Support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
@@ -603,12 +619,12 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
      transpose of the three terms
   */
 
-  if (!(osm->type & PC_ASM_INTERPOLATE)) {
+  if (!(type & PC_ASM_INTERPOLATE)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if (!(osm->type & PC_ASM_RESTRICT)) reverse = SCATTER_REVERSE_LOCAL;
+  if (!(type & PC_ASM_RESTRICT)) reverse = SCATTER_REVERSE_LOCAL;
 
   /* zero the global and the local solutions */
   PetscCall(VecSet(y, 0.0));
@@ -625,12 +641,13 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
   /* do the local solves */
   for (i = 0; i < n_local_true; ++i) {
     /* solve the overlapping i-block */
+    if (osm->type == PC_ASM_WEIGHTED) PetscCall(VecPointwiseMult(osm->x[i], osm->scaling[i], osm->x[i]));
     PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
-    if (osm->lprolongation && osm->type != PC_ASM_RESTRICT) { /* interpolate the non-overlapping i-block solution to the local solution */
+    if (osm->lprolongation && !(type & PC_ASM_RESTRICT)) { /* interpolate the non-overlapping i-block solution to the local solution */
       PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping i-block solution to the local solution */
@@ -655,6 +672,10 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
+  if (osm->scaling) {
+    for (PetscInt i = 0; i < osm->n_local_true; i++) PetscCall(VecDestroy(&osm->scaling[i]));
+    PetscCall(PetscFree(osm->scaling));
+  }
   if (osm->ksp) {
     for (PetscInt i = 0; i < osm->n_local_true; i++) PetscCall(KSPReset(osm->ksp[i]));
   }
@@ -704,6 +725,8 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMGetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMWeightedSetScaling_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMWeightedSetComputeScaling_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetLocalType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMGetLocalType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetSortIndices_C", NULL));
@@ -847,6 +870,7 @@ static PetscErrorCode PCASMSetType_ASM(PC pc, PCASMType type)
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
+  PetscCheck(type != PC_ASM_WEIGHTED || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PC_ASM_WEIGHTED requires additive local composition");
   osm->type     = type;
   osm->type_set = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -861,12 +885,58 @@ static PetscErrorCode PCASMGetType_ASM(PC pc, PCASMType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCASMWeightedSetComputeScaling_ASM(PC pc, PCASMWeightedComputeScalingFn *fn, PetscCtx ctx)
+{
+  PC_ASM *osm = (PC_ASM *)pc->data;
+
+  PetscFunctionBegin;
+  osm->computescaling    = fn;
+  osm->computescalingctx = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCASMWeightedSetScaling_ASM(PC pc, PetscInt n, Vec scaling[])
+{
+  PC_ASM     *osm = (PC_ASM *)pc->data;
+  Vec        *newscaling;
+  VecType     type;
+  PetscInt    m, nvec;
+  PetscMPIInt size;
+  PetscBool   match;
+
+  PetscFunctionBegin;
+  PetscCheck(osm->x, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Call PCSetUp() before PCASMWeightedSetScaling() so that the subdomain sizes and ordering are final");
+  PetscCheck(n == osm->n_local_true, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of scaling vectors %" PetscInt_FMT " must match number of local subdomains %" PetscInt_FMT, n, osm->n_local_true);
+  for (PetscInt i = 0; i < n; i++) {
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)scaling[i]), &size));
+    PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Scaling vector %" PetscInt_FMT " must have a single-process communicator; create it with MatCreateVecs() from PCASMGetLocalSubmatrices()", i);
+    PetscCall(VecGetSize(scaling[i], &nvec));
+    PetscCall(VecGetSize(osm->x[i], &m));
+    PetscCheck(nvec == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Scaling vector %" PetscInt_FMT " has size %" PetscInt_FMT ", expected %" PetscInt_FMT "; create it with MatCreateVecs() from PCASMGetLocalSubmatrices()", i, nvec, m);
+    PetscCall(VecGetType(osm->x[i], &type));
+    PetscCall(PetscObjectTypeCompare((PetscObject)scaling[i], type, &match));
+    PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Scaling vector %" PetscInt_FMT " must have local solver vector type %s; create it with MatCreateVecs() from PCASMGetLocalSubmatrices()", i, type);
+  }
+  PetscCall(PetscMalloc1(n, &newscaling));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscCall(PetscObjectReference((PetscObject)scaling[i]));
+    newscaling[i] = scaling[i];
+  }
+  if (osm->scaling) {
+    for (PetscInt i = 0; i < n; i++) PetscCall(VecDestroy(&osm->scaling[i]));
+    PetscCall(PetscFree(osm->scaling));
+  }
+  osm->scaling = newscaling;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
 {
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
+  PetscCheck(osm->type != PC_ASM_WEIGHTED || type == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PC_ASM_WEIGHTED requires additive local composition");
   osm->loctype = type;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1070,23 +1140,25 @@ PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl)
 + pc   - the preconditioner context
 - type - variant of `PCASM`, one of
 .vb
-      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_NONE        - local processor restriction and interpolation
       PC_ASM_RESTRICT    - full restriction, local processor interpolation (default)
       PC_ASM_INTERPOLATE - full interpolation, local processor restriction
-      PC_ASM_NONE        - local processor restriction and interpolation
+      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_WEIGHTED    - full restriction and interpolation with user-provided diagonal scaling
 .ve
 
   Options Database Key:
-. -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASMType`
+. -pc_asm_type (none|restrict|interpolate|basic|weighted) - Sets `PCASMType`
 
   Level: intermediate
 
   Note:
   if the is_local arguments are passed to `PCASMSetLocalSubdomains()` then they are used when `PC_ASM_RESTRICT` has been selected
-  to limit the local processor interpolation
+  to limit the local processor interpolation. `PC_ASM_WEIGHTED` ignores these inner index sets and
+  uses the weights supplied with `PCASMWeightedSetScaling()` instead. Weighted ASM requires additive local composition.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
-          `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetLocalType()`, `PCASMGetLocalType()`, `PCGASM`
+          `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMWeightedSetScaling()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`, `PCGASM`
 @*/
 PetscErrorCode PCASMSetType(PC pc, PCASMType type)
 {
@@ -1094,6 +1166,146 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
   PetscTryMethod(pc, "PCASMSetType_C", (PC, PCASMType), (pc, type));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCASMWeightedSetComputeScaling - Sets a callback to compute `PC_ASM_WEIGHTED` scaling during `PCSetUp()`.
+
+  Logically Collective
+
+  Input Parameters:
++ pc  - the `PCASM` preconditioner
+. fn  - function to fill each local scaling vector, or `NULL` to disable the callback
+- ctx - function context passed to `fn`
+
+  Level: intermediate
+
+  Notes:
+  Register before setup and select `PC_ASM_WEIGHTED`.
+
+  Whenever `PCSetUp()` rebuilds weighted ASM,
+  `fn` is called once per local subdomain, after overlap expansion and index sorting, with a vector
+  of the correct size and type.
+
+  No explicit setup or vector allocation is needed by the caller.
+
+  The callback overwrites any existing weights, including those supplied directly by `PCASMWeightedSetScaling()`.
+
+  Registration does not trigger setup. Passing `NULL` leaves the current weights in place.
+
+  The callback and context survive `PCReset()`. The caller owns `ctx` and must keep it valid
+  until the callback is replaced or disabled, or the preconditioner is destroyed.
+
+  Fortran Note:
+  `fn` is a subroutine with arguments `(pc, local, scaling, ctx, ierr)`. Pass `PETSC_NULL_FUNCTION` to disable the callback.
+
+.seealso: [](ch_ksp), `PCASM`, `PCASMWeightedComputeScalingFn`, `PCASMWeightedSetScaling()`, `PCASMWeightedGetScaling()`, `PCASMSetType()`
+@*/
+PetscErrorCode PCASMWeightedSetComputeScaling(PC pc, PCASMWeightedComputeScalingFn *fn, PetscCtx ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCASMWeightedSetComputeScaling_C", (PC, PCASMWeightedComputeScalingFn *, PetscCtx), (pc, fn, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCASMWeightedSetScaling - Sets the diagonal weights for the overlapping local corrections in weighted additive Schwarz.
+
+  Logically Collective
+
+  Input Parameters:
++ pc      - the `PCASM` preconditioner
+. n       - the number of local subdomains
+- scaling - one local scaling `Vec` per overlapping subdomain
+
+  Level: intermediate
+
+  Notes:
+  Call `PCSetUp()` before this routine, then use `PCASMGetLocalSubdomains()` to obtain the final
+  overlapping index sets. Each vector must have a single-process communicator and the same length
+  and ordering as its corresponding overlapping index set, after overlap expansion and sorting.
+  Its vector type must match the local solver vectors. Compatible vectors can be created with
+  `MatCreateVecs()` from the corresponding matrix returned by `PCASMGetLocalSubmatrices()`.
+  These are local subdomain vectors, not vectors in the parallel global layout.
+  Select `PC_ASM_WEIGHTED` with `PCASMSetType()` or `-pc_asm_type weighted` to use the weights.
+  The weights are ignored by the other ASM types.
+
+  With restriction operators $R_i$, local solvers $A_i^{-1}$, and $D_i = \text{diag}(scaling[i])$, the action is
+  $B = \sum_i R_i^T D_i A_i^{-1} R_i$.
+  PETSc uses the supplied weights as-is, without checking whether they are real, non-negative,
+  or satisfy $\sum_i R_i^T D_i R_i = I$.
+  The PC increments the reference count of the vectors but does not copy them.
+  `PCReset()` discards the weights along with the subdomains.
+  Alternatively, use `PCASMWeightedSetComputeScaling()` to fill internally-created vectors during `PCSetUp()`.
+
+  Example Usage:
+.vb
+  KSPGetPC(ksp, &pc);
+  PCASMSetType(pc, PC_ASM_WEIGHTED);
+  PCSetUp(pc);
+  PCASMGetLocalSubmatrices(pc, &n, &submat);
+  PCASMGetLocalSubdomains(pc, NULL, &is, NULL);
+  for (i = 0; i < n; i++) {
+    MatCreateVecs(submat[i], &scaling[i], NULL); // a Vec of the right size and type
+    // fill scaling[i] in the local ordering of is[i]
+  }
+  PCASMWeightedSetScaling(pc, n, scaling);
+.ve
+
+.seealso: [](ch_ksp), `PCASM`, `PCASMType`, `PCASMSetType()`, `PCASMWeightedGetScaling()`, `PCASMGetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`, `PCASMSetLocalSubdomains()`, `PCASMSetLocalType()`
+@*/
+PetscErrorCode PCASMWeightedSetScaling(PC pc, PetscInt n, Vec scaling[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of scaling vectors must be nonnegative");
+  if (n) PetscAssertPointer(scaling, 3);
+  for (PetscInt i = 0; i < n; i++) PetscValidHeaderSpecific(scaling[i], VEC_CLASSID, 3);
+  PetscTryMethod(pc, "PCASMWeightedSetScaling_C", (PC, PetscInt, Vec[]), (pc, n, scaling));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCASMWeightedGetScaling - Gets the diagonal weights supplied with `PCASMWeightedSetScaling()` or computed by the function provided with `PCASMWeightedSetComputeScaling()`.
+
+  Not Collective
+
+  Input Parameter:
+. pc - the `PCASM` preconditioner
+
+  Output Parameters:
++ n       - if requested, the number of local subdomains for this processor, or zero if no weights have been supplied
+- scaling - if requested, the local scaling `Vec`, or `NULL` if none have been supplied
+
+  Level: intermediate
+
+  Note:
+  The returned array and its vectors are owned by `pc`; do not free or destroy them. They
+  are released by `PCReset()` and `PCDestroy()`, and replaced by a further call to
+  `PCASMWeightedSetScaling()`.
+
+  Fortran Note:
+  Declare `scaling` as `Vec, pointer :: scaling(:)`. It is always returned and is disassociated when no weights
+  have been supplied; `n` may be `PETSC_NULL_INTEGER`. There is no restore routine, and the pointer must not be
+  used after `PCReset()`, `PCDestroy()`, or a further call to `PCASMWeightedSetScaling()`.
+
+.seealso: [](ch_ksp), `PCASM`, `PCASMType`, `PCASMWeightedSetScaling()`, `PCASMSetType()`, `PCASMGetLocalSubdomains()`
+@*/
+PetscErrorCode PCASMWeightedGetScaling(PC pc, PetscInt *n, Vec *scaling[])
+{
+  PC_ASM   *osm = (PC_ASM *)pc->data;
+  PetscBool match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (n) PetscAssertPointer(n, 2);
+  if (scaling) PetscAssertPointer(scaling, 3);
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCASM, &match));
+  PetscCheck(match, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PC is not a PCASM");
+  if (n) *n = osm->scaling ? osm->n_local_true : 0;
+  if (scaling) *scaling = osm->scaling;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1109,14 +1321,15 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type)
   Output Parameter:
 . type - variant of `PCASM`, one of
 .vb
-      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_NONE        - local processor restriction and interpolation
       PC_ASM_RESTRICT    - full restriction, local processor interpolation
       PC_ASM_INTERPOLATE - full interpolation, local processor restriction
-      PC_ASM_NONE        - local processor restriction and interpolation
+      PC_ASM_BASIC       - full interpolation and restriction
+      PC_ASM_WEIGHTED    - full restriction and interpolation with user-provided diagonal scaling
 .ve
 
   Options Database Key:
-. -pc_asm_type [basic,restrict,interpolate,none] - Sets `PCASM` type
+. -pc_asm_type (none|restrict|interpolate|basic|weighted) - Sets `PCASM` type
 
   Level: intermediate
 
@@ -1254,11 +1467,11 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
            its own `KSP` object, {cite}`dryja1987additive` and {cite}`1sbg`
 
    Options Database Keys:
-+  -pc_asm_blocks blks                            - Sets total blocks. Defaults to one block per MPI process.
-.  -pc_asm_overlap ovl                            - Sets overlap
-.  -pc_asm_type (basic|restrict|interpolate|none) - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
-.  -pc_asm_dm_subdomains (true|false)             - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
--  -pc_asm_local_type (additive|multiplicative)   - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
++  -pc_asm_blocks blks                                     - Sets total blocks. Defaults to one block per MPI process.
+.  -pc_asm_overlap ovl                                     - Sets overlap
+.  -pc_asm_type (none|restrict|interpolate|basic|weighted) - Sets `PCASMType`, default is restrict. See `PCASMSetType()`
+.  -pc_asm_dm_subdomains (true|false)                      - use subdomains defined by the `DM` with `DMCreateDomainDecomposition()`
+-  -pc_asm_local_type (additive|multiplicative)            - Sets `PCCompositeType`, default is additive. See `PCASMSetLocalType()`
 
    Level: beginner
 
@@ -1278,9 +1491,11 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
 
    If the `PC` has an associated `DM`, then, by default, `DMCreateDomainDecomposition()` is used to create the subdomains
 
+   Use `PCASMWeightedSetScaling()` with `PC_ASM_WEIGHTED` to supply a diagonal partition of unity on the overlapping subdomains.
+
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASMType`, `PCCompositeType`,
           `PCBJACOBI`, `PCASMGetSubKSP()`, `PCASMSetLocalSubdomains()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`,
-          `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`
+          `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`, `PCASMWeightedSetScaling()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
@@ -1300,6 +1515,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   osm->lrestriction  = NULL;
   osm->x             = NULL;
   osm->y             = NULL;
+  osm->scaling       = NULL;
   osm->is            = NULL;
   osm->is_local      = NULL;
   osm->mat           = NULL;
@@ -1328,6 +1544,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetOverlap_C", PCASMSetOverlap_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetType_C", PCASMSetType_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMGetType_C", PCASMGetType_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMWeightedSetScaling_C", PCASMWeightedSetScaling_ASM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMWeightedSetComputeScaling_C", PCASMWeightedSetComputeScaling_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetLocalType_C", PCASMSetLocalType_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMGetLocalType_C", PCASMGetLocalType_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetSortIndices_C", PCASMSetSortIndices_ASM));

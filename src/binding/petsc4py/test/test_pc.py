@@ -176,6 +176,48 @@ class TestASMPC(BaseTestPC, unittest.TestCase):
         self.assertEqual(got_sub, [])
         self.assertEqual(got_local, [])
 
+    def testLocalScaling(self):
+        # Independent weights on overlapping blocks reproduce the identity.
+        A = PETSc.Mat().createAIJ([4, 4], nnz=1, comm=self.COMM)
+        for i in range(4):
+            A[i, i] = 1
+        A.assemble()
+        pc = self.pc
+        pc.setOperators(A)
+        self.checkLocalSubdomains(pc, [[2, 0, 1], [3, 2, 1]])
+        pc.setASMType(PETSc.PC.ASMType.WEIGHTED)
+        pc.setUp()
+        nsd, is_sub, is_local = pc.getASMLocalSubdomains()
+        self.assertEqual(nsd, 2)
+        scaling = []
+        values = ({0: 1, 1: 0.25, 2: 0.5}, {1: 0.75, 2: 0.5, 3: 1})
+        for iset, weights in zip(is_sub, values):
+            vec = PETSc.Vec().createSeq(iset.getLocalSize(), comm=self.COMM)
+            vec.array[:] = [weights[i] for i in iset.getIndices()]
+            scaling.append(vec)
+        self.assertEqual(pc.getASMWeightedScaling(), [])
+        pc.setASMWeightedScaling(scaling)
+        got = pc.getASMWeightedScaling()
+        self.assertEqual(len(got), nsd)
+        for stored, vec in zip(got, scaling):
+            self.assertTrue(stored.equal(vec))
+        for stored in got:
+            stored.destroy()
+        # The setter retains the Vec objects independently of their wrappers.
+        for vec in scaling:
+            vec.destroy()
+        x, y = A.createVecs()
+        x.array[:] = [1, 2, 3, 4]
+        pc.apply(x, y)
+        self.assertTrue(y.equal(x))
+        pc.applyTranspose(x, y)
+        self.assertTrue(y.equal(x))
+        x.destroy()
+        y.destroy()
+        for iset in is_sub + is_local:
+            iset.destroy()
+        A.destroy()
+
 
 class TestHPDDMPC(BaseTestPC, unittest.TestCase):
     PC_TYPE = PETSc.PC.Type.HPDDM

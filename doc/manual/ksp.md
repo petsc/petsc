@@ -973,23 +973,42 @@ block per process is supported. However, the `MATMPIAIJ` and
 blocks are shared among processes. The `is` argument contains the
 index sets that define the subdomains.
 
-The object `PCASMType` is one of `PC_ASM_BASIC`,
-`PC_ASM_INTERPOLATE`, `PC_ASM_RESTRICT`, or `PC_ASM_NONE` and may
-also be set with the options database `-pc_asm_type (basic|interpolate|restrict|none)`. The type `PC_ASM_BASIC` (or
-`-pc_asm_type basic`) corresponds to the standard additive Schwarz
-method that uses the full restriction and interpolation operators. The
-type `PC_ASM_RESTRICT` (or `-pc_asm_type restrict`) uses a full
-restriction operator, but during the interpolation process ignores the
-off-process values. Similarly, `PC_ASM_INTERPOLATE` (or
-`-pc_asm_type` `interpolate`) uses a limited restriction process in
-conjunction with a full interpolation, while `PC_ASM_NONE` (or
-`-pc_asm_type` `none`) ignores off-process values for both
-restriction and interpolation. The ASM types with limited restriction or
+The object `PCASMType` is one of `PC_ASM_NONE`,
+`PC_ASM_RESTRICT`, `PC_ASM_INTERPOLATE`, `PC_ASM_BASIC`, or `PC_ASM_WEIGHTED` and may
+also be set with the options database `-pc_asm_type (none|restrict|interpolate|basic|weighted)`. The type `PC_ASM_NONE` (or
+`-pc_asm_type none`) ignores off-process values for both
+restriction and interpolation. The type `PC_ASM_RESTRICT` (or
+`-pc_asm_type restrict`) uses a full restriction operator, but during
+the interpolation process ignores the off-process values. Similarly,
+`PC_ASM_INTERPOLATE` (or `-pc_asm_type interpolate`) uses a limited
+restriction process in conjunction with a full interpolation, while
+`PC_ASM_BASIC` (or `-pc_asm_type basic`) corresponds to the standard
+additive Schwarz method that uses the full restriction and interpolation
+operators. The ASM types with limited restriction or
 interpolation were suggested by Xiao-Chuan Cai and Marcus Sarkis
 {cite}`cs99`. `PC_ASM_RESTRICT` is the PETSc default, as
 it saves substantial communication and for many problems has the added
 benefit of requiring fewer iterations for convergence than the standard
 additive Schwarz method.
+
+The type `PC_ASM_WEIGHTED` (or `-pc_asm_type weighted`) uses the full restriction and
+interpolation operators, like `PC_ASM_BASIC`, but scales each local correction by
+diagonal weights $D_i$ supplied with
+
+```
+PCASMWeightedSetScaling(PC pc, PetscInt n, Vec scaling[]);
+```
+
+so that, if $R_i$ is the restriction operator to subdomain $i$, the preconditioner applies $\sum_i R_i^T D_i A_i^{-1} R_i$. This generalizes the
+Boolean ownership weighting of `PC_ASM_RESTRICT` to an arbitrary partition of unity, where
+the user is responsible for ensuring $\sum_i R_i^T D_i R_i = I$. One sequential `Vec` is
+supplied per overlapping subdomain, in the local ordering of the corresponding index set
+returned by `PCASMGetLocalSubdomains()`, so `PCASMWeightedSetScaling()` must be called after
+`PCSetUp()`. Create each `Vec` with `MatCreateVecs()` from the matching submatrix returned
+by `PCASMGetLocalSubmatrices()`, so that it has the size and `VecType` the local solver
+expects. The weights can be retrieved with `PCASMWeightedGetScaling()` and are ignored by the
+other `PCASMType`s. Alternatively, register `PCASMWeightedSetComputeScaling()` before setup to
+fill PETSc-created scaling vectors through a callback.
 
 The user can also set the number of blocks and sizes on a per-process
 basis with the commands

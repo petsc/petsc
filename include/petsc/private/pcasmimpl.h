@@ -11,6 +11,7 @@ typedef struct {
   VecScatter     *lprolongation; /* mapping from non-overlapping subregion to overlapping (process) subdomain; used for restrict additive version of algorithms */
   Vec             lx, ly;        /* work vectors */
   Vec            *x, *y;         /* work vectors */
+  Vec            *scaling;       /* user-provided diagonal weights for each overlapping subdomain */
   IS              lis;           /* index set that defines each overlapping multiplicative (process) subdomain */
   IS             *is;            /* index set that defines each overlapping subdomain */
   IS             *is_local;      /* index set that defines each non-overlapping subdomain, may be NULL */
@@ -21,6 +22,9 @@ typedef struct {
   PetscBool       dm_subdomains; /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;       /* the type of composition for local solves */
   MatType         sub_mat_type;  /* the type of Mat used for subdomain solves (can be MATSAME or NULL) */
+  /* For PC_ASM_WEIGHTED */
+  PCASMWeightedComputeScalingFn *computescaling;    /* callback filling scaling[] during PCSetUp() */
+  PetscCtx                       computescalingctx; /* user context passed to computescaling */
   /* For multiplicative solve */
   Mat *lmats; /* submatrices for overlapping multiplicative (process) subdomain */
 } PC_ASM;
