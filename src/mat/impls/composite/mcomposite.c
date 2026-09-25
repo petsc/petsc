@@ -28,11 +28,25 @@ typedef struct {
   VecScatter   Mvctx;
 } Mat_Composite;
 
+static PetscErrorCode MatCompositeDestroyMergedMvctx_Private(Mat_Composite *shell)
+{
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (shell->Mvctx) {
+    for (i = 0; i < shell->nmat; i++) PetscCall(VecDestroy(&shell->lvecs[i]));
+    PetscCall(PetscFree3(shell->location, shell->larray, shell->lvecs));
+    PetscCall(VecDestroy(&shell->gvec));
+    PetscCall(VecScatterDestroy(&shell->Mvctx));
+    shell->len = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_Composite(Mat mat)
 {
   Mat_Composite    *shell;
   Mat_CompositeLink next, oldnext;
-  PetscInt          i;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &shell));
@@ -46,12 +60,7 @@ static PetscErrorCode MatDestroy_Composite(Mat mat)
   }
   PetscCall(VecDestroy(&shell->work));
 
-  if (shell->Mvctx) {
-    for (i = 0; i < shell->nmat; i++) PetscCall(VecDestroy(&shell->lvecs[i]));
-    PetscCall(PetscFree3(shell->location, shell->larray, shell->lvecs));
-    PetscCall(VecDestroy(&shell->gvec));
-    PetscCall(VecScatterDestroy(&shell->Mvctx));
-  }
+  PetscCall(MatCompositeDestroyMergedMvctx_Private(shell));
 
   PetscCall(PetscFree(shell->scalings));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatCompositeAddMat_C", NULL));
@@ -406,6 +415,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &shell));
+  PetscCall(MatCompositeDestroyMergedMvctx_Private(shell));
   next = shell->head;
   PetscCall(PetscNew(&ilink));
   ilink->next = NULL;

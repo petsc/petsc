@@ -73,6 +73,19 @@ int main(int argc, char **args)
   PetscCall(VecNorm(y, NORM_2, &rnorm));
   if (rnorm > 10000.0 * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with composite add after merge %g\n", (double)rnorm));
 
+  /* Test adding a matrix after MatMult() has merged the communication context */
+  PetscCall(MatCreateComposite(PETSC_COMM_WORLD, 1, A + 1, &B));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatMult(B, x, y));
+  PetscCall(MatCompositeAddMat(B, A[1]));
+  PetscCall(MatMult(B, x, y));
+  PetscCall(MatMult(A[1], x, z));
+  PetscCall(VecScale(z, 2.0));
+  PetscCall(VecAXPY(y, -1.0, z));
+  PetscCall(VecNorm(y, NORM_2, &rnorm));
+  PetscCheck(rnorm <= 10000.0 * PETSC_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error with composite add after MatMult(): %g", (double)rnorm);
+  PetscCall(MatDestroy(&B));
+
   /*
      Test n x n/2 multiplicative composite B made up of A[0],A[1],A[2] with separate scalings
   */
