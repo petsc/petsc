@@ -511,6 +511,16 @@ cdef extern from * nogil:
     PetscErrorCode MatLRCGetMats(PetscMat, PetscMat*, PetscMat*, PetscVec*, PetscMat*)
     PetscErrorCode MatLRCSetMats(PetscMat, PetscMat, PetscMat, PetscVec, PetscMat)
 
+    ctypedef enum PetscMatCompositeType "MatCompositeType":
+        MAT_COMPOSITE_ADDITIVE
+        MAT_COMPOSITE_MULTIPLICATIVE
+    PetscErrorCode MatCreateComposite(MPI_Comm, PetscInt, const PetscMat[], PetscMat*)
+    PetscErrorCode MatCompositeAddMat(PetscMat, PetscMat)
+    PetscErrorCode MatCompositeSetType(PetscMat, PetscMatCompositeType)
+    PetscErrorCode MatCompositeGetType(PetscMat, PetscMatCompositeType*)
+    PetscErrorCode MatCompositeGetNumberMat(PetscMat, PetscInt*)
+    PetscErrorCode MatCompositeGetMat(PetscMat, PetscInt, PetscMat*)
+
     PetscErrorCode MatMumpsSetIcntl(PetscMat, PetscInt, PetscInt)
     PetscErrorCode MatMumpsGetIcntl(PetscMat, PetscInt, PetscInt*)
     PetscErrorCode MatMumpsSetCntl(PetscMat, PetscInt, PetscReal)

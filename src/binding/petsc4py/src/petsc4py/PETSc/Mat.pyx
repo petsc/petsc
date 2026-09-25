@@ -282,6 +282,18 @@ class MatSORType(object):
     APPLY_LOWER           = SOR_APPLY_LOWER
 
 
+class MatCompositeType(object):
+    """Matrix composite type.
+
+    See Also
+    --------
+    petsc.MatCompositeType
+
+    """
+    ADDITIVE       = MAT_COMPOSITE_ADDITIVE
+    MULTIPLICATIVE = MAT_COMPOSITE_MULTIPLICATIVE
+
+
 class MatHtoolCompressorType(object):
     """Htool compressor type.
 
@@ -421,6 +433,7 @@ cdef class Mat(Object):
     SolverType      = MatSolverType
     FactorShiftType = MatFactorShiftType
     SORType         = MatSORType
+    CompositeType   = MatCompositeType
     #
 
     def __cinit__(self):
@@ -1577,6 +1590,51 @@ cdef class Mat(Object):
             for j from 0 <= j < mc: ciscols[j] = (<IS?>iscols[j]).iset
         cdef PetscMat newmat = NULL
         CHKERR(MatCreateNest(ccomm, nr, cisrows, nc, ciscols, cmats, &newmat))
+        CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
+        return self
+
+    def createComposite(
+        self,
+        mats: Sequence[Mat],
+        comm: Comm | None = None) -> Self:
+        """Create a `Type.COMPOSITE` matrix representing a sum or product of matrices.
+
+        Collective.
+
+        Parameters
+        ----------
+        mats
+            Nonempty sequence of matrices.
+        comm
+            MPI communicator, defaults to the communicator of ``mats[0]``.
+
+        Notes
+        -----
+        The composite matrix is never actually formed. By default it
+        represents the sum of ``mats``. Use `setCompositeType` with
+        `CompositeType.MULTIPLICATIVE` to represent the product
+        ``mats[-1]*...*mats[1]*mats[0]``, which applies ``mats[0]`` first.
+
+        See Also
+        --------
+        addCompositeMat, setCompositeType, getCompositeMats
+        petsc.MatCreateComposite, petsc.MATCOMPOSITE
+
+        """
+        mats = list(mats)
+        if not mats:
+            raise ValueError("mats must contain at least one matrix")
+        if comm is None:
+            comm = (<Mat?>mats[0]).getComm()
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef Py_ssize_t i, m = len(mats)
+        cdef PetscInt n = <PetscInt>m
+        cdef PetscMat *cmats = NULL
+        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cmats)
+        for i from 0 <= i < m:
+            cmats[i] = (<Mat?>mats[i]).mat
+        cdef PetscMat newmat = NULL
+        CHKERR(MatCreateComposite(ccomm, n, cmats, &newmat))
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
@@ -6467,6 +6525,79 @@ cdef class Mat(Object):
         if V is not None:
             CHKERR(PetscCLEAR(V.obj))
 
+    # Composite
+
+    def addCompositeMat(self, Mat mat) -> None:
+        """Add a matrix to a `Type.COMPOSITE` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        mat
+            The matrix to add.
+
+        See Also
+        --------
+        createComposite, petsc.MatCompositeAddMat
+
+        """
+        CHKERR(MatCompositeAddMat(self.mat, mat.mat))
+
+    def setCompositeType(self, ctype: CompositeType) -> None:
+        """Set whether a `Type.COMPOSITE` matrix is a sum or a product.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ctype
+            The composite type.
+
+        See Also
+        --------
+        getCompositeType, petsc.MatCompositeSetType
+
+        """
+        cdef PetscMatCompositeType cval = ctype
+        CHKERR(MatCompositeSetType(self.mat, cval))
+
+    def getCompositeType(self) -> CompositeType:
+        """Return whether a `Type.COMPOSITE` matrix is a sum or a product.
+
+        Not collective.
+
+        See Also
+        --------
+        setCompositeType, petsc.MatCompositeGetType
+
+        """
+        cdef PetscMatCompositeType cval = MAT_COMPOSITE_ADDITIVE
+        CHKERR(MatCompositeGetType(self.mat, &cval))
+        return cval
+
+    def getCompositeMats(self) -> list[Mat]:
+        """Return the matrices held by a `Type.COMPOSITE` matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        createComposite, petsc.MatCompositeGetNumberMat
+        petsc.MatCompositeGetMat
+
+        """
+        cdef PetscInt i, n = 0
+        cdef Mat mat
+        CHKERR(MatCompositeGetNumberMat(self.mat, &n))
+        mats = []
+        for i from 0 <= i < n:
+            mat = Mat()
+            CHKERR(MatCompositeGetMat(self.mat, i, &mat.mat))
+            CHKERR(PetscINCREF(mat.obj))
+            mats.append(mat)
+        return mats
+
     # Nest
 
     def getNestSize(self) -> tuple[int, int]:
@@ -7058,5 +7189,6 @@ del MatOrderingType
 del MatSolverType
 del MatFactorShiftType
 del MatSORType
+del MatCompositeType
 
 # --------------------------------------------------------------------

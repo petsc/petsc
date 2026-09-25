@@ -53,6 +53,9 @@ Development
 - Add ``DMPlexTransform.getSourcePoint()``, ``DMPlexTransform.getActive()``,
   ``DMPlexTransform.setActive()``, and
   ``DMPlexTransform.createSplitCellLabel()``.
+- Add ``Mat.createComposite()``, ``Mat.addCompositeMat()``,
+  ``Mat.setCompositeType()``, ``Mat.getCompositeType()``,
+  ``Mat.getCompositeMats()``, and ``Mat.CompositeType``.
 
 
 Release 3.25.0

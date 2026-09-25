@@ -490,6 +490,54 @@ class BaseTestMatAnyAIJ:
         AT.multTranspose(yt, xt)
         self.assertTrue(xt.equal(y))
 
+    def testCreateComposite(self):
+        self._preallocate()
+        self._set_values_ijv()
+        self.A.assemble()
+        A = self.A
+        x, y = A.createVecs()
+        z = y.duplicate()
+        x.setRandom()
+
+        C = PETSc.Mat().createComposite([A])
+        self.assertEqual(C.getType(), PETSc.Mat.Type.COMPOSITE)
+        self.assertEqual(C.getCompositeType(), PETSc.Mat.CompositeType.ADDITIVE)
+        self.assertEqual([M.handle for M in C.getCompositeMats()], [A.handle])
+        C.mult(x, z)
+        A.mult(x, y)
+        self.assertTrue(np.allclose(z.getArray(), y.getArray()))
+        C.addCompositeMat(A)
+        self.assertEqual([M.handle for M in C.getCompositeMats()], [A.handle, A.handle])
+        C.mult(x, z)
+        A.mult(x, y)
+        y.scale(2)
+        self.assertTrue(np.allclose(z.getArray(), y.getArray()))
+        C.destroy()
+
+        # product A * A^T * A applies the first matrix first
+        AT = PETSc.Mat().createTranspose(A)
+        C = PETSc.Mat().createComposite([A])
+        C.setCompositeType(PETSc.Mat.CompositeType.MULTIPLICATIVE)
+        self.assertEqual(C.getCompositeType(), PETSc.Mat.CompositeType.MULTIPLICATIVE)
+        C.addCompositeMat(AT)
+        C.addCompositeMat(A)
+        self.assertEqual(len(C.getCompositeMats()), 3)
+        w = x.duplicate()
+        C.mult(x, z)
+        A.mult(x, y)
+        AT.mult(y, w)
+        A.mult(w, y)
+        self.assertTrue(np.allclose(z.getArray(), y.getArray()))
+        C.multTranspose(y, w)
+        A.multTranspose(y, x)
+        AT.multTranspose(x, z)
+        A.multTranspose(z, x)
+        self.assertTrue(np.allclose(w.getArray(), x.getArray()))
+        C.destroy()
+        AT.destroy()
+        for v in (w, x, y, z):
+            v.destroy()
+
     def _get_aijv(self):
         return (
             self.rows,
