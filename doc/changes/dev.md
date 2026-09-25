@@ -93,6 +93,7 @@
 
 ## Mat
 
+- Fix cleanup of additive `MATCOMPOSITE` matrices when `MatCompositeAddMat()` follows `MatMult()`
 - Fix an invalid free in `MatColoringDestroy()` for weights supplied with `MatColoringSetWeights()`
 - Speed up single-index-set `MatCreateSubMatrices()` reuse for `MATMPIAIJ` with sorted column subsets and unchanged structure
 - Add `MATPRODUCT_PtAP` support for `MATDIAGONAL` and `MATCONSTANTDIAGONAL`
