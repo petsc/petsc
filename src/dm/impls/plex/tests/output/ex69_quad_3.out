@@ -1012,28 +1012,6 @@ Vec Object: Local Solution 1 MPI process
 0.
 0.
 0.
-[0]BT for serial flipped cells:
-0 0
-[1]BT for serial flipped cells:
-0 0
-[2]BT for serial flipped cells:
-0 0
-[3]BT for serial flipped cells:
-0 0
-[1]: component 0, Found representative leaf 0 (face 3) connecting to face 2 on (3, 0) with orientation -1
-Proc 0 Comp 0:
-Proc 1 Comp 0:
-  edge (3, 0) (TRUE):
-Proc 2 Comp 0:
-Proc 3 Comp 0:
-[0]BT for parallel flipped cells:
-0 0
-[1]BT for parallel flipped cells:
-0 0
-[2]BT for parallel flipped cells:
-0 0
-[3]BT for parallel flipped cells:
-0 0
 Discrete System with 2 fields
     cell total dim 12 total comp 4
     cohesive cell

@@ -1,0 +1,355 @@
+Label 'fault':
+[0]: 20 (0)
+[0]: 21 (0)
+[0]: 22 (0)
+[0]: 23 (0)
+[0]: 24 (0)
+[0]: 25 (0)
+[0]: 26 (0)
+[0]: 27 (0)
+[0]: 50 (0)
+[0]: 51 (0)
+[0]: 52 (0)
+[0]: 53 (0)
+[0]: 7 (1)
+[0]: 8 (1)
+[0]: 34 (1)
+[0]: 35 (1)
+[0]: 36 (1)
+[0]: 37 (1)
+[0]: 0 (102)
+[0]: 1 (102)
+[0]: 2 (102)
+[0]: 28 (101)
+[0]: 29 (101)
+[0]: 30 (101)
+[0]: 31 (101)
+[0]: 32 (101)
+[0]: 33 (101)
+[0]: 3 (-102)
+[0]: 39 (-101)
+[0]: 40 (-101)
+[1]: 15 (0)
+[1]: 16 (0)
+[1]: 17 (0)
+[1]: 18 (0)
+[1]: 19 (0)
+[1]: 20 (0)
+[1]: 37 (0)
+[1]: 38 (0)
+[1]: 39 (0)
+[1]: 6 (1)
+[1]: 35 (1)
+[1]: 36 (1)
+[1]: 0 (102)
+[1]: 5 (102)
+[1]: 32 (101)
+[1]: 33 (101)
+[1]: 34 (101)
+[1]: 1 (-102)
+[1]: 2 (-102)
+[1]: 3 (-102)
+[1]: 22 (-101)
+[1]: 24 (-101)
+[1]: 25 (-101)
+[1]: 26 (-101)
+[1]: 27 (-101)
+[2]: 14 (0)
+[2]: 15 (0)
+[2]: 16 (0)
+[2]: 17 (0)
+[2]: 33 (0)
+[2]: 34 (0)
+[2]: 5 (1)
+[2]: 31 (1)
+[2]: 32 (1)
+[2]: 1 (-102)
+[2]: 2 (-102)
+[2]: 19 (-101)
+[2]: 20 (-101)
+[2]: 21 (-101)
+[2]: 29 (101)
+[2]: 30 (101)
+[2]: 0 (102)
+Vec Object: Local Solution 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Vec Object: Local Solution 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Vec Object: Local Solution 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+Discrete System with 2 fields
+    cell total dim 12 total comp 4
+    cohesive cell
+  Field displacement FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: displacement 1 MPI process
+      type: basic
+      Basic Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: displacement 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: P1 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Field fault traction FEM 2 components (implicit) (Nq 2 Nqc 1) 1-jet
+    PetscFE Object: fault traction (faulttraction_) 1 MPI process
+      type: vector
+      Vector Finite Element in 1 dimensions with 2 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Space in 1 variables with 2 components, size 4
+        Sum space of 2 concatenated subspaces (all identical)
+          PetscSpace Object: Q1 (faulttraction_sumcomp_) 1 MPI process
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI process
+        type: sum
+        Dual space with 2 components, size 4
+        Sum dual space of 2 concatenated subspaces (all identical)
+          PetscDualSpace Object: Q1 1 MPI process
+            type: lagrange
+            Dual space with 1 components, size 2
+            Continuous Lagrange dual space
+        Quadrature on a segment of order 3 on 2 points (dim 1)
+  Weak Form System with 2 fields
+    boundary_residual_f0
+      (material, 1) (0, 0) 
+      (material, 2) (0, 0) 
+      (faultCells, 1) (0, 1) 
+    boundary_jacobian_g0
+      (material, 1) (0, 1) 
+      (material, 2) (0, 1) 
+      (faultCells, 1) (1, 0) 
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.5
+0.
+0.5
+0.
+0.
+0.
+0.
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.5
+0.
+0.5
+Vec Object: Local Residual 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.5
+0.
+0.5

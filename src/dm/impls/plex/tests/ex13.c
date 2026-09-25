@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 /*TEST
   testset:
     requires: triangle
-    args: -dm_coord_space 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail -orientation_view
+    args: -dm_coord_space 0 -dm_view ascii::ascii_info_detail -oriented_dm_view ascii::ascii_info_detail
 
     test:
       suffix: 0
@@ -153,6 +153,5 @@ int main(int argc, char **argv)
     test:
       suffix: 3
       nsize: 3
-      args: -orientation_view_synchronized
 
 TEST*/

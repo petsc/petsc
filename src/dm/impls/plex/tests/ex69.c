@@ -19,6 +19,44 @@ char              tri_2_cv[] = "\
 -2.0  1.0 0.0  1\n\
 -1.0  2.0 0.0 -1";
 
+PETSC_EXTERN char tri_3x3_cv[];
+char              tri_3x3_cv[] = "\
+2 18 16 3 0\n\
+0 1 5\n\
+0 5 4\n\
+1 2 6\n\
+1 6 5\n\
+2 3 7\n\
+2 7 6\n\
+4 5 9\n\
+4 9 8\n\
+5 6 10\n\
+5 10 9\n\
+6 7 11\n\
+6 11 10\n\
+8 9 13\n\
+8 13 12\n\
+9 10 14\n\
+9 14 13\n\
+10 11 15\n\
+10 15 14\n\
+0 0 0\n\
+1 0 0\n\
+2 0 0\n\
+3 0 0\n\
+0 1 0\n\
+1 1 0\n\
+2 1 0\n\
+3 1 0\n\
+0 2 0\n\
+1 2 0\n\
+2 2 0\n\
+3 2 0\n\
+0 3 0\n\
+1 3 0\n\
+2 3 0\n\
+3 3 0";
+
 /* List of test meshes
 
 Test tri_0: triangle
@@ -139,6 +177,25 @@ Test tri_3: tri_2, in parallel
                \|   |  |   |/
                 8---7  7---6
                  19      21
+
+Test tri_4 to tri_8: 3x3 triangles on 3 processes
+
+The fault is the horizontal line y = 1. The fault is oriented after distribution, so each process holds
+only part of it. The tests use different partitions, some with overlap.
+
+ +-----+-----+-----+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +-----+-----+-----+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +=====+=====+=====+
+ |    /|    /|    /|
+ |  /  |  /  |  /  |
+ |/    |/    |/    |
+ +-----+-----+-----+
 
 Test quad_0: quadrilateral
 
@@ -1046,10 +1103,13 @@ static PetscErrorCode CreateMaterialLabel(DM dm)
   DMLabel         fault, material;
   IS              faceIS;
   const PetscInt *faces;
-  PetscReal       fvol, fcentroid[3], fnormal[3];
-  PetscInt        dim, cStart, cEnd, Nf;
+  PetscReal       fvol, fcentroid[3] = {0., 0., 0.}, fnormal[3] = {0., 0., 0.};
+  PetscInt        dim, cStart, cEnd, Nf = 0;
+  PetscMPIInt     rank, size, root;
 
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetLabel(dm, "fault", &fault));
   PetscCall(DMCreateLabel(dm, "material"));
@@ -1070,21 +1130,28 @@ static PetscErrorCode CreateMaterialLabel(DM dm)
     PetscCall(ISDestroy(&pointIS));
   }
   // This simple algorithm will work for now (note that cohesive cells get added into this label)
+  // A process can hold only vertices of the fault, so all processes use a face from the lowest process that has one
   PetscCall(DMLabelGetStratumIS(fault, dim - 1, &faceIS));
-  PetscCall(ISGetLocalSize(faceIS, &Nf));
-  PetscCheck(Nf > 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Fault label must contain at least one face");
-  PetscCall(ISGetIndices(faceIS, &faces));
-  for (PetscInt i = 0; i < Nf; ++i) {
-    const PetscInt face = faces[i];
-    DMPolytopeType ct;
+  if (faceIS) PetscCall(ISGetLocalSize(faceIS, &Nf));
+  root = Nf ? rank : size;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &root, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCheck(root < size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Fault label must contain at least one face");
+  if (rank == root) {
+    PetscCall(ISGetIndices(faceIS, &faces));
+    for (PetscInt i = 0; i < Nf; ++i) {
+      const PetscInt face = faces[i];
+      DMPolytopeType ct;
 
-    PetscCall(DMPlexGetCellType(dm, face, &ct));
-    if (DMPolytopeTypeGetDim(ct) != dim - 1) continue;
-    PetscCall(DMPlexComputeCellGeometryFVM(dm, face, &fvol, fcentroid, fnormal));
-    break;
+      PetscCall(DMPlexGetCellType(dm, face, &ct));
+      if (DMPolytopeTypeGetDim(ct) != dim - 1) continue;
+      PetscCall(DMPlexComputeCellGeometryFVM(dm, face, &fvol, fcentroid, fnormal));
+      break;
+    }
+    PetscCall(ISRestoreIndices(faceIS, &faces));
   }
-  PetscCall(ISRestoreIndices(faceIS, &faces));
   PetscCall(ISDestroy(&faceIS));
+  PetscCallMPI(MPI_Bcast(fcentroid, 3, MPIU_REAL, root, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPI_Bcast(fnormal, 3, MPIU_REAL, root, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (PetscInt c = cStart; c < cEnd; ++c) {
     PetscReal vol, centroid[3];
@@ -1217,6 +1284,7 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], PetscCtx ctx);
   DMPolytopeType fct;
   PetscInt       dim, fStart, Nf, cMax, cEnd, id;
+  PetscBool      hasCohesive;
   PetscMPIInt    rank, size;
 
   PetscFunctionBegin;
@@ -1275,8 +1343,10 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscCall(DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
   PetscCall(PetscObjectViewSynchronizedFromOptions((PetscObject)locX, (PetscObject)dm, "-local_solution_view"));
 
-  // Test projection to fault mesh
-  if (cMax < cEnd) {
+  // Test projection to fault mesh, which is collective although a process can have no cohesive cells
+  hasCohesive = cMax < cEnd ? PETSC_TRUE : PETSC_FALSE;
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &hasCohesive, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  if (hasCohesive) {
     PetscCall(DMPlexCreateCohesiveSubmesh(dm, PETSC_FALSE, NULL, 0, &dmFault));
     PetscCall(PetscObjectSetName((PetscObject)dmFault, "Fault Mesh"));
     PetscCall(DMViewFromOptions(dmFault, NULL, "-fault_view"));
@@ -1419,6 +1489,39 @@ int main(int argc, char **argv)
               -petscpartitioner_shell_points 0,3,1,2
 
   testset:
+    requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)
+    nsize: 3
+    args: -dm_plex_file_contents dat:tri_3x3_cv -dm_plex_cohesive_label_fault 37,42,46 -petscpartitioner_type shell \
+          -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
+            -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
+          -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
+            -local_solution_view -local_residual_view
+    filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
+
+    # The owner of a shared fault vertex holds no fault edge next to it
+    test:
+      suffix: tri_4
+      args: -petscpartitioner_shell_sizes 4,5,9 -petscpartitioner_shell_points 6,7,10,15,0,1,3,8,16,2,4,5,9,11,12,13,14,17
+    # A process holds a shared fault vertex that it does not own, but no fault edge next to it
+    test:
+      suffix: tri_5
+      args: -petscpartitioner_shell_sizes 7,6,5 -petscpartitioner_shell_points 1,3,4,6,12,14,16,2,5,7,10,11,17,0,8,9,13,15
+    # With overlap, every process holds copies of fault edges that other processes own
+    test:
+      suffix: tri_6
+      args: -petscpartitioner_shell_sizes 7,6,5 -petscpartitioner_shell_points 1,3,4,6,12,14,16,2,5,7,10,11,17,0,8,9,13,15 \
+            -dm_distribute_overlap 1
+    # A process holds vertices of the fault, but no fault edge
+    test:
+      suffix: tri_7
+      args: -petscpartitioner_shell_sizes 6,6,6 -petscpartitioner_shell_points 1,3,6,8,13,17,5,7,9,10,15,16,0,2,4,11,12,14
+    # With overlap, the fault mesh made from the cohesive cells also has overlap
+    test:
+      suffix: tri_8
+      args: -petscpartitioner_shell_sizes 7,7,4 -petscpartitioner_shell_points 0,1,2,5,6,9,17,4,8,10,11,12,13,14,3,7,15,16 \
+            -dm_distribute_overlap 1
+
+  testset:
     requires: triangle
     args: -dm_plex_option_phases coh_,ref_ \
             -coh_dm_refine 1 -coh_dm_plex_transform_type cohesive_extrude \
@@ -1467,7 +1570,6 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
-          -orientation_view -orientation_view_synchronized \
           -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
             -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
     filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
@@ -1593,7 +1695,6 @@ int main(int argc, char **argv)
           -dm_refine 1 -dm_plex_transform_type cohesive_extrude \
             -dm_plex_transform_active fault -dm_plex_save_transform -dm_plex_check_transform \
           -dm_view ::ascii_info_detail -coarse_dm_view ::ascii_info_detail \
-          -orientation_view -orientation_view_synchronized \
           -displacement_petscspace_degree 1 -faulttraction_petscspace_degree 1 \
             -local_section_view -local_solution_view -local_residual_view -local_jacobian_view
     filter: sed -e "s/_start//g" -e "s/f0_bd_u_neg//g" -e "s/f0_bd_u_pos//g" -e "s/f0_bd_l//g" -e "s/g0_bd_ul_neg//g" -e "s/g0_bd_ul_pos//g" -e "s/g0_bd_lu//g" -e "s~_ZL.*~~g"
