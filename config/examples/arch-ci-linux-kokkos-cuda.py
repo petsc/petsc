@@ -10,6 +10,7 @@ if __name__ == '__main__':
   import configure
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
+    '--download-mpich',
     '--with-make-test-np=3',
     '--with-debugging=0',
     '--with-cuda',

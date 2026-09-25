@@ -765,8 +765,9 @@ linux-kokkos-cuda:
     TEST_OPTS: -j3 queryval='cuda,kokkos,kokkos_kernels' query='requires,requires,requires'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
     OMP_PROC_BIND: false
-    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-11-27-cuda/modules/linux-ubuntu22.04-x86_64/Core
-    LOAD_MODULES: cuda/12.8.0-rz6425d
+    # Use a gcc that supports OpenMP Target offload
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2026-09-22-gcc-nvptx/share/spack/lmod/linux-ubuntu22.04-x86_64/Core:/nfs/gce/projects/petsc/soft/u22.04/spack-2026-09-22-gcc-nvptx/share/spack/lmod/linux-ubuntu22.04-x86_64/gcc/11.4.0
+    LOAD_MODULES: gcc/14.4.0 cuda/12.8.1-2sehchm
 
 linux-cuda-omp:
   extends:

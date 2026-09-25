@@ -19,7 +19,9 @@ class Configure(config.package.Package):
     self.mpi          = framework.require('config.packages.MPI',self)
     self.pthread      = framework.require('config.packages.pthread',self)
     self.hwloc        = framework.require('config.packages.hwloc',self)
-    self.odeps        = [self.mpi,self.pthread,self.hwloc]
+    self.cuda         = framework.require('config.packages.CUDA',self)
+    self.hip          = framework.require('config.packages.HIP',self)
+    self.odeps        = [self.mpi,self.pthread,self.hwloc,self.cuda,self.hip]
     return
 
   def configureLibrary(self):
@@ -89,6 +91,47 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['with-openmp-kernels']:
       self.addDefine('USE_OPENMP_KERNELS', 1)
+
+    self.configureOpenMPTarget()
+
+  def configureOpenMPTarget(self):
+    '''Automatically enable OpenMP GPU target offload for each host compiler that supports it.
+
+       Since users might use a Fortran compiler supporting OpenMP target offload along with
+       regular C/C++ compilers, we do this check per host language and define
+       PETSC_HAVE_OPENMP_TARGET_OFFLOAD_{CC, CXX, FC} accordingly.
+    '''
+    if self.cuda.found:  candidates = ['-foffload=nvptx-none', '-mp=gpu', '-fopenmp-targets=nvptx64-nvidia-cuda'] # flags for [GNU, NVIDIA, Clang] compilers
+    elif self.hip.found: candidates = ['-foffload=amdgcn-amdhsa', '-fopenmp-targets=amdgcn-amd-amdhsa'] # flags for [GNU, Clang] compilers
+    else: return # TODO: support SYCL.
+
+    # A minimal OpenMP target region per language
+    ctest = ('#include <omp.h>\n', 'int x = 0;\n#pragma omp target map(tofrom:x)\n  x = 1;\n  (void)x;\n')
+    ftest = ('', 'integer :: x\n      x = 0\n!$omp target map(tofrom:x)\n      x = 1\n!$omp end target')
+
+    for language, compiler, (includes, body) in [('C', 'CC', ctest), ('Cxx', 'CXX', ctest), ('FC', 'FC', ftest)]:
+      if not hasattr(self.compilers, compiler): continue
+      self.setCompilers.pushLanguage(language)
+      cflagsArg  = self.setCompilers.getCompilerFlagsArg(0)
+      ldflagsArg = self.setCompilers.getLinkerFlagsArg()
+      for flag in candidates:
+        oldc = getattr(self.setCompilers, cflagsArg)
+        oldl = getattr(self.setCompilers, ldflagsArg)
+        setattr(self.setCompilers, cflagsArg, oldc + ' ' + flag)
+        setattr(self.setCompilers, ldflagsArg, oldl + ' ' + flag)
+        works = self.setCompilers.checkLink(includes, body)
+        setattr(self.setCompilers, cflagsArg, oldc)
+        setattr(self.setCompilers, ldflagsArg, oldl)
+        if works:
+          # Record the flag only in this language's compiler flags (CFLAGS/CXXFLAGS/FFLAGS); those
+          # already flow into the corresponding language's link line. Do not add it to the linker
+          # flags: getLinkerFlagsArg() is LDFLAGS, which is shared by C, C++, and Fortran, so a flag
+          # accepted by one compiler would leak onto the others' link lines and break them.
+          self.setCompilers.insertCompilerFlag(flag, 0)
+          self.addDefine('HAVE_OPENMP_TARGET_OFFLOAD_' + compiler, 1)
+          self.logPrintBox('Enabled OpenMP target offload for ' + compiler + ': ' + flag)
+          break
+      self.setCompilers.popLanguage()
 
   def alternateConfigureLibrary(self):
     if self.framework.argDB['with-openmp-kernels']:

@@ -154,7 +154,7 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
 /*@
   VecCUDAGetArray - Provides access to the device buffer inside a vector
 
-  Logically Collective; Asynchronous; No Fortran Support
+  Logically Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -180,10 +180,16 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
   If the device memory hasn't been allocated previously it will be allocated as part of this
   routine.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecCUDARestoreArray()`.
+
 .seealso: [](ch_vectors), `VecCUDARestoreArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`, `VecGetArrayWrite()`
 @*/
-PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
+PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync<DeviceType::CUDA>(v, a));
@@ -194,7 +200,7 @@ PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
 /*@
   VecCUDARestoreArray - Restore a device buffer previously acquired with `VecCUDAGetArray()`.
 
-  NotCollective; Asynchronous; No Fortran Support
+  Not Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -207,10 +213,15 @@ PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
   host data as out of date. Subsequent access to the vector data on the host side via
   `VecGetArray()` will incur a (synchronous) data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
+PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync<DeviceType::CUDA>(v, a));
@@ -221,7 +232,7 @@ PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
 /*@
   VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Not Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -242,10 +253,16 @@ PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
   host is up to date. Accessing data on the host side does not incur a device to host data
   transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecCUDARestoreArrayRead()`.
+
 .seealso: [](ch_vectors), `VecCUDARestoreArrayRead()`, `VecCUDAGetArray()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`,
           `VecGetArrayRead()`
 @*/
-PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
+PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayReadAsync<DeviceType::CUDA>(v, a));
@@ -257,7 +274,7 @@ PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
   VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with
   `VecCUDAGetArrayRead()`.
 
-  Not Collective; Asynchronous; No Fortran Support
+  Not Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -269,10 +286,15 @@ PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
   This routine does not modify the corresponding array on the host in any way. The pointer is
   invalid after this function returns.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecGetArray()`,
           `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
+PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayReadAsync<DeviceType::CUDA>(v, a));
@@ -283,7 +305,7 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 /*@
   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
 
-   Logically Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous
 
   Input Parameter:
 . v - the vector
@@ -303,10 +325,16 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
   released the host data of the vector is marked as out of data. Subsequent access of the host
   data with e.g. VecGetArray() incurs a device to host data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+  `a` addresses device memory; pass it to device code and release it with `VecCUDARestoreArrayWrite()`.
+
 .seealso: [](ch_vectors), `VecCUDARestoreArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
           `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
+PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayWriteAsync<DeviceType::CUDA>(v, a));
@@ -318,7 +346,7 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with
   `VecCUDAGetArrayWrite()`.
 
-   Logically Collective; Asynchronous; No Fortran Support
+   Logically Collective; Asynchronous
 
   Input Parameters:
 + v - the vector
@@ -330,10 +358,15 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
   Data on the host will be marked as out of date. Subsequent access of the data on the host
   side e.g. with `VecGetArray()` will incur a device to host data transfer.
 
+  Fortran Note:
+.vb
+  PetscScalar, pointer :: a(:)
+.ve
+
 .seealso: [](ch_vectors), `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`,
           `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
 @*/
-PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
+PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayWriteAsync<DeviceType::CUDA>(v, a));

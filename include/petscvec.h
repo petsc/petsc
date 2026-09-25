@@ -1055,23 +1055,23 @@ VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm a, PetscI
 VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, const PetscScalar *f, Vec *g), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f, (void)g)
 VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, const PetscScalar *f, Vec *g), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f, (void)g)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArray(Vec a, PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArray(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArray(Vec a, PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArray(Vec a, PetscScalar *b[]), (void)a, (void)b)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArray(Vec a, PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArray(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArray(Vec a, PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArray(Vec a, PetscScalar *b[]), (void)a, (void)b)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayRead(Vec a, const PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayRead(Vec a, const PetscScalar *b[]), (void)a, (void)b)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayRead(Vec a, const PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayRead(Vec a, const PetscScalar *b[]), (void)a, (void)b)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayWrite(Vec a, PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayWrite(Vec a, PetscScalar *b[]), (void)a, (void)b)
 
-VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
-VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayWrite(Vec a, PetscScalar *b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayWrite(Vec a, PetscScalar *b[]), (void)a, (void)b)
 
 VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAPlaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
 VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPPlaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
