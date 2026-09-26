@@ -1653,9 +1653,9 @@ static PetscErrorCode PCApplyTranspose_FieldSplit_Schur(PC pc, Vec x, Vec y)
 }
 
 #define FieldSplitSplitSolveAdd(ilink, xx, yy) \
-  ((PetscErrorCode)(VecScatterBegin(ilink->sctx, xx, ilink->x, INSERT_VALUES, SCATTER_FORWARD) || VecScatterEnd(ilink->sctx, xx, ilink->x, INSERT_VALUES, SCATTER_FORWARD) || PetscLogEventBegin(ilink->event, ilink->ksp, ilink->x, ilink->y, NULL) || \
-                    KSPSolve(ilink->ksp, ilink->x, ilink->y) || KSPCheckSolve(ilink->ksp, pc, ilink->y) || PetscLogEventEnd(ilink->event, ilink->ksp, ilink->x, ilink->y, NULL) || VecScatterBegin(ilink->sctx, ilink->y, yy, ADD_VALUES, SCATTER_REVERSE) || \
-                    VecScatterEnd(ilink->sctx, ilink->y, yy, ADD_VALUES, SCATTER_REVERSE)))
+  ((PetscErrorCode)(VecScatterBegin((ilink)->sctx, xx, (ilink)->x, INSERT_VALUES, SCATTER_FORWARD) || VecScatterEnd((ilink)->sctx, xx, (ilink)->x, INSERT_VALUES, SCATTER_FORWARD) || PetscLogEventBegin((ilink)->event, (ilink)->ksp, (ilink)->x, (ilink)->y, NULL) || \
+                    KSPSolve((ilink)->ksp, (ilink)->x, (ilink)->y) || KSPCheckSolve((ilink)->ksp, pc, (ilink)->y) || PetscLogEventEnd((ilink)->event, (ilink)->ksp, (ilink)->x, (ilink)->y, NULL) || VecScatterBegin((ilink)->sctx, (ilink)->y, yy, ADD_VALUES, SCATTER_REVERSE) || \
+                    VecScatterEnd((ilink)->sctx, (ilink)->y, yy, ADD_VALUES, SCATTER_REVERSE)))
 
 static PetscErrorCode PCApply_FieldSplit(PC pc, Vec x, Vec y)
 {
@@ -1961,9 +1961,9 @@ static PetscErrorCode PCApply_FieldSplit_GKB(PC pc, Vec x, Vec y)
 }
 
 #define FieldSplitSplitSolveAddTranspose(ilink, xx, yy) \
-  ((PetscErrorCode)(VecScatterBegin(ilink->sctx, xx, ilink->y, INSERT_VALUES, SCATTER_FORWARD) || VecScatterEnd(ilink->sctx, xx, ilink->y, INSERT_VALUES, SCATTER_FORWARD) || PetscLogEventBegin(ilink->event, ilink->ksp, ilink->y, ilink->x, NULL) || \
-                    KSPSolveTranspose(ilink->ksp, ilink->y, ilink->x) || KSPCheckSolve(ilink->ksp, pc, ilink->x) || PetscLogEventEnd(ilink->event, ilink->ksp, ilink->y, ilink->x, NULL) || VecScatterBegin(ilink->sctx, ilink->x, yy, ADD_VALUES, SCATTER_REVERSE) || \
-                    VecScatterEnd(ilink->sctx, ilink->x, yy, ADD_VALUES, SCATTER_REVERSE)))
+  ((PetscErrorCode)(VecScatterBegin((ilink)->sctx, xx, (ilink)->y, INSERT_VALUES, SCATTER_FORWARD) || VecScatterEnd((ilink)->sctx, xx, (ilink)->y, INSERT_VALUES, SCATTER_FORWARD) || PetscLogEventBegin((ilink)->event, (ilink)->ksp, (ilink)->y, (ilink)->x, NULL) || \
+                    KSPSolveTranspose((ilink)->ksp, (ilink)->y, (ilink)->x) || KSPCheckSolve((ilink)->ksp, pc, (ilink)->x) || PetscLogEventEnd((ilink)->event, (ilink)->ksp, (ilink)->y, (ilink)->x, NULL) || VecScatterBegin((ilink)->sctx, (ilink)->x, yy, ADD_VALUES, SCATTER_REVERSE) || \
+                    VecScatterEnd((ilink)->sctx, (ilink)->x, yy, ADD_VALUES, SCATTER_REVERSE)))
 
 static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc, Vec x, Vec y)
 {

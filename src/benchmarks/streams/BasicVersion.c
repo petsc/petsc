@@ -14,7 +14,7 @@ struct timezone { int tz_minuteswest;
   int             i;
 
   i = gettimeofday(&tp, &tzp);
-  return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
+  return (double)tp.tv_sec + (double)tp.tv_usec * 1.e-6;
 }
 #include <stdio.h>
 #include <math.h>

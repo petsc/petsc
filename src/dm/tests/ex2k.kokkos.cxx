@@ -61,8 +61,8 @@ static PetscErrorCode Update2(DM da, const PetscScalar *__restrict__ x2, PetscSc
   PetscFunctionBegin;
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
-#define X2(k, j, i) x2[(k - gzs) * gym * gxm + (j - gys) * gxm + (i - gxs)]
-#define Y2(k, j, i) y2[(k - zs) * ym * xm + (j - ys) * xm + (i - xs)]
+#define X2(k, j, i) x2[((k) - gzs) * gym * gxm + ((j) - gys) * gxm + ((i) - gxs)]
+#define Y2(k, j, i) y2[((k) - zs) * ym * xm + ((j) - ys) * xm + ((i) - xs)]
   for (it = 0; it < nwarm + nloop; it++) {
     if (it == nwarm) PetscCall(PetscTime(&tstart));
     for (k = zs; k < zs + zm; k++) {

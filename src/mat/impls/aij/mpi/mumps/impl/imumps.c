@@ -178,19 +178,19 @@ typedef struct {
   do { \
     MUMPS_STRUC_T *inner; \
     PetscCall(PetscNew(&inner)); \
-    outer->icntl      = inner->icntl; \
-    outer->cntl       = inner->cntl; \
-    outer->info       = inner->info; \
-    outer->infog      = inner->infog; \
-    outer->rinfo      = inner->rinfo; \
-    outer->rinfog     = inner->rinfog; \
-    outer->ooc_tmpdir = inner->ooc_tmpdir; \
-    outer->ooc_prefix = inner->ooc_prefix; \
+    (outer)->icntl      = inner->icntl; \
+    (outer)->cntl       = inner->cntl; \
+    (outer)->info       = inner->info; \
+    (outer)->infog      = inner->infog; \
+    (outer)->rinfo      = inner->rinfo; \
+    (outer)->rinfog     = inner->rinfog; \
+    (outer)->ooc_tmpdir = inner->ooc_tmpdir; \
+    (outer)->ooc_prefix = inner->ooc_prefix; \
     /* the three field should never change after init */ \
-    inner->comm_fortran = outer->comm_fortran; \
-    inner->par          = outer->par; \
-    inner->sym          = outer->sym; \
-    outer->internal_id  = inner; \
+    inner->comm_fortran  = (outer)->comm_fortran; \
+    inner->par           = (outer)->par; \
+    inner->sym           = (outer)->sym; \
+    (outer)->internal_id = inner; \
   } while (0)
 
 // Allocate the internal [SDCZ]MUMPS_STRUC_C ID data structure in the given <precision>, and link fields of the outer and the inner
@@ -418,46 +418,46 @@ static inline MPI_Datatype MPIU_MUMPSREAL(const XMUMPS_STRUC_C *id)
 
 #define PreMumpsCall(inner, outer, mumpsscalar) \
   do { \
-    inner->job           = outer->job; \
-    inner->n             = outer->n; \
-    inner->nblk          = outer->nblk; \
-    inner->nnz           = outer->nnz; \
-    inner->irn           = outer->irn; \
-    inner->jcn           = outer->jcn; \
-    inner->a             = (mumpsscalar *)outer->a; \
-    inner->nnz_loc       = outer->nnz_loc; \
-    inner->irn_loc       = outer->irn_loc; \
-    inner->jcn_loc       = outer->jcn_loc; \
-    inner->a_loc         = (mumpsscalar *)outer->a_loc; \
-    inner->blkptr        = outer->blkptr; \
-    inner->blkvar        = outer->blkvar; \
-    inner->perm_in       = outer->perm_in; \
-    inner->rhs           = (mumpsscalar *)outer->rhs; \
-    inner->redrhs        = (mumpsscalar *)outer->redrhs; \
-    inner->rhs_sparse    = (mumpsscalar *)outer->rhs_sparse; \
-    inner->sol_loc       = (mumpsscalar *)outer->sol_loc; \
-    inner->rhs_loc       = (mumpsscalar *)outer->rhs_loc; \
-    inner->irhs_sparse   = outer->irhs_sparse; \
-    inner->irhs_ptr      = outer->irhs_ptr; \
-    inner->isol_loc      = outer->isol_loc; \
-    inner->irhs_loc      = outer->irhs_loc; \
-    inner->nrhs          = outer->nrhs; \
-    inner->lrhs          = outer->lrhs; \
-    inner->lredrhs       = outer->lredrhs; \
-    inner->nz_rhs        = outer->nz_rhs; \
-    inner->lsol_loc      = outer->lsol_loc; \
-    inner->nloc_rhs      = outer->nloc_rhs; \
-    inner->lrhs_loc      = outer->lrhs_loc; \
-    inner->schur_lld     = outer->schur_lld; \
-    inner->size_schur    = outer->size_schur; \
-    inner->listvar_schur = outer->listvar_schur; \
-    inner->schur         = (mumpsscalar *)outer->schur; \
+    (inner)->job           = (outer)->job; \
+    (inner)->n             = (outer)->n; \
+    (inner)->nblk          = (outer)->nblk; \
+    (inner)->nnz           = (outer)->nnz; \
+    (inner)->irn           = (outer)->irn; \
+    (inner)->jcn           = (outer)->jcn; \
+    (inner)->a             = (mumpsscalar *)(outer)->a; \
+    (inner)->nnz_loc       = (outer)->nnz_loc; \
+    (inner)->irn_loc       = (outer)->irn_loc; \
+    (inner)->jcn_loc       = (outer)->jcn_loc; \
+    (inner)->a_loc         = (mumpsscalar *)(outer)->a_loc; \
+    (inner)->blkptr        = (outer)->blkptr; \
+    (inner)->blkvar        = (outer)->blkvar; \
+    (inner)->perm_in       = (outer)->perm_in; \
+    (inner)->rhs           = (mumpsscalar *)(outer)->rhs; \
+    (inner)->redrhs        = (mumpsscalar *)(outer)->redrhs; \
+    (inner)->rhs_sparse    = (mumpsscalar *)(outer)->rhs_sparse; \
+    (inner)->sol_loc       = (mumpsscalar *)(outer)->sol_loc; \
+    (inner)->rhs_loc       = (mumpsscalar *)(outer)->rhs_loc; \
+    (inner)->irhs_sparse   = (outer)->irhs_sparse; \
+    (inner)->irhs_ptr      = (outer)->irhs_ptr; \
+    (inner)->isol_loc      = (outer)->isol_loc; \
+    (inner)->irhs_loc      = (outer)->irhs_loc; \
+    (inner)->nrhs          = (outer)->nrhs; \
+    (inner)->lrhs          = (outer)->lrhs; \
+    (inner)->lredrhs       = (outer)->lredrhs; \
+    (inner)->nz_rhs        = (outer)->nz_rhs; \
+    (inner)->lsol_loc      = (outer)->lsol_loc; \
+    (inner)->nloc_rhs      = (outer)->nloc_rhs; \
+    (inner)->lrhs_loc      = (outer)->lrhs_loc; \
+    (inner)->schur_lld     = (outer)->schur_lld; \
+    (inner)->size_schur    = (outer)->size_schur; \
+    (inner)->listvar_schur = (outer)->listvar_schur; \
+    (inner)->schur         = (mumpsscalar *)(outer)->schur; \
   } while (0)
 
 #define PostMumpsCall(inner, outer) \
   do { \
-    outer->pivnul_list = inner->pivnul_list; \
-    outer->mapping     = inner->mapping; \
+    (outer)->pivnul_list = (inner)->pivnul_list; \
+    (outer)->mapping     = (inner)->mapping; \
   } while (0)
 
 // Entry for PETSc to call mumps
@@ -527,28 +527,28 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
 #if PetscDefined(HAVE_OPENMP_SUPPORT)
   #define PetscMUMPS_c(mumps) \
     do { \
-      if (mumps->use_petsc_omp_support) { \
-        if (mumps->is_omp_master) { \
-          PetscCall(PetscOmpCtrlOmpRegionOnMasterBegin(mumps->omp_ctrl)); \
+      if ((mumps)->use_petsc_omp_support) { \
+        if ((mumps)->is_omp_master) { \
+          PetscCall(PetscOmpCtrlOmpRegionOnMasterBegin((mumps)->omp_ctrl)); \
           PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
-          PetscCall(PetscCallMumps_Private(&mumps->id)); \
+          PetscCall(PetscCallMumps_Private(&(mumps)->id)); \
           PetscCall(PetscFPTrapPop()); \
-          PetscCall(PetscOmpCtrlOmpRegionOnMasterEnd(mumps->omp_ctrl)); \
+          PetscCall(PetscOmpCtrlOmpRegionOnMasterEnd((mumps)->omp_ctrl)); \
         } \
-        PetscCall(PetscOmpCtrlBarrier(mumps->omp_ctrl)); \
+        PetscCall(PetscOmpCtrlBarrier((mumps)->omp_ctrl)); \
         /* Global info is same on all processes so we Bcast it within omp_comm. Local info is specific      \
          to processes, so we only Bcast info[1], an error code and leave others (since they do not have   \
          an easy translation between omp_comm and petsc_comm). See MUMPS-5.1.2 manual p82.                   \
          omp_comm is a small shared memory communicator, hence doing multiple Bcast as shown below is OK. \
       */ \
         MUMPS_STRUC_C tmp; /* All MUMPS_STRUC_C types have same lengths on these info arrays */ \
-        PetscCallMPI(MPI_Bcast(mumps->id.infog, PETSC_STATIC_ARRAY_LENGTH(tmp.infog), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
-        PetscCallMPI(MPI_Bcast(mumps->id.info, PETSC_STATIC_ARRAY_LENGTH(tmp.info), MPIU_MUMPSINT, 0, mumps->omp_comm)); \
-        PetscCallMPI(MPI_Bcast(mumps->id.rinfog, PETSC_STATIC_ARRAY_LENGTH(tmp.rinfog), MPIU_MUMPSREAL(&mumps->id), 0, mumps->omp_comm)); \
-        PetscCallMPI(MPI_Bcast(mumps->id.rinfo, PETSC_STATIC_ARRAY_LENGTH(tmp.rinfo), MPIU_MUMPSREAL(&mumps->id), 0, mumps->omp_comm)); \
+        PetscCallMPI(MPI_Bcast((mumps)->id.infog, PETSC_STATIC_ARRAY_LENGTH(tmp.infog), MPIU_MUMPSINT, 0, (mumps)->omp_comm)); \
+        PetscCallMPI(MPI_Bcast((mumps)->id.info, PETSC_STATIC_ARRAY_LENGTH(tmp.info), MPIU_MUMPSINT, 0, (mumps)->omp_comm)); \
+        PetscCallMPI(MPI_Bcast((mumps)->id.rinfog, PETSC_STATIC_ARRAY_LENGTH(tmp.rinfog), MPIU_MUMPSREAL(&(mumps)->id), 0, (mumps)->omp_comm)); \
+        PetscCallMPI(MPI_Bcast((mumps)->id.rinfo, PETSC_STATIC_ARRAY_LENGTH(tmp.rinfo), MPIU_MUMPSREAL(&(mumps)->id), 0, (mumps)->omp_comm)); \
       } else { \
         PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
-        PetscCall(PetscCallMumps_Private(&mumps->id)); \
+        PetscCall(PetscCallMumps_Private(&(mumps)->id)); \
         PetscCall(PetscFPTrapPop()); \
       } \
     } while (0)
@@ -556,7 +556,7 @@ static inline PetscErrorCode PetscCallMumps_Private(XMUMPS_STRUC_C *outer)
   #define PetscMUMPS_c(mumps) \
     do { \
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF)); \
-      PetscCall(PetscCallMumps_Private(&mumps->id)); \
+      PetscCall(PetscCallMumps_Private(&(mumps)->id)); \
       PetscCall(PetscFPTrapPop()); \
     } while (0)
 #endif
@@ -2418,7 +2418,7 @@ static PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse, Mat_MUMPS *
         nreqs = 0;
         for (PetscMPIInt i = 1; i < osize; i++) nreqs += (mumps->recvcount[i] + PETSC_MPI_INT_MAX - 1) / PETSC_MPI_INT_MAX;
       } else {
-        nreqs = (PetscMPIInt)(((mumps->nnz + PETSC_MPI_INT_MAX - 1) / PETSC_MPI_INT_MAX));
+        nreqs = (PetscMPIInt)((mumps->nnz + PETSC_MPI_INT_MAX - 1) / PETSC_MPI_INT_MAX);
       }
       PetscCall(PetscMalloc1(nreqs * 3, &mumps->reqs)); /* Triple the requests since we send irn, jcn and val separately */
 

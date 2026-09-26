@@ -187,9 +187,9 @@ typedef struct {
     PetscInt        nonew = 0, nounused = 0; \
     PetscBool       roworiented = PETSC_FALSE; \
     if (oldvalues) { \
-      nonew       = ((Mat_SeqAIJ *)A->data)->nonew; \
-      nounused    = ((Mat_SeqAIJ *)A->data)->nounused; \
-      roworiented = ((Mat_SeqAIJ *)A->data)->roworiented; \
+      nonew       = ((Mat_SeqAIJ *)(A)->data)->nonew; \
+      nounused    = ((Mat_SeqAIJ *)(A)->data)->nounused; \
+      roworiented = ((Mat_SeqAIJ *)(A)->data)->roworiented; \
     } \
     (void)0
 
@@ -198,24 +198,24 @@ typedef struct {
     PetscBool ignore_ltriangular = PETSC_FALSE, getrow_utriangular = PETSC_FALSE; \
     MatSeqXAIJGetOptions_Private(A); \
     if (oldvalues) { \
-      ignore_ltriangular = ((Mat_SeqSBAIJ *)A->data)->ignore_ltriangular; \
-      getrow_utriangular = ((Mat_SeqSBAIJ *)A->data)->getrow_utriangular; \
+      ignore_ltriangular = ((Mat_SeqSBAIJ *)(A)->data)->ignore_ltriangular; \
+      getrow_utriangular = ((Mat_SeqSBAIJ *)(A)->data)->getrow_utriangular; \
     } \
     (void)0
 
 #define MatSeqXAIJRestoreOptions_Private(A) \
   if (oldvalues) { \
-    ((Mat_SeqAIJ *)A->data)->nonew       = nonew; \
-    ((Mat_SeqAIJ *)A->data)->nounused    = nounused; \
-    ((Mat_SeqAIJ *)A->data)->roworiented = roworiented; \
+    ((Mat_SeqAIJ *)(A)->data)->nonew       = nonew; \
+    ((Mat_SeqAIJ *)(A)->data)->nounused    = nounused; \
+    ((Mat_SeqAIJ *)(A)->data)->roworiented = roworiented; \
   } \
   } \
   (void)0
 
 #define MatSeqSBAIJRestoreOptions_Private(A) \
   if (oldvalues) { \
-    ((Mat_SeqSBAIJ *)A->data)->ignore_ltriangular = ignore_ltriangular; \
-    ((Mat_SeqSBAIJ *)A->data)->getrow_utriangular = getrow_utriangular; \
+    ((Mat_SeqSBAIJ *)(A)->data)->ignore_ltriangular = ignore_ltriangular; \
+    ((Mat_SeqSBAIJ *)(A)->data)->getrow_utriangular = getrow_utriangular; \
   } \
   MatSeqXAIJRestoreOptions_Private(A); \
   } \
@@ -260,27 +260,27 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 */
 #define MatSeqXAIJReallocateAIJ(Amat, AM, BS2, NROW, ROW, COL, RMAX, AA, AI, AJ, RP, AP, AIMAX, NONEW, datatype) \
   do { \
-    if (NROW >= RMAX) { \
-      Mat_SeqAIJ *Ain       = (Mat_SeqAIJ *)Amat->data; \
-      PetscInt    CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
+    if ((NROW) >= (RMAX)) { \
+      Mat_SeqAIJ *Ain       = (Mat_SeqAIJ *)(Amat)->data; \
+      PetscInt    CHUNKSIZE = 15, new_nz = (AI)[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
       datatype   *new_a; \
 \
-      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
+      PetscCheck((NONEW) != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscShmgetAllocateArray(BS2 * new_nz, sizeof(PetscScalar), (void **)&new_a)); \
+      PetscCall(PetscShmgetAllocateArray((BS2) * new_nz, sizeof(PetscScalar), (void **)&new_a)); \
       PetscCall(PetscShmgetAllocateArray(new_nz, sizeof(PetscInt), (void **)&new_j)); \
-      PetscCall(PetscShmgetAllocateArray(AM + 1, sizeof(PetscInt), (void **)&new_i)); \
+      PetscCall(PetscShmgetAllocateArray((AM) + 1, sizeof(PetscInt), (void **)&new_i)); \
       Ain->free_a  = PETSC_TRUE; \
       Ain->free_ij = PETSC_TRUE; \
       /* copy over old data into new slots */ \
-      for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
-      for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
-      PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
-      len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-      PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, PetscSafePointerPlusOffset(AJ, AI[ROW] + NROW), len)); \
-      PetscCall(PetscArraycpy(new_a, AA, BS2 * (AI[ROW] + NROW))); \
-      PetscCall(PetscArrayzero(new_a + BS2 * (AI[ROW] + NROW), BS2 * CHUNKSIZE)); \
-      PetscCall(PetscArraycpy(new_a + BS2 * (AI[ROW] + NROW + CHUNKSIZE), PetscSafePointerPlusOffset(AA, BS2 * (AI[ROW] + NROW)), BS2 * len)); \
+      for (ii = 0; ii < (ROW) + 1; ii++) new_i[ii] = (AI)[ii]; \
+      for (ii = (ROW) + 1; ii < (AM) + 1; ii++) new_i[ii] = (AI)[ii] + CHUNKSIZE; \
+      PetscCall(PetscArraycpy(new_j, AJ, (AI)[ROW] + (NROW))); \
+      len = (new_nz - CHUNKSIZE - (AI)[ROW] - (NROW)); \
+      PetscCall(PetscArraycpy(new_j + (AI)[ROW] + (NROW) + CHUNKSIZE, PetscSafePointerPlusOffset(AJ, (AI)[ROW] + (NROW)), len)); \
+      PetscCall(PetscArraycpy(new_a, AA, (BS2) * ((AI)[ROW] + (NROW)))); \
+      PetscCall(PetscArrayzero(new_a + (BS2) * ((AI)[ROW] + (NROW)), (BS2) * CHUNKSIZE)); \
+      PetscCall(PetscArraycpy(new_a + (BS2) * ((AI)[ROW] + (NROW) + CHUNKSIZE), PetscSafePointerPlusOffset(AA, (BS2) * ((AI)[ROW] + (NROW))), (BS2) * len)); \
       /* free up old matrix storage */ \
       PetscCall(MatSeqXAIJFreeAIJ(A, &Ain->a, &Ain->j, &Ain->i)); \
       AA     = new_a; \
@@ -288,35 +288,35 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       AI = Ain->i = new_i; \
       AJ = Ain->j = new_j; \
 \
-      RP   = AJ + AI[ROW]; \
-      AP   = AA + BS2 * AI[ROW]; \
-      RMAX = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
-      Ain->maxnz += BS2 * CHUNKSIZE; \
+      RP   = (AJ) + (AI)[ROW]; \
+      AP   = (AA) + (BS2) * (AI)[ROW]; \
+      RMAX = (AIMAX)[ROW] = (AIMAX)[ROW] + CHUNKSIZE; \
+      Ain->maxnz += (BS2) * CHUNKSIZE; \
       Ain->reallocs++; \
-      Amat->nonzerostate++; \
+      (Amat)->nonzerostate++; \
     } \
   } while (0)
 
 #define MatSeqXAIJReallocateAIJ_structure_only(Amat, AM, BS2, NROW, ROW, COL, RMAX, AI, AJ, RP, AIMAX, NONEW, datatype) \
   do { \
-    if (NROW >= RMAX) { \
-      Mat_SeqAIJ *Ain = (Mat_SeqAIJ *)Amat->data; \
+    if ((NROW) >= (RMAX)) { \
+      Mat_SeqAIJ *Ain = (Mat_SeqAIJ *)(Amat)->data; \
       /* there is no extra room in row, therefore enlarge */ \
-      PetscInt CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
+      PetscInt CHUNKSIZE = 15, new_nz = (AI)[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
 \
-      PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
+      PetscCheck((NONEW) != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
       PetscCall(PetscShmgetAllocateArray(new_nz, sizeof(PetscInt), (void **)&new_j)); \
-      PetscCall(PetscShmgetAllocateArray(AM + 1, sizeof(PetscInt), (void **)&new_i)); \
+      PetscCall(PetscShmgetAllocateArray((AM) + 1, sizeof(PetscInt), (void **)&new_i)); \
       Ain->free_a  = PETSC_FALSE; \
       Ain->free_ij = PETSC_TRUE; \
 \
       /* copy over old data into new slots */ \
-      for (ii = 0; ii < ROW + 1; ii++) new_i[ii] = AI[ii]; \
-      for (ii = ROW + 1; ii < AM + 1; ii++) new_i[ii] = AI[ii] + CHUNKSIZE; \
-      PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
-      len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
-      PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, AJ + AI[ROW] + NROW, len)); \
+      for (ii = 0; ii < (ROW) + 1; ii++) new_i[ii] = (AI)[ii]; \
+      for (ii = (ROW) + 1; ii < (AM) + 1; ii++) new_i[ii] = (AI)[ii] + CHUNKSIZE; \
+      PetscCall(PetscArraycpy(new_j, AJ, (AI)[ROW] + (NROW))); \
+      len = (new_nz - CHUNKSIZE - (AI)[ROW] - (NROW)); \
+      PetscCall(PetscArraycpy(new_j + (AI)[ROW] + (NROW) + CHUNKSIZE, (AJ) + (AI)[ROW] + (NROW), len)); \
 \
       /* free up old matrix storage */ \
       PetscCall(MatSeqXAIJFreeAIJ(A, &Ain->a, &Ain->j, &Ain->i)); \
@@ -324,11 +324,11 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       AI = Ain->i = new_i; \
       AJ = Ain->j = new_j; \
 \
-      RP   = AJ + AI[ROW]; \
-      RMAX = AIMAX[ROW] = AIMAX[ROW] + CHUNKSIZE; \
-      Ain->maxnz += BS2 * CHUNKSIZE; \
+      RP   = (AJ) + (AI)[ROW]; \
+      RMAX = (AIMAX)[ROW] = (AIMAX)[ROW] + CHUNKSIZE; \
+      Ain->maxnz += (BS2) * CHUNKSIZE; \
       Ain->reallocs++; \
-      Amat->nonzerostate++; \
+      (Amat)->nonzerostate++; \
     } \
   } while (0)
 
@@ -527,25 +527,25 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
 #if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
     do { \
-      if (nnz > 0) { \
-        PetscInt nnz2 = nnz, rem = nnz & 0x3; \
+      if ((nnz) > 0) { \
+        PetscInt nnz2 = nnz, rem = (nnz) & 0x3; \
         switch (rem) { \
         case 3: \
-          sum -= *xv++ * r[*xi++]; \
+          (sum) -= *(xv)++ * (r)[*(xi)++]; \
         case 2: \
-          sum -= *xv++ * r[*xi++]; \
+          (sum) -= *(xv)++ * (r)[*(xi)++]; \
         case 1: \
-          sum -= *xv++ * r[*xi++]; \
+          (sum) -= *(xv)++ * (r)[*(xi)++]; \
           nnz2 -= rem; \
         } \
         while (nnz2 > 0) { \
-          sum -= xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-          xv += 4; \
-          xi += 4; \
+          (sum) -= (xv)[0] * (r)[(xi)[0]] + (xv)[1] * (r)[(xi)[1]] + (xv)[2] * (r)[(xi)[2]] + (xv)[3] * (r)[(xi)[3]]; \
+          (xv) += 4; \
+          (xi) += 4; \
           nnz2 -= 4; \
         } \
-        xv -= nnz; \
-        xi -= nnz; \
+        (xv) -= nnz; \
+        (xi) -= nnz; \
       } \
     } while (0)
 
@@ -553,19 +553,19 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
   #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
-      for (__i = 0; __i < nnz - 1; __i += 2) { \
-        __i1 = xi[__i]; \
-        __i2 = xi[__i + 1]; \
-        sum -= (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
+      for (__i = 0; __i < (nnz) - 1; __i += 2) { \
+        __i1 = (xi)[__i]; \
+        __i2 = (xi)[__i + 1]; \
+        (sum) -= ((xv)[__i] * (r)[__i1] + (xv)[__i + 1] * (r)[__i2]); \
       } \
-      if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]]; \
+      if ((nnz) & 0x1) (sum) -= (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 
 #else
   #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i; \
-      for (__i = 0; __i < nnz; __i++) sum -= xv[__i] * r[xi[__i]]; \
+      for (__i = 0; __i < (nnz); __i++) (sum) -= (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 #endif
 
@@ -593,25 +593,25 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
 #if PetscDefined(KERNEL_USE_UNROLL_4)
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
     do { \
-      if (nnz > 0) { \
-        PetscInt nnz2 = nnz, rem = nnz & 0x3; \
+      if ((nnz) > 0) { \
+        PetscInt nnz2 = nnz, rem = (nnz) & 0x3; \
         switch (rem) { \
         case 3: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
         case 2: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
         case 1: \
-          sum += *xv++ * r[*xi++]; \
+          (sum) += *(xv)++ * (r)[*(xi)++]; \
           nnz2 -= rem; \
         } \
         while (nnz2 > 0) { \
-          sum += xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-          xv += 4; \
-          xi += 4; \
+          (sum) += (xv)[0] * (r)[(xi)[0]] + (xv)[1] * (r)[(xi)[1]] + (xv)[2] * (r)[(xi)[2]] + (xv)[3] * (r)[(xi)[3]]; \
+          (xv) += 4; \
+          (xi) += 4; \
           nnz2 -= 4; \
         } \
-        xv -= nnz; \
-        xi -= nnz; \
+        (xv) -= nnz; \
+        (xi) -= nnz; \
       } \
     } while (0)
 
@@ -619,12 +619,12 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i, __i1, __i2; \
-      for (__i = 0; __i < nnz - 1; __i += 2) { \
-        __i1 = xi[__i]; \
-        __i2 = xi[__i + 1]; \
-        sum += (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
+      for (__i = 0; __i < (nnz) - 1; __i += 2) { \
+        __i1 = (xi)[__i]; \
+        __i2 = (xi)[__i + 1]; \
+        (sum) += ((xv)[__i] * (r)[__i1] + (xv)[__i + 1] * (r)[__i2]); \
       } \
-      if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
+      if ((nnz) & 0x1) (sum) += (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 
 #elif !(defined(__GNUC__) && defined(_OPENMP)) && PetscDefined(USE_AVX512_KERNELS) && PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX512F__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES) && !PetscDefined(SKIP_IMMINTRIN_H_CUDAWORKAROUND)
@@ -634,7 +634,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAI
   #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
     do { \
       PetscInt __i; \
-      for (__i = 0; __i < nnz; __i++) sum += xv[__i] * r[xi[__i]]; \
+      for (__i = 0; __i < (nnz); __i++) (sum) += (xv)[__i] * (r)[(xi)[__i]]; \
     } while (0)
 #endif
 

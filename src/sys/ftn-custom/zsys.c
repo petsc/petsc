@@ -38,10 +38,10 @@ static char FIXCHARSTRING[1024];
     if (a == PETSC_NULL_CHARACTER_Fortran) { \
       b = a = NULL; \
     } else { \
-      while ((n > 0) && (a[n - 1] == ' ')) n--; \
-      if (a[n] != 0) { \
+      while (((n) > 0) && ((a)[(n) - 1] == ' ')) (n)--; \
+      if ((a)[n] != 0) { \
         b     = FIXCHARSTRING; \
-        *ierr = PetscStrncpy(b, a, n + 1); \
+        *ierr = PetscStrncpy(b, a, (n) + 1); \
         if (*ierr) return; \
       } else b = a; \
     } \

@@ -35,7 +35,7 @@ typedef struct {
 #define VEC_TEMP       fgmres->vecs[0] /* work space */
 #define VEC_TEMP_MATOP fgmres->vecs[1] /* work space */
 #define VEC_VV(i) \
-  fgmres->vecs[VEC_OFFSET + i] /* use to access
+  fgmres->vecs[VEC_OFFSET + (i)] /* use to access
                                                         othog basis vectors */
 #define PREVEC(i) \
   fgmres->prevecs[i] /* use to access

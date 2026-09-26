@@ -144,33 +144,33 @@ static const PetscReal QuadQDeriv[4][4][2] = {
 #define HexExtract(x, i, j, k, n) \
   do { \
     (n)[0] = (x)[i][j][k]; \
-    (n)[1] = (x)[i + 1][j][k]; \
-    (n)[2] = (x)[i + 1][j + 1][k]; \
-    (n)[3] = (x)[i][j + 1][k]; \
-    (n)[4] = (x)[i][j][k + 1]; \
-    (n)[5] = (x)[i + 1][j][k + 1]; \
-    (n)[6] = (x)[i + 1][j + 1][k + 1]; \
-    (n)[7] = (x)[i][j + 1][k + 1]; \
+    (n)[1] = (x)[(i) + 1][j][k]; \
+    (n)[2] = (x)[(i) + 1][(j) + 1][k]; \
+    (n)[3] = (x)[i][(j) + 1][k]; \
+    (n)[4] = (x)[i][j][(k) + 1]; \
+    (n)[5] = (x)[(i) + 1][j][(k) + 1]; \
+    (n)[6] = (x)[(i) + 1][(j) + 1][(k) + 1]; \
+    (n)[7] = (x)[i][(j) + 1][(k) + 1]; \
   } while (0)
 
 #define HexExtractRef(x, i, j, k, n) \
   do { \
     (n)[0] = &(x)[i][j][k]; \
-    (n)[1] = &(x)[i + 1][j][k]; \
-    (n)[2] = &(x)[i + 1][j + 1][k]; \
-    (n)[3] = &(x)[i][j + 1][k]; \
-    (n)[4] = &(x)[i][j][k + 1]; \
-    (n)[5] = &(x)[i + 1][j][k + 1]; \
-    (n)[6] = &(x)[i + 1][j + 1][k + 1]; \
-    (n)[7] = &(x)[i][j + 1][k + 1]; \
+    (n)[1] = &(x)[(i) + 1][j][k]; \
+    (n)[2] = &(x)[(i) + 1][(j) + 1][k]; \
+    (n)[3] = &(x)[i][(j) + 1][k]; \
+    (n)[4] = &(x)[i][j][(k) + 1]; \
+    (n)[5] = &(x)[(i) + 1][j][(k) + 1]; \
+    (n)[6] = &(x)[(i) + 1][(j) + 1][(k) + 1]; \
+    (n)[7] = &(x)[i][(j) + 1][(k) + 1]; \
   } while (0)
 
 #define QuadExtract(x, i, j, n) \
   do { \
     (n)[0] = (x)[i][j]; \
-    (n)[1] = (x)[i + 1][j]; \
-    (n)[2] = (x)[i + 1][j + 1]; \
-    (n)[3] = (x)[i][j + 1]; \
+    (n)[1] = (x)[(i) + 1][j]; \
+    (n)[2] = (x)[(i) + 1][(j) + 1]; \
+    (n)[3] = (x)[i][(j) + 1]; \
   } while (0)
 
 static PetscScalar Sqr(PetscScalar a)
@@ -311,13 +311,17 @@ static inline PetscReal UpwindFlux1D(PetscReal u, PetscReal hL, PetscReal hR)
 }
 
 #define UpwindFluxXW(x3, x2, h, i, j, k, dj) \
-  UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].u, x3[i - 1][j][k].u, x3[i - 1][j + dj][k].u, x3[i][k + dj][k].u), PetscRealPart(0.75 * x2[i - 1][j].h + 0.25 * x2[i - 1][j + dj].h), PetscRealPart(0.75 * x2[i][j].h + 0.25 * x2[i][j + dj].h))
+  UpwindFlux1D(StaggeredMidpoint2D((x3)[i][j][k].u, (x3)[(i) - 1][j][k].u, (x3)[(i) - 1][(j) + (dj)][k].u, (x3)[i][(k) + (dj)][k].u), PetscRealPart(0.75 * (x2)[(i) - 1][j].h + 0.25 * (x2)[(i) - 1][(j) + (dj)].h), \
+               PetscRealPart(0.75 * (x2)[i][j].h + 0.25 * (x2)[i][(j) + (dj)].h))
 #define UpwindFluxXE(x3, x2, h, i, j, k, dj) \
-  UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].u, x3[i + 1][j][k].u, x3[i + 1][j + dj][k].u, x3[i][k + dj][k].u), PetscRealPart(0.75 * x2[i][j].h + 0.25 * x2[i][j + dj].h), PetscRealPart(0.75 * x2[i + 1][j].h + 0.25 * x2[i + 1][j + dj].h))
+  UpwindFlux1D(StaggeredMidpoint2D((x3)[i][j][k].u, (x3)[(i) + 1][j][k].u, (x3)[(i) + 1][(j) + (dj)][k].u, (x3)[i][(k) + (dj)][k].u), PetscRealPart(0.75 * (x2)[i][j].h + 0.25 * (x2)[i][(j) + (dj)].h), \
+               PetscRealPart(0.75 * (x2)[(i) + 1][j].h + 0.25 * (x2)[(i) + 1][(j) + (dj)].h))
 #define UpwindFluxYS(x3, x2, h, i, j, k, di) \
-  UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].v, x3[i][j - 1][k].v, x3[i + di][j - 1][k].v, x3[i + di][j][k].v), PetscRealPart(0.75 * x2[i][j - 1].h + 0.25 * x2[i + di][j - 1].h), PetscRealPart(0.75 * x2[i][j].h + 0.25 * x2[i + di][j].h))
+  UpwindFlux1D(StaggeredMidpoint2D((x3)[i][j][k].v, (x3)[i][(j) - 1][k].v, (x3)[(i) + (di)][(j) - 1][k].v, (x3)[(i) + (di)][j][k].v), PetscRealPart(0.75 * (x2)[i][(j) - 1].h + 0.25 * (x2)[(i) + (di)][(j) - 1].h), \
+               PetscRealPart(0.75 * (x2)[i][j].h + 0.25 * (x2)[(i) + (di)][j].h))
 #define UpwindFluxYN(x3, x2, h, i, j, k, di) \
-  UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].v, x3[i][j + 1][k].v, x3[i + di][j + 1][k].v, x3[i + di][j][k].v), PetscRealPart(0.75 * x2[i][j].h + 0.25 * x2[i + di][j].h), PetscRealPart(0.75 * x2[i][j + 1].h + 0.25 * x2[i + di][j + 1].h))
+  UpwindFlux1D(StaggeredMidpoint2D((x3)[i][j][k].v, (x3)[i][(j) + 1][k].v, (x3)[(i) + (di)][(j) + 1][k].v, (x3)[(i) + (di)][j][k].v), PetscRealPart(0.75 * (x2)[i][j].h + 0.25 * (x2)[(i) + (di)][j].h), \
+               PetscRealPart(0.75 * (x2)[i][(j) + 1].h + 0.25 * (x2)[(i) + (di)][(j) + 1].h))
 
 static void PrmNodeGetFaceMeasure(const PrmNode **p, PetscInt i, PetscInt j, PetscScalar h[])
 {

@@ -34,7 +34,7 @@
   #define PetscCallHDF5Return(ret, func, ...) \
     do { \
       PetscCallHDF5ReturnNoCheck(ret, func, __VA_ARGS__); \
-      PetscCheck(ret >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HDF5 call %s() Status %d", #func, (int)ret); \
+      PetscCheck((ret) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HDF5 call %s() Status %d", #func, (int)(ret)); \
     } while (0)
 
 typedef struct PetscViewerHDF5GroupList {

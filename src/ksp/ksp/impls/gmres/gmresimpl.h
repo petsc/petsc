@@ -74,5 +74,5 @@ PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP, PetscInt *);
   #define VEC_OFFSET     2
   #define VEC_TEMP       gmres->vecs[0]
   #define VEC_TEMP_MATOP gmres->vecs[1]
-  #define VEC_VV(i)      gmres->vecs[VEC_OFFSET + i]
+  #define VEC_VV(i)      gmres->vecs[VEC_OFFSET + (i)]
 #endif

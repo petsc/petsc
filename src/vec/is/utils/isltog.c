@@ -236,8 +236,8 @@ static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlob
 #define GTOLBS   mapping->bs
 #define GTOL(g, local) \
   do { \
-    local = map->globals[g / bs - start]; \
-    if (local >= 0) local = bs * local + (g % bs); \
+    local = map->globals[(g) / bs - start]; \
+    if ((local) >= 0) local = bs * (local) + ((g) % bs); \
   } while (0)
 
 #include <../src/vec/is/utils/isltog.h>
@@ -247,7 +247,7 @@ static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlob
 #define GTOLBS   1
 #define GTOL(g, local) \
   do { \
-    local = map->globals[g - start]; \
+    local = map->globals[(g) - start]; \
   } while (0)
 #include <../src/vec/is/utils/isltog.h>
 
@@ -256,8 +256,8 @@ static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlob
 #define GTOLBS   mapping->bs
 #define GTOL(g, local) \
   do { \
-    (void)PetscHMapIGet(map->globalht, g / bs, &local); \
-    if (local >= 0) local = bs * local + (g % bs); \
+    (void)PetscHMapIGet(map->globalht, (g) / bs, &(local)); \
+    if ((local) >= 0) local = bs * (local) + ((g) % bs); \
   } while (0)
 #include <../src/vec/is/utils/isltog.h>
 
@@ -266,7 +266,7 @@ static PetscErrorCode ISLocalToGlobalMappingResetBlockInfo_Private(ISLocalToGlob
 #define GTOLBS   1
 #define GTOL(g, local) \
   do { \
-    (void)PetscHMapIGet(map->globalht, g, &local); \
+    (void)PetscHMapIGet(map->globalht, g, &(local)); \
   } while (0)
 #include <../src/vec/is/utils/isltog.h>
 

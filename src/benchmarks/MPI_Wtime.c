@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   x = MPI_Wtime();
   PetscCall(PetscSleep(10));
   y = MPI_Wtime();
-  fprintf(stdout, "%-15s : %e sec - Slept for 10 sec \n", "MPI_Wtime", (y - x));
+  fprintf(stdout, "%-15s : %e sec - Slept for 10 sec \n", "MPI_Wtime", y - x);
 
   PetscCall(PetscFinalize());
   return 0;

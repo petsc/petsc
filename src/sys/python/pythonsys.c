@@ -109,7 +109,7 @@ static void (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
 static void (*PyMem_RawFree)(void *);
 
 #define PetscDLPyLibOpen(libname)      PetscDLLibraryAppend(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, libname)
-#define PetscDLPyLibSym(symbol, value) PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, symbol, (void **)value)
+#define PetscDLPyLibSym(symbol, value) PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, symbol, (void **)(value))
 #define PetscDLPyLibClose(comm) \
   do { \
   } while (0)

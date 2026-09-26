@@ -57,8 +57,8 @@
     const Type    *u = (const Type *)unpacked, *u2; \
     Type          *p = (Type *)packed, *p2; \
     PetscInt       i, j, k, X, Y, r, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */ \
-    const PetscInt MBS = M * BS;             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); /* If EQ, then M=1 enables compiler's const-propagation */ \
+    const PetscInt MBS = M * (BS);             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
     PetscFunctionBegin; \
     if (!idx) PetscCall(PetscArraycpy(p, u + start * MBS, MBS * count)); /* idx[] are contiguous */ \
     else if (opt) { /* has optimizations available */ p2 = p; \
@@ -74,9 +74,9 @@
       } \
     } else { \
       for (i = 0; i < count; i++) \
-        for (j = 0; j < M; j++)    /* Decent compilers should eliminate this loop when M = const 1 */ \
-          for (k = 0; k < BS; k++) /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */ \
-            p[i * MBS + j * BS + k] = u[idx[i] * MBS + j * BS + k]; \
+        for (j = 0; j < M; j++)      /* Decent compilers should eliminate this loop when M = const 1 */ \
+          for (k = 0; k < (BS); k++) /* Compiler either unrolls (BS=1) or vectorizes (BS=2,4,8,etc) this loop */ \
+            p[i * MBS + j * (BS) + k] = u[idx[i] * MBS + j * (BS) + k]; \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
@@ -98,8 +98,8 @@
     Type          *u = (Type *)unpacked, *u2; \
     const Type    *p = (const Type *)packed; \
     PetscInt       i, j, k, X, Y, r, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */ \
-    const PetscInt MBS = M * BS;             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); /* If EQ, then M=1 enables compiler's const-propagation */ \
+    const PetscInt MBS = M * (BS);             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
     PetscFunctionBegin; \
     if (!idx) { \
       u += start * MBS; \
@@ -118,7 +118,7 @@
     } else { \
       for (i = 0; i < count; i++) \
         for (j = 0; j < M; j++) \
-          for (k = 0; k < BS; k++) u[idx[i] * MBS + j * BS + k] = p[i * MBS + j * BS + k]; \
+          for (k = 0; k < (BS); k++) u[idx[i] * MBS + j * (BS) + k] = p[i * MBS + j * (BS) + k]; \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
@@ -139,14 +139,14 @@
     Type          *u = (Type *)unpacked, *u2; \
     const Type    *p = (const Type *)packed; \
     PetscInt       i, j, k, X, Y, r, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; /* If EQ, then M=1 enables compiler's const-propagation */ \
-    const PetscInt MBS = M * BS;             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); /* If EQ, then M=1 enables compiler's const-propagation */ \
+    const PetscInt MBS = M * (BS);             /* MBS=bs. We turn MBS into a compile time const when EQ=1. */ \
     PetscFunctionBegin; \
     if (!idx) { \
       u += start * MBS; \
       for (i = 0; i < count; i++) \
         for (j = 0; j < M; j++) \
-          for (k = 0; k < BS; k++) OpApply(Op, u[i * MBS + j * BS + k], p[i * MBS + j * BS + k]); \
+          for (k = 0; k < (BS); k++) OpApply(Op, u[i * MBS + j * (BS) + k], p[i * MBS + j * (BS) + k]); \
     } else if (opt) { /* idx[] has patterns */ \
       for (r = 0; r < opt->n; r++) { \
         u2 = u + opt->start[r] * MBS; \
@@ -161,7 +161,7 @@
     } else { \
       for (i = 0; i < count; i++) \
         for (j = 0; j < M; j++) \
-          for (k = 0; k < BS; k++) OpApply(Op, u[idx[i] * MBS + j * BS + k], p[i * MBS + j * BS + k]); \
+          for (k = 0; k < (BS); k++) OpApply(Op, u[idx[i] * MBS + j * (BS) + k], p[i * MBS + j * (BS) + k]); \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }
@@ -171,17 +171,17 @@
   { \
     Type          *u = (Type *)unpacked, *p = (Type *)packed, tmp; \
     PetscInt       i, j, k, r, l, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; \
-    const PetscInt MBS = M * BS; \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); \
+    const PetscInt MBS = M * (BS); \
     PetscFunctionBegin; \
     for (i = 0; i < count; i++) { \
       r = (!idx ? start + i : idx[i]) * MBS; \
       l = i * MBS; \
       for (j = 0; j < M; j++) \
-        for (k = 0; k < BS; k++) { \
-          tmp = u[r + j * BS + k]; \
-          OpApply(Op, u[r + j * BS + k], p[l + j * BS + k]); \
-          p[l + j * BS + k] = tmp; \
+        for (k = 0; k < (BS); k++) { \
+          tmp = u[r + j * (BS) + k]; \
+          OpApply(Op, u[r + j * (BS) + k], p[l + j * (BS) + k]); \
+          p[l + j * (BS) + k] = tmp; \
         } \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -193,8 +193,8 @@
     const Type    *u = (const Type *)src; \
     Type          *v = (Type *)dst; \
     PetscInt       i, j, k, s, t, X, Y, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; \
-    const PetscInt MBS = M * BS; \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); \
+    const PetscInt MBS = M * (BS); \
     PetscFunctionBegin; \
     if (!srcIdx) { /* src is contiguous */ \
       u += srcStart * MBS; \
@@ -214,7 +214,7 @@
         s = (!srcIdx ? srcStart + i : srcIdx[i]) * MBS; \
         t = (!dstIdx ? dstStart + i : dstIdx[i]) * MBS; \
         for (j = 0; j < M; j++) \
-          for (k = 0; k < BS; k++) OpApply(Op, v[t + j * BS + k], u[s + j * BS + k]); \
+          for (k = 0; k < (BS); k++) OpApply(Op, v[t + j * (BS) + k], u[s + j * (BS) + k]); \
       } \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \
@@ -226,16 +226,16 @@
     Type          *rdata = (Type *)rootdata, *lupdate = (Type *)leafupdate; \
     const Type    *ldata = (const Type *)leafdata; \
     PetscInt       i, j, k, r, l, bs = link->bs; \
-    const PetscInt M   = (EQ) ? 1 : bs / BS; \
-    const PetscInt MBS = M * BS; \
+    const PetscInt M   = (EQ) ? 1 : bs / (BS); \
+    const PetscInt MBS = M * (BS); \
     PetscFunctionBegin; \
     for (i = 0; i < count; i++) { \
       r = (rootidx ? rootidx[i] : rootstart + i) * MBS; \
       l = (leafidx ? leafidx[i] : leafstart + i) * MBS; \
       for (j = 0; j < M; j++) \
-        for (k = 0; k < BS; k++) { \
-          lupdate[l + j * BS + k] = rdata[r + j * BS + k]; \
-          OpApply(Op, rdata[r + j * BS + k], ldata[l + j * BS + k]); \
+        for (k = 0; k < (BS); k++) { \
+          lupdate[l + j * (BS) + k] = rdata[r + j * (BS) + k]; \
+          OpApply(Op, rdata[r + j * (BS) + k], ldata[l + j * (BS) + k]); \
         } \
     } \
     PetscFunctionReturn(PETSC_SUCCESS); \

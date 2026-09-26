@@ -202,14 +202,14 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
 
 #define MatSetValues_SeqSBAIJ_A_Private(row, col, value, addv, orow, ocol) \
   do { \
-    brow = row / bs; \
+    brow = (row) / bs; \
     rp   = aj + ai[brow]; \
     if (!A->structure_only) ap = aa + bs2 * ai[brow]; \
     rmax = aimax[brow]; \
     nrow = ailen[brow]; \
-    bcol = col / bs; \
-    ridx = row % bs; \
-    cidx = col % bs; \
+    bcol = (col) / bs; \
+    ridx = (row) % bs; \
+    cidx = (col) % bs; \
     low  = 0; \
     high = nrow; \
     while (high - low > 3) { \
@@ -246,14 +246,14 @@ static PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
 
 #define MatSetValues_SeqSBAIJ_B_Private(row, col, value, addv, orow, ocol) \
   do { \
-    brow = row / bs; \
+    brow = (row) / bs; \
     rp   = bj + bi[brow]; \
     if (!B->structure_only) ap = ba + bs2 * bi[brow]; \
     rmax = bimax[brow]; \
     nrow = bilen[brow]; \
-    bcol = col / bs; \
-    ridx = row % bs; \
-    cidx = col % bs; \
+    bcol = (col) / bs; \
+    ridx = (row) % bs; \
+    cidx = (col) % bs; \
     low  = 0; \
     high = nrow; \
     while (high - low > 3) { \

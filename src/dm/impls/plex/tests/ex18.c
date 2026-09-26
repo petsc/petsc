@@ -1296,7 +1296,7 @@ static PetscErrorCode PointSFGetInterfacePoints_Private(PetscSF pointSF, IS *is)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define CHKERRMY(ierr) PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!")
+#define CHKERRMY(ierr) PetscCheck(!(ierr), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PointSF is wrong. Unable to show details!")
 
 static PetscErrorCode ViewPointsWithType_Internal(DM dm, IS pointsIS, PetscViewer v)
 {

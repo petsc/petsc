@@ -65,8 +65,8 @@ static inline const char *TikZColorMap(int cl)
 /*
      These macros transform from the users coordinates to the (0,0) -> (1,1) coordinate system
 */
-#define XTRANS(draw, x) (double)((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))
-#define YTRANS(draw, y) (double)((draw)->port_yl + (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl)))
+#define XTRANS(draw, x) (double)((draw)->port_xl + ((((x) - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))
+#define YTRANS(draw, y) (double)((draw)->port_yl + ((((y) - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl)))
 
 static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 {

@@ -373,19 +373,19 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 
 #define MatSetValues_SeqAIJ_A_Private(row, col, value, addv, orow, ocol) \
   do { \
-    if (col <= lastcol1) low1 = 0; \
+    if ((col) <= lastcol1) low1 = 0; \
     else high1 = nrow1; \
     lastcol1 = col; \
     while (high1 - low1 > 5) { \
       t = (low1 + high1) / 2; \
-      if (rp1[t] > col) high1 = t; \
+      if (rp1[t] > (col)) high1 = t; \
       else low1 = t; \
     } \
     for (_i = low1; _i < high1; _i++) { \
-      if (rp1[_i] > col) break; \
-      if (rp1[_i] == col) { \
+      if (rp1[_i] > (col)) break; \
+      if (rp1[_i] == (col)) { \
         if (A->structure_only) goto a_noinsert; \
-        if (addv == ADD_VALUES) { \
+        if ((addv) == ADD_VALUES) { \
           ap1[_i] += value; \
           /* Not sure LogFlops will slow down the code or not */ \
           (void)PetscLogFlops(1.0); \
@@ -393,7 +393,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
         goto a_noinsert; \
       } \
     } \
-    if (!A->structure_only && value == 0.0 && ignorezeroentries && orow != ocol) { \
+    if (!A->structure_only && (value) == 0.0 && ignorezeroentries && (orow) != (ocol)) { \
       low1  = 0; \
       high1 = nrow1; \
       goto a_noinsert; \
@@ -422,26 +422,26 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
 
 #define MatSetValues_SeqAIJ_B_Private(row, col, value, addv, orow, ocol) \
   do { \
-    if (col <= lastcol2) low2 = 0; \
+    if ((col) <= lastcol2) low2 = 0; \
     else high2 = nrow2; \
     lastcol2 = col; \
     while (high2 - low2 > 5) { \
       t = (low2 + high2) / 2; \
-      if (rp2[t] > col) high2 = t; \
+      if (rp2[t] > (col)) high2 = t; \
       else low2 = t; \
     } \
     for (_i = low2; _i < high2; _i++) { \
-      if (rp2[_i] > col) break; \
-      if (rp2[_i] == col) { \
+      if (rp2[_i] > (col)) break; \
+      if (rp2[_i] == (col)) { \
         if (B->structure_only) goto b_noinsert; \
-        if (addv == ADD_VALUES) { \
+        if ((addv) == ADD_VALUES) { \
           ap2[_i] += value; \
           (void)PetscLogFlops(1.0); \
         } else ap2[_i] = value; \
         goto b_noinsert; \
       } \
     } \
-    if (!B->structure_only && value == 0.0 && ignorezeroentries) { \
+    if (!B->structure_only && (value) == 0.0 && ignorezeroentries) { \
       low2  = 0; \
       high2 = nrow2; \
       goto b_noinsert; \

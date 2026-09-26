@@ -273,9 +273,9 @@ PetscErrorCode PetscDrawUtilitySetCmap(const char colormap[], int mapsize, unsig
     while (i < j) {
 #define SWAP(a, i, j) \
   do { \
-    unsigned char t = a[i]; \
-    a[i]            = a[j]; \
-    a[j]            = t; \
+    unsigned char t = (a)[i]; \
+    (a)[i]          = (a)[j]; \
+    (a)[j]          = t; \
   } while (0)
       SWAP(R, i, j);
       SWAP(G, i, j);

@@ -770,8 +770,8 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
     const PetscInt *B = (const PetscInt *)b; \
     int             i; \
     PetscInt        diff = 0; \
-    for (i = 0; i < N; i++) { \
-      diff = A[N - i] - B[N - i]; \
+    for (i = 0; i < (N); i++) { \
+      diff = A[(N) - i] - B[(N) - i]; \
       if (diff) break; \
     } \
     return (diff <= 0) ? (diff < 0) ? -1 : 0 : 1; \
@@ -2629,9 +2629,9 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceGetBoundarySymmetries_Internal(PetscDu
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define BaryIndex(perEdge, a, b, c) (((b) * (2 * perEdge + 1 - (b))) / 2) + (c)
+#define BaryIndex(perEdge, a, b, c) ((((b) * (2 * (perEdge) + 1 - (b))) / 2) + (c))
 
-#define CartIndex(perEdge, a, b) (perEdge * (a) + b)
+#define CartIndex(perEdge, a, b) ((perEdge) * (a) + (b))
 
 /* the existing interface for symmetries is insufficient for all cases:
  * - it should be sufficient for form degrees that are scalar (0 and n)

@@ -135,7 +135,7 @@ static PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *ex
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
-#define Endpoint(a, start, b) (a == 0 || a == (b - 1 - start))
+#define Endpoint(a, start, b) ((a) == 0 || (a) == ((b) - 1 - (start)))
   PetscCall(PetscMalloc3(N, &II, Nint, &Iint, Nsurf, &Isurf));
   PetscCall(PetscMalloc2(Nint, &IIint, Nsurf, &IIsurf));
   for (k = 0; k < p - kstart; k++) {
@@ -455,7 +455,7 @@ static PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, 
              is NOT the local DMDA ordering.)
        IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
-#define Endpoint(a, start, b) (a == 0 || a == (b - 1 - start))
+#define Endpoint(a, start, b) ((a) == 0 || (a) == ((b) - 1 - (start)))
   PetscCall(PetscMalloc3(N, &II, Nint, &Iint, Nsurf, &Isurf));
   PetscCall(PetscMalloc2(Nint, &IIint, Nsurf, &IIsurf));
   for (k = 0; k < p - kstart; k++) {

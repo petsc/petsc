@@ -2147,8 +2147,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKokkos(Mat B, Mat A, const MatFac
       factors->jL_h = MatColIdxKokkosViewHost(NoInit("jL_h"), (Bi[m] - Bi[0]) + m); // + the diagonal entries
       factors->aL_h = MatScalarKokkosViewHost(NoInit("aL_h"), (Bi[m] - Bi[0]) + m);
       factors->iU_h = MatRowMapKokkosViewHost(NoInit("iU_h"), m + 1);
-      factors->jU_h = MatColIdxKokkosViewHost(NoInit("jU_h"), (Bdiag[0] - Bdiag[m]));
-      factors->aU_h = MatScalarKokkosViewHost(NoInit("aU_h"), (Bdiag[0] - Bdiag[m]));
+      factors->jU_h = MatColIdxKokkosViewHost(NoInit("jU_h"), Bdiag[0] - Bdiag[m]);
+      factors->aU_h = MatScalarKokkosViewHost(NoInit("aU_h"), Bdiag[0] - Bdiag[m]);
 
       PetscInt *Li = factors->iL_h.data();
       PetscInt *Lj = factors->jL_h.data();

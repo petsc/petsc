@@ -320,7 +320,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionRestoreField_Internal(Pet
 
 #define VecCheckSameSize(x, ar1, y, ar2) \
   do { \
-    PetscCheck((x)->map->N == (y)->map->N, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_INCOMP, "Incompatible vector global lengths parameter # %d global size %" PetscInt_FMT " != parameter # %d global size %" PetscInt_FMT, ar1, (x)->map->N, ar2, \
+    PetscCheck((x)->map->N == (y)->map->N, PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_INCOMP, "Incompatible vector global lengths parameter # %d global size %" PetscInt_FMT " != parameter # %d global size %" PetscInt_FMT, ar1, (x)->map->N, ar2, \
                (y)->map->N); \
     VecCheckSameLocalSize(x, ar1, y, ar2); \
   } while (0)
@@ -332,7 +332,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscSectionRestoreField_Internal(Pet
 
 #define VecCheckSize(x, ar1, n, N) \
   do { \
-    PetscCheck((x)->map->N == (N), PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_INCOMP, "Incorrect vector global size: parameter # %d global size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->N, N); \
+    PetscCheck((x)->map->N == (N), PetscObjectComm((PetscObject)(x)), PETSC_ERR_ARG_INCOMP, "Incorrect vector global size: parameter # %d global size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->N, N); \
     VecCheckLocalSize(x, ar1, n); \
   } while (0)
 

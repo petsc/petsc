@@ -11,7 +11,7 @@ extern PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM, ISColoringType, ISColori
    For ghost i that may be negative or greater than the upper bound this
   maps it into the 0:m-1 range using periodicity
 */
-#define SetInRange(i, m) ((i < 0) ? m + i : ((i >= m) ? i - m : i))
+#define SetInRange(i, m) (((i) < 0) ? (m) + (i) : (((i) >= (m)) ? (i) - (m) : (i)))
 
 static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill, PetscInt w, PetscInt **rfill)
 {

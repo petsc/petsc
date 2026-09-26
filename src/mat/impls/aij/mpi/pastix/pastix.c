@@ -304,7 +304,7 @@ static PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
       PetscCheck(!spm, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sparse matrix isn't initialized");
 
       PetscCall(PetscViewerASCIIPrintf(viewer, "PaStiX run parameters:\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix type :                      %s \n", ((spm->mtxtype == SpmSymmetric) ? "Symmetric" : "Unsymmetric")));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix type :                      %s \n", spm->mtxtype == SpmSymmetric ? "Symmetric" : "Unsymmetric"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Level of printing (0,1,2):         %ld \n", (long)pastix->iparm[IPARM_VERBOSE]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of refinements iterations : %ld \n", (long)pastix->iparm[IPARM_NBITER]));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error :                            %e \n", pastix->dparm[DPARM_RELATIVE_ERROR]));

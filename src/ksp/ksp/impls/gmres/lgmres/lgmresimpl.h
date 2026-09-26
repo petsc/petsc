@@ -44,15 +44,15 @@ typedef struct {
 
 /* vector names */
 #define VEC_OFFSET     2
-#define VEC_TEMP       lgmres->vecs[0]              /* work space */
-#define VEC_TEMP_MATOP lgmres->vecs[1]              /* work space */
-#define VEC_VV(i)      lgmres->vecs[VEC_OFFSET + i] /* use to access othog basis vectors */
+#define VEC_TEMP       lgmres->vecs[0]                /* work space */
+#define VEC_TEMP_MATOP lgmres->vecs[1]                /* work space */
+#define VEC_VV(i)      lgmres->vecs[VEC_OFFSET + (i)] /* use to access othog basis vectors */
 /*LGMRES_MOD */
 #define AUG_OFFSET   1
-#define AUGVEC(i)    lgmres->augvecs[AUG_OFFSET + i]                   /*error approx vectors */
-#define AUG_ORDER(i) lgmres->aug_order[i]                              /*order in which to augment */
-#define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + i + lgmres->aug_dim] /*A times error vector */
-#define AUG_TEMP     lgmres->augvecs[0]                                /* work vector */
+#define AUGVEC(i)    lgmres->augvecs[AUG_OFFSET + (i)]                   /*error approx vectors */
+#define AUG_ORDER(i) lgmres->aug_order[i]                                /*order in which to augment */
+#define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + (i) + lgmres->aug_dim] /*A times error vector */
+#define AUG_TEMP     lgmres->augvecs[0]                                  /* work vector */
 
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30

@@ -56,8 +56,8 @@ typedef struct {
   PetscBool setup_called; /* indicates whether SNESSetUp_NGMRES() has been called  */
 } SNES_NGMRES;
 
-#define H(i, j) ngmres->h[i * ngmres->msize + j]
-#define Q(i, j) ngmres->q[i * ngmres->msize + j]
+#define H(i, j) ngmres->h[(i) * ngmres->msize + (j)]
+#define Q(i, j) ngmres->q[(i) * ngmres->msize + (j)]
 
 /* private functions that are shared components of the methods */
 PETSC_INTERN PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES, PetscInt, PetscInt, Vec, PetscReal, Vec);

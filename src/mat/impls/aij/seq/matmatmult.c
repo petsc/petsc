@@ -876,7 +876,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A, Mat B, PetscReal
   do { \
     window_min  = bn; \
     outputi_nnz = 0; \
-    for (k = 0; k < ANNZ; ++k) { \
+    for (k = 0; k < (ANNZ); ++k) { \
       brow_ptr[k] = inputj + inputi[inputcol[k]]; \
       brow_end[k] = inputj + inputi[inputcol[k] + 1]; \
       window[k]   = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \
@@ -887,7 +887,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A, Mat B, PetscReal
       /* advance front and compute new minimum */ \
       old_window_min = window_min; \
       window_min     = bn; \
-      for (k = 0; k < ANNZ; ++k) { \
+      for (k = 0; k < (ANNZ); ++k) { \
         if (window[k] == old_window_min) { \
           brow_ptr[k]++; \
           window[k] = (brow_ptr[k] != brow_end[k]) ? *brow_ptr[k] : bn; \

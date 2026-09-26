@@ -70,7 +70,7 @@ static void f1_u_lap(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 }
 
 /* 3D elasticity */
-#define IDX(ii, jj, kk, ll) (27 * ii + 9 * jj + 3 * kk + ll)
+#define IDX(ii, jj, kk, ll) (27 * (ii) + 9 * (jj) + 3 * (kk) + (ll))
 
 void g3_uu_3d_private(PetscScalar g3[], const PetscReal mu, const PetscReal lambda)
 {

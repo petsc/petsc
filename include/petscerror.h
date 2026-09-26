@@ -956,13 +956,13 @@ void PETSCABORTWITHERR_Private(MPI_Comm, PetscErrorCode);
     do { \
       PetscMPIInt size_; \
       (void)MPI_Comm_size(comm, &size_); \
-      if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr != PETSC_ERR_SIG) { \
+      if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && (ierr) != PETSC_ERR_SIG) { \
         (void)MPI_Finalize(); \
         exit(0); \
       } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
         exit(0); \
       } else { \
-        (void)MPI_Abort(comm, (PetscMPIInt)ierr); \
+        (void)MPI_Abort(comm, (PetscMPIInt)(ierr)); \
       } \
     } while (0)
 #endif
@@ -1473,42 +1473,42 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscStackPop
   #define PetscStackPush(f)
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
-    (void)file__; \
-    (void)func__; \
-    (void)line__
-  #define PetscStackPop_Private(stack__, func__) (void)func__
+    (void)(file__); \
+    (void)(func__); \
+    (void)(line__)
+  #define PetscStackPop_Private(stack__, func__) (void)(func__)
 #elif PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
     do { \
-      if (stack__.currentsize < PETSCSTACKSIZE) { \
-        stack__.function[stack__.currentsize] = func__; \
+      if ((stack__).currentsize < PETSCSTACKSIZE) { \
+        (stack__).function[(stack__).currentsize] = func__; \
         if (petsc_routine__) { \
-          stack__.file[stack__.currentsize] = file__; \
-          stack__.line[stack__.currentsize] = line__; \
+          (stack__).file[(stack__).currentsize] = file__; \
+          (stack__).line[(stack__).currentsize] = line__; \
         } else { \
-          stack__.file[stack__.currentsize] = PETSC_NULLPTR; \
-          stack__.line[stack__.currentsize] = 0; \
+          (stack__).file[(stack__).currentsize] = PETSC_NULLPTR; \
+          (stack__).line[(stack__).currentsize] = 0; \
         } \
-        stack__.petscroutine[stack__.currentsize] = petsc_routine__; \
+        (stack__).petscroutine[(stack__).currentsize] = petsc_routine__; \
       } \
-      ++stack__.currentsize; \
-      stack__.hotdepth += (hot__ || stack__.hotdepth); \
+      ++(stack__).currentsize; \
+      (stack__).hotdepth += ((hot__) || (stack__).hotdepth); \
     } while (0)
 
   /* uses PetscCheckAbort() because may be used in a function that does not return an error code */
   #define PetscStackPop_Private(stack__, func__) \
     do { \
-      PetscCheckAbort(!stack__.check || stack__.currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d.\n", stack__.currentsize, func__, __FILE__, __LINE__); \
-      if (--stack__.currentsize < PETSCSTACKSIZE) { \
-        PetscCheckAbort(!stack__.check || stack__.petscroutine[stack__.currentsize] != 1 || stack__.function[stack__.currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d.\n", \
-                        stack__.function[stack__.currentsize], stack__.file[stack__.currentsize], stack__.line[stack__.currentsize], func__, __FILE__, __LINE__); \
-        stack__.function[stack__.currentsize]     = PETSC_NULLPTR; \
-        stack__.file[stack__.currentsize]         = PETSC_NULLPTR; \
-        stack__.line[stack__.currentsize]         = 0; \
-        stack__.petscroutine[stack__.currentsize] = 0; \
+      PetscCheckAbort(!(stack__).check || (stack__).currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d.\n", (stack__).currentsize, func__, __FILE__, __LINE__); \
+      if (--(stack__).currentsize < PETSCSTACKSIZE) { \
+        PetscCheckAbort(!(stack__).check || (stack__).petscroutine[(stack__).currentsize] != 1 || (stack__).function[(stack__).currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d.\n", \
+                        (stack__).function[(stack__).currentsize], (stack__).file[(stack__).currentsize], (stack__).line[(stack__).currentsize], func__, __FILE__, __LINE__); \
+        (stack__).function[(stack__).currentsize]     = PETSC_NULLPTR; \
+        (stack__).file[(stack__).currentsize]         = PETSC_NULLPTR; \
+        (stack__).line[(stack__).currentsize]         = 0; \
+        (stack__).petscroutine[(stack__).currentsize] = 0; \
       } \
-      stack__.hotdepth = PetscMax(stack__.hotdepth - 1, 0); \
+      (stack__).hotdepth = PetscMax((stack__).hotdepth - 1, 0); \
     } while (0)
 
   /*MC
@@ -1986,6 +1986,7 @@ void PetscCallExternalAbort(F, Args...);
 M*/
   #define PetscCallExternal(func, ...) \
     do { \
+      /* func must not be parenthesized; callers pass !func to invert an external library's success convention */ \
       PetscStackPush(PetscStringize(func)); \
       int ierr_petsc_call_external_ = (int)func(__VA_ARGS__); \
       PetscStackPop; \
