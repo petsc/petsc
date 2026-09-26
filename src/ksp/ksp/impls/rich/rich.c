@@ -141,9 +141,8 @@ static PetscErrorCode KSPMatSolveCheckNorm_Richardson(KSP ksp, PetscReal rnorm, 
   PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged due to infinity or NaN norm", ksp->transpose.solve_requested ? "Transpose" : "");
   PetscCall(PCReduceFailedReason(ksp->pc));
   PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
-  /* as with VecFlag() in KSPCheckNorm(), the state of the block of solutions increases exactly once whether or not it is flagged, so that an outer solver detects the failure, MatSetInf() does the increase itself and PCReduceFailedReason() above makes pcreason the same on all processes */
-  if (pcreason) PetscCall(MatSetInf(X));
-  else PetscCall(PetscObjectStateIncrease((PetscObject)X));
+  /* as with VecFlag() in KSPCheckNorm(), the state of the block of solutions increases whether or not it is flagged, so that an outer solver detects the failure */
+  PetscCall(MatFlag(X, pcreason));
   ksp->reason = pcreason ? KSP_DIVERGED_PC_FAILED : KSP_DIVERGED_NANORINF;
   ksp->rnorm  = rnorm;
   PetscFunctionReturn(PETSC_SUCCESS);

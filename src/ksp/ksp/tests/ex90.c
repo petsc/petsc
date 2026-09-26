@@ -319,7 +319,7 @@ int main(int argc, char **args)
       output_file: output/ex90.out
       args: -ksp_type richardson -ksp_max_it 5 -ksp_rtol 1e-50 -ksp_norm_type preconditioned -nullspace -pc_type jacobi -set_initial_guess -ksp_initial_guess_nonzero
 
-   # the singular operator makes the Cholesky factorization fail, so the block iteration flags the whole block of solutions with MatSetInf() and stops with KSP_DIVERGED_PC_FAILED,
+   # the singular operator makes the Cholesky factorization fail, so the block iteration flags the whole block of solutions with MatFlag() and stops with KSP_DIVERGED_PC_FAILED,
    # its null space is left off the operator since removing a null space from a block of infinities would turn them into NaN in complex arithmetic, and -fp_trap 0
    # overrides the option some harness configurations pass since the zero-pivot factorization and the flagged infinities raise floating point exceptions by design
    test:
@@ -327,7 +327,7 @@ int main(int argc, char **args)
       nsize: 1
       args: -ksp_type richardson -nullspace -nullspace_attach false -pc_type cholesky -pc_factor_shift_type none -compare false -ksp_converged_reason -fp_trap 0
 
-   # the same failure with batching, so that MatSetInf() is called on a MatDenseGetSubMatrix() view
+   # the same failure with batching, so that MatFlag() is called on a MatDenseGetSubMatrix() view
    test:
       suffix: pc_failed_batch
       nsize: 1

@@ -927,7 +927,11 @@ PETSC_EXTERN PetscErrorCode MatGetColumnMeansRealPart(Mat, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatGetColumnMeansImaginaryPart(Mat, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatGetColumnReductions(Mat, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatZeroEntries(Mat);
-PETSC_EXTERN PetscErrorCode MatSetInf(Mat);
+PETSC_EXTERN PetscErrorCode MatFlag(Mat, PetscInt);
+PETSC_DEPRECATED_FUNCTION(3, 26, 0, "MatFlag()", ) static inline PetscErrorCode MatSetInf(Mat A)
+{
+  return MatFlag(A, 1);
+}
 PETSC_EXTERN PetscErrorCode MatZeroRows(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsIS(Mat, IS, PetscScalar, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatZeroRowsStencil(Mat, PetscInt, const MatStencil[], PetscScalar, Vec, Vec);
