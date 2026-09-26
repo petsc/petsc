@@ -31,9 +31,9 @@ PETSC_EXTERN void taobrgnsetregularizerobjectiveandgradientroutine_(Tao *tao, vo
   if (!*ierr) *ierr = TaoBRGNSetRegularizerObjectiveAndGradientRoutine(*tao, ourtaobrgnregobjgradroutine, ctx);
 }
 
-PETSC_EXTERN void taobrgnsetregularizerhessianroutine_(Tao *tao, Mat *H, void (*func)(Tao *, Vec *, Mat *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void taobrgnsetregularizerhessianroutine_(Tao *tao, Mat *Hreg, void (*func)(Tao *, Vec *, Mat *, void *, PetscErrorCode *), PetscCtx ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
   *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.hess, (PetscFortranCallbackFn *)func, ctx);
-  if (!*ierr) *ierr = TaoBRGNSetRegularizerHessianRoutine(*tao, *H, ourtaobrgnreghessroutine, ctx);
+  if (!*ierr) *ierr = TaoBRGNSetRegularizerHessianRoutine(*tao, *Hreg, ourtaobrgnreghessroutine, ctx);
 }

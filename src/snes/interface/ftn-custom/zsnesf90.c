@@ -9,23 +9,23 @@
   #define snesrestoreconvergencehistory_ snesrestoreconvergencehistory
 #endif
 
-PETSC_EXTERN void snesgetconvergencehistory_(SNES *snes, F90Array1d *r, F90Array1d *fits, PetscInt *n, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+PETSC_EXTERN void snesgetconvergencehistory_(SNES *snes, F90Array1d *a, F90Array1d *its, PetscInt *na, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
   PetscReal *hist;
-  PetscInt  *its, N;
+  PetscInt  *itsv, N;
 
-  CHKFORTRANNULLINTEGER(n);
-  *ierr = SNESGetConvergenceHistory(*snes, &hist, &its, &N);
+  CHKFORTRANNULLINTEGER(na);
+  *ierr = SNESGetConvergenceHistory(*snes, &hist, &itsv, &N);
   if (*ierr) return;
-  *ierr = F90Array1dCreate(hist, MPIU_REAL, 1, N, r PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dCreate(hist, MPIU_REAL, 1, N, a PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dCreate(its, MPIU_INT, 1, N, fits PETSC_F90_2PTR_PARAM(ptrd2));
-  if (n) *n = N;
+  *ierr = F90Array1dCreate(itsv, MPIU_INT, 1, N, its PETSC_F90_2PTR_PARAM(ptrd2));
+  if (na) *na = N;
 }
 
-PETSC_EXTERN void snesrestoreconvergencehistory_(SNES *snes, F90Array1d *r, F90Array1d *fits, PetscInt *n, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+PETSC_EXTERN void snesrestoreconvergencehistory_(SNES *snes, F90Array1d *a, F90Array1d *its, PetscInt *na, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
-  *ierr = F90Array1dDestroy(r, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(fits, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dDestroy(its, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
 }

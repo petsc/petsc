@@ -30,18 +30,18 @@ PETSC_EXTERN void petsclayoutrestoreranges_(PetscLayout *map, F90Array1d *ptr, i
   *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void isgetindices_(IS *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void isgetindices_(IS *is, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
   PetscInt        len;
 
-  *ierr = ISGetIndices(*x, &fa);
+  *ierr = ISGetIndices(*is, &fa);
   if (*ierr) return;
-  *ierr = ISGetLocalSize(*x, &len);
+  *ierr = ISGetLocalSize(*is, &len);
   if (*ierr) return;
   *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void isrestoreindices_(IS *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void isrestoreindices_(IS *is, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 
@@ -49,5 +49,5 @@ PETSC_EXTERN void isrestoreindices_(IS *x, F90Array1d *ptr, int *ierr PETSC_F90_
   if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
-  *ierr = ISRestoreIndices(*x, &fa);
+  *ierr = ISRestoreIndices(*is, &fa);
 }

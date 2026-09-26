@@ -17,10 +17,10 @@ static PetscErrorCode ourdrawzoom(PetscDraw draw, PetscCtx ctx)
   return ierr;
 }
 
-PETSC_EXTERN void petscdrawzoom_(PetscDraw *draw, FCN f, PetscCtx ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscdrawzoom_(PetscDraw *draw, FCN func, PetscCtx ctx, PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*draw, 1);
-  ((PetscObject)*draw)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)f;
+  ((PetscObject)*draw)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)func;
 
   *ierr = PetscDrawZoom(*draw, ourdrawzoom, ctx);
 }

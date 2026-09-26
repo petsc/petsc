@@ -36,7 +36,7 @@ PETSC_EXTERN void matcreatenest_(MPI_Fint *comm, PetscInt *nr, IS is_row[], Pets
   *ierr = PetscFree(m);
 }
 
-PETSC_EXTERN void matnestsetsubmats_(Mat *B, PetscInt *nr, IS is_row[], PetscInt *nc, IS is_col[], Mat a[], PetscErrorCode *ierr)
+PETSC_EXTERN void matnestsetsubmats_(Mat *A, PetscInt *nr, IS is_row[], PetscInt *nc, IS is_col[], Mat a[], PetscErrorCode *ierr)
 {
   Mat     *m, *tmp;
   PetscInt i;
@@ -51,7 +51,7 @@ PETSC_EXTERN void matnestsetsubmats_(Mat *B, PetscInt *nr, IS is_row[], PetscInt
     tmp = &a[i];
     CHKFORTRANNULLOBJECT(tmp);
     if (a[i] == (Mat)-2 || a[i] == (Mat)-3) {
-      *ierr = PetscObjectGetComm((PetscObject)*B, &comm);
+      *ierr = PetscObjectGetComm((PetscObject)*A, &comm);
       if (*ierr) return;
       (void)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_MAT for missing blocks");
       *ierr = PETSC_ERR_ARG_WRONG;
@@ -59,7 +59,7 @@ PETSC_EXTERN void matnestsetsubmats_(Mat *B, PetscInt *nr, IS is_row[], PetscInt
     }
     m[i] = (tmp == NULL ? NULL : a[i]);
   }
-  *ierr = MatNestSetSubMats(*B, *nr, is_row, *nc, is_col, m);
+  *ierr = MatNestSetSubMats(*A, *nr, is_row, *nc, is_col, m);
   if (*ierr) return;
   *ierr = PetscFree(m);
 }

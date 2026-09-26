@@ -1,10 +1,10 @@
 interface
-  subroutine PetscQuadratureRestoreData(q, dim, nc, np, p, w, ierr)
+  subroutine PetscQuadratureRestoreData(q, dim, Nc, npoints, points, weights, ierr)
     use, intrinsic :: ISO_C_binding
     import tPetscQuadrature
-    PetscInt dim, nc, np
-    PetscReal, pointer :: p(:)
-    PetscReal, pointer :: w(:)
+    PetscInt dim, Nc, npoints
+    PetscReal, pointer :: points(:)
+    PetscReal, pointer :: weights(:)
     PetscErrorCode, intent(out) :: ierr
     PetscQuadrature q
   end subroutine

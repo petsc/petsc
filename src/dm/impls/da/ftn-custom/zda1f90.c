@@ -63,7 +63,7 @@ PETSC_EXTERN void dmdarestoreelements_(DM *dm, PetscInt *nel, PetscInt *nen, F90
   *ierr = F90Array1dDestroy(e, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarray1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarray1_(DM *da, Vec *vec, F90Array1d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt     xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalar *aa;
@@ -76,7 +76,7 @@ PETSC_EXTERN void dmdavecgetarray1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCod
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -89,22 +89,22 @@ PETSC_EXTERN void dmdavecgetarray1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCod
     *ierr = PETSC_ERR_ARG_INCOMP;
     return;
   }
-  *ierr = VecGetArray(*v, &aa);
+  *ierr = VecGetArray(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array1dCreate(aa, MPIU_SCALAR, gxs, gxm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate(aa, MPIU_SCALAR, gxs, gxm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearray1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearray1_(DM *da, Vec *vec, F90Array1d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  *ierr = F90Array1dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArray(*v, &fa);
+  *ierr = F90Array1dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarray2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarray2_(DM *da, Vec *vec, F90Array2d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt     xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalar *aa;
@@ -117,7 +117,7 @@ PETSC_EXTERN void dmdavecgetarray2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCod
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -136,22 +136,22 @@ PETSC_EXTERN void dmdavecgetarray2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCod
     gxs = 0;
     gxm = dof;
   }
-  *ierr = VecGetArray(*v, &aa);
+  *ierr = VecGetArray(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array2dCreate(aa, MPIU_SCALAR, gxs, gxm, gys, gym, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dCreate(aa, MPIU_SCALAR, gxs, gxm, gys, gym, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearray2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearray2_(DM *da, Vec *vec, F90Array2d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  *ierr = F90Array2dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArray(*v, &fa);
+  *ierr = F90Array2dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array2dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarray3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarray3_(DM *da, Vec *vec, F90Array3d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt     xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   PetscScalar *aa;
@@ -164,7 +164,7 @@ PETSC_EXTERN void dmdavecgetarray3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCod
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -185,22 +185,22 @@ PETSC_EXTERN void dmdavecgetarray3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCod
     gxs = 0;
     gxm = dof;
   }
-  *ierr = VecGetArray(*v, &aa);
+  *ierr = VecGetArray(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array3dCreate(aa, MPIU_SCALAR, gxs, gxm, gys, gym, gzs, gzm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dCreate(aa, MPIU_SCALAR, gxs, gxm, gys, gym, gzs, gzm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearray3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearray3_(DM *da, Vec *vec, F90Array3d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  *ierr = F90Array3dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArray(*v, &fa);
+  *ierr = F90Array3dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array3dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarray4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarray4_(DM *da, Vec *vec, F90Array4d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt     xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof, zero = 0;
   PetscScalar *aa;
@@ -213,7 +213,7 @@ PETSC_EXTERN void dmdavecgetarray4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCod
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -226,25 +226,25 @@ PETSC_EXTERN void dmdavecgetarray4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCod
     *ierr = PETSC_ERR_ARG_INCOMP;
     return;
   }
-  *ierr = VecGetArray(*v, &aa);
+  *ierr = VecGetArray(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array4dCreate(aa, MPIU_SCALAR, zero, dof, gxs, gxm, gys, gym, gzs, gzm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dCreate(aa, MPIU_SCALAR, zero, dof, gxs, gxm, gys, gym, gzs, gzm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearray4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearray4_(DM *da, Vec *vec, F90Array4d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   /*
     F90Array4dAccess is not implemented, so the following call would fail
   */
-  *ierr = F90Array4dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArray(*v, &fa);
+  *ierr = F90Array4dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArray(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array4dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarrayread1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarrayread1_(DM *da, Vec *vec, F90Array1d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt           xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   const PetscScalar *aa;
@@ -257,7 +257,7 @@ PETSC_EXTERN void dmdavecgetarrayread1_(DM *da, Vec *v, F90Array1d *a, PetscErro
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -270,22 +270,22 @@ PETSC_EXTERN void dmdavecgetarrayread1_(DM *da, Vec *v, F90Array1d *a, PetscErro
     *ierr = PETSC_ERR_ARG_INCOMP;
     return;
   }
-  *ierr = VecGetArrayRead(*v, &aa);
+  *ierr = VecGetArrayRead(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearrayread1_(DM *da, Vec *v, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearrayread1_(DM *da, Vec *vec, F90Array1d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
-  *ierr = F90Array1dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArrayRead(*v, &fa);
+  *ierr = F90Array1dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArrayRead(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarrayread2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarrayread2_(DM *da, Vec *vec, F90Array2d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt           xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   const PetscScalar *aa;
@@ -298,7 +298,7 @@ PETSC_EXTERN void dmdavecgetarrayread2_(DM *da, Vec *v, F90Array2d *a, PetscErro
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -317,22 +317,22 @@ PETSC_EXTERN void dmdavecgetarrayread2_(DM *da, Vec *v, F90Array2d *a, PetscErro
     gxs = 0;
     gxm = dof;
   }
-  *ierr = VecGetArrayRead(*v, &aa);
+  *ierr = VecGetArrayRead(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array2dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, gys, gym, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, gys, gym, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearrayread2_(DM *da, Vec *v, F90Array2d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearrayread2_(DM *da, Vec *vec, F90Array2d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
-  *ierr = F90Array2dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArrayRead(*v, &fa);
+  *ierr = F90Array2dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArrayRead(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array2dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array2dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarrayread3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarrayread3_(DM *da, Vec *vec, F90Array3d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt           xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
   const PetscScalar *aa;
@@ -345,7 +345,7 @@ PETSC_EXTERN void dmdavecgetarrayread3_(DM *da, Vec *v, F90Array3d *a, PetscErro
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -366,22 +366,22 @@ PETSC_EXTERN void dmdavecgetarrayread3_(DM *da, Vec *v, F90Array3d *a, PetscErro
     gxs = 0;
     gxm = dof;
   }
-  *ierr = VecGetArrayRead(*v, &aa);
+  *ierr = VecGetArrayRead(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array3dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, gys, gym, gzs, gzm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dCreate((void *)aa, MPIU_SCALAR, gxs, gxm, gys, gym, gzs, gzm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearrayread3_(DM *da, Vec *v, F90Array3d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearrayread3_(DM *da, Vec *vec, F90Array3d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
-  *ierr = F90Array3dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArrayRead(*v, &fa);
+  *ierr = F90Array3dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArrayRead(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array3dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array3dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmdavecgetarrayread4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecgetarrayread4_(DM *da, Vec *vec, F90Array4d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt           xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof, zero = 0;
   const PetscScalar *aa;
@@ -394,7 +394,7 @@ PETSC_EXTERN void dmdavecgetarrayread4_(DM *da, Vec *v, F90Array4d *a, PetscErro
   if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v, &N);
+  *ierr = VecGetLocalSize(*vec, &N);
   if (*ierr) return;
   if (N == xm * ym * zm * dof) {
     gxm = xm;
@@ -407,20 +407,20 @@ PETSC_EXTERN void dmdavecgetarrayread4_(DM *da, Vec *v, F90Array4d *a, PetscErro
     *ierr = PETSC_ERR_ARG_INCOMP;
     return;
   }
-  *ierr = VecGetArrayRead(*v, &aa);
+  *ierr = VecGetArrayRead(*vec, &aa);
   if (*ierr) return;
-  *ierr = F90Array4dCreate((void *)aa, MPIU_SCALAR, zero, dof, gxs, gxm, gys, gym, gzs, gzm, a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dCreate((void *)aa, MPIU_SCALAR, zero, dof, gxs, gxm, gys, gym, gzs, gzm, array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmdavecrestorearrayread4_(DM *da, Vec *v, F90Array4d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmdavecrestorearrayread4_(DM *da, Vec *vec, F90Array4d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
   /*
     F90Array4dAccess is not implemented, so the following call would fail
   */
-  *ierr = F90Array4dAccess(a, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
-  *ierr = VecRestoreArrayRead(*v, &fa);
+  *ierr = F90Array4dAccess(array, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecRestoreArrayRead(*vec, &fa);
   if (*ierr) return;
-  *ierr = F90Array4dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array4dDestroy(array, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }

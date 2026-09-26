@@ -30,9 +30,9 @@ static PetscErrorCode ourmoddestroy(PetscCtxRt ctx)
 PETSC_EXTERN void kspflexiblemodifypcnochange_(KSP *, PetscInt *, PetscInt *, PetscReal *, void *, PetscErrorCode *);
 PETSC_EXTERN void kspflexiblemodifypcksp_(KSP *, PetscInt *, PetscInt *, PetscReal *, void *, PetscErrorCode *);
 
-PETSC_EXTERN void kspflexiblesetmodifypc_(KSP *ksp, void (*fcn)(KSP *, PetscInt *, PetscInt *, PetscReal *, void *, PetscErrorCode *), PetscCtx ctx, void (*d)(void *, PetscErrorCode *), PetscErrorCode *ierr)
+PETSC_EXTERN void kspflexiblesetmodifypc_(KSP *ksp, void (*fcn)(KSP *, PetscInt *, PetscInt *, PetscReal *, void *, PetscErrorCode *), PetscCtx ctx, void (*destroy)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLFUNCTION(d);
+  CHKFORTRANNULLFUNCTION(destroy);
   if (fcn == kspflexiblemodifypcksp_) {
     *ierr = KSPFlexibleSetModifyPC(*ksp, KSPFlexibleModifyPCKSP, NULL, NULL);
   } else if (fcn == kspflexiblemodifypcnochange_) {
@@ -40,7 +40,7 @@ PETSC_EXTERN void kspflexiblesetmodifypc_(KSP *ksp, void (*fcn)(KSP *, PetscInt 
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.modify, (PetscFortranCallbackFn *)fcn, ctx);
     if (*ierr) return;
-    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.destroy, (PetscFortranCallbackFn *)d, ctx);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.destroy, (PetscFortranCallbackFn *)destroy, ctx);
     if (*ierr) return;
     *ierr = KSPFlexibleSetModifyPC(*ksp, ourmodify, *ksp, ourmoddestroy);
   }

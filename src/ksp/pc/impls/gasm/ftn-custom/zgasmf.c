@@ -13,29 +13,29 @@
   #define pcgasmcreatesubdomains2d_ pcgasmcreatesubdomains2d
 #endif
 
-PETSC_EXTERN void pcgasmdestroysubdomains_(PetscInt *n, F90Array1d *is1, F90Array1d *is2, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+PETSC_EXTERN void pcgasmdestroysubdomains_(PetscInt *n, F90Array1d *iis, F90Array1d *ois, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
   IS *isa, *isb;
 
-  *ierr = F90Array1dAccess(is1, MPIU_FORTRANADDR, (void **)&isa PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dAccess(iis, MPIU_FORTRANADDR, (void **)&isa PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dAccess(is2, MPIU_FORTRANADDR, (void **)&isb PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dAccess(ois, MPIU_FORTRANADDR, (void **)&isb PETSC_F90_2PTR_PARAM(ptrd2));
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(is1, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dDestroy(iis, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(is2, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dDestroy(ois, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd2));
   if (*ierr) return;
   *ierr = PCGASMDestroySubdomains(*n, &isa, &isb);
 }
 
-PETSC_EXTERN void pcgasmcreatesubdomains2d_(PC *pc, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, PetscInt *dof, PetscInt *overlap, PetscInt *Nsub, F90Array1d *is1, F90Array1d *is2, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+PETSC_EXTERN void pcgasmcreatesubdomains2d_(PC *pc, PetscInt *M, PetscInt *N, PetscInt *Mdomains, PetscInt *Ndomains, PetscInt *dof, PetscInt *overlap, PetscInt *nsub, F90Array1d *iis, F90Array1d *ois, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
-  IS *iis, *iisl;
-  *ierr = PCGASMCreateSubdomains2D(*pc, *m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
+  IS *iis_arr, *ois_arr;
+  *ierr = PCGASMCreateSubdomains2D(*pc, *M, *N, *Mdomains, *Ndomains, *dof, *overlap, nsub, &iis_arr, &ois_arr);
   if (*ierr) return;
-  *ierr = F90Array1dCreate(iis, MPIU_FORTRANADDR, 1, *Nsub, is1 PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dCreate(iis_arr, MPIU_FORTRANADDR, 1, *nsub, iis PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dCreate(iisl, MPIU_FORTRANADDR, 1, *Nsub, is2 PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dCreate(ois_arr, MPIU_FORTRANADDR, 1, *nsub, ois PETSC_F90_2PTR_PARAM(ptrd2));
   if (*ierr) return;
 }
 

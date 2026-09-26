@@ -45,7 +45,7 @@
   #define dmplexrestoremeet_              dmplexrestoremeet
 #endif
 
-PETSC_EXTERN void dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *cone, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *v;
   PetscInt        n;
@@ -54,16 +54,16 @@ PETSC_EXTERN void dmplexgetcone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr
   if (*ierr) return;
   *ierr = DMPlexGetCone(*dm, *p, &v);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, cone PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmplexrestorecone_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexrestorecone_(DM *dm, PetscInt *p, F90Array1d *cone, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(cone, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmplexgetconeorientation_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexgetconeorientation_(DM *dm, PetscInt *p, F90Array1d *coneOrientation, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *v;
   PetscInt        n;
@@ -72,16 +72,16 @@ PETSC_EXTERN void dmplexgetconeorientation_(DM *dm, PetscInt *p, F90Array1d *ptr
   if (*ierr) return;
   *ierr = DMPlexGetConeOrientation(*dm, *p, &v);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, coneOrientation PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmplexrestoreconeorientation_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexrestoreconeorientation_(DM *dm, PetscInt *p, F90Array1d *coneOrientation, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(coneOrientation, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmplexgetsupport_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexgetsupport_(DM *dm, PetscInt *p, F90Array1d *support, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *v;
   PetscInt        n;
@@ -90,60 +90,60 @@ PETSC_EXTERN void dmplexgetsupport_(DM *dm, PetscInt *p, F90Array1d *ptr, int *i
   if (*ierr) return;
   *ierr = DMPlexGetSupport(*dm, *p, &v);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n, support PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void dmplexrestoresupport_(DM *dm, PetscInt *p, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexrestoresupport_(DM *dm, PetscInt *p, F90Array1d *support, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(support, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmplexgettransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, PetscInt *N, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexgettransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, PetscInt *numPoints, F90Array1d *points, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *v = NULL;
   PetscInt  n;
 
-  CHKFORTRANNULL(N);
+  CHKFORTRANNULL(numPoints);
   *ierr = DMPlexGetTransitiveClosure(*dm, *p, *useCone, &n, &v);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n * 2, ptr PETSC_F90_2PTR_PARAM(ptrd));
-  if (N) *N = n;
+  *ierr = F90Array1dCreate((void *)v, MPIU_INT, 1, n * 2, points PETSC_F90_2PTR_PARAM(ptrd));
+  if (numPoints) *numPoints = n;
 }
 
-PETSC_EXTERN void dmplexrestoretransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, PetscInt *N, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexrestoretransitiveclosure_(DM *dm, PetscInt *p, PetscBool *useCone, PetscInt *numPoints, F90Array1d *points, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *array;
 
-  *ierr = F90Array1dAccess(ptr, MPIU_INT, (void **)&array PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dAccess(points, MPIU_INT, (void **)&array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
   *ierr = DMPlexRestoreTransitiveClosure(*dm, *p, *useCone, NULL, &array);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(points, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
-PETSC_EXTERN void dmplexvecgetclosure_(DM *dm, PetscSection *section, Vec *x, PetscInt *point, PetscInt *N, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexvecgetclosure_(DM *dm, PetscSection *section, Vec *v, PetscInt *point, PetscInt *csize, F90Array1d *values, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscScalar *v = NULL;
+  PetscScalar *fa = NULL;
   PetscInt     n;
 
-  CHKFORTRANNULL(N);
-  *ierr = DMPlexVecGetClosure(*dm, *section, *x, *point, &n, &v);
+  CHKFORTRANNULL(csize);
+  *ierr = DMPlexVecGetClosure(*dm, *section, *v, *point, &n, &fa);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)v, MPIU_SCALAR, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
-  if (N) *N = n;
+  *ierr = F90Array1dCreate((void *)fa, MPIU_SCALAR, 1, n, values PETSC_F90_2PTR_PARAM(ptrd));
+  if (csize) *csize = n;
 }
 
-PETSC_EXTERN void dmplexvecrestoreclosure_(DM *dm, PetscSection *section, Vec *v, PetscInt *point, PetscInt *N, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void dmplexvecrestoreclosure_(DM *dm, PetscSection *section, Vec *v, PetscInt *point, PetscInt *csize, F90Array1d *values, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *array;
 
-  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&array PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dAccess(values, MPIU_SCALAR, (void **)&array PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
   *ierr = DMPlexVecRestoreClosure(*dm, *section, *v, *point, NULL, &array);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(values, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
 }
 
@@ -180,75 +180,74 @@ PETSC_EXTERN void dmplexrestoreclosureindices_(DM *dm, PetscSection *section, Pe
   if (!FORTRANNULLSCALARPOINTER(valPtr)) *ierr = F90Array1dDestroy(valPtr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(valPtrd));
 }
 
-PETSC_EXTERN void dmplexgetjoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+PETSC_EXTERN void dmplexgetjoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveredPoints, F90Array1d *coveredPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+{
+  const PetscInt *fa;
+  PetscInt        n;
+
+  CHKFORTRANNULL(numCoveredPoints);
+  *ierr = DMPlexGetJoin(*dm, *numPoints, points, &n, &fa);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, n, coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
+  if (numCoveredPoints) *numCoveredPoints = n;
+}
+
+PETSC_EXTERN void dmplexgetfulljoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveredPoints, F90Array1d *coveredPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+{
+  const PetscInt *fa;
+  PetscInt        n;
+
+  CHKFORTRANNULL(numCoveredPoints);
+  *ierr = DMPlexGetFullJoin(*dm, *numPoints, points, &n, &fa);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, n, coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
+  if (numCoveredPoints) *numCoveredPoints = n;
+}
+
+PETSC_EXTERN void dmplexrestorejoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveredPoints, F90Array1d *coveredPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+{
+  PetscInt *fa;
+
+  *ierr = F90Array1dAccess(coveredPoints, MPIU_INT, (void **)&fa PETSC_F90_2PTR_PARAM(cptrd));
+  if (*ierr) return;
+  *ierr = DMPlexRestoreJoin(*dm, 0, NULL, NULL, (const PetscInt **)&fa);
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(coveredPoints, MPIU_INT PETSC_F90_2PTR_PARAM(cptrd));
+  if (*ierr) return;
+}
+
+PETSC_EXTERN void dmplexgetmeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveringPoints, F90Array1d *coveringPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
 {
   const PetscInt *coveredPoints;
   PetscInt        n;
 
-  CHKFORTRANNULL(N);
-  *ierr = DMPlexGetJoin(*dm, *numPoints, points, &n, &coveredPoints);
-  if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)coveredPoints, MPIU_INT, 1, n, cptr PETSC_F90_2PTR_PARAM(cptrd));
-  if (N) *N = n;
-}
-
-PETSC_EXTERN void dmplexgetfulljoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
-{
-  const PetscInt *coveredPoints;
-  PetscInt        n;
-
-  CHKFORTRANNULL(N);
-  *ierr = DMPlexGetFullJoin(*dm, *numPoints, points, &n, &coveredPoints);
-  if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)coveredPoints, MPIU_INT, 1, n, cptr PETSC_F90_2PTR_PARAM(cptrd));
-  if (N) *N = n;
-}
-
-PETSC_EXTERN void dmplexrestorejoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
-{
-  PetscInt *coveredPoints;
-
-  *ierr = F90Array1dAccess(cptr, MPIU_INT, (void **)&coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
-  if (*ierr) return;
-  *ierr = DMPlexRestoreJoin(*dm, 0, NULL, NULL, (const PetscInt **)&coveredPoints);
-  if (*ierr) return;
-  *ierr = F90Array1dDestroy(cptr, MPIU_INT PETSC_F90_2PTR_PARAM(cptrd));
-  if (*ierr) return;
-}
-
-PETSC_EXTERN void dmplexgetmeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
-{
-  const PetscInt *coveredPoints;
-  PetscInt        n;
-
-  CHKFORTRANNULL(N);
+  CHKFORTRANNULL(numCoveringPoints);
   *ierr = DMPlexGetMeet(*dm, *numPoints, points, &n, &coveredPoints);
   if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)coveredPoints, MPIU_INT, 1, n, cptr PETSC_F90_2PTR_PARAM(cptrd));
-  if (N) *N = n;
+  *ierr = F90Array1dCreate((void *)coveredPoints, MPIU_INT, 1, n, coveringPoints PETSC_F90_2PTR_PARAM(cptrd));
+  if (numCoveringPoints) *numCoveringPoints = n;
 }
 
-PETSC_EXTERN void dmplexgetfullmeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+PETSC_EXTERN void dmplexgetfullmeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveredPoints, F90Array1d *coveredPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
 {
-  const PetscInt *coveredPoints;
+  const PetscInt *fa;
   PetscInt        n;
 
-  CHKFORTRANNULL(N);
+  CHKFORTRANNULL(numCoveredPoints);
+  *ierr = DMPlexGetFullMeet(*dm, *numPoints, points, &n, &fa);
   if (*ierr) return;
-  *ierr = DMPlexGetFullMeet(*dm, *numPoints, points, &n, &coveredPoints);
-  if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)coveredPoints, MPIU_INT, 1, n, cptr PETSC_F90_2PTR_PARAM(cptrd));
-  if (N) *N = n;
+  *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, n, coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
+  if (numCoveredPoints) *numCoveredPoints = n;
 }
 
-PETSC_EXTERN void dmplexrestoremeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
+PETSC_EXTERN void dmplexrestoremeet_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *numCoveredPoints, F90Array1d *coveredPoints, int *ierr PETSC_F90_2PTR_PROTO(cptrd))
 {
-  PetscInt *coveredPoints;
+  PetscInt *fa;
 
-  *ierr = F90Array1dAccess(cptr, MPIU_INT, (void **)&coveredPoints PETSC_F90_2PTR_PARAM(cptrd));
+  *ierr = F90Array1dAccess(coveredPoints, MPIU_INT, (void **)&fa PETSC_F90_2PTR_PARAM(cptrd));
   if (*ierr) return;
-  *ierr = DMPlexRestoreMeet(*dm, 0, NULL, NULL, (const PetscInt **)&coveredPoints);
+  *ierr = DMPlexRestoreMeet(*dm, 0, NULL, NULL, (const PetscInt **)&fa);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(cptr, MPIU_INT PETSC_F90_2PTR_PARAM(cptrd));
+  *ierr = F90Array1dDestroy(coveredPoints, MPIU_INT PETSC_F90_2PTR_PARAM(cptrd));
   if (*ierr) return;
 }

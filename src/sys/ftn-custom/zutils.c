@@ -9,15 +9,7 @@
 
    Level: beginner
 
-.seealso:  `PetscOffset`, `PetscInt`
-M*/
-/*MC
-   PetscOffset - a variable type in Fortran used with `VecGetArray()`
-     and `ISGetIndices()`
-
-   Level: beginner
-
-.seealso:  `PetscFortranAddr`, `PetscInt`
+.seealso: `PetscInt`
 M*/
 
 /*
