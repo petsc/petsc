@@ -726,6 +726,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
       PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Superlu_dist_keyval, context));
     } else {
       PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)A), &lu->comm_superlu));
+      context = NULL; /* the context is owned by another factored matrix; do not use or modify it */
     }
 
     /* Default number of process columns and rows */
