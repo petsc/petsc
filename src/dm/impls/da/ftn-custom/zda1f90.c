@@ -60,7 +60,7 @@ PETSC_EXTERN void dmdarestoreelements_(DM *dm, PetscInt *nel, PetscInt *nen, F90
     *ierr = PetscError(((PetscObject)e)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "e==NULL, maybe #include <petsc/finclude/petscvec.h> is missing?");
     return;
   }
-  *ierr = F90Array1dDestroy(e, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dDestroy(e, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void dmdavecgetarray1_(DM *da, Vec *vec, F90Array1d *array, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))

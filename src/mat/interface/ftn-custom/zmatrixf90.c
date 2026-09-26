@@ -98,7 +98,7 @@ PETSC_EXTERN void matrestorerow_(Mat *mat, PetscInt *row, PetscInt *ncols, F90Ar
   if (!FORTRANNULLSCALARPOINTER(vals)) {
     *ierr = F90Array1dAccess(vals, MPIU_SCALAR, (void **)&A PETSC_F90_2PTR_PARAM(jad));
     if (*ierr) return;
-    *ierr = F90Array1dDestroy(vals, MPIU_INT PETSC_F90_2PTR_PARAM(jad));
+    *ierr = F90Array1dDestroy(vals, MPIU_SCALAR PETSC_F90_2PTR_PARAM(jad));
     if (*ierr) return;
   }
   if (FORTRANNULLINTEGERPOINTER(cols)) {

@@ -129,8 +129,8 @@ PETSC_EXTERN void dmplexrestorefacegeometry_(DM *dm, PetscInt *fStart, PetscInt 
   if (*ierr) return;
   *ierr = DMPlexRestoreFaceGeometry(*dm, *fStart, *fEnd, *faceGeometry, *cellGeometry, Nface, &g, &v);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(gPtr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(vPtrd));
+  *ierr = F90Array1dDestroy(gPtr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(gPtrd));
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(vPtr, MPIU_REAL PETSC_F90_2PTR_PARAM(gPtrd));
+  *ierr = F90Array1dDestroy(vPtr, MPIU_REAL PETSC_F90_2PTR_PARAM(vPtrd));
   if (*ierr) return;
 }

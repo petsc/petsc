@@ -25,7 +25,7 @@ PETSC_EXTERN void snesgetconvergencehistory_(SNES *snes, F90Array1d *a, F90Array
 
 PETSC_EXTERN void snesrestoreconvergencehistory_(SNES *snes, F90Array1d *a, F90Array1d *its, PetscInt *na, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
-  *ierr = F90Array1dDestroy(a, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dDestroy(a, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrd1));
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(its, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dDestroy(its, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd2));
 }
