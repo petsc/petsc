@@ -4,6 +4,7 @@ static char help[] = "Solves a saddle-point linear system using PCHPDDM.\n\n";
 #include <petsc/private/petscimpl.h>
 
 static PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, IS is, Mat N, PetscMPIInt size);
+static PetscErrorCode ResetA11(KSP ksp);
 
 int main(int argc, char **args)
 {
@@ -96,6 +97,9 @@ int main(int argc, char **args)
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(MatConvert(A[0], MATBAIJ, MAT_INPLACE_MATRIX, A));
   }
+  flg[3] = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-null_A11", flg + 3, NULL));
+  PetscCheck(!flg[3] || flg[0] || id == 3, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "-null_A11 requires either -system stokes -empty_A11 or -system lagrange");
   if (flg[0]) PetscCall(MatDestroy(A + 3));
   else {
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-diagonal_A11", flg, NULL));
@@ -129,6 +133,7 @@ int main(int argc, char **args)
   if (flg[1]) {
     PetscCall(PCSetUp(pc));
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    if (flg[3]) PetscCall(ResetA11(subksp[1]));
     PetscCall(KSPGetPC(subksp[0], &pc));
     /* inner preconditioner associated to top-left block */
 #if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
@@ -170,6 +175,7 @@ int main(int argc, char **args)
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCSetUp(pc)); /* update PCFIELDSPLIT submatrices */
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    if (flg[3]) PetscCall(ResetA11(subksp[1]));
     PetscCall(KSPGetPC(subksp[0], &pc));
 #if PetscDefined(HAVE_HPDDM) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
     PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
@@ -259,6 +265,17 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ResetA11(KSP ksp)
+{
+  Mat S, A00, Ap00, A01, A10;
+
+  PetscFunctionBeginUser;
+  PetscCall(KSPGetOperators(ksp, &S, NULL));
+  PetscCall(MatSchurComplementGetSubMatrices(S, &A00, &Ap00, &A01, &A10, NULL));
+  PetscCall(MatSchurComplementUpdateSubMatrices(S, A00, Ap00, A01, A10, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*TEST
 
    testset:
@@ -282,7 +299,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       test:
         suffix: 2_petsc
         output_file: output/ex87_1_petsc_system-stokes.out
-        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -successive_solves
+        args: -system stokes -empty_A11 -null_A11 {{false true}shared output} -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -successive_solves
         filter: sed -e "s/type: transpose/type: hermitiantranspose/g"
       test:
         suffix: threshold
@@ -318,13 +335,17 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system diffusion -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 20 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type pbjacobi -prefix_push fieldsplit_1_ -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -prefix_push pc_hpddm_levels_1_ -sub_pc_type lu -sub_pc_factor_shift_type nonzero -eps_nev 5 -eps_gen_non_hermitian -st_share_sub_ksp -prefix_pop -prefix_pop -fieldsplit_1_mat_schur_complement_ainv_type {{diag blockdiag}shared output}
 
-   test:
+   testset:
       requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 2
-      suffix: lagrange
       output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
-      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -transpose {{false true}shared output} -successive_solves
+      test:
+        suffix: lagrange
+        args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -transpose {{false true}shared output} -successive_solves
+      test:
+        suffix: lagrange_null_A11
+        args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -null_A11 -successive_solves
 
    test:
       requires: datafilespath mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
