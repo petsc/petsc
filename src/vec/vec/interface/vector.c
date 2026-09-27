@@ -2274,52 +2274,6 @@ PetscErrorCode VecFlag(Vec xin, PetscInt flg)
 }
 
 /*@
-  VecSetInf - set infinity into the local part of the vector
-
-  Not Collective
-
-  Input Parameters:
-. xin - the vector
-
-  Level: developer
-
-  Note:
-  Deprecated, see  `VecFlag()`
-  This is used for any subset of MPI processes to indicate an failure in a solver, after the next use of `VecNorm()` if
-  `KSPCheckNorm()` detects an infinity and at least one of the MPI processes has a not converged reason then the `KSP`
-  object collectively is labeled as not converged.
-
-  This cannot be called if `xin` has a cached norm available
-
-.seealso: [](ch_vectors), `VecFlag()`, `Vec`, `PetscLayout`, `VecGetLayout()`, `VecGetSize()`, `VecGetOwnershipRange()`, `VecGetOwnershipRanges()`
-@*/
-PetscErrorCode VecSetInf(Vec xin)
-{
-  // MSVC gives "divide by zero" error at compile time - so declare as volatile to skip this check.
-  volatile PetscReal one = 1.0, zero = 0.0;
-  PetscScalar        inf;
-  PetscBool          flg;
-
-  PetscFunctionBegin;
-  PetscCall(VecNormAvailable(xin, NORM_2, &flg, NULL));
-  PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot call VecSetInf() if the vector has a cached norm");
-  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
-  inf = one / zero;
-  PetscCall(PetscFPTrapPop());
-  if (xin->ops->set) PetscUseTypeMethod(xin, set, inf);
-  else {
-    PetscInt     n;
-    PetscScalar *xx;
-
-    PetscCall(VecGetLocalSize(xin, &n));
-    PetscCall(VecGetArrayWrite(xin, &xx));
-    for (PetscInt i = 0; i < n; ++i) xx[i] = inf;
-    PetscCall(VecRestoreArrayWrite(xin, &xx));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
   VecBindToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
 
   Logically collective
