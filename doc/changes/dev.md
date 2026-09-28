@@ -290,5 +290,5 @@
 ## Fortran
 
 - Remove the `PetscOffset` datatype and the undocumented `PetscOffsetFortran()` routine; both were needed by the removed Fortran bindings that returned an array together with a separate index offset
-- Fix `PCASMCreateSubdomains()`, which misread the number of blocks
-- `PCASMGetSubKSP()` and `PCASMGetLocalSubmatrices()` now return their errors instead of discarding them
+- Fix `PCASMCreateSubdomains()`, which misread the number of blocks. It now errors if given `PETSC_NULL_IS_POINTER`
+- `PCASMDestroySubdomains()` accepts `PETSC_NULL_IS_POINTER` for `is_local`, and `PCASMGetSubKSP()` and `PCASMGetLocalSubmatrices()` now return their errors instead of discarding them
