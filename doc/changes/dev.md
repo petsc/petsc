@@ -106,7 +106,7 @@
 - Change `MatGetValues()` to respect the row or column orientation set with `MatSetOption(mat, MAT_ROW_ORIENTED, ...)`. This will break current code that calls
   `MatSetOption(mat, MAT_ROW_ORIENTED, PETSC_FALSE)` and uses `MatGetValues()`
 - Add new `MatType` `MATSEQBAIJLIBXSMM` and `MATMPIBAIJLIBXSMM`
-- Add support for `MatSetInf()` with `MATSEQDENSE` and `MATMPIDENSE`; no `MatType` implemented it before
+- Add `MatFlag()`, the `Mat` counterpart of `VecFlag()`, implemented for `MATSEQDENSE` and `MATMPIDENSE`, and deprecate `MatSetInf()`, which no `MatType` implemented before
 - Fix `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()` and `MatDenseGetColumnVecWrite()` on `MATDENSECUDA` and `MATDENSEHIP` matrices whose `VecType` is `VECKOKKOS`; the column `Vec` was placed as if it were a CUDA/HIP `Vec`, so the column data never reached it
 - Add device SpMM support for `MATPRODUCT_AB` and `MATPRODUCT_AtB` with a `MATAIJKOKKOS` matrix and dense matrices; previously these products looped `MatMult()` over the columns of the dense matrix
 - Change `MatCreateMAIJ()` to convert its result to `MATAIJKOKKOS` when the input matrix has that type, as is already done for `MATAIJCUSPARSE`; the `MATMAIJ` kernels read the host arrays of the input matrix directly and so miss values last updated on device
@@ -130,6 +130,7 @@
 - Fix the symbolic phase of a `MatProduct` with a dense result to propagate the `VecType` of the dense operand to the `Mat` it creates
 - Fix `MatDenseGetSubMatrix()` to propagate the `VecType` to the submatrix
 - Add `MatCreateNestFromMultipleShifts()` to create a `MATNEST` that represents a family of shifted matrices, and `MatCreateVecNestFromMultipleShifts()` to create a compatible `VECNEST` vector
+- Change `MatMatSolve()`, `MatMatSolveTranspose()` and `MatMatTransposeSolve()` to flag every entry of `X` with `MatFlag()` and skip the solve when the factorization failed, as `MatSolve()` already did for `x`
 
 ## MatCoarsen
 

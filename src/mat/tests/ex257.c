@@ -1,4 +1,4 @@
-static char help[] = "Test MatDenseGetSubMatrix() on a CUDA matrix and MatSetInf() on dense matrices.\n";
+static char help[] = "Test MatDenseGetSubMatrix() on a CUDA matrix and MatFlag() on dense matrices.\n";
 
 #include <petscmat.h>
 
@@ -38,7 +38,7 @@ static PetscErrorCode CreateDenseCUDA(PetscInt n, PetscInt lda, Mat *A)
 }
 
 /*
-   MatSetInf() on a dense Mat whose leading dimension matches the number of local rows and on one whose leading dimension is larger, on the host or on the device
+   MatFlag() on a dense Mat whose leading dimension matches the number of local rows and on one whose leading dimension is larger, on the host or on the device
 */
 static PetscErrorCode TestSetInf(PetscInt n, PetscInt lda, PetscBool cuda)
 {
@@ -49,20 +49,20 @@ static PetscErrorCode TestSetInf(PetscInt n, PetscInt lda, PetscBool cuda)
   if (cuda) PetscCall(CreateDenseCUDA(n, n, &A));
   else PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, PETSC_DETERMINE, n, NULL, &A));
   PetscCall(MatZeroEntries(A));
-  PetscCall(MatSetInf(A));
+  PetscCall(MatFlag(A, 1));
   PetscCall(CheckInf(A));
   PetscCall(MatDestroy(&A));
 
   if (cuda) {
     PetscCall(CreateDenseCUDA(n, lda, &A));
-    /* the values are put on the device so that MatSetInf() has to invalidate them, as when it is called on the block of solutions of a KSPMatSolve() which has not converged */
+    /* the values are put on the device so that MatFlag() has to invalidate them, as when it is called on the block of solutions of a KSPMatSolve() which has not converged */
     PetscCall(MatZeroEntries(A));
   } else {
     PetscCall(PetscCalloc1((size_t)lda * n, &data));
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, n, PETSC_DECIDE, PETSC_DETERMINE, n, data, &A));
     PetscCall(MatDenseSetLDA(A, lda));
   }
-  PetscCall(MatSetInf(A));
+  PetscCall(MatFlag(A, 1));
   PetscCall(CheckInf(A));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFree(data));

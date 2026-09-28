@@ -3902,11 +3902,6 @@ static PetscErrorCode MatMatSolve_Basic(Mat A, Mat B, Mat X, PetscBool trans)
   PetscBool Abound, Bneedconv = PETSC_FALSE, Xneedconv = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (A->factorerrortype) {
-    PetscCall(PetscInfo(A, "MatFactorError %d\n", A->factorerrortype));
-    PetscCall(MatSetInf(X));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
   f = (!trans || (!A->ops->solvetranspose && A->symmetric)) ? A->ops->solve : A->ops->solvetranspose;
   PetscCheck(f, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Mat type %s", ((PetscObject)A)->type_name);
   PetscCall(MatBoundToCPU(A, &Abound));
@@ -3970,7 +3965,10 @@ PetscErrorCode MatMatSolve(Mat A, Mat B, Mat X)
   MatCheckPreallocated(A, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MatSolve, A, B, X, 0));
-  if (!A->ops->matsolve) {
+  if (A->factorerrortype) {
+    PetscCall(PetscInfo(A, "MatFactorError %d\n", A->factorerrortype));
+    PetscCall(MatFlag(X, 1));
+  } else if (!A->ops->matsolve) {
     PetscCall(PetscInfo(A, "Mat type %s using basic MatMatSolve\n", ((PetscObject)A)->type_name));
     PetscCall(MatMatSolve_Basic(A, B, X, PETSC_FALSE));
   } else PetscUseTypeMethod(A, matsolve, B, X);
@@ -4017,7 +4015,10 @@ PetscErrorCode MatMatSolveTranspose(Mat A, Mat B, Mat X)
   MatCheckPreallocated(A, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MatSolve, A, B, X, 0));
-  if (!A->ops->matsolvetranspose) {
+  if (A->factorerrortype) {
+    PetscCall(PetscInfo(A, "MatFactorError %d\n", A->factorerrortype));
+    PetscCall(MatFlag(X, 1));
+  } else if (!A->ops->matsolvetranspose) {
     PetscCall(PetscInfo(A, "Mat type %s using basic MatMatSolveTranspose\n", ((PetscObject)A)->type_name));
     PetscCall(MatMatSolve_Basic(A, B, X, PETSC_TRUE));
   } else PetscUseTypeMethod(A, matsolvetranspose, B, X);
@@ -4065,7 +4066,10 @@ PetscErrorCode MatMatTransposeSolve(Mat A, Mat Bt, Mat X)
   MatCheckPreallocated(A, 1);
 
   PetscCall(PetscLogEventBegin(MAT_MatTrSolve, A, Bt, X, 0));
-  PetscUseTypeMethod(A, mattransposesolve, Bt, X);
+  if (A->factorerrortype) {
+    PetscCall(PetscInfo(A, "MatFactorError %d\n", A->factorerrortype));
+    PetscCall(MatFlag(X, 1));
+  } else PetscUseTypeMethod(A, mattransposesolve, Bt, X);
   PetscCall(PetscLogEventEnd(MAT_MatTrSolve, A, Bt, X, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -11870,30 +11874,34 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat, PetscBool *cong)
 }
 
 /*@
-  MatSetInf - Set every entry (of a given nonzero pattern) of a matrix to positive infinity.
+  MatFlag - set infinity into the local part of the matrix on any subset of MPI processes
 
   Logically Collective
 
-  Input Parameter:
-. A - the matrix
+  Input Parameters:
++ A   - the matrix, can be `NULL` but only if on all processes
+- flg - indicates if this processes portion of the matrix should be set to infinity
 
   Level: developer
 
   Notes:
-  Only the dense types (`MATSEQDENSE`, `MATMPIDENSE`, and their device variants) currently implement this operation, which is used to flag a block of solutions that a linear solver failed to compute, as `VecFlag()` does for a single solution.
+  This is used to flag a block of solutions that a linear solver failed to compute, as `VecFlag()` does for a single solution.
 
-  The state of `A` is increased, so an outer solver that tracks it detects the failure even when the entries were already infinite.
+  The state of `A` is increased on all processes, whether or not their portion is flagged, so an outer solver that tracks it detects the failure even when the entries were already infinite.
 
-.seealso: `Mat`, `MatZeroEntries()`, `MatSetValues()`, `VecFlag()`
+  Only the dense types (`MATSEQDENSE`, `MATMPIDENSE`, and their device variants) currently implement this operation.
+
+.seealso: [](ch_matrices), `Mat`, `VecFlag()`, `MatZeroEntries()`, `MatSetValues()`
 @*/
-PetscErrorCode MatSetInf(Mat A)
+PetscErrorCode MatFlag(Mat A, PetscInt flg)
 {
   PetscFunctionBegin;
+  if (!A) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   MatCheckPreallocated(A, 1);
-  PetscUseTypeMethod(A, setinf);
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  if (flg) PetscUseTypeMethod(A, setinf);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

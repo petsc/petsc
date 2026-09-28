@@ -446,7 +446,7 @@ static PetscErrorCode MatSetInf_MPIDense(Mat A)
   Mat_MPIDense *l = (Mat_MPIDense *)A->data;
 
   PetscFunctionBegin;
-  PetscCall(MatSetInf(l->A));
+  PetscCall(MatFlag(l->A, 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

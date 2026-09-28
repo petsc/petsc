@@ -8,7 +8,7 @@
    u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
 */
 
-static char help[] = "This example is for testing different MatSolve routines :MatSolve(), MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd(), and MatMatSolve().\n\
+static char help[] = "This example is for testing different MatSolve routines :MatSolve(), MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd(), MatMatSolve(), and MatMatSolveTranspose(), including how they flag a solution they could not compute.\n\
 Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 
 #include <petscdm.h>
@@ -17,6 +17,84 @@ Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 extern PetscErrorCode ComputeMatrix(DM, Mat);
 extern PetscErrorCode ComputeRHS(DM, Vec);
 extern PetscErrorCode ComputeRHSMatrix(PetscInt, PetscInt, Mat *);
+
+/*
+   Every entry of a solution that could not be computed must have been flagged with positive infinity, see MatFlag() and VecFlag()
+*/
+static PetscErrorCode CheckInf(Mat X, const char name[])
+{
+  const PetscScalar *x;
+  PetscInt           i, j, m, N, lda;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetLocalSize(X, &m, NULL));
+  PetscCall(MatGetSize(X, NULL, &N));
+  PetscCall(MatDenseGetLDA(X, &lda));
+  PetscCall(MatDenseGetArrayRead(X, &x));
+  for (j = 0; j < N; j++)
+    for (i = 0; i < m; i++)
+      PetscCheck(PetscIsInfReal(PetscRealPart(x[i + j * lda])) && PetscRealPart(x[i + j * lda]) > 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s left entry (%" PetscInt_FMT ",%" PetscInt_FMT ") unflagged after a failed factorization", name, i, j);
+  PetscCall(MatDenseRestoreArrayRead(X, &x));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+   A factorization that hit a zero pivot must make MatMatSolve() and MatMatSolveTranspose() flag every column of X, exactly as MatSolve() flags x
+*/
+static PetscErrorCode TestZeroPivot(PetscInt n, PetscInt nrhs)
+{
+  Mat                A, F, B, X;
+  Vec                b, x;
+  IS                 perm, iperm;
+  MatFactorInfo      info;
+  const PetscScalar *xx;
+  PetscInt           i;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n, n, 1, NULL, &A));
+  /* an explicit zero on the diagonal gives a numeric, rather than structural, zero pivot */
+  for (i = 0; i < n; i++) PetscCall(MatSetValue(A, i, i, i == n / 2 ? 0.0 : 1.0, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+
+  PetscCall(MatFactorInfoInitialize(&info));
+  PetscCall(MatGetOrdering(A, MATORDERINGNATURAL, &perm, &iperm));
+  PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, &F));
+  PetscCall(MatLUFactorSymbolic(F, A, perm, iperm, &info));
+  /* the zero pivot is divided by during the factorization, so do not trap floating point exceptions until the solves are done */
+  PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
+  PetscCall(MatLUFactorNumeric(F, A, &info));
+
+  PetscCall(MatCreateVecs(A, &x, &b));
+  PetscCall(VecSet(b, 1.0));
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n, nrhs, NULL, &B));
+  PetscCall(MatZeroEntries(B));
+  PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &X)); /* start from zeros so that an untouched X cannot pass the checks below */
+
+  /* the reference behaviour that the block solves must reproduce */
+  PetscCall(MatSolve(F, b, x));
+  PetscCall(VecGetArrayRead(x, &xx));
+  for (i = 0; i < n; i++) PetscCheck(PetscIsInfReal(PetscRealPart(xx[i])) && PetscRealPart(xx[i]) > 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatSolve() left entry %" PetscInt_FMT " unflagged after a failed factorization", i);
+  PetscCall(VecRestoreArrayRead(x, &xx));
+
+  PetscCall(MatMatSolve(F, B, X));
+  PetscCall(CheckInf(X, "MatMatSolve()"));
+
+  PetscCall(MatZeroEntries(X));
+  PetscCall(MatMatSolveTranspose(F, B, X));
+  PetscCall(CheckInf(X, "MatMatSolveTranspose()"));
+  PetscCall(PetscFPTrapPop());
+
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&F));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&X));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(ISDestroy(&perm));
+  PetscCall(ISDestroy(&iperm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 int main(int argc, char **args)
 {
@@ -37,6 +115,8 @@ int main(int argc, char **args)
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
+
+  PetscCall(TestZeroPivot(4, 2));
 
   PetscCall(DMDACreate(PETSC_COMM_WORLD, &da));
   PetscCall(DMSetDimension(da, 3));

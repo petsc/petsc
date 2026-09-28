@@ -330,7 +330,10 @@ PETSC_EXTERN PetscErrorCode VecSetRandom(Vec, PetscRandom);
 PETSC_EXTERN PetscErrorCode VecSetRandomGaussian(Vec, PetscRandom, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode VecSet(Vec, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecSetStdBasis(Vec, PetscInt);
-PETSC_DEPRECATED_FUNCTION(3, 22, 0, "VecFlag()", ) PetscErrorCode VecSetInf(Vec);
+PETSC_DEPRECATED_FUNCTION(3, 22, 0, "VecFlag()", ) static inline PetscErrorCode VecSetInf(Vec xin)
+{
+  return VecFlag(xin, 1);
+}
 PETSC_EXTERN PetscErrorCode VecSwap(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPY(Vec, PetscScalar, Vec);
 PETSC_EXTERN PetscErrorCode VecAXPBY(Vec, PetscScalar, PetscScalar, Vec);
@@ -764,7 +767,7 @@ M*/
   Notes:
   Some operations may serve as the implementation for other routines not listed above. For
   example `VECOP_SET` can be used to simultaneously overriding the implementation used in
-  `VecSet()`, `VecSetInf()`, and `VecZeroEntries()`.
+  `VecSet()`, `VecFlag()`, and `VecZeroEntries()`.
 
   Entries to `VecOperation` are added as needed so if you do not see the operation listed which
   you'd like to replace, please send mail to `petsc-maint@mcs.anl.gov`!

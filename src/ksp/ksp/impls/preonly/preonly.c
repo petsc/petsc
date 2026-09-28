@@ -56,10 +56,11 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
   PetscCheck(ksp->guess_zero, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Running KSP of preonly doesn't make sense with nonzero initial guess you probably want a KSP type of Richardson");
   ksp->its = 0;
   PetscCall(KSP_PCMatApply(ksp, B, X));
+  PetscCall(PCReduceFailedReason(ksp->pc));
   PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
-  /* Note: only some ranks may have this set; this may lead to problems if the caller assumes ksp->reason is set on all processes or just uses the result */
+  PetscCall(MatFlag(X, pcreason));
   if (pcreason) {
-    PetscCall(MatSetInf(X));
+    PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPMatSolve%s() has not converged with PCFailedReason %s", ksp->transpose.solve_requested ? "Transpose" : "", PCFailedReasons[pcreason]);
     ksp->reason = KSP_DIVERGED_PC_FAILED;
   } else {
     ksp->its    = 1;

@@ -1,4 +1,4 @@
-static char help[] = "Tests VecSetInf().\n\n";
+static char help[] = "Tests VecFlag().\n\n";
 
 #include <petscvec.h>
 
