@@ -59,7 +59,7 @@ static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y)
   } else {
     PetscCall(KSPMatSolve(jac->ksp, X, Y));
   }
-  PetscCall(KSPCheckSolve(jac->ksp, pc, NULL));
+  PetscCall(KSPCheckMatSolve(jac->ksp, pc, Y));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -95,7 +95,7 @@ static PetscErrorCode PCMatApplyTranspose_KSP(PC pc, Mat X, Mat Y)
   } else {
     PetscCall(KSPMatSolveTranspose(jac->ksp, X, Y));
   }
-  PetscCall(KSPCheckSolve(jac->ksp, pc, NULL));
+  PetscCall(KSPCheckMatSolve(jac->ksp, pc, Y));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
   PetscFunctionReturn(PETSC_SUCCESS);

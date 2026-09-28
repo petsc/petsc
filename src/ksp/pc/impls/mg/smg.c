@@ -30,7 +30,7 @@ PetscErrorCode PCMGACycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
     if (!transpose) {
       if (matapp) {
         PetscCall(KSPMatSolve(mglevels[i]->smoothd, mglevels[i]->B, mglevels[i]->X));
-        PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, NULL));
+        PetscCall(KSPCheckMatSolve(mglevels[i]->smoothd, pc, mglevels[i]->X));
       } else {
         PetscCall(KSPSolve(mglevels[i]->smoothd, mglevels[i]->b, mglevels[i]->x));
         PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, mglevels[i]->x));

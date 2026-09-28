@@ -1397,11 +1397,13 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseScatter_Private(ilinkD->sctx, X, ilinkD->X, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(KSPMatSolve(kspA, ilinkA->X, ilinkA->Y));
+    PetscCall(KSPCheckMatSolve(kspA, pc, ilinkA->Y));
     PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilinkA->sctx, ilinkA->Y, Y, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(PetscLogEventBegin(KSP_Solve_FS_S, jac->kspschur, ilinkD->X, ilinkD->Y, NULL));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, 1));
     PetscCall(KSPMatSolve(jac->kspschur, ilinkD->X, ilinkD->Y));
+    PetscCall(KSPCheckMatSolve(jac->kspschur, pc, ilinkD->Y));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, -1));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->X, ilinkD->Y, NULL));
     PetscCall(MatScale(ilinkD->Y, jac->schurscale));
@@ -1412,6 +1414,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseScatter_Private(ilinkA->sctx, X, ilinkA->X, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(KSPMatSolve(kspA, ilinkA->X, ilinkA->Y));
+    PetscCall(KSPCheckMatSolve(kspA, pc, ilinkA->Y));
     PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(MatMatMult(jac->C, ilinkA->Y, MAT_REUSE_MATRIX, PETSC_DETERMINE, &ilinkD->X));
     PetscCall(MatScale(ilinkD->X, -1.0));
@@ -1421,6 +1424,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, 1));
     PetscCall(KSPMatSolve(jac->kspschur, ilinkD->X, ilinkD->Y));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, -1));
+    PetscCall(KSPCheckMatSolve(jac->kspschur, pc, ilinkD->Y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->X, ilinkD->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilinkD->sctx, ilinkD->Y, Y, INSERT_VALUES, SCATTER_REVERSE));
     break;
@@ -1431,6 +1435,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, 1));
     PetscCall(KSPMatSolve(jac->kspschur, ilinkD->X, ilinkD->Y));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, -1));
+    PetscCall(KSPCheckMatSolve(jac->kspschur, pc, ilinkD->Y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->X, ilinkD->Y, NULL));
     PetscCall(MatMatMult(jac->B, ilinkD->Y, MAT_REUSE_MATRIX, PETSC_DETERMINE, &ilinkA->X));
     PetscCall(MatScale(ilinkA->X, -1.0));
@@ -1438,6 +1443,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseScatter_Private(ilinkD->sctx, ilinkD->Y, Y, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(KSPMatSolve(kspA, ilinkA->X, ilinkA->Y));
+    PetscCall(KSPCheckMatSolve(kspA, pc, ilinkA->Y));
     PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilinkA->sctx, ilinkA->Y, Y, INSERT_VALUES, SCATTER_REVERSE));
     break;
@@ -1495,6 +1501,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
       }
     }
     if (N == P) PetscCall(KSPMatSolve(kspLower, ilinkA->X, ilinkA->Y));
+    PetscCall(KSPCheckMatSolve(kspLower, pc, ilinkA->Y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_L, kspLower, ilinkA->X, ilinkA->Y, NULL));
     PetscCall(MatMatMult(jac->C, ilinkA->Y, MAT_REUSE_MATRIX, PETSC_DETERMINE, &ilinkD->X));
     PetscCall(MatScale(ilinkD->X, -1.0));
@@ -1504,6 +1511,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, 1));
     PetscCall(KSPMatSolve(jac->kspschur, ilinkD->X, ilinkD->Y));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)kspA, (PetscObject)kspA, -1));
+    PetscCall(KSPCheckMatSolve(jac->kspschur, pc, ilinkD->Y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_S, jac->kspschur, ilinkD->X, ilinkD->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilinkD->sctx, ilinkD->Y, Y, INSERT_VALUES, SCATTER_REVERSE));
 
@@ -1513,6 +1521,7 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
         PetscCall(MatAXPY(ilinkA->X, -1.0, ilinkA->Y, SAME_NONZERO_PATTERN));
         PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
         PetscCall(KSPMatSolve(kspA, ilinkA->X, ilinkA->Y));
+        PetscCall(KSPCheckMatSolve(kspA, pc, ilinkA->Y));
         PetscCall(PetscLogEventEnd(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
       } else {
         PetscCall(MatMatMult(AinvB, ilinkD->Y, MAT_REUSE_MATRIX, PETSC_DETERMINE, &ilinkA->X));
@@ -1521,10 +1530,12 @@ static PetscErrorCode PCMatApply_FieldSplit_Schur(PC pc, Mat X, Mat Y)
     } else {
       PetscCall(PetscLogEventBegin(ilinkA->event, kspA, ilinkA->X, ilinkA->Y, NULL));
       PetscCall(KSPMatSolve(kspA, ilinkA->X, ilinkA->Y));
+      PetscCall(KSPCheckMatSolve(kspA, pc, ilinkA->Y));
       PetscCall(MatMatMult(jac->B, ilinkD->Y, MAT_REUSE_MATRIX, PETSC_DETERMINE, &ilinkA->X));
       if (!ilinkA->Z) PetscCall(MatDuplicate(ilinkA->X, MAT_DO_NOT_COPY_VALUES, &ilinkA->Z));
       PetscCall(PetscLogEventBegin(KSP_Solve_FS_U, kspUpper, ilinkA->X, ilinkA->Z, NULL));
       PetscCall(KSPMatSolve(kspUpper, ilinkA->X, ilinkA->Z));
+      PetscCall(KSPCheckMatSolve(kspUpper, pc, ilinkA->Z));
       PetscCall(PetscLogEventEnd(KSP_Solve_FS_U, kspUpper, ilinkA->X, ilinkA->Z, NULL));
       PetscCall(MatAXPY(ilinkA->Y, -1.0, ilinkA->Z, SAME_NONZERO_PATTERN));
     }
@@ -1773,6 +1784,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
       PetscCall(MatDenseScatter_Private(ilink->sctx, X, ilink->X, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
       PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+      PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
       PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
       PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
       ilink = ilink->next;
@@ -1782,6 +1794,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseScatter_Private(ilink->sctx, X, ilink->X, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+    PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
     PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
 
@@ -1794,6 +1807,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
     /* solve on second block variables */
     PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+    PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
     PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
   } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE || jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
@@ -1803,6 +1817,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseScatter_Private(ilink->sctx, X, ilink->X, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+    PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
     PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
     PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
     cnt = 1;
@@ -1815,6 +1830,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
       PetscCall(MatDenseScatter_Private(ilink->sctx, X, ilink->X, ADD_VALUES, SCATTER_FORWARD));
       PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
       PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+      PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
       PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
       PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
     }
@@ -1829,6 +1845,7 @@ static PetscErrorCode PCMatApply_FieldSplit(PC pc, Mat X, Mat Y)
         PetscCall(MatDenseScatter_Private(ilink->sctx, X, ilink->X, ADD_VALUES, SCATTER_FORWARD));
         PetscCall(PetscLogEventBegin(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
         PetscCall(KSPMatSolve(ilink->ksp, ilink->X, ilink->Y));
+        PetscCall(KSPCheckMatSolve(ilink->ksp, pc, ilink->Y));
         PetscCall(PetscLogEventEnd(ilink->event, ilink->ksp, ilink->X, ilink->Y, NULL));
         PetscCall(MatDenseScatter_Private(ilink->sctx, ilink->Y, Y, ADD_VALUES, SCATTER_REVERSE));
       }

@@ -2096,11 +2096,31 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, PetscCtxRt ctx)
 
 #include <petsc/private/pcimpl.h>
 
+static PetscErrorCode KSPCheckSolve_Private(KSP ksp, PC pc, Vec vec, Mat mat)
+{
+  PCFailedReason pcreason;
+  PC             subpc;
+  PetscBool      failed;
+
+  PetscFunctionBegin;
+  PetscCall(KSPGetPC(ksp, &subpc));
+  PetscCall(PCGetFailedReason(subpc, &pcreason));
+  failed = (PetscBool)(pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS));
+  PetscCall(VecFlag(vec, failed));
+  PetscCall(MatFlag(mat, failed));
+  if (failed) {
+    PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]);
+    PetscCall(PetscInfo(ksp, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]));
+    pc->failedreason = PC_SUBPC_ERROR;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   KSPCheckSolve - Checks if the `PCSetUp()` or `KSPSolve()` failed and set the error flag for the outer `PC`. A `KSP_DIVERGED_ITS` is
   not considered a failure in this context
 
-  Collective
+  Logically Collective
 
   Input Parameters:
 + ksp - the linear solver `KSP` context.
@@ -2114,26 +2134,59 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, PetscCtxRt ctx)
   with infinity the next call to `KSPCheckNorm()` or `KSPCheckDot()` will provide the same information to all the MPI processes that an error occurred on
   at least one of the processes.
 
+  If `vec` is `NULL`, it must be `NULL` on all calling processes.
+
   This may be called by a subset of the processes in the `PC`.
 
   Developer Note:
   This is used to manage returning with appropriate information from preconditioners whose inner `KSP` solvers have failed in some way
 
-.seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSPCheckNorm()`, `KSPCheckDot()`
+.seealso: [](ch_ksp), `KSP`, `KSPCreate()`, `KSPSetType()`, `KSPCheckNorm()`, `KSPCheckDot()`, `KSPCheckMatSolve()`
 @*/
 PetscErrorCode KSPCheckSolve(KSP ksp, PC pc, Vec vec)
 {
-  PCFailedReason pcreason;
-  PC             subpc;
-
   PetscFunctionBegin;
-  PetscCall(KSPGetPC(ksp, &subpc));
-  PetscCall(PCGetFailedReason(subpc, &pcreason));
-  PetscCall(VecFlag(vec, pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)));
-  if (pcreason || (ksp->reason < 0 && ksp->reason != KSP_DIVERGED_ITS)) {
-    PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]);
-    PetscCall(PetscInfo(ksp, "Detected not converged in KSP inner solve: KSP reason %s PC reason %s\n", KSPConvergedReasons[ksp->reason], PCFailedReasons[pcreason]));
-    pc->failedreason = PC_SUBPC_ERROR;
-  }
+  PetscCall(KSPCheckSolve_Private(ksp, pc, vec, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPCheckMatSolve - Checks whether an inner matrix solve failed and flags its solution and the outer preconditioner
+
+  Logically Collective
+
+  Input Parameters:
++ ksp - the inner linear solver context
+. pc  - the outer preconditioner context
+- mat - the `MATDENSE` solution matrix to flag
+
+  Level: developer
+
+  Notes:
+  This is the matrix counterpart of `KSPCheckSolve()`, for use after `KSPMatSolve()` or `KSPMatSolveTranspose()`
+  within a `PCMatApply()` or `PCMatApplyTranspose()` implementation.
+
+  If the inner preconditioner reports a failure, or `ksp` has a negative convergence reason other than `KSP_DIVERGED_ITS`,
+  the local portion of `mat` is set to infinity with `MatFlag()` and the outer `pc` is marked with `PC_SUBPC_ERROR`.
+  If the outer `pc` is configured to raise an error on failure, this routine raises the error after flagging `mat`.
+
+  Without a failure, the entries of `mat` are unchanged. Its object state is increased in either case.
+
+  If `mat` is `NULL`, it must be `NULL` on all calling processes.
+
+  This may be called by a subset of the processes in the `PC`.
+
+  Example Usage:
+.vb
+  PetscCall(KSPMatSolve(ksp, B, X));
+  PetscCall(KSPCheckMatSolve(ksp, pc, X));
+.ve
+
+.seealso: [](ch_ksp), `KSP`, `PC`, `KSPCheckSolve()`, `KSPMatSolve()`, `KSPMatSolveTranspose()`, `MatFlag()`, `PCGetFailedReason()`, `PCSetErrorIfFailure()`
+@*/
+PetscErrorCode KSPCheckMatSolve(KSP ksp, PC pc, Mat mat)
+{
+  PetscFunctionBegin;
+  PetscCall(KSPCheckSolve_Private(ksp, pc, NULL, mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

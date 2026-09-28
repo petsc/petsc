@@ -152,8 +152,9 @@
 
 ## KSP
 
+- Add `KSPCheckMatSolve()`, the matrix counterpart of `KSPCheckSolve()`, to flag block solutions and propagate inner solver failures to the outer preconditioner
 - Fix for `KSP` pre- and post-solve callbacks, that can now be used together with Eisenstat and Walker trick for `SNES`
-- Add `KSPPreSolve()` and `KSPPostSolve()` to run the registered `KSP` pre/post solve callbacks
+- Add `KSPPreSolve()` and `KSPPostSolve()` to run the registered `KSP` pre- and post-solve callbacks
 - Change `KSPSolve()` to run the `KSPSetPreSolve()` callback after `KSPSetUp()` and `KSPSetUpOnBlocks()` instead of before
 - Add `KSPIDR` — IDR(s) Induced Dimension Reduction Krylov solver (biorthogonal variant)
 - Add `KSPIDRSetS()`, `KSPIDRGetS()`, `KSPIDRSetRandom()`, `KSPIDRGetRandom()`, `KSPIDRSetCosine()`, and `KSPIDRGetCosine()`

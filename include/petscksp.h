@@ -125,6 +125,7 @@ PETSC_EXTERN PetscErrorCode KSPSetReusePreconditioner(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetReusePreconditioner(KSP, PetscBool *);
 PETSC_EXTERN PetscErrorCode KSPSetSkipPCSetFromOptions(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPCheckSolve(KSP, PC, Vec);
+PETSC_EXTERN PetscErrorCode KSPCheckMatSolve(KSP, PC, Mat);
 
 PETSC_EXTERN PetscFunctionList KSPList;
 PETSC_EXTERN PetscFunctionList KSPGuessList;

@@ -738,7 +738,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   PetscCall(MatAssemblyEnd(Z, MAT_FINAL_ASSEMBLY));
   /* do the subdomain solve */
   PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
-  PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
+  PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
   /* do we need to zero y? */
   PetscCall(MatZeroEntries(Y));

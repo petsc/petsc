@@ -618,6 +618,7 @@ static PetscErrorCode PCMatApply_BJacobi_Singleblock_Private(PC pc, Mat X, Mat Y
     PetscCall(KSPMatSolveTranspose(jac->ksp[0], sX, sY));
     PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, jac->ksp[0], sX, sY, 0));
   }
+  PetscCall(KSPCheckMatSolve(jac->ksp[0], pc, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1188,7 +1189,6 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y)
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc *)jac->data;
   PetscScalar          *yarray;
   const PetscScalar    *xarray;
-  KSPConvergedReason    reason;
 
   PetscFunctionBegin;
   /* place x's and y's local arrays into xsub and ysub */
@@ -1202,8 +1202,6 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y)
   PetscCall(KSPSolve(jac->ksp[0], mpjac->xsub, mpjac->ysub));
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, mpjac->ysub));
   PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], mpjac->xsub, mpjac->ysub, 0));
-  PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
 
   PetscCall(VecResetArray(mpjac->xsub));
   PetscCall(VecResetArray(mpjac->ysub));
@@ -1215,7 +1213,6 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y)
 static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y)
 {
   PC_BJacobi        *jac = (PC_BJacobi *)pc->data;
-  KSPConvergedReason reason;
   Mat                sX, sY;
   const PetscScalar *x;
   PetscScalar       *y;
@@ -1235,14 +1232,12 @@ static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y)
   PetscCall(MatDenseSetLDA(sY, ldb));
   PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[0], X, Y, 0));
   PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
-  PetscCall(KSPCheckSolve(jac->ksp[0], pc, NULL));
+  PetscCall(KSPCheckMatSolve(jac->ksp[0], pc, sY));
   PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], X, Y, 0));
   PetscCall(MatDestroy(&sY));
   PetscCall(MatDestroy(&sX));
   PetscCall(MatDenseRestoreArrayWrite(Y, &y));
   PetscCall(MatDenseRestoreArrayRead(X, &x));
-  PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
-  if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

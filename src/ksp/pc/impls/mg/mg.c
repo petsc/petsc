@@ -22,7 +22,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
   if (!transpose) {
     if (matapp) {
       PetscCall(KSPMatSolve(mglevels->smoothd, mglevels->B, mglevels->X)); /* pre-smooth */
-      PetscCall(KSPCheckSolve(mglevels->smoothd, pc, NULL));
+      PetscCall(KSPCheckMatSolve(mglevels->smoothd, pc, mglevels->X));
     } else {
       PetscCall(KSPSolve(mglevels->smoothd, mglevels->b, mglevels->x)); /* pre-smooth */
       PetscCall(KSPCheckSolve(mglevels->smoothd, pc, mglevels->x));
@@ -93,7 +93,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     if (!transpose) {
       if (matapp) {
         PetscCall(KSPMatSolve(mglevels->smoothu, mglevels->B, mglevels->X)); /* post smooth */
-        PetscCall(KSPCheckSolve(mglevels->smoothu, pc, NULL));
+        PetscCall(KSPCheckMatSolve(mglevels->smoothu, pc, mglevels->X));
       } else {
         PetscCall(KSPSolve(mglevels->smoothu, mglevels->b, mglevels->x)); /* post smooth */
         PetscCall(KSPCheckSolve(mglevels->smoothu, pc, mglevels->x));
