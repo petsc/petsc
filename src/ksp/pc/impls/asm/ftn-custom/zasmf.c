@@ -92,6 +92,10 @@ PETSC_EXTERN void pcasmcreatesubdomains2d_(PetscInt *m, PetscInt *n, PetscInt *M
 {
   IS *iis, *iisl;
 
+  if (FORTRANNULLISPOINTER(is) || FORTRANNULLISPOINTER(is_local)) {
+    *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_NULL, PETSC_ERROR_INITIAL, "PCASMCreateSubdomains2D() requires both output arrays; do not use PETSC_NULL_IS_POINTER");
+    return;
+  }
   *ierr = PCASMCreateSubdomains2D(*m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
   if (*ierr) return;
   *ierr = F90Array1dCreate(iis, MPIU_FORTRANADDR, 1, *Nsub, is PETSC_F90_2PTR_PARAM(ptrd1));
@@ -107,14 +111,17 @@ PETSC_EXTERN void pcasmgetsubksp_(PC *pc, PetscInt *n_local, PetscInt *first_loc
 
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCASMGetSubKSP(*pc, &nloc, &flocal, &tksp);
+  *ierr = PCASMGetSubKSP(*pc, &nloc, first_local ? &flocal : NULL, &tksp);
   if (*ierr) return;
   if (n_local) *n_local = nloc;
   if (first_local) *first_local = flocal;
+  if (FORTRANNULLKSPPOINTER(ksp)) return;
   *ierr = F90Array1dCreate(tksp, MPIU_FORTRANADDR, 1, nloc, ksp PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void pcasmrestoresubksp_(PC *pc, PetscInt *n_local, PetscInt *first_local, F90Array1d *ksp, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
+  *ierr = PETSC_SUCCESS;
+  if (FORTRANNULLKSPPOINTER(ksp)) return;
   *ierr = F90Array1dDestroy(ksp, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));
 }

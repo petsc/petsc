@@ -1236,7 +1236,7 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
   You must call `KSPSetUp()` before calling `PCASMGetSubKSP()`.
 
   Fortran Note:
-  Call `PCASMRestoreSubKSP()` when access to the array of `KSP` is no longer needed
+  Call `PCASMRestoreSubKSP()` when access to the array of `KSP` is no longer needed. Pass `PETSC_NULL_KSP_POINTER` for `ksp` if not needed.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`
@@ -1579,6 +1579,9 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS *is[], IS *is_local[])
   Presently `PCAMSCreateSubdomains2d()` is valid only for sequential
   preconditioners.  More general related routines are
   `PCASMSetTotalSubdomains()` and `PCASMSetLocalSubdomains()`.
+
+  Fortran Note:
+  Both `is` and `is_local` are created, so neither can be `PETSC_NULL_IS_POINTER`.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
