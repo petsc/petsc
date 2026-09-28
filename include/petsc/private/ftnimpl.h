@@ -5,6 +5,7 @@ PETSC_INTERN PetscErrorCode PETScParseFortranArgs_Private(int *, char ***);
 PETSC_EXTERN PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint, MPI_Datatype *);
 PETSC_EXTERN void          *PETSC_NULL_MAT_POINTER_Fortran(void);
 PETSC_EXTERN void          *PETSC_NULL_IS_POINTER_Fortran(void);
+PETSC_EXTERN void          *PETSC_NULL_KSP_POINTER_Fortran(void);
 
 PETSC_EXTERN PetscErrorCode          PetscScalarAddressToFortran(PetscObject, PetscInt, PetscScalar *, PetscScalar *, PetscInt, size_t *);
 PETSC_EXTERN PetscErrorCode          PetscScalarAddressFromFortran(PetscObject, PetscScalar *, size_t, PetscInt, PetscScalar **);
@@ -79,6 +80,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 #define FORTRANNULLREALPOINTER(a)    (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_POINTER_Fortran)
 #define FORTRANNULLISPOINTER(a)      (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_IS_POINTER_Fortran())
 #define FORTRANNULLMATPOINTER(a)     (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_MAT_POINTER_Fortran())
+#define FORTRANNULLKSPPOINTER(a)     (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_KSP_POINTER_Fortran())
 #define FORTRANNULLINTEGER(a)        (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_INTEGER_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_INTEGER_ARRAY_Fortran)
 #define FORTRANNULLSCALAR(a)         (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_SCALAR_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_SCALAR_ARRAY_Fortran)
 #define FORTRANNULLREAL(a)           (((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)(a)) == PETSC_NULL_REAL_ARRAY_Fortran)
