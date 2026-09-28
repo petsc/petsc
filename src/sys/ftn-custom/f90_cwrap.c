@@ -46,43 +46,41 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
 /*************************************************************************/
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
-  #define f90array1dcreatescalar_       F90ARRAY1DCREATESCALAR
-  #define f90array1daccessscalar_       F90ARRAY1DACCESSSCALAR
-  #define f90array1ddestroyscalar_      F90ARRAY1DDESTROYSCALAR
-  #define f90array1dcreatereal_         F90ARRAY1DCREATEREAL
-  #define f90array1daccessreal_         F90ARRAY1DACCESSREAL
-  #define f90array1ddestroyreal_        F90ARRAY1DDESTROYREAL
-  #define f90array1dcreateint_          F90ARRAY1DCREATEINT
-  #define f90array1daccessint_          F90ARRAY1DACCESSINT
-  #define f90array1ddestroyint_         F90ARRAY1DDESTROYINT
-  #define f90array1dcreatebool_         F90ARRAY1DCREATEBOOL
-  #define f90array1daccessbool_         F90ARRAY1DACCESSBOOL
-  #define f90array1ddestroybool_        F90ARRAY1DDESTROYBOOL
-  #define f90array1dcreatempiint_       F90ARRAY1DCREATEMPIINT
-  #define f90array1daccessmpiint_       F90ARRAY1DACCESSMPIINT
-  #define f90array1ddestroympiint_      F90ARRAY1DDESTROYMPIINT
-  #define f90array1dcreatefortranaddr_  F90ARRAY1DCREATEFORTRANADDR
-  #define f90array1daccessfortranaddr_  F90ARRAY1DACCESSFORTRANADDR
-  #define f90array1ddestroyfortranaddr_ F90ARRAY1DDESTROYFORTRANADDR
+  #define f90array1dcreatescalar_      F90ARRAY1DCREATESCALAR
+  #define f90array1daccessscalar_      F90ARRAY1DACCESSSCALAR
+  #define f90array1ddestroyscalar_     F90ARRAY1DDESTROYSCALAR
+  #define f90array1dcreatereal_        F90ARRAY1DCREATEREAL
+  #define f90array1daccessreal_        F90ARRAY1DACCESSREAL
+  #define f90array1ddestroyreal_       F90ARRAY1DDESTROYREAL
+  #define f90array1dcreateint_         F90ARRAY1DCREATEINT
+  #define f90array1daccessint_         F90ARRAY1DACCESSINT
+  #define f90array1ddestroyint_        F90ARRAY1DDESTROYINT
+  #define f90array1dcreatebool_        F90ARRAY1DCREATEBOOL
+  #define f90array1daccessbool_        F90ARRAY1DACCESSBOOL
+  #define f90array1ddestroybool_       F90ARRAY1DDESTROYBOOL
+  #define f90array1dcreatempiint_      F90ARRAY1DCREATEMPIINT
+  #define f90array1daccessmpiint_      F90ARRAY1DACCESSMPIINT
+  #define f90array1ddestroympiint_     F90ARRAY1DDESTROYMPIINT
+  #define f90array1dcreatefortranaddr_ F90ARRAY1DCREATEFORTRANADDR
+  #define f90array1daccessfortranaddr_ F90ARRAY1DACCESSFORTRANADDR
 #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
-  #define f90array1dcreatescalar_       f90array1dcreatescalar
-  #define f90array1daccessscalar_       f90array1daccessscalar
-  #define f90array1ddestroyscalar_      f90array1ddestroyscalar
-  #define f90array1dcreatereal_         f90array1dcreatereal
-  #define f90array1daccessreal_         f90array1daccessreal
-  #define f90array1ddestroyreal_        f90array1ddestroyreal
-  #define f90array1dcreateint_          f90array1dcreateint
-  #define f90array1daccessint_          f90array1daccessint
-  #define f90array1ddestroyint_         f90array1ddestroyint
-  #define f90array1dcreatebool_         f90array1dcreatebool
-  #define f90array1daccessbool_         f90array1daccessbool
-  #define f90array1ddestroybool_        f90array1ddestroybool
-  #define f90array1dcreatempiint_       f90array1dcreatempiint
-  #define f90array1daccessmpiint_       f90array1daccessmpiint
-  #define f90array1ddestroympiint_      f90array1ddestroympiint
-  #define f90array1dcreatefortranaddr_  f90array1dcreatefortranaddr
-  #define f90array1daccessfortranaddr_  f90array1daccessfortranaddr
-  #define f90array1ddestroyfortranaddr_ f90array1ddestroyfortranaddr
+  #define f90array1dcreatescalar_      f90array1dcreatescalar
+  #define f90array1daccessscalar_      f90array1daccessscalar
+  #define f90array1ddestroyscalar_     f90array1ddestroyscalar
+  #define f90array1dcreatereal_        f90array1dcreatereal
+  #define f90array1daccessreal_        f90array1daccessreal
+  #define f90array1ddestroyreal_       f90array1ddestroyreal
+  #define f90array1dcreateint_         f90array1dcreateint
+  #define f90array1daccessint_         f90array1daccessint
+  #define f90array1ddestroyint_        f90array1ddestroyint
+  #define f90array1dcreatebool_        f90array1dcreatebool
+  #define f90array1daccessbool_        f90array1daccessbool
+  #define f90array1ddestroybool_       f90array1ddestroybool
+  #define f90array1dcreatempiint_      f90array1dcreatempiint
+  #define f90array1daccessmpiint_      f90array1daccessmpiint
+  #define f90array1ddestroympiint_     f90array1ddestroympiint
+  #define f90array1dcreatefortranaddr_ f90array1dcreatefortranaddr
+  #define f90array1daccessfortranaddr_ f90array1daccessfortranaddr
 #endif
 
 PETSC_EXTERN void f90array1dcreatescalar_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
@@ -102,7 +100,6 @@ PETSC_EXTERN void f90array1daccessmpiint_(F90Array1d *, void **PETSC_F90_2PTR_PR
 PETSC_EXTERN void f90array1ddestroympiint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1dcreatefortranaddr_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1daccessfortranaddr_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
-PETSC_EXTERN void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
 /*@
    F90Array1dCreate - given a `F90Array1d` passed from Fortran associate with it a C array, its starting index and length
@@ -551,6 +548,7 @@ PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2P
   #define f90array1dgetaddrbool_        F90ARRAY1DGETADDRBOOL
   #define f90array1dgetaddrmpiint_      F90ARRAY1DGETADDRMPIINT
   #define f90array1dgetaddrfortranaddr_ F90ARRAY1DGETADDRFORTRANADDR
+  #define f90array1dgetdescriptor_      F90ARRAY1DGETDESCRIPTOR
 #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define f90array1dgetaddrscalar_      f90array1dgetaddrscalar
   #define f90array1dgetaddrreal_        f90array1dgetaddrreal
@@ -558,6 +556,7 @@ PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2P
   #define f90array1dgetaddrbool_        f90array1dgetaddrbool
   #define f90array1dgetaddrmpiint_      f90array1dgetaddrmpiint
   #define f90array1dgetaddrfortranaddr_ f90array1dgetaddrfortranaddr
+  #define f90array1dgetdescriptor_      f90array1dgetdescriptor
 #endif
 
 PETSC_EXTERN void f90array1dgetaddrscalar_(void *array, PetscFortranAddr *address)
@@ -583,6 +582,10 @@ PETSC_EXTERN void f90array1dgetaddrmpiint_(void *array, PetscFortranAddr *addres
 PETSC_EXTERN void f90array1dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
+}
+PETSC_EXTERN void f90array1dgetdescriptor_(F90Array1d *array, void **address PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *address = array;
 }
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)

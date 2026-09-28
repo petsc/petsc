@@ -107,3 +107,25 @@ module petscpf
 contains
 #include <../ftn/vec/petscpf.hf90>
 end module
+
+! Return the address of the PETSC_NULL_IS_POINTER descriptor, so C stubs can recognize an omitted array argument.
+function PETSC_NULL_IS_POINTER_Fortran() bind(C, name="PETSC_NULL_IS_POINTER_Fortran") result(ptr)
+  use, intrinsic :: ISO_C_binding
+  use petscisdef, only: tIS, PETSC_NULL_IS_POINTER
+  implicit none
+  type(c_ptr) ptr
+
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS_POINTER_Fortran
+#endif
+  interface
+    subroutine F90Array1dGetDescriptor(array, address)
+      use, intrinsic :: ISO_C_binding
+      import tIS
+      IS, pointer :: array(:)
+      type(c_ptr) address
+    end subroutine
+  end interface
+
+  call F90Array1dGetDescriptor(PETSC_NULL_IS_POINTER, ptr)
+end function
