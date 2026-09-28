@@ -2709,8 +2709,10 @@ static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLoc
   PetscCall(ISLocalToGlobalMappingGetType(map, &l2gtype));
   PetscCall(ISLocalToGlobalMappingSetType(*nmap, l2gtype));
 
-  /* New local l2g map for repeated indices if not allowed */
-  PetscCall(ISGlobalToLocalMappingApplyBlock(*nmap, IS_GTOLM_MASK, n / bs, idxs, NULL, nidxs));
+  /* Map the original local blocks to the retained local blocks. */
+  if (matis->allow_repeated) {
+    for (i = 0, c = 0; i < n / bs; i++) nidxs[i] = idxs[i] < 0 ? -1 : c++;
+  } else PetscCall(ISGlobalToLocalMappingApplyBlock(*nmap, IS_GTOLM_MASK, n / bs, idxs, NULL, nidxs));
   PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, n / bs, nidxs, PETSC_USE_POINTER, &is));
   PetscCall(ISLocalToGlobalMappingCreateIS(is, lmap));
   PetscCall(ISDestroy(&is));
