@@ -37,12 +37,13 @@ PETSC_EXTERN void pcasmgetlocalsubmatrices_(PC *pc, PetscInt *n, F90Array1d *mat
   PetscInt nloc;
   Mat     *tmat;
 
-  CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubmatrices(*pc, &nloc, &tmat);
   if (*ierr) return;
   if (n) *n = nloc;
-  if (mat) *ierr = F90Array1dCreate(tmat, MPIU_FORTRANADDR, 1, nloc, mat PETSC_F90_2PTR_PARAM(ptrd));
+  if (FORTRANNULLMATPOINTER(mat)) return;
+  if (tmat) *ierr = F90Array1dCreate(tmat, MPIU_FORTRANADDR, 1, nloc, mat PETSC_F90_2PTR_PARAM(ptrd));
+  else f90array1ddestroyfortranaddr_(mat PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 PETSC_EXTERN void pcasmgetlocalsubdomains_(PC *pc, PetscInt *n, F90Array1d *is, F90Array1d *is_local, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
@@ -50,16 +51,19 @@ PETSC_EXTERN void pcasmgetlocalsubdomains_(PC *pc, PetscInt *n, F90Array1d *is, 
   PetscInt nloc;
   IS      *tis, *tis_local;
 
-  CHKFORTRANNULLOBJECT(is);
-  CHKFORTRANNULLOBJECT(is_local);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubdomains(*pc, &nloc, &tis, &tis_local);
   if (*ierr) return;
   if (n) *n = nloc;
-  if (is) *ierr = F90Array1dCreate(tis, MPIU_FORTRANADDR, 1, nloc, is PETSC_F90_2PTR_PARAM(ptrd1));
+  if (!FORTRANNULLISPOINTER(is)) {
+    if (tis) *ierr = F90Array1dCreate(tis, MPIU_FORTRANADDR, 1, nloc, is PETSC_F90_2PTR_PARAM(ptrd1));
+    else f90array1ddestroyfortranaddr_(is PETSC_F90_2PTR_PARAM(ptrd1));
+  }
   if (*ierr) return;
-  if (is_local) *ierr = F90Array1dCreate(tis_local, MPIU_FORTRANADDR, 1, nloc, is_local PETSC_F90_2PTR_PARAM(ptrd2));
-  if (*ierr) return;
+  if (!FORTRANNULLISPOINTER(is_local)) {
+    if (tis_local) *ierr = F90Array1dCreate(tis_local, MPIU_FORTRANADDR, 1, nloc, is_local PETSC_F90_2PTR_PARAM(ptrd2));
+    else f90array1ddestroyfortranaddr_(is_local PETSC_F90_2PTR_PARAM(ptrd2));
+  }
 }
 
 PETSC_EXTERN void pcasmdestroysubdomains_(PetscInt *n, F90Array1d *is, F90Array1d *is_local, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))

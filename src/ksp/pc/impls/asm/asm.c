@@ -1658,6 +1658,9 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
   Note:
   The `IS` numbering is in the parallel, global numbering of the vector.
 
+  Fortran Note:
+  Pass `PETSC_NULL_IS_POINTER` for `is` or `is_local` if not needed. A requested array that does not exist is returned disassociated.
+
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
@@ -1698,6 +1701,9 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
   Call after `PCSetUp()` (or `KSPSetUp()`) but before `PCApply()` and before `PCSetUpOnBlocks()`)
 
   Usually one would use `PCSetModifySubMatrices()` to change the submatrices in building the preconditioner.
+
+  Fortran Note:
+  Pass `PETSC_NULL_MAT_POINTER` for `mat` if not needed. If the `PC` is not a `PCASM`, `mat` is returned disassociated.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`

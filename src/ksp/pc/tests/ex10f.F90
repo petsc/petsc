@@ -5,13 +5,16 @@ program main
   implicit none
 
   Mat A, saved_null_mat
-  Mat, pointer :: saved_mat_pointer(:)
+  Mat, target :: matrix_target(1)
+  Mat, pointer :: submatrices(:) => null(), saved_mat_pointer(:)
   IS, pointer :: subdomains(:) => null(), inner(:) => null(), saved_is_pointer(:)
   IS saved_null_is
+  IS, target :: explicit_outer(1), explicit_inner(1)
   PC pc
-  PetscInt i, nsub, n, imin, imax, saved_null_integer
+  PetscInt i, nsub, m, n, imin, imax, saved_null_integer
   PetscInt, parameter :: nrows = 4
   PetscScalar, parameter :: one = 1
+  PetscScalar value(1)
   PetscErrorCode ierr, expected_error, second_error
   character(len=16) :: test_case = 'create'
 
@@ -29,6 +32,7 @@ program main
   end do
   PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
   PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+  matrix_target(1) = A
   PetscCallA(PCCreate(PETSC_COMM_SELF, pc, ierr))
   PetscCallA(PCSetOperators(pc, A, A, ierr))
   PetscCallA(PCSetType(pc, PCASM, ierr))
@@ -52,22 +56,111 @@ program main
     PetscCallA(PCASMCreateSubdomains(A, nsub, subdomains, ierr))
     PetscCallA(PCASMDestroySubdomains(nsub, subdomains, PETSC_NULL_IS_POINTER, ierr))
     call CheckNullOutputs()
+  case ('subdomains')
+    PetscCallA(PCASMGetLocalSubdomains(pc, nsub, subdomains, inner, ierr))
+    PetscCheckA(.not. associated(inner), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Expected no inner subdomain array for one block')
+  case ('submatrices')
+    PetscCallA(PCASMGetLocalSubmatrices(pc, nsub, submatrices, ierr))
+    PetscCheckA(associated(submatrices), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'PCASMGetLocalSubmatrices() left the output disassociated')
+    PetscCheckA(size(submatrices) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong submatrix array extent')
+    PetscCallA(MatGetSize(submatrices(1), m, n, ierr))
+    PetscCheckA(m == nrows .and. n == nrows, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong submatrix dimensions')
+    PetscCallA(MatGetValues(submatrices(1), 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], 1_PETSC_INT_KIND, [0_PETSC_INT_KIND], value, ierr))
+    PetscCheckA(value(1) == one, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong submatrix value')
   case default
     SETERRA(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, 'Unknown -case value')
   end select
   PetscCheckA(nsub == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Expected exactly one subdomain')
-  if (test_case == 'create') then
+  if (test_case == 'create' .or. test_case == 'subdomains') then
     PetscCheckA(associated(subdomains), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'PCASM left the subdomain output disassociated')
     PetscCheckA(size(subdomains) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong subdomain array extent')
     PetscCallA(ISGetSize(subdomains(1), n, ierr))
     PetscCallA(ISGetMinMax(subdomains(1), imin, imax, ierr))
     PetscCheckA(n == nrows .and. imin == 0 .and. imax == nrows - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong subdomain indices')
   end if
+  select case (trim(test_case))
+  case ('submatrices')
+    nullify (submatrices)
+    PetscCallA(PCASMGetLocalSubmatrices(pc, PETSC_NULL_INTEGER, submatrices, ierr))
+    call CheckNullOutputs()
+    PetscCheckA(associated(submatrices), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Omitting the count lost the submatrix output')
+    PetscCheckA(size(submatrices) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong submatrix extent with omitted count')
+    nsub = -1
+    PetscCallA(PCASMGetLocalSubmatrices(pc, nsub, PETSC_NULL_MAT_POINTER, ierr))
+    call CheckNullOutputs()
+    PetscCheckA(nsub == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Omitting matrices lost the count')
+    PetscCallA(PCASMGetLocalSubmatrices(pc, PETSC_NULL_INTEGER, PETSC_NULL_MAT_POINTER, ierr))
+    call CheckNullOutputs()
+    ! Before setup, the getter must return the C error and leave its outputs untouched.
+    nullify (submatrices)
+    PetscCallA(PCSetType(pc, PCNONE, ierr))
+    PetscCallA(PCSetType(pc, PCASM, ierr))
+    nsub = -1
+    PetscCallA(PetscPushErrorHandler(ReturnError, PETSC_NULL_INTEGER, ierr))
+    call PCASMGetLocalSubmatrices(pc, nsub, submatrices, expected_error)
+    PetscCallA(PetscPopErrorHandler(ierr))
+    PetscCheckA(expected_error == PETSC_ERR_ARG_WRONGSTATE, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'PCASMGetLocalSubmatrices() lost the error before setup')
+    PetscCheckA(nsub == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'A failed getter changed its count')
+    PetscCheckA(.not. associated(submatrices), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'A failed getter associated its output')
+    call CheckNullOutputs()
+    PetscCallA(PCSetType(pc, PCNONE, ierr))
+    PetscCallA(PCSetUp(pc, ierr))
+    submatrices => matrix_target
+    PetscCallA(PCASMGetLocalSubmatrices(pc, nsub, submatrices, ierr))
+    PetscCheckA(nsub == 0 .and. .not. associated(submatrices), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Empty matrix output retained an old association')
+  case ('subdomains')
+    inner => PETSC_NULL_IS_ARRAY
+    PetscCallA(PCASMGetLocalSubdomains(pc, PETSC_NULL_INTEGER, PETSC_NULL_IS_POINTER, inner, ierr))
+    call CheckNullOutputs()
+    PetscCheckA(.not. associated(inner), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Absent inner IS array retained an old association')
+    nullify (subdomains, inner)
+    PetscCallA(PCSetType(pc, PCNONE, ierr))
+    PetscCallA(PCSetType(pc, PCASM, ierr))
+    ! Before setup, neither IS array exists. Ordinary pointers may alias the null arrays.
+    subdomains => PETSC_NULL_IS_ARRAY
+    inner => PETSC_NULL_IS_ARRAY
+    PetscCallA(PCASMGetLocalSubdomains(pc, nsub, subdomains, inner, ierr))
+    PetscCheckA(.not. associated(subdomains) .and. .not. associated(inner), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Absent IS outputs retained old associations')
+    call CheckNullOutputs()
+    PetscCallA(ISCreateStride(PETSC_COMM_SELF, nrows, 0_PETSC_INT_KIND, 1_PETSC_INT_KIND, explicit_outer(1), ierr))
+    PetscCallA(ISCreateStride(PETSC_COMM_SELF, 2_PETSC_INT_KIND, 0_PETSC_INT_KIND, 1_PETSC_INT_KIND, explicit_inner(1), ierr))
+    PetscCallA(PCASMSetLocalSubdomains(pc, 1_PETSC_INT_KIND, explicit_outer, explicit_inner, ierr))
+    nsub = -1
+    PetscCallA(PCASMGetLocalSubdomains(pc, nsub, PETSC_NULL_IS_POINTER, PETSC_NULL_IS_POINTER, ierr))
+    call CheckNullOutputs()
+    PetscCheckA(nsub == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Omitting IS arrays lost the count')
+    PetscCallA(PCASMGetLocalSubdomains(pc, PETSC_NULL_INTEGER, PETSC_NULL_IS_POINTER, PETSC_NULL_IS_POINTER, ierr))
+    call CheckNullOutputs()
+    ! Omit the count, then each array independently, using fresh output descriptors.
+    do i = 1, 3
+      nullify (subdomains, inner)
+      if (i == 1) then
+        PetscCallA(PCASMGetLocalSubdomains(pc, PETSC_NULL_INTEGER, subdomains, inner, ierr))
+      else if (i == 2) then
+        PetscCallA(PCASMGetLocalSubdomains(pc, PETSC_NULL_INTEGER, subdomains, PETSC_NULL_IS_POINTER, ierr))
+      else
+        PetscCallA(PCASMGetLocalSubdomains(pc, PETSC_NULL_INTEGER, PETSC_NULL_IS_POINTER, inner, ierr))
+      end if
+      call CheckNullOutputs()
+      if (i /= 3) then
+        PetscCheckA(associated(subdomains), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Omitted arguments lost the outer IS array')
+        PetscCheckA(size(subdomains) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong outer IS array extent')
+        PetscCheckA(subdomains(1) == explicit_outer(1), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong outer IS returned')
+      end if
+      if (i /= 2) then
+        PetscCheckA(associated(inner), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Omitted arguments lost the inner IS array')
+        PetscCheckA(size(inner) == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong inner IS array extent')
+        PetscCheckA(inner(1) == explicit_inner(1), PETSC_COMM_SELF, PETSC_ERR_PLIB, 'Wrong inner IS returned')
+      end if
+    end do
+    PetscCallA(ISDestroy(explicit_outer(1), ierr))
+    PetscCallA(ISDestroy(explicit_inner(1), ierr))
+  end select
   if (test_case == 'create') then
     PetscCallA(PCASMDestroySubdomains(nsub, subdomains, inner, ierr))
   end if
   ! Getter outputs are borrowed from pc; only the create case owns its array.
-  nullify (subdomains, inner)
+  nullify (subdomains, inner, submatrices)
   PetscCallA(PCDestroy(pc, ierr))
   PetscCallA(MatDestroy(A, ierr))
   call CheckNullOutputs()
@@ -112,5 +205,11 @@ end program
 !     test:
 !       suffix: create_null
 !       args: -case create_null
+!     test:
+!       suffix: submatrices
+!       args: -case submatrices
+!     test:
+!       suffix: subdomains
+!       args: -case subdomains
 !
 !TEST*/
