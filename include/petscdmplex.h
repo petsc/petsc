@@ -27,6 +27,23 @@ PETSC_EXTERN PetscErrorCode DMPlexBuildFromCellSectionParallel(DM, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM, PetscInt, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM, PetscInt, PetscSF, const PetscReal[]);
 
+/*J
+  DMPlexCurveType - String with the name of a space-filling curve for `DMPlexReorderCellListByCurve()` and `DMPlexGetOrdering()`
+
+  Level: advanced
+
+  Note:
+  The curve is selected by name so that a new curve does not change the calling sequence of
+  `DMPlexReorderCellListByCurve()`.
+
+.seealso: `DMPlexReorderCellListByCurve()`, `DMPlexReorderCellListByCurveFromCentroids()`, `DMPlexGetOrdering()`
+J*/
+typedef const char *DMPlexCurveType;
+#define DMPLEXCURVEMORTON "morton"
+
+PETSC_EXTERN PetscErrorCode DMPlexReorderCellListByCurve(MPI_Comm, DMPlexCurveType, PetscInt, PetscInt, const PetscInt[], PetscInt, PetscInt, PetscInt, const PetscReal[], PetscSF *, PetscInt *, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMPlexReorderCellListByCurveFromCentroids(MPI_Comm, DMPlexCurveType, PetscInt, PetscInt, const PetscReal[], PetscSF *, PetscInt *);
+
 PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char[], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const PetscInt[], PetscInt, const PetscReal[], DM *);

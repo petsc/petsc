@@ -9,6 +9,7 @@ typedef struct {
   PetscInt *numComponents;   /* The number of field components */
   PetscInt *numDof;          /* The dof signature for the section */
   PetscInt  numGroups;       /* If greater than 1, use grouping in test */
+  char      orderType[256];  /* The ordering passed to DMPlexGetOrdering() */
 } AppCtx;
 
 PetscErrorCode ProcessOptions(AppCtx *options)
@@ -21,6 +22,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
   options->numComponents = NULL;
   options->numDof        = NULL;
   options->numGroups     = 0;
+  PetscCall(PetscStrncpy(options->orderType, MATORDERINGRCM, sizeof(options->orderType)));
 
   PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");
   PetscCall(PetscOptionsBoundedInt("-num_fields", "The number of section fields", "ex10.c", options->numFields, &options->numFields, NULL, 1));
@@ -31,6 +33,7 @@ PetscErrorCode ProcessOptions(AppCtx *options)
     PetscCheck(!flg || !(len != options->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %" PetscInt_FMT " should be %" PetscInt_FMT, len, options->numFields);
   }
   PetscCall(PetscOptionsBoundedInt("-num_groups", "Group permutation by this many label values", "ex10.c", options->numGroups, &options->numGroups, NULL, 0));
+  PetscCall(PetscOptionsString("-order_type", "The ordering type, for example rcm or morton", "ex10.c", options->orderType, options->orderType, sizeof(options->orderType), NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -60,7 +63,7 @@ PetscErrorCode TestReordering(DM dm, AppCtx *user)
   IS              perm;
   Mat             A, pA;
   PetscInt        bw, pbw;
-  MatOrderingType order = MATORDERINGRCM;
+  MatOrderingType order = user->orderType;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetOrdering(dm, order, NULL, &perm));
@@ -109,7 +112,7 @@ PetscErrorCode TestReorderingByGroup(DM dm, AppCtx *user)
   DM              pdm;
   DMLabel         label;
   Mat             A, pA;
-  MatOrderingType order = MATORDERINGRCM;
+  MatOrderingType order = user->orderType;
   IS              perm;
 
   PetscFunctionBegin;
@@ -183,6 +186,24 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
+  # Space-filling-curve ordering. Uses the same meshes as tests 1 and 3, so it exercises the
+  # DMPLEXCURVEMORTON branch of DMPlexGetOrdering() in 2D and 3D.
+  test:
+    suffix: morton_2d
+    args: -dm_plex_simplex 0 -num_dof 1,0,0 -mat_view -dm_coord_space 0 -order_type morton
+  test:
+    suffix: morton_3d
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -num_dof 1,0,0,0 -mat_view -dm_coord_space 0 -order_type morton
+  test:
+    suffix: morton_refined
+    args: -dm_plex_simplex 0 -dm_refine 2 -num_dof 1,0,0 -order_type morton
+  # A periodic mesh with localized coordinates keeps a second, per-cell coordinate field. The
+  # centroid of a cell that crosses the periodic boundary must come from that field, so this covers
+  # the other branch of DMPlexGetCellCoordinates(). Four of the 16 cells cross the boundary.
+  test:
+    suffix: morton_periodic
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -dm_plex_box_bd periodic,none -num_dof 1,0,0 -order_type morton
 
   # Two cell tests 0-3
   test:
