@@ -548,7 +548,7 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
     PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
     PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[0], Z, W, 0));
   }
-  PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
+  PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
 
   for (i = 0; i < N; ++i) {

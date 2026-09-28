@@ -485,6 +485,7 @@ static PetscErrorCode PCApply_HPDDM(PC pc, Vec x, Vec y)
   if (data->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[0], data->levels[0]->ksp, nullptr, nullptr, nullptr)); /* coarser-level events are directly triggered in HPDDM */
   if (!transpose) PetscCall(KSPSolve(data->levels[0]->ksp, x, y));
   else PetscCall(KSPSolveTranspose(data->levels[0]->ksp, x, y));
+  PetscCall(KSPCheckSolve(data->levels[0]->ksp, pc, y));
   if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Solve[0], data->levels[0]->ksp, nullptr, nullptr, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -499,6 +500,7 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
   PetscCheck(data->levels[0]->ksp, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No KSP attached to PCHPDDM");
   if (!transpose) PetscCall(KSPMatSolve(data->levels[0]->ksp, X, Y));
   else PetscCall(KSPMatSolveTranspose(data->levels[0]->ksp, X, Y));
+  PetscCall(KSPCheckMatSolve(data->levels[0]->ksp, pc, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

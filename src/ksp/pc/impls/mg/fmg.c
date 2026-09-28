@@ -75,7 +75,7 @@ PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
     if (mglevels[i]->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsolve, 0, 0, 0, 0));
     if (matapp) {
       PetscCall(KSPMatSolve(mglevels[i]->smoothd, mglevels[i]->B, mglevels[i]->X));
-      PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, NULL));
+      PetscCall(KSPCheckMatSolve(mglevels[i]->smoothd, pc, mglevels[i]->X));
     } else {
       PetscCall(KSPSolve(mglevels[i]->smoothd, mglevels[i]->b, mglevels[i]->x));
       PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, mglevels[i]->x));
@@ -89,7 +89,7 @@ PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
   if (mglevels[l - 1]->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels[l - 1]->eventsmoothsolve, 0, 0, 0, 0));
   if (matapp) {
     PetscCall(KSPMatSolve(mglevels[l - 1]->smoothd, mglevels[l - 1]->B, mglevels[l - 1]->X));
-    PetscCall(KSPCheckSolve(mglevels[l - 1]->smoothd, pc, NULL));
+    PetscCall(KSPCheckMatSolve(mglevels[l - 1]->smoothd, pc, mglevels[l - 1]->X));
   } else {
     PetscCall(KSPSolve(mglevels[l - 1]->smoothd, mglevels[l - 1]->b, mglevels[l - 1]->x));
     PetscCall(KSPCheckSolve(mglevels[l - 1]->smoothd, pc, mglevels[l - 1]->x));
