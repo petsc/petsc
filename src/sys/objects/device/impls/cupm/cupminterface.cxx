@@ -17,6 +17,8 @@ namespace cupm
 namespace impl
 {
 
+#define PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY(...) static_assert(true, "")
+
 #define PETSC_CUPM_STATIC_VARIABLE_DEFN(theirs, DEVICE, ours) const decltype(theirs) InterfaceImpl<DeviceType::DEVICE>::ours
 
 #define PETSC_CUPM_STATIC_VARIABLE_DEFN_CLASS(type_name, DEVICE, ours) const typename InterfaceImpl<DeviceType::DEVICE>::type_name InterfaceImpl<DeviceType::DEVICE>::ours
@@ -29,19 +31,19 @@ namespace impl
 // const decltype(cudaSuccess) Interface<DeviceType::CUDA>::cupmSuccess;
 // const decltype(hipAllGood)  Interface<DeviceType::HIP>::cupmSuccess;
 #define PETSC_CUPM_DEFINE_STATIC_VARIABLE_EXACT(cuoriginal, hiporiginal, ours) \
-  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN, PetscExpandToNothing)(cuoriginal, CUDA, ours); \
-  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN, PetscExpandToNothing)(hiporiginal, HIP, ours)
+  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(cuoriginal, CUDA, ours); \
+  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(hiporiginal, HIP, ours)
 
 // define the static variable in terms of the class typename
 #define PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(type_name, ours) \
-  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN_CLASS, PetscExpandToNothing)(type_name, CUDA, ours); \
-  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN_CLASS, PetscExpandToNothing)(type_name, HIP, ours)
+  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN_CLASS, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(type_name, CUDA, ours); \
+  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN_CLASS, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(type_name, HIP, ours)
 
 #define PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_EXACT_TYPENAME(type_name, ours) \
-  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN_EXACT, PetscExpandToNothing)(type_name, CUDA, ours); \
-  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN_EXACT, PetscExpandToNothing)(type_name, HIP, ours)
+  PetscIfPetscDefined(HAVE_CUDA, PETSC_CUPM_STATIC_VARIABLE_DEFN_EXACT, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(type_name, CUDA, ours); \
+  PetscIfPetscDefined(HAVE_HIP, PETSC_CUPM_STATIC_VARIABLE_DEFN_EXACT, PETSC_CUPM_STATIC_VARIABLE_DEFN_EMPTY)(type_name, HIP, ours)
 
-// if both cuda and hip agree on the same naming scheme i.e. cudaSuccess and hipSuccess:
+// if both CUDA and HIP agree on the same naming scheme, i.e., cudaSuccess and hipSuccess:
 //
 // PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(Success) ->
 // const decltype(cudaSuccess) Interface<DeviceType::CUDA>::cupmSuccess;
