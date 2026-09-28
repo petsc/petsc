@@ -6,9 +6,10 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
-Development
-===========
+Release 3.26.0
+==============
 
+- Update to PETSc 3.26 release.
 - Remove backward-compatibility entry points. Use their current names:
 
   - ``PETSc.DMDA`` instead of ``PETSc.DA``.
