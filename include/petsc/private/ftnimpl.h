@@ -420,6 +420,14 @@ PETSC_EXTERN PetscErrorCode F90Array1dCreate(void *, MPI_Datatype, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode F90Array1dAccess(F90Array1d *, MPI_Datatype, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN PetscErrorCode F90Array1dDestroy(F90Array1d *, MPI_Datatype PETSC_F90_2PTR_PROTO_NOVAR);
 
+/* Fortran routine that nullifies a Fortran pointer array of addresses, for stubs that must return an unassociated array */
+#if PetscDefined(HAVE_FORTRAN_CAPS)
+  #define f90array1ddestroyfortranaddr_ F90ARRAY1DDESTROYFORTRANADDR
+#elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
+  #define f90array1ddestroyfortranaddr_ f90array1ddestroyfortranaddr
+#endif
+PETSC_EXTERN void f90array1ddestroyfortranaddr_(F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
+
 PETSC_EXTERN PetscErrorCode F90Array2dCreate(void *, MPI_Datatype, PetscInt, PetscInt, PetscInt, PetscInt, F90Array2d *PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN PetscErrorCode F90Array2dAccess(F90Array2d *, MPI_Datatype, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN PetscErrorCode F90Array2dDestroy(F90Array2d *, MPI_Datatype PETSC_F90_2PTR_PROTO_NOVAR);
