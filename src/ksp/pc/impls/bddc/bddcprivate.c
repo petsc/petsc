@@ -9296,7 +9296,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
     PetscCall(MatMPIAIJRestrict(pcbddc->nedcG, ccomm, &coarseG));
   }
 
-  /* create the coarse KSP object only once with defaults */
+  /* A different coarse MPI communicator requires destroying the KSP on all of its old ranks */
+  if (pcbddc->coarse_ksp) {
+    PetscMPIInt comparison = MPI_UNEQUAL;
+
+    if (coarse_mat) PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)pcbddc->coarse_ksp), PetscObjectComm((PetscObject)coarse_mat), &comparison));
+    if (comparison != MPI_IDENT && comparison != MPI_CONGRUENT) PetscCall(KSPDestroy(&pcbddc->coarse_ksp));
+  }
+
+  /* create the coarse KSP object with defaults when needed */
   if (coarse_mat) {
     PetscBool   isredundant, isbddc, force, valid;
     PetscViewer dbg_viewer = NULL;
