@@ -2272,9 +2272,9 @@ static PetscErrorCode PCApplyTranspose_BDDC(PC pc, Vec r, Vec z)
 
 static PetscErrorCode PCReset_BDDC(PC pc)
 {
-  PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
-  PC_IS   *pcis   = (PC_IS *)pc->data;
-  KSP      kspD, kspR, kspC;
+  PC_BDDC    *pcbddc         = (PC_BDDC *)pc->data;
+  PC_IS      *pcis           = (PC_IS *)pc->data;
+  PetscScalar scaling_factor = pcis->scaling_factor;
 
   PetscFunctionBegin;
   /* free BDDC custom data  */
@@ -2291,32 +2291,16 @@ static PetscErrorCode PCReset_BDDC(PC pc)
   /* free data created by PCIS */
   PetscCall(PCISReset(pc));
 
-  /* restore defaults */
-  kspD = pcbddc->ksp_D;
-  kspR = pcbddc->ksp_R;
-  kspC = pcbddc->coarse_ksp;
-  PetscCall(PetscMemzero(pc->data, sizeof(*pcbddc)));
-  pcis->n_neigh                     = -1;
-  pcis->scaling_factor              = 1.0;
-  pcis->reusesubmatrices            = PETSC_TRUE;
-  pcbddc->use_local_adj             = PETSC_TRUE;
-  pcbddc->use_vertices              = PETSC_TRUE;
-  pcbddc->use_edges                 = PETSC_TRUE;
-  pcbddc->symmetric_primal          = PETSC_TRUE;
-  pcbddc->vertex_size               = 1;
-  pcbddc->recompute_topography      = PETSC_TRUE;
-  pcbddc->coarse_size               = -1;
-  pcbddc->use_exact_dirichlet_trick = PETSC_TRUE;
-  pcbddc->coarsening_ratio          = 8;
-  pcbddc->coarse_eqs_per_proc       = 1;
-  pcbddc->benign_compute_correction = PETSC_TRUE;
-  pcbddc->nedfield                  = -1;
-  pcbddc->nedglobal                 = PETSC_TRUE;
-  pcbddc->graphmaxcount             = PETSC_INT_MAX;
-  pcbddc->sub_schurs_layers         = -1;
-  pcbddc->ksp_D                     = kspD;
-  pcbddc->ksp_R                     = kspR;
-  pcbddc->coarse_ksp                = kspC;
+  // Restore the PCIS callbacks and clear derived state while preserving configured options.
+  PetscCall(PCISInitialize(pc));
+  pcis->scaling_factor              = scaling_factor;
+  pcis->n                           = 0;
+  pcis->n_B                         = 0;
+  pcis->pure_neumann                = PETSC_FALSE;
+  pcbddc->exact_dirichlet_trick_app = PETSC_FALSE;
+  pcbddc->ksp_guess_nonzero         = PETSC_FALSE;
+  pcbddc->rhs_change                = PETSC_FALSE;
+  pcbddc->temp_solution_used        = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2326,6 +2310,8 @@ static PetscErrorCode PCDestroy_BDDC(PC pc)
 
   PetscFunctionBegin;
   PetscCall(PCReset_BDDC(pc));
+  PetscCall(PCBDDCGraphDestroy(&pcbddc->mat_graph));
+  PetscCall(PCISReset(pc));
   PetscCall(KSPDestroy(&pcbddc->ksp_D));
   PetscCall(KSPDestroy(&pcbddc->ksp_R));
   PetscCall(KSPDestroy(&pcbddc->coarse_ksp));
