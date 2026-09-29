@@ -4,7 +4,7 @@
 
 static const char *const PCSides_Shifted[]       = {"DEFAULT", "LEFT", "RIGHT", "SYMMETRIC", "PCSide", "PC_", NULL};
 const char *const *const PCSides                 = PCSides_Shifted + 1;
-const char *const        PCASMTypes[]            = {"NONE", "RESTRICT", "INTERPOLATE", "BASIC", "PCASMType", "PC_ASM_", NULL};
+const char *const        PCASMTypes[]            = {"NONE", "RESTRICT", "INTERPOLATE", "BASIC", "WEIGHTED", "PCASMType", "PC_ASM_", NULL};
 const char *const        PCGASMTypes[]           = {"NONE", "RESTRICT", "INTERPOLATE", "BASIC", "PCGASMType", "PC_GASM_", NULL};
 const char *const        PCCompositeTypes[]      = {"ADDITIVE", "MULTIPLICATIVE", "SYMMETRIC_MULTIPLICATIVE", "SPECIAL", "SCHUR", "GKB", "PCCompositeType", "PC_COMPOSITE", NULL};
 const char *const        PCPARMSGlobalTypes[]    = {"RAS", "SCHUR", "BJ", "PCPARMSGlobalType", "PC_PARMS_", NULL};

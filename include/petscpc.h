@@ -236,6 +236,28 @@ PETSC_EXTERN PetscErrorCode PCASMSetSortIndices(PC, PetscBool);
 
 PETSC_EXTERN PetscErrorCode PCASMSetType(PC, PCASMType);
 PETSC_EXTERN PetscErrorCode PCASMGetType(PC, PCASMType *);
+/*S
+  PCASMWeightedComputeScalingFn - Computes the weights for one overlapping ASM subdomain.
+
+  Calling Sequence:
++ pc      - the `PCASM` preconditioner of `PCASMType` `PC_ASM_WEIGHTED`
+. local   - zero-based local subdomain number
+. scaling - vector to fill, in the ordering returned by `PCASMGetLocalSubdomains()`
+- ctx     - context supplied to `PCASMWeightedSetComputeScaling()`
+
+  Level: intermediate
+
+  Note:
+  Fill every entry of `scaling` without destroying it. The number of local subdomains may differ
+  between processes, so the callback must not perform collective operations on the communicator of `pc`.
+
+.seealso: [](ch_ksp), `PCASM`, `PCASMWeightedSetComputeScaling()`, `PCASMWeightedSetScaling()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PCASMWeightedComputeScalingFn(PC pc, PetscInt local, Vec scaling, PetscCtx ctx);
+
+PETSC_EXTERN PetscErrorCode PCASMWeightedSetComputeScaling(PC, PCASMWeightedComputeScalingFn *, PetscCtx);
+PETSC_EXTERN PetscErrorCode PCASMWeightedSetScaling(PC, PetscInt, Vec[]);
+PETSC_EXTERN PetscErrorCode PCASMWeightedGetScaling(PC, PetscInt *, Vec *[]);
 PETSC_EXTERN PetscErrorCode PCASMSetLocalType(PC, PCCompositeType);
 PETSC_EXTERN PetscErrorCode PCASMGetLocalType(PC, PCCompositeType *);
 PETSC_EXTERN PetscErrorCode PCASMCreateSubdomains(Mat, PetscInt, IS *[]);

@@ -791,9 +791,9 @@ SNESNASMSetSubdomains(SNES snes, PetscInt n, SNES subsnes[], VecScatter iscatter
 allows for the user to create these local subdomains. Problems set up
 using the `SNES` `DMDA` interface are automatically decomposed. To
 begin, the type of subdomain updates to the whole solution are limited
-to two types borrowed from `PCASM`: `PC_ASM_BASIC`, in which the
-overlapping updates added. `PC_ASM_RESTRICT` updates in a
-nonoverlapping fashion. This may be set with
+to two types borrowed from `PCASM`: `PC_ASM_RESTRICT`, which updates
+in a nonoverlapping fashion, and `PC_ASM_BASIC`, in which the
+overlapping updates are added. This may be set with
 
 ```
 SNESNASMSetType(SNES snes, PCASMType type);.
