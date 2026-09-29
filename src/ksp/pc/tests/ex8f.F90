@@ -1,5 +1,5 @@
 !
-!   Tests PCMGSetResidual
+!   Tests PCMGSetResidual and PCMGSetResidualTranspose
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
@@ -9,6 +9,13 @@ module ex8fmodule
 
 contains
   subroutine MyResidual(A, b, x, r, ierr)
+    Mat A
+    Vec b, x, r
+    integer, intent(out) :: ierr
+    ierr = 0
+  end
+
+  subroutine MyResidualTranspose(A, b, x, r, ierr)
     Mat A
     Vec b, x, r
     integer, intent(out) :: ierr
@@ -138,6 +145,7 @@ program main
   PetscCallA(PCSetType(pc, PCMG, ierr))
   PetscCallA(PCMGSetLevels(pc, 1_PETSC_INT_KIND, PETSC_NULL_MPI_COMM, ierr))
   PetscCallA(PCMGSetResidual(pc, 0_PETSC_INT_KIND, MyResidual, A, ierr))
+  PetscCallA(PCMGSetResidualTranspose(pc, 0_PETSC_INT_KIND, MyResidualTranspose, A, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix used to construct the preconditioner.
