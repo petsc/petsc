@@ -3,7 +3,6 @@
 #include <petscdmshell.h>
 #include <petscdmplex.h>  // For TSSetFromOptions()
 #include <petscdmswarm.h> // For TSSetFromOptions()
-#include <petscviewer.h>
 #include <petscdraw.h>
 #include <petscconvest.h>
 

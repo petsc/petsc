@@ -1,4 +1,3 @@
-#include <petscviewer.h>
 #include <petsc/private/matimpl.h>
 
 PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer)

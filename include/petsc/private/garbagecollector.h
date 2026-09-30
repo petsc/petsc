@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petsc/private/hashmapobj.h>
-#include <petscsys.h>
 
 typedef union _PetscGarbage
 {

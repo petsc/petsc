@@ -3,7 +3,6 @@ static char help[] = "Create a mesh, refine and coarsen simultaneously, and tran
 #include <petscds.h>
 #include <petscdmplex.h>
 #include <petscdmforest.h>
-#include <petscoptions.h>
 
 static PetscErrorCode AddIdentityLabel(DM dm)
 {

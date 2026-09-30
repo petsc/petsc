@@ -2,7 +2,6 @@
     Code for allocating Unix shared memory on MPI rank 0 and later accessing it from other MPI processes
 */
 #include <petsc/private/petscimpl.h>
-#include <petscsys.h>
 
 PetscBool PCMPIServerActive    = PETSC_FALSE; // PETSc is running in server mode
 PetscBool PCMPIServerInSolve   = PETSC_FALSE; // A parallel server solve is occurring

@@ -1,7 +1,5 @@
 static char help[] = "Tests CGNS viewers.\n\n";
 
-#include <petscsys.h>
-#include <petscviewer.h>
 #include <petscdm.h>
 #include <petscfe.h>
 

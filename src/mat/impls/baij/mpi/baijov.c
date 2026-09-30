@@ -3,7 +3,6 @@
   and to find submatrices that were shared across processors.
 */
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
-#include <petscbt.h>
 
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat, PetscInt, PetscBT *, PetscInt *, PetscInt **);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat, PetscInt, PetscInt **, PetscInt **, PetscInt *);

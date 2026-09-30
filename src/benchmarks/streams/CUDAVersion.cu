@@ -21,9 +21,6 @@
 */
 static char help[] = "Double-Precision STREAM Benchmark implementation in CUDA\n Performs Copy, Scale, Add, and Triad double-precision kernels\n\n";
 
-#include <petscconf.h>
-#include <petscsys.h>
-#include <petsctime.h>
 #include <petscdevice_cuda.h>
 
 #define N      10000000

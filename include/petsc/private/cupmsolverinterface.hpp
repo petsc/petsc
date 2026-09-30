@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petsc/private/cupmblasinterface.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 
 namespace Petsc
 {

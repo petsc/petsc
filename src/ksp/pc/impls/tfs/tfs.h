@@ -19,7 +19,6 @@ Last Modification:
 
 File Description:
 */
-#include <petscsys.h>
 #include <petscblaslapack.h>
 
 #define X  0

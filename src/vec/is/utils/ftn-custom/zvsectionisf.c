@@ -1,7 +1,6 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscis.h>
 #include <petscsection.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsectiongetpointsyms_          PETSCSECTIONGETPOINTSYMS

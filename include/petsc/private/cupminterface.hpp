@@ -3,7 +3,6 @@
 #include <petscdevice_cupm.h>
 
 #include <petsc/private/cpputil.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 
 #include <petsc/private/cpp/array.hpp>
 

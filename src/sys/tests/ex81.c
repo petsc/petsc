@@ -1,6 +1,5 @@
 static char help[] = "Tests PetscLogView() called with no PetscGlobalArgc and PetscGlobalArgs.\n\n";
 
-#include <petscsys.h>
 #include <petscvec.h>
 
 int main(int argc, char **args)

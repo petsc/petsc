@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petsc/private/cupminterface.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 
 #include <limits> // std::numeric_limits
 

@@ -1,7 +1,6 @@
 #include <petsc/private/dmpleximpl.h>  /*I      "petscdmplex.h"   I*/
 #include <petsc/private/petscfeimpl.h> /*I      "petscfe.h"       I*/
 #include <petscblaslapack.h>
-#include <petsctime.h>
 
 const char *const DMPlexCoordMaps[] = {"none", "rotate", "shear", "flare", "annulus", "shell", "sinusoid", "torus", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
 

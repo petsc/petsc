@@ -220,8 +220,6 @@ struct _MatOps {
     in include/petscmat.h
 */
 
-#include <petscsys.h>
-
 typedef struct _n_MatRootName *MatRootName;
 struct _n_MatRootName {
   char       *rname, *sname, *mname;
@@ -898,7 +896,6 @@ static inline PetscErrorCode MatPivotCheck(Mat fact, Mat mat, const MatFactorInf
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <petscbt.h>
 /*
   Create and initialize a linked list
   Input Parameters:

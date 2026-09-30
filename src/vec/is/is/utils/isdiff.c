@@ -1,6 +1,5 @@
 #include <petsc/private/isimpl.h> /*I "petscis.h"  I*/
 #include <petsc/private/sectionimpl.h>
-#include <petscbt.h>
 
 /*@
   ISDifference - Computes the difference between two index sets.

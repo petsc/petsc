@@ -1,4 +1,3 @@
-#include <petscsys.h>
 #include <petscblaslapack.h>
 
 static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z)

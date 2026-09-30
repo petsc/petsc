@@ -1,6 +1,5 @@
 static char help[] = "Tests PetscViewerBinary VecView()/VecLoad() function correctly when binary header is skipped.\n\n";
 
-#include <petscviewer.h>
 #include <petscvec.h>
 
 #define VEC_LEN 10

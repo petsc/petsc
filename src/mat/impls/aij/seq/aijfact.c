@@ -1,6 +1,5 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
-#include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
 static PetscErrorCode MatFactorGetSolverType_petsc(Mat A, MatSolverType *type)

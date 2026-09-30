@@ -1,7 +1,5 @@
 #pragma once
 
-#include <petsclog.h>         // PetscLogGpuTimeBegin()/End()
-#include <petscsys.h>         // SETERRQ()
 #include <petscdevice_cupm.h> // PETSC_USING_NVCC
 
 #include <thrust/version.h>          // THRUST_VERSION

@@ -17,7 +17,6 @@ static char help[] = "Landau Damping test using Vlasov-Poisson equations\n";
 #include <petscds.h>
 #include <petscbag.h>
 #include <petscdraw.h>
-#include <petscviewer.h>
 #include <petsclandau.h>
 #include <petscdmcomposite.h>
 #include <petsc/private/dmpleximpl.h>  /* For norm and dot */

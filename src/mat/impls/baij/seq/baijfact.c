@@ -1010,7 +1010,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C, Mat A, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
 {

@@ -1,4 +1,3 @@
-#include "petscsystypes.h"
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 
 /*@

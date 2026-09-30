@@ -2,7 +2,6 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petsc/private/kernels/blockinvert.h>
-#include <petscbt.h>
 #include <petscblaslapack.h>
 
 PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], PetscInt ov)

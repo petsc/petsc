@@ -1,6 +1,5 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
 #include <petscviewersaws.h>
-#include <petscsys.h>
 
 /*@
   PetscObjectSAWsTakeAccess - Take access of the data fields that have been published to SAWs

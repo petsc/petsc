@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscsys.h>
 #include <petscblaslapack.h>
 
 #define PetscKernel_A_gets_transpose_A_BODY(a, N) \

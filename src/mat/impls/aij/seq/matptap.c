@@ -5,8 +5,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
-#include <petscbt.h>
-#include <petsctime.h>
 
 #if PetscDefined(HAVE_HYPRE)
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);

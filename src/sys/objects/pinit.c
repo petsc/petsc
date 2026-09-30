@@ -4,7 +4,6 @@
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petsc/private/logimpl.h>
-#include <petscviewer.h>
 #include <petsc/private/garbagecollector.h>
 
 #if !PetscDefined(HAVE_WINDOWS_COMPILERS)

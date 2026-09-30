@@ -1,6 +1,5 @@
 static char help[] = "Demonstrates using the PetscBag Object\n\n";
 
-#include <petscsys.h>
 #include <petscbag.h>
 #include <petscviewer.h>
 

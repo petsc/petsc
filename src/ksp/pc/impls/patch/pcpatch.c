@@ -3,7 +3,6 @@
 #include <petsc/private/vecimpl.h>     /* For vec->map */
 #include <petsc/private/dmpleximpl.h>  /* For DMPlexComputeJacobian_Patch_Internal() */
 #include <petscsf.h>
-#include <petscbt.h>
 #include <petscds.h>
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 

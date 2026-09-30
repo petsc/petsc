@@ -4646,7 +4646,6 @@ static PetscErrorCode MatMergeSeqsToMPIDestroy(PetscCtxRt data)
 }
 
 #include <../src/mat/utils/freespace.h>
-#include <petscbt.h>
 
 /*@
   MatCreateMPIAIJSumSeqAIJNumeric - Fill the numerical values of an `MATMPIAIJ` matrix previously created by

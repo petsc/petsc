@@ -8,7 +8,6 @@
 
 #include <petsc/private/dmswarmimpl.h>         // For the citation and check
 #include "../src/dm/impls/swarm/data_bucket.h" // For DataBucket internals
-#include "petscmath.h"
 
 typedef struct _projectConstraintsCtx {
   DM  dm;

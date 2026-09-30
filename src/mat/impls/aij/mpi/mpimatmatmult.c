@@ -5,7 +5,6 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/utils/freespace.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petscbt.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/sfimpl.h>

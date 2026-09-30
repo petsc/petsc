@@ -12,8 +12,6 @@ static const char help[] = "Tests PetscDeviceContextMarkIntentFromID().\n\n";
 #include <algorithm>     // std::find
 #include <iterator>      // std::distance, std::next
 
-#include <petscmacros.h> // PETSC_CPP_VERSION
-
 #if PETSC_CPP_VERSION > 14
 struct Marker {
   PetscMemoryAccessMode mode{};

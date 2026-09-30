@@ -4,7 +4,6 @@
         Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
 */
 
-#include <petscsys.h>
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 #include <errno.h>

@@ -1,7 +1,6 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
 PETSC_INTERN PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);

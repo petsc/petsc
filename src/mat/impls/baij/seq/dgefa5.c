@@ -8,7 +8,6 @@
     dgefa() and dgedi() specialized for a size of 5.
 
 */
-#include <petscsys.h>
 #include <petsc/private/kernels/blockinvert.h>
 
 PetscErrorCode PetscKernel_A_gets_inverse_A_5(MatScalar *a, PetscInt *ipvt, MatScalar *work, PetscReal shift, PetscBool allowzeropivot, PetscBool *zeropivotdetected)

@@ -1,5 +1,4 @@
 #include <petscsys.h>
-#include <petscbt.h>
 #include <errno.h>
 #include <fcntl.h>
 #if PetscDefined(HAVE_UNISTD_H)

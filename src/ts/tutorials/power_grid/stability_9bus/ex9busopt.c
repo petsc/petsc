@@ -17,7 +17,6 @@ in current balance form using rectangular coordinates.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
-#include <petsctime.h>
 
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 

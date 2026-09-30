@@ -2,7 +2,6 @@
 /*
       Some PETSc utility routines to add simple parallel IO capabilities
 */
-#include <petscsys.h>
 #include <petsc/private/logimpl.h> /*I   "petscsys.h"    I*/
 #include <errno.h>
 

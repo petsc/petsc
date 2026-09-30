@@ -1,6 +1,5 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdmlabel.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscsectionsymlabelsetstratum_ PETSCSECTIONSYMLABELSETSTRATUM

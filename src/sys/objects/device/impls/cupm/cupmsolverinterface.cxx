@@ -1,5 +1,4 @@
 #include <petsc/private/cupmsolverinterface.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 
 namespace Petsc
 {

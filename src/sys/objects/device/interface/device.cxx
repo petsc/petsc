@@ -1,5 +1,4 @@
 #include "petscdevice_interface_internal.hpp" /*I <petscdevice.h> I*/
-#include <petsc/private/petscadvancedmacros.h>
 
 #include <petsc/private/cpp/register_finalize.hpp>
 

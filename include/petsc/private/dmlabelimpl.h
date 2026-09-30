@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petscdmlabel.h>
-#include <petscbt.h>
 #include <petscistypes.h>
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashseti.h>

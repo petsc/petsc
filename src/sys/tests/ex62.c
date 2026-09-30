@@ -1,6 +1,5 @@
 static char help[] = "Tests PetscGarbageKeySortedIntersect()\n\n";
 
-#include <petscsys.h>
 #include <petsc/private/garbagecollector.h>
 
 /* This program tests PetscGarbageKeySortedIntersect(), which is the

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscsys.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/petscimpl.h>
 
 typedef struct _PrintfQueue *PrintfQueue;
