@@ -448,7 +448,38 @@ PETSC_INTERN char **PetscGlobalArgs, **PetscGlobalArgsFortran;
 int                 PetscGlobalArgc        = 0;
 char              **PetscGlobalArgs        = NULL;
 char              **PetscGlobalArgsFortran = NULL;
-PetscSegBuffer      PetscCitationsList;
+
+static PetscSegBuffer PetscCitationsList;
+
+/*@
+  PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ cite - the bibtex item, formatted to displayed on multiple lines nicely
+- set  - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
+
+  Options Database Key:
+. -citations [filename] - print out the bibtex entries for the given computation
+
+  Level: intermediate
+
+.seealso: `PetscFinalize()`
+@*/
+PetscErrorCode PetscCitationsRegister(const char cite[], PetscBool *set)
+{
+  size_t len;
+  char  *vstring;
+
+  PetscFunctionBegin;
+  if (set && *set) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscStrlen(cite, &len));
+  PetscCall(PetscSegBufferGet(PetscCitationsList, (PetscCount)len, &vstring));
+  PetscCall(PetscArraycpy(vstring, cite, len));
+  if (set) *set = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 PetscErrorCode PetscCitationsInitialize(void)
 {

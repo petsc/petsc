@@ -2789,37 +2789,7 @@ PETSC_EXTERN PetscErrorCode    PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrin
 PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char *, size_t, const char[], size_t *, va_list);
 PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
 
-PETSC_EXTERN PetscSegBuffer PetscCitationsList;
-
-/*@
-  PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
-
-  Not Collective; No Fortran Support
-
-  Input Parameters:
-+ cite - the bibtex item, formatted to displayed on multiple lines nicely
-- set  - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
-
-  Options Database Key:
-. -citations [filename] - print out the bibtex entries for the given computation
-
-  Level: intermediate
-
-.seealso: `PetscFinalize()`
-@*/
-static inline PetscErrorCode PetscCitationsRegister(const char cit[], PetscBool *set)
-{
-  size_t len;
-  char  *vstring;
-
-  PetscFunctionBegin;
-  if (set && *set) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscStrlen(cit, &len));
-  PetscCall(PetscSegBufferGet(PetscCitationsList, (PetscCount)len, &vstring));
-  PetscCall(PetscArraycpy(vstring, cit, len));
-  if (set) *set = PETSC_TRUE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+PETSC_EXTERN PetscErrorCode PetscCitationsRegister(const char[], PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm, char[], char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm, const char[], char[], size_t);
