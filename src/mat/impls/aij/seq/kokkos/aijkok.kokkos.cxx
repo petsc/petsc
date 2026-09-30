@@ -1357,6 +1357,103 @@ static PetscErrorCode MatGetDiagonal_SeqAIJKokkos(Mat A, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Sum of |a_ij|^2 over the nonzeros of A
+PetscErrorCode MatSeqAIJKokkosGetFrobeniusSquared_Private(Mat A, PetscReal *sum)
+{
+  MatScalarKokkosView Aa;
+
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  Aa = static_cast<Mat_SeqAIJKokkos *>(A->spptr)->a_dual.view_device();
+  PetscCallCXX(Kokkos::parallel_reduce("MatNorm_Frobenius", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, Aa.extent(0)), KOKKOS_LAMBDA(const PetscInt k, PetscReal &update) { update += PetscRealPart(PetscConj(Aa(k)) * Aa(k)); }, *sum));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Max over rows i of sum_j |A_ij| + sum_j |B_ij|; B is optional and, if given, has the same number of rows as A
+PetscErrorCode MatSeqAIJKokkosGetMaxRowAbsSum_Private(Mat A, Mat B, PetscReal *nrm)
+{
+  PetscInt            m    = A->rmap->n;
+  PetscBool           hasB = B ? PETSC_TRUE : PETSC_FALSE;
+  Mat_SeqAIJKokkos   *aijkok, *bijkok;
+  MatScalarKokkosView Aa, Ba;
+  MatRowMapKokkosView Ai, Bi;
+
+  PetscFunctionBegin;
+  *nrm = 0.0;
+  if (!m) PetscFunctionReturn(PETSC_SUCCESS); // the Max reducer of an empty range is not zero
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  if (B) PetscCall(MatSeqAIJKokkosSyncDevice(B));
+  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  bijkok = B ? static_cast<Mat_SeqAIJKokkos *>(B->spptr) : aijkok;
+  Aa     = aijkok->a_dual.view_device();
+  Ai     = aijkok->i_dual.view_device();
+  Ba     = bijkok->a_dual.view_device();
+  Bi     = bijkok->i_dual.view_device();
+  PetscCallCXX(Kokkos::parallel_reduce(
+    "MatNorm_Infinity", Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), m, Kokkos::AUTO()),
+    KOKKOS_LAMBDA(const KokkosTeamMemberType &t, PetscReal &update) {
+      PetscInt  i    = t.league_rank(); // row i
+      PetscReal sumA = 0.0, sumB = 0.0;
+
+      Kokkos::parallel_reduce(Kokkos::TeamThreadRange(t, Ai(i), Ai(i + 1)), [&](PetscInt k, PetscReal &s) { s += PetscAbsScalar(Aa(k)); }, sumA);
+      if (hasB) Kokkos::parallel_reduce(Kokkos::TeamThreadRange(t, Bi(i), Bi(i + 1)), [&](PetscInt k, PetscReal &s) { s += PetscAbsScalar(Ba(k)); }, sumB);
+      Kokkos::single(Kokkos::PerTeam(t), [&]() {
+        if (sumA + sumB > update) update = sumA + sumB;
+      });
+    },
+    Kokkos::Max<PetscReal>(*nrm)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// colsums(j) = sum_i |A_ij| for each of the A->cmap->n columns of A
+PetscErrorCode MatSeqAIJKokkosGetColumnAbsSums_Private(Mat A, PetscScalarKokkosView &colsums)
+{
+  PetscInt                                      n    = A->cmap->n;
+  DefaultExecutionSpace                         exec = PetscGetKokkosExecutionSpace();
+  Mat_SeqAIJKokkos                             *aijkok;
+  MatScalarKokkosView                           Aa;
+  MatColIdxKokkosView                           Aj;
+  Kokkos::View<PetscReal *, DefaultMemorySpace> sums;
+
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJKokkosSyncDevice(A));
+  aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+  Aa     = aijkok->a_dual.view_device();
+  Aj     = aijkok->j_dual.view_device();
+  // accumulate in PetscReal so that the atomics do not operate on complex values
+  PetscCallCXX(sums = Kokkos::View<PetscReal *, DefaultMemorySpace>("sums", n));
+  PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(exec, 0, Aa.extent(0)), KOKKOS_LAMBDA(const PetscInt k) { Kokkos::atomic_add(&sums(Aj(k)), PetscAbsScalar(Aa(k))); }));
+  PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(exec, 0, n), KOKKOS_LAMBDA(const PetscInt j) { colsums(j) = sums(j); }));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatNorm_SeqAIJKokkos(Mat A, NormType type, PetscReal *nrm)
+{
+  PetscInt nz = static_cast<Mat_SeqAIJ *>(A->data)->nz;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
+  if (type == NORM_FROBENIUS) {
+    PetscCall(MatSeqAIJKokkosGetFrobeniusSquared_Private(A, nrm));
+    *nrm = PetscSqrtReal(*nrm);
+    PetscCall(PetscLogGpuFlops(2.0 * nz));
+  } else if (type == NORM_1) {
+    PetscInt              n = A->cmap->n;
+    PetscScalarKokkosView colsums;
+
+    PetscCallCXX(colsums = PetscScalarKokkosView("colsums", n));
+    PetscCall(MatSeqAIJKokkosGetColumnAbsSums_Private(A, colsums));
+    *nrm = 0.0;
+    if (n) PetscCallCXX(Kokkos::parallel_reduce(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, n), KOKKOS_LAMBDA(const PetscInt j, PetscReal &update) { update = PetscMax(update, PetscRealPart(colsums(j))); }, Kokkos::Max<PetscReal>(*nrm)));
+    PetscCall(PetscLogGpuFlops(nz));
+  } else if (type == NORM_INFINITY) {
+    PetscCall(MatSeqAIJKokkosGetMaxRowAbsSum_Private(A, NULL, nrm));
+    PetscCall(PetscLogGpuFlops(nz));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for two norm");
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* Get a Kokkos View from a mat of type MatSeqAIJKokkos */
 PetscErrorCode MatSeqAIJGetKokkosView(Mat A, Kokkos::View<const PetscScalar *> *kv)
 {
@@ -1650,6 +1747,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->shift                     = MatShift_SeqAIJKokkos;
   A->ops->diagonalset               = MatDiagonalSet_SeqAIJKokkos;
   A->ops->diagonalscale             = MatDiagonalScale_SeqAIJKokkos;
+  A->ops->norm                      = MatNorm_SeqAIJKokkos;
   A->ops->getcurrentmemtype         = MatGetCurrentMemType_SeqAIJKokkos;
   A->ops->bindtocpu                 = MatBindToCPU_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;

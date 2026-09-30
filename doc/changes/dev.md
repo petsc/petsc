@@ -50,6 +50,8 @@
 ```{rubric} Mat:
 ```
 
+- Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATAIJKOKKOS`; previously all norms copied the matrix values to the host
+
 ```{rubric} MatCoarsen:
 ```
 
