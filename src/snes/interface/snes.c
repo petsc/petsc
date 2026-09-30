@@ -5,6 +5,7 @@
 #include <petscds.h>
 #include <petscdmadaptor.h>
 #include <petscconvest.h>
+#include <petscpreload.h>
 
 PetscBool         SNESRegisterAllCalled = PETSC_FALSE;
 PetscFunctionList SNESList              = NULL;

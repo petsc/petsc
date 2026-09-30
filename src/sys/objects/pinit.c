@@ -60,6 +60,7 @@ const char *const PetscBools[]     = {"FALSE", "TRUE", "PetscBool", "PETSC_", NU
 const char *const PetscBool3s[]    = {"FALSE", "TRUE", "UNKNOWN", "PetscBool3", "PETSC_", NULL};
 const char *const PetscCopyModes[] = {"COPY_VALUES", "OWN_POINTER", "USE_POINTER", "PetscCopyMode", "PETSC_", NULL};
 
+#include <petscpreload.h>
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 

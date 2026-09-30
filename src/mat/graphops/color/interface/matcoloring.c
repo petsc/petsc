@@ -1,4 +1,5 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
+#include <petscpreload.h>
 
 PetscFunctionList MatColoringList              = NULL;
 PetscBool         MatColoringRegisterAllCalled = PETSC_FALSE;

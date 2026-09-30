@@ -33,6 +33,11 @@ users manual for a discussion of preloading.  Input parameters include\n\
 */
 #include <petscksp.h>
 
+/*
+  Include "petscpreload.h" so that we can use the PetscPreload API for careful profiling
+*/
+#include <petscpreload.h>
+
 static PetscErrorCode TestBDDCCustomization(PC pc, Vec b)
 {
   PC           restored;

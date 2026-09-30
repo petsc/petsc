@@ -14,6 +14,11 @@ static char help[] = "Solve a small system and a large system through preloading
 */
 #include <petscksp.h>
 
+/*
+  Include "petscpreload.h" so that we can use the PetscPreload API for careful profiling
+*/
+#include <petscpreload.h>
+
 typedef enum {
   RHS_FILE,
   RHS_ONE,

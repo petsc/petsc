@@ -10,6 +10,7 @@
 #include <petscbt.h>
 #include <petscmatlab.h>
 #include <petscdraw.h>
+#include <petscpreload.h>
 #include <petscdevice.h>
 #include <petscbm.h>
 
