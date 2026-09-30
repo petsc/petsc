@@ -12,9 +12,6 @@
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/loghandlerimpl.h>
-#include <petsctime.h>
-#include <petscviewer.h>
-#include <petscdevice.h>
 #include <petsc/private/deviceimpl.h>
 
 #if PetscDefined(HAVE_THREADSAFETY)

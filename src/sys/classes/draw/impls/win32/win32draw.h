@@ -6,7 +6,7 @@
 #if PetscDefined(HAVE_WINDOWSX_H)
   #include <windowsx.h>
 #endif
-#include <petscdraw.h>
+#include <petscdrawtypes.h>
 
 /* Nodes that record mouse actions when needed */
 typedef struct _n_MouseNode *MouseNode;

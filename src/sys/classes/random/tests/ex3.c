@@ -1,7 +1,6 @@
 static char help[] = "Run Birthday Spacing Tests for PetscRandom.\n\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 /* L'Ecuyer & Simard, 2001.
  * "On the performance of birthday spacings tests with certain families of random number generators"

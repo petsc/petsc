@@ -1,5 +1,5 @@
 #include <petscts.h>
-#include <petscdm.h>
+#include <petscdmtypes.h>
 
 typedef struct _LimitInfo {
   PetscReal hx;

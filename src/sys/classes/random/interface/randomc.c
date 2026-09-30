@@ -12,7 +12,6 @@
  */
 
 #include <petsc/private/randomimpl.h> /*I "petscsys.h" I*/
-#include <petscviewer.h>
 
 /* Logging support */
 PetscClassId PETSC_RANDOM_CLASSID;

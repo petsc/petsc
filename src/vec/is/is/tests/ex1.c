@@ -5,7 +5,6 @@
 static char help[] = "Tests IS general routines.\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

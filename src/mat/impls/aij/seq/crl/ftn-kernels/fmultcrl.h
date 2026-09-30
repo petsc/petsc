@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(USE_FORTRAN_KERNEL_MULTCRL)
   #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranmultcrl_ FORTRANMULTCRL

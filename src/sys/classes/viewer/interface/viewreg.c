@@ -1,4 +1,4 @@
-#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h>
 #include <petsc/private/hashtable.h>
 #if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>

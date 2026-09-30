@@ -1,7 +1,6 @@
 static char help[] = "Error handling for destroying PETSC_VIEWER_STDOUT_SELF.\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

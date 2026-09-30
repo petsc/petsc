@@ -1,6 +1,5 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/bagimpl.h> /*I  "petscbag.h"   I*/
-#include <petscviewer.h>
 
 /*
       Adds item to the linked list in a bag

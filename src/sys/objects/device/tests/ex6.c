@@ -1,7 +1,6 @@
 static const char help[] = "Tests PetscDeviceContextView().\n\n";
 
 #include "petscdevicetestcommon.h"
-#include <petscviewer.h>
 
 static PetscErrorCode TestView(PetscDeviceContext dctx)
 {

@@ -1,5 +1,4 @@
 #include <petsc/private/petscimpl.h> /*I    "petscsys.h"   I*/
-#include <petscviewer.h>
 
 /*@
   PetscObjectSetName - Sets a string name for a PETSc object.

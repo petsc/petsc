@@ -1,7 +1,6 @@
 static char help[] = "Tests application ordering.\n\n";
 
 #include <petscao.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

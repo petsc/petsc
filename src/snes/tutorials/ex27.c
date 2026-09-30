@@ -89,7 +89,7 @@ This is also possible with the automated path
 
 #include <petscsnes.h>
 #include <petscdmplex.h>
-#include <petscdmadaptor.h>
+#include <petscdmadaptortypes.h>
 #include <petscds.h>
 #include <petscviewerhdf5.h>
 #include <petscbag.h>

@@ -1,7 +1,6 @@
 /*
     Creates hypre ijmatrix from PETSc matrix
 */
-#include <petscsys.h>
 #include <petsc/private/petschypre.h>
 #include <petsc/private/matimpl.h>
 #include <petscdmda.h> /*I "petscdmda.h" I*/

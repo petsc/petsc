@@ -1,7 +1,6 @@
 const char help[] = "Test getting performance info when the default log handler is not running";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

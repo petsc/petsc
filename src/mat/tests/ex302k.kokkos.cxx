@@ -2,7 +2,6 @@ static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and various
 
 #include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
-#include <petscdevice.h>
 #include <petscmat.h>
 #include <petscmat_kokkos.hpp>
 #include <Kokkos_Core.hpp>

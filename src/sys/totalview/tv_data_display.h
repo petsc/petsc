@@ -31,7 +31,7 @@
  *
  */
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 #if defined(__cplusplus)
 extern "C" {

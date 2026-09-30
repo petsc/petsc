@@ -2,7 +2,6 @@ static char help[] = "Tests DMDAGetElements() and VecView() contour plotting for
 
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscdraw.h>
 
 int main(int argc, char **argv)
 {

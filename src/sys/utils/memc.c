@@ -5,7 +5,6 @@
 
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#include <petscviewer.h>
 #include <../src/sys/utils/ftn-kernels/fcopy.h>
 
 /*@

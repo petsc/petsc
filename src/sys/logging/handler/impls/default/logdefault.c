@@ -1,5 +1,3 @@
-#include <petscviewer.h>
-#include <petscdevice.h>
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
 #include <petsc/private/deviceimpl.h>

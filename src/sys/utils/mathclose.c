@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscmath.h>
 
 /*@
   PetscIsCloseAtTol - Returns whether the two `PetscReal` numbers

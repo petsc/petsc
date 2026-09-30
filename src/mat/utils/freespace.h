@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 typedef struct _n_PetscFreeSpaceList *PetscFreeSpaceList;
 

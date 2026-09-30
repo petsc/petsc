@@ -198,8 +198,6 @@ static char                 emacsmachinename[256];
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
-#include <petscviewer.h>
-
 /*@
   PetscSetHelpVersionFunctions - Sets functions that print help and version information
   before the PETSc help and version information is printed.

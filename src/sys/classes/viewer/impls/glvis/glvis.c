@@ -1,7 +1,7 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fdopen() */
 
-#include <petsc/private/viewerimpl.h> /*I   "petscviewer.h" I*/
-#include <petsc/private/petscimpl.h>  /*I   "petscsys.h"    I*/
+#include <petsc/private/viewerimpl.h>
+#include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
 #include <petsc/private/glvisviewerimpl.h>
 
 /* we may eventually make this function public */

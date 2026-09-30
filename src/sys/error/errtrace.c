@@ -1,6 +1,5 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
-#include <petscsys.h>                    /*I "petscsys.h" I*/
-#include <petsc/private/petscimpl.h>
+#include <petsc/private/petscimpl.h>     /*I "petscsys.h" I*/
 #include <petscpkg_version.h>
 #include <petscconfiginfo.h>
 #if PetscDefined(HAVE_UNISTD_H)

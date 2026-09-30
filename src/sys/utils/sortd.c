@@ -4,8 +4,7 @@
    of overhead in calling the comparison routines.
 
  */
-#include <petscsys.h> /*I  "petscsys.h"  I*/
-#include <petsc/private/petscimpl.h>
+#include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 
 #define SWAP(a, b, t) \
   do { \

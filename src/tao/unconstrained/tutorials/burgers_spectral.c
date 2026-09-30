@@ -26,7 +26,6 @@ static char help[] = "Solves a simple data assimilation problem with one dimensi
 #include <petsctao.h>
 #include <petscts.h>
 #include <petscdt.h>
-#include <petscdraw.h>
 #include <petscdmda.h>
 
 /*

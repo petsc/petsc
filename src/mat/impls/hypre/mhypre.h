@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscsys.h>
 #include <petscmat.h>
 #include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE_IJ_mv.h>

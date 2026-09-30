@@ -3,7 +3,6 @@
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
-#include <petscviewer.h>
 
 #include <petsc/private/hashmap.h>
 /*

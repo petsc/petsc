@@ -1,7 +1,6 @@
 static char help[] = "Tests ISFilter().\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscInt step, IS *is)
 {

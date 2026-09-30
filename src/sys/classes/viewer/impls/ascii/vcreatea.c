@@ -1,4 +1,4 @@
-#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h> /*I     "petscviewer.h"   I*/
+#include <../src/sys/classes/viewer/impls/ascii/asciiimpl.h>
 
 /*
     The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that

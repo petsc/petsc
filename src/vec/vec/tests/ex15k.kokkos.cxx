@@ -13,7 +13,6 @@ static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel v
 */
 
 #include <petscvec.h>
-#include <petscdevice.h>
 
 #if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>

@@ -4,8 +4,7 @@
     plots that change dynamically.
 */
 
-#include <petscdraw.h>              /*I "petscdraw.h" I*/
-#include <petsc/private/drawimpl.h> /*I "petscsys.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 
 PetscClassId PETSC_DRAWSP_CLASSID = 0;
 

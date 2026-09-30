@@ -1,7 +1,6 @@
 #include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
-#include <petscdevice.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp> // for MatInvertVariableBlockDiagonal_SeqAIJKokkos
 #include <../src/mat/impls/aij/mpi/mpiaij.h>          // for Mat_MPIAIJ

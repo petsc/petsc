@@ -1,5 +1,3 @@
-#include <petscsys.h>
-#include <petscviewer.h>
 #include <petsc/private/deviceimpl.h>
 
 /* implementations for <include/petscdevice.h> */

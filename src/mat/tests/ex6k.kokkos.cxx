@@ -30,7 +30,6 @@ Examples:
     srun -N1 -n8 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex6k -A HV15R.aij -mat_type aijkokkos
 */
 #include <petscmat.h>
-#include <petscdevice.h>
 
 #if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>

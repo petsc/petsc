@@ -1,5 +1,4 @@
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
-#include <petscviewer.h>
 
 /*@
   PetscIntViewNumColumns - Prints an array of integers; useful for debugging.

@@ -1,5 +1,4 @@
-#include <petscsys.h>         /*I   "petscsys.h"   I*/
-#include <petscdevice_cuda.h> /* Needed to provide PetscCallCUDA() */
+#include <petscdevice_cuda.h> /*I "petscsys.h" I*/
 
 static PetscErrorCode PetscCUDAHostMalloc(size_t a, PetscBool, int, const char[], const char[], void **result)
 {

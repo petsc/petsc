@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
   #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortransolvebaij4_       FORTRANSOLVEBAIJ4

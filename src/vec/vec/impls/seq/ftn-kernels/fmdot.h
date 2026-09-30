@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(USE_FORTRAN_KERNEL_MDOT)
   #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranmdot4_ FORTRANMDOT4

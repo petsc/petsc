@@ -1,6 +1,5 @@
 #include <../src/sys/classes/draw/impls/image/drawimage.h> /*I  "petscdraw.h" I*/
 #include <petsc/private/drawimpl.h>                        /*I  "petscdraw.h" I*/
-#include <petscviewer.h>
 
 #if PetscDefined(USE_DEBUG)
   #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %d out of range [0..255]", (color))

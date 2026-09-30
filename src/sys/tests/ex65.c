@@ -1,7 +1,6 @@
 static const char help[] = "Test PetscFunctionList.\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 #define PETSC_DEFINE_FUNCTION_AND_STR(name) \
   static void name(void) \

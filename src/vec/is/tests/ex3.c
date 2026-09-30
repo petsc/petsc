@@ -1,7 +1,6 @@
 static char help[] = "Tests ISSetBlockSize() on ISBlock().\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

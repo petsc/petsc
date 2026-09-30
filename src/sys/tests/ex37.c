@@ -1,7 +1,6 @@
 static char help[] = "Test PetscFormatConvertGetSize().\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 PetscErrorCode TestPetscVSNPrintf(char *, size_t, size_t *, const char *, ...);
 

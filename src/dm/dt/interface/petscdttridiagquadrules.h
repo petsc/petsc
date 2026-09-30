@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscmath.h>
 
 static const PetscReal PetscDTKMVTriQuad_2_weights[] = {PetscRealConstant(6.66666666666666666666666666666666667e-01)};
 

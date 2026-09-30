@@ -34,7 +34,6 @@ static char help[] = "Tests PetscObjectSetOptions() for TS object\n\n";
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscdraw.h>
 
 /*
    User-defined application context - contains data needed by the

@@ -1,5 +1,5 @@
-#include <petscvec_kokkos.hpp>
 #include <petsc_kokkos.hpp>
+#include <petscvec_kokkos.hpp>
 #include <petsc/private/kokkosimpl.hpp>
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/matimpl.h>
