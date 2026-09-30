@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#include <petscsystypes.h>
+
 /* MANSEC = Sys */
 /* SUBMANSEC = Matlab */
 

@@ -4,7 +4,6 @@
 */
 #pragma once
 
-#include "petscsystypes.h"
 #include <petscsys.h>
 #include <petscsftypes.h>
 #include <petscsectiontypes.h>

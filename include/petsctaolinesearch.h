@@ -11,7 +11,8 @@
 S*/
 typedef struct _p_TaoLineSearch *TaoLineSearch;
 
-#include <petsctao.h>
+#include <petsctaotypes.h>
+#include <petscvec.h>
 
 /*E
    TaoLineSearchConvergedReason - reason a `TaoLineSearch` completed

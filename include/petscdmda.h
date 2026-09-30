@@ -4,7 +4,7 @@
 #include <petscdmdatypes.h>
 #include <petscpf.h>
 #include <petscao.h>
-#include <petscfe.h>
+#include <petscfetypes.h>
 
 /* MANSEC = DM */
 /* SUBMANSEC = DMDA */

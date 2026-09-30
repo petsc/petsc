@@ -1,8 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
 #include <petscis.h>
-#include <petscbt.h>
 #include <petscsectiontypes.h>
 
 /* MANSEC = Vec */
