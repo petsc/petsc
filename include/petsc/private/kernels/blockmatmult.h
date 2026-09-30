@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 #define PetscKernel_v_gets_A_times_w_1_exp(v, A, w, exp) \
   do { \

@@ -1,68 +1,9 @@
 /*
-   This is the main PETSc include file (for C and C++).  It is included by all
-   other PETSc include files, so it almost never has to be specifically included.
+   This is the main PETSc include file (for C and C++), included by petscvec.h and higher-level headers.
    Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 #pragma once
-
-/*MC
-   PeOP - indicates an argument to a PETSc function is optional and one can pass `NULL` instead. This is used by the Fortran API generator
-
-   Level: developer
-
-   Example:
-.vb
-   PetscErrorCode XXXX(Vec v, PeOp PetscObject obj, PeOp PetscInt *idx, PeOp PetscInt *array[])
-.ve
-
-   Notes:
-   This is not part of the PETSc public API and should only be used in PETSc source code.
-
-   Put this in the function declaration in front of each variable that is optional
-
-   Developer Note:
-   Shortened form of PETSc optional
-
-.seealso: `PeNS`, `PeNSS`, `PetscCtxRt`, `PetscInitialize()`
-M*/
-#define PeOp
-
-/*MC
-   PeNS - indicates a function that does not use the PETSc standard arguments which make it easy to generate automatic language stubs for other languages
-
-   Level: developer
-
-   Notes:
-   This is not part of the PETSc public API and should only be used in PETSc source code.
-
-   Put this at the end of the function declaration closing parenthesis
-
-   Developer Note:
-   Shortened form of PETSc non-standard
-
-.seealso: `PeOp`, `PeNSS`, `PetscCtxRt`, `PetscInitialize()`
-M*/
-#define PeNS
-
-/*MC
-   PeNSS - indicates a function that needs a special treatment in the C-side stub when generating the binding for other languages
-
-   Level: developer
-
-   Notes:
-   This is not part of the PETSc public API and should only be used in PETSc source code.
-
-   Put this at the end of the function declaration closing parenthesis
-
-   It is similar to PeNS; in Fortran it will generate the Fortran interface definition automatically but not the C stub, which should be added manually under the appropriate `ftn-custom` directory
-
-   Developer Note:
-   Shortened form of PETSc non-standard stub
-
-.seealso: `PeOp`, `PeNS`, `PetscCtxRt`, `PetscInitialize()`
-M*/
-#define PeNSS
 
 /* ========================================================================== */
 /*
@@ -73,8 +14,6 @@ M*/
    directory as the other PETSc include files.
 */
 #include <petscconf.h>
-#include <petscconf_poison.h>
-#include <petscfix.h>
 #include <petscmacros.h>
 
 /* SUBMANSEC = Sys */
@@ -103,27 +42,6 @@ M*/
 /* ========================================================================== */
 
 /*
-    Defines the interface to MPI allowing the use of all MPI functions.
-
-    PETSc does not use the C++ binding of MPI at ALL. The following flag
-    makes sure the C++ bindings are not included. The C++ bindings REQUIRE
-    putting mpi.h before ANY C++ include files, we cannot control this
-    with all PETSc users. Users who want to use the MPI C++ bindings can include
-    mpicxx.h directly in their code
-*/
-#if !defined(MPICH_SKIP_MPICXX)
-  #define MPICH_SKIP_MPICXX 1
-#endif
-#if !defined(OMPI_SKIP_MPICXX)
-  #define OMPI_SKIP_MPICXX 1
-#endif
-#if PetscDefined(HAVE_MPIUNI)
-  #include <petsc/mpiuni/mpi.h>
-#else
-  #include <mpi.h>
-#endif
-
-/*
     Need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler
     see the top of mpicxx.h in the MPICH2 distribution.
 */
@@ -135,41 +53,8 @@ M*/
 #endif
 
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscEnum);
-#define MPIU_BOOL MPI_C_BOOL PETSC_DEPRECATED_MACRO(3, 24, 0, "MPI_C_BOOL", )
 
 PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
-
-/*MC
-   MPIU_INT - Portable `MPI_Datatype` corresponding to `PetscInt` independent of the precision of `PetscInt`
-
-   Level: beginner
-
-   Note:
-   In MPI calls that require an `MPI_Datatype` that matches a `PetscInt` or array of `PetscInt` values, pass this value.
-
-.seealso: `MPI_Datatype`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_COUNT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`
-M*/
-#if PetscDefined(USE_64BIT_INDICES)
-  #define MPIU_INT MPIU_INT64
-#else
-  #define MPIU_INT MPI_INT
-#endif
-
-/*MC
-   MPIU_COUNT - Portable `MPI_Datatype` corresponding to `PetscCount` independent of the precision of `PetscCount`
-
-   Level: beginner
-
-   Note:
-   In MPI calls that require an `MPI_Datatype` that matches a `PetscCount` or array of `PetscCount` values, pass this value.
-
-  Developer Note:
-  It seems `MPI_AINT` is unsigned so this may be the wrong choice here since `PetscCount` is signed
-
-.seealso: `MPI_Datatype`, `PetscReal`, `PetscScalar`, `PetscComplex`, `PetscInt`, `MPIU_INT`, `MPIU_REAL`, `MPIU_SCALAR`, `MPIU_COMPLEX`,
-          `MPI_Count`
-M*/
-#define MPIU_COUNT MPI_AINT
 
 /*
     For the rare cases when one needs to send a size_t object with MPI
@@ -205,148 +90,6 @@ PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
     Defines elementary mathematics functions and constants.
 */
 #include <petscmath.h>
-
-/*MC
-   PETSC_IGNORE - same as `NULL`, means PETSc will ignore this argument
-
-   Level: beginner
-
-   Note:
-   Accepted by many PETSc functions to not set a parameter and instead use a default value
-
-   Fortran Note:
-   Use `PETSC_NULL_INTEGER`, `PETSC_NULL_SCALAR` etc
-
-.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_DETERMINE`
-M*/
-#define PETSC_IGNORE PETSC_NULLPTR
-#define PETSC_NULL   PETSC_DEPRECATED_MACRO(3, 19, 0, "PETSC_NULLPTR", ) PETSC_NULLPTR
-
-/*MC
-   PETSC_UNLIMITED - standard way of passing an integer or floating point parameter to indicate PETSc there is no bound on the value allowed
-
-   Level: beginner
-
-   Example Usage:
-.vb
-   KSPSetTolerances(ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_UNLIMITED, PETSC_UNLIMITED);
-.ve
-  indicates that the solver is allowed to take any number of iterations and will not stop early no matter how the residual gets.
-
-   Fortran Note:
-   Use `PETSC_UNLIMITED_INTEGER` or `PETSC_UNLIMITED_REAL`.
-
-.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DECIDE`
-M*/
-
-/*MC
-   PETSC_DECIDE - standard way of passing an integer or floating point parameter to indicate PETSc should determine an appropriate value
-
-   Level: beginner
-
-   Example Usage:
-.vb
-   VecSetSizes(ksp, PETSC_DECIDE, 10);
-.ve
-  indicates that the global size of the vector is 10 and the local size will be automatically determined so that the sum of the
-  local sizes is the global size, see `PetscSplitOwnership()`.
-
-   Fortran Note:
-   Use `PETSC_DECIDE_INTEGER` or `PETSC_DECIDE_REAL`.
-
-.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_UNLIMITED`
-M*/
-
-/*MC
-   PETSC_DETERMINE - standard way of passing an integer or floating point parameter to indicate PETSc should determine an appropriate value
-
-   Level: beginner
-
-    Example Usage:
-.vb
-   VecSetSizes(ksp, 10, PETSC_DETERMINE);
-.ve
-  indicates that the local size of the vector is 10 and the global size will be automatically summing up all the local sizes.
-
-   Note:
-   Same as `PETSC_DECIDE`
-
-   Fortran Note:
-   Use `PETSC_DETERMINE_INTEGER` or `PETSC_DETERMINE_REAL`.
-
-   Developer Note:
-   I would like to use const `PetscInt` `PETSC_DETERMINE` = `PETSC_DECIDE`; but for
-   some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
-
-.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`, `PETSC_UNLIMITED`
-M*/
-
-/*MC
-   PETSC_CURRENT - standard way of indicating to an object not to change the current value of the parameter in the object
-
-   Level: beginner
-
-   Note:
-   Use `PETSC_DECIDE` to use the value that was set by PETSc when the object's type was set
-
-   Fortran Note:
-   Use `PETSC_CURRENT_INTEGER` or `PETSC_CURRENT_REAL`.
-
-.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DEFAULT`, `PETSC_UNLIMITED`
-M*/
-
-/*MC
-   PETSC_DEFAULT - deprecated, see `PETSC_CURRENT` and `PETSC_DETERMINE`
-
-   Level: beginner
-
-   Note:
-   The name is confusing since it tells the object to continue to use the value it is using, not the default value when the object's type was set.
-
-   Developer Note:
-   Unfortunately this was used for two different purposes in the past, to actually trigger the use of a default value or to continue the
-   use of currently set value (in, for example, `KSPSetTolerances()`.
-
-.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_CURRENT`, `PETSC_UNLIMITED`
-M*/
-
-/* These MUST be preprocessor defines! see https://gitlab.com/petsc/petsc/-/issues/1370 */
-#define PETSC_DECIDE    (-1)
-#define PETSC_DETERMINE PETSC_DECIDE
-#define PETSC_CURRENT   (-2)
-#define PETSC_UNLIMITED (-3)
-/*  PETSC_DEFAULT is deprecated in favor of PETSC_CURRENT for use in KSPSetTolerances() and similar functions */
-#define PETSC_DEFAULT PETSC_CURRENT
-
-/*MC
-   PETSC_COMM_WORLD - the equivalent of the `MPI_COMM_WORLD` communicator which represents all the processes that PETSc knows about.
-
-   Level: beginner
-
-   Notes:
-   By default `PETSC_COMM_WORLD` and `MPI_COMM_WORLD` are identical unless you wish to
-   run PETSc on ONLY a subset of `MPI_COMM_WORLD`. In that case create your new (smaller)
-   communicator, call it, say comm, and set `PETSC_COMM_WORLD` = comm BEFORE calling
-   `PetscInitialize()`, but after `MPI_Init()` has been called.
-
-   The value of `PETSC_COMM_WORLD` should never be used or accessed before `PetscInitialize()`
-   is called because it may not have a valid value yet.
-
-.seealso: `PETSC_COMM_SELF`
-M*/
-PETSC_EXTERN MPI_Comm PETSC_COMM_WORLD;
-
-/*MC
-   PETSC_COMM_SELF - This is always `MPI_COMM_SELF`
-
-   Level: beginner
-
-   Note:
-   Do not USE/access or set this variable before `PetscInitialize()` has been called.
-
-.seealso: `PETSC_COMM_WORLD`
-M*/
-#define PETSC_COMM_SELF MPI_COMM_SELF
 
 /*MC
    PETSC_MPI_THREAD_REQUIRED - the required threading support used if PETSc initializes MPI with `MPI_Init_thread()`.
@@ -410,9 +153,6 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 
 #include <petscmem.h>
-
-#define MPIU_PETSCLOGDOUBLE  MPI_DOUBLE
-#define MPIU_2PETSCLOGDOUBLE MPI_2DOUBLE_PRECISION
 
 PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType, MPI_Datatype *);
 PETSC_EXTERN PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype, PetscDataType *);
@@ -648,107 +388,6 @@ M*/
 M*/
 #define PetscObjectParameterDeclarePtr(type, NAME) type *NAME, *default_##NAME
 
-/*MC
-   PetscCtx - indicates an argument that can be a pointer to any C struct (or Fortran derived type).
-
-   Level: developer
-
-   Notes:
-   This should not be used for arrays of unknown type.
-
-   Fortran Notes:
-   A Fortran code that calls a function with a `PetscCtx` argument would declare the variable `ctx` with
-.vb
-   type(AppType) :: ctx
-.ve
-   where `AppType` is a Fortran derived type. Or the argument can be a `PetscObject`.
-
-   Developer Note:
-   `PetscCtx` is used instead of `void *` in PETSc code to enhance the clarity of the PETSc source code since `void *` serves so many different roles.
-   The getAPI() code processor also uses the variable type to generate correct bindings for other languages.
-
-.seealso: [](sec_fortran_context), `PetscCtxRt`, `PetscCtxDestroyFn()`, `PeOp`, `PeNS`, `PetscInitialize()`, `DMGetApplicationContext()`,
-          `DMSetApplicationContextDestroy()`
-M*/
-typedef void *PetscCtx;
-
-/*MC
-   PetscCtxRt - indicates an argument that returns a pointer to a C struct (or Fortran derived type) which is generally an application context
-
-   Level: developer
-
-   Notes:
-   A PETSc object (in C or Fortran) can be used as a PETSc context
-
-   This should not be used for functions that return pointers to arrays of unknown type. Thus it is used for, for example,
-   `KSPGetApplicationContext()` but not used for `DMNetworkGetComponent()`
-
-   A PETSc object (in C or Fortran) can be used as a PETSc context
-
-   It is also used for functions that destroy an application context. For example, the destroy function passed to `DMSetApplicationContextDestroy()`
-   which has a prototype of `PetscCtxDestroyFn()`
-
-   This typedef is not part of the PETSc public API and should only be used in PETSc source code.
-
-   For pointers to arrays of unknown type and for functions that return PETSc internal objects that are opaque to users, such
-   as `KSPMonitorDynamicToleranceCreate()` a `void **` should be used.
-
-   Fortran Notes:
-   A Fortran code that calls a function with a `PetscCtxRt` argument must declare the variable `ctx` with
-.vb
-   type(AppType), pointer :: ctx
-.ve
-   where `AppType` is a Fortran derived type.
-
-   If one passes a PETSc function with a `PetscCtxRt` argument as an argument in Fortran one must use the function named suffixed with `Cptr`,
-   for example `KSPConvergedDefaultDestroyCptr`, see src/ksp/ksp/tutorials/ex1f.F90.
-
-   Developer Notes:
-   C++ compilers generate a warning or error if one passes a pointer to a pointer to a specific type (instead of `void`), for example,
-.vb
-   extern calledfunction(void **);
-   SomeCtx *ctx;
-   calledfunction(&ctx);   << warning that it is passing a pointer to a pointer to a SomeCtx instead of a void **
-.ve
-   By using the common practice of prototyping the function as
-.vb
-   extern calledfunction(void *);
-.ve
-   the warning message is averted.
-
-   `PetscCtxRt` is used instead of `void *` in PETSc code to enhance the clarity of the PETSc source code since `void *` serves so many different roles.
-   The getAPI() code processor also uses the variable type to generate correct bindings for other languages.
-
-   The Fortran C stub and Fortran interface definition generated for functions with a `PetscCtxRt` argument are the C function name suffixed with
-   `Cptr`, for example `KSPConvergedDefaultDestroyCptr`. The Fortran user API is a macro with the original C function name, for example,
-   `KSPConvergedDefaultDestroy` that calls the  `KSPConvergedDefaultDestroyCptr` version and then calls `c_f_pointer()` to handle the equivalent of a `void**` cast
-   to the users Fortran derived type argument.
-
-.seealso: [](sec_fortran_context), `PetscCtx`, `PetscCtxDestroyFn()`, `PeOp`, `PeNS`, `PetscInitialize()`, `DMGetApplicationContext()`,
-          `DMSetApplicationContextDestroy()`
-M*/
-typedef void *PetscCtxRt;
-
-/*S
-  PetscCtxDestroyFn - A prototype of a `PetscErrorCode (*)(PetscCtxRt)` function that is used to free application contexts
-
-  Level: intermediate
-
-  Notes:
-  Used in the prototype of functions such as `DMSetApplicationContextDestroy()`
-
-  The function argument is a `PetscCtxRt` which is psychologically equivalent to a `void **` meaning that this function is called with a pointer to
-  the application context (which is itself a pointer) thus the destroy implementation must first reference the context via, for example,
-  `*(AppCtx **)arg`. Note that syntactically `PetscCtxRt` is defined as a `void *`, this is because C++ does
-  not accept passing a pointer to a pointer to a `void**` but it does accept passing a pointer to a pointer to `void *`.
-
-  PETSc destroy functions take the address of the context (rather than just the context) so that that the destroy function can "zero the pointer" when
-  appropriate, preventing accidental later use of a dangling pointer.
-
-.seealso: `PetscObject`, `PetscCtxDestroyDefault()`, `PetscObjectDestroy()`, `DMSetApplicationContextDestroy()`
-S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscCtxDestroyFn(PetscCtxRt ctx);
-
 PETSC_EXTERN PetscCtxDestroyFn PetscCtxDestroyDefault;
 PETSC_DEPRECATED_FUNCTION(3, 23, 0, "PetscCtxDestroyDefault()", ) static inline PetscErrorCode PetscContainerCtxDestroyDefault(PetscCtxRt a)
 {
@@ -757,8 +396,9 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "PetscCtxDestroyDefault()", ) static inline 
 
 PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void), void *, PetscCtxDestroyFn *, PetscErrorCode (*)(void), void *, PetscCtxDestroyFn *, PetscBool *);
 
+/* generatefortranbindings.py requires the next line */
 #include <petscviewertypes.h>
-#include <petscoptions.h>
+#include <petscoptionstypes.h>
 
 PETSC_EXTERN PetscErrorCode PetscMallocTraceSet(PetscViewer, PetscBool, PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscMallocTraceGet(PetscBool *);
@@ -820,8 +460,6 @@ PETSC_EXTERN PetscErrorCode PetscObjectSAWsSetBlock(PetscObject, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsBlock(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject);
-PETSC_EXTERN void           PetscStackSAWsGrantAccess(void);
-PETSC_EXTERN void           PetscStackSAWsTakeAccess(void);
 PETSC_EXTERN PetscErrorCode PetscStackViewSAWs(void);
 PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 
@@ -834,8 +472,6 @@ PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
   #define PetscObjectSAWsTakeAccess(obj)    PETSC_SUCCESS
   #define PetscStackViewSAWs()              PETSC_SUCCESS
   #define PetscStackSAWsViewOff()           PETSC_SUCCESS
-  #define PetscStackSAWsTakeAccess()
-  #define PetscStackSAWsGrantAccess()
 
 #endif
 
@@ -1705,25 +1341,6 @@ PETSC_EXTERN PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt, Petsc
 PETSC_EXTERN PetscErrorCode PetscSetDisplay(void);
 PETSC_EXTERN PetscErrorCode PetscGetDisplay(char[], size_t);
 
-/*J
-    PetscRandomType - String with the name of a PETSc randomizer
-
-   Level: beginner
-
-   Note:
-   To use `PETSCSPRNG` or `PETSCRANDOM123` you must have ./configure PETSc
-   with the option `--download-sprng` or `--download-random123`. We recommend the default provided with PETSc.
-
-.seealso: `PetscRandomSetType()`, `PetscRandom`, `PetscRandomCreate()`
-J*/
-typedef const char *PetscRandomType;
-#define PETSCRAND      "rand"
-#define PETSCRAND48    "rand48"
-#define PETSCSPRNG     "sprng"
-#define PETSCRANDER48  "rander48"
-#define PETSCRANDOM123 "random123"
-#define PETSCCURAND    "curand"
-
 /* Logging support */
 PETSC_EXTERN PetscClassId PETSC_RANDOM_CLASSID;
 
@@ -2209,21 +1826,6 @@ PETSC_EXTERN PetscErrorCode PetscShmgetDeallocateArray(void **);
 PETSC_EXTERN PetscErrorCode PetscShmgetMapAddresses(MPI_Comm, PetscInt, const void **, void **);
 PETSC_EXTERN PetscErrorCode PetscShmgetUnmapAddresses(PetscInt, void **);
 PETSC_EXTERN PetscErrorCode PetscShmgetAddressesFinalize(void);
-
-/*S
-   PCMPIServerAddresses - Small bookkeeping record used by the `PCMPI` server to track shared-memory address mappings that have been distributed across the participating MPI ranks
-
-   Level: developer
-
-   Note:
-   Allocated and managed by the `PCMPI` server when running with shared-memory transfers enabled (`PCMPIServerUseShmget`). Destroyed with `PCMPIServerAddressesDestroy()`. Not intended to be inspected or constructed by user code.
-
-.seealso: `PCMPI`, `PCMPIServerBegin()`, `PCMPIServerEnd()`, `PCMPIServerAddressesDestroy()`, `PCMPIServerUseShmget`
-S*/
-typedef struct {
-  PetscInt n;
-  void    *addr[3];
-} PCMPIServerAddresses;
 PETSC_EXTERN PetscErrorCode PCMPIServerAddressesDestroy(PetscCtxRt);
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
@@ -2279,3 +1881,12 @@ M*/
   { \
     return &mkl_serv_intel_cpu_true; \
   }
+
+/*
+   The options database and viewer APIs are used throughout PETSc, so for convenience they are made available to
+   any file that includes petscsys.h. These are included at the end of petscsys.h, after all of its own declarations,
+   so that petscviewer.h and petscoptions.h see the complete petscsys.h; this avoids an include cycle even though
+   both of them, in turn, depend on the basic PETSc types.
+*/
+#include <petscviewer.h>
+#include <petscoptions.h>

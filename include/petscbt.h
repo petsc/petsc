@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscsystypes.h>
 #include <petscviewertypes.h>
 #include <petscstring.h>
 

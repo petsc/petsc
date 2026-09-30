@@ -4,7 +4,6 @@
 #pragma once
 // IWYU pragma: private, include "petscsys.h"
 
-#include <petscmacros.h>
 #include <petscsystypes.h>
 
 #if defined(__cplusplus)
@@ -1443,6 +1442,16 @@ PETSC_EXTERN PETSC_TLS PetscStack petscstack;
 PETSC_EXTERN PetscBool            petscstackcheck;
 #endif
 
+/* These are used by the PetscStackPushNoCheck() machinery below; their full SAWs counterparts
+   (PetscObjectSAWs*(), PetscStackViewSAWs(), etc.) live in petscsys.h */
+#if PetscDefined(HAVE_SAWS)
+PETSC_EXTERN void PetscStackSAWsGrantAccess(void);
+PETSC_EXTERN void PetscStackSAWsTakeAccess(void);
+#else
+  #define PetscStackSAWsTakeAccess()
+  #define PetscStackSAWsGrantAccess()
+#endif
+
 #if PetscDefined(CLANG_STATIC_ANALYZER) || defined(__clang_analyzer__)
   #define PetscStackPushNoCheck(funct, petsc_routine, hot)
   #define PetscStackUpdateLine
@@ -1492,7 +1501,7 @@ PETSC_EXTERN PetscBool            petscstackcheck;
         (stack__).line[(stack__).currentsize]         = 0; \
         (stack__).petscroutine[(stack__).currentsize] = 0; \
       } \
-      (stack__).hotdepth = PetscMax((stack__).hotdepth - 1, 0); \
+      (stack__).hotdepth = (stack__).hotdepth > 0 ? (stack__).hotdepth - 1 : 0; \
     } while (0)
 
   /*MC
@@ -1652,7 +1661,7 @@ M*/
         petscstack.line[petscstack.currentsize]         = 0; \
         petscstack.petscroutine[petscstack.currentsize] = 0; \
       } \
-      petscstack.hotdepth = PetscMax(petscstack.hotdepth - 1, 0); \
+      petscstack.hotdepth = petscstack.hotdepth > 0 ? petscstack.hotdepth - 1 : 0; \
       PetscStackSAWsGrantAccess(); \
     } while (0)
 

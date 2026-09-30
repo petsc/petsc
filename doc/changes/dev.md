@@ -31,6 +31,8 @@
 - Change `PETSC_REAL_MIN` in double precision from the largest subnormal value to `DBL_MIN`, its documented smallest positive normalized value
 - Change `PETSC_SQRT_MACHINE_EPSILON` in double precision to the exactly representable `1.4901161193847656e-08`, one ulp below the previous value; finite-difference step sizes change accordingly
 - `petscsys.h` no longer includes `petscpkg_version.h`; include it directly to use the `PETSC_PKG_*_VERSION_*()` macros
+- `petscviewer.h`, `petscoptions.h`, `petsclog.h`, `petscstring.h`, `petsctime.h`, and `petscdevicetypes.h` no longer
+  include `petscsys.h` (just include `petscsys.h` instead of these individual files), and `petscdstypes.h` no longer provides the `DMLabel` API
 - `PetscCitationsList` is no longer declared in a public header; register citations with `PetscCitationsRegister()`
 - Move the PETSc memory-management API (`PetscMalloc()`, `PetscFree()`, and related routines) into the new header `petscmem.h`; the API remains available through `petscsys.h`
 - Move the `PetscPreLoad*` functionality into `petscpreload.h`

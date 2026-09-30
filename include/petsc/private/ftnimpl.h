@@ -266,8 +266,6 @@ typedef PETSC_UINTPTR_T PetscFortranAddr;
 #define PETSC_VIEWER_MATLAB_WORLD_FORTRAN 14
 #define PETSC_VIEWER_MATLAB_SELF_FORTRAN  15
 
-#include <petscviewer.h>
-
 static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
 {
   if (!v) return PETSC_NULLPTR;

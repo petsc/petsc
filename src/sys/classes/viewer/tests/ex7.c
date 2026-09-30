@@ -1,6 +1,6 @@
 const char help[] = "Test PetscOptionsCreateViewers()";
 
-#include <petscviewer.h>
+#include <petscsys.h>
 
 #define N_MAX 5
 

@@ -1,6 +1,6 @@
 static char help[] = "Demonstrates PetscOptionsCreateViewer().\n\n";
 
-#include <petscviewer.h>
+#include <petscsys.h>
 
 int main(int argc, char **args)
 {

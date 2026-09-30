@@ -1,6 +1,8 @@
 #pragma once
 
-#include <petsclog.h>
+/*
+   This is a continuation of petsclog.h: it is included at the bottom of petsclog.h
+*/
 
 /* MANSEC = Sys */
 /* SUBMANSEC = Log */

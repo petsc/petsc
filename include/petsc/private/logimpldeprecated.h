@@ -1,9 +1,8 @@
 #pragma once
 
-#include <petscsystypes.h>
-#include <petsclogtypes.h>
-#include <petsclogdeprecated.h>
-#include <petscconf.h>
+/*
+   This is a continuation of logimpl.h: it is included at the bottom of logimpl.h
+*/
 
 /* MANSEC = Sys */
 /* SUBMANSEC = Log */

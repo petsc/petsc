@@ -1,6 +1,7 @@
 #pragma once
 
-#include <petscdmlabel.h>
+#include <petscsystypes.h>
+#include <petscdmlabeltypes.h>
 
 /* MANSEC = DM */
 /* SUBMANSEC = DT */

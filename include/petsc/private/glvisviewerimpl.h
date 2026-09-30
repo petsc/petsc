@@ -1,7 +1,6 @@
 #pragma once
 
-#include <petscviewer.h>
-#include <petscsys.h>
+#include <petscviewertypes.h>
 
 struct _n_PetscViewerGLVisVecInfo {
   char *fec_type; /* the output of FiniteElementCollection::Name() */

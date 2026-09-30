@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscviewer.h>
+#include <petscsys.h>
 
 /* MANSEC = Sys */
 /* SUBMANSEC = Viewer */

@@ -3,7 +3,9 @@
 */
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
+#include <petscerror.h>
+#include <petscoptionstypes.h>
 #include <petsctime.h>
 #include <petscbt.h>
 #include <petsclogtypes.h>
@@ -28,28 +30,6 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
 #define PetscInfo7(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
 #define PetscInfo8(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
 #define PetscInfo9(...) PETSC_DEPRECATED_MACRO(3, 17, 0, "PetscInfo()", ) PetscInfo(__VA_ARGS__)
-
-/*E
-  PetscInfoCommFlag - Describes the method by which to filter information displayed by `PetscInfo()` by communicator size
-
-  Values:
-+ `PETSC_INFO_COMM_ALL`       - Default uninitialized value. `PetscInfo()` will not filter based on
-                                communicator size (i.e. will print for all communicators)
-. `PETSC_INFO_COMM_NO_SELF`   - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
-- `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
-
-  Level: intermediate
-
-  Note:
-  Used as an input for `PetscInfoSetFilterCommSelf()`
-
-.seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
-E*/
-typedef enum {
-  PETSC_INFO_COMM_ALL       = -1,
-  PETSC_INFO_COMM_NO_SELF   = 0,
-  PETSC_INFO_COMM_ONLY_SELF = 1
-} PetscInfoCommFlag;
 
 PETSC_EXTERN const char *const PetscInfoCommFlags[];
 PETSC_EXTERN PetscErrorCode    PetscInfoDeactivateClass(PetscClassId);

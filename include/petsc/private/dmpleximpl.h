@@ -2,8 +2,7 @@
 
 #include <petscmat.h>    /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
-#include <petscdmplextransform.h>
-#include <petscbt.h>
+#include <petscdmplextransformtypes.h>
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
 

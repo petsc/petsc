@@ -3,7 +3,7 @@
 */
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 /* SUBMANSEC = Sys */
 

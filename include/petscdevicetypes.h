@@ -1,6 +1,7 @@
 #pragma once
 
-#include <petscsys.h> /*I <petscdevicetypes.h> I*/
+#include <petscsystypes.h> /*I <petscdevicetypes.h> I*/
+#include <petscerror.h>
 
 // Some overzealous older gcc versions warn that the comparisons below are always true. Neat
 // that it can detect this, but the tautology *is* the point of the static_assert()!
