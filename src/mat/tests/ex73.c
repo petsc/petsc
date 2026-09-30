@@ -3,10 +3,9 @@ static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
 /*
   Include "petscmat.h" so that we can use matrices.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets
-     petscviewer.h - viewers
+     petscsys.h - base PETSc routines
+     petscvec.h - vectors
+     petscis.h  - index sets
 
   Example of usage:
     mpiexec -n 3 ex73 -f <matfile> -mat_partitioning_type parmetis/scotch -viewer_binary_skip_info -nox

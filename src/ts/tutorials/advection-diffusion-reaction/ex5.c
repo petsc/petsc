@@ -29,10 +29,13 @@ F*/
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES numerical (ODE) integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h  - vectors
-     petscmat.h - matrices                    petscis.h   - index sets
-     petscksp.h - Krylov subspace methods     petscpc.h   - preconditioners
-     petscviewer.h - viewers                  petscsnes.h - nonlinear solvers
+     petscsys.h  - base PETSc routines
+     petscis.h   - index sets
+     petscvec.h  - vectors
+     petscmat.h  - matrices
+     petscpc.h   - preconditioners
+     petscksp.h  - Krylov subspace methods
+     petscsnes.h - nonlinear solvers
 */
 #include "reaction_diffusion.h"
 #include <petscdm.h>

@@ -6,10 +6,11 @@ static char help[] = "Solve a small system and a large system through preloading
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscis.h     - index sets
+     petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscpc.h  - preconditioners
 */
 #include <petscksp.h>
 

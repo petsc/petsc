@@ -3,9 +3,9 @@ static char help[] = "Tests MatCreateComposite()\n\n";
 /*
   Include "petscmat.h" so that we can use matrices.
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h    - vectors
-     petscmat.h    - matrices
-     petscis.h     - index sets            petscviewer.h - viewers
+     petscsys.h - base PETSc routines
+     petscvec.h - vectors
+     petscis.h  - index sets
 */
 #include <petscmat.h>
 

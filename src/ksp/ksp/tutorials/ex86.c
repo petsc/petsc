@@ -6,7 +6,6 @@ static char help[] = "Solves a one-dimensional steady upwind advection system wi
      petscsys.h    - base PETSc routines   petscvec.h - vectors
      petscmat.h    - matrices              petscpc.h  - preconditioners
      petscis.h     - index sets
-     petscviewer.h - viewers
 */
 #include <petscksp.h>
 

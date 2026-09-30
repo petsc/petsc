@@ -4,7 +4,6 @@ static char help[] = "Demonstrates using a local ordering to set values into a p
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
-     petscviewer.h - viewers
 */
 #include <petscvec.h>
 

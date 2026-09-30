@@ -19,11 +19,10 @@ static char help[] = "Krylov methods to solve u''  = f in parallel with periodic
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscksp.h" so that we can use KSP solvers.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscis.h  - index sets
+     petscpc.h  - preconditioners
 */
 
 #include <petscdm.h>

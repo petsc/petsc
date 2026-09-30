@@ -38,19 +38,21 @@ Choose one of the two at runtime by -sa_method {track,global}. \n";
    Since the equations here have parameters at predefined time steps, this
    example should be run with non adaptive time stepping solvers only. This
    can be ensured by -ts_adapt_type none (which is the default behavior only
-   for certain TS solvers like TSCN. If using an explicit TS like TSRK,
+   for certain TS ODE integrators like TSCN. If using an explicit TS like TSRK,
    please be sure to add the aforementioned option to disable adaptive
    timestepping.)
 */
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this file
+   Include "petscts.h" so that we can use the TS ODE integrators.  Note that this file
    automatically includes:
-     petscsys.h    - base PETSc routines   petscvec.h  - vectors
-     petscmat.h    - matrices
-     petscis.h     - index sets            petscksp.h  - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h   - preconditioners
-     petscksp.h    - linear solvers        petscsnes.h - nonlinear solvers
+     petscsys.h  - base PETSc routines
+     petscis.h   - index sets
+     petscvec.h  - vectors
+     petscmat.h  - matrices
+     petscpc.h   - preconditioners
+     petscksp.h  - linear solvers
+     petscsnes.h - nonlinear solvers
 */
 #include <petscts.h>
 

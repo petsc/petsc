@@ -3,8 +3,8 @@ static char help[] = "Parallel vector layout.\n\n";
 /*
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscis.h     - index sets
-     petscviewer.h - viewers
+     petscsys.h - base PETSc routines
+     petscis.h  - index sets
 */
 #include <petscvec.h>
 

@@ -1,11 +1,12 @@
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscis.h  - index sets
+     petscpc.h  - preconditioners
+     petscksp.h - linear solvers
 */
 #include <petscsnes.h>
 #include <petscao.h>

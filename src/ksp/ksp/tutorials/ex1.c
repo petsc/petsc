@@ -6,7 +6,6 @@ static char help[] = "Solves a tridiagonal linear system with KSP.\n\n";
      petscsys.h    - base PETSc routines   petscvec.h - vectors
      petscmat.h    - matrices              petscpc.h  - preconditioners
      petscis.h     - index sets
-     petscviewer.h - viewers
 
   Note:  The corresponding parallel example is ex23.c
 */

@@ -19,13 +19,14 @@ static char help[] = "Basic equation for generator stability analysis.\n";
 F*/
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
+   Include "petscts.h" so that we can use the TS ODE integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscis.h  - index sets
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscvec.h - vectors
+     petscpc.h  - preconditioners
+     petscksp.h - linear solvers
 */
 
 #include <petscts.h>

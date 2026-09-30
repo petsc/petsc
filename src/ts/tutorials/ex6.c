@@ -38,13 +38,15 @@ Input parameters include:\n\
   ------------------------------------------------------------------------- */
 
 /*
-   Include "ts.h" so that we can use TS solvers.  Note that this file
+   Include "petscts.h" so that we can use the TS ODE integrators.  Note that this file
    automatically includes:
-     petscsys.h  - base PETSc routines   vec.h  - vectors
-     sys.h    - system routines       mat.h  - matrices
-     is.h     - index sets            ksp.h  - Krylov subspace methods
-     viewer.h - viewers               pc.h   - preconditioners
-     snes.h - nonlinear solvers
+     petscsys.h  - base PETSc routines
+     petscis.h   - index sets
+     petscvec.h  - vectors
+     petscmat.h  - matrices
+     petscpc.h   - preconditioners
+     petscksp.h  - Krylov subspace methods
+     petscsnes.h - nonlinear solvers
 */
 
 #include <petscts.h>

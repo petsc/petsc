@@ -3,10 +3,10 @@ static char help[] = "Solves a tridiagonal linear system.\n\n";
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscis.h  - index sets
+     petscpc.h  - preconditioners
 
   Note:  The corresponding uniprocessor example is ex1.c
 */

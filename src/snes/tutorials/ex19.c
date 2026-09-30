@@ -55,11 +55,12 @@ The flow can be driven with the lid or with buoyancy or both:\n\
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscis.h  - index sets
+     petscpc.h  - preconditioners
+     petscksp.h - linear solvers
 */
 #if defined(PETSC_APPLE_FRAMEWORK)
   #import <PETSc/petscsnes.h>
