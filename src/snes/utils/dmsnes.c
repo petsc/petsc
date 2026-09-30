@@ -43,21 +43,11 @@ PetscErrorCode DMSNESLoad(DMSNES kdm, PetscViewer viewer)
 
 PetscErrorCode DMSNESView(DMSNES kdm, PetscViewer viewer)
 {
-  PetscBool isascii, isbinary;
+  PetscBool isbinary;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (isascii) {
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-    const char *fname;
-
-    PetscCall(PetscFPTFind(kdm->ops->computefunction, &fname));
-    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "Function used by SNES: %s\n", fname));
-    PetscCall(PetscFPTFind(kdm->ops->computejacobian, &fname));
-    if (fname) PetscCall(PetscViewerASCIIPrintf(viewer, "Jacobian function used by SNES: %s\n", fname));
-#endif
-  } else if (isbinary) {
+  if (isbinary) {
     struct {
       SNESFunctionFn *func;
     } funcstruct;

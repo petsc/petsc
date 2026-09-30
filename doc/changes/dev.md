@@ -30,6 +30,7 @@
 - Change `PETSC_PI`, `PETSC_PHI`, `PETSC_SQRT2`, `PETSC_E`, `PETSC_MAX_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, and `PETSC_SMALL` from macros to `static const PetscReal` objects, `constexpr` in C++ so they can be used in constant expressions and device code, and likewise `PETSC_MIN_REAL`, `PETSC_INFINITY`, and `PETSC_NINFINITY` except in C with the Microsoft, Intel classic, and NVHPC compilers, where they remain macros
 - Change `PETSC_REAL_MIN` in double precision from the largest subnormal value to `DBL_MIN`, its documented smallest positive normalized value
 - Change `PETSC_SQRT_MACHINE_EPSILON` in double precision to the exactly representable `1.4901161193847656e-08`, one ulp below the previous value; finite-difference step sizes change accordingly
+- Remove the `--with-serialize-functions` configure option and the associated function-pointer serialization feature (`PETSC_SERIALIZE_FUNCTIONS`)
 
 ```{rubric} Event Logging:
 ```

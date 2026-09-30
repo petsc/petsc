@@ -23,11 +23,6 @@ void __gcov_flush(void);
 EXTERN_C_END
 #endif
 
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-PETSC_INTERN PetscFPT PetscFPTData;
-PetscFPT              PetscFPTData = 0;
-#endif
-
 #if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif
@@ -1176,10 +1171,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   if (!PetscBinaryBigEndian()) PetscCallMPI(MPI_Register_datarep((char *)"petsc", PetscDataRep_read_conv_fn, PetscDataRep_write_conv_fn, PetscDataRep_extent_fn, NULL));
 #endif
 
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-  PetscCall(PetscFPTCreate(10000));
-#endif
-
 #if PetscDefined(HAVE_HWLOC)
   {
     PetscViewer viewer;
@@ -1542,10 +1533,6 @@ PetscErrorCode PetscFinalize(void)
     PetscCall(PetscFree(cits));
   }
   PetscCall(PetscSegBufferDestroy(&PetscCitationsList));
-
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-  PetscCall(PetscFPTDestroy());
-#endif
 
 #if PetscDefined(HAVE_X)
   flg1 = PETSC_FALSE;
