@@ -924,7 +924,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     dd = os.path.join('../','ftn', getAPI.mansecpath(i))
     args = [os.path.join(d,i) for i in os.listdir(d) if i.endswith('.h')]
     for j in args:
-      if not os.path.getsize(j): os.path.remove(j)
+      if not os.path.getsize(j): os.remove(j)
     with open(os.path.join(d,pkgname + 'all.h'),'w') as fd, open(os.path.join(d,pkgname + 'all.h90'),'w') as fd90, open(os.path.join(d,pkgname + 'all.hf90'),'w') as fdf90:
       if not i.startswith(pkgname): f = pkgname + i + '.h'
       else: f = i + '.h'
@@ -932,6 +932,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       for j in files[f].included:
         if j in skipinc: continue
         j = j.replace('types.h','.h')
+        if j in includes: continue  # a header and its types.h variant both normalize to the same name; include it once
         includes.add(j)
         fd.write('#include <' + os.path.join(('petsc' if j.startswith('petsc') else 'slepc'),'finclude',j) + '>\n')
         if os.path.isfile(os.path.join(d,j)) :
