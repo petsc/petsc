@@ -147,6 +147,20 @@ PetscErrorCode VecReciprocal_SeqKokkos(Vec xin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* x = sqrt(|x|) */
+PetscErrorCode VecSqrtAbs_SeqKokkos(Vec xin)
+{
+  PetscScalarKokkosView xv;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(VecGetKokkosView(xin, &xv));
+  PetscCallCXX(Kokkos::parallel_for("VecSqrtAbs", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, xin->map->n), KOKKOS_LAMBDA(const PetscInt &i) { xv(i) = Kokkos::sqrt(PetscAbsScalar(xv(i))); }));
+  PetscCall(VecRestoreKokkosView(xin, &xv));
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
   ConstPetscScalarKokkosView                           xv;
@@ -1717,6 +1731,7 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
   v->ops->bindtocpu       = VecBindToCPU_SeqKokkos;
   v->ops->abs             = VecAbs_SeqKokkos;
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
+  v->ops->sqrt            = VecSqrtAbs_SeqKokkos;
   v->ops->pointwisemult   = VecPointwiseMult_SeqKokkos;
   v->ops->min             = VecMin_SeqKokkos;
   v->ops->max             = VecMax_SeqKokkos;

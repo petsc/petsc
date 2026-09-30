@@ -129,6 +129,7 @@ struct Vec_Kokkos {
 
 PETSC_INTERN PetscErrorCode VecAbs_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecReciprocal_SeqKokkos(Vec);
+PETSC_INTERN PetscErrorCode VecSqrtAbs_SeqKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqKokkos(Vec, Vec, PetscScalar *, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecWAXPY_SeqKokkos(Vec, PetscScalar, Vec, Vec);

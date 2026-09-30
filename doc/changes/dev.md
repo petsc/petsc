@@ -39,6 +39,8 @@
 ```{rubric} Vec:
 ```
 
+- Add a device implementation of `VecSqrtAbs()` for `VECKOKKOS`; previously it copied the vector to the host
+
 ```{rubric} PetscSection:
 ```
 

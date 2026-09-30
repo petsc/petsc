@@ -1,4 +1,4 @@
-static char help[] = "Tests VecExp().\n\n";
+static char help[] = "Tests VecExp() and VecSqrtAbs().\n\n";
 
 #include <petscvec.h>
 
@@ -33,6 +33,48 @@ static PetscErrorCode CheckExp(Vec v, PetscInt n, PetscScalar *arr, PetscScalar 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+   Compare VecSqrtAbs() on v with VecSqrtAbs() on a host VECMPI vector holding the same entries,
+   which are signed so the absolute value matters, and complex in complex builds
+*/
+static PetscErrorCode CheckSqrtAbs(Vec v)
+{
+  const PetscReal    rtol = 1e-10, atol = PETSC_SMALL;
+  Vec                w;
+  PetscInt           n, rstart;
+  const PetscScalar *varr, *warr;
+
+  PetscFunctionBeginUser;
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
+  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)v), n, PETSC_DETERMINE, &w));
+  for (PetscInt i = rstart; i < rstart + n; ++i) {
+    PetscScalar value = (i % 2 ? -1.0 : 1.0) * (PetscReal)(3 * i + 2);
+
+#if PetscDefined(USE_COMPLEX)
+    value += PETSC_i * (PetscReal)(i - 4);
+#endif
+    PetscCall(VecSetValue(v, i, value, INSERT_VALUES));
+    PetscCall(VecSetValue(w, i, value, INSERT_VALUES));
+  }
+  PetscCall(VecAssemblyBegin(v));
+  PetscCall(VecAssemblyEnd(v));
+  PetscCall(VecAssemblyBegin(w));
+  PetscCall(VecAssemblyEnd(w));
+  PetscCall(VecSqrtAbs(v));
+  PetscCall(VecSqrtAbs(w));
+  PetscCall(VecViewFromOptions(v, NULL, "-vec_view"));
+
+  PetscCall(VecGetArrayRead(v, &varr));
+  PetscCall(VecGetArrayRead(w, &warr));
+  for (PetscInt i = 0; i < n; ++i)
+    PetscCheck(PetscIsCloseAtTolScalar(varr[i], warr[i], rtol, atol), PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecSqrtAbs() actual[%" PetscInt_FMT "] %g != host %g", rstart + i, (double)PetscRealPart(varr[i]), (double)PetscRealPart(warr[i]));
+  PetscCall(VecRestoreArrayRead(w, &warr));
+  PetscCall(VecRestoreArrayRead(v, &varr));
+  PetscCall(VecDestroy(&w));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   Vec          v;
@@ -52,6 +94,7 @@ int main(int argc, char **argv)
   PetscCall(CheckExp(v, n, arr, 0.0));
   PetscCall(CheckExp(v, n, arr, 1.0));
   PetscCall(CheckExp(v, n, arr, -1.0));
+  PetscCall(CheckSqrtAbs(v));
 
   PetscCall(PetscFree(arr));
   PetscCall(VecDestroy(&v));
