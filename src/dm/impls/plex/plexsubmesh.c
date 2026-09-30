@@ -2693,7 +2693,7 @@ static void MPIAPI DMPlexLabelCohesiveValueReduce_Private(void *a, void *b, int 
   Note:
   The vertices in blabel are called "unsplit" in the terminology from hybrid cell creation.
 
-  Points are marked with their dimension, combined with a shift based on the type of interation with the surface. For points on the surface itself, the shift is zero. Mesh points impinging on the surface have a shoft of 100, and then are negated for points on the negative side of the fault. Points on the surface boundary, called unsplit, are shifted by 200. Cells on the surface that are not owned by this process are shifted by 300.
+  Points are marked with their dimension, combined with a shift based on the type of interaction with the surface. For points on the surface itself, the shift is zero. Mesh points impinging on the surface have a shift of 100, and then are negated for points on the negative side of the fault. Points on the surface boundary, called unsplit, are shifted by 200. Cells on the surface that are not owned by this process are shifted by 300.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructCohesiveCells()`, `DMPlexLabelComplete()`
 @*/
