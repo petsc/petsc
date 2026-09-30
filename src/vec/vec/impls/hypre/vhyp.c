@@ -3,6 +3,7 @@
 */
 
 #include <petsc/private/vecimpl.h> /*I "petscvec.h" I*/
+#include <petscpkg_version.h>
 #include <../src/vec/vec/impls/hypre/vhyp.h>
 #include <HYPRE.h>
 

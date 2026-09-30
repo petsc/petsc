@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petscdevice_cupm.h>
+#include <petscpkg_version.h>
 
 #include <petsc/private/cpputil.hpp>
 

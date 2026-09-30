@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petsc/private/matdensecupmimpl.h> /*I <petscmat.h> I*/
+#include <petscpkg_version.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
 #include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()

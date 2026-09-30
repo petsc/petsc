@@ -1,5 +1,6 @@
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
+#include <petscpkg_version.h>
 #include <petscdevice.h>
 #if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
   #include <nvtx3/nvToolsExt.h>

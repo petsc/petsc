@@ -1,4 +1,5 @@
 #include <petscdevice_cuda.h>
+#include <petscpkg_version.h>
 #include <petsc/private/cupmblasinterface.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 #include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>

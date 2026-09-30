@@ -4,7 +4,7 @@
 /*                             Atomic operations on device                            */
 /*====================================================================================*/
 #include <petscdevice_cupm.h>
-#include <petscsystypes.h>
+#include <petscpkg_version.h>
 
 /* In terms of function overloading, long long int is a different type than int64_t, which PetscInt might be defined to.
    We prefer long long int over PetscInt (int64_t), since CUDA atomics are built around (unsigned) long long int.
