@@ -21,7 +21,7 @@ Some package managers provide separate packages for the complex number installat
   : `brew install petsc`
 - MacPorts: <https://ports.macports.org/port/petsc>
   : `sudo port install petsc`
-- MSYS2 (Windows) <https://packages.msys2.org/package/mingw-w64-x86_64-petsc>
+- MSYS2 (Windows) <https://packages.msys2.org/base/mingw-w64-petsc>
 - openSUSE <https://software.opensuse.org/package/petsc>
 - Python: <https://pypi.org/project/petsc>
   : `python -m pip install petsc petsc4py`
