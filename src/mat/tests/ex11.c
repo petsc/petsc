@@ -49,7 +49,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-keep_nonzero_pattern", &keepnonzeropattern));
   if (keepnonzeropattern) PetscCall(MatSetOption(C, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
 
-  PetscCall(MatZeroRowsIS(C, isrow, five, 0, 0));
+  PetscCall(MatZeroRowsIS(C, isrow, five, NULL, NULL));
 
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_SELF));
 

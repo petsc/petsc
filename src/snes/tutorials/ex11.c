@@ -89,7 +89,7 @@ typedef enum {
   BC_NEUMANN,
 } bcType;
 
-static const char *const bcTypes[] = {"DIRICHLET", "NEUMANN", "bcType", "BC_", 0};
+static const char *const bcTypes[] = {"DIRICHLET", "NEUMANN", "bcType", "BC_", NULL};
 
 /* The forcing term: constant or analytical */
 typedef enum {
@@ -97,7 +97,7 @@ typedef enum {
   RHS_ANALYTICAL,
 } rhsType;
 
-static const char *const rhsTypes[] = {"CONSTANT", "ANALYTICAL", "rhsType", "RHS_", 0};
+static const char *const rhsTypes[] = {"CONSTANT", "ANALYTICAL", "rhsType", "RHS_", NULL};
 
 /* the constant case */
 static PetscErrorCode rhs_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *g, PetscCtx ctx)
@@ -128,7 +128,7 @@ typedef enum {
   COEFF_ANALYTICAL,
 } coeffType;
 
-static const char *const coeffTypes[] = {"CONSTANT", "CHECKERBOARD", "ANALYTICAL", "coeffType", "COEFF_", 0};
+static const char *const coeffTypes[] = {"CONSTANT", "CHECKERBOARD", "ANALYTICAL", "coeffType", "COEFF_", NULL};
 
 /* the constant coefficient case */
 static PetscErrorCode coefficient_constant(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *K, PetscCtx ctx)

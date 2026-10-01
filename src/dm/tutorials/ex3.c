@@ -17,7 +17,7 @@ PetscErrorCode SetCoordinates1d(DM da)
   PetscCall(DMGetCoordinatesLocal(da, &local));
   PetscCall(DMDAVecGetArray(cda, global, &coors));
   PetscCall(DMDAVecGetArrayRead(cda, local, &coorslocal));
-  PetscCall(DMDAGetCorners(cda, &start, 0, 0, &m, 0, 0));
+  PetscCall(DMDAGetCorners(cda, &start, NULL, NULL, &m, NULL, NULL));
   for (i = start; i < start + m; i++) {
     if (i % 2) coors[i] = coorslocal[i - 1] + .1 * (coorslocal[i + 1] - coorslocal[i - 1]);
   }
@@ -42,7 +42,7 @@ PetscErrorCode SetCoordinates2d(DM da)
   PetscCall(DMGetCoordinatesLocal(da, &local));
   PetscCall(DMDAVecGetArray(cda, global, &coors));
   PetscCall(DMDAVecGetArrayRead(cda, local, &coorslocal));
-  PetscCall(DMDAGetCorners(cda, &mstart, &nstart, 0, &m, &n, 0));
+  PetscCall(DMDAGetCorners(cda, &mstart, &nstart, NULL, &m, &n, NULL));
   for (i = mstart; i < mstart + m; i++) {
     for (j = nstart; j < nstart + n; j++) {
       if (i % 2) coors[j][i].x = coorslocal[j][i - 1].x + .1 * (coorslocal[j][i + 1].x - coorslocal[j][i - 1].x);
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
   } else if (dim == 3) {
     PetscCall(SetCoordinates3d(daf));
   }
-  PetscCall(DMCreateInterpolation(dac, daf, &A, 0));
+  PetscCall(DMCreateInterpolation(dac, daf, &A, NULL));
 
   /* Free memory */
   PetscCall(DMDestroy(&dac));

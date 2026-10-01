@@ -912,7 +912,7 @@ static PetscErrorCode AssembleA_Stokes(Mat A, DM stokes_da, CellProperties cell_
   PetscInt                n, M, N, P;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(stokes_da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(stokes_da, NULL, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   /* setup for coords */
   PetscCall(DMGetCoordinateDM(stokes_da, &cda));
   PetscCall(DMGetCoordinatesLocal(stokes_da, &coords));
@@ -998,7 +998,7 @@ static PetscErrorCode AssembleA_PCStokes(Mat A, DM stokes_da, CellProperties cel
   PetscInt                n, M, N, P;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(stokes_da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(stokes_da, NULL, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   /* setup for coords */
   PetscCall(DMGetCoordinateDM(stokes_da, &cda));
   PetscCall(DMGetCoordinatesLocal(stokes_da, &coords));
@@ -1083,7 +1083,7 @@ static PetscErrorCode AssembleF_Stokes(Vec F, DM stokes_da, CellProperties cell_
   PetscInt                n, M, N, P;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(stokes_da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(stokes_da, NULL, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   /* setup for coords */
   PetscCall(DMGetCoordinateDM(stokes_da, &cda));
   PetscCall(DMGetCoordinatesLocal(stokes_da, &coords));
@@ -1302,7 +1302,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
   PetscCall(DMGlobalToLocalEnd(stokes_da, X, INSERT_VALUES, X_local));
   PetscCall(DMDAVecGetArray(stokes_da, X_local, &stokes));
 
-  PetscCall(DMDAGetInfo(stokes_da, 0, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(stokes_da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetBoundingBox(stokes_da, xymin, xymax));
 
   h = (xymax[0] - xymin[0]) / ((PetscReal)(M - 1));
@@ -1347,7 +1347,7 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
   {
     PetscInt     k, L, dof;
     PetscScalar *fields;
-    PetscCall(DMDAGetInfo(stokes_da, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+    PetscCall(DMDAGetInfo(stokes_da, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
 
     PetscCall(VecGetLocalSize(X_local, &L));
     PetscCall(VecGetArray(X_local, &fields));
@@ -1473,7 +1473,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "      </Points>\n"));
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "      <PointData Scalars=\" "));
-  PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, 0, 0, 0, &n_fields, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &n_fields, NULL, NULL, NULL, NULL, NULL));
   for (f = 0; f < n_fields; f++) {
     const char *field_name;
     PetscCall(DMDAGetFieldName(da, f, &field_name));
@@ -1552,7 +1552,7 @@ PetscErrorCode DAViewVTK_write_PieceExtend(FILE *vtk_fp, PetscInt indent_level, 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, &pM, &pN, &pP, 0, &stencil, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, &P, &pM, &pN, &pP, NULL, &stencil, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetOwnershipRanges(da, &lx, &ly, &lz));
 
   /* generate start,end list */
@@ -1657,7 +1657,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da, const char file_prefix[], con
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n", byte_order));
 
   /* define size of the nodal mesh based on the cell DM */
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, &dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, &P, NULL, NULL, NULL, &dofs, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetGhostCorners(da, &si, &sj, &sk, &nx, &ny, &nz));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "  <PStructuredGrid GhostLevel=\"1\" WholeExtent=\"%d %" PetscInt_FMT " %d %" PetscInt_FMT " %d %" PetscInt_FMT "\">\n", 0, M - 1, 0, N - 1, 0, P - 1)); /* note overlap = 1 for Q1 */
 
@@ -1738,7 +1738,7 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc, DM da_fine)
 
   PetscFunctionBeginUser;
   nlevels = 1;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-levels", &nlevels, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-levels", &nlevels, NULL));
 
   PetscCall(PetscMalloc1(nlevels, &da_list));
   for (PetscInt k = 0; k < nlevels; k++) da_list[k] = NULL;
@@ -2055,7 +2055,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx, PetscInt my, PetscInt
 
   {
     PetscBool stokes_monitor = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-stokes_ksp_monitor_blocks", &stokes_monitor, 0));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-stokes_ksp_monitor_blocks", &stokes_monitor, NULL));
     if (stokes_monitor) PetscCall(KSPMonitorSet(ksp_S, KSPMonitorStokesBlocks, NULL, NULL));
   }
 

@@ -63,7 +63,7 @@ int main(int argc, char **args)
     col[0] = rstart * bs + 0;
     col[1] = rstart * bs + 1;
     col[2] = rstart * bs + 2;
-    PetscCall(MatZeroRows(A, 3, col, one, 0, 0));
+    PetscCall(MatZeroRows(A, 3, col, one, NULL, NULL));
   }
 
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));

@@ -38,7 +38,7 @@ typedef enum {
   FVBC_PERIODIC,
   FVBC_OUTFLOW
 } FVBCType;
-static const char *FVBCTypes[] = {"PERIODIC", "OUTFLOW", "FVBCType", "FVBC_", 0};
+static const char *FVBCTypes[] = {"PERIODIC", "OUTFLOW", "FVBCType", "FVBC_", NULL};
 
 typedef struct {
   PetscErrorCode (*sample)(void *, PetscInt, FVBCType, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal *);
@@ -178,8 +178,8 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   PetscFunctionBeginUser;
   ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
+  PetscCall(DMGetLocalVector(da, &Xloc));                                                                  /* Xloc contains ghost points                                     */
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL)); /* Mx is the number of center points                              */
   hs = (ctx->xmax - ctx->xmin) / 2.0 * (ctx->hratio + 1.0) / Mx;
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
@@ -187,7 +187,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
   PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(DMDAVecGetArray(da, F, &f));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(PetscMalloc4(dof, &r, dof, &min, dof, &alpha, dof, &gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -327,8 +327,8 @@ static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, voi
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
+  PetscCall(DMGetLocalVector(da, &Xloc));                                                                  /* Xloc contains ghost points                                     */
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL)); /* Mx is the number of center points                              */
   hs = (ctx->xmax - ctx->xmin) / 2.0 * (ctx->hratio + 1.0) / Mx;
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
@@ -336,7 +336,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, voi
   PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(PetscMalloc4(dof, &r, dof, &min, dof, &alpha, dof, &gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -449,8 +449,8 @@ static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, voi
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
+  PetscCall(DMGetLocalVector(da, &Xloc));                                                                  /* Xloc contains ghost points                                     */
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL)); /* Mx is the number of center points                              */
   hs = (ctx->xmax - ctx->xmin) / 2.0 * (ctx->hratio + 1.0) / Mx;
   hf = (ctx->xmax - ctx->xmin) / 2.0 * (1.0 + 1.0 / ctx->hratio) / Mx;
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc)); /* X is solution vector which does not contain ghost points       */
@@ -458,7 +458,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, voi
   PetscCall(VecZeroEntries(F)); /* F is the right-hand side function corresponds to center points */
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(PetscMalloc4(dof, &r, dof, &min, dof, &alpha, dof, &gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
@@ -553,8 +553,8 @@ PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
 
   PetscFunctionBeginUser;
   PetscCheck(ctx->physics.sample, PETSC_COMM_SELF, PETSC_ERR_SUP, "Physics has not provided a sampling function");
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(DMDAVecGetArray(da, U, &u));
   PetscCall(PetscMalloc1(dof, &uj));
   const PetscReal hs = (ctx->xmax - ctx->xmin) / 2.0 * (ctx->hratio + 1.0) / Mx;
@@ -613,8 +613,8 @@ static PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc));
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
   PetscCall(DMDAVecGetArrayRead(da, Xloc, (void *)&x));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   tvsum = 0;
   for (i = xs; i < xs + xm; i++) {
     for (j = 0; j < dof; j++) tvsum += PetscAbsScalar(x[i * dof + j] - x[(i - 1) * dof + j]);
@@ -659,7 +659,7 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx, DM da, PetscReal t, Vec X, 
 int main(int argc, char *argv[])
 {
   char              physname[256] = "advect", final_fname[256] = "solution.m";
-  PetscFunctionList physics = 0;
+  PetscFunctionList physics = NULL;
   MPI_Comm          comm;
   TS                ts;
   DM                da;
@@ -670,7 +670,7 @@ int main(int argc, char *argv[])
   PetscReal         ptime;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscMemzero(&ctx, sizeof(ctx)));
 
@@ -711,8 +711,8 @@ int main(int argc, char *argv[])
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i = 0; i < ctx.physics.dof; i++) PetscCall(DMDASetFieldName(da, i, ctx.physics.fieldname[i]));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   /* Set coordinates of cell centers */
   PetscCall(DMDASetUniformCoordinates(da, ctx.xmin + 0.5 * (ctx.xmax - ctx.xmin) / Mx, ctx.xmax + 0.5 * (ctx.xmax - ctx.xmin) / Mx, 0, 0, 0, 0));

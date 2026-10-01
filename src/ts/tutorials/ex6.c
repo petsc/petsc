@@ -120,10 +120,10 @@ int main(int argc, char **argv)
      Set up displays to show graphs of the solution and error
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, 0, "", 80, 380, 400, 160, &appctx.viewer1));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, "", 80, 380, 400, 160, &appctx.viewer1));
   PetscCall(PetscViewerDrawGetDraw(appctx.viewer1, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, 0, "", 80, 0, 400, 160, &appctx.viewer2));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, "", 80, 0, 400, 160, &appctx.viewer2));
   PetscCall(PetscViewerDrawGetDraw(appctx.viewer2, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 

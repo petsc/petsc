@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, 0, "Title", x, y, width, height, &draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "Title", x, y, width, height, &draw));
 #if PetscDefined(HAVE_X)
   PetscCall(PetscDrawSetType(draw, "x"));
   PetscCall(PetscDrawSetType(draw, "null"));

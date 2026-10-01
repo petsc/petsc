@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 280, 480, 600, 200, &viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "", 280, 480, 600, 200, &viewer));
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 

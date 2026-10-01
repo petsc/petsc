@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 
   /* ------- Assemble matrix, --------- */
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, n, 0, 0, 0, 0, &A));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, n, 0, NULL, 0, NULL, &A));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   if (!rstart) {

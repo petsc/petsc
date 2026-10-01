@@ -303,10 +303,10 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
     PetscCall(MatMult(user->JsBlock, X, Y));
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], 0, 0));
-      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], NULL, NULL));
       PetscCall(MatMult(user->JsBlock, user->subq, user->suby));
-      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], NULL, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -332,12 +332,12 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
     user->ksp_its += its;
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], 0, 0));
-      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], NULL, NULL));
       PetscCall(KSPSolve(user->solver, user->subq, user->suby));
       PetscCall(KSPGetIterationNumber(user->solver, &its));
       user->ksp_its += its;
-      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], NULL, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -353,10 +353,10 @@ PetscErrorCode QMatMult(Mat J_shell, Vec X, Vec Y)
     PetscCall(MatMult(user->Q, X, Y));
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], 0, 0));
-      PetscCall(Scatter(Y, user->subd, user->di_scatter[i], 0, 0));
+      PetscCall(Scatter(X, user->subq, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Scatter(Y, user->subd, user->di_scatter[i], NULL, NULL));
       PetscCall(MatMult(user->Q, user->subq, user->subd));
-      PetscCall(Gather(Y, user->subd, user->di_scatter[i], 0, 0));
+      PetscCall(Gather(Y, user->subd, user->di_scatter[i], NULL, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -373,10 +373,10 @@ PetscErrorCode QMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     PetscCall(MatMultTranspose(user->Q, X, Y));
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(X, user->subd, user->di_scatter[i], 0, 0));
-      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Scatter(X, user->subd, user->di_scatter[i], NULL, NULL));
+      PetscCall(Scatter(Y, user->suby, user->yi_scatter[i], NULL, NULL));
       PetscCall(MatMultTranspose(user->Q, user->subd, user->suby));
-      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], 0, 0));
+      PetscCall(Gather(Y, user->suby, user->yi_scatter[i], NULL, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -416,14 +416,14 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
     PetscCall(MatMultTranspose(user->Grad, user->Swork, Y));
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], 0, 0));
-      PetscCall(Scatter(Y, user->subq, user->yi_scatter[i], 0, 0));
+      PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Scatter(Y, user->subq, user->yi_scatter[i], NULL, NULL));
 
       PetscCall(MatMult(user->Grad, user->suby, user->Twork));
       PetscCall(VecPointwiseMult(user->Twork, user->Twork, user->Swork));
       PetscCall(MatMultTranspose(user->Grad, user->Twork, user->subq));
-      PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], 0, 0));
-      PetscCall(Gather(Y, user->subq, user->yi_scatter[i], 0, 0));
+      PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Gather(Y, user->subq, user->yi_scatter[i], NULL, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -447,8 +447,8 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
   PetscCall(VecReciprocal(user->Sdiag));
 
   for (i = 0; i < user->ns; i++) {
-    PetscCall(Scatter(X, user->subq, user->yi_scatter[i], 0, 0));
-    PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], 0, 0));
+    PetscCall(Scatter(X, user->subq, user->yi_scatter[i], NULL, NULL));
+    PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
 
     /* Swork = (Div' * b(:,i)) */
     PetscCall(MatMult(user->Grad, user->subq, user->Swork));
@@ -468,7 +468,7 @@ PetscErrorCode DesignMatMultTranspose(Mat J_shell, Vec X, Vec Y)
     /* Ywork = pointwisemult(uwork,Ywork) */
     PetscCall(VecPointwiseMult(user->Ywork, user->uwork, user->Ywork));
     PetscCall(VecAXPY(Y, 1.0, user->Ywork));
-    PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], 0, 0));
+    PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -491,8 +491,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
     PetscCall(VecShift(C, sum));
   } else {
     for (i = 0; i < user->ns; i++) {
-      PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], 0, 0));
-      PetscCall(Scatter(C, user->subq, user->yi_scatter[i], 0, 0));
+      PetscCall(Scatter(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Scatter(C, user->subq, user->yi_scatter[i], NULL, NULL));
       PetscCall(MatMult(user->Grad, user->suby, user->Swork));
       PetscCall(VecPointwiseDivide(user->Swork, user->Swork, user->Av_u));
       PetscCall(MatMultTranspose(user->Grad, user->Swork, user->subq));
@@ -501,8 +501,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec C, void *ptr)
       sum /= user->ndesign;
       PetscCall(VecShift(user->subq, sum));
 
-      PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], 0, 0));
-      PetscCall(Gather(C, user->subq, user->yi_scatter[i], 0, 0));
+      PetscCall(Gather(user->y, user->suby, user->yi_scatter[i], NULL, NULL));
+      PetscCall(Gather(C, user->subq, user->yi_scatter[i], NULL, NULL));
     }
   }
   PetscCall(VecAXPY(C, -1.0, user->q));

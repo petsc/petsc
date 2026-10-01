@@ -94,7 +94,7 @@ static PetscErrorCode RoberSolution(PetscReal t, Vec X, PetscCtx ctx)
 static PetscErrorCode RoberCreate(Problem p)
 {
   PetscFunctionBeginUser;
-  p->destroy    = 0;
+  p->destroy    = NULL;
   p->function   = &RoberFunction;
   p->jacobian   = &RoberJacobian;
   p->solution   = &RoberSolution;
@@ -268,7 +268,7 @@ static PetscErrorCode OregoSolution(PetscReal t, Vec X, PetscCtx ctx)
 static PetscErrorCode OregoCreate(Problem p)
 {
   PetscFunctionBeginUser;
-  p->destroy    = 0;
+  p->destroy    = NULL;
   p->function   = &OregoFunction;
   p->jacobian   = &OregoJacobian;
   p->solution   = &OregoSolution;

@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   PetscBool    cuda = PETSC_FALSE, set_inf = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-lda", &lda, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-cuda", &cuda, NULL));

@@ -310,13 +310,13 @@ int main(int argc, char *argv[])
   VecType         vtype;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 10, 1, 1, NULL, &dau));
   PetscCall(DMSetOptionsPrefix(dau, "u_"));
   PetscCall(DMSetFromOptions(dau));
   PetscCall(DMSetUp(dau));
-  PetscCall(DMDAGetOwnershipRanges(dau, &lxu, 0, 0));
-  PetscCall(DMDAGetInfo(dau, 0, &m, 0, 0, &sizes, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetOwnershipRanges(dau, &lxu, NULL, NULL));
+  PetscCall(DMDAGetInfo(dau, NULL, &m, NULL, NULL, &sizes, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(PetscMalloc1(sizes, &lxk));
   PetscCall(PetscArraycpy(lxk, lxu, sizes));
   lxk[0]--;
@@ -355,8 +355,8 @@ int main(int argc, char *argv[])
     user->ptype = 0;
     pass_dm     = PETSC_TRUE;
 
-    PetscCall(PetscOptionsInt("-problem_type", "0: solve for u only, 1: solve for k only, 2: solve for both", 0, user->ptype, &user->ptype, NULL));
-    PetscCall(PetscOptionsBool("-pass_dm", "Pass the packed DM to SNES to use when determining splits and forward into splits", 0, pass_dm, &pass_dm, NULL));
+    PetscCall(PetscOptionsInt("-problem_type", "0: solve for u only, 1: solve for k only, 2: solve for both", NULL, user->ptype, &user->ptype, NULL));
+    PetscCall(PetscOptionsBool("-pass_dm", "Pass the packed DM to SNES to use when determining splits and forward into splits", NULL, pass_dm, &pass_dm, NULL));
   }
   PetscOptionsEnd();
 
@@ -419,9 +419,9 @@ int main(int argc, char *argv[])
     Mat       D;
     Vec       Y;
 
-    PetscCall(PetscOptionsGetInt(NULL, 0, "-col", &col, 0));
-    PetscCall(PetscOptionsGetBool(NULL, 0, "-mult_dup", &mult_dup, 0));
-    PetscCall(PetscOptionsGetBool(NULL, 0, "-view_dup", &view_dup, 0));
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-col", &col, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-mult_dup", &mult_dup, NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_dup", &view_dup, NULL));
 
     PetscCall(VecDuplicate(X, &Y));
     /* PetscCall(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY)); */

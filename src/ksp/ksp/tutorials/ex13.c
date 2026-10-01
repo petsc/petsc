@@ -144,7 +144,7 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m, PetscInt n, UserCtx *userc
   /*
      Create the sparse matrix. Preallocate 5 nonzeros per row.
   */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 5, 0, &userctx->A));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 5, NULL, &userctx->A));
 
   /*
      Create vectors. Here we create vectors with no memory allocated.

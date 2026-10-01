@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscScalar one = 1.0, two = 2.0;
   Vec         x, y;
   IS          is1, is2;
-  VecScatter  ctx = 0;
+  VecScatter  ctx = NULL;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

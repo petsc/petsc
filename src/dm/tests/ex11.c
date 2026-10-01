@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create viewers */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", PETSC_DECIDE, PETSC_DECIDE, 600, 200, &viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "", PETSC_DECIDE, PETSC_DECIDE, 600, 200, &viewer));
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   /* Set values into global vectors */
   PetscCall(DMDAVecGetArrayDOFRead(dac, coors, &xy));
   PetscCall(DMDAVecGetArrayDOF(da, global, &aglobal));
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &m, &n, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &m, &n, NULL));
   for (k = 0; k < dof; k++) {
     for (j = ys; j < ys + n; j++) {
       for (i = xs; i < xs + m; i++) aglobal[j][i][k] = PetscSinScalar(2.0 * PETSC_PI * (k + 1) * xy[j][i][0]);

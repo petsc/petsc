@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
     if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
     PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &F));
-    PetscCall(MatCholeskyFactor(F, perm, 0));
+    PetscCall(MatCholeskyFactor(F, perm, NULL));
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
@@ -145,8 +145,8 @@ int main(int argc, char **argv)
   /* out-of-place Cholesky */
   if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
   PetscCall(MatGetFactor(mat, solver, MAT_FACTOR_CHOLESKY, &F));
-  PetscCall(MatCholeskyFactorSymbolic(F, mat, perm, 0));
-  PetscCall(MatCholeskyFactorNumeric(F, mat, 0));
+  PetscCall(MatCholeskyFactorSymbolic(F, mat, perm, NULL));
+  PetscCall(MatCholeskyFactorNumeric(F, mat, NULL));
   PetscCall(MatSolve(F, b, y));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm));
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
     Mat RHS2;
 
     PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &F));
-    PetscCall(MatLUFactor(F, perm, perm, 0));
+    PetscCall(MatLUFactor(F, perm, perm, NULL));
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
     PetscCall(VecNorm(y, NORM_2, &norm));
@@ -179,8 +179,8 @@ int main(int argc, char **argv)
 
   /* out-of-place LU */
   PetscCall(MatGetFactor(mat, solver, MAT_FACTOR_LU, &F));
-  PetscCall(MatLUFactorSymbolic(F, mat, perm, perm, 0));
-  PetscCall(MatLUFactorNumeric(F, mat, 0));
+  PetscCall(MatLUFactorSymbolic(F, mat, perm, perm, NULL));
+  PetscCall(MatLUFactorNumeric(F, mat, NULL));
   PetscCall(MatSolve(F, b, y));
   PetscCall(VecAXPY(y, -1.0, x));
   PetscCall(VecNorm(y, NORM_2, &norm));
@@ -210,7 +210,7 @@ int main(int argc, char **argv)
       Mat SOLU2;
 
       PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &F));
-      PetscCall(MatQRFactor(F, NULL, 0));
+      PetscCall(MatQRFactor(F, NULL, NULL));
       PetscCall(MatSolve(F, b, y));
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm));

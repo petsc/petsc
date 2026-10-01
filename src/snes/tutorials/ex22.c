@@ -113,9 +113,9 @@ int main(int argc, char **argv)
 
   if (use_monitor) {
     /* create graphics windows */
-    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "u_lambda - state variables and Lagrange multipliers", -1, -1, -1, -1, &user.u_lambda_viewer));
-    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu_lambda - derivative w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
-    PetscCall(SNESMonitorSet(snes, Monitor, 0, 0));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "u_lambda - state variables and Lagrange multipliers", -1, -1, -1, -1, &user.u_lambda_viewer));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "fu_lambda - derivative w.r.t. state variables and Lagrange multipliers", -1, -1, -1, -1, &user.fu_lambda_viewer));
+    PetscCall(SNESMonitorSet(snes, Monitor, NULL, NULL));
   }
 
   PetscCall(SNESSolve(snes, NULL, NULL));
@@ -160,7 +160,7 @@ PetscErrorCode ComputeFunction(SNES snes, Vec U, Vec FU, PetscCtx ctx)
   PetscCall(DMCompositeGetAccess(packer, FU, &vfw, &vfu_lambda));
 
   PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
-  PetscCall(DMDAGetInfo(da, 0, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(VecGetArray(vw, &w));
   PetscCall(VecGetArray(vfw, &fw));
   PetscCall(DMDAVecGetArray(da, vu_lambda, &u_lambda));
@@ -254,13 +254,13 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy)
   PetscCall(VecView(u_lambda, user->u_lambda_viewer));
   PetscCall(DMCompositeRestoreAccess(packer, U, &w, &u_lambda));
 
-  PetscCall(SNESGetFunction(snes, &F, 0, 0));
+  PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
   PetscCall(DMCompositeGetAccess(packer, F, &w, &u_lambda));
   /* ierr = VecView(u_lambda,user->fu_lambda_viewer); */
   PetscCall(DMCompositeRestoreAccess(packer, U, &w, &u_lambda));
 
   PetscCall(DMCompositeGetEntries(packer, &m, &da));
-  PetscCall(DMDAGetInfo(da, 0, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(VecDuplicate(U, &Uexact));
   PetscCall(ExactSolution(packer, Uexact));
   PetscCall(VecAXPY(Uexact, -1.0, U));

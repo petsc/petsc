@@ -40,14 +40,14 @@ typedef enum {
   SOL_TRIG,
   SOL_UNKNOWN
 } SolType;
-const char *SolTypes[] = {"quadratic", "trig", "unknown", "SolType", "SOL_", 0};
+const char *SolTypes[] = {"quadratic", "trig", "unknown", "SolType", "SOL_", NULL};
 
 typedef enum {
   BC_ESSENTIAL,
   BC_NITSCHE,
   BC_UNKNOWN
 } BCType;
-const char *BCTypes[] = {"essential", "nitsche", "unknown", "BCType", "BC_", 0};
+const char *BCTypes[] = {"essential", "nitsche", "unknown", "BCType", "BC_", NULL};
 
 typedef struct {
   PetscScalar mu;  /* dynamic shear viscosity */

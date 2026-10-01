@@ -11,7 +11,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, m, n, 20, 0, &A));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, m, n, 20, NULL, &A));
 
   for (i = 0; i < n; i++) values[i] = (PetscReal)i;
 

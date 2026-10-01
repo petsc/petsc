@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, 0, "-values_view", &values_view, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-values_view", &values_view, NULL));
 
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rand));
   PetscCall(PetscRandomSetFromOptions(rand));

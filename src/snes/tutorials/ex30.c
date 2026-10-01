@@ -150,7 +150,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(SNESCreate(comm, &snes));
-  PetscCall(DMDACreate2d(comm, grid.bx, grid.by, grid.stencil, grid.ni, grid.nj, PETSC_DECIDE, PETSC_DECIDE, grid.dof, grid.stencil_width, 0, 0, &da));
+  PetscCall(DMDACreate2d(comm, grid.bx, grid.by, grid.stencil, grid.ni, grid.nj, PETSC_DECIDE, PETSC_DECIDE, grid.dof, grid.stencil_width, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(SNESSetDM(snes, da));
@@ -230,7 +230,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
   if (param->ivisc == VISC_CONST && !param->stop_solve) {
     param->ivisc = VISC_CONST;
 
-    PetscCall(SNESSolve(snes, 0, user->x));
+    PetscCall(SNESSolve(snes, NULL, user->x));
     PetscCall(SNESGetConvergedReason(snes, &reason));
     PetscCall(SNESGetIterationNumber(snes, &its));
     *nits += its;
@@ -248,7 +248,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 
       /* solve the non-linear system */
       PetscCall(VecCopy(user->Xguess, user->x));
-      PetscCall(SNESSolve(snes, 0, user->x));
+      PetscCall(SNESSolve(snes, NULL, user->x));
       PetscCall(SNESGetConvergedReason(snes, &reason));
       PetscCall(SNESGetIterationNumber(snes, &its));
       *nits += its;

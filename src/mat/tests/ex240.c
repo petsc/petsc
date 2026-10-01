@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   /* put the compressed matrix into the standard matrix */
   PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   PetscCall(MatZeroEntries(A));
-  PetscCall(MatView(B, 0));
+  PetscCall(MatView(B, NULL));
   PetscCall(MatFDColoringCreate(A, iscoloring, &fdcoloring));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-single_block", &single));
   if (single) PetscCall(MatFDColoringSetBlockSize(fdcoloring, PETSC_DEFAULT, nc));

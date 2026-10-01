@@ -673,7 +673,7 @@ int main(int argc, char **argv)
 
   if (PetscDefined(HAVE_MATLAB)) {
     PetscBool matlab_function = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-matlab_function", &matlab_function, 0));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-matlab_function", &matlab_function, NULL));
     if (matlab_function) {
       PetscCall(VecDuplicate(x, &r));
       PetscCall(SNESSetFunction(snes, r, FormFunctionMatlab, &user));

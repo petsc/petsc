@@ -120,7 +120,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-keep_nonzero_pattern", &keepnonzeropattern));
   if (keepnonzeropattern) PetscCall(MatSetOption(B, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
 
-  PetscCall(MatZeroRowsIS(B, is, diag, 0, 0));
+  PetscCall(MatZeroRowsIS(B, is, diag, NULL, NULL));
   PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&B));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -136,7 +136,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
 
-  PetscCall(MatZeroRowsIS(B, is, diag, 0, 0));
+  PetscCall(MatZeroRowsIS(B, is, diag, NULL, NULL));
   PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatDestroy(&B));
   PetscFunctionReturn(PETSC_SUCCESS);

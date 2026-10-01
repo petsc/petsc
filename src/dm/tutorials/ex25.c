@@ -23,14 +23,14 @@ int main(int argc, char **argv)
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* create the large DMDA and set coordinates (which we will copy down to the small DA). */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, m, n, PETSC_DECIDE, PETSC_DECIDE, dof, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, m, n, PETSC_DECIDE, PETSC_DECIDE, dof, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
   /* Just as a simple example we use the coordinates as the variables in the vectors we wish to examine. */
   PetscCall(DMGetCoordinates(da, &xy));
   /* The vector entries are displayed in the "natural" ordering on the two dimensional grid; interlaced x and y with the x variable increasing more rapidly than the y */
-  PetscCall(VecView(xy, 0));
+  PetscCall(VecView(xy, NULL));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank == 0) comm = MPI_COMM_SELF;

@@ -379,7 +379,7 @@ static PetscErrorCode ComputeAdjoint(Vec u, AppCtx *user)
     PetscInt  N;
     PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = {user->homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u};
     void (*identity[1])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {f0_identityaux_u};
-    PetscCtx ctxs[1] = {0};
+    PetscCtx ctxs[1] = {NULL};
 
     ctxs[0] = user;
     PetscCall(DMClone(dm, &dmErr));

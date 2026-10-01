@@ -88,7 +88,7 @@ typedef enum {
   QUAD_GAUSS,
   QUAD_LOBATTO
 } QuadratureType;
-static const char                  *QuadratureTypes[] = {"gauss", "lobatto", "QuadratureType", "QUAD_", 0};
+static const char                  *QuadratureTypes[] = {"gauss", "lobatto", "QuadratureType", "QUAD_", NULL};
 PETSC_UNUSED static const PetscReal HexQWeights[8]    = {1, 1, 1, 1, 1, 1, 1, 1};
 PETSC_UNUSED static const PetscReal HexQNodes[]       = {-0.57735026918962573, 0.57735026918962573};
 #define G 0.57735026918962573
@@ -417,7 +417,7 @@ static PetscErrorCode THIDestroy(THI *thi)
   PetscFunctionBeginUser;
   if (!*thi) PetscFunctionReturn(PETSC_SUCCESS);
   if (--((PetscObject)*thi)->refct > 0) {
-    *thi = 0;
+    *thi = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscFree((*thi)->units));
@@ -433,7 +433,7 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
   Units            units;
 
   PetscFunctionBeginUser;
-  *inthi = 0;
+  *inthi = NULL;
   if (!registered) {
     PetscCall(PetscClassIdRegister("Toy Hydrostatic Ice", &THI_CLASSID));
     registered = PETSC_TRUE;
@@ -570,8 +570,8 @@ static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, Vec prm)
   PetscInt  i, j, xs, xm, ys, ym, mx, my;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetGhostCorners(da2prm, &ys, &xs, 0, &ym, &xm, 0));
-  PetscCall(DMDAGetInfo(da2prm, 0, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetGhostCorners(da2prm, &ys, &xs, NULL, &ym, &xm, NULL));
+  PetscCall(DMDAGetInfo(da2prm, NULL, &my, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAVecGetArray(da2prm, prm, &p));
   for (i = xs; i < xs + xm; i++) {
     for (j = ys; j < ys + ym; j++) {
@@ -591,12 +591,12 @@ static PetscErrorCode THISetUpDM(THI thi, DM dm)
   Vec             X;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(dm, &dim, &Mz, &My, &Mx, 0, &my, &mx, 0, &s, 0, 0, 0, &st));
-  if (dim == 2) PetscCall(DMDAGetInfo(dm, &dim, &My, &Mx, 0, &my, &mx, 0, 0, &s, 0, 0, 0, &st));
+  PetscCall(DMDAGetInfo(dm, &dim, &Mz, &My, &Mx, NULL, &my, &mx, NULL, &s, NULL, NULL, NULL, &st));
+  if (dim == 2) PetscCall(DMDAGetInfo(dm, &dim, &My, &Mx, NULL, &my, &mx, NULL, NULL, &s, NULL, NULL, NULL, &st));
   PetscCall(DMGetRefineLevel(dm, &refinelevel));
   PetscCall(DMGetCoarsenLevel(dm, &coarsenlevel));
   level = refinelevel - coarsenlevel;
-  PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)thi), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, st, My, Mx, my, mx, sizeof(PrmNode) / sizeof(PetscScalar), s, 0, 0, &da2prm));
+  PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)thi), DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, st, My, Mx, my, mx, sizeof(PrmNode) / sizeof(PetscScalar), s, NULL, NULL, &da2prm));
   PetscCall(DMSetUp(da2prm));
   PetscCall(DMCreateLocalVector(da2prm, &X));
   {
@@ -686,7 +686,7 @@ static PetscErrorCode THIInitial(SNES snes, Vec X, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetApplicationContext(da, &thi));
-  PetscCall(DMDAGetInfo(da, 0, 0, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, &my, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &zs, &ys, &xs, &zm, &ym, &xm));
   PetscCall(DMDAVecGetArray(da, X, &x));
   PetscCall(THIDAGetPrm(da, &prm));
@@ -860,7 +860,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer)
 
   PetscFunctionBeginUser;
   PetscCall(MatNorm(B, NORM_FROBENIUS, &nrm));
-  PetscCall(MatGetSize(B, &m, 0));
+  PetscCall(MatGetSize(B, &m, NULL));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)B), &rank));
   if (rank == 0) {
     PetscScalar val0, val2;
@@ -882,7 +882,7 @@ static PetscErrorCode THISurfaceStatistics(DM da, Vec X, PetscReal *min, PetscRe
   *min  = 1e100;
   *max  = -1e100;
   *mean = 0;
-  PetscCall(DMDAGetInfo(da, 0, &mz, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mz, &my, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &zs, &ys, &xs, &zm, &ym, &xm));
   PetscCheck(zs == 0 && zm == mz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected decomposition");
   PetscCall(DMDAVecGetArray(da, X, &x));
@@ -1261,7 +1261,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0, PetscInt nlevels, DM hierar
   } else {
     dac = dac0;
   }
-  PetscCall(DMDAGetInfo(dac, &dim, &N, &M, 0, &n, &m, 0, &dof, &s, 0, 0, 0, &st));
+  PetscCall(DMDAGetInfo(dac, &dim, &N, &M, NULL, &n, &m, NULL, &dof, &s, NULL, NULL, NULL, &st));
   PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "This function can only refine 2D DMDAs");
 
   /* Creates a 3D DMDA with the same map-plane layout as the 2D one, with contiguous columns */
@@ -1291,7 +1291,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac, DM daf, Mat *A, Vec *
   PetscValidHeaderSpecific(daf, DM_CLASSID, 2);
   PetscAssertPointer(A, 3);
   if (scale) PetscAssertPointer(scale, 4);
-  PetscCall(DMDAGetInfo(daf, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(daf, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   if (dim == 2) {
     /* We are in the 2D problem and use normal DMDA interpolation */
     PetscCall(DMCreateInterpolation(dac, daf, A, scale));
@@ -1299,7 +1299,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac, DM daf, Mat *A, Vec *
     PetscInt i, j, k, xs, ys, zs, xm, ym, zm, mx, my, mz, rstart, cstart;
     Mat      B;
 
-    PetscCall(DMDAGetInfo(daf, 0, &mz, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    PetscCall(DMDAGetInfo(daf, NULL, &mz, &my, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
     PetscCall(DMDAGetCorners(daf, &zs, &ys, &xs, &zm, &ym, &xm));
     PetscCheck(!zs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "unexpected");
     PetscCall(MatCreate(PetscObjectComm((PetscObject)daf), &B));
@@ -1334,9 +1334,9 @@ static PetscErrorCode DMCreateMatrix_THI_Tridiagonal(DM da, Mat *J)
   ISLocalToGlobalMapping ltog;
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCheck(dim == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected DMDA to be 3D");
-  PetscCall(DMDAGetCorners(da, 0, 0, 0, &zm, &ym, &xm));
+  PetscCall(DMDAGetCorners(da, NULL, NULL, NULL, &zm, &ym, &xm));
   PetscCall(DMGetLocalToGlobalMapping(da, &ltog));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)da), &A));
   PetscCall(MatSetSizes(A, dof * xm * ym * zm, dof * xm * ym * zm, PETSC_DETERMINE, PETSC_DETERMINE));
@@ -1367,7 +1367,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)thi, &comm));
-  PetscCall(DMDAGetInfo(da, 0, &mz, &my, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mz, &my, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscViewerASCIIOpen(comm, filename, &viewer));
@@ -1450,7 +1450,7 @@ int main(int argc, char *argv[])
   SNES     snes;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
 
   PetscCall(THICreate(comm, &thi));
@@ -1469,7 +1469,7 @@ int main(int argc, char *argv[])
     }
     PetscOptionsEnd();
     if (thi->coarse2d) {
-      PetscCall(DMDACreate2d(comm, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX, N, M, PETSC_DETERMINE, PETSC_DETERMINE, sizeof(Node) / sizeof(PetscScalar), 1, 0, 0, &da));
+      PetscCall(DMDACreate2d(comm, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX, N, M, PETSC_DETERMINE, PETSC_DETERMINE, sizeof(Node) / sizeof(PetscScalar), 1, NULL, NULL, &da));
       PetscCall(DMSetFromOptions(da));
       PetscCall(DMSetUp(da));
       da->ops->refinehierarchy     = DMRefineHierarchy_THI;
@@ -1477,7 +1477,7 @@ int main(int argc, char *argv[])
 
       PetscCall(PetscObjectCompose((PetscObject)da, "THI", (PetscObject)thi));
     } else {
-      PetscCall(DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX, P, N, M, 1, PETSC_DETERMINE, PETSC_DETERMINE, sizeof(Node) / sizeof(PetscScalar), 1, 0, 0, 0, &da));
+      PetscCall(DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_BOX, P, N, M, 1, PETSC_DETERMINE, PETSC_DETERMINE, sizeof(Node) / sizeof(PetscScalar), 1, NULL, NULL, NULL, &da));
       PetscCall(DMSetFromOptions(da));
       PetscCall(DMSetUp(da));
     }

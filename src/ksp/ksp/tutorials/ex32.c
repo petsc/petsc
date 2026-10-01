@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 2, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 2, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMDASetInterpolationType(da, DMDA_Q0));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
@@ -90,10 +90,10 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx = 1.0 / (PetscReal)mx;
   Hy = 1.0 / (PetscReal)my;
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) array[j][i] = PetscExpScalar(-(((PetscReal)i + 0.5) * Hx) * (((PetscReal)i + 0.5) * Hx) / user->nu) * PetscExpScalar(-(((PetscReal)j + 0.5) * Hy) * (((PetscReal)j + 0.5) * Hy) / user->nu) * Hx * Hy;
@@ -107,7 +107,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
     PetscCall(MatNullSpaceRemove(nullspace, b));
     PetscCall(MatNullSpaceDestroy(&nullspace));
   }
@@ -124,12 +124,12 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx    = 1.0 / (PetscReal)mx;
   Hy    = 1.0 / (PetscReal)my;
   HxdHy = Hx / Hy;
   HydHx = Hy / Hx;
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) {
       row.i = i;
@@ -202,7 +202,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
     PetscCall(MatSetNullSpace(J, nullspace));
     PetscCall(MatNullSpaceDestroy(&nullspace));
   }

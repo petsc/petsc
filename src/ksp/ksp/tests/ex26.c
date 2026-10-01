@@ -165,8 +165,8 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
   hydhx = hy / hx;
 
   /* Get ghost points */
-  PetscCall(DMDAGetCorners(grid->da, &xs, &ys, 0, &xm, &ym, 0));
-  PetscCall(DMDAGetGhostCorners(grid->da, &Xs, &Ys, 0, &Xm, &Ym, 0));
+  PetscCall(DMDAGetCorners(grid->da, &xs, &ys, NULL, &xm, &ym, NULL));
+  PetscCall(DMDAGetGhostCorners(grid->da, &Xs, &Ys, NULL, &Xm, &Ym, NULL));
   PetscCall(DMGetLocalToGlobalMapping(grid->da, &ltogm));
   PetscCall(ISLocalToGlobalMappingGetIndices(ltogm, &ltog));
 

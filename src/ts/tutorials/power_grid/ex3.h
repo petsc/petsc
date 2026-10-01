@@ -4,7 +4,7 @@ typedef enum {
   SA_ADJ,
   SA_TLM
 } SAMethod;
-static const char *const SAMethods[] = {"ADJ", "TLM", "SAMethod", "SA_", 0};
+static const char *const SAMethods[] = {"ADJ", "TLM", "SAMethod", "SA_", NULL};
 
 typedef struct {
   PetscScalar H, D, omega_b, omega_s, Pmax, Pmax_ini, Pm, E, V, X, u_s, c;

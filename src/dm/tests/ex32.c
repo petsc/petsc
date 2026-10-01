@@ -28,12 +28,12 @@ static PetscErrorCode TestQ2Q1DA(void)
   mx = 7;
   my = 11;
   mz = 13;
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, mz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 2, 0, 0, 0, &Q2_da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, mz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 2, NULL, NULL, NULL, &Q2_da));
   PetscCall(DMSetFromOptions(Q2_da));
   PetscCall(DMSetUp(Q2_da));
   PetscCall(DMDASetUniformCoordinates(Q2_da, -1.0, 1.0, -2.0, 2.0, -3.0, 3.0));
   PetscCall(DMGetCoordinates(Q2_da, &coords));
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, mz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 1, 0, 0, 0, &Q1_da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, mx, my, mz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 3, 1, NULL, NULL, NULL, &Q1_da));
   PetscCall(DMSetFromOptions(Q1_da));
   PetscCall(DMSetUp(Q1_da));
   PetscCall(DMSetCoordinates(Q1_da, coords));
@@ -64,7 +64,7 @@ static PetscErrorCode TestQ2Q1DA(void)
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(TestQ2Q1DA());
   PetscCall(PetscFinalize());
   return 0;

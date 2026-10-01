@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     toplabel = NULL;
   }
 
-  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, 0, "Title", x, y, width, height, &draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "Title", x, y, width, height, &draw));
   PetscCall(PetscDrawSetFromOptions(draw));
   PetscCall(PetscDrawHGCreate(draw, bins, &hist));
   PetscCall(PetscDrawHGSetColor(hist, color));

@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
-  PetscCall(PetscDrawCreate(PETSC_COMM_SELF, 0, "Title", 0, 0, 256, 256, &draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_SELF, NULL, "Title", 0, 0, 256, 256, &draw));
   PetscCall(PetscDrawSetFromOptions(draw));
 
   PetscCall(PetscDrawStringBoxed(draw, .5, .5, PETSC_DRAW_BLUE, PETSC_DRAW_RED, "Greetings", NULL, NULL));

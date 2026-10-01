@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   PetscScalar value;
   Vec         x, y;
   IS          is1, is2;
-  VecScatter  ctx = 0;
+  VecScatter  ctx = NULL;
   PetscViewer subviewer;
 
   PetscFunctionBeginUser;

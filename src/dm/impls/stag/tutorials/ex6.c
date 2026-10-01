@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBeginUser;
   /* Initialize PETSc */
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Populate application context */
   ctx.dim         = 2;

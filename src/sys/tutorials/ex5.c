@@ -15,7 +15,7 @@ typedef enum {
   THAT      = 1,
   THE_OTHER = 2
 } YourChoice;
-const char *EnumeratedChoices[] = {"THIS", "THAT", "THE_OTHER", "EnumeratedChoices", "", 0};
+const char *EnumeratedChoices[] = {"THIS", "THAT", "THE_OTHER", "EnumeratedChoices", "", NULL};
 
 /*
   Data structures can be used in a bag as long as they

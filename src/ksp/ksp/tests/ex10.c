@@ -86,7 +86,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat)
   PetscInt    ict, nz, base, r1, r2, N, *rowkeep, nstart;
   IS          iskeep;
   PetscReal **K, norm;
-  Mat         mat, submat = 0, *submatb;
+  Mat         mat, submat = NULL, *submatb;
   MatType     type = MATSEQBAIJ;
 
   m /= 2; /* This is done just to be consistent with the old example */
@@ -141,9 +141,9 @@ PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat)
   ict    = 0;
   PetscCall(PetscMalloc1(N - nstart, &rowkeep));
   for (i = nstart; i < N; i++) {
-    PetscCall(MatGetRow(mat, i, &nz, 0, 0));
+    PetscCall(MatGetRow(mat, i, &nz, NULL, NULL));
     if (nz) rowkeep[ict++] = i;
-    PetscCall(MatRestoreRow(mat, i, &nz, 0, 0));
+    PetscCall(MatRestoreRow(mat, i, &nz, NULL, NULL));
   }
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ict, rowkeep, PETSC_COPY_VALUES, &iskeep));
   PetscCall(MatCreateSubMatrices(mat, 1, &iskeep, &iskeep, MAT_INITIAL_MATRIX, &submatb));

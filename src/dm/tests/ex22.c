@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   if (flg) stencil_type = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, stencil_type, M, N, P, m, n, p, w, s, 0, 0, 0, &da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, stencil_type, M, N, P, m, n, p, w, s, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMCreateMatrix(da, &mat));

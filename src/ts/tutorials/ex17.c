@@ -28,7 +28,7 @@ typedef enum {
   JACOBIAN_FD_COLORING,
   JACOBIAN_FD_FULL
 } JacobianType;
-static const char *const JacobianTypes[] = {"analytic", "fd_coloring", "fd_full", "JacobianType", "fd_", 0};
+static const char *const JacobianTypes[] = {"analytic", "fd_coloring", "fd_full", "JacobianType", "fd_", NULL};
 
 /*
    User-defined data structures and routines
@@ -108,14 +108,14 @@ int main(int argc, char **argv)
   /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requires snes which is not created until TSSetUp()/TSSetFromOptions() is called */
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Options for Jacobian evaluation", NULL);
-  PetscCall(PetscOptionsEnum("-jac_type", "Type of Jacobian", "", JacobianTypes, (PetscEnum)jacType, (PetscEnum *)&jacType, 0));
+  PetscCall(PetscOptionsEnum("-jac_type", "Type of Jacobian", "", JacobianTypes, (PetscEnum)jacType, (PetscEnum *)&jacType, NULL));
   PetscOptionsEnd();
   if (jacType == JACOBIAN_ANALYTIC) {
     PetscCall(TSSetIJacobian(ts, J, J, FormIJacobian, &user));
   } else if (jacType == JACOBIAN_FD_COLORING) {
     SNES snes;
     PetscCall(TSGetSNES(ts, &snes));
-    PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, 0));
+    PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, NULL));
   } else if (jacType == JACOBIAN_FD_FULL) {
     SNES snes;
     PetscCall(TSGetSNES(ts, &snes));
