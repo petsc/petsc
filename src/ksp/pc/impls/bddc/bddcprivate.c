@@ -4208,6 +4208,7 @@ PetscErrorCode PCBDDCResetCustomization(PC pc)
   PetscCall(ISDestroy(&pcbddc->DirichletBoundariesLocal));
   PetscCall(PCBDDCSetDofsSplitting(pc, 0, NULL));
   PetscCall(PCBDDCSetDofsSplittingLocal(pc, 0, NULL));
+  pcbddc->user_provided_isfordofs = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4225,7 +4226,9 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   PetscCall(MatDestroy(&pcbddc->ConstraintMatrix));
   PetscCall(MatDestroy(&pcbddc->divudotp));
   PetscCall(ISDestroy(&pcbddc->divudotp_vl2l));
-  PetscCall(PCBDDCGraphDestroy(&pcbddc->mat_graph));
+  PetscCall(PCBDDCGraphResetCSR(pcbddc->mat_graph));
+  PetscCall(PCBDDCGraphResetCoords(pcbddc->mat_graph));
+  PetscCall(PCBDDCGraphReset(pcbddc->mat_graph));
   for (PetscInt i = 0; i < pcbddc->n_local_subs; i++) PetscCall(ISDestroy(&pcbddc->local_subs[i]));
   pcbddc->n_local_subs = 0;
   PetscCall(PetscFree(pcbddc->local_subs));
@@ -4233,6 +4236,8 @@ PetscErrorCode PCBDDCResetTopography(PC pc)
   pcbddc->graphanalyzed        = PETSC_FALSE;
   pcbddc->recompute_topography = PETSC_TRUE;
   pcbddc->corner_selected      = PETSC_FALSE;
+  pcbddc->computed_rowadj      = PETSC_FALSE;
+  pcbddc->change_interior      = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4274,6 +4279,16 @@ PetscErrorCode PCBDDCResetSolvers(PC pc)
     PetscCall(PetscFree(pcbddc->benign_zerodiag_subs));
   }
   PetscCall(PetscFree3(pcbddc->benign_p0_lidx, pcbddc->benign_p0_gidx, pcbddc->benign_p0));
+  pcbddc->local_primal_size        = 0;
+  pcbddc->local_primal_size_cc     = 0;
+  pcbddc->n_vertices               = 0;
+  pcbddc->coarse_size              = -1;
+  pcbddc->new_primal_space         = PETSC_FALSE;
+  pcbddc->new_primal_space_local   = PETSC_FALSE;
+  pcbddc->benign_n                 = 0;
+  pcbddc->benign_have_null         = PETSC_FALSE;
+  pcbddc->benign_null              = PETSC_FALSE;
+  pcbddc->benign_apply_coarse_only = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -9281,7 +9296,15 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
     PetscCall(MatMPIAIJRestrict(pcbddc->nedcG, ccomm, &coarseG));
   }
 
-  /* create the coarse KSP object only once with defaults */
+  /* A different coarse MPI communicator requires destroying the KSP on all of its old ranks */
+  if (pcbddc->coarse_ksp) {
+    PetscMPIInt comparison = MPI_UNEQUAL;
+
+    if (coarse_mat) PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)pcbddc->coarse_ksp), PetscObjectComm((PetscObject)coarse_mat), &comparison));
+    if (comparison != MPI_IDENT && comparison != MPI_CONGRUENT) PetscCall(KSPDestroy(&pcbddc->coarse_ksp));
+  }
+
+  /* create the coarse KSP object with defaults when needed */
   if (coarse_mat) {
     PetscBool   isredundant, isbddc, force, valid;
     PetscViewer dbg_viewer = NULL;

@@ -5,6 +5,7 @@ static char help[] = "Tests the use of interface functions for MATIS matrices an
 PetscErrorCode TestMatZeroRows(Mat, Mat, PetscBool, IS, PetscScalar, PetscBool);
 PetscErrorCode CheckMat(Mat, Mat, PetscBool, const char *);
 PetscErrorCode CheckVariableBlockSizes(Mat);
+PetscErrorCode CheckRepeatedMapFiltering(MPI_Comm, PetscInt, PetscInt, InsertMode);
 PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping, IS, IS *);
 
 int main(int argc, char **args)
@@ -941,6 +942,12 @@ int main(int argc, char **args)
   PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));
+  for (PetscInt bs = 1; bs <= 2; bs++) {
+    for (PetscInt mask = 0; mask < 5; mask++) {
+      PetscCall(CheckRepeatedMapFiltering(PETSC_COMM_WORLD, bs, mask, INSERT_VALUES));
+      PetscCall(CheckRepeatedMapFiltering(PETSC_COMM_WORLD, bs, mask, ADD_VALUES));
+    }
+  }
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -999,6 +1006,68 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
     PetscCall(MatMultTransposeEqual(A, B, 3, &okt));
     PetscCheck(ok && okt, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d", func, ok, okt);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode CheckRepeatedMapFiltering(MPI_Comm comm, PetscInt bs, PetscInt mask, InsertMode mode)
+{
+  Mat                    A, B, local, expected;
+  ISLocalToGlobalMapping rmap, cmap;
+  PetscInt               rows[3], cols[3], nr = 0, nc = 0, i, j, r, c;
+  PetscMPIInt            rank, size;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  /* Only rank zero masks entries, so the other ranks retain every local occurrence. */
+  for (i = 0; i < 3; i++) {
+    rows[i] = cols[i] = rank;
+    if (!rank && (mask == 4 || (i == 1 && (mask == 1 || mask == 3)))) rows[i] = -1;
+    if (!rank && (mask == 4 || (i == 1 && (mask == 2 || mask == 3)))) cols[i] = -1;
+    nr += rows[i] >= 0;
+    nc += cols[i] >= 0;
+  }
+  PetscCall(ISLocalToGlobalMappingCreate(comm, bs, 3, rows, PETSC_COPY_VALUES, &rmap));
+  if (mask >= 3) {
+    PetscCall(PetscObjectReference((PetscObject)rmap));
+    cmap = rmap;
+  } else PetscCall(ISLocalToGlobalMappingCreate(comm, bs, 3, cols, PETSC_COPY_VALUES, &cmap));
+  PetscCall(MatCreate(comm, &A));
+  PetscCall(MatSetSizes(A, bs, bs, bs * size, bs * size));
+  PetscCall(MatSetType(A, MATIS));
+  PetscCall(MatISSetAllowRepeated(A, PETSC_TRUE));
+  PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
+  PetscCall(MatISSetPreallocation(A, 3 * bs, NULL, 3 * bs, NULL));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, nr * bs, nc * bs, nc * bs, NULL, &expected));
+  PetscCall(MatCreateAIJ(comm, bs, bs, bs * size, bs * size, bs, NULL, 0, NULL, &B));
+  for (i = 0, r = 0; i < 3 * bs; i++) {
+    for (j = 0, c = 0; j < 3 * bs; j++) {
+      PetscScalar value = 1 + i * 3 * bs + j;
+
+      PetscCall(MatSetValuesLocal(A, 1, &i, 1, &j, &value, mode));
+      if (rows[i / bs] >= 0 && cols[j / bs] >= 0) {
+        PetscCall(MatSetValue(expected, r, c, value, INSERT_VALUES));
+        PetscCall(MatSetValue(B, bs * rows[i / bs] + i % bs, bs * cols[j / bs] + j % bs, value, ADD_VALUES));
+      }
+      c += cols[j / bs] >= 0;
+    }
+    r += rows[i / bs] >= 0;
+  }
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyBegin(expected, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(expected, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatISGetLocalMat(A, &local));
+  PetscCall(CheckMat(local, expected, PETSC_FALSE, "local matrix with repeated and masked indices"));
+  PetscCall(MatISRestoreLocalMat(A, &local));
+  PetscCall(CheckMat(A, B, PETSC_FALSE, "global matrix with repeated and masked indices"));
+  PetscCall(MatDestroy(&expected));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscCall(ISLocalToGlobalMappingDestroy(&rmap));
+  PetscCall(ISLocalToGlobalMappingDestroy(&cmap));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -2165,6 +2165,39 @@ cdef class KSP(Object):
         CHKERR(KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec))
         return r
 
+    def computeOperator(self, mat_type: Mat.Type | str | None = None) -> Mat:
+        """Compute the explicit preconditioned operator.
+
+        Collective.
+
+        Parameters
+        ----------
+        mat_type
+            The output matrix type. If `None`, use a dense matrix.
+
+        Returns
+        -------
+        Mat
+            A newly created matrix owned by the caller.
+
+        Notes
+        -----
+        The operator uses the configured preconditioning side and includes
+        null space removal when applicable. It is formed by applying the
+        operator to columns of the identity matrix, so this computation
+        is intended for relatively small systems.
+
+        See Also
+        --------
+        setPCSide, computeEigenvalues, petsc.KSPComputeOperator
+
+        """
+        cdef PetscMatType mtype = NULL
+        cdef Mat mat = Mat()
+        mat_type = str2bytes(mat_type, &mtype)
+        CHKERR(KSPComputeOperator(self.ksp, mtype, &mat.mat))
+        return mat
+
     def computeEigenvalues(self) -> ArrayComplex:
         """Compute the extreme eigenvalues for the preconditioned operator.
 

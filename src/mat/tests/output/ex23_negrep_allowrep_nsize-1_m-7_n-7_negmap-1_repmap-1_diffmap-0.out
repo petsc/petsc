@@ -1,27 +1,27 @@
 Test MatGetInfo
-Process   0: 33 84 51 1 0
-GlobalMax  : 33 84 51 1 0
-GlobalSum  : 33 84 51 1 0
+Process   0: 42 84 42 1 0
+GlobalMax  : 42 84 42 1 0
+GlobalSum  : 42 84 42 1 0
 Test MatIsSymmetric: 0
 Test MatView
 Mat Object: 1 MPI process
   type: is
   Mat Object: (is_) 1 MPI process
     type: seqaij
-  row 0:  
-  row 1:  
-  row 2:  
-  row 3:  
-  row 4:  
-  row 5:  
-  row 6:  
-  row 7:   (7, -8.)    (11, -9.)    (12, 10.)    (13, 7.)   
-  row 8:   (7, 14.)    (8, -7.)    (10, -10.)    (11, 20.)    (12, -10.)    (13, -7.)   
-  row 9:   (7, -6.)    (8, 12.)    (9, -17.)    (10, 22.)    (11, -11.)   
-  row 10:   (8, -17.)    (9, 34.)    (10, -17.)   
-  row 11:   (7, -13.)    (8, 26.)    (9, -17.)    (10, 8.)    (11, -4.)   
-  row 12:   (7, 28.)    (8, -14.)    (10, -3.)    (11, 6.)    (12, -3.)    (13, -14.)   
-  row 13:   (7, -15.)    (11, -2.)    (12, -11.)    (13, 28.)   
+  row 0:   (11, -2.)    (12, 4.)    (13, -2.)
+  row 1:   (10, -3.)    (11, 6.)    (12, -3.)
+  row 2:   (9, -4.)    (10, 8.)    (11, -4.)
+  row 3:   (8, -5.)    (9, 10.)    (10, -5.)
+  row 4:   (7, -6.)    (8, 12.)    (9, -6.)
+  row 5:   (7, 14.)    (8, -7.)    (13, -7.)
+  row 6:   (7, -8.)    (12, -8.)    (13, 16.)
+  row 7:   (11, -9.)    (12, 18.)    (13, -9.)
+  row 8:   (10, -10.)    (11, 20.)    (12, -10.)
+  row 9:   (9, -11.)    (10, 22.)    (11, -11.)
+  row 10:   (8, -12.)    (9, 24.)    (10, -12.)
+  row 11:   (7, -13.)    (8, 26.)    (9, -13.)
+  row 12:   (7, 28.)    (8, -14.)    (13, -14.)
+  row 13:   (7, -15.)    (12, -15.)    (13, 30.)
 Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 28.)  (1, -11.)  (2, -2.)  (6, -15.) 
@@ -39,14 +39,14 @@ Test MatLoad from world
 Mat Object: 1 MPI process
   type: is
   rows=7, cols=7
-  total: nonzeros=33, allocated nonzeros=33
+  total: nonzeros=42, allocated nonzeros=42
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
       rows=14, cols=14
-      total: nonzeros=33, allocated nonzeros=33
+      total: nonzeros=42, allocated nonzeros=42
       total number of mallocs used during MatSetValues calls=0
-        using I-node routines: found 9 nodes, limit used is 5
+        not using I-node routines
     ISLocalToGlobalMapping Object: 1 MPI process
       type not yet set
     [0] 0 0
@@ -83,14 +83,14 @@ Test MatLoad from self
 Mat Object: 1 MPI process
   type: is
   rows=7, cols=7
-  total: nonzeros=33, allocated nonzeros=33
+  total: nonzeros=42, allocated nonzeros=42
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
       rows=14, cols=14
-      total: nonzeros=33, allocated nonzeros=33
+      total: nonzeros=42, allocated nonzeros=42
       total number of mallocs used during MatSetValues calls=0
-        using I-node routines: found 9 nodes, limit used is 5
+        not using I-node routines
     ISLocalToGlobalMapping Object: 1 MPI process
       type not yet set
     [0] 0 0
@@ -127,14 +127,14 @@ Test MatLoad from subcomm
 Mat Object: 1 MPI process
   type: is
   rows=7, cols=7
-  total: nonzeros=33, allocated nonzeros=33
+  total: nonzeros=42, allocated nonzeros=42
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
       rows=14, cols=14
-      total: nonzeros=33, allocated nonzeros=33
+      total: nonzeros=42, allocated nonzeros=42
       total number of mallocs used during MatSetValues calls=0
-        using I-node routines: found 9 nodes, limit used is 5
+        not using I-node routines
     ISLocalToGlobalMapping Object: 1 MPI process
       type not yet set
     [0] 0 0
@@ -171,14 +171,14 @@ Test subcomm MatLoad from world
 Mat Object: 1 MPI process
   type: is
   rows=7, cols=7
-  total: nonzeros=33, allocated nonzeros=33
+  total: nonzeros=42, allocated nonzeros=42
   total number of mallocs used during MatSetValues calls=0
     Mat Object: 1 MPI process
       type: seqaij
       rows=14, cols=14
-      total: nonzeros=33, allocated nonzeros=33
+      total: nonzeros=42, allocated nonzeros=42
       total number of mallocs used during MatSetValues calls=0
-        using I-node routines: found 9 nodes, limit used is 5
+        not using I-node routines
     ISLocalToGlobalMapping Object: 1 MPI process
       type not yet set
     [0] 0 0
