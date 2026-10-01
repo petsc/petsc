@@ -145,7 +145,7 @@ static PetscErrorCode TestPatchFacetResidual(void)
   DM                dms[1];
   SNES              snes;
   Vec               x, f, rhs;
-  PatchFacetTestCtx test = {0};
+  PatchFacetTestCtx test = {0, NULL, 0, 0, 0};
 
   PetscFunctionBeginUser;
   PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
