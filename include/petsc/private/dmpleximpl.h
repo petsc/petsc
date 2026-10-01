@@ -168,7 +168,7 @@ typedef struct {
   char            *tetgenOpts;            // COmmand line options for Tetgen
   PetscReal        tetgenRadiusEdgeBound; // Maximum tetgen radius-edge ratio
   PetscReal        tetgenDihedralBound;   // Minimum tetgen dihedral angle
-  char            *triangleOpts;          // Comand line options for Triangle
+  char            *triangleOpts;          // Command line options for Triangle
   PetscReal        triangleAngBound;      // Minimum triangle angle
   PetscPartitioner partitioner;           // Partitioner object
   PetscBool        partitionBalance;      // Evenly divide partition overlap when distributing

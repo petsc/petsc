@@ -62,8 +62,8 @@ int main(int argc, char **args)
   PetscCallCUDA(cudaMallocManaged((void **)&xarray, n * sizeof(PetscScalar), cudaMemAttachGlobal));
   PetscCallCUDA(cudaMallocManaged((void **)&uarray, n * sizeof(PetscScalar), cudaMemAttachGlobal));
 
-  // Use a managed array as a host array parameter, it will be a host array in petsc's view;
-  // similarily, use it as a device array parameter, it will be a device array.
+  // Use a managed array as a host array parameter, it will be a host array in PETSc's view;
+  // similarly, use it as a device array parameter, it will be a device array.
   // One can use the same array on both host and device parameters.
   PetscCall(VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD, 1, n, N, xarray, xarray, &x));
   PetscCall(VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD, 1, n, N, uarray, uarray, &u));
