@@ -2099,7 +2099,7 @@ static PetscErrorCode MatZeroRows_SeqAIJ(Mat A, PetscInt N, const PetscInt rows[
         a->ilen[rows[i]] = 0;
       }
     }
-    A->nonzerostate++;
+    if (N) A->nonzerostate++;
   }
   PetscCall(MatSeqAIJRestoreArray(A, &aa));
   PetscUseTypeMethod(A, assemblyend, MAT_FINAL_ASSEMBLY);
