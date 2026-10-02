@@ -820,6 +820,10 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 
   If the `MAT_STRUCTURE_ONLY` option is set to true, the values are ignored and only the assembly process is performed.
 
+  `MatSetValues()` and other operations may modify existing entries of the matrix between calls to this routine. If they change
+  the nonzero pattern built by `MatSetPreallocationCOO()`, for example by inserting a new nonzero, this routine generates an error
+  for `MATAIJ` and its device subtypes; call `MatSetPreallocationCOO()` again before calling `MatSetValuesCOO()`.
+
 .seealso: [](ch_matrices), `Mat`, `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)

@@ -225,8 +225,9 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     cupmStream_t         stream;
 
     PetscFunctionBegin;
+    PetscCall(MatMPIAIJCheckCOONonzeroState(mat));
     PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
-    PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
+    PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "The matrix is missing the device COO struct built by MatSetPreallocationCOO()");
     PetscCall(PetscContainerGetPointer(container, (void **)&coo));
 
     const auto &Annz   = coo->Annz;

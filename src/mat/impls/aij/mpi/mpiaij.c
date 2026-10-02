@@ -6770,11 +6770,51 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   // Allocate in preallocation. If not used, it has zero cost on host
   if (!mat->structure_only) PetscCall(PetscMalloc2(coo->sendlen, &coo->sendbuf, coo->recvlen, &coo->recvbuf));
   else coo->sendbuf = coo->recvbuf = NULL;
+  coo->Anonzerostate = mpiaij->A->nonzerostate;
+  coo->Bnonzerostate = mpiaij->B->nonzerostate;
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, coo));
   PetscCall(PetscContainerSetCtxDestroy(container, MatCOOStructDestroy_MPIAIJ));
   PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject)container));
   PetscCall(PetscContainerDestroy(&container));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// PetscClangLinter pragma disable: -fdoc-internal-linkage
+/*@
+  MatMPIAIJCheckCOONonzeroState - Checks that the COO maps built by `MatSetPreallocationCOO()` can still be used by
+  `MatSetValuesCOO()` on a `MATMPIAIJ` matrix
+
+  Not Collective
+
+  Input Parameter:
+. mat - the `MATMPIAIJ` matrix
+
+  Level: developer
+
+  Notes:
+  The maps address the nonzeros of the diagonal and off-diagonal blocks by position, so they are only valid while the blocks keep
+  the nonzero patterns built by `MatSetPreallocationCOO()`. Any change to them, for example a new nonzero inserted with
+  `MatSetValues()`, would make `MatSetValuesCOO()` write values into the wrong locations, so this routine generates an error
+  instead. It also generates an error when `MatSetPreallocationCOO()` has not been called.
+
+  The check is local to each MPI process, so only the processes whose blocks changed generate the error.
+
+  The `MatSetValuesCOO()` implementations of `MATMPIAIJ` and its device subtypes call this routine before using the maps.
+
+.seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatSetPreallocationCOO()`, `MatSetValuesCOO()`, `MatSeqAIJCheckCOONonzeroState()`
+@*/
+PetscErrorCode MatMPIAIJCheckCOONonzeroState(Mat mat)
+{
+  Mat_MPIAIJ          *mpiaij = (Mat_MPIAIJ *)mat->data;
+  PetscContainer       container;
+  MatCOOStruct_MPIAIJ *coo;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
+  PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "MatSetPreallocationCOO() must be called before MatSetValuesCOO()");
+  PetscCall(PetscContainerGetPointer(container, &coo));
+  PetscCheck(coo->Anonzerostate == mpiaij->A->nonzerostate && coo->Bnonzerostate == mpiaij->B->nonzerostate, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "The nonzero pattern of the matrix has changed since MatSetPreallocationCOO(), for example because MatSetValues() inserted a new nonzero; call MatSetPreallocationCOO() again before MatSetValuesCOO(), or stop inserting new nonzeros with MatSetValues()");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6792,8 +6832,8 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJ(Mat mat, const PetscScalar v[], Ins
   MatCOOStruct_MPIAIJ *coo;
 
   PetscFunctionBegin;
+  PetscCall(MatMPIAIJCheckCOONonzeroState(mat));
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject *)&container));
-  PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not found MatCOOStruct on this matrix");
   PetscCall(PetscContainerGetPointer(container, &coo));
   sendbuf = coo->sendbuf;
   recvbuf = coo->recvbuf;

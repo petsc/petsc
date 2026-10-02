@@ -1586,6 +1586,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
   Kokkos::DefaultExecutionSpace exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
+  PetscCall(MatMPIAIJCheckCOONonzeroState(mat));
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
   PetscCall(PetscContainerGetPointer(container, &coo));
 
