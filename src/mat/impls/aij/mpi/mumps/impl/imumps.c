@@ -2049,7 +2049,10 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
     PetscCall(VecRestoreArray(x, &array));
   }
 
-  PetscCall(PetscLogFlops(2.0 * PetscMax(0, (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
+  /* Structural estimate per RHS: 2z-p for LU, 4z-3p for LDL^T.
+     INFO(28) counts factor entries z and INFO(23) counts eliminated pivots p. */
+  if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+    PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2179,6 +2182,8 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
       PetscCall(PetscFree(solalloc));
     }
     PetscCall(MatDenseRestoreArray(X, &array));
+    if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+      PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -2361,7 +2366,8 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   PetscCall(VecScatterDestroy(&scat_sol));
   PetscCall(PetscFree(rhsalloc));
   PetscCall(PetscFree(solalloc));
-  PetscCall(PetscLogFlops(nrhs * PetscMax(0, 2.0 * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
+  if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+    PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
