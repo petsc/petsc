@@ -251,8 +251,18 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
 . B - the matrix
 
   Options Database Keys:
-+ -mat_type type      - see `MatType`
-- -mat_vec_type vtype - the `VecType` used by `MatCreateVecs()`, see `MatSetVecType()`
++ -mat_block_size size                         - set the block size used to store the matrix; see `MatSetBlockSize()`
+. -mat_type type                               - set the matrix type; see `MatType` and `MatSetType()`
+. -mat_vec_type vtype                          - set the `VecType` used by `MatCreateVecs()`; see `MatSetVecType()`
+. -mat_is_symmetric tol                        - check symmetry during `MatAssemblyEnd()` with an optional tolerance; see `MatIsSymmetric()`
+. -mat_null_space_test (true|false)            - test the attached null space during `MatAssemblyEnd()`; see `MatNullSpaceTest()`
+. -mat_error_if_failure (true|false)           - generate an error if matrix factorization fails; see `MatSetErrorIfFailure()`
+. -mat_spd (true|false)                        - set the `MAT_SPD` property with `MatSetOption()`
+. -mat_new_nonzero_location_err (true|false)   - generate an error if insertion creates a new nonzero location; see `MAT_NEW_NONZERO_LOCATION_ERR` in `MatSetOption()`
+. -mat_new_nonzero_allocation_err (true|false) - generate an error if insertion requires additional nonzero allocation; see `MAT_NEW_NONZERO_ALLOCATION_ERR` in `MatSetOption()`
+. -mat_ignore_zero_entries (true|false)        - ignore eligible zero entries during insertion; see `MAT_IGNORE_ZERO_ENTRIES` in `MatSetOption()`
+. -mat_form_explicit_transpose (true|false)    - hint to form an explicit transpose for operations such as `MatMultTranspose()`
+- -mat_bind_below size                         - bind the matrix to the CPU if its number of local rows is less than size; see `MatBindToCPU()`
 
   Level: beginner
 
@@ -298,10 +308,14 @@ PetscErrorCode MatSetFromOptions(Mat B)
 
   PetscCall(PetscOptionsName("-mat_is_symmetric", "Checks if mat is symmetric on MatAssemblyEnd()", "MatIsSymmetric", &B->checksymmetryonassembly));
   PetscCall(PetscOptionsReal("-mat_is_symmetric", "Checks if mat is symmetric on MatAssemblyEnd()", "MatIsSymmetric", B->checksymmetrytol, &B->checksymmetrytol, NULL));
-  PetscCall(PetscOptionsBool("-mat_null_space_test", "Checks if provided null space is correct in MatAssemblyEnd()", "MatSetNullSpaceTest", B->checknullspaceonassembly, &B->checknullspaceonassembly, NULL));
+  PetscCall(PetscOptionsBool("-mat_null_space_test", "Checks if provided null space is correct in MatAssemblyEnd()", "MatNullSpaceTest", B->checknullspaceonassembly, &B->checknullspaceonassembly, NULL));
   PetscCall(PetscOptionsBool("-mat_error_if_failure", "Generate an error if an error occurs when factoring the matrix", "MatSetErrorIfFailure", B->erroriffailure, &B->erroriffailure, NULL));
 
   PetscTryTypeMethod(B, setfromoptions, PetscOptionsObject);
+
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-mat_spd", "Set whether the matrix is symmetric positive definite", "MatSetOption", flg, &flg, &set));
+  if (set) PetscCall(MatSetOption(B, MAT_SPD, flg));
 
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-mat_new_nonzero_location_err", "Generate an error if new nonzeros are created in the matrix nonzero structure (useful to test preallocation)", "MatSetOption", flg, &flg, &set));

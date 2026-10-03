@@ -51,6 +51,7 @@
 ```
 
 - Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATAIJKOKKOS`; previously all norms copied the matrix values to the host
+- Add `-mat_spd` to set `MAT_SPD` from the options database in `MatSetFromOptions()`
 
 ```{rubric} MatCoarsen:
 ```
