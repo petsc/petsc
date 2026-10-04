@@ -1186,6 +1186,7 @@ static PetscErrorCode PCDestroy_Schur(PC pc)
 template <bool transpose>
 static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short &mu)
 {
+  PC       pc;
   Mat      B, X;
   PetscInt n, N, j = 0;
 
@@ -1193,10 +1194,10 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
   PetscCall(KSPGetOperators(ctx->ksp, &B, nullptr));
   PetscCall(MatGetLocalSize(B, &n, nullptr));
   PetscCall(MatGetSize(B, &N, nullptr));
-  if (ctx->parent->log_separate) {
-    j = std::distance(ctx->parent->levels, std::find(ctx->parent->levels, ctx->parent->levels + ctx->parent->N, ctx));
-    PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, nullptr, nullptr, nullptr));
-  }
+  PetscCall(PetscIntCast(std::distance(ctx->parent->levels, std::find(ctx->parent->levels, ctx->parent->levels + ctx->parent->N, ctx)), &j));
+  PetscCheck(j > 0 && j < ctx->parent->N, PetscObjectComm((PetscObject)ctx->ksp), PETSC_ERR_PLIB, "No finer level found for PCHPDDM solve");
+  PetscCall(KSPGetPC(ctx->parent->levels[j - 1]->ksp, &pc));
+  if (ctx->parent->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, nullptr, nullptr, nullptr));
   if (mu == 1) {
     if (!ctx->ksp->vec_rhs) {
       PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ctx->ksp), 1, n, N, nullptr, &ctx->ksp->vec_rhs));
@@ -1209,6 +1210,7 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
       PetscCall(KSPSolveTranspose(ctx->ksp, nullptr, nullptr)); /* TODO: missing KSPSolveHermitianTranspose() */
       PetscCall(VecConjugate(ctx->ksp->vec_sol));
     }
+    PetscCall(KSPCheckSolve(ctx->ksp, pc, ctx->ksp->vec_sol));
     PetscCall(VecCopy(ctx->ksp->vec_sol, ctx->ksp->vec_rhs));
     PetscCall(VecResetArray(ctx->ksp->vec_rhs));
   } else {
@@ -1220,6 +1222,7 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
       PetscCall(KSPMatSolveTranspose(ctx->ksp, B, X)); /* TODO: missing KSPMatSolveHermitianTranspose() */
       PetscCall(MatConjugate(X));
     }
+    PetscCall(KSPCheckMatSolve(ctx->ksp, pc, X));
     PetscCall(MatCopy(X, B, SAME_NONZERO_PATTERN));
     PetscCall(MatDestroy(&X));
     PetscCall(MatDestroy(&B));
