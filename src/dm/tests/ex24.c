@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateGlobalVector(da, &global));
   PetscCall(DMCreateLocalVector(da, &local));
 
-  PetscCall(DMDAGetCorners(da, &is, &js, 0, &in, &jen, 0));
+  PetscCall(DMDAGetCorners(da, &is, &js, NULL, &in, &jen, NULL));
   PetscCall(DMDAVecGetArrayDOF(da, local, &l));
   for (i = is; i < is + in; i++) {
     for (j = js; j < js + jen; j++) {

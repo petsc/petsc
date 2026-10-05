@@ -168,7 +168,7 @@ int main(int argc, char **argv)
   PetscReal     ftime, dt;
   PetscInt      steps, dof = 5;
   PetscBool     use_coloring  = PETSC_TRUE;
-  MatFDColoring matfdcoloring = 0;
+  MatFDColoring matfdcoloring = NULL;
   PetscBool     monitor_off   = PETSC_FALSE;
   PetscBool     prunejacobian = PETSC_FALSE;
 
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-drawcontours", &usermonitor.drawcontours));
   if (usermonitor.drawcontours) {
     PetscReal bounds[] = {1000.0, -1000., -1000., -1000., 1000., -1000., 1000., -1000., 1000, -1000, 100700, 100800};
-    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, 0, 0, 0, 300, 300, &usermonitor.drawviewer));
+    PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, NULL, 0, 0, 300, 300, &usermonitor.drawviewer));
     PetscCall(PetscViewerDrawSetBounds(usermonitor.drawviewer, dof, bounds));
   }
   usermonitor.interval = 1;

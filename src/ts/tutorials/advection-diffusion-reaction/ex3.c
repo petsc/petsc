@@ -104,7 +104,7 @@ int main(int argc, char **argv)
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dt = .48 / (M * M);
   PetscCall(TSSetTimeStep(ts, dt));
   PetscCall(TSSetMaxSteps(ts, 1000));
@@ -160,8 +160,8 @@ PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx)
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &xm, 0, 0));
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &xm, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + xm;
   /*
@@ -208,8 +208,8 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &xm, 0, 0));
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &xm, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + xm;
   /*
@@ -264,8 +264,8 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, PetscCtx
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetInfo(da, 0, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &xm, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + xm;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,7 +308,7 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, PetscCtx
   PetscCall(MatAssemblyBegin(A, MAT_FLUSH_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FLUSH_ASSEMBLY));
 
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &xm, NULL, NULL));
   mend = mstart + xm;
   if (!appctx->upwind) {
     /* advection -- centered differencing */

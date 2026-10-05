@@ -43,7 +43,7 @@ int main(int argc, char **argv)
   PetscCall(PetscLogEventBegin(usertime, NULL, NULL, NULL, NULL));
 
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 7, 7, 7, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, 0, &da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 7, 7, 7, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(KSPSetDM(ksp, da));
@@ -81,7 +81,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(PetscLogEventBegin(setvalues, NULL, NULL, NULL, NULL));
   PetscCall(KSPGetDM(ksp, &dm));
-  PetscCall(DMDAGetInfo(dm, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(dm, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx      = 1.0 / (PetscReal)(mx - 1);
   Hy      = 1.0 / (PetscReal)(my - 1);
   Hz      = 1.0 / (PetscReal)(mz - 1);
@@ -124,7 +124,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(PetscLogEventBegin(setvalues, NULL, NULL, NULL, NULL));
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx      = 1.0 / (PetscReal)(mx - 1);
   Hy      = 1.0 / (PetscReal)(my - 1);
   Hz      = 1.0 / (PetscReal)(mz - 1);

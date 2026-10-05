@@ -98,7 +98,7 @@ int main(int argc, char **args)
      Set user-defined monitoring routine for first linear system.
   */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-my_ksp_monitor", &flg, NULL));
-  if (flg) PetscCall(KSPMonitorSet(ksp1, MyKSPMonitor, NULL, 0));
+  if (flg) PetscCall(KSPMonitorSet(ksp1, MyKSPMonitor, NULL, NULL));
 
   /*
      Create data structures for second linear system.

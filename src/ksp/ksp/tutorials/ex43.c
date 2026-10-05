@@ -260,7 +260,7 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da, PetscInt **_lx, Pet
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, &cpu_x, &cpu_y, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, &cpu_x, &cpu_y, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
 
   proc_J = rank / cpu_x;
   proc_I = rank - cpu_x * proc_J;
@@ -331,7 +331,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da, const char prefix[])
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArrayRead(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
   for (j = sj; j < sj + ny - 1; j++) {
     for (i = si; i < si + nx - 1; i++) {
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "%1.6e %1.6e \n", (double)PetscRealPart(_coords[j][i].x), (double)PetscRealPart(_coords[j][i].y)));
@@ -366,7 +366,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   PetscCheck(fp, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot open file");
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### %s (processor %1.4d) ### \n", comment, rank));
-  PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### x y "));
   for (PetscInt d = 0; d < n_dofs; d++) {
     const char *field_name;
@@ -378,7 +378,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArray(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
 
   PetscCall(DMCreateLocalVector(da, &local_fields));
   PetscCall(DMGlobalToLocalBegin(da, fields, INSERT_VALUES, local_fields));
@@ -428,7 +428,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const cha
   PetscCheck(fp, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot open file");
 
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### %s (processor %1.4d) ### \n", comment, rank));
-  PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "### x y "));
   for (PetscInt d = 0; d < n_dofs; d++) {
     const char *field_name;
@@ -438,7 +438,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const cha
   PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "###\n"));
 
   PetscCall(DMGetCoordinateDM(da, &cda));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
 
   PetscCall(DMCreateLocalVector(da, &local_fields));
   PetscCall(DMGlobalToLocalBegin(da, fields, INSERT_VALUES, local_fields));
@@ -947,7 +947,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0, PetscReal eta1, PetscReal 
   PetscCall(DMCreateGlobalVector(da, &X));
   PetscCall(DMDAVecGetArray(da, X, &_stokes));
 
-  PetscCall(DMDAGetCorners(da, &si, &sj, 0, &ei, &ej, 0));
+  PetscCall(DMDAGetCorners(da, &si, &sj, NULL, &ei, &ej, NULL));
   for (j = sj; j < sj + ej; j++) {
     for (i = si; i < si + ei; i++) {
       PetscReal pos[2], pressure, vel[2], total_stress[3], strain_rate[3];
@@ -1031,7 +1031,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da, Vec X, Vec X_analytic)
   PetscCall(DMGlobalToLocalEnd(stokes_da, X, INSERT_VALUES, X_local));
   PetscCall(DMDAVecGetArray(stokes_da, X_local, &stokes));
 
-  PetscCall(DMDAGetInfo(stokes_da, 0, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(stokes_da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetBoundingBox(stokes_da, xymin, xymax));
 
   h = (xymax[0] - xymin[0]) / ((PetscReal)M);
@@ -1147,7 +1147,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
 
   /* Generate element properties, we will assume all material properties are constant over the element */
   /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!!  */
-  PetscCall(DMDAGetInfo(da_Stokes, 0, 0, 0, 0, &cpu_x, &cpu_y, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da_Stokes, NULL, NULL, NULL, NULL, &cpu_x, &cpu_y, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetElementOwnershipRanges2d(da_Stokes, &lx, &ly));
 
   prop_dof           = (PetscInt)(sizeof(GaussPointCoefficients) / sizeof(PetscScalar)); /* gauss point setup */
@@ -1159,7 +1159,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   PetscCall(PetscFree(ly));
 
   /* define centroid positions */
-  PetscCall(DMDAGetInfo(da_prop, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da_prop, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dx = 1.0 / (PetscReal)M;
   dy = 1.0 / (PetscReal)N;
 
@@ -1176,7 +1176,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
   PetscCall(DMGetCoordinatesLocal(da_prop, &prop_coords));
   PetscCall(DMDAVecGetArray(prop_cda, prop_coords, &_prop_coords));
 
-  PetscCall(DMDAGetGhostCorners(prop_cda, &si, &sj, 0, &nx, &ny, 0));
+  PetscCall(DMDAGetGhostCorners(prop_cda, &si, &sj, NULL, &nx, &ny, NULL));
 
   PetscCall(DMGetCoordinateDM(da_Stokes, &vel_cda));
   PetscCall(DMGetCoordinatesLocal(da_Stokes, &vel_coords));
@@ -1644,8 +1644,8 @@ static PetscErrorCode BCApplyZero_EAST(DM da, PetscInt d_idx, Mat A, Vec b)
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArray(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
 
   PetscCall(PetscMalloc1(ny * n_dofs, &bc_global_ids));
   PetscCall(PetscMalloc1(ny * n_dofs, &bc_vals));
@@ -1672,7 +1672,7 @@ static PetscErrorCode BCApplyZero_EAST(DM da, PetscInt d_idx, Mat A, Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, 0, 0));
+  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, NULL, NULL));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1702,8 +1702,8 @@ static PetscErrorCode BCApplyZero_WEST(DM da, PetscInt d_idx, Mat A, Vec b)
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArray(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
 
   PetscCall(PetscMalloc1(ny * n_dofs, &bc_global_ids));
   PetscCall(PetscMalloc1(ny * n_dofs, &bc_vals));
@@ -1731,7 +1731,7 @@ static PetscErrorCode BCApplyZero_WEST(DM da, PetscInt d_idx, Mat A, Vec b)
     PetscCall(VecAssemblyEnd(b));
   }
 
-  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, 0, 0));
+  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, NULL, NULL));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1761,8 +1761,8 @@ static PetscErrorCode BCApplyZero_NORTH(DM da, PetscInt d_idx, Mat A, Vec b)
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArray(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
 
   PetscCall(PetscMalloc1(nx, &bc_global_ids));
   PetscCall(PetscMalloc1(nx, &bc_vals));
@@ -1789,7 +1789,7 @@ static PetscErrorCode BCApplyZero_NORTH(DM da, PetscInt d_idx, Mat A, Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, 0, 0));
+  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, NULL, NULL));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));
@@ -1819,8 +1819,8 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da, PetscInt d_idx, Mat A, Vec b)
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &coords));
   PetscCall(DMDAVecGetArray(cda, coords, &_coords));
-  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, 0, &nx, &ny, 0));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, &n_dofs, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetGhostCorners(cda, &si, &sj, NULL, &nx, &ny, NULL));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, &n_dofs, NULL, NULL, NULL, NULL, NULL));
 
   PetscCall(PetscMalloc1(nx, &bc_global_ids));
   PetscCall(PetscMalloc1(nx, &bc_vals));
@@ -1847,7 +1847,7 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da, PetscInt d_idx, Mat A, Vec b)
     PetscCall(VecAssemblyBegin(b));
     PetscCall(VecAssemblyEnd(b));
   }
-  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, 0, 0));
+  if (A) PetscCall(MatZeroRowsColumns(A, nbcs, bc_global_ids, 1.0, NULL, NULL));
 
   PetscCall(PetscFree(bc_vals));
   PetscCall(PetscFree(bc_global_ids));

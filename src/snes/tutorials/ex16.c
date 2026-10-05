@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(SNESSetDM(snes, (DM)da));
 
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   user.loading     = 0.0;
   user.arc         = PETSC_PI / 3.;
   user.mu          = 4.0;
@@ -732,7 +732,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, vo
   PetscCall(DMGetCoordinateDM(info->da, &cda));
   PetscCall(DMGetCoordinatesLocal(info->da, &C));
   PetscCall(DMDAVecGetArray(cda, C, &c));
-  PetscCall(DMDAGetInfo(info->da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(info->da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetCorners(info->da, &xs, &ys, &zs, &xm, &ym, &zm));
 
   /* loop over elements */
@@ -820,7 +820,7 @@ PetscErrorCode TangentLoad(SNES snes, Vec X, Vec Q, void *ptr)
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinatesLocal(da, &C));
   PetscCall(DMDAVecGetArray(cda, C, &c));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
 
   /* loop over elements */
@@ -886,7 +886,7 @@ PetscErrorCode FormCoordinates(DM da, AppCtx *user)
   PetscFunctionBeginUser;
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMCreateGlobalVector(cda, &coords));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAVecGetArray(da, coords, &x));
   for (k = zs; k < zs + zm; k++) {
@@ -917,7 +917,7 @@ PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X)
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAVecGetArray(da, X, &x));
 
   for (k = zs; k < zs + zm; k++) {
@@ -949,7 +949,7 @@ PetscErrorCode ArcLengthScaling(DM da, AppCtx *user, Vec V)
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAVecGetArray(da, V, &v));
 
   for (k = zs; k < zs + zm; k++) {
@@ -973,7 +973,7 @@ PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X)
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAVecGetArray(da, X, &x));
 
   for (k = zs; k < zs + zm; k++) {
@@ -1003,7 +1003,7 @@ PetscErrorCode DisplayLine(SNES snes, Vec X)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(SNESGetDM(snes, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateDM(da, &cda));
   PetscCall(DMGetCoordinates(da, &C));
   j = my / 2;

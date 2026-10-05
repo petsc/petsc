@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
   PetscInt  cells[3] = {2, 2, 2};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ho", &ho, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-plex", &plex, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nex", &cells[0], NULL));

@@ -13,13 +13,13 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscOptionsGetInt(NULL, 0, "-stencil_width", &stencil_width, 0));
-  PetscCall(PetscOptionsGetInt(NULL, 0, "-dof", &dof, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-stencil_width", &stencil_width, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
 
   PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR, M, dof, stencil_width, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMDAGetCorners(da, &xstart, 0, 0, &m, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xstart, NULL, NULL, &m, NULL, NULL));
 
   PetscCall(DMCreateGlobalVector(da, &global));
   PetscCall(DMDAVecGetArrayDOF(da, global, &vglobal));

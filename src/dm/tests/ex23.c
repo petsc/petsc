@@ -41,9 +41,9 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-two", &flg2));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-three", &flg3));
   if (flg2) {
-    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, bx, by, stencil_type, M, N, m, n, dof, stencil_width, 0, 0, &da));
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, bx, by, stencil_type, M, N, m, n, dof, stencil_width, NULL, NULL, &da));
   } else if (flg3) {
-    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stencil_type, M, N, P, m, n, p, dof, stencil_width, 0, 0, 0, &da));
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, bx, by, bz, stencil_type, M, N, P, m, n, p, dof, stencil_width, NULL, NULL, NULL, &da));
   } else {
     PetscCall(DMDACreate1d(PETSC_COMM_WORLD, bx, M, dof, stencil_width, NULL, &da));
   }
@@ -85,8 +85,8 @@ int main(int argc, char **argv)
     PetscCall(VecEqual(global2, filenative, &same));
     if (!same) {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "ex23: global vector does not match contents of file\n"));
-      PetscCall(VecView(global2, 0));
-      PetscCall(VecView(filenative, 0));
+      PetscCall(VecView(global2, NULL));
+      PetscCall(VecView(filenative, NULL));
     }
     PetscCall(PetscViewerDestroy(&viewer));
     PetscCall(VecDestroy(&filenative));

@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, 5, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, 0, &da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, 5, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMSetApplicationContext(da, &user));
@@ -144,7 +144,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &localX));
-  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   hx      = one / (PetscReal)(mx - 1);
   hy      = one / (PetscReal)(my - 1);
   hz      = one / (PetscReal)(mz - 1);
@@ -457,7 +457,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &localX));
-  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   hx      = one / (PetscReal)(mx - 1);
   hy      = one / (PetscReal)(my - 1);
   hz      = one / (PetscReal)(mz - 1);

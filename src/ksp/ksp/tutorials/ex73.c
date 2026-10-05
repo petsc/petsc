@@ -357,7 +357,7 @@ PetscErrorCode DMCreateMatrix_ShellDA(DM dm, Mat *A)
     PetscCall(MatGetNullSpace(*A, &nullspace));
     if (!nullspace) {
       PetscCall(PetscPrintf(comm, "[size %" PetscInt_FMT "] DMCreateMatrix_ShellDA: operator does not have nullspace - attaching\n", (PetscInt)size));
-      PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, 0, &nullspace));
+      PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, &nullspace));
       PetscCall(MatSetNullSpace(*A, nullspace));
       PetscCall(MatNullSpaceDestroy(&nullspace));
     } else {
@@ -597,7 +597,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f, DM *dm_c, UserContext *ctx)
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 17, 17, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &dm));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 17, 17, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
   PetscCall(DMDASetUniformCoordinates(dm, 0, 1, 0, 1, 0, 0));
@@ -608,7 +608,7 @@ PetscErrorCode HierarchyCreate_Basic(DM *dm_f, DM *dm_c, UserContext *ctx)
   dmc       = NULL;
   dmc_shell = NULL;
   if (rank == 0) {
-    PetscCall(DMDACreate2d(PETSC_COMM_SELF, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 17, 17, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &dmc));
+    PetscCall(DMDACreate2d(PETSC_COMM_SELF, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 17, 17, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dmc));
     PetscCall(DMSetFromOptions(dmc));
     PetscCall(DMSetUp(dmc));
     PetscCall(DMDASetUniformCoordinates(dmc, 0, 1, 0, 1, 0, 0));
@@ -679,7 +679,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
     char name[PETSC_MAX_PATH_LEN];
 
     if (commlist[d] != MPI_COMM_NULL) {
-      PetscCall(DMDACreate2d(commlist[d], DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, nx, nx, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &dmroot));
+      PetscCall(DMDACreate2d(commlist[d], DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, nx, nx, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &dmroot));
       PetscCall(DMSetUp(dmroot));
       PetscCall(DMDASetUniformCoordinates(dmroot, 0, 1, 0, 1, 0, 0));
       PetscCall(DMDASetFieldName(dmroot, 0, "Pressure"));
@@ -962,7 +962,7 @@ PetscErrorCode ComputeRHS_DMDA(DM da, Vec b, PetscCtx ctx)
   if (user->bcType == NEUMANN) {
     MatNullSpace nullspace;
 
-    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+    PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
     PetscCall(MatNullSpaceRemove(nullspace, b));
     PetscCall(MatNullSpaceDestroy(&nullspace));
   }

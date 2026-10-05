@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   }
 
   /* Customize timestepping solver */
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dt = 1.0 / (PetscAbsReal(appctx.a) * M);
   PetscCall(TSSetTimeStep(ts, dt));
   PetscCall(TSSetMaxSteps(ts, 100));
@@ -118,8 +118,8 @@ PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx)
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &um, 0, 0));
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &um, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + um;
   /*
@@ -166,8 +166,8 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &um, 0, 0));
-  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &um, NULL, NULL));
+  PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + um;
 
@@ -204,8 +204,8 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec 
   PetscCall(TSGetSolution(ts, &Uold));
 
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetInfo(da, 0, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &um, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &um, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + um;
   /* printf(" mstart %d, um %d\n",mstart,um); */
@@ -252,8 +252,8 @@ PetscErrorCode IFunction_LaxWendroff(TS ts, PetscReal t, Vec U, Vec Udot, Vec F,
   PetscCall(TSGetSolution(ts, &Uold));
 
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMDAGetInfo(da, 0, &M, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &mstart, 0, 0, &um, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &mstart, NULL, NULL, &um, NULL, NULL));
   h    = 1.0 / M;
   mend = mstart + um;
   /* printf(" mstart %d, um %d\n",mstart,um); */

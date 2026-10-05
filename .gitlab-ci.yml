@@ -94,7 +94,7 @@ check-ci-settings:
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}"
     - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" EXTRA_OPTIONS_INITIAL="${EXTRA_OPTIONS_INITIAL} ${BASE_EXTRA_OPTIONS}" check; fi
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" EXTRA_OPTIONS_INITIAL="${EXTRA_OPTIONS_INITIAL} ${BASE_EXTRA_OPTIONS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
-    - if [ ! -z ${ENABLE_COMPILETESTS+x} ]; then make -j 16 CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" EXTRA_OPTIONS_INITIAL="${EXTRA_OPTIONS_INITIAL} ${BASE_EXTRA_OPTIONS}" test PRINTONLY=1; fi
+    - if [ ! -z ${ENABLE_COMPILETESTS+x} ]; then make -k -j 16 CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" EXTRA_OPTIONS_INITIAL="${EXTRA_OPTIONS_INITIAL} ${BASE_EXTRA_OPTIONS}" test PRINTONLY=1; fi
   variables:
     PYTHON: python3
     MAKE_CFLAGS: -Werror -Wmissing-field-initializers
@@ -146,8 +146,10 @@ ompi-cuda:
 mpich-cxx-py3:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11 --with-strict-petscerrorcode
+    CONFIG_OPTS: --with-clanguage=cxx --with-cxx-dialect=c++11 --with-fc=0 --with-strict-petscerrorcode
+    MAKE_TEST_CXXFLAGS: -Werror -Wmissing-field-initializers -Wzero-as-null-pointer-constant -Wundef -Wextra-semi -Wformat-security
     TEST_SEARCH: snes_tutorials-ex48%
+    ENABLE_COMPILETESTS: 1
 
 mpich-cxx-mlib:
   extends: .stage-1
@@ -176,8 +178,8 @@ clang-uni:
     CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode FPPFLAGS=-fsecond-underscore
     MAKE_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt
     MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi
-    MAKE_TEST_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt
-    MAKE_TEST_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi
+    MAKE_TEST_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt -Wsign-compare -Wformat-security
+    MAKE_TEST_CXXFLAGS: -Werror -Wmissing-field-initializers -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi -Wformat-security
     TEST_SEARCH: snes_tutorials-ex48% snes_tutorials-ex5f%
     ENABLE_COMPILETESTS: 1
 

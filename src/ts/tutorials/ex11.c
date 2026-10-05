@@ -106,12 +106,12 @@ typedef enum {
   ADVECT_SOL_BUMP,
   ADVECT_SOL_BUMP_CAVITY
 } AdvectSolType;
-static const char *const AdvectSolTypes[] = {"TILTED", "BUMP", "BUMP_CAVITY", "AdvectSolType", "ADVECT_SOL_", 0};
+static const char *const AdvectSolTypes[] = {"TILTED", "BUMP", "BUMP_CAVITY", "AdvectSolType", "ADVECT_SOL_", NULL};
 typedef enum {
   ADVECT_SOL_BUMP_CONE,
   ADVECT_SOL_BUMP_COS
 } AdvectSolBumpType;
-static const char *const AdvectSolBumpTypes[] = {"CONE", "COS", "AdvectSolBumpType", "ADVECT_SOL_BUMP_", 0};
+static const char *const AdvectSolBumpTypes[] = {"CONE", "COS", "AdvectSolBumpType", "ADVECT_SOL_BUMP_", NULL};
 
 typedef struct {
   PetscReal wind[DIM];

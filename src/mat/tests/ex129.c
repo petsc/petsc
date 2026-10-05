@@ -221,7 +221,7 @@ PetscErrorCode ComputeRHS(DM da, Vec b)
   PetscScalar h;
 
   PetscFunctionBegin;
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h = 1.0 / ((mx - 1) * (my - 1) * (mz - 1));
   PetscCall(VecSet(b, h));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -273,7 +273,7 @@ PetscErrorCode ComputeMatrix(DM da, Mat B)
   PetscCall(PetscRandomSetInterval(rand, -.001, .001));
   PetscCall(PetscRandomSetFromOptions(rand));
 
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   /* For simplicity, this example only works on mx=my=mz */
   PetscCheck(mx == my && mx == mz, PETSC_COMM_SELF, PETSC_ERR_SUP, "This example only works with mx %" PetscInt_FMT " = my %" PetscInt_FMT " = mz %" PetscInt_FMT, mx, my, mz);
 

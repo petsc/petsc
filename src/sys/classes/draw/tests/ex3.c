@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     ylabel   = NULL;
   }
 
-  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, 0, "Title", x, y, width, height, &draw));
+  PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "Title", x, y, width, height, &draw));
   PetscCall(PetscDrawSetFromOptions(draw));
   if (useports) {
     PetscCall(PetscDrawViewPortsCreate(draw, nports, &ports));

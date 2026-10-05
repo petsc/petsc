@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   /* Check for any TAO command line arguments */
   PetscCall(TaoSetFromOptions(tao));
 
-  PetscCall(TaoSetConvergenceHistory(tao, hist, resid, 0, lits, 100, PETSC_TRUE));
+  PetscCall(TaoSetConvergenceHistory(tao, hist, resid, NULL, lits, 100, PETSC_TRUE));
   /* Perform the Solve */
   PetscCall(TaoSolve(tao));
 

@@ -74,16 +74,16 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(U, &FU));
 
   /* create graphics windows */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "u - state variables", -1, -1, -1, -1, &user.u_viewer));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "lambda - Lagrange multipliers", -1, -1, -1, -1, &user.lambda_viewer));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "fu - derivative w.r.t. state variables", -1, -1, -1, -1, &user.fu_viewer));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "flambda - derivative w.r.t. Lagrange multipliers", -1, -1, -1, -1, &user.flambda_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "u - state variables", -1, -1, -1, -1, &user.u_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "lambda - Lagrange multipliers", -1, -1, -1, -1, &user.lambda_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "fu - derivative w.r.t. state variables", -1, -1, -1, -1, &user.fu_viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "flambda - derivative w.r.t. Lagrange multipliers", -1, -1, -1, -1, &user.flambda_viewer));
 
   /* create nonlinear solver */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
   PetscCall(SNESSetFunction(snes, FU, FormFunction, &user));
   PetscCall(SNESSetFromOptions(snes));
-  PetscCall(SNESMonitorSet(snes, Monitor, &user, 0));
+  PetscCall(SNESMonitorSet(snes, Monitor, &user, NULL));
   PetscCall(SNESSolve(snes, NULL, U));
   PetscCall(SNESGetIterationNumber(snes, &its));
   PetscCall(SNESDestroy(&snes));
@@ -119,7 +119,7 @@ PetscErrorCode FormFunction(SNES snes, Vec U, Vec FU, void *dummy)
   PetscCall(DMCompositeScatter(user->packer, U, vw, vu, vlambda));
 
   PetscCall(DMDAGetCorners(user->da1, &xs, NULL, NULL, &xm, NULL, NULL));
-  PetscCall(DMDAGetInfo(user->da1, 0, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(user->da1, NULL, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(VecGetArray(vw, &w));
   PetscCall(VecGetArray(vfw, &fw));
   PetscCall(DMDAVecGetArray(user->da1, vu, &u));
@@ -175,7 +175,7 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy)
   PetscCall(VecView(lambda, user->lambda_viewer));
   PetscCall(DMCompositeRestoreAccess(user->packer, U, &w, &u, &lambda));
 
-  PetscCall(SNESGetFunction(snes, &F, 0, 0));
+  PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
   PetscCall(DMCompositeGetAccess(user->packer, F, &w, &u, &lambda));
   PetscCall(VecView(u, user->fu_viewer));
   PetscCall(VecView(lambda, user->flambda_viewer));

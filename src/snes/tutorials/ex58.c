@@ -480,8 +480,8 @@ PetscErrorCode FormBoundaryConditions(SNES snes, PetscCtxRt Ctx)
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
   /* Check if lower and upper bounds are set */
-  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-lb", &ctx->lb, 0));
-  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ub", &ctx->ub, 0));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-lb", &ctx->lb, NULL));
+  PetscCall(PetscOptionsGetScalar(NULL, NULL, "-ub", &ctx->ub, NULL));
   bsize = mx + 2;
   lsize = my + 2;
   rsize = my + 2;

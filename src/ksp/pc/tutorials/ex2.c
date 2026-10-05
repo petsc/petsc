@@ -28,14 +28,14 @@ int main(int argc, char **argv)
 
   PetscFunctionBegin;
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = MPI_COMM_SELF;
 
   /*
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
    */
-  PetscCall(MatCreateSeqAIJ(comm, 4, 4, 4, 0, &A));
+  PetscCall(MatCreateSeqAIJ(comm, 4, 4, 4, NULL, &A));
   PetscCall(VecCreateSeq(comm, 4, &B));
   PetscCall(VecDuplicate(B, &X));
   for (i = 0; i < 4; i++) {
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(B, &D));
   PetscCall(MatGetDiagonal(M, D));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nPivots:\n\n"));
-  PetscCall(VecView(D, 0));
+  PetscCall(VecView(D, NULL));
 
   /*
    * Solve the system;

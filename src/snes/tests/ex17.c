@@ -148,7 +148,7 @@ static PetscErrorCode assembled_system(void)
   if (flg) {
     Vec f;
     PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(SNESGetFunction(snes, &f, 0, 0));
+    PetscCall(SNESGetFunction(snes, &f, NULL, NULL));
     PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "number of SNES iterations = %" PetscInt_FMT "\n\n", its));
@@ -485,7 +485,7 @@ static PetscErrorCode block_system(void)
   if (flg) {
     Vec f;
     PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(SNESGetFunction(snes, &f, 0, 0));
+    PetscCall(SNESGetFunction(snes, &f, NULL, NULL));
     PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
   }
 

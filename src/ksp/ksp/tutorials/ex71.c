@@ -248,7 +248,7 @@ int main(int argc, char **args)
   PetscCall(DMSetUp(da));
   {
     PetscInt M, N, P;
-    PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    PetscCall(DMDAGetInfo(da, NULL, &M, &N, &P, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
     switch (user.dim) {
     case 3:
       user.cells[2] = P - !user.per[2]; /* fall through */

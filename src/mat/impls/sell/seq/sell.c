@@ -575,7 +575,7 @@ PetscErrorCode MatMultAdd_SeqSELL(Mat A, Vec xx, Vec yy, Vec zz)
 
     if (i == totalslices - 1 && A->rmap->n & 0x07) { /* if last slice has padding rows */
       mask  = (__mmask8)(0xff >> (8 - (A->rmap->n & 0x07)));
-      vec_y = _mm512_mask_loadu_pd(vec_y, mask, &y[8 * i]);
+      vec_y = _mm512_maskz_loadu_pd(mask, &y[8 * i]);
     } else {
       vec_y = _mm512_loadu_pd(&y[8 * i]);
     }

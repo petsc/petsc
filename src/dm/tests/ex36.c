@@ -73,7 +73,7 @@ PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)
 
   PetscCall(VecGetArray(Gcoords, &XX));
   PetscCall(DMDAGetCorners(da, &sx, &sy, &sz, &nx, &ny, &nz));
-  PetscCall(DMDAGetInfo(da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(VecGetLocalSize(Gcoords, &n));
   n = n / dim;
 
@@ -256,7 +256,7 @@ PetscErrorCode DADefineXLinearField2D(DM da, Vec field)
   PetscCall(DMDAVecGetArrayRead(cda, Gcoords, &XX));
   PetscCall(DMDAVecGetArray(da, field, &FF));
 
-  PetscCall(DMDAGetCorners(da, &sx, &sy, 0, &nx, &ny, 0));
+  PetscCall(DMDAGetCorners(da, &sx, &sy, NULL, &nx, &ny, NULL));
 
   for (i = sx; i < sx + nx; i++) {
     for (j = sy; j < sy + ny; j++) FF[j][i] = 10.0 + 3.0 * XX[j][i].x + 5.5 * XX[j][i].y + 8.003 * XX[j][i].x * XX[j][i].y;
@@ -315,7 +315,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscCall(DMSetUp(dac));
 
   PetscCall(DMRefine(dac, MPI_COMM_NULL, &daf));
-  PetscCall(DMDAGetInfo(daf, 0, &Mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(daf, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Mx--;
 
   PetscCall(DMDASetUniformCoordinates(dac, -1.0, 1.0, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE));
@@ -395,7 +395,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx, PetscInt my)
   PetscCall(DMSetUp(dac));
 
   PetscCall(DMRefine(dac, MPI_COMM_NULL, &daf));
-  PetscCall(DMDAGetInfo(daf, 0, &Mx, &My, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(daf, NULL, &Mx, &My, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Mx--;
   My--;
 
@@ -481,7 +481,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx, PetscInt my, PetscInt mz)
   PetscCall(DMSetUp(dac));
 
   PetscCall(DMRefine(dac, MPI_COMM_NULL, &daf));
-  PetscCall(DMDAGetInfo(daf, 0, &Mx, &My, &Mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(daf, NULL, &Mx, &My, &Mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Mx--;
   My--;
   Mz--;
@@ -559,14 +559,14 @@ int main(int argc, char **argv)
   PetscInt mx = 2, my = 2, mz = 2, l, nl, dim;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, 0));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mz", &mz, NULL));
   nl = 1;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nl", &nl, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-nl", &nl, NULL));
   dim = 2;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
 
   for (l = 0; l < nl; l++) {
     if (dim == 1) PetscCall(da_test_RefineCoords1D(mx));

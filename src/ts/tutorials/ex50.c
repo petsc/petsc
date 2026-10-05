@@ -454,7 +454,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(VecReciprocal(appctx->SEMop.mass));
-    PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, 0));
+    PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, NULL));
     PetscCall(VecReciprocal(appctx->SEMop.mass));
 
     PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n, appctx->SEMop.gll.nodes, appctx->SEMop.gll.weights, &temp));
@@ -513,7 +513,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
     PetscCall(VecReciprocal(appctx->SEMop.mass));
-    PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, 0));
+    PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, NULL));
     PetscCall(VecReciprocal(appctx->SEMop.mass));
 
     PetscCall(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n, appctx->SEMop.gll.nodes, appctx->SEMop.gll.weights, &temp));

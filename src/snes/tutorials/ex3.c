@@ -174,8 +174,8 @@ int main(int argc, char **argv)
   /*
      Set an optional user-defined monitoring routine
   */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, 0, 0, 0, 400, 400, &monP.viewer));
-  PetscCall(SNESMonitorSet(snes, Monitor, &monP, 0));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, NULL, 0, 0, 400, 400, &monP.viewer));
+  PetscCall(SNESMonitorSet(snes, Monitor, &monP, NULL));
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -260,8 +260,8 @@ int main(int argc, char **argv)
   PetscCall(DMDAVecRestoreArray(ctx.da, F, &FF));
   PetscCall(DMDAVecRestoreArray(ctx.da, U, &UU));
   if (viewinitial) {
-    PetscCall(VecView(U, 0));
-    PetscCall(VecView(F, 0));
+    PetscCall(VecView(U, NULL));
+    PetscCall(VecView(F, NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

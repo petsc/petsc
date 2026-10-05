@@ -243,7 +243,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
 
   PetscFunctionBeginUser;
   PetscCall(PetscNew(&newctx));
-  newctx->diag = 0;
+  newctx->diag = NULL;
   *shell       = newctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -234,7 +234,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ct
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(user->da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateDM(user->da, &cda));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
 
   PetscCall(DMGetLocalVector(user->da, &localX));
   PetscCall(DMGetLocalVector(user->da, &localXdot));
@@ -286,7 +286,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(user->da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateDM(user->da, &cda));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
 
   PetscCall(DMGetCoordinatesLocal(user->da, &gc));
   PetscCall(DMDAVecGetArrayRead(cda, gc, &coors));

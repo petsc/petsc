@@ -95,12 +95,12 @@ int main(int argc, char **argv)
   /* Just make sure we can not repeat adding the same function
    * PETSc will be able to ignore the repeated function
    */
-  for (i = 0; i < 4; i++) PetscCall(SNESConvergedReasonViewSet(snes, MySNESConvergedReasonView, &monP, 0));
+  for (i = 0; i < 4; i++) PetscCall(SNESConvergedReasonViewSet(snes, MySNESConvergedReasonView, &monP, NULL));
   PetscCall(SNESGetKSP(snes, &ksp));
   /* Just make sure we can not repeat adding the same function
    * PETSc will be able to ignore the repeated function
    */
-  for (i = 0; i < 4; i++) PetscCall(KSPConvergedReasonViewSet(ksp, MyKSPConvergedReasonView, &monP, 0));
+  for (i = 0; i < 4; i++) PetscCall(KSPConvergedReasonViewSet(ksp, MyKSPConvergedReasonView, &monP, NULL));
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>

@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscInt n = 5, m = 5, *dnnz, *onnz, i, rstart, rend, M, N;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = MPI_COMM_WORLD;
   PetscCall(PetscMalloc2(m, &dnnz, m, &onnz));
   for (i = 0; i < m; i++) {

@@ -72,7 +72,7 @@ PetscErrorCode test_view(void)
 
   tmp_buf[0] = e;
   tmp_buf[1] = f;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_is", &explcit, 0));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-explicit_is", &explcit, NULL));
   PetscCall(GetISs(tmp_buf, tmp_is, PETSC_FALSE));
   PetscCall(VecCreateNest(PETSC_COMM_WORLD, 2, explcit ? tmp_is : NULL, tmp_buf, &b));
   PetscCall(VecDestroy(&e));
@@ -86,7 +86,7 @@ PetscErrorCode test_view(void)
   PetscCall(VecDestroy(&c));
   PetscCall(VecDestroy(&d));
 
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-inv", &inv, 0));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-inv", &inv, NULL));
   tmp_buf[0] = a;
   tmp_buf[1] = b;
   if (inv) {

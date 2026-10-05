@@ -56,7 +56,7 @@ typedef enum {
   JAC_STAR,
   JAC_NEWTON
 } JacType;
-static const char *const JacTypes[] = {"BRATU", "PICARD", "STAR", "NEWTON", "JacType", "JAC_", 0};
+static const char *const JacTypes[] = {"BRATU", "PICARD", "STAR", "NEWTON", "JacType", "JAC_", NULL};
 
 /*
    User-defined application context - contains data needed by the

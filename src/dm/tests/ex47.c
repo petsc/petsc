@@ -168,7 +168,7 @@ PetscErrorCode test_3d_nocoord(const char filename[])
 int main(int argc, char *argv[])
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(test_3d("3d.vts"));
   PetscCall(test_2d("2d.vts"));
   PetscCall(test_2d_nocoord("2d_nocoord.vts"));

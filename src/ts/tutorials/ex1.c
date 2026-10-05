@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     the Performance chapter of the users manual for information on
     preallocating memory in sparse matrices.
   */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 5, 0, &J));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 5, NULL, &J));
 
   /*
      Create timestepper context
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
   /*
       Use the default strategy for increasing the timestep
   */
-  PetscCall(TSPseudoSetTimeStep(ts, TSPseudoTimeStepDefault, 0));
+  PetscCall(TSPseudoSetTimeStep(ts, TSPseudoTimeStepDefault, NULL));
 
   /*
       Set any additional options from the options database. This

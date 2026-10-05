@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMSetApplicationContext(da, &user));
@@ -118,7 +118,7 @@ PetscErrorCode FormInitialGuess(SNES snes, Vec X, PetscCtx ctx)
   PetscCall(DMGetApplicationContext(da, &user));
   tleft = user->tleft;
   /* Get ghost points */
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArray(da, X, &x));
 
   /* Compute initial guess */
@@ -144,7 +144,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &localX));
-  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   hx     = one / (PetscReal)(mx - 1);
   hy     = one / (PetscReal)(my - 1);
   hxdhy  = hx / hy;
@@ -156,7 +156,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   /* Get ghost points */
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArray(da, localX, &x));
   PetscCall(DMDAVecGetArray(da, F, &f));
 
@@ -304,7 +304,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat jac, Mat B, void *ptr)
   PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &localX));
-  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   hx     = one / (PetscReal)(mx - 1);
   hy     = one / (PetscReal)(my - 1);
   hxdhy  = hx / hy;
@@ -318,7 +318,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat jac, Mat B, void *ptr)
   /* Get ghost points */
   PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX));
   PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX));
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAVecGetArray(da, localX, &x));
 
   /* Evaluate Jacobian of function */

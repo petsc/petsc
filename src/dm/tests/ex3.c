@@ -43,7 +43,7 @@ int main(int argc, char **argv)
   PetscCall(DMCreateLocalVector(da, &local));
 
   /* Set up display to show combined wave graph */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "Entire Solution", 20, 480, 800, 200, &viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "Entire Solution", 20, 480, 800, 200, &viewer));
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
   /* set up display to show my portion of the wave */
   xbase = (int)((mybase) * ((800.0 - 4.0 * size) / M) + 4.0 * rank);
   width = (int)((myend - mybase) * 800. / M);
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, 0, "Local Portion of Solution", xbase, 200, width, 200, &viewer_private));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, "Local Portion of Solution", xbase, 200, width, 200, &viewer_private));
   PetscCall(PetscViewerDrawGetDraw(viewer_private, 0, &draw));
   PetscCall(PetscDrawSetDoubleBuffer(draw));
 

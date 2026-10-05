@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 3, 2, 1, 0, &da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, 3, 2, 1, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(KSPSetDM(ksp, da));
@@ -48,9 +48,9 @@ PetscErrorCode ComputeInitialSolution(DM da, Vec x)
   PetscScalar Hx, val[2];
 
   PetscFunctionBeginUser;
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx = 2.0 * PETSC_PI / (PetscReal)mx;
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   for (i = xs; i < xs + xm; i++) {
     col[0] = 2 * i;
@@ -72,7 +72,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetApplicationContext(da, &x));
   h = 2.0 * PETSC_PI / mx;
   PetscCall(VecCopy(x, b));
@@ -91,9 +91,9 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(PetscArrayzero(col, 7));
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx = 2.0 * PETSC_PI / (PetscReal)mx;
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   lambda = 2.0 * Hx;
   for (i = xs; i < xs + xm; i++) {
     row.i    = i;

@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   if (flg) {
     Vec f;
     PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(SNESGetFunction(snes, &f, 0, 0));
+    PetscCall(SNESGetFunction(snes, &f, NULL, NULL));
     PetscCall(VecView(r, PETSC_VIEWER_STDOUT_WORLD));
   }
 

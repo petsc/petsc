@@ -71,14 +71,14 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   uu = user->uu;
   tt = user->tt;
   pi = 4 * PetscAtanReal(1.0);
   Hx = 1.0 / (PetscReal)M;
   Hy = 1.0 / (PetscReal)N;
 
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0)); /* Fine grid */
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL)); /* Fine grid */
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) array[j][i] = -PetscCosScalar(uu * pi * ((PetscReal)i + 0.5) * Hx) * PetscCosScalar(tt * pi * ((PetscReal)j + 0.5) * Hy) * Hx * Hy;
@@ -89,7 +89,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 
   /* force right-hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
   PetscCall(MatNullSpaceRemove(nullspace, b));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -105,12 +105,12 @@ PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx    = 1.0 / (PetscReal)M;
   Hy    = 1.0 / (PetscReal)N;
   HxdHy = Hx / Hy;
   HydHx = Hy / Hx;
-  PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL));
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) {
       row.i    = i;
@@ -136,7 +136,7 @@ PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
   PetscCall(MatSetNullSpace(J, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(PETSC_SUCCESS);

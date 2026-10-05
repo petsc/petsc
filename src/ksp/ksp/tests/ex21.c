@@ -23,7 +23,7 @@ PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1)
   PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  *inA = 0;
+  *inA = NULL;
   PetscCall(MatCreate(comm, &A));
   PetscCall(MatSetSizes(A, 4, 4, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetFromOptions(A));
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
   PetscInt                   m, N = 10, M;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ex21", "KSP");
   PetscCall(PetscOptionsEnum("-mat_schur_complement_ainv_type", "Type of approximation for inv(A00) used when assembling Sp = A11 - A10 inv(A00) A01", "MatSchurComplementAinvType", MatSchurComplementAinvTypes, (PetscEnum)ainv_type, (PetscEnum *)&ainv_type, NULL));
   PetscOptionsEnd();

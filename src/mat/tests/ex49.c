@@ -4,7 +4,7 @@ static char help[] = "Tests MatTranspose(), MatNorm(), and MatAXPY().\n\n";
 
 int main(int argc, char **argv)
 {
-  Mat         mat, tmat = 0;
+  Mat         mat, tmat = NULL;
   PetscInt    m = 4, n, i, j;
   PetscMPIInt size, rank;
   PetscInt    rstart, rend, rect = 0;
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   if (flg) {
     PetscCall(MatTranspose(mat, MAT_INPLACE_MATRIX, &mat)); /* in-place transpose */
     tmat = mat;
-    mat  = 0;
+    mat  = NULL;
   } else { /* out-of-place transpose */
     PetscCall(MatTranspose(mat, MAT_INITIAL_MATRIX, &tmat));
   }

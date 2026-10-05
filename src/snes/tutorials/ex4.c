@@ -22,7 +22,7 @@ typedef enum {
   PROBLEM_ENNEPER,
   PROBLEM_SINS,
 } ProblemType;
-static const char *const ProblemTypes[] = {"ENNEPER", "SINS", "ProblemType", "PROBLEM_", 0};
+static const char *const ProblemTypes[] = {"ENNEPER", "SINS", "ProblemType", "PROBLEM_", NULL};
 
 typedef struct {
   PetscScalar *bottom, *top, *left, *right;
