@@ -7,7 +7,7 @@ static PetscErrorCode CheckExp(Vec v, PetscInt n, PetscScalar *arr, PetscScalar 
   const PetscReal    rtol = 1e-10, atol = PETSC_SMALL;
   const PetscScalar *varr;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecSet(v, value));
   PetscCall(VecViewFromOptions(v, NULL, "-vec_view"));
   PetscCall(VecExp(v));
