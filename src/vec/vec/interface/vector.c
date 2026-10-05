@@ -174,13 +174,20 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
 
   This API is particularly efficient for use on GPUs.
 
+  The preallocation is stored in `x` and reused by every later `VecSetValuesCOO()` on `x`; each distinct vector needs its own preallocation.
+  Both this routine and `VecSetValuesCOO()` do work proportional to the local size of `x` in addition to `ncoo`, even when `ncoo` is small.
+  The interface is therefore most efficient when the COO entries cover most of the local portion of the vector and the vector is assembled repeatedly.
+
   Entries can be repeated, see `VecSetValuesCOO()`. Negative indices are not allowed unless vector option `VEC_IGNORE_NEGATIVE_INDICES` is set,
   in which case they, along with the corresponding entries in `VecSetValuesCOO()`, are ignored. If vector option `VEC_NO_OFF_PROC_ENTRIES` is set,
   remote entries are ignored, otherwise, they will be properly added or inserted to the vector.
 
-  The array coo_i[] may be freed immediately after calling this function.
+  `coo_i` may be freed immediately after calling this function.
 
-.seealso: [](ch_vectors), `Vec`, `VecSetValuesCOO()`, `VecSetPreallocationCOOLocal()`
+  An alternative, when only accumulating off-process contributions into their owning MPI processes, is to create a `PetscSF` once with
+  `PetscSFSetGraphLayout()` and use `PetscSFReduceBegin()` and `PetscSFReduceEnd()`, whose cost scales with the number of off-process contributions.
+
+.seealso: [](ch_vectors), `Vec`, `VecSetValuesCOO()`, `VecSetPreallocationCOOLocal()`, `PetscSFReduceBegin()`, `PetscSFReduceEnd()`
 @*/
 PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo_i[])
 {
@@ -270,6 +277,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   The values must follow the order of the indices prescribed with `VecSetPreallocationCOO()` or `VecSetPreallocationCOOLocal()`.
   When repeated entries are specified in the COO indices the `coo_v` values are first properly summed, regardless of the value of `imode`.
   The imode flag indicates if `coo_v` must be added to the current values of the vector (`ADD_VALUES`) or overwritten (`INSERT_VALUES`).
+  With `INSERT_VALUES`, every locally owned entry is overwritten; entries not referenced by any COO index are set to zero.
   `VecAssemblyBegin()` and `VecAssemblyEnd()` do not need to be called after this routine. It automatically handles the assembly process.
 
 .seealso: [](ch_vectors), `Vec`, `VecSetPreallocationCOO()`, `VecSetPreallocationCOOLocal()`, `VecSetValues()`
