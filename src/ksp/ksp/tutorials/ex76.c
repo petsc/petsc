@@ -545,7 +545,7 @@ int main(int argc, char **args)
       test:
         suffix: geneo_mumps_use_omp_threads_1
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
-        args: -pc_hpddm_coarse_mat_type {{baij sbaij}shared output}
+        args: -pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -pc_hpddm_coarse_mat_spd true
       test:
         suffix: geneo_mumps_use_omp_threads_2
         output_file: output/ex76_geneo_mumps_use_omp_threads.out

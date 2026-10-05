@@ -782,8 +782,9 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type x, Type y)
   PetscCall(VecScatterEnd(ctx->scatter, x, ctx->v[0][0], INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(ctx->P->deflation<false, transpose>(ctx->v[0][0], ctx->D)); /* y = Q x */
   /* going from HPDDM to PETSc numbering */
-  PetscCall(VecScatterBegin(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE));
-  PetscCall(VecScatterEnd(ctx->scatter, ctx->v[0][0], y, INSERT_VALUES, SCATTER_REVERSE));
+  PetscCall(VecSet(y, 0.0));
+  PetscCall(VecScatterBegin(ctx->scatter, ctx->v[0][0], y, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(VecScatterEnd(ctx->scatter, ctx->v[0][0], y, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -803,7 +804,8 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
   PetscCall(MatDenseScatter_Private(ctx->scatter, X, ctx->V[0], INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(ctx->P->deflation<false, transpose>(ctx->V[0], ctx->D)); /* Y = Q X */
   /* going from HPDDM to PETSc numbering */
-  PetscCall(MatDenseScatter_Private(ctx->scatter, ctx->V[0], Y, INSERT_VALUES, SCATTER_REVERSE));
+  PetscCall(MatZeroEntries(Y));
+  PetscCall(MatDenseScatter_Private(ctx->scatter, ctx->V[0], Y, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2899,12 +2901,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(PetscObjectComposeFunction((PetscObject)data->levels[0]->ksp, "PCHPDDMSetUp_Private_C", nullptr));
       if (!ismatis) PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_C", nullptr));
       else PetscCall(PetscObjectDereference((PetscObject)C)); /* matching PetscObjectReference() above */
-      for (n = 0; n < data->N - 1; ++n)
-        if (data->levels[n]->P) {
-          /* HPDDM internal work buffers */
-          PetscCallCXX(data->levels[n]->P->setBuffer());
-          PetscCallCXX(data->levels[n]->P->super::start());
-        }
+      for (n = 0; n < data->N - 1; ++n) {
+        /* HPDDM internal work buffers */
+        if (data->levels[n]->P) PetscCallCXX(data->levels[n]->P->start());
+      }
       if (ismatis || !subdomains) PetscCall(PCHPDDMDestroySubMatrices_Private(PetscBool3ToBool(data->Neumann), PetscBool(algebraic && !block && overlap == -1), sub));
       if (ismatis) data->is = nullptr;
       for (n = 0; n < data->N - 1 + (reused > 0); ++n) {
