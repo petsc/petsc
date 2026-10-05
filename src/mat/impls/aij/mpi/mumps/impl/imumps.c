@@ -2049,7 +2049,10 @@ static PetscErrorCode MatSolve_MUMPS(Mat A, Vec b, Vec x)
     PetscCall(VecRestoreArray(x, &array));
   }
 
-  PetscCall(PetscLogFlops(2.0 * PetscMax(0, (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
+  /* Structural estimate per RHS: 2z-p for LU, 4z-3p for LDL^T.
+     INFO(28) counts factor entries z and INFO(23) counts eliminated pivots p. */
+  if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+    PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2070,9 +2073,9 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   Mat                Bt = NULL;
   PetscBool          denseX, denseB, flg, flgT;
   Mat_MUMPS         *mumps = (Mat_MUMPS *)A->data;
-  PetscInt           i, nrhs, M, nrhsM;
-  PetscScalar       *array;
-  const PetscScalar *barray;
+  PetscInt           i, nrhs, M, nrhsM, ldb = 0, ldx;
+  PetscScalar       *array, *rhsalloc = NULL, *solalloc = NULL;
+  const PetscScalar *barray, *rhsarray;
   PetscInt           lsol_loc, nlsol_loc, *idxx, iidx = 0;
   PetscMUMPSInt     *isol_loc, *isol_loc_save;
   PetscScalar       *sol_loc;
@@ -2109,21 +2112,32 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     mumps->id.ICNTL(20) = 1; /* sparse RHS */
   }
 
+  PetscCall(MatDenseGetLDA(X, &ldx));
+  if (denseB) PetscCall(MatDenseGetLDA(B, &ldb));
   PetscCall(MatGetSize(B, &M, &nrhs));
   PetscCall(PetscIntMultError(nrhs, M, &nrhsM));
   mumps->id.nrhs = (PetscMUMPSInt)nrhs;
   mumps->id.lrhs = (PetscMUMPSInt)M;
 
   if (mumps->petsc_size == 1) { // handle this easy case specially and return early
-    PetscScalar *aa;
-    PetscInt     spnr, *ia, *ja;
+    PetscScalar *aa, *xarray;
+    PetscInt     spnr, ldrhs;
+    PetscInt    *ia, *ja;
     PetscBool    second_solve = PETSC_FALSE;
 
     PetscCall(MatDenseGetArray(X, &array));
+    // use the output stride directly unless precision conversion needs contiguous storage
+    if (ldx != M && mumps->id.precision != PETSC_SCALAR_PRECISION) PetscCall(PetscMalloc1(nrhsM, &solalloc));
+    xarray = solalloc ? solalloc : array;
+    ldrhs  = solalloc ? M : ldx;
+    PetscCall(PetscMUMPSIntCast(ldrhs, &mumps->id.lrhs));
     if (denseB) {
       /* copy B to X */
       PetscCall(MatDenseGetArrayRead(B, &barray));
-      PetscCall(PetscArraycpy(array, barray, nrhsM));
+      if (ldb == M && ldrhs == M) PetscCall(PetscArraycpy(xarray, barray, nrhsM));
+      else {
+        for (j = 0; j < nrhs; ++j) PetscCall(PetscArraycpy(xarray + (size_t)j * ldrhs, barray + (size_t)j * ldb, M));
+      }
       PetscCall(MatDenseRestoreArrayRead(B, &barray));
     } else { /* sparse B */
       PetscCall(MatSeqAIJGetArray(Bt, &aa));
@@ -2132,7 +2146,7 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
       PetscCall(PetscMUMPSIntCSRCast(mumps, spnr, ia, ja, &mumps->id.irhs_ptr, &mumps->id.irhs_sparse, &mumps->id.nz_rhs));
       PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, mumps->id.nz_rhs, aa, mumps->id.precision, &mumps->id.rhs_sparse_len, &mumps->id.rhs_sparse));
     }
-    PetscCall(MatMumpsMakeMumpsScalarArray(denseB, nrhsM, array, mumps->id.precision, &mumps->id.rhs_len, &mumps->id.rhs));
+    PetscCall(MatMumpsMakeMumpsScalarArray(denseB, nrhsM, xarray, mumps->id.precision, &mumps->id.rhs_len, &mumps->id.rhs));
 
     /* handle condensation step of Schur complement (if any) */
     if (mumps->id.size_schur > 0) {
@@ -2152,7 +2166,7 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     else if (mumps->id.ICNTL(26) == 1) { // condense the right hand side
       PetscCall(MatMumpsSolveSchur_Private(A));
       for (j = 0; j < nrhs; ++j)
-        for (i = 0; i < mumps->id.size_schur; ++i) array[mumps->id.listvar_schur[i] - 1 + j * M] = ID_FIELD_GET(mumps->id, redrhs, i + j * mumps->id.lredrhs);
+        for (i = 0; i < mumps->id.size_schur; ++i) xarray[mumps->id.listvar_schur[i] - 1 + (size_t)j * ldrhs] = ID_FIELD_GET(mumps->id, redrhs, i + j * mumps->id.lredrhs);
     }
 
     if (!denseB) { /* sparse B, restore ia, ja */
@@ -2162,8 +2176,14 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     }
 
     // no matter dense B or sparse B, solution is in id.rhs; convert it to array of X.
-    PetscCall(MatMumpsCastMumpsScalarArray(nrhsM, mumps->id.precision, mumps->id.rhs, array));
+    PetscCall(MatMumpsCastMumpsScalarArray(nrhsM, mumps->id.precision, mumps->id.rhs, xarray));
+    if (solalloc) {
+      for (j = 0; j < nrhs; ++j) PetscCall(PetscArraycpy(array + (size_t)j * ldx, solalloc + j * M, M));
+      PetscCall(PetscFree(solalloc));
+    }
     PetscCall(MatDenseRestoreArray(X, &array));
+    if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+      PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -2187,13 +2207,18 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, nlsol_loc, (PetscScalar *)sol_loc, &msol_loc));
 
   if (denseB) {
+    PetscCall(MatGetLocalSize(B, &m, NULL));
+    PetscCall(MatDenseGetArrayRead(B, &barray));
+    if (ldb != m && m) {
+      PetscCall(PetscMalloc1((size_t)nrhs * m, &rhsalloc));
+      for (j = 0; j < nrhs; ++j) PetscCall(PetscArraycpy(rhsalloc + j * m, barray + (size_t)j * ldb, m));
+    }
+    rhsarray = rhsalloc ? rhsalloc : barray;
     if (mumps->ICNTL20 == 10) {
       mumps->id.ICNTL(20) = 10; /* dense distributed RHS */
-      PetscCall(MatDenseGetArrayRead(B, &barray));
-      PetscCall(MatMumpsSetUpDistRHSInfo(A, nrhs, barray)); // put barray to rhs_loc
-      PetscCall(MatDenseRestoreArrayRead(B, &barray));
-      PetscCall(MatGetLocalSize(B, &m, NULL));
-      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)B), 1, nrhs * m, nrhsM, NULL, &v_mpi)); // will scatter the solution to v_mpi, which wraps X
+      PetscCall(MatMumpsSetUpDistRHSInfo(A, nrhs, rhsarray));
+      // the solution will be scattered to v_mpi, which wraps X
+      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)B), 1, nrhs * m, nrhsM, NULL, &v_mpi));
     } else {
       mumps->id.ICNTL(20) = 0; /* dense centralized RHS */
       /* TODO: Because of non-contiguous indices, the created vecscatter scat_rhs is not done in MPI_Gather, resulting in
@@ -2203,10 +2228,7 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
 
       /* scatter v_mpi to b_seq because MUMPS before 5.3.0 only supports centralized rhs */
       /* wrap dense rhs matrix B into a vector v_mpi */
-      PetscCall(MatGetLocalSize(B, &m, NULL));
-      PetscCall(MatDenseGetArrayRead(B, &barray));
-      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)B), 1, nrhs * m, nrhsM, barray, &v_mpi));
-      PetscCall(MatDenseRestoreArrayRead(B, &barray));
+      PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)B), 1, nrhs * m, nrhsM, rhsarray, &v_mpi));
 
       /* scatter v_mpi to b_seq in proc[0]. With ICNTL(20) = 0, MUMPS requires rhs to be centralized on the host! */
       if (!mumps->myid) {
@@ -2236,9 +2258,9 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
       PetscCall(VecScatterEnd(scat_rhs, v_mpi, b_seq, INSERT_VALUES, SCATTER_FORWARD));
 
       if (!mumps->myid) { /* define rhs on the host */
-        PetscCall(VecGetArrayRead(b_seq, &barray));
-        PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, nrhsM, barray, mumps->id.precision, &mumps->id.rhs_len, &mumps->id.rhs));
-        PetscCall(VecRestoreArrayRead(b_seq, &barray));
+        PetscCall(VecGetArrayRead(b_seq, &rhsarray));
+        PetscCall(MatMumpsMakeMumpsScalarArray(PETSC_TRUE, nrhsM, rhsarray, mumps->id.precision, &mumps->id.rhs_len, &mumps->id.rhs));
+        PetscCall(VecRestoreArrayRead(b_seq, &rhsarray));
       }
     }
   } else { /* sparse B */
@@ -2272,9 +2294,13 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   PetscMUMPS_c(mumps);
   PetscCheck(mumps->id.INFOG(1) >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "MUMPS error in solve: INFOG(1)=%d, INFO(2)=%d " MUMPS_MANUALS, mumps->id.INFOG(1), mumps->id.INFO(2));
 
+  if (denseB) PetscCall(MatDenseRestoreArrayRead(B, &barray));
+
   /* scatter mumps distributed solution to PETSc vector v_mpi, which shares local arrays with solution matrix X */
   PetscCall(MatDenseGetArray(X, &array));
-  PetscCall(VecPlaceArray(v_mpi, array));
+  PetscCall(MatGetLocalSize(X, &m, NULL));
+  if (ldx != m && m) PetscCall(PetscMalloc1((size_t)nrhs * m, &solalloc));
+  PetscCall(VecPlaceArray(v_mpi, solalloc ? solalloc : array));
 
   /* create scatter scat_sol */
   PetscCall(MatGetOwnershipRanges(X, &rstart));
@@ -2304,6 +2330,10 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   PetscCall(ISDestroy(&is_from));
   PetscCall(ISDestroy(&is_to));
   PetscCall(VecScatterEnd(scat_sol, msol_loc, v_mpi, INSERT_VALUES, SCATTER_FORWARD));
+  if (solalloc) {
+    PetscCall(MatGetLocalSize(X, &m, NULL));
+    for (j = 0; j < nrhs; ++j) PetscCall(PetscArraycpy(array + (size_t)j * ldx, solalloc + j * m, m));
+  }
   PetscCall(MatDenseRestoreArray(X, &array));
 
   if (mumps->id.sol_loc_len) { // in case we allocated intermediate buffers
@@ -2334,7 +2364,10 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     }
   }
   PetscCall(VecScatterDestroy(&scat_sol));
-  PetscCall(PetscLogFlops(nrhs * PetscMax(0, 2.0 * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
+  PetscCall(PetscFree(rhsalloc));
+  PetscCall(PetscFree(solalloc));
+  if (!mumps->use_petsc_omp_support || mumps->is_omp_master)
+    PetscCall(PetscLogFlops(mumps->id.nrhs * PetscMax(0.0, (mumps->sym ? 4.0 : 2.0) * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1.0e6 * mumps->id.INFO(28)) - (mumps->sym ? 3.0 : 1.0) * mumps->id.INFO(23))));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3265,8 +3298,8 @@ static PetscErrorCode MatGetInfo_MUMPS(Mat A, PETSC_UNUSED MatInfoType flag, Mat
 
   PetscFunctionBegin;
   info->block_size        = 1.0;
-  info->nz_allocated      = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1000000 * mumps->id.INFOG(20);
-  info->nz_used           = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1000000 * mumps->id.INFOG(20);
+  info->nz_allocated      = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1.0e6 * mumps->id.INFOG(20);
+  info->nz_used           = mumps->id.INFOG(20) >= 0 ? mumps->id.INFOG(20) : -1.0e6 * mumps->id.INFOG(20);
   info->nz_unneeded       = 0.0;
   info->assemblies        = 0.0;
   info->mallocs           = 0.0;

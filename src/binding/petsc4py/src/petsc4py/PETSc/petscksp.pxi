@@ -179,6 +179,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPGetInitialGuessKnoll(PetscKSP, PetscBool*)
     PetscErrorCode KSPSetUseFischerGuess(PetscKSP, PetscInt, PetscInt)
 
+    PetscErrorCode KSPComputeOperator(PetscKSP, PetscMatType, PetscMat*)
     PetscErrorCode KSPGetComputeEigenvalues(PetscKSP, PetscBool*)
     PetscErrorCode KSPSetComputeEigenvalues(PetscKSP, PetscBool)
     PetscErrorCode KSPGetComputeSingularValues(PetscKSP, PetscBool*)
