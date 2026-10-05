@@ -116,19 +116,19 @@ Tao Object: 1 MPI process
     left preconditioning
     using UNPRECONDITIONED norm type for convergence test
   PC Object: (tao_nls_) 1 MPI process
-    type: ilu
+    type: icc
       out-of-place factorization
       0 levels of fill
       tolerance for zero pivot 2.22045e-14
+      using Manteuffel shift [POSITIVE_DEFINITE]
       matrix ordering: natural
       factor fill ratio given 1., needed 1.
         Factored matrix:
           Mat Object: (tao_nls_) 1 MPI process
-            type: seqaij
+            type: seqsbaij
             rows=2, cols=2
             package used to perform factorization: petsc
-            total: nonzeros=4, allocated nonzeros=4
-              using I-node routines: found 1 nodes, limit used is 5
+            total: nonzeros=3, allocated nonzeros=3
     linear system matrix, which is also used to construct the preconditioner:
     Mat Object: 1 MPI process
       type: seqaij

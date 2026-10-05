@@ -2063,20 +2063,30 @@ static PetscErrorCode MatAXPY_MPIAIJ(Mat Y, PetscScalar a, Mat X, MatStructure s
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     PetscCall(MatAXPY_Basic(Y, a, X, str));
   } else {
-    Mat       B;
-    PetscInt *nnz_d, *nnz_o;
+    Mat         B;
+    PetscInt   *nnz_d, *nnz_o;
+    PetscBool   subset = PETSC_TRUE;
+    Mat_SeqAIJ *ya = (Mat_SeqAIJ *)yy->A->data, *yb = (Mat_SeqAIJ *)yy->B->data;
 
     PetscCall(PetscMalloc1(yy->A->rmap->N, &nnz_d));
     PetscCall(PetscMalloc1(yy->B->rmap->N, &nnz_o));
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)Y), &B));
-    PetscCall(PetscObjectSetName((PetscObject)B, ((PetscObject)Y)->name));
-    PetscCall(MatSetLayouts(B, Y->rmap, Y->cmap));
-    PetscCall(MatSetType(B, ((PetscObject)Y)->type_name));
     PetscCall(MatAXPYGetPreallocation_SeqAIJ(yy->A, xx->A, nnz_d));
     PetscCall(MatAXPYGetPreallocation_MPIAIJ(yy->B, yy->garray, xx->B, xx->garray, nnz_o));
-    PetscCall(MatMPIAIJSetPreallocation(B, 0, nnz_d, 0, nnz_o));
-    PetscCall(MatAXPY_BasicWithPreallocation(B, Y, a, X, str));
-    PetscCall(MatHeaderMerge(Y, &B));
+    /* nnz_d[i] and nnz_o[i] are the sizes of the unions of row i of the blocks of X and Y, so the pattern of X is contained in
+       that of Y when, on every process, they equal the lengths of row i of the blocks of Y. Adding in place then keeps the nonzero
+       pattern of Y, and its nonzero state, unchanged. */
+    for (PetscInt i = 0; i < yy->A->rmap->N && subset; i++) subset = (PetscBool)(nnz_d[i] == ya->i[i + 1] - ya->i[i] && nnz_o[i] == yb->i[i + 1] - yb->i[i]);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &subset, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)Y)));
+    if (subset) PetscCall(MatAXPY_Basic(Y, a, X, SUBSET_NONZERO_PATTERN));
+    else {
+      PetscCall(MatCreate(PetscObjectComm((PetscObject)Y), &B));
+      PetscCall(PetscObjectSetName((PetscObject)B, ((PetscObject)Y)->name));
+      PetscCall(MatSetLayouts(B, Y->rmap, Y->cmap));
+      PetscCall(MatSetType(B, ((PetscObject)Y)->type_name));
+      PetscCall(MatMPIAIJSetPreallocation(B, 0, nnz_d, 0, nnz_o));
+      PetscCall(MatAXPY_BasicWithPreallocation(B, Y, a, X, str));
+      PetscCall(MatHeaderMerge(Y, &B));
+    }
     PetscCall(PetscFree(nnz_d));
     PetscCall(PetscFree(nnz_o));
   }

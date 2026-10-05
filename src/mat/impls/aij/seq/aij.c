@@ -2973,16 +2973,24 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y, PetscScalar a, Mat X, MatStructure str)
   } else {
     Mat       B;
     PetscInt *nnz;
+    PetscBool subset = PETSC_TRUE;
+
     PetscCall(PetscMalloc1(Y->rmap->N, &nnz));
-    PetscCall(MatCreate(PetscObjectComm((PetscObject)Y), &B));
-    PetscCall(PetscObjectSetName((PetscObject)B, ((PetscObject)Y)->name));
-    PetscCall(MatSetLayouts(B, Y->rmap, Y->cmap));
-    PetscCall(MatSetType(B, ((PetscObject)Y)->type_name));
     PetscCall(MatAXPYGetPreallocation_SeqAIJ(Y, X, nnz));
-    PetscCall(MatSeqAIJSetPreallocation(B, 0, nnz));
-    PetscCall(MatAXPY_BasicWithPreallocation(B, Y, a, X, str));
-    PetscCall(MatHeaderMerge(Y, &B));
-    PetscCall(MatSeqAIJCheckInode(Y));
+    /* nnz[i] is the size of the union of row i of X and Y, so the pattern of X is contained in that of Y when every nnz[i] equals
+       the length of row i of Y. Adding in place then keeps the nonzero pattern of Y, and its nonzero state, unchanged. */
+    for (PetscInt i = 0; i < Y->rmap->N && subset; i++) subset = (PetscBool)(nnz[i] == y->i[i + 1] - y->i[i]);
+    if (subset) PetscCall(MatAXPY_Basic(Y, a, X, SUBSET_NONZERO_PATTERN));
+    else {
+      PetscCall(MatCreate(PetscObjectComm((PetscObject)Y), &B));
+      PetscCall(PetscObjectSetName((PetscObject)B, ((PetscObject)Y)->name));
+      PetscCall(MatSetLayouts(B, Y->rmap, Y->cmap));
+      PetscCall(MatSetType(B, ((PetscObject)Y)->type_name));
+      PetscCall(MatSeqAIJSetPreallocation(B, 0, nnz));
+      PetscCall(MatAXPY_BasicWithPreallocation(B, Y, a, X, str));
+      PetscCall(MatHeaderMerge(Y, &B));
+      PetscCall(MatSeqAIJCheckInode(Y));
+    }
     PetscCall(PetscFree(nnz));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -66,6 +66,7 @@
 - Add `-mat_spd` to set `MAT_SPD` from the options database in `MatSetFromOptions()`
 - Change `MatSetOption()` to error when a symmetry-related option contradicts an already known property
 - Add support for `MatZeroRows()` and `MatZeroRowsColumns()` with a nonzero diagonal value on a `MATIS` whose local matrix does not implement `MatSetValues()`, such as `MATSHELL`
+- Change `MatAXPY()` with `DIFFERENT_NONZERO_PATTERN` for `MATSEQAIJ` and `MATMPIAIJ` to add in place when the nonzeros of `X` are a subset of those of `Y`, keeping the nonzero pattern and nonzero state of `Y`, as well as the options that survive assembly, such as `MAT_SYMMETRY_ETERNAL`
 
 ```{rubric} MatCoarsen:
 ```
