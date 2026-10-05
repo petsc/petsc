@@ -208,15 +208,7 @@ applications that are compatible with the Microsoft and Intel compilers.
 
 2. Update MSYS2 and install base packages:
 
-   First, launch a MSYS2 MinGW x64 shell. Double-check this is the proper type of shell by typing
-
-   ```console
-   $  echo $MINGW_PREFIX
-   /mingw64
-   ```
-
-   If you see something else, e.g., `/clang64`, this is not the correct type
-   of shell, it may still work, but this is less tested. Then, update your
+   First, launch a MSYS2 MinGW. Then, update your
    installation using `pacman` (you may be asked to quit and re-open your shell).
 
    ```console
@@ -228,9 +220,9 @@ applications that are compatible with the Microsoft and Intel compilers.
 
    ```console
    $  pacman -S autoconf automake-wrapper bison bsdcpio make git \
-   mingw-w64-x86_64-toolchain patch python flex \
-   pkg-config pkgfile tar unzip mingw-w64-x86_64-cmake \
-   mingw-w64-x86_64-msmpi mingw-w64-x86_64-openblas mingw-w64-x86_64-jq
+   ${MINGW_PACKAGE_PREFIX}-toolchain patch python flex \
+   pkg-config pkgfile tar unzip ${MINGW_PACKAGE_PREFIX}-cmake \
+   ${MINGW_PACKAGE_PREFIX}-msmpi ${MINGW_PACKAGE_PREFIX}-openblas
    ```
 
 3. Configuring:
