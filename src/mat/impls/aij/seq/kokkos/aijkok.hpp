@@ -223,5 +223,8 @@ PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat, KokkosCsrMatrix *);
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetFrobeniusSquared_Private(Mat, PetscReal *);
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetMaxRowAbsSum_Private(Mat, Mat, PetscReal *);
+PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetColumnAbsSums_Private(Mat, PetscScalarKokkosView &);
 PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat, const PetscIntKokkosView &, const PetscIntKokkosView &, const PetscIntKokkosView &, PetscScalarKokkosView &, PetscScalarKokkosView &);
 PETSC_INTERN PetscErrorCode MatBindToCPU_SeqAIJKokkos(Mat, PetscBool);

@@ -1703,6 +1703,57 @@ static PetscErrorCode MatShift_MPIAIJKokkos(Mat A, PetscScalar a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatNorm_MPIAIJKokkos(Mat mat, NormType type, PetscReal *norm)
+{
+  Mat_MPIAIJ *aij = static_cast<Mat_MPIAIJ *>(mat->data);
+  PetscInt    nz  = static_cast<Mat_SeqAIJ *>(aij->A->data)->nz + static_cast<Mat_SeqAIJ *>(aij->B->data)->nz;
+  MPI_Comm    comm;
+
+  PetscFunctionBegin;
+  if (aij->size == 1) {
+    PetscCall(MatNorm(aij->A, type, norm));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
+  if (type == NORM_FROBENIUS) {
+    PetscReal sumA, sumB;
+
+    PetscCall(PetscLogGpuTimeBegin());
+    PetscCall(MatSeqAIJKokkosGetFrobeniusSquared_Private(aij->A, &sumA));
+    PetscCall(MatSeqAIJKokkosGetFrobeniusSquared_Private(aij->B, &sumB));
+    PetscCall(PetscLogGpuTimeEnd());
+    *norm = sumA + sumB;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, norm, 1, MPIU_REAL, MPIU_SUM, comm));
+    *norm = PetscSqrtReal(*norm);
+    PetscCall(PetscLogGpuFlops(2.0 * nz));
+  } else if (type == NORM_1) { // max column sum; as in MatMultTranspose(), a reverse scatter adds B's column sums to the owning ranks
+    Vec                   col;
+    PetscScalarKokkosView colv, lv;
+
+    PetscCall(MatCreateVecs(mat, &col, NULL));
+    PetscCall(PetscLogGpuTimeBegin());
+    PetscCall(VecGetKokkosViewWrite(col, &colv));
+    PetscCall(MatSeqAIJKokkosGetColumnAbsSums_Private(aij->A, colv));
+    PetscCall(VecRestoreKokkosViewWrite(col, &colv));
+    PetscCall(VecGetKokkosViewWrite(aij->lvec, &lv));
+    PetscCall(MatSeqAIJKokkosGetColumnAbsSums_Private(aij->B, lv));
+    PetscCall(VecRestoreKokkosViewWrite(aij->lvec, &lv));
+    PetscCall(PetscLogGpuTimeEnd());
+    PetscCall(VecScatterBegin(aij->Mvctx, aij->lvec, col, ADD_VALUES, SCATTER_REVERSE));
+    PetscCall(VecScatterEnd(aij->Mvctx, aij->lvec, col, ADD_VALUES, SCATTER_REVERSE));
+    PetscCall(VecNorm(col, NORM_INFINITY, norm));
+    PetscCall(VecDestroy(&col));
+    PetscCall(PetscLogGpuFlops(nz));
+  } else if (type == NORM_INFINITY) { // max row sum, where a row spans both A and B
+    PetscCall(PetscLogGpuTimeBegin());
+    PetscCall(MatSeqAIJKokkosGetMaxRowAbsSum_Private(aij->A, aij->B, norm));
+    PetscCall(PetscLogGpuTimeEnd());
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, norm, 1, MPIU_REAL, MPIU_MAX, comm));
+    PetscCall(PetscLogGpuFlops(PetscMax(nz - 1, 0)));
+  } else SETERRQ(comm, PETSC_ERR_SUP, "No support for two norm");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIDense(Mat);
 
 static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
@@ -1716,6 +1767,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   B->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJKokkos;
   B->ops->destroy               = MatDestroy_MPIAIJKokkos;
   B->ops->shift                 = MatShift_MPIAIJKokkos;
+  B->ops->norm                  = MatNorm_MPIAIJKokkos;
   B->ops->getcurrentmemtype     = MatGetCurrentMemType_MPIAIJ;
   B->ops->bindtocpu             = MatBindToCPU_SeqAIJKokkos;
 

@@ -212,6 +212,7 @@ static PetscErrorCode VecCreate_MPIKokkos_Common(Vec v)
   v->ops->bindtocpu       = VecBindToCPU_SeqKokkos;
   v->ops->abs             = VecAbs_SeqKokkos;
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
+  v->ops->sqrt            = VecSqrtAbs_SeqKokkos;
   v->ops->pointwisemult   = VecPointwiseMult_SeqKokkos;
   v->ops->setrandom       = VecSetRandom_SeqKokkos;
   v->ops->dotnorm2        = VecDotNorm2_MPIKokkos;

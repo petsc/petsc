@@ -123,6 +123,24 @@ int main(int argc, char **argv)
   PetscCall(MatNorm(mat, NORM_INFINITY, &normi));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "original A: Frobenius norm = %g, one norm = %g, infinity norm = %g\n", (double)normf, (double)norm1, (double)normi));
   PetscCall(MatView(mat, PETSC_VIEWER_STDOUT_WORLD));
+  {
+    /* The printed norms are masked by petscdiff, so compare the norms of -A with those of a host MATAIJ copy of A.
+       The entries of -A are negative, so the norms of -A only match if absolute values are taken */
+    const NormType types[] = {NORM_FROBENIUS, NORM_1, NORM_INFINITY};
+    Mat            C, D;
+    PetscReal      nc, nd;
+
+    PetscCall(MatConvert(mat, MATAIJ, MAT_INITIAL_MATRIX, &C));
+    PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &D));
+    PetscCall(MatScale(D, -1.0));
+    for (PetscInt t = 0; t < 3; t++) {
+      PetscCall(MatNorm(C, types[t], &nc));
+      PetscCall(MatNorm(D, types[t], &nd));
+      PetscCheck(PetscIsCloseAtTol(nd, nc, PETSC_SMALL, 0.0), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "NORM_%s of -A is %g, but %g for a MATAIJ copy of A", NormTypes[types[t]], (double)nd, (double)nc);
+    }
+    PetscCall(MatDestroy(&D));
+    PetscCall(MatDestroy(&C));
+  }
 
   /* --------------- Test MatTranspose()  -------------- */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-in_place", &flg));
@@ -361,6 +379,14 @@ int main(int argc, char **argv)
       suffix: 3
       nsize: 2
       args: -mat_type mpiaij -rectA
+
+   test:
+      suffix: 3_aijkokkos
+      nsize: 2
+      args: -mat_type aijkokkos -rectA
+      output_file: output/ex2_3.out
+      requires: kokkos_kernels
+      filter: sed -e "s/mpiaijkokkos/mpiaij/"
 
    test:
       suffix: 3_aijcusparse
