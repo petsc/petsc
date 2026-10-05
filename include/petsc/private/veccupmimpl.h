@@ -362,6 +362,19 @@ template <device::cupm::DeviceType T, typename D>
 inline PetscErrorCode Vec_CUPMBase<T, D>::VecCUPMAllocateCheck_(Vec v) noexcept
 {
   PetscFunctionBegin;
+  if (!v->spptr) {
+    /*
+      This is where v first gets a CUPM device array, which only the CUPM vector types use. If v is
+      any other type, such as VECSEQ, its operations ignore that array, so any result a device
+      routine writes there is silently lost. PetscCheckTypeNames() catches this only in debug
+      builds, so check the type here too. The check runs only once per vector, on the first
+      allocation.
+    */
+    PetscBool iscupm;
+
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(v), &iscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+    PetscCheck(iscupm, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vec type %s cannot hold a device array, it must be %s or %s. Obtain vectors for a device operation from MatCreateVecs(), or set their type with VecSetType()", PetscObjectCast(v)->type_name, VECSEQCUPM(), VECMPICUPM());
+  }
   PetscCall(VecAllocateCheck_(v, v->spptr, VecCUPMCast));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
