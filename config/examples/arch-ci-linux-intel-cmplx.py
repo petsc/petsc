@@ -27,6 +27,7 @@ if __name__ == '__main__':
     '--download-codipack',
     '--download-ctetgen',
     '--download-hdf5',
+    '--download-htool',
     '--download-hypre',
     '--download-metis',
     '--download-mpi4py',
