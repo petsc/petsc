@@ -363,7 +363,10 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
   Local indices refer to the local matrices inside the `MATIS` objects. If `vl2l` is `NULL`, the local velocity numbering in
   `divudotp` must match that of the preconditioning matrix.
 
-.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDiscreteGradient()`
+  The computed flux constraints supplement the near-nullspace supplied with `MatSetNearNullSpace()`.
+  The near-nullspace attached to the preconditioning matrix is preserved.
+
+.seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDiscreteGradient()`, `MatSetNearNullSpace()`
 @*/
 PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS vl2l)
 {
@@ -1812,16 +1815,10 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
     PetscCall(PCBDDCAnalyzeInterface(pc));
     computeconstraintsmatrix = PETSC_TRUE;
     PetscCheck(!(pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
+    PetscCall(MatNullSpaceDestroy(&pcbddc->nonetflux));
     if (pcbddc->compute_nonetflux) {
-      MatNullSpace nnfnnsp;
-
       PetscCheck(pcbddc->divudotp, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Missing divudotp operator");
-      PetscCall(PCBDDCComputeNoNetFlux(pc->pmat, pcbddc->divudotp, pcbddc->divudotp_trans, pcbddc->divudotp_vl2l, pcbddc->mat_graph, &nnfnnsp));
-      /* TODO what if a nearnullspace is already attached? */
-      if (nnfnnsp) {
-        PetscCall(MatSetNearNullSpace(pc->pmat, nnfnnsp));
-        PetscCall(MatNullSpaceDestroy(&nnfnnsp));
-      }
+      PetscCall(PCBDDCComputeNoNetFlux(pc->pmat, pcbddc->divudotp, pcbddc->divudotp_trans, pcbddc->divudotp_vl2l, pcbddc->mat_graph, &pcbddc->nonetflux));
     }
   }
   PetscCall(PetscLogEventEnd(PC_BDDC_Topology[pcbddc->current_level], pc, 0, 0, 0));

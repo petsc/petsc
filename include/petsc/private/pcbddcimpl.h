@@ -138,10 +138,11 @@ typedef struct {
   PCBDDCInterfaceExtType interface_extension;
 
   /* no-net-flux */
-  PetscBool compute_nonetflux;
-  Mat       divudotp;
-  PetscBool divudotp_trans;
-  IS        divudotp_vl2l;
+  MatNullSpace nonetflux;
+  PetscBool    compute_nonetflux;
+  Mat          divudotp;
+  PetscBool    divudotp_trans;
+  IS           divudotp_vl2l;
 
   /* nedelec */
   Mat       discretegradient;
