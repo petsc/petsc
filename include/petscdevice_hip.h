@@ -39,15 +39,11 @@
     #define HIPSPARSE_ORDER_COL HIPSPARSE_ORDER_COLUMN
   #endif
 
-  #if defined(__HIP_PLATFORM_NVCC__)
-    #include <cusolverDn.h>
-  #else // __HIP_PLATFORM_HCC__
-    #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-      #include <hipsolver/hipsolver.h>
-    #else
-      #include <hipsolver.h>
-    #endif
-  #endif                       // __HIP_PLATFORM_NVCC__
+  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
+    #include <hipsolver/hipsolver.h>
+  #else
+    #include <hipsolver.h>
+  #endif
   #include <hip/hip_complex.h> // for hipComplex, hipDoubleComplex
 
   /*MC
@@ -165,7 +161,7 @@ M*/
 typedef cusolverStatus_t hipsolverStatus_t;
 
 /* Alias hipsolverDestroy to cusolverDnDestroy */
-static inline hipsolverStatus_t hipsolverDestroy(hipsolverHandle_t *hipsolverhandle)
+static inline hipsolverStatus_t hipsolverDestroy(hipsolverHandle_t hipsolverhandle)
 {
   return cusolverDnDestroy(hipsolverhandle);
 }
@@ -185,7 +181,7 @@ static inline hipsolverStatus_t hipsolverGetStream(hipsolverHandle_t handle, hip
 /* Alias hipsolverSetStream to cusolverDnSetStream */
 static inline hipsolverStatus_t hipsolverSetStream(hipsolverHandle_t handle, hipStream_t stream)
 {
-  return cusolveDnSetStream(handle, stream);
+  return cusolverDnSetStream(handle, stream);
 }
     #else /* __HIP_PLATFORM_HCC__ */
       #include <rocsolver.h>

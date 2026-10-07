@@ -5,7 +5,11 @@
 #include <petsc/private/cupmatomics.hpp>
 #include <../src/mat/impls/sell/seq/sell.h> /*I   "petscmat.h"  I*/
 
-#define WARP_SIZE 64
+#if PetscDefined(HAVE_HIPCUDA)
+  #define WARP_SIZE 32
+#else
+  #define WARP_SIZE 64
+#endif
 
 typedef struct {
   PetscInt   maxallocmat;
@@ -106,6 +110,15 @@ static __global__ void matmultadd_seqsell_basic_kernel(PetscInt nrows, PetscInt 
 }
 
 #if !PetscDefined(USE_COMPLEX)
+static __device__ __forceinline__ PetscScalar MatSeqSELLHIPShuffleDown(PetscScalar value, unsigned int delta, int width = WARP_SIZE)
+{
+  #if PetscDefined(HAVE_HIPCUDA)
+  return __shfl_down_sync(0xffffffff, value, delta, width);
+  #else
+  return __shfl_down(value, delta, width);
+  #endif
+}
+
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wpass-failed")
 /* use 1 block per slice, suitable for large slice width */
 template <int BLOCKY>
@@ -124,13 +137,13 @@ __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheig
     for (i = sliidx[slice_id] + threadIdx.x + WARP_SIZE * threadIdx.y; i < sliidx[slice_id + 1]; i += WARP_SIZE * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
   if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
   if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) y[row] = shared[0][threadIdx.x];
@@ -153,13 +166,13 @@ __global__ void matmultadd_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceh
     for (i = sliidx[slice_id] + threadIdx.x + WARP_SIZE * threadIdx.y; i < sliidx[slice_id + 1]; i += WARP_SIZE * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
   if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
   if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) z[row] = y[row] + shared[0][threadIdx.x];
@@ -222,13 +235,13 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
           int tid = threadIdx.x + threadIdx.y * WARP_SIZE, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
           if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(y[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
@@ -277,13 +290,13 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
           int tid = threadIdx.x + threadIdx.y * WARP_SIZE, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
           if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(z[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
@@ -305,7 +318,7 @@ static __global__ void matmult_seqsell_tiled_kernel7(PetscInt nrows, PetscInt sl
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += WARP_SIZE) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   if (row < nrows && threadIdx.x < sliceheight) y[row] = t;
 }
 
@@ -320,7 +333,7 @@ static __global__ void matmultadd_seqsell_tiled_kernel7(PetscInt nrows, PetscInt
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += WARP_SIZE) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   if (row < nrows && threadIdx.x < sliceheight) z[row] = y[row] + t;
 }
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
