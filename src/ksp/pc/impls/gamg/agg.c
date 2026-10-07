@@ -247,9 +247,8 @@ PetscErrorCode PCGAMGSetGraphSymmetrize(PC pc, PetscBool b)
   relative to the largest block Frobenius norm in the same fine-node block row so the decision is invariant to the differing scales of the near-null space modes.
   The comparison is strict, so the strongest block of a fine node always survives. On coarser levels the threshold is scaled by `PCGAMGSetProlongatorFilterScale()`.
   Dropping whole blocks (rather than individual entries) keeps complete coarse-node blocks in every surviving fine row, so the near-null space correction below
-  remains full rank. The dropped entries are removed from the sparsity pattern with `MatEliminateZeros()`; on matrix types that do not implement it, and on
-  HIPSPARSE where it is bypassed due to a known issue, they are zeroed but remain in the pattern, so the coarse operators are unchanged in structure and the
-  complexity and memory reduction is not realized (reported with `-info`).
+  remains full rank. The dropped entries are removed from the sparsity pattern with `MatEliminateZeros()`; on matrix types that do not implement it, they are
+  zeroed but remain in the pattern, so the coarse operators are unchanged in structure and the complexity and memory reduction is not realized (reported with `-info`).
 
   After filtering, each row of the prolongator is corrected so that the filtered prolongator still reproduces the near-null space exactly, that is, P applied to the coarse
   representation of the near-null space equals the fine near-null space. With a single near-null space vector each row is simply rescaled; with several, a small symmetric
@@ -1596,7 +1595,7 @@ static PetscErrorCode PCGAMGProlongatorBlockFilter_AGG(PC pc, Mat Prol, PetscInt
   PetscReal   *cn_n2;
   PetscReal    thr2 = thr * thr;
   PetscScalar *zeros;
-  PetscBool    no_off_proc, ishipsparse;
+  PetscBool    no_off_proc;
 
   PetscFunctionBegin;
   PetscCall(MatGetBlockSizes(Prol, &rbs, &cbs));
@@ -1705,13 +1704,11 @@ static PetscErrorCode PCGAMGProlongatorBlockFilter_AGG(PC pc, Mat Prol, PetscInt
      PETSC_FALSE: with keep, a zero whose local column index equals its local row index survives (an
      index-based diagonal test that is meaningless for the rectangular Prol). The compression is done
      in place, deliberately: a MatDuplicate()/MatHeaderReplace() copy as in MatFilter() would return
-     the freed CSR tail to the allocator, at the cost of a peak-memory spike. MatEliminateZeros() has
-     a known issue with HIPSPARSE (see the bypass in MatFilter()) and is not implemented by all matrix
-     types; in those cases the zeros are left in the sparsity pattern; the step-3 correction in
-     PCGAMGKernelPreservingFilter_AGG() skips exactly-zero entries, so a dropped block stays dropped
-     either way, it just still costs storage here. */
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)Prol, &ishipsparse, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
-  if (!ishipsparse && Prol->ops->eliminatezeros) PetscCall(MatEliminateZeros(Prol, PETSC_FALSE));
+     the freed CSR tail to the allocator, at the cost of a peak-memory spike. MatEliminateZeros() is not
+     implemented by all matrix types; in those cases the zeros are left in the sparsity pattern;
+     the step-3 correction in PCGAMGKernelPreservingFilter_AGG() skips exactly-zero entries, so a dropped
+     block stays dropped either way, it just still costs storage here. */
+  if (Prol->ops->eliminatezeros) PetscCall(MatEliminateZeros(Prol, PETSC_FALSE));
   else PetscCall(PetscInfo(pc, "PCGAMGProlongatorBlockFilter_AGG: skipping zero elimination for %s; filtered entries are zeroed but not removed\n", ((PetscObject)Prol)->type_name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
