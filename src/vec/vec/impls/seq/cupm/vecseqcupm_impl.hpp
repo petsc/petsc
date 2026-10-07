@@ -1298,7 +1298,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
   PetscFunctionBegin;
   PetscCall(GetHandlesFrom_(dctx, &stream));
   // allocate scratchpad memory for the results of individual work groups
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nwork, &d_results));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nwork, PETSC_DECIDE, &d_results));
   {
     const auto          xptr       = DeviceArrayRead(dctx, xin);
     PetscInt            yidx       = 0;
@@ -1384,7 +1384,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::true_type, Vec xin, PetscInt nv
 
   PetscFunctionBegin;
   PetscCall(GetHandlesFrom_(dctx, &stream));
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nv, &d_z));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nv, PETSC_DECIDE, &d_z));
   // Upload inputs before forking so child contexts cannot race on repeated vectors.
   for (PetscInt i = 0; i < nv; ++i) PetscCall(CopyToDevice_(dctx, yin[i]));
   PetscCall(PetscDeviceContextFork(dctx, n_sub, &subctx));
@@ -2378,7 +2378,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetValuesCOO(Vec x, const PetscScalar v[],
     const auto size = VecIMPLCast(x)->coo_n;
 
     // If user gave v[] in host, we might need to copy it to device if any
-    PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), size, &vv));
+    PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), size, PETSC_DECIDE, &vv));
     PetscCall(PetscCUPMMemcpyAsync(vv, v, size, cupmMemcpyHostToDevice, stream));
     PetscCall(PetscLogCpuToGpu(size * sizeof(PetscScalar)));
   }

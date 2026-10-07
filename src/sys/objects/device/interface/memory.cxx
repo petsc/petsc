@@ -271,45 +271,24 @@ PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMe
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx      - The `PetscDeviceContext` used to allocate the memory
-. clear     - Whether or not the memory should be zeroed
-. mtype     - The type of memory to allocate
-. n         - The amount (in bytes) to allocate
-- alignment - The alignment requirement (in bytes) of the allocated pointer
++ dctx                - The context, or `NULL` for the null context on the current device
+. clear               - Whether to zero the allocation
+. mtype               - The memory type
+. n                   - The size in bytes
+. requested_alignment - A positive power of two or `PETSC_DECIDE`
+- type_alignment      - The pointed-to type's alignment in the calling translation unit
 
   Output Parameter:
-. ptr - The pointer to store the result in
+. ptr - The allocated pointer
 
   Notes:
-  The user should prefer `PetscDeviceMalloc()` over this routine as it automatically computes
-  the size of the allocation and alignment based on the size of the datatype.
+  Prefer `PetscDeviceMalloc()` or `PetscDeviceCalloc()`, which supply the byte count and
+  type alignment. For a backend allocation, `PETSC_DECIDE` selects `type_alignment`;
+  an explicit request is increased to `type_alignment` if necessary.
 
-  If the user is unsure about `alignment` -- or unable to compute it -- passing
-  `PETSC_MEMALIGN` will always work, though the user should beware that this may be quite
-  wasteful for very small allocations.
-
-  Memory allocated with this function must be freed with `PetscDeviceFree()` (or
-  `PetscDeviceDeallocate_Private()`).
-
-  If `n` is zero, then `ptr` is set to `PETSC_NULLPTR`.
-
-  This routine falls back to using `PetscMalloc1()` or `PetscCalloc1()` (depending on the value
-  of `clear`) if PETSc was not configured with device support. The user should note that
-  `mtype` and `alignment` are ignored in this case, as these routines allocate only host memory
-  aligned to `PETSC_MEMALIGN`.
-
-  Note result stored `ptr` is immediately valid and the user may freely inspect or manipulate
-  its value on function return, i.e.\:
-
-.vb
-  PetscInt *ptr;
-
-  PetscDeviceAllocate_Private(dctx, PETSC_FALSE, PETSC_MEMTYPE_DEVICE, 20, alignof(PetscInt), (void**)&ptr);
-
-  PetscInt *sub_ptr = ptr + 10; // OK, no need to synchronize
-
-  ptr[0] = 10; // ERROR, directly accessing contents of ptr is undefined until synchronization
-.ve
+  The ordinary host fallback uses `PETSC_MEMALIGN` and rejects explicit requests that
+  do not divide it. See `PetscDeviceMalloc()` for context and memory-type selection.
+  Memory must be freed with `PetscDeviceFree()`. A zero byte count returns `NULL`.
 
   DAG representation:
 .vb
@@ -326,22 +305,18 @@ PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMe
 .seealso: `PetscDeviceMalloc()`, `PetscDeviceFree()`, `PetscDeviceDeallocate_Private()`,
 `PetscDeviceArrayCopy()`, `PetscDeviceArrayZero()`, `PetscMemType`
 */
-PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool clear, PetscMemType mtype, std::size_t n, std::size_t alignment, void **PETSC_RESTRICT ptr)
+PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool clear, PetscMemType mtype, std::size_t n, std::size_t requested_alignment, std::size_t type_alignment, void **PETSC_RESTRICT ptr)
 {
   PetscObjectId id = 0;
+  std::size_t   alignment;
 
   PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) {
-    const auto is_power_of_2 = [](std::size_t num) { return (num & (num - 1)) == 0; };
-
-    PetscCheck(alignment != 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu cannot be 0", alignment);
-    PetscCheck(is_power_of_2(alignment), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Requested alignment %zu must be a power of 2", alignment);
-  }
-  PetscAssertPointer(ptr, 6);
+  PetscAssertPointer(ptr, 7);
   *ptr = nullptr;
   if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(memory_map.register_finalize());
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscCall(PetscDeviceGetAllocationAlignment_Private(requested_alignment, type_alignment, PetscBool(!dctx->ops->memalloc), &alignment));
 
   // get our pointer here
   if (dctx->ops->memalloc) {

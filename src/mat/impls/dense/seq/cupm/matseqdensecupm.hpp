@@ -1674,7 +1674,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Norm(Mat A, NormType type, PetscReal
       const auto keys       = thrust::make_transform_iterator(thrust::make_counting_iterator(PetscInt{0}), detail::GroupIndexFunctor<PetscInt>{group_size});
       PetscReal *sums       = nullptr;
 
-      PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), ngroups, &sums));
+      PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), ngroups, PETSC_DECIDE, &sums));
       if (type == NORM_1) {
         // the sub-matrix iterator enumerates the entries column-major, so each run of m
         // consecutive keys is exactly one column, for any lda

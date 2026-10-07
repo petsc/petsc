@@ -434,6 +434,7 @@ static inline PetscErrorCode PetscDeviceContextGetOptionalNullContext_Internal(P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode PetscDeviceGetAllocationAlignment_Private(size_t, size_t, PetscBool, size_t *);
 #if PetscDefined(DEVICELANGUAGE_CXX)
 PETSC_INTERN PetscErrorCode PetscDeviceContextRecordMemoryAccess_Private(PetscDeviceContext, PetscObjectId);
 #endif

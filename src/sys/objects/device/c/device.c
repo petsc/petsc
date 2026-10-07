@@ -230,10 +230,15 @@ PetscErrorCode PetscDeviceContextGetStreamHandle(PETSC_UNUSED PetscDeviceContext
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDeviceAllocate_Private(PETSC_UNUSED PetscDeviceContext dctx, PetscBool clear, PETSC_UNUSED PetscMemType mtype, size_t n, PETSC_UNUSED size_t alignment, void **PETSC_RESTRICT ptr)
+PetscErrorCode PetscDeviceAllocate_Private(PETSC_UNUSED PetscDeviceContext dctx, PetscBool clear, PETSC_UNUSED PetscMemType mtype, size_t n, size_t requested_alignment, size_t type_alignment, void **PETSC_RESTRICT ptr)
 {
+  size_t alignment;
+
   PetscFunctionBegin;
-  PetscAssertPointer(ptr, 6);
+  PetscAssertPointer(ptr, 7);
+  *ptr = NULL;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceGetAllocationAlignment_Private(requested_alignment, type_alignment, PETSC_TRUE, &alignment));
   PetscCall(PetscMallocA(1, clear, __LINE__, PETSC_FUNCTION_NAME, __FILE__, n, ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

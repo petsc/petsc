@@ -69,7 +69,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceConte
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext, void **);
 
 /* memory */
-PETSC_EXTERN PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, void **PETSC_RESTRICT);
+PETSC_EXTERN PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, size_t, void **PETSC_RESTRICT);
 PETSC_EXTERN PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext, void *PETSC_RESTRICT);
 PETSC_EXTERN PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, size_t);
 PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RESTRICT, PetscInt, size_t);
@@ -79,14 +79,15 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 
   Synopsis:
   #include <petscdevice.h>
-  PetscErrorCode PetscDeviceMalloc(PetscDeviceContext dctx, PetscMemType mtype, size_t n, Type **ptr)
+  PetscErrorCode PetscDeviceMalloc(PetscDeviceContext dctx, PetscMemType mtype, size_t n, size_t alignment, Type **ptr)
 
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx  - The `PetscDeviceContext` used to allocate the memory
-. mtype - The type of memory to allocate
-- n     - The amount (in elements) to allocate
++ dctx      - The `PetscDeviceContext` used to allocate the memory, or `NULL` for the null context on the current device
+. mtype     - The type of memory to allocate
+. n         - The amount (in elements) to allocate
+- alignment - The requested alignment in bytes, a positive power of two or `PETSC_DECIDE`
 
   Output Parameter:
 . ptr - The pointer to store the result in
@@ -98,9 +99,35 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 
   If `n` is zero, then `ptr` is set to `PETSC_NULLPTR`.
 
-  This routine falls back to using `PetscMalloc1()` if PETSc was not configured with device
-  support. The user should note that `mtype` is ignored in this case, as `PetscMalloc1()`
-  allocates only host memory.
+  CUDA and HIP contexts allocate `PETSC_MEMTYPE_HOST` memory from a pinned host pool and
+  `PETSC_MEMTYPE_DEVICE` memory from their device pool. There is no separate pinned host
+  memory type. The context selects the backend; `NULL` selects the null context associated
+  with the current device, not a host context.
+
+  If the context has no memory allocation operation, only `PETSC_MEMTYPE_HOST` is supported
+  and allocation uses `PetscMalloc1()`. In the C device-interface fallback, `dctx` and `mtype`
+  are ignored and allocation always uses `PetscMalloc1()`. Backend allocation failures do
+  not trigger a retry with host allocation.
+
+  For CUDA and HIP pools, `PETSC_DECIDE` uses the alignment inferred for the pointed-to type
+  in the calling translation unit. When type inference is unavailable, PETSc uses the alignment
+  of `max_align_t` or `PETSC_MEMALIGN`. An explicit alignment is honored, or increased to the
+  inferred alignment if necessary. This applies to both pinned host and device memory.
+  The alignment inferred from a C complex type may be smaller than that required by the
+  corresponding CUDA or HIP complex type. If the memory will be accessed using the CUDA
+  or HIP type, pass that type's required alignment as `alignment`.
+
+  The `PetscMalloc1()` fallback guarantees `PETSC_MEMALIGN` alignment. An explicit request
+  that does not divide `PETSC_MEMALIGN` produces `PETSC_ERR_SUP`; `PETSC_DECIDE` retains the
+  ordinary host allocation behavior. A zero element count returns `NULL` without allocating.
+
+  Alignment of an allocation does not guarantee the same alignment for interior pointers.
+  For structures shared with device code, the element layout and stride must also agree.
+
+  Allocation, initialization, and pool reuse are ordered on `dctx`, including for pinned host
+  memory. Contexts with `PETSC_STREAM_DEFAULT_WITH_BARRIER` or `PETSC_STREAM_NONBLOCKING_WITH_BARRIER`
+  synchronize before returning. For other stream types, synchronize `dctx` before accessing the
+  contents from the CPU. The alignment argument does not change this synchronization policy.
 
   This routine uses the `sizeof()` of the memory type requested to determine the total memory
   to be allocated, therefore you should not multiply the number of elements requested by the
@@ -110,10 +137,10 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
   PetscInt *arr;
 
   // correct
-  PetscDeviceMalloc(dctx,PETSC_MEMTYPE_DEVICE,n,&arr);
+  PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n, PETSC_DECIDE, &arr);
 
   // incorrect
-  PetscDeviceMalloc(dctx,PETSC_MEMTYPE_DEVICE,n*sizeof(*arr),&arr);
+  PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n * sizeof(*arr), PETSC_DECIDE, &arr);
 .ve
 
   Note result stored `ptr` is immediately valid and the user may freely inspect or manipulate
@@ -122,7 +149,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 .vb
   PetscInt *ptr;
 
-  PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, 20, &ptr);
+  PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, 20, PETSC_DECIDE, &ptr);
 
   PetscInt *sub_ptr = ptr + 10; // OK, no need to synchronize
 
@@ -142,21 +169,22 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 .seealso: `PetscDeviceFree()`, `PetscDeviceCalloc()`, `PetscDeviceArrayCopy()`,
 `PetscDeviceArrayZero()`
 M*/
-#define PetscDeviceMalloc(dctx, mtype, n, ptr) PetscDeviceAllocate_Private((dctx), PETSC_FALSE, (mtype), (size_t)(n) * sizeof(**(ptr)), PETSC_DEVICE_ALIGNOF(**(ptr)), (void **)(ptr))
+#define PetscDeviceMalloc(dctx, mtype, n, alignment, ptr) PetscDeviceAllocate_Private((dctx), PETSC_FALSE, (mtype), (size_t)(n) * sizeof(**(ptr)), (size_t)(alignment), PETSC_DEVICE_ALIGNOF(**(ptr)), (void **)(ptr))
 
 /*MC
   PetscDeviceCalloc - Allocate zeroed device-aware memory
 
   Synopsis:
   #include <petscdevice.h>
-  PetscErrorCode PetscDeviceCalloc(PetscDeviceContext dctx, PetscMemType mtype, size_t n, Type **ptr)
+  PetscErrorCode PetscDeviceCalloc(PetscDeviceContext dctx, PetscMemType mtype, size_t n, size_t alignment, Type **ptr)
 
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx  - The `PetscDeviceContext` used to allocate the memory
-. mtype - The type of memory to allocate
-- n     - The amount (in elements) to allocate
++ dctx      - The `PetscDeviceContext` used to allocate the memory, or `NULL` for the null context on the current device
+. mtype     - The type of memory to allocate
+. n         - The amount (in elements) to allocate
+- alignment - The requested alignment in bytes, a positive power of two or `PETSC_DECIDE`
 
   Output Parameter:
 . ptr - The pointer to store the result in
@@ -164,19 +192,16 @@ M*/
   Level: beginner
 
   Notes:
-  Has identical usage to `PetscDeviceMalloc()` except that the memory is zeroed before it is
-  returned. See `PetscDeviceMalloc()` for further discussion.
-
-  This routine falls back to using `PetscCalloc1()` if PETSc was not configured with device
-  support. The user should note that `mtype` is ignored in this case, as `PetscCalloc1()`
-  allocates only host memory.
+  Has the same allocation, alignment, fallback, and synchronization rules as `PetscDeviceMalloc()`,
+  and additionally queues zero-initialization on `dctx`. Zero-initialization may still be pending
+  when this routine returns. The ordinary host fallback uses `PetscCalloc1()`.
 
 .N ASYNC_API
 
 .seealso: `PetscDeviceFree()`, `PetscDeviceMalloc()`, `PetscDeviceArrayCopy()`,
 `PetscDeviceArrayZero()`
 M*/
-#define PetscDeviceCalloc(dctx, mtype, n, ptr) PetscDeviceAllocate_Private((dctx), PETSC_TRUE, (mtype), (size_t)(n) * sizeof(**(ptr)), PETSC_DEVICE_ALIGNOF(**(ptr)), (void **)(ptr))
+#define PetscDeviceCalloc(dctx, mtype, n, alignment, ptr) PetscDeviceAllocate_Private((dctx), PETSC_TRUE, (mtype), (size_t)(n) * sizeof(**(ptr)), (size_t)(alignment), PETSC_DEVICE_ALIGNOF(**(ptr)), (void **)(ptr))
 
 /*MC
   PetscDeviceFree - Free device-aware memory obtained with  `PetscDeviceMalloc()` or `PetscDeviceCalloc()`
