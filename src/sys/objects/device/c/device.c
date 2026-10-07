@@ -180,6 +180,14 @@ PetscErrorCode PetscDeviceContextSynchronize(PETSC_UNUSED PetscDeviceContext dct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode PetscDeviceContextDelay(PETSC_UNUSED PetscDeviceContext dctx, PetscReal seconds)
+{
+  PetscFunctionBegin;
+  PetscCheck(seconds >= 0 && !PetscIsInfOrNanReal(seconds), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Delay must be finite and nonnegative, got %g", (double)seconds);
+  if (seconds) PetscCall(PetscSleep(seconds));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PetscDeviceContextSetFromOptions(PETSC_UNUSED MPI_Comm comm, PETSC_UNUSED PetscDeviceContext dctx)
 {
   PetscFunctionBegin;

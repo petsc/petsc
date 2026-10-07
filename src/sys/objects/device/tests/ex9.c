@@ -1,4 +1,4 @@
-static const char help[] = "Tests PetscDeviceContextQueryIdle.\n\n";
+static const char help[] = "Tests PetscDeviceContextQueryIdle() and PetscDeviceContextDelay().\n\n";
 
 #include "petscdevicetestcommon.h"
 
@@ -51,9 +51,40 @@ static PetscErrorCode TestQueryIdle(PetscDeviceContext dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestDelay(PetscDeviceContext dctx)
+{
+  PetscDeviceContext other;
+  PetscDeviceType    type;
+  PetscLogDouble     start, end;
+  PetscBool          idle, synchronous;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscDeviceContextDuplicate(dctx, &other));
+  PetscCall(PetscDeviceContextSetStreamType(other, PETSC_STREAM_NONBLOCKING));
+  PetscCall(PetscDeviceContextSetUp(other));
+  PetscCall(PetscDeviceContextGetDeviceType(other, &type));
+  synchronous = (PetscBool)(type == PETSC_DEVICE_HOST);
+  PetscCall(PetscDeviceContextDelay(other, 0));
+  PetscCall(PetscDeviceContextDelay(other, 0.001));
+  PetscCall(PetscDeviceContextSynchronize(other));
+  PetscCall(PetscTime(&start));
+  PetscCall(PetscDeviceContextDelay(other, 0.1));
+  PetscCall(PetscTime(&end));
+  PetscCall(PetscDeviceContextQueryIdle(other, &idle));
+  if (synchronous) {
+    PetscCheck(idle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Context is not idle after a synchronous delay");
+    PetscCheck(end - start >= 0.09, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Synchronous delay returned too early: %g seconds", (double)(end - start));
+  } else PetscCheck(!idle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Delayed device context is unexpectedly idle");
+  PetscCall(PetscDeviceContextSynchronize(other));
+  PetscCall(CheckIdle(other, "synchronizing a delayed context"));
+  PetscCall(PetscDeviceContextDestroy(&other));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx = NULL;
+  PetscDeviceType    type;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -62,6 +93,8 @@ int main(int argc, char *argv[])
   PetscCall(PetscDeviceContextSetStreamType(dctx, PETSC_STREAM_DEFAULT));
   PetscCall(PetscDeviceContextSetUp(dctx));
   PetscCall(TestQueryIdle(dctx));
+  PetscCall(PetscDeviceContextGetDeviceType(dctx, &type));
+  if (type == PETSC_DEVICE_HOST || type == PETSC_DEVICE_CUDA || type == PETSC_DEVICE_HIP) PetscCall(TestDelay(dctx));
   PetscCall(PetscDeviceContextDestroy(&dctx));
 
   PetscCall(TestQueryIdle(NULL));

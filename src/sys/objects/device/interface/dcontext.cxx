@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string> // std::to_string among other things
+#include <cmath>
 
 /* Define the allocator */
 class PetscDeviceContextConstructor : public Petsc::ConstructorInterface<_p_PetscDeviceContext, PetscDeviceContextConstructor> {
@@ -851,6 +852,38 @@ PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
     PetscCall(PetscDeviceContextSyncClearMap_Internal(dctx));
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDeviceContextDelay - Queue a delay on a device context for testing stream ordering
+
+  Not Collective; Asynchronous
+
+  Input Parameters:
++ dctx    - the device context, or `NULL` for the default context
+- seconds - length of the delay in seconds, which must be finite and nonnegative
+
+  Level: developer
+
+  Notes:
+  This routine is intended for tests of asynchronous stream operations. On CUDA and HIP, it
+  queues a host callback after earlier work on `dctx` without waiting for the callback to
+  complete. Work queued later on the same context waits for the callback. Use
+  `PetscDeviceContextSynchronize()` to wait for the delay to finish.
+
+  A host context sleeps before returning. SYCL contexts are not yet supported.
+
+.seealso: `PetscDeviceContextSynchronize()`, `PetscDeviceContextQueryIdle()`, `PetscDeviceContextGetStreamHandle()`
+@*/
+PetscErrorCode PetscDeviceContextDelay(PetscDeviceContext dctx, PetscReal seconds)
+{
+  PetscFunctionBegin;
+  PetscCheck(seconds >= 0 && std::isfinite(static_cast<double>(seconds)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Delay must be finite and nonnegative, got %g", static_cast<double>(seconds));
+  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  if (!seconds) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceContextSetUp(dctx));
+  PetscUseTypeMethod(dctx, delay, seconds);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

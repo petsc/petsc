@@ -46,6 +46,7 @@
 - Move the PETSc memory-management API (`PetscMalloc()`, `PetscFree()`, and related routines) into the new header `petscmem.h`; the API remains available through `petscsys.h`
 - Move the `PetscPreLoad*` functionality into `petscpreload.h`
 - Remove the `--with-serialize-functions` configure option and the associated function-pointer serialization feature (`PETSC_SERIALIZE_FUNCTIONS`)
+- Add `PetscDeviceContextDelay()` to queue a timed host callback for testing CUDA and HIP stream ordering
 
 ```{rubric} Event Logging:
 ```

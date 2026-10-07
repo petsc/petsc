@@ -5,6 +5,9 @@
 #include <petsc/private/logimpl.h>
 
 #include <petsc/private/cpp/array.hpp>
+#include <chrono>
+#include <memory>
+#include <thread>
 
 #include "../segmentedmempool.hpp"
 #include "cupmallocator.hpp"
@@ -74,6 +77,14 @@ public:
 
 private:
   static bool initialized_;
+
+  static void delayCallback_(void *ctx)
+  {
+    std::unique_ptr<PetscReal> seconds(static_cast<PetscReal *>(ctx));
+
+    // A device runtime callback must not touch PETSc's shared debug stack.
+    std::this_thread::sleep_for(std::chrono::duration<PetscReal>(*seconds));
+  }
 
   static std::array<cupmBlasHandle_t, PETSC_DEVICE_MAX_DEVICES>   blashandles_;
   static std::array<cupmSolverHandle_t, PETSC_DEVICE_MAX_DEVICES> solverhandles_;
@@ -201,6 +212,7 @@ public:
   static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept;
   static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept;
   static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
+  static PetscErrorCode delay(PetscDeviceContext, PetscReal) noexcept;
   template <typename Handle_t>
   static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
   template <typename Handle_t>
@@ -249,7 +261,8 @@ public:
     PetscDesignatedInitializer(memset, memSet),
     PetscDesignatedInitializer(createevent, createEvent),
     PetscDesignatedInitializer(recordevent, recordEvent),
-    PetscDesignatedInitializer(waitforevent, waitForEvent)
+    PetscDesignatedInitializer(waitforevent, waitForEvent),
+    PetscDesignatedInitializer(delay, delay)
   };
   // clang-format on
 };
@@ -360,6 +373,19 @@ inline PetscErrorCode DeviceContext<T>::synchronize(PetscDeviceContext dctx) noe
   PetscFunctionBegin;
   PetscCall(query(dctx, &idle));
   if (!idle) PetscCallCUPM(cupmStreamSynchronize(impls_cast_(dctx)->stream.get_stream()));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
+inline PetscErrorCode DeviceContext<T>::delay(PetscDeviceContext dctx, PetscReal seconds) noexcept
+{
+  std::unique_ptr<PetscReal> duration;
+
+  PetscFunctionBegin;
+  PetscCall(check_current_device_(dctx));
+  PetscCallCXX(duration.reset(new PetscReal(seconds)));
+  PetscCallCUPM(cupmLaunchHostFunc(impls_cast_(dctx)->stream.get_stream(), delayCallback_, duration.get()));
+  (void)duration.release();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1,6 +1,8 @@
 #include <petsc/private/deviceimpl.h>
 
 #include <petsc/private/cpp/utility.hpp> // PetscObjectCast()
+#include <chrono>
+#include <thread>
 
 namespace Petsc
 {
@@ -27,6 +29,12 @@ public:
   }
   static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
   static PetscErrorCode synchronize(PetscDeviceContext) noexcept { return PETSC_SUCCESS; }
+  static PetscErrorCode delay(PetscDeviceContext, PetscReal seconds) noexcept
+  {
+    PetscFunctionBegin;
+    PetscCallCXX(std::this_thread::sleep_for(std::chrono::duration<PetscReal>(seconds)));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 
   // clang-format off
   const _DeviceContextOps ops = {
@@ -50,7 +58,8 @@ public:
     PetscDesignatedInitializer(memset, nullptr),
     PetscDesignatedInitializer(createevent, nullptr),
     PetscDesignatedInitializer(recordevent, nullptr),
-    PetscDesignatedInitializer(waitforevent, nullptr)
+    PetscDesignatedInitializer(waitforevent, nullptr),
+    PetscDesignatedInitializer(delay, delay)
   };
   // clang-format on
 };
