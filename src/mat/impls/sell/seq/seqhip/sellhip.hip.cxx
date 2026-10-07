@@ -12,18 +12,18 @@
 #endif
 
 typedef struct {
-  PetscInt   maxallocmat;
-  PetscInt   totalentries;
-  PetscInt  *colidx; /* column index array, device pointer */
-  MatScalar *val;    /* value array, device pointer */
-  PetscInt   totalslices;
-  PetscInt  *sliidx; /* slice index array, device pointer */
-  PetscInt   nonzerostate;
-  PetscInt   kernelchoice;
-  PetscInt   blocky;
-  PetscInt   chunksperblock;
-  PetscInt   totalchunks;
-  PetscInt  *chunk_slice_map; /* starting slice for each chunk, device pointer */
+  PetscInt         maxallocmat;
+  PetscInt         totalentries;
+  PetscInt        *colidx; /* column index array, device pointer */
+  MatScalar       *val;    /* value array, device pointer */
+  PetscInt         totalslices;
+  PetscInt        *sliidx; /* slice index array, device pointer */
+  PetscObjectState nonzerostate;
+  PetscInt         kernelchoice;
+  PetscInt         blocky;
+  PetscInt         chunksperblock;
+  PetscInt         totalchunks;
+  PetscInt        *chunk_slice_map; /* starting slice for each chunk, device pointer */
 } Mat_SeqSELLHIP;
 
 static PetscErrorCode MatSeqSELLHIP_Destroy(Mat_SeqSELLHIP **hipstruct)
@@ -47,7 +47,7 @@ static PetscErrorCode MatSeqSELLHIPCopyToGPU(Mat A)
   PetscFunctionBegin;
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     PetscCall(PetscLogEventBegin(MAT_HIPCopyToGPU, A, 0, 0, 0));
-    if (A->assembled && A->nonzerostate == hipstruct->nonzerostate) {
+    if (hipstruct->sliidx && A->nonzerostate == hipstruct->nonzerostate) {
       /* copy values only */
       PetscCallHIP(hipMemcpy(hipstruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), hipMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
@@ -74,7 +74,8 @@ static PetscErrorCode MatSeqSELLHIPCopyToGPU(Mat A)
     }
     PetscCallHIP(WaitForHIP());
     PetscCall(PetscLogEventEnd(MAT_HIPCopyToGPU, A, 0, 0, 0));
-    A->offloadmask = PETSC_OFFLOAD_BOTH;
+    hipstruct->nonzerostate = A->nonzerostate;
+    A->offloadmask          = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -600,7 +601,7 @@ static PetscErrorCode MatMult_SeqSELLHIP(Mat A, Vec xx, Vec yy)
 
   PetscFunctionBegin;
   PetscCheck(WARP_SIZE % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of WARP_SIZE, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
-  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be less than 32, but the current slice height is %" PetscInt_FMT, sliceheight);
+  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices 2-6 require a slice height of at most 32, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLHIPCopyToGPU(A));
   /* hipstruct may not be available until MatSeqSELLHIPCopyToGPU() is called */
   aval    = hipstruct->val;
@@ -725,9 +726,9 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
   PetscScalar       *z;
   const PetscScalar *y, *x;
   PetscInt           nrows = A->rmap->n, sliceheight = a->sliceheight;
-  MatScalar         *aval    = hipstruct->val;
-  PetscInt          *acolidx = hipstruct->colidx;
-  PetscInt          *sliidx  = hipstruct->sliidx;
+  MatScalar         *aval;
+  PetscInt          *acolidx;
+  PetscInt          *sliidx;
 #if !PetscDefined(USE_COMPLEX)
   PetscReal maxoveravg;
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
@@ -736,8 +737,11 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCheck(WARP_SIZE % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of WARP_SIZE, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
-  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight != sliceheight), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be 16, but the current slice height is %" PetscInt_FMT, sliceheight);
+  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices 2-6 require a slice height of at most 32, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLHIPCopyToGPU(A));
+  aval    = hipstruct->val;
+  acolidx = hipstruct->colidx;
+  sliidx  = hipstruct->sliidx;
   if (a->nz) {
     PetscInt nblocks, blocksize = 512;
     dim3     block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
@@ -944,7 +948,7 @@ static PetscErrorCode MatZeroEntries_SeqSELLHIP(Mat A)
 static PetscErrorCode MatDestroy_SeqSELLHIP(Mat A)
 {
   PetscFunctionBegin;
-  if (A->factortype == MAT_FACTOR_NONE && A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) PetscCall(MatSeqSELLHIP_Destroy((Mat_SeqSELLHIP **)&A->spptr));
+  if (A->factortype == MAT_FACTOR_NONE) PetscCall(MatSeqSELLHIP_Destroy((Mat_SeqSELLHIP **)&A->spptr));
   PetscCall(MatDestroy_SeqSELL(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
