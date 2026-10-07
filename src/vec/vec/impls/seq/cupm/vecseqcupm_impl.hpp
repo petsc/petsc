@@ -7,6 +7,10 @@
 #include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
 #include "../src/sys/objects/device/impls/cupm/kernels.hpp"
 
+#if PetscDefined(USE_COMPLEX)
+  #include <cstring>
+#endif
+
 #include <thrust/transform_reduce.h>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
@@ -958,34 +962,23 @@ inline PetscErrorCode VecSeq_CUPM<T>::SetStdBasis(Vec s, PetscInt i) noexcept
 namespace kernels
 {
 
+template <std::size_t N>
+struct MAXPYCoefficients {
+  PetscScalar values[N];
+};
+
 template <typename... Args>
-PETSC_KERNEL_DECL static void MAXPY_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT xptr, const PetscScalar *PETSC_RESTRICT aptr, Args... yptr)
+PETSC_KERNEL_DECL static void MAXPY_kernel(const PetscInt size, PetscScalar *PETSC_RESTRICT xptr, const MAXPYCoefficients<sizeof...(Args)> alpha, Args... yptr)
 {
   constexpr int      N        = sizeof...(Args);
-  const auto         tx       = threadIdx.x;
   const PetscScalar *yptr_p[] = {yptr...};
 
-  PETSC_SHAREDMEM_DECL PetscScalar aptr_shmem[N];
-
-  // load a to shared memory
-  if (tx < N) aptr_shmem[tx] = aptr[tx];
-  __syncthreads();
-
   ::Petsc::device::cupm::kernels::util::grid_stride_1D(size, [&](PetscInt i) {
-  // these may look the same but give different results!
-#if 0
-    PetscScalar sum = 0.0;
-
-  #pragma unroll
-    for (auto j = 0; j < N; ++j) sum += aptr_shmem[j]*yptr_p[j][i];
-    xptr[i] += sum;
-#else
     auto sum = xptr[i];
 
-  #pragma unroll
-    for (auto j = 0; j < N; ++j) sum += aptr_shmem[j] * yptr_p[j][i];
+#pragma unroll
+    for (auto j = 0; j < N; ++j) sum += alpha.values[j] * yptr_p[j][i];
     xptr[i] = sum;
-#endif
   });
   return;
 }
@@ -1011,13 +1004,24 @@ template <device::cupm::DeviceType T>
 template <std::size_t... Idx>
 inline PetscErrorCode VecSeq_CUPM<T>::MAXPY_kernel_dispatch_(PetscDeviceContext dctx, cupmStream_t stream, PetscScalar *xptr, const PetscScalar *aptr, const Vec *yin, PetscInt size, util::index_sequence<Idx...>) noexcept
 {
+#if PetscDefined(USE_COMPLEX)
+  kernels::MAXPYCoefficients<sizeof...(Idx)> alpha;
+#else
+  const kernels::MAXPYCoefficients<sizeof...(Idx)> alpha{{aptr[Idx]...}};
+#endif
+
   PetscFunctionBegin;
+#if PetscDefined(USE_COMPLEX)
+  /* C complex coefficients may have weaker alignment than the CUDA/HIP complex type.
+     Use a byte copy: PetscArraycpy() can select a typed scalar copy at configure time. */
+  std::memcpy(static_cast<void *>(alpha.values), static_cast<const void *>(aptr), sizeof(alpha.values));
+#endif
   // clang-format off
   PetscCall(
     PetscCUPMLaunchKernel1D(
       size, 0, stream,
       kernels::MAXPY_kernel<typename detail::repeat_type<const PetscScalar *, Idx>::type...>,
-      size, xptr, aptr, DeviceArrayRead(dctx, yin[Idx]).data()...
+      size, xptr, alpha, DeviceArrayRead(dctx, yin[Idx]).data()...
     )
   );
   // clang-format on
@@ -1051,46 +1055,42 @@ inline PetscErrorCode VecSeq_CUPM<T>::MAXPYAsync(Vec xin, PetscInt nv, const Pet
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(GetHandlesFrom_(dctx, &stream));
   {
-    const auto   xptr    = DeviceArrayReadWrite(dctx, xin);
-    PetscScalar *d_alpha = nullptr;
-    PetscInt     yidx    = 0;
+    const auto xptr = DeviceArrayReadWrite(dctx, xin);
+    PetscInt   yidx = 0;
 
     // placement of early-return is deliberate, we would like to capture the
     // DeviceArrayReadWrite() call (which calls PetscObjectStateIncreate()) before we bail
     if (!n || !nv) PetscFunctionReturn(PETSC_SUCCESS);
-    PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nv, &d_alpha));
-    PetscCall(PetscCUPMMemcpyAsync(d_alpha, alpha, nv, cupmMemcpyHostToDevice, stream));
     PetscCall(PetscLogGpuTimeBegin());
     do {
       switch (nv - yidx) {
       case 7:
-        PetscCall(MAXPY_kernel_dispatch_<7>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<7>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 6:
-        PetscCall(MAXPY_kernel_dispatch_<6>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<6>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 5:
-        PetscCall(MAXPY_kernel_dispatch_<5>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<5>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 4:
-        PetscCall(MAXPY_kernel_dispatch_<4>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<4>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 3:
-        PetscCall(MAXPY_kernel_dispatch_<3>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<3>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 2:
-        PetscCall(MAXPY_kernel_dispatch_<2>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<2>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       case 1:
-        PetscCall(MAXPY_kernel_dispatch_<1>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<1>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       default: // 8 or more
-        PetscCall(MAXPY_kernel_dispatch_<8>(dctx, stream, xptr.data(), d_alpha, yin, n, yidx));
+        PetscCall(MAXPY_kernel_dispatch_<8>(dctx, stream, xptr.data(), alpha, yin, n, yidx));
         break;
       }
     } while (yidx < nv);
     PetscCall(PetscLogGpuTimeEnd());
-    PetscCall(PetscDeviceFree(dctx, d_alpha));
     PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   }
   PetscCall(PetscLogGpuFlops(nv * 2 * n));
