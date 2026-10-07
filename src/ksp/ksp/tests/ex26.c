@@ -42,9 +42,31 @@ typedef struct {
 
 static PetscErrorCode FormJacobian_Grid(GridCtx *, Mat);
 
+/* Copies A into a new dense matrix of the same type, VecType, and layout, stored with a leading dimension larger by shift */
+static PetscErrorCode DuplicateWithLDA(Mat A, PetscInt shift, Mat *B)
+{
+  MatType  type;
+  VecType  vtype;
+  PetscInt m, n, M, N;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetType(A, &type));
+  PetscCall(MatGetVecType(A, &vtype));
+  PetscCall(MatGetLocalSize(A, &m, &n));
+  PetscCall(MatGetSize(A, &M, &N));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
+  PetscCall(MatSetSizes(*B, m, n, M, N));
+  PetscCall(MatSetType(*B, type));
+  PetscCall(MatSetVecType(*B, vtype));
+  PetscCall(MatDenseSetLDA(*B, m + shift));
+  PetscCall(MatSetUp(*B));
+  PetscCall(MatCopy(A, *B, SAME_NONZERO_PATTERN));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1;
+  PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1, lda_shift = 0;
   PetscScalar one = 1.0;
   Mat         A, B, X;
   GridCtx     fine_ctx;
@@ -63,6 +85,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &Ny, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rand", &Brand, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-lda_shift", &lda_shift, NULL));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n", fine_ctx.mx, fine_ctx.my));
 
   /* Set up distributed array for fine grid */
@@ -131,6 +154,23 @@ int main(int argc, char **argv)
     }
     PetscCall(MatDenseRestoreArrayRead(X, &XX));
     PetscCall(VecRestoreArrayRead(fine_ctx.x, &xx));
+  }
+
+  if (lda_shift > 0) { /* solve again with the same blocks stored with a larger leading dimension, which the solver must handle with what it kept from the first solve */
+    Mat       B2, X2;
+    PetscReal norm, err;
+
+    PetscCall(DuplicateWithLDA(B, lda_shift, &B2));
+    PetscCall(DuplicateWithLDA(X, lda_shift, &X2));
+    PetscCall(MatZeroEntries(X2));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B2, X2));
+    else PetscCall(KSPMatSolve(ksp, B2, X2));
+    PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(X2, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution with a larger leading dimension has error %g relative to %g", (double)err, (double)norm);
+    PetscCall(MatDestroy(&B2));
+    PetscCall(MatDestroy(&X2));
   }
 
   /* free data structures */
@@ -250,6 +290,38 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       suffix: matcycles_richardson_guess
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -ksp_initial_guess_nonzero -ksp_norm_type unpreconditioned -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      # a second solve with blocks of a larger leading dimension
+      suffix: matcycles_lda
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}shared output} -lda_shift 3
+
+    # the same on the device, solving the whole block at once so that the kept products get the new leading dimension
+    testset:
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -lda_shift 3
+      output_file: output/ex26_matcycles_lda.out
+
+      test:
+        suffix: matcycles_lda_kokkos_cuda
+        requires: cuda kokkos_kernels
+        args: -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densecuda -rhs_mat_vec_type kokkos
+
+      test:
+        suffix: matcycles_lda_cuda
+        requires: cuda
+        args: -dm_mat_type aijcusparse -dm_vec_type cuda -rhs_mat_type densecuda
+
+      test:
+        suffix: matcycles_lda_kokkos_hip
+        requires: hip kokkos_kernels
+        args: -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densehip -rhs_mat_vec_type kokkos
+
+      test:
+        suffix: matcycles_lda_hip
+        requires: hip
+        args: -dm_mat_type aijhipsparse -dm_vec_type hip -rhs_mat_type densehip
 
     test:
       suffix: matcycles_richardson_transpose

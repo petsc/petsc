@@ -194,6 +194,7 @@ typedef struct {
   PetscInt      nsends, nrecvs;
   MPI_Datatype *stype, *rtype;
   PetscInt      blda;
+  PetscObjectId bid;   /* identity of the last dense input checked to have the leading dimension blda */
   PetscSF       sf[2]; /* strided scatters for ncols[0] = workB->cmap->n columns and ncols[1] = remainder columns of the batched path, NULL if unused */
   PetscInt      ncols[2];
   PetscBool     ondevice; /* workB has a device type, use sf[] instead of the MPI derived datatypes */
@@ -205,6 +206,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter, PetscInt, PetscInt, PetscInt, Mat, Mat, MPIAIJ_MPIDense *, PetscInt *, PetscInt *);
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *);
+PETSC_INTERN PetscErrorCode MatMPIDenseScatterUpdateLDA_Private(VecScatter, PetscInt, Mat, Mat, MPIAIJ_MPIDense *);
 PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter, PetscInt, PetscInt, Mat, MPIAIJ_MPIDense *, Mat, Mat);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */

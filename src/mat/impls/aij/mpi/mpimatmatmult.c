@@ -458,6 +458,7 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
   PetscCall(MatDenseGetLDA(B, &contents->blda));
+  PetscCall(PetscObjectGetId((PetscObject)B, &contents->bid));
 
   /* Create column block of B and C for memory scalability when BN is too large */
   /* Estimate Bbn, column size of Bb */
@@ -518,6 +519,31 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
   PetscCall(MatMPIDenseScatterSetUpLDA_Private(ctx, bs, B, contents));
   if (batchSize) *batchSize = Bbn;
   if (numBatches) *numBatches = numBb;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Recreates the parts of the scatter that depend on the leading dimension when a new input B has a different one */
+PETSC_INTERN PetscErrorCode MatMPIDenseScatterUpdateLDA_Private(VecScatter ctx, PetscInt bs, Mat B, Mat C, MPIAIJ_MPIDense *contents)
+{
+  PetscObjectId id;
+  PetscInt      blda;
+  PetscBool     update;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetId((PetscObject)B, &id));
+  if (id == contents->bid) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatDenseGetLDA(B, &blda));
+  update = (PetscBool)(blda != contents->blda);
+  if (contents->ondevice) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &update, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)C)));
+  if (update) {
+    PetscCall(PetscInfo(C, "Setting up the scatter again for a dense input with leading dimension %" PetscInt_FMT " instead of %" PetscInt_FMT "\n", blda, contents->blda));
+    PetscCall(PetscSFDestroy(&contents->sf[0]));
+    PetscCall(PetscSFDestroy(&contents->sf[1]));
+    for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
+    contents->blda = blda;
+    PetscCall(MatMPIDenseScatterSetUpLDA_Private(ctx, bs, B, contents));
+  }
+  contents->bid = id;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -760,6 +786,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
   /* The device scatter is non-blocking, so when there are no column batches start it before the product of the
      diagonal block below to overlap the communication with that product, as MatMult_MPIAIJ() does. The host
      scatter is blocking, so it is left where it is */
+  PetscCall(MatMPIDenseScatterUpdateLDA_Private(aij->Mvctx, 1, B, C, contents));
   overlap = (PetscBool)(contents->ondevice && contents->workB->cmap->n == B->cmap->N);
   if (overlap) PetscCall(MatMPIDenseScatterBegin(A, B, contents->workB, C));
   /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
