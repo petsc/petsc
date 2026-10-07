@@ -853,12 +853,13 @@ static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
 }
 
 template <bool transpose>
-static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscBool *reset)
+static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscErrorCode (**reset)(Mat))
 {
   Mat            A, *ptr;
   PetscScalar   *array;
   PetscInt       m, M, N, prev = 0;
   PetscContainer container = nullptr;
+  PetscMemType   type;
 
   PetscFunctionBegin;
   PetscCall(KSPGetOperators(ctx->ksp, &A, nullptr));
@@ -879,14 +880,12 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscB
     PetscCall(VecGetLocalSize(ctx->v[0][0], &m));
     PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)Y), A->defaultvectype, m, PETSC_DECIDE, PETSC_DECIDE, N, PETSC_DECIDE, nullptr, ctx->V));
     if (N != prev) {
-      PetscMemType mtype;
-
       PetscCall(MatDestroy(ctx->V + 1));
       PetscCall(MatDestroy(ctx->V + 2));
       PetscCall(MatGetLocalSize(Y, &m, nullptr));
       PetscCall(MatGetSize(Y, &M, nullptr));
-      PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, &mtype));
-      PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)Y), mtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED ? array : nullptr, ctx->V + 1));
+      PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, &type));
+      PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)Y), type, m, PETSC_DECIDE, M, N, PETSC_DECIDE, ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED ? array : nullptr, ctx->V + 1));
       PetscCall(MatDenseRestoreArrayWriteAndMemType(ctx->V[0], &array));
       PetscCall(MatDuplicate(ctx->V[1], MAT_DO_NOT_COPY_VALUES, ctx->V + 2));
       PetscCall(MatProductCreateWithMat(A, !transpose ? Y : ctx->V[2], nullptr, ctx->V[1]));
@@ -908,10 +907,24 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscB
   if (N == prev || container) { /* when MatProduct container is attached, always need to MatProductReplaceMats() since KSPHPDDM may have replaced the Mat as well */
     PetscCall(MatProductReplaceMats(nullptr, !transpose ? Y : ctx->V[2], nullptr, ctx->V[1]));
     if (container && ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      PetscCall(MatDenseGetArrayWrite(ctx->V[0], &array));
-      PetscCall(MatDensePlaceArray(ctx->V[1], array));
-      PetscCall(MatDenseRestoreArrayWrite(ctx->V[0], &array));
-      *reset = PETSC_TRUE;
+      PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, &type));
+      if (PetscMemTypeHost(type)) {
+        PetscCall(MatDensePlaceArray(ctx->V[1], array));
+        *reset = MatDenseResetArray;
+      }
+#if PetscDefined(HAVE_CUDA)
+      else if (PetscMemTypeCUDA(type)) {
+        PetscCall(MatDenseCUDAPlaceArray(ctx->V[1], array));
+        *reset = MatDenseCUDAResetArray;
+      }
+#endif
+#if PetscDefined(HAVE_HIP)
+      else if (PetscMemTypeHIP(type)) {
+        PetscCall(MatDenseHIPPlaceArray(ctx->V[1], array));
+        *reset = MatDenseHIPResetArray;
+      }
+#endif
+      PetscCall(MatDenseRestoreArrayWriteAndMemType(ctx->V[0], &array));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -934,7 +947,7 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscB
 static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
 {
   PC_HPDDM_Level *ctx;
-  PetscBool       reset = PETSC_FALSE;
+  PetscErrorCode (*reset)(Mat) = nullptr;
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, static_cast<void *>(&ctx)));
@@ -968,7 +981,7 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
       PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
     }
   }
-  if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
+  if (reset) PetscCall((*reset)(ctx->V[1]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1025,7 +1038,7 @@ static PetscErrorCode PCApplyTranspose_HPDDMShell(PC pc, Vec x, Vec y)
 static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
 {
   PC_HPDDM_Level *ctx;
-  PetscBool       reset = PETSC_FALSE;
+  PetscErrorCode (*reset)(Mat) = nullptr;
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, static_cast<void *>(&ctx)));
@@ -1053,7 +1066,7 @@ static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
       PetscCall(MatProductNumeric(ctx->V[1]));
       /* ctx->V[0] and ctx->V[1] memory regions overlap, so need to copy to ctx->V[2] and switch array */
       PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-      if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
+      if (reset) PetscCall((*reset)(ctx->V[1]));
       PetscCall(PCHPDDMDeflate_Private<true>(pc, ctx->V[2], ctx->V[2]));
       PetscCall(MatAXPY(Y, -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
     } else {
@@ -1069,7 +1082,7 @@ static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
         PetscCall(PCMatApplyTranspose(ctx->pc, X, ctx->V[1]));
         PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
       }
-      if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
+      if (reset) PetscCall((*reset)(ctx->V[1]));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
