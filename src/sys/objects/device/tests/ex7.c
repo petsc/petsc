@@ -586,16 +586,133 @@ static PetscErrorCode TestAlignmentOrdering(PetscDeviceContext dctx, PetscMemTyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Both helpers call the context's backend methods directly to leave memory accesses untracked.
+  PetscDeviceMemset() and PetscDeviceMemcpy() would register these accesses and make later
+  operations wait automatically, hiding missing explicit PetscDeviceContextWaitForContext()
+  calls in TestContextOrdering().
+*/
+static PetscErrorCode SetDeviceBytes(PetscDeviceContext dctx, void *ptr, PetscInt value, size_t n)
+{
+  PetscFunctionBeginUser;
+  PetscUseTypeMethod(dctx, memset, PETSC_MEMTYPE_DEVICE, ptr, value, n);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode CopyDeviceBytesToHost(PetscDeviceContext dctx, void *host, const void *ptr, size_t n)
+{
+  PetscFunctionBeginUser;
+  PetscUseTypeMethod(dctx, memcopy, host, ptr, n, PETSC_DEVICE_COPY_DTOH);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestContextOrdering(PetscDeviceContext saved)
+{
+  const PetscInt     n = 32769;
+  PetscDeviceContext current, other, standard, contexts[3];
+  PetscDeviceType    dtype;
+  unsigned char     *src, *dest, *host;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscDeviceContextGetDeviceType(saved, &dtype));
+  if (dtype != PETSC_DEVICE_CUDA && dtype != PETSC_DEVICE_HIP) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceContextDuplicate(saved, &current));
+  PetscCall(PetscDeviceContextSetStreamType(current, PETSC_STREAM_NONBLOCKING));
+  PetscCall(PetscDeviceContextSetUp(current));
+  PetscCall(PetscDeviceContextDuplicate(current, &other));
+  standard = PetscDeviceContextDefault;
+  PetscCall(PetscDeviceContextSetCurrentContext(current));
+  contexts[0] = standard;
+  contexts[1] = current;
+  contexts[2] = other;
+  PetscCall(PetscDeviceMalloc(current, PETSC_MEMTYPE_HOST, n, 128, &host));
+
+  // Memory operations must use the supplied context even when another context is current.
+  PetscCall(PetscDeviceCalloc(standard, PETSC_MEMTYPE_HOST, n, 128, &src));
+  PetscCall(PetscDeviceContextSynchronize(standard));
+  PetscCall(PetscDeviceContextSynchronize(current));
+  PetscCall(PetscDeviceContextDelay(current, 0.05));
+  PetscCall(PetscDeviceMemset(standard, src, 73, n));
+  PetscCall(PetscDeviceContextSynchronize(standard));
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(src[i] == 73, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Synchronization did not complete the explicit-context memory operation at byte %" PetscInt_FMT " (got %u)", i, (unsigned)src[i]);
+  PetscCall(PetscDeviceContextSynchronize(current));
+  PetscCall(PetscDeviceFree(standard, src));
+
+  // Track dependencies between a default-stream context and two nonblocking contexts.
+  for (PetscInt p = 0; p < 3; ++p) {
+    for (PetscInt c = 0; c < 3; ++c) {
+      PetscDeviceContext alloc = contexts[(p + c) % 3], producer = contexts[p], consumer = contexts[c];
+      PetscInt           value = 17 + 3 * p + c;
+
+      PetscCall(PetscDeviceCalloc(alloc, PETSC_MEMTYPE_DEVICE, n, 128, &src));
+      PetscCall(PetscDeviceMalloc(alloc, PETSC_MEMTYPE_DEVICE, n, 128, &dest));
+      PetscCall(PetscDeviceContextSynchronize(alloc));
+      PetscCall(PetscDeviceContextDelay(producer, 0.02));
+      PetscCall(PetscDeviceMemset(producer, src, value, n));
+      PetscCall(PetscDeviceContextDelay(consumer, 0.02));
+      PetscCall(PetscDeviceArrayCopy(consumer, dest, src, n));
+      PetscCall(PetscDeviceFree(producer, src));
+      PetscCall(PetscDeviceMalloc(producer, PETSC_MEMTYPE_DEVICE, n, 128, &src));
+      PetscCall(PetscDeviceMemset(producer, src, 99, n));
+      PetscCall(PetscDeviceArrayCopy(consumer, host, dest, n));
+      PetscCall(PetscDeviceContextSynchronize(consumer));
+      for (PetscInt i = 0; i < n; ++i) PetscCheck(host[i] == value, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Tracked transfer %" PetscInt_FMT " -> %" PetscInt_FMT " corrupted byte %" PetscInt_FMT " (got %u)", p, c, i, (unsigned)host[i]);
+      PetscCall(PetscDeviceFree(alloc, src));
+      PetscCall(PetscDeviceFree(alloc, dest));
+    }
+  }
+  for (PetscInt c = 0; c < 3; ++c) PetscCall(PetscDeviceContextSynchronize(contexts[c]));
+
+  // Warm reuse before testing allocation on standard followed by an untracked write on current.
+  PetscCall(PetscDeviceMalloc(standard, PETSC_MEMTYPE_DEVICE, n, 128, &src));
+  PetscCall(PetscDeviceFree(standard, src));
+  PetscCall(PetscDeviceContextSynchronize(standard));
+  PetscCall(PetscDeviceContextDelay(standard, 0.05));
+  PetscCall(PetscDeviceCalloc(standard, PETSC_MEMTYPE_DEVICE, n, 128, &src));
+  PetscCall(PetscDeviceContextWaitForContext(current, standard));
+  PetscCall(SetDeviceBytes(current, src, 63, n));
+  PetscCall(PetscDeviceArrayCopy(current, host, src, n));
+  PetscCall(PetscDeviceContextSynchronize(current));
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(host[i] == 63, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Allocation-to-raw-write ordering corrupted byte %" PetscInt_FMT " (got %u)", i, (unsigned)host[i]);
+
+  // A raw producer is not registered with memory tracking, so copying on standard needs a wait.
+  PetscCall(PetscDeviceContextDelay(current, 0.05));
+  PetscCall(SetDeviceBytes(current, src, 37, n));
+  PetscCall(PetscDeviceContextWaitForContext(standard, current));
+  PetscCall(PetscDeviceArrayCopy(standard, host, src, n));
+  PetscCall(PetscDeviceContextSynchronize(standard));
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(host[i] == 37, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Raw-write-to-copy ordering corrupted byte %" PetscInt_FMT " (got %u)", i, (unsigned)host[i]);
+
+  // Releasing and reusing on standard must also follow an untracked read on current.
+  PetscCall(PetscDeviceContextDelay(current, 0.05));
+  PetscCall(CopyDeviceBytesToHost(current, host, src, n));
+  PetscCall(PetscDeviceContextWaitForContext(standard, current));
+  PetscCall(PetscDeviceFree(standard, src));
+  PetscCall(PetscDeviceMalloc(standard, PETSC_MEMTYPE_DEVICE, n, 128, &src));
+  PetscCall(PetscDeviceMemset(standard, src, 99, n));
+  PetscCall(PetscDeviceContextSynchronize(standard));
+  PetscCall(PetscDeviceContextSynchronize(current));
+  for (PetscInt i = 0; i < n; ++i) PetscCheck(host[i] == 37, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Raw-read-to-reuse ordering corrupted byte %" PetscInt_FMT " (got %u)", i, (unsigned)host[i]);
+  PetscCall(PetscDeviceFree(standard, src));
+  PetscCall(PetscDeviceFree(current, host));
+  for (PetscInt c = 0; c < 3; ++c) PetscCall(PetscDeviceContextSynchronize(contexts[c]));
+  PetscCall(PetscDeviceContextSetCurrentContext(saved));
+  PetscCall(PetscDeviceContextDestroy(&other));
+  PetscCall(PetscDeviceContextDestroy(&current));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
   PetscRandom        rand;
-  PetscBool          test_alignment = PETSC_FALSE, test_stream_types = PETSC_FALSE, test_pinned_reuse = PETSC_FALSE, test_memory_access = PETSC_FALSE;
+  PetscBool          test_alignment = PETSC_FALSE, test_context_policy = PETSC_FALSE, test_stream_types = PETSC_FALSE, test_pinned_reuse = PETSC_FALSE, test_memory_access = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_alignment", &test_alignment, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_context_policy", &test_context_policy, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_stream_types", &test_stream_types, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_pinned_reuse", &test_pinned_reuse, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_memory_access", &test_memory_access, NULL));
@@ -609,6 +726,9 @@ int main(int argc, char *argv[])
   } else if (test_memory_access) {
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(TestMemoryAccessOrdering(dctx));
+  } else if (test_context_policy) {
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(TestContextOrdering(dctx));
   } else if (test_alignment) {
     PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(TestTypeAlignment(dctx));
@@ -697,6 +817,18 @@ int main(int argc, char *argv[])
       args: -default_device_type cuda
     test:
       suffix: stream_types_hip
+      requires: hip
+      args: -default_device_type hip
+
+  testset:
+    args: -test_context_policy
+    output_file: output/ExitSuccess.out
+    test:
+      suffix: context_policy_cuda
+      requires: cuda
+      args: -default_device_type cuda
+    test:
+      suffix: context_policy_hip
       requires: hip
       args: -default_device_type hip
 

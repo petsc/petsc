@@ -423,6 +423,84 @@ static PetscErrorCode TestRandom(Vec x, PetscDeviceType type, PetscDeviceContext
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestPlacedAllocation(Vec x, PetscDeviceType type, PetscDeviceContext current)
+{
+  Vec                y;
+  PetscDeviceContext alloc, standard;
+  PetscScalar       *p, *host;
+  const PetscScalar *a;
+  PetscInt           n;
+
+  PetscFunctionBeginUser;
+  PetscCall(VecGetLocalSize(x, &n));
+  PetscCall(VecDuplicate(x, &y));
+  PetscCall(PetscDeviceContextDuplicate(current, &standard));
+  PetscCall(PetscDeviceContextSetStreamType(standard, PETSC_STREAM_DEFAULT));
+  PetscCall(PetscDeviceContextSetUp(standard));
+  for (PetscInt pass = 0; pass < 4; ++pass) {
+    PetscBool cross = (PetscBool)(pass % 2);
+
+    alloc = cross ? standard : current;
+    PetscCall(VecSet(x, 1));
+    PetscCall(VecSet(y, 1));
+    PetscCall(PetscDeviceMalloc(alloc, PETSC_MEMTYPE_HOST, n, sizeof(PetscScalar), &host));
+    PetscCall(PetscDeviceMalloc(alloc, PETSC_MEMTYPE_DEVICE, n, sizeof(PetscScalar), &p));
+    PetscCall(PetscDeviceFree(alloc, p));
+    PetscCall(PetscDeviceContextSynchronize(alloc));
+    PetscCall(PetscDeviceContextSynchronize(current));
+
+    // Order allocation and initialization before Vec uses the placed array.
+    PetscCall(PetscDeviceContextDelay(alloc, 0.05));
+    if (pass < 2) PetscCall(PetscDeviceMalloc(alloc, PETSC_MEMTYPE_DEVICE, n, sizeof(PetscScalar), &p));
+    else PetscCall(PetscDeviceCalloc(alloc, PETSC_MEMTYPE_DEVICE, n, sizeof(PetscScalar), &p));
+    if (cross) PetscCall(PetscDeviceContextWaitForContext(current, alloc));
+#if PetscDefined(HAVE_CUDA)
+    if (type == PETSC_DEVICE_CUDA) PetscCall(VecCUDAPlaceArray(x, p));
+#endif
+#if PetscDefined(HAVE_HIP)
+    if (type == PETSC_DEVICE_HIP) PetscCall(VecHIPPlaceArray(x, p));
+#endif
+    PetscCall(VecSet(x, 3));
+    PetscCall(PetscDeviceContextSynchronize(current));
+    PetscCall(PetscDeviceContextSynchronize(alloc));
+    PetscCall(VecGetArrayRead(x, &a));
+    for (PetscInt i = 0; i < n; ++i) PetscCheck(a[i] == 3, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Allocation then VecSet(): expected 3 at entry %" PetscInt_FMT ", got %g", i, (double)PetscRealPart(a[i]));
+    PetscCall(VecRestoreArrayRead(x, &a));
+
+    // Vec writes must complete before a copy on another context reads the buffer.
+    PetscCall(PetscDeviceContextDelay(current, 0.05));
+    PetscCall(VecSet(x, 7));
+    if (cross) PetscCall(PetscDeviceContextWaitForContext(alloc, current));
+    PetscCall(PetscDeviceArrayCopy(alloc, host, p, n));
+    PetscCall(PetscDeviceContextSynchronize(alloc));
+    for (PetscInt i = 0; i < n; ++i) PetscCheck(host[i] == 7, PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecSet() then memory copy: expected 7 at entry %" PetscInt_FMT ", got %g", i, (double)PetscRealPart(host[i]));
+
+    // Resetting the array does not complete queued Vec reads before pool reuse.
+    PetscCall(PetscDeviceContextDelay(current, 0.05));
+    PetscCall(VecCopy(x, y));
+#if PetscDefined(HAVE_CUDA)
+    if (type == PETSC_DEVICE_CUDA) PetscCall(VecCUDAResetArray(x));
+#endif
+#if PetscDefined(HAVE_HIP)
+    if (type == PETSC_DEVICE_HIP) PetscCall(VecHIPResetArray(x));
+#endif
+    if (cross) PetscCall(PetscDeviceContextWaitForContext(alloc, current));
+    PetscCall(PetscDeviceFree(alloc, p));
+    PetscCall(PetscDeviceCalloc(alloc, PETSC_MEMTYPE_DEVICE, n, sizeof(PetscScalar), &p));
+    PetscCall(PetscDeviceContextSynchronize(alloc));
+    PetscCall(PetscDeviceContextSynchronize(current));
+    PetscCall(VecGetArrayRead(y, &a));
+    for (PetscInt i = 0; i < n; ++i) PetscCheck(a[i] == 7, PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecCopy() then memory reuse: expected 7 at entry %" PetscInt_FMT ", got %g", i, (double)PetscRealPart(a[i]));
+    PetscCall(VecRestoreArrayRead(y, &a));
+    PetscCall(PetscDeviceFree(alloc, p));
+    PetscCall(PetscDeviceFree(alloc, host));
+    PetscCall(PetscDeviceContextSynchronize(alloc));
+  }
+  PetscCall(PetscDeviceContextDestroy(&standard));
+  PetscCall(VecDestroy(&y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   Vec                   x;
@@ -431,12 +509,13 @@ int main(int argc, char **argv)
   PetscDeviceType       type;
   const PetscStreamType streams[] = {PETSC_STREAM_NONBLOCKING, PETSC_STREAM_NONBLOCKING_WITH_BARRIER};
   PetscMPIInt           rank;
-  PetscBool             empty = PETSC_FALSE;
+  PetscBool             empty = PETSC_FALSE, placed = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-empty_rank", &empty, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_placed_allocation", &placed, NULL));
   PetscCall(PetscDeviceContextGetCurrentContext(&saved));
   PetscCall(PetscDeviceContextGetDevice(saved, &device));
   PetscCall(PetscDeviceGetType(device, &type));
@@ -446,13 +525,16 @@ int main(int argc, char **argv)
     PetscCall(PetscDeviceContextSetUp(current));
     PetscCall(PetscDeviceContextSetCurrentContext(current));
     PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
-    PetscCall(VecSetSizes(x, empty && rank ? 0 : 4, PETSC_DECIDE));
+    PetscCall(VecSetSizes(x, empty && rank ? 0 : (placed ? 32769 : 4), PETSC_DECIDE));
     PetscCall(VecSetFromOptions(x));
-    PetscCall(TestMAXPYCoefficients(x, current));
-    PetscCall(TestOperations(x, type, current));
-    PetscCall(TestExplicitBackendContext(x, type, current));
-    PetscCall(TestDeviceArrays(x, type, current));
-    PetscCall(TestRandom(x, type, current, saved));
+    if (placed) PetscCall(TestPlacedAllocation(x, type, current));
+    else {
+      PetscCall(TestMAXPYCoefficients(x, current));
+      PetscCall(TestOperations(x, type, current));
+      PetscCall(TestExplicitBackendContext(x, type, current));
+      PetscCall(TestDeviceArrays(x, type, current));
+      PetscCall(TestRandom(x, type, current, saved));
+    }
     PetscCall(VecDestroy(&x));
     PetscCall(PetscDeviceContextSetCurrentContext(saved));
     PetscCall(PetscDeviceContextDestroy(&current));
@@ -487,6 +569,32 @@ int main(int argc, char **argv)
     suffix: hip_mpi
     nsize: 2
     args: -vec_type mpihip -empty_rank {{0 1}}
+    output_file: output/empty.out
+
+  test:
+    requires: cuda
+    suffix: cuda_placed_allocation
+    args: -vec_type seqcuda -test_placed_allocation
+    output_file: output/empty.out
+
+  test:
+    requires: cuda
+    suffix: cuda_mpi_placed_allocation
+    nsize: 2
+    args: -vec_type mpicuda -test_placed_allocation -empty_rank {{0 1}}
+    output_file: output/empty.out
+
+  test:
+    requires: hip
+    suffix: hip_placed_allocation
+    args: -vec_type seqhip -test_placed_allocation
+    output_file: output/empty.out
+
+  test:
+    requires: hip
+    suffix: hip_mpi_placed_allocation
+    nsize: 2
+    args: -vec_type mpihip -test_placed_allocation -empty_rank {{0 1}}
     output_file: output/empty.out
 
 TEST*/
