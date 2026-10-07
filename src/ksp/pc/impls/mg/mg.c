@@ -688,6 +688,24 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
     PetscCall(PCMGFCycle_Private(pc, mglevels, transpose, matapp));
   }
   if (mg->stageApply) PetscCall(PetscLogStagePop());
+  if (matapp && levels > 1 && mglevels[levels - 1]->W != NULL) {
+    /* bind the kept products that take the caller's X or B as input to W so they do not keep them alive; skipped when the type differs from
+       that of W, since rebinding would redo the symbolic phase */
+    Mat       W = mglevels[levels - 1]->W, R = mglevels[levels - 1]->R, Bc = mglevels[levels - 2]->B, in = NULL;
+    PetscBool flg;
+
+    if (R != NULL) PetscCall(MatProductGetMats(R, NULL, &in, NULL));
+    if (in == X) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)W, ((PetscObject)X)->type_name, &flg));
+      if (flg) PetscCall(MatProductReplaceMats(NULL, W, NULL, R));
+    }
+    in = NULL;
+    if (Bc != NULL) PetscCall(MatProductGetMats(Bc, NULL, &in, NULL));
+    if (in == B) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)W, ((PetscObject)B)->type_name, &flg));
+      if (flg) PetscCall(MatProductReplaceMats(NULL, W, NULL, Bc));
+    }
+  }
   if (!changeu && !changed) {
     if (matapp) {
       mglevels[levels - 1]->B = NULL;

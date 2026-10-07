@@ -1,0 +1,4 @@
+2 Calling MatProduct API with MAT_INITIAL_MATRIX and product type AB
+2 Calling MatProduct API with MAT_INITIAL_MATRIX and product type AtB
+6 Calling MatProduct API with MAT_REUSE_MATRIX with product present and product type AB
+6 Calling MatProduct API with MAT_REUSE_MATRIX with product present and product type AtB

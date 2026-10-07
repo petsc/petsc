@@ -1,4 +1,5 @@
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
+#include <petsc/private/matimpl.h>
 
 /*@
   PCMGResidualDefault - Default routine to calculate the residual.
@@ -64,12 +65,16 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 
   Level: developer
 
+  Note:
+  When `r` is dense, the `MatProduct` computing it stays attached to `r`, so that later calls with the same `mat` and nonzero pattern only run
+  its numeric phase; it keeps references to `mat` and `x` until `MatProductClear()` is called on `r` or `r` is destroyed.
+
 .seealso: [](ch_ksp), `PCMG`, `PCMGSetMatResidual()`, `PCMGResidualDefault()`
 @*/
 PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 {
   PetscFunctionBegin;
-  PetscCall(MatMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_CURRENT, &r));
+  PetscCall(MatProductComputeWithMat_Private(mat, x, MATPRODUCT_AB, r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -89,12 +94,16 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 
   Level: developer
 
+  Note:
+  When `r` is dense, the `MatProduct` computing it stays attached to `r`, so that later calls with the same `mat` and nonzero pattern only run
+  its numeric phase; it keeps references to `mat` and `x` until `MatProductClear()` is called on `r` or `r` is destroyed.
+
 .seealso: [](ch_ksp), `PCMG`, `PCMGSetMatResidualTranspose()`
 @*/
 PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r)
 {
   PetscFunctionBegin;
-  PetscCall(MatTransposeMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_CURRENT, &r));
+  PetscCall(MatProductComputeWithMat_Private(mat, x, MATPRODUCT_AtB, r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
