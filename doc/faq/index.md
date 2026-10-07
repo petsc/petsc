@@ -303,7 +303,7 @@ architecture and level of optimization, a new user must merely:
 
 1. Set `PETSC_DIR` to the full path of the PETSc home
    directory. This will be the location of the `configure` script, and usually called
-   "petsc" or some variation of that (for example, /home/username/petsc).
+   "petsc" or some variation of that (for example, /path/to/petsc).
 2. Set `PETSC_ARCH`, which indicates the configuration on which PETSc will be
    used. Note that `$PETSC_ARCH` is simply a name the installer used when installing
    the libraries. There will exist a directory within `$PETSC_DIR` that is named after
@@ -439,9 +439,9 @@ For example:
 ```none
 Possible error running C/C++ src/snes/tutorials/ex19 with 2 MPI processes
 See https://petsc.org/release/faq/
-[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
-[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /Users/barrysmith/Src/PETSc/src/sys/objects/options.c
-[0]PETSC ERROR: #3 PetscInitialize() line 828 in /Users/barrysmith/Src/PETSc/src/sys/objects/pinit.c
+[0]PETSC ERROR: #1 PetscOptionsInsertFile() line 563 in /path/to/petsc/src/sys/objects/options.c
+[0]PETSC ERROR: #2 PetscOptionsInsert() line 720 in /path/to/petsc/src/sys/objects/options.c
+[0]PETSC ERROR: #3 PetscInitialize() line 828 in /path/to/petsc/src/sys/objects/pinit.c
 ```
 
 or
@@ -449,7 +449,7 @@ or
 ```none
 $ make check
 Running check examples to verify correct installation
-Using PETSC_DIR=/Users/barrysmith/Src/petsc and PETSC_ARCH=arch-fix-mpiexec-hang-2-ranks
+Using PETSC_DIR=/path/to/petsc and PETSC_ARCH=arch-debug
 C/C++ example src/snes/tutorials/ex19 run successfully with 1 MPI process
 PROGRAM SEEMS TO BE HANGING HERE
 ```
@@ -1814,28 +1814,13 @@ debugger since there is likely a way to have it catch exceptions.
 
 ### Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory
 
-The Intel compilers use shared libraries (like libimf) that cannot be found, by default, at run
-time. When using the Intel compilers (and running the resulting code) you must make sure
-that the proper Intel initialization scripts are run. This is usually done by adding some
-code into your `.cshrc`, `.bashrc`, `.profile` etc file. Sometimes on batch file
-systems that do now access your initialization files (like .cshrc) you must include the
-initialization calls in your batch file submission.
-
-For example, on my Mac using `csh` I have the following in my `.cshrc` file:
-
-```csh
-source /opt/intel/cc/10.1.012/bin/iccvars.csh
-source /opt/intel/fc/10.1.012/bin/ifortvars.csh
-source /opt/intel/idb/10.1.012/bin/idbvars.csh
-```
-
-And in my `.profile` I have
-
-```csh
-source /opt/intel/cc/10.1.012/bin/iccvars.sh
-source /opt/intel/fc/10.1.012/bin/ifortvars.sh
-source /opt/intel/idb/10.1.012/bin/idbvars.sh
-```
+Load the environment for the Intel compiler used to build PETSc before running
+the application. On managed systems, load the corresponding compiler module.
+For an Intel oneAPI installation, source `setvars.sh` or `oneapi-vars.sh`,
+depending on the installation layout; see Intel's
+[environment setup instructions](https://www.intel.com/content/www/us/en/docs/oneapi/programming-guide/2024-0/use-the-setvars-script-with-linux-or-macos.html).
+Include this setup in batch scripts too, since they may not read your interactive
+shell's initialization files.
 
 (object_type_not_set)=
 
@@ -1901,12 +1886,6 @@ use [valgrind](http://valgrind.org). Follow the below instructions:
 3. Run with Valgrind.
 
    ```console
-   $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS
-   ```
-
-   or
-
-   ```console
    $ mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
    --suppressions=$PETSC_DIR/share/petsc/suppressions/valgrind \
    --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS
@@ -1916,12 +1895,10 @@ use [valgrind](http://valgrind.org). Follow the below instructions:
 - option `--with-debugging` enables valgrind to give stack trace with additional
   source-file:line-number info.
 - option `--download-mpich` is valgrind clean, other MPI builds are not valgrind clean.
-- when `--download-mpich` is used - mpiexec will be in `$PETSC_ARCH/bin`
+- Use the `mpiexec` from the MPI installation used to build PETSc. For an in-place
+  build with `--download-mpich`, it is normally `$PETSC_DIR/$PETSC_ARCH/bin/mpiexec`.
 - `--log-file=valgrind.log.%p` option tells valgrind to store the output from each
   process in a different file \[as %p i.e PID, is different for each MPI process.
-- `memcheck` will not find certain array access that violate static array
-  declarations so if memcheck runs clean you can try the `--tool=exp-ptrcheck`
-  instead.
 :::
 
 You might also consider using <http://drmemory.org> which has support for GNU/Linux, Apple

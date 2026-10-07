@@ -77,7 +77,7 @@
      - ``MATDENSE``
      - ``MatCreateDense()``
      -
-     - Row oriented storage
+     - Column-major storage
    * -
      - ``MATELEMENTAL``
      - ``MatCreate()`` followed by ``MatSetType()``

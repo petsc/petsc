@@ -69,8 +69,10 @@ communicator.
 Instead of, or before calling `VecSetFromOptions()`, one can call
 
 ```
-VecSetType(Vec v, VecType <VECCUDA, VECHIP, VECKOKKOS, etc.>)
+VecSetType(Vec v, VecType type);
 ```
+
+with a type such as `VECCUDA`, `VECHIP`, or `VECKOKKOS`.
 
 One can create vectors whose entries are stored on GPUs using the convenience routine,
 

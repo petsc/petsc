@@ -43,7 +43,7 @@ your recommendations to <mailto:petsc-maint@mcs.anl.gov>. See bug report {ref}`d
 - Same as above - but install in a user specified (prefix) location.
 
   ```console
-  $ ./configure --prefix=/home/user/soft/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
+  $ ./configure --prefix=/path/to/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
   ```
 
 - If [BLAS/LAPACK], MPI sources (in "-devel" packages in most Linux distributions) are already
@@ -129,7 +129,7 @@ $ ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
 or the following (but **without** `--with-cc=gcc`)
 
 ```console
-$ ./configure --with-mpi-dir=/opt/mpich2-1.1
+$ ./configure --with-mpi-dir=/path/to/mpich
 ```
 
 See {any}`doc_config_mpi` for details on how to select specific MPI compiler wrappers or the
@@ -230,7 +230,7 @@ The following modes can be used to download/install {ref}`external packages
   configure PETSc with it:
 
   ```console
-  $ ./configure --download-mpich=/home/petsc/mpich2-1.0.4p1.tar.gz
+  $ ./configure --download-mpich=/path/to/mpich.tar.gz
   ```
 
 - `--with-PACKAGENAME-dir=/path/to/dir`: If the external package is already installed -
@@ -239,7 +239,7 @@ The following modes can be used to download/install {ref}`external packages
   installation directory for the package:
 
   ```console
-  $ ./configure --with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1
+  $ ./configure --with-mpi-dir=/path/to/mpich
   ```
 
 - `--with-PACKAGENAME-include=/path/to/include/dir` and
@@ -248,19 +248,19 @@ The following modes can be used to download/install {ref}`external packages
   these two options to specify the package to `configure`. For example:
 
   ```console
-  $ ./configure --with-superlu-include=/home/petsc/software/superlu/include --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a
+  $ ./configure --with-superlu-include=/path/to/superlu/include --with-superlu-lib=/path/to/superlu/lib/libsuperlu.a
   ```
 
   or
 
   ```console
-  $ ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib="-L/sandbox/balay/parmetis/lib -lparmetis -lmetis"
+  $ ./configure --with-parmetis-include=/path/to/parmetis/include --with-parmetis-lib="-L/path/to/parmetis/lib -lparmetis -lmetis"
   ```
 
   or
 
   ```console
-  $ ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib=[/sandbox/balay/parmetis/lib/libparmetis.a,libmetis.a]
+  $ ./configure --with-parmetis-include=/path/to/parmetis/include --with-parmetis-lib="[/path/to/parmetis/lib/libparmetis.a,/path/to/parmetis/lib/libmetis.a]"
   ```
 
 :::{note}
@@ -528,11 +528,11 @@ The libraries and include files are located in `$PETSC_DIR/$PETSC_ARCH/lib` and
 To install the libraries and include files in another location use the `--prefix` option
 
 ```console
-$ ./configure --prefix=/home/userid/my-petsc-install --some-other-options
+$ ./configure --prefix=/path/to/petsc-install --some-other-options
 ```
 
-The libraries and include files will be located in `/home/userid/my-petsc-install/lib`
-and `/home/userid/my-petsc-install/include`.
+The libraries and include files will be located in `/path/to/petsc-install/lib`
+and `/path/to/petsc-install/include`.
 
 ### Installation in Root Location, **Not Recommended** (Uncommon)
 
@@ -548,7 +548,7 @@ and then do the PETSc install as a **regular/non-root** user:
 ```console
 $ sudo mkdir /opt/petsc
 $ sudo chown user:group /opt/petsc
-$ cd /home/userid/petsc
+$ cd "$PETSC_DIR"
 $ ./configure --prefix=/opt/petsc/my-root-petsc-install --some-other-options
 $ make
 $ make install
@@ -639,11 +639,13 @@ work**.
 
 ## Installing With TAU Instrumentation Package
 
-[TAU] package and the prerequisite [PDT] packages need to be installed separately (perhaps with MPI). Now use tau_cc.sh as compiler to PETSc configure:
+[TAU] and [PDT] must be installed separately. Set `TAU_MAKEFILE` to the makefile
+for the desired TAU configuration and use the matching `tau_cc.sh` wrapper.
+Replace `/path/to/tau` and the architecture directory below with your installation:
 
 ```console
-$ export TAU_MAKEFILE=/home/balay/soft/linux64/tau-2.20.3/x86_64/lib/Makefile.tau-mpi-pdt
-$ ./configure CC=/home/balay/soft/linux64/tau-2.20.3/x86_64/bin/tau_cc.sh --with-fc=0 PETSC_ARCH=arch-tau
+$ export TAU_MAKEFILE=/path/to/tau/x86_64/lib/Makefile.tau-mpi-pdt
+$ ./configure CC=/path/to/tau/x86_64/bin/tau_cc.sh --with-fc=0 PETSC_ARCH=arch-tau
 ```
 
 (doc_config_accel)=

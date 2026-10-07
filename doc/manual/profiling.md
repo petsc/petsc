@@ -695,8 +695,6 @@ or Open MPI - we can run a parallel job on 4 MPI tasks as:
 $ mpiexec -n 1 nsys profile -t nvtx,cuda -o file_name --stats=true --force-overwrite true ./a.out : -n 3 ./a.out
 ```
 
-(sec_using_tau)=
-
 Note: The Nsight GUI can open profiling reports from elsewhere. For
 example, a report from a compute node can be analyzed on your local
 machine, but care should be taken to use the exact same versions of
@@ -714,6 +712,8 @@ At the least, you will need:
 $ mpiexec -n 1 rocprofv3 --marker-trace -o file_name -- ./path/to/application -log_roctx
 ```
 
+
+(sec_using_tau)=
 
 ## Using TAU
 
