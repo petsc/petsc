@@ -203,6 +203,11 @@ int main(int argc, char **argv)
         args: -vec_type hip
         requires: hip
 
+     test:
+        suffix: complex_norms_kokkos
+        args: -vec_type kokkos
+        requires: kokkos_kernels
+
    test:
       nsize: 3
       output_file: output/empty.out
