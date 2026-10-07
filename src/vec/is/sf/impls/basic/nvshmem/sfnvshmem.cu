@@ -735,6 +735,7 @@ PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF sf, MPI_Datatype unit, PetscMem
     if (link->use_nvshmem) {
       PetscCall(MPIPetsc_Type_compare(unit, link->unit, &match));
       if (match) {
+        if (sf->backend == PETSCSF_BACKEND_CUDA) PetscCall(PetscSFLinkSetUp_CUDA(sf, link, unit));
         *p = link->next; /* Remove from available list */
         goto found;
       }

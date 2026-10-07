@@ -489,6 +489,16 @@ PetscErrorCode PetscSFLinkReclaim(PetscSF sf, PetscSFLink *mylink)
   PetscSFLink    link = *mylink;
 
   PetscFunctionBegin;
+#if PetscDefined(HAVE_DEVICE)
+  if (PetscMemTypeDevice(link->rootmtype) || PetscMemTypeDevice(link->leafmtype)) {
+    PetscDeviceContext dctx;
+    PetscStreamType    streamtype;
+
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextGetStreamType(dctx, &streamtype));
+    if (streamtype == PETSC_STREAM_DEFAULT_WITH_BARRIER || streamtype == PETSC_STREAM_NONBLOCKING_WITH_BARRIER) PetscCall((*link->SyncStream)(link));
+  }
+#endif
   link->rootdata = NULL;
   link->leafdata = NULL;
   link->next     = bas->avail;

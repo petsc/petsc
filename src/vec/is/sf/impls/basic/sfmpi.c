@@ -168,7 +168,7 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf, MPI_Datatype unit, PetscMemType
 found:
 
 #if PetscDefined(HAVE_DEVICE)
-  if ((PetscMemTypeDevice(xrootmtype) || PetscMemTypeDevice(xleafmtype)) && !link->deviceinited) {
+  if (PetscMemTypeDevice(xrootmtype) || PetscMemTypeDevice(xleafmtype)) {
   #if PetscDefined(HAVE_CUDA)
     if (sf->backend == PETSCSF_BACKEND_CUDA) PetscCall(PetscSFLinkSetUp_CUDA(sf, link, unit)); /* Setup streams etc */
   #endif
@@ -176,7 +176,7 @@ found:
     if (sf->backend == PETSCSF_BACKEND_HIP) PetscCall(PetscSFLinkSetUp_HIP(sf, link, unit)); /* Setup streams etc */
   #endif
   #if PetscDefined(HAVE_KOKKOS)
-    if (sf->backend == PETSCSF_BACKEND_KOKKOS) PetscCall(PetscSFLinkSetUp_Kokkos(sf, link, unit));
+    if (sf->backend == PETSCSF_BACKEND_KOKKOS && !link->deviceinited) PetscCall(PetscSFLinkSetUp_Kokkos(sf, link, unit));
   #endif
   }
 #endif
