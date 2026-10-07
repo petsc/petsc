@@ -370,6 +370,33 @@ static PetscErrorCode MatSeqAIJHIPSPARSEILUAnalysisAndCopyToGPU(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Affected rocSPARSE versions cache SpSV analysis with a descriptor-wide flag, so analysing an
+  ordinary solve causes subsequent transpose analysis to be skipped. This occurs in the inspected
+  ROCm releases from 5.0.0 through 7.2.0. Separate descriptors avoid sharing that flag while sharing
+  the CSR arrays. Upstream fixes the cache to distinguish operation and fill mode:
+  https://github.com/ROCm/rocm-libraries/pull/9295
+*/
+static PetscErrorCode MatSeqAIJHIPSPARSECreateTransposeSolveMat(hipsparseSpMatDescr_t mat, hipsparseSpMatDescr_t *trans)
+{
+  int64_t              rows, cols, nnz;
+  void                *rowptr, *colidx, *values;
+  hipsparseIndexType_t rowtype, coltype;
+  hipsparseIndexBase_t base;
+  hipDataType          datatype;
+  hipsparseFillMode_t  fill;
+  hipsparseDiagType_t  diag;
+
+  PetscFunctionBegin;
+  PetscCallHIPSPARSE(hipsparseCsrGet(mat, &rows, &cols, &nnz, &rowptr, &colidx, &values, &rowtype, &coltype, &base, &datatype));
+  PetscCallHIPSPARSE(hipsparseSpMatGetAttribute(mat, HIPSPARSE_SPMAT_FILL_MODE, &fill, sizeof(fill)));
+  PetscCallHIPSPARSE(hipsparseSpMatGetAttribute(mat, HIPSPARSE_SPMAT_DIAG_TYPE, &diag, sizeof(diag)));
+  PetscCallHIPSPARSE(hipsparseCreateCsr(trans, rows, cols, nnz, rowptr, colidx, values, rowtype, coltype, base, datatype));
+  PetscCallHIPSPARSE(hipsparseSpMatSetAttribute(*trans, HIPSPARSE_SPMAT_FILL_MODE, &fill, sizeof(fill)));
+  PetscCallHIPSPARSE(hipsparseSpMatSetAttribute(*trans, HIPSPARSE_SPMAT_DIAG_TYPE, &diag, sizeof(diag)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
 {
   Mat_SeqAIJ                    *a  = static_cast<Mat_SeqAIJ *>(A->data);
@@ -427,8 +454,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
       PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_U, &fs->spsvBufferSize_U));
       PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_U, fs->spsvBufferSize_U));
 
-      PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut)); // Ut solve uses the same matrix (spMatDescr_U), but different descr and buffer
-      PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
+      PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_U, &fs->spMatDescr_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
       PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Ut, fs->spsvBufferSize_Ut));
 
       // Record for reuse
@@ -451,7 +479,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
     {
       // Do hipsparseSpSV_analysis(), which is numeric and requires valid and up-to-date matrix values
       PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_U, fs->spsvBuffer_U));
-      PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
       fs->updatedSpSVAnalysis = PETSC_TRUE;
     }
   }
@@ -486,9 +514,9 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_Cholesky(Mat A, Vec b, Vec x)
   // Solve Ut Y = X
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_Y, fs->Y));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
 #endif
 
   // Solve diag(D) Z = Y. Actually just do Y = Y*D since D is already inverted in MatCholeskyFactorNumeric_SeqAIJ().
@@ -730,21 +758,22 @@ static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   if (!fs->createdTransposeSpSVDescr) { // Call MatSolveTranspose() for the first time
+    PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_L, &fs->spMatDescr_Lt));
+    PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_U, &fs->spMatDescr_Ut));
     PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Lt));
-    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* The matrix is still L. We only do transpose solve with it */
-                                                fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
 
     PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut));
-    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
+    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
     PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Lt, fs->spsvBufferSize_Lt));
     PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Ut, fs->spsvBufferSize_Ut));
     fs->createdTransposeSpSVDescr = PETSC_TRUE;
   }
 
   if (!fs->updatedTransposeSpSVAnalysis) {
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
     fs->updatedTransposeSpSVAnalysis = PETSC_TRUE;
   }
 
@@ -762,18 +791,18 @@ static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
   // Solve Ut Y = X
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_Y, fs->Y));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
 #endif
 
   // Solve Lt X = Y
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->cpermIndices ? fs->X : xarray)); // if need to permute, we need to use the intermediate buffer X
 
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 #endif
 
   // Reorder X with the column permutation if needed, and put the result back to x
@@ -1028,10 +1057,10 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_ICC0(Mat fact, Vec b, Vec x)
   /* Solve Lt*x = y */
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, xarray));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* Lt X = Y */
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, /* Lt X = Y */
                                          fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* Lt X = Y */
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, /* Lt X = Y */
                                          fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 #endif
   PetscCall(VecHIPRestoreArrayRead(b, &barray));
@@ -1085,7 +1114,7 @@ static PetscErrorCode MatICCFactorNumeric_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A, 
     /* Note that cusparse reports this error if we use double and CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE
     ** On entry to cusparseSpSV_analysis(): conjugate transpose (opA) is not supported for matA data type, current -> CUDA_R_64F
   */
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
     fs->updatedSpSVAnalysis = PETSC_TRUE;
   }
 
@@ -1187,8 +1216,9 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A,
   PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_L));
   PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_L, &fs->spsvBufferSize_L));
 
+  PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_L, &fs->spMatDescr_Lt));
   PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Lt));
-  PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
 
   /* To save device memory, we make the factorization buffer share with one of the solver buffer.
      See also comments in MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0().
@@ -3008,6 +3038,9 @@ PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Reset(Mat_SeqAIJHIPSPARSETriFactors_
     PetscCallHIPSPARSE(hipsparseDestroyMatDescr(fs->matDescr_M));
     if (fs->spMatDescr_L) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_L));
     if (fs->spMatDescr_U) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_U));
+    if (fs->spMatDescr_Lt) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_Lt));
+    if (fs->spMatDescr_Ut) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_Ut));
+    fs->spMatDescr_Lt = fs->spMatDescr_Ut = NULL;
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_L));
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_Lt));
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_U));

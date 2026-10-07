@@ -155,6 +155,49 @@ static PetscErrorCode TestSELLChunks(PetscDeviceType type)
 }
 #endif
 
+static PetscErrorCode TestSparseSolves(PetscDeviceType type)
+{
+  Mat                A, F;
+  Vec                b, x;
+  IS                 perm;
+  MatFactorInfo      info;
+  const PetscScalar *a;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, 4, 4, 1, NULL, &A));
+  for (PetscInt i = 0; i < 4; ++i) PetscCall(MatSetValue(A, i, i, 2, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatConvert(A, type == PETSC_DEVICE_CUDA ? MATSEQAIJCUSPARSE : MATSEQAIJHIPSPARSE, MAT_INPLACE_MATRIX, &A));
+  PetscCall(MatCreateVecs(A, &b, &x));
+  PetscCall(VecSet(b, 2));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, 4, 0, 1, &perm));
+  PetscCall(MatFactorInfoInitialize(&info));
+  for (PetscInt kind = 0; kind < 2; ++kind) {
+    PetscCall(MatGetFactor(A, type == PETSC_DEVICE_CUDA ? MATSOLVERCUSPARSE : MATSOLVERHIPSPARSE, kind ? MAT_FACTOR_CHOLESKY : MAT_FACTOR_LU, &F));
+    if (kind) {
+      PetscCall(MatCholeskyFactorSymbolic(F, A, perm, &info));
+      PetscCall(MatCholeskyFactorNumeric(F, A, &info));
+    } else {
+      PetscCall(MatLUFactorSymbolic(F, A, perm, perm, &info));
+      PetscCall(MatLUFactorNumeric(F, A, &info));
+    }
+    for (PetscInt transpose = 0; transpose < 2; ++transpose) {
+      if (transpose) PetscCall(MatSolveTranspose(F, b, x));
+      else PetscCall(MatSolve(F, b, x));
+      PetscCall(VecGetArrayRead(x, &a));
+      for (PetscInt i = 0; i < 4; ++i) PetscCheck(PetscAbsScalar(a[i] - 1) <= 10 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect sparse solve at entry %" PetscInt_FMT, i);
+      PetscCall(VecRestoreArrayRead(x, &a));
+    }
+    PetscCall(MatDestroy(&F));
+  }
+  PetscCall(ISDestroy(&perm));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&b));
+  PetscCall(MatDestroy(&A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   PetscDeviceContext dctx;
@@ -168,6 +211,7 @@ int main(int argc, char **argv)
 #if !PetscDefined(USE_COMPLEX)
   PetscCall(TestSELLChunks(type));
 #endif
+  PetscCall(TestSparseSolves(type));
   PetscCall(PetscFinalize());
   return 0;
 }
