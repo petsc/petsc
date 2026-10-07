@@ -1,6 +1,137 @@
 static char help[] = "Test MatSetValuesCOO() for MPIAIJ and its subclasses \n\n";
 
 #include <petscmat.h>
+#include <petscdevice.h>
+#if PetscDefined(HAVE_CUDA)
+  #include <petscdevice_cuda.h>
+#endif
+#if PetscDefined(HAVE_HIP)
+  #include <petscdevice_hip.h>
+#endif
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
+
+static PetscErrorCode PreallocateDeviceCOO(Mat A, PetscInt n, const PetscInt i[], const PetscInt j[])
+{
+  PetscDeviceContext saved, current;
+  PetscDevice        device;
+  PetscDeviceType    type;
+  PetscInt          *hi, *hj, *di, *dj;
+  void              *stream;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscDeviceContextGetCurrentContext(&saved));
+  PetscCall(PetscDeviceContextDuplicate(saved, &current));
+  PetscCall(PetscDeviceContextSetStreamType(current, PETSC_STREAM_NONBLOCKING));
+  PetscCall(PetscDeviceContextSetUp(current));
+  PetscCall(PetscDeviceContextSetCurrentContext(current));
+  PetscCall(PetscDeviceContextGetDevice(current, &device));
+  PetscCall(PetscDeviceGetType(device, &type));
+  PetscCall(PetscDeviceContextGetStreamHandle(current, &stream));
+  // Keep valid device pointers on ranks with no COO entries.
+  PetscCall(PetscDeviceMalloc(current, PETSC_MEMTYPE_HOST, n + 1, PETSC_DECIDE, &hi));
+  PetscCall(PetscDeviceMalloc(current, PETSC_MEMTYPE_HOST, n + 1, PETSC_DECIDE, &hj));
+  PetscCall(PetscDeviceCalloc(current, PETSC_MEMTYPE_DEVICE, n + 1, PETSC_DECIDE, &di));
+  PetscCall(PetscDeviceCalloc(current, PETSC_MEMTYPE_DEVICE, n + 1, PETSC_DECIDE, &dj));
+  PetscCall(PetscDeviceContextSynchronize(current));
+  for (PetscInt k = 0; k < n; ++k) {
+    hi[k] = i[k];
+    hj[k] = j[k];
+  }
+  // Preallocation must read the updated indices, not the initial zeros.
+  PetscCall(PetscDeviceContextDelay(current, 0.05));
+  #if PetscDefined(HAVE_CUDA)
+  if (type == PETSC_DEVICE_CUDA) {
+    PetscCallCUDA(cudaMemcpyAsync(di, hi, n * sizeof(*di), cudaMemcpyHostToDevice, *(cudaStream_t *)stream));
+    PetscCallCUDA(cudaMemcpyAsync(dj, hj, n * sizeof(*dj), cudaMemcpyHostToDevice, *(cudaStream_t *)stream));
+  }
+  #endif
+  #if PetscDefined(HAVE_HIP)
+  if (type == PETSC_DEVICE_HIP) {
+    PetscCallHIP(hipMemcpyAsync(di, hi, n * sizeof(*di), hipMemcpyHostToDevice, *(hipStream_t *)stream));
+    PetscCallHIP(hipMemcpyAsync(dj, hj, n * sizeof(*dj), hipMemcpyHostToDevice, *(hipStream_t *)stream));
+  }
+  #endif
+  PetscCall(MatSetPreallocationCOO(A, n, di, dj));
+  PetscCall(PetscDeviceFree(current, di));
+  PetscCall(PetscDeviceFree(current, dj));
+  PetscCall(PetscDeviceFree(current, hi));
+  PetscCall(PetscDeviceFree(current, hj));
+  PetscCall(PetscDeviceContextSynchronize(current));
+  PetscCall(PetscDeviceContextSetCurrentContext(saved));
+  PetscCall(PetscDeviceContextDestroy(&current));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestCOOStreams(Mat ref, Mat A, PetscInt n, const PetscScalar values[])
+{
+  Mat                   twice;
+  PetscDeviceContext    saved, current;
+  PetscDevice           device;
+  PetscDeviceType       type;
+  PetscScalar          *host, *pinned, *gpu;
+  const PetscStreamType streams[] = {PETSC_STREAM_NONBLOCKING, PETSC_STREAM_NONBLOCKING_WITH_BARRIER};
+  void                 *stream;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatDuplicate(ref, MAT_COPY_VALUES, &twice));
+  PetscCall(MatScale(twice, 2));
+  PetscCall(PetscDeviceContextGetCurrentContext(&saved));
+  PetscCall(PetscDeviceContextGetDevice(saved, &device));
+  PetscCall(PetscDeviceGetType(device, &type));
+  PetscCall(PetscMalloc1(n + 1, &host));
+  PetscCall(PetscDeviceMalloc(saved, PETSC_MEMTYPE_HOST, n + 1, PETSC_DECIDE, &pinned));
+  PetscCall(PetscDeviceMalloc(saved, PETSC_MEMTYPE_DEVICE, n + 1, PETSC_DECIDE, &gpu));
+  PetscCall(PetscDeviceContextSynchronize(saved));
+  for (size_t k = 0; k < PETSC_STATIC_ARRAY_LENGTH(streams); ++k) {
+    PetscCall(PetscDeviceContextDuplicate(saved, &current));
+    PetscCall(PetscDeviceContextSetStreamType(current, streams[k]));
+    PetscCall(PetscDeviceContextSetUp(current));
+    PetscCall(PetscDeviceContextSetCurrentContext(current));
+    PetscCall(PetscDeviceContextGetStreamHandle(current, &stream));
+    for (PetscInt memory = 0; memory < 3; ++memory) {
+      for (PetscInt add = 0; add < 2; ++add) {
+        PetscBool equal, idle;
+
+        // Warm allocations and communication before delaying the next update.
+        PetscCall(MatSetValuesCOO(A, values, INSERT_VALUES));
+        for (PetscInt i = 0; i < n; ++i) host[i] = pinned[i] = values[i];
+        // Clear the device input so a stale read differs from the delayed upload.
+        if (memory == 2) PetscCall(PetscDeviceArrayZero(current, gpu, n));
+        PetscCall(PetscDeviceContextSynchronize(current));
+        PetscCall(PetscDeviceContextDelay(current, 0.05));
+  #if PetscDefined(HAVE_CUDA)
+        if (type == PETSC_DEVICE_CUDA && memory == 2) PetscCallCUDA(cudaMemcpyAsync(gpu, pinned, n * sizeof(*gpu), cudaMemcpyHostToDevice, *(cudaStream_t *)stream));
+  #endif
+  #if PetscDefined(HAVE_HIP)
+        if (type == PETSC_DEVICE_HIP && memory == 2) PetscCallHIP(hipMemcpyAsync(gpu, pinned, n * sizeof(*gpu), hipMemcpyHostToDevice, *(hipStream_t *)stream));
+  #endif
+        PetscCall(MatSetValuesCOO(A, memory == 2 ? gpu : (memory == 1 ? pinned : host), add ? ADD_VALUES : INSERT_VALUES));
+        if (streams[k] == PETSC_STREAM_NONBLOCKING_WITH_BARRIER) {
+          PetscCall(PetscDeviceContextQueryIdle(current, &idle));
+          PetscCheck(idle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatSetValuesCOO() returned with work pending on a barrier context");
+        }
+        // Host inputs must be reusable on return, even if device work is pending.
+        if (memory != 2)
+          for (PetscInt i = 0; i < n; ++i) host[i] = pinned[i] = 0;
+        PetscCall(PetscDeviceContextSynchronize(current));
+        PetscCall(PetscDeviceContextSetCurrentContext(saved));
+        PetscCall(MatMultEqual(add ? twice : ref, A, 10, &equal));
+        PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect COO values (stream %s, memory %" PetscInt_FMT ", add %" PetscInt_FMT ")", PetscStreamTypes[streams[k]], memory, add);
+        PetscCall(PetscDeviceContextSetCurrentContext(current));
+      }
+    }
+    PetscCall(PetscDeviceContextSetCurrentContext(saved));
+    PetscCall(PetscDeviceContextDestroy(&current));
+  }
+  PetscCall(MatZeroEntries(A));
+  PetscCall(PetscFree(host));
+  PetscCall(PetscDeviceFree(saved, gpu));
+  PetscCall(PetscDeviceFree(saved, pinned));
+  PetscCall(PetscDeviceContextSynchronize(saved));
+  PetscCall(MatDestroy(&twice));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
 
 /*
   Checks that MatSetValuesCOO() can still be called after MatShift() on a matrix with m local rows and n local columns, whose COO
@@ -50,7 +181,7 @@ int main(int argc, char **args)
   const PetscInt M = 18, N = 18;
   PetscBool      equal, isHypre;
   PetscScalar   *vals;
-  PetscBool      flg = PETSC_FALSE, freecoo = PETSC_FALSE, missing_diagonal = PETSC_FALSE;
+  PetscBool      flg = PETSC_FALSE, freecoo = PETSC_FALSE, missing_diagonal = PETSC_FALSE, device_indices = PETSC_FALSE, coo_streams = PETSC_FALSE;
   PetscInt       ncoos = 1;
   PetscMPIInt    size;
 
@@ -85,6 +216,9 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ignore_remote", &flg, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncoos", &ncoos, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-missing_diagonal", &missing_diagonal, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-device_indices", &device_indices, NULL));
+
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-coo_streams", &coo_streams, NULL));
 
   mycoo.n = 0;
   if (ncoos > 1) {
@@ -130,7 +264,15 @@ int main(int argc, char **args)
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSetOption(B, MAT_IGNORE_OFF_PROC_ENTRIES, flg));
-  PetscCall(MatSetPreallocationCOO(B, mycoo.n, mycoo.i, mycoo.j));
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
+  if (device_indices) PetscCall(PreallocateDeviceCOO(B, mycoo.n, mycoo.n ? mycoo.i : NULL, mycoo.n ? mycoo.j : NULL));
+  else
+#endif
+    PetscCall(MatSetPreallocationCOO(B, mycoo.n, mycoo.i, mycoo.j));
+
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
+  if (coo_streams) PetscCall(TestCOOStreams(A, B, mycoo.n, vals));
+#endif
 
   /* Test with ADD_VALUES on a zeroed matrix */
   PetscCall(MatSetValuesCOO(B, vals, ADD_VALUES));
@@ -310,5 +452,33 @@ int main(int argc, char **args)
       suffix: 2_hypre
       requires: hypre
       args: -mat_type hypre
+
+  testset:
+    output_file: output/empty.out
+    nsize: {{1 2 4}}
+    args: -device_indices
+    test:
+      suffix: cuda_device_indices
+      requires: cuda
+      args: -mat_type aijcusparse
+
+    test:
+      suffix: hip_device_indices
+      requires: hip
+      args: -mat_type aijhipsparse
+
+  testset:
+    output_file: output/empty.out
+    nsize: {{1 2 4}}
+    args: -coo_streams
+    test:
+      suffix: cuda_streams
+      requires: cuda
+      args: -mat_type aijcusparse
+
+    test:
+      suffix: hip_streams
+      requires: hip
+      args: -mat_type aijhipsparse
 
 TEST*/

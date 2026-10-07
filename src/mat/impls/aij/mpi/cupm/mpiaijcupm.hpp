@@ -148,8 +148,11 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscInt            *i, *j;
     PetscContainer       container_h;
     MatCOOStruct_MPIAIJ *coo_h, *coo_d;
+    cupmStream_t         stream;
+    PetscDeviceContext   dctx;
 
     PetscFunctionBegin;
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscCall(PetscFree(mpiaij->garray));
     PetscCall(VecDestroy(&mpiaij->lvec));
 #if PetscDefined(USE_CTABLE)
@@ -164,8 +167,9 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     if (PetscMemTypeDevice(mtype)) {
       dev_ij = PETSC_TRUE;
       PetscCall(PetscMalloc2(coo_n, &i, coo_n, &j));
-      PetscCallCUPM(cupmMemcpy(i, coo_i, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost));
-      PetscCallCUPM(cupmMemcpy(j, coo_j, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost));
+      PetscCallCUPM(cupmMemcpyAsync(i, coo_i, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost, stream));
+      PetscCallCUPM(cupmMemcpyAsync(j, coo_j, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost, stream));
+      PetscCall(PetscDeviceContextSynchronize(dctx));
     } else {
       i = coo_i;
       j = coo_j;
@@ -196,17 +200,18 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscCallCUPM(cupmMalloc((void **)&coo_d->Cperm1, coo_h->sendlen * sizeof(PetscCount)));
     PetscCallCUPM(cupmMalloc((void **)&coo_d->sendbuf, coo_h->sendlen * sizeof(PetscScalar)));
     PetscCallCUPM(cupmMalloc((void **)&coo_d->recvbuf, coo_h->recvlen * sizeof(PetscScalar)));
-    PetscCallCUPM(cupmMemcpy(coo_d->Ajmap1, coo_h->Ajmap1, (coo_h->Annz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Aperm1, coo_h->Aperm1, coo_h->Atot1 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Bjmap1, coo_h->Bjmap1, (coo_h->Bnnz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Bperm1, coo_h->Bperm1, coo_h->Btot1 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Aimap2, coo_h->Aimap2, coo_h->Annz2 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Ajmap2, coo_h->Ajmap2, (coo_h->Annz2 + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Aperm2, coo_h->Aperm2, coo_h->Atot2 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Bimap2, coo_h->Bimap2, coo_h->Bnnz2 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Bjmap2, coo_h->Bjmap2, (coo_h->Bnnz2 + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Bperm2, coo_h->Bperm2, coo_h->Btot2 * sizeof(PetscCount), cupmMemcpyHostToDevice));
-    PetscCallCUPM(cupmMemcpy(coo_d->Cperm1, coo_h->Cperm1, coo_h->sendlen * sizeof(PetscCount), cupmMemcpyHostToDevice));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Ajmap1, coo_h->Ajmap1, (coo_h->Annz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Aperm1, coo_h->Aperm1, coo_h->Atot1 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Bjmap1, coo_h->Bjmap1, (coo_h->Bnnz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Bperm1, coo_h->Bperm1, coo_h->Btot1 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Aimap2, coo_h->Aimap2, coo_h->Annz2 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Ajmap2, coo_h->Ajmap2, (coo_h->Annz2 + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Aperm2, coo_h->Aperm2, coo_h->Atot2 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Bimap2, coo_h->Bimap2, coo_h->Bnnz2 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Bjmap2, coo_h->Bjmap2, (coo_h->Bnnz2 + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Bperm2, coo_h->Bperm2, coo_h->Btot2 * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->Cperm1, coo_h->Cperm1, coo_h->sendlen * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCall(PetscDeviceContextSynchronize(dctx));
     /* Put the COO struct in a container and attach it to the matrix */
     PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", coo_d, MatMPIAIJCUSPARSE_CUPM::COOStructDestroy));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -223,9 +228,11 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscContainer       container;
     MatCOOStruct_MPIAIJ *coo;
     cupmStream_t         stream;
+    PetscDeviceContext   dctx;
 
     PetscFunctionBegin;
     PetscCall(MatMPIAIJCheckCOONonzeroState(mat));
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
     PetscCheck(container, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "The matrix is missing the device COO struct built by MatSetPreallocationCOO()");
     PetscCall(PetscContainerGetPointer(container, (void **)&coo));
@@ -251,7 +258,9 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscCall(PetscGetMemType(v, &memtype));
     if (PetscMemTypeHost(memtype)) {
       PetscCallCUPM(cupmMalloc((void **)&v1, coo->n * sizeof(PetscScalar)));
-      PetscCallCUPM(cupmMemcpy((void *)v1, v, coo->n * sizeof(PetscScalar), cupmMemcpyHostToDevice));
+      PetscCallCUPM(cupmMemcpyAsync((void *)v1, v, coo->n * sizeof(PetscScalar), cupmMemcpyHostToDevice, stream));
+      // The caller may reuse the host values after this call returns.
+      PetscCall(PetscDeviceContextSynchronize(dctx));
       PetscCall(PetscLogCpuToGpu(coo->n * sizeof(PetscScalar)));
     }
 
@@ -263,7 +272,6 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
       PetscCall(Policy::GetArray(B, &Ba));
     }
 
-    PetscCall(GetHandles_(&stream));
     PetscCall(PetscLogGpuTimeBegin());
     /* Pack entries to be sent to remote */
     if (coo->sendlen) {
@@ -294,8 +302,10 @@ struct MatMPIAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     }
     if (PetscMemTypeHost(memtype)) {
       void *v1_device = (void *)v1;
-      PetscCallCUPM(cupmFree(v1_device));
+
+      PetscCallCUPM(cupmFreeAsync(v1_device, stream));
     }
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     mat->offloadmask = PETSC_OFFLOAD_GPU;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
