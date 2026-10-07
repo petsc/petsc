@@ -2696,15 +2696,56 @@ static PetscErrorCode MatDenseScatterCtxDestroy_Private(PetscCtxRt ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode, ScatterMode smode)
+// The communication of MatDenseScatter_Private(), for a caller that already has a PetscSF for the layouts of X and Y
+PetscErrorCode MatDenseScatterWithSF_Private(PetscSF vsf, Mat X, Mat Y, MPI_Op op, ScatterMode smode, PetscBool writeonly)
 {
   const PetscScalar *in;
   PetscScalar       *out;
-  PetscSF            vsf;
-  PetscInt           N, ny, rld, lld;
   PetscMemType       mtype[2];
-  MPI_Op             op        = MPI_OP_NULL;
-  PetscBool          writeonly = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseGetArrayReadAndMemType(X, &in, &mtype[0]));
+  if (writeonly == PETSC_TRUE) PetscCall(MatDenseGetArrayWriteAndMemType(Y, &out, &mtype[1]));
+  else PetscCall(MatDenseGetArrayAndMemType(Y, &out, &mtype[1]));
+  if (smode == SCATTER_FORWARD) {
+    PetscCall(PetscSFBcastWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
+    PetscCall(PetscSFBcastEnd(vsf, vsf->vscat.unit, in, out, op));
+  } else {
+    PetscCall(PetscSFReduceWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
+    PetscCall(PetscSFReduceEnd(vsf, vsf->vscat.unit, in, out, op));
+  }
+  if (writeonly == PETSC_TRUE) PetscCall(MatDenseRestoreArrayWriteAndMemType(Y, &out));
+  else PetscCall(MatDenseRestoreArrayAndMemType(Y, &out));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(X, &in));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* MatDenseScatter_Private - Scatters the columns of the dense matrix X into the dense matrix Y
+
+   Collective
+
+   Input Parameters:
++  sf    - the PetscSF for one column
+.  X     - the matrix to read
+.  Y     - the matrix to update
+.  mode  - INSERT_VALUES, ADD_VALUES, MAX_VALUES, or MIN_VALUES
+-  smode - SCATTER_FORWARD for a broadcast from X to Y, or SCATTER_REVERSE for a reduction from X to Y
+
+   Level: developer
+
+   Note:
+   With more than one column, a strided PetscSF is cached on sf. It is rebuilt if the number of columns changes.
+   Any other change of layout, such as another leading dimension, is an error unless the cache is first cleared
+   on all processes with PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", NULL).
+
+.seealso: `MatDenseScatterWithSF_Private()`, `PetscSFCreateStridedSF()`
+*/
+PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode, ScatterMode smode)
+{
+  PetscSF   vsf;
+  PetscInt  N, ny, rld, lld;
+  MPI_Op    op        = MPI_OP_NULL;
+  PetscBool writeonly = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -2756,18 +2797,6 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
     // preserve untouched rows and padding; contiguous leaves cover every row only in this case
     writeonly = (PetscBool)(ilocal == NULL && (PetscCount)nl * PetscMax(sf->vscat.bs, 1) == ny && lld == ny);
   }
-  PetscCall(MatDenseGetArrayReadAndMemType(X, &in, &mtype[0]));
-  if (writeonly == PETSC_TRUE) PetscCall(MatDenseGetArrayWriteAndMemType(Y, &out, &mtype[1]));
-  else PetscCall(MatDenseGetArrayAndMemType(Y, &out, &mtype[1]));
-  if (smode == SCATTER_FORWARD) {
-    PetscCall(PetscSFBcastWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
-    PetscCall(PetscSFBcastEnd(vsf, vsf->vscat.unit, in, out, op));
-  } else {
-    PetscCall(PetscSFReduceWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
-    PetscCall(PetscSFReduceEnd(vsf, vsf->vscat.unit, in, out, op));
-  }
-  if (writeonly == PETSC_TRUE) PetscCall(MatDenseRestoreArrayWriteAndMemType(Y, &out));
-  else PetscCall(MatDenseRestoreArrayAndMemType(Y, &out));
-  PetscCall(MatDenseRestoreArrayReadAndMemType(X, &in));
+  PetscCall(MatDenseScatterWithSF_Private(vsf, X, Y, op, smode, writeonly));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

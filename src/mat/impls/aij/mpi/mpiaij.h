@@ -208,6 +208,8 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter, PetscInt
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *);
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterUpdateLDA_Private(VecScatter, PetscInt, Mat, Mat, MPIAIJ_MPIDense *);
 PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter, PetscInt, PetscInt, Mat, MPIAIJ_MPIDense *, Mat, Mat);
+PETSC_INTERN PetscErrorCode MatMPIDenseGetBatchSize_Private(PetscInt, PetscInt, Mat, Mat, PetscInt *, PetscInt *);
+PETSC_INTERN PetscErrorCode MatMPIAIJ_MPIDenseProductNumeric_Private(Mat, Mat, Mat, MatProductType, PetscBool);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
 #define AProw_scalable(i, ad, ao, p_loc, p_oth, api, apj, apa) \
