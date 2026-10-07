@@ -1,4 +1,4 @@
-static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
+static char help[] = "Tests vector norms and repeated VecDotBegin()/VecDotEnd().\n\n";
 
 #include <petscvec.h>
 #define CheckError(a, b, tol) \
@@ -18,11 +18,11 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscInt    n = 25, i, row0 = 0;
-  PetscScalar two = 2.0, result1, result2, results[40], value, ten = 10.0;
+  PetscInt    n = 25, i, rows[] = {0, 1};
+  PetscScalar two = 2.0, result1, result2, results[40], value, values[] = {10.0, 11.0};
   PetscScalar result1a, result2a;
   PetscReal   result3, result4, result[2], result3a, result4a, resulta[2];
-  Vec         x, y, vecs[40];
+  Vec         x, y, x_ref, y_ref, vecs[40];
   PetscReal   tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
@@ -33,9 +33,15 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(x, n, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(x));
   PetscCall(VecDuplicate(x, &y));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x_ref));
+  PetscCall(VecSetSizes(x_ref, n, PETSC_DECIDE));
+  PetscCall(VecSetType(x_ref, VECSTANDARD));
+  PetscCall(VecDuplicate(x_ref, &y_ref));
   PetscCall(VecSetRandom(x, NULL));
+  PetscCall(VecCopy(x, x_ref));
   PetscCall(VecViewFromOptions(x, NULL, "-x_view"));
   PetscCall(VecSet(y, two));
+  PetscCall(VecSet(y_ref, two));
 
   /*
         Test mixing dot products and norms that require sums
@@ -61,6 +67,10 @@ int main(int argc, char **argv)
   CheckErrorScalar(result2, result2a, tol);
   CheckError(result3, result3a, tol);
   CheckError(result4, result4a, tol);
+  PetscCall(VecNorm(y_ref, NORM_2, &result3a));
+  PetscCall(VecNorm(x_ref, NORM_1, &result4a));
+  CheckError(result3, result3a, tol);
+  CheckError(result4, result4a, tol);
 
   /*
         Test norms that only require abs
@@ -76,15 +86,26 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(y, NORM_MAX, &result3a));
   CheckError(result3, result3a, tol);
   CheckError(result4, result4a, tol);
+  PetscCall(VecNorm(x_ref, NORM_MAX, &result4a));
+  PetscCall(VecNorm(y_ref, NORM_MAX, &result3a));
+  CheckError(result3, result3a, tol);
+  CheckError(result4, result4a, tol);
 
   /*
         Tests dot,  max, 1, norm
   */
   result1 = result2 = 0.0;
   result3 = result4 = 0.0;
-  PetscCall(VecSetValues(x, 1, &row0, &ten, INSERT_VALUES));
+#if PetscDefined(USE_COMPLEX)
+  // The entries 6+8i and 11 have opposite order under |z| and |Re(z)| + |Im(z)|.
+  values[0] = PetscCMPLX(6, 8);
+#endif
+  PetscCall(VecSetValues(x, 2, rows, values, INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
+  PetscCall(VecSetValues(x_ref, 2, rows, values, INSERT_VALUES));
+  PetscCall(VecAssemblyBegin(x_ref));
+  PetscCall(VecAssemblyEnd(x_ref));
 
   PetscCall(VecDotBegin(x, y, &result1));
   PetscCall(VecDotBegin(y, x, &result2));
@@ -102,6 +123,10 @@ int main(int argc, char **argv)
 
   CheckErrorScalar(result1, result1a, tol);
   CheckErrorScalar(result2, result2a, tol);
+  CheckError(result3, result3a, tol);
+  CheckError(result4, result4a, tol);
+  PetscCall(VecNorm(x_ref, NORM_MAX, &result3a));
+  PetscCall(VecNorm(x_ref, NORM_1, &result4a));
   CheckError(result3, result3a, tol);
   CheckError(result4, result4a, tol);
 
@@ -123,9 +148,18 @@ int main(int argc, char **argv)
   CheckError(result4, result4a, tol);
   CheckError(result[0], resulta[0], tol);
   CheckError(result[1], resulta[1], tol);
+  PetscCall(VecNorm(x_ref, NORM_MAX, &result3a));
+  PetscCall(VecNorm(x_ref, NORM_1_AND_2, resulta));
+  PetscCall(VecNorm(y_ref, NORM_MAX, &result4a));
+  CheckError(result3, result3a, tol);
+  CheckError(result4, result4a, tol);
+  CheckError(result[0], resulta[0], tol);
+  CheckError(result[1], resulta[1], tol);
 
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&x_ref));
+  PetscCall(VecDestroy(&y_ref));
 
   /*
        Tests computing a large number of operations that require
@@ -151,6 +185,23 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
+   testset:
+     requires: complex
+     output_file: output/empty.out
+
+     test:
+        suffix: complex_norms
+
+     test:
+        suffix: complex_norms_cuda
+        args: -vec_type cuda
+        requires: cuda
+
+     test:
+        suffix: complex_norms_hip
+        args: -vec_type hip
+        requires: hip
 
    test:
       nsize: 3

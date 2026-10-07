@@ -7,9 +7,7 @@
 #include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"
 #include "../src/sys/objects/device/impls/cupm/kernels.hpp"
 
-#if PetscDefined(USE_COMPLEX)
-  #include <thrust/transform_reduce.h>
-#endif
+#include <thrust/transform_reduce.h>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
 #include <thrust/functional.h>
@@ -707,7 +705,12 @@ namespace detail
 {
 
 struct AbsoluteValue {
-  PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &s) const noexcept { return PetscAbsScalar(s); }
+  PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(const PetscScalar &s) const noexcept { return PetscAbsScalar(s); }
+};
+
+struct NormMax {
+  // Propagate NaNs as in VecNorm_Seq().
+  PETSC_HOSTDEVICE_INLINE_DECL PetscReal operator()(PetscReal lhs, PetscReal rhs) const noexcept { return lhs != lhs || lhs > rhs ? lhs : rhs; }
 };
 
 } // namespace detail
@@ -1726,9 +1729,10 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
 {
   PetscDeviceContext dctx;
   cupmBlasHandle_t   cupmBlasHandle;
+  cupmStream_t       stream;
 
   PetscFunctionBegin;
-  PetscCall(GetHandles_(&dctx, &cupmBlasHandle));
+  PetscCall(GetHandles_(&dctx, &cupmBlasHandle, &stream));
   if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
     const auto xptr      = DeviceArrayRead(dctx, xin);
     PetscInt   flopCount = 0;
@@ -1737,7 +1741,12 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
     switch (type) {
     case NORM_1_AND_2:
     case NORM_1:
-      PetscCallCUPMBLAS(cupmBlasXasum(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
+      if (PetscDefined(USE_COMPLEX)) {
+        const auto dptr = thrust::device_pointer_cast(xptr.data());
+
+        // Complex BLAS reductions use |Re(x)| + |Im(x)|, but VecNorm() uses |x|.
+        PetscCallThrust(*z = THRUST_CALL(thrust::transform_reduce, stream, dptr, dptr + n, detail::AbsoluteValue{}, PetscReal{0.0}, thrust::plus<PetscReal>{}));
+      } else PetscCallCUPMBLAS(cupmBlasXasum(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
       flopCount = std::max(n - 1, 0);
       if (type == NORM_1) break;
       ++z; // fall-through
@@ -1749,17 +1758,22 @@ inline PetscErrorCode VecSeq_CUPM<T>::Norm(Vec xin, NormType type, PetscReal *z)
       PetscCallCUPMBLAS(cupmBlasXnrm2(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
       flopCount += std::max(2 * n - 1, 0); // += in case we've fallen through from NORM_1_AND_2
       break;
-    case NORM_INFINITY: {
-      cupmBlasInt_t max_loc = 0;
-      PetscScalar   xv      = 0.;
-      cupmStream_t  stream;
+    case NORM_INFINITY:
+      if (PetscDefined(USE_COMPLEX)) {
+        const auto dptr = thrust::device_pointer_cast(xptr.data());
 
-      PetscCall(GetHandlesFrom_(dctx, &stream));
-      PetscCallCUPMBLAS(cupmBlasXamax(cupmBlasHandle, n, xptr.cupmdata(), 1, &max_loc));
-      PetscCall(PetscCUPMMemcpyAsync(&xv, xptr.data() + max_loc - 1, 1, cupmMemcpyDeviceToHost, stream));
-      *z = PetscAbsScalar(xv);
+        PetscCallThrust(*z = THRUST_CALL(thrust::transform_reduce, stream, dptr, dptr + n, detail::AbsoluteValue{}, PetscReal{0.0}, detail::NormMax{}));
+      } else {
+        cupmBlasInt_t max_loc = 0;
+        PetscScalar   xv      = 0.;
+
+        PetscCallCUPMBLAS(cupmBlasXamax(cupmBlasHandle, n, xptr.cupmdata(), 1, &max_loc));
+        PetscCall(PetscCUPMMemcpyAsync(&xv, xptr.data() + max_loc - 1, 1, cupmMemcpyDeviceToHost, stream));
+        PetscCall(PetscDeviceContextSynchronize(dctx));
+        *z = PetscAbsScalar(xv);
+      }
       // REVIEW ME: flopCount = ???
-    } break;
+      break;
     }
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(flopCount));
