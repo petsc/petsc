@@ -3640,6 +3640,148 @@ Once the solver has been registered, the new solver can be selected
 either by using the `TaoSetType()` function or by using the
 `-tao_type` command line option.
 
+(sec_tao_cutest)=
+
+## Unconstrained CUTEst problems with TAO
+
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/tao/unconstrained/tutorials/cutest.c.html">
+<code>src/tao/unconstrained/tutorials/cutest.c</code></a> solves continuous,
+unconstrained CUTEst problems with TAO, using
+CUTEst's starting point and callbacks. Finite variable bounds
+and general constraints are not yet supported. PETSc must be
+configured with cutest and sifdecode support, i.e. using
+
+```console
+--download-cutest --download-sifdecode
+```
+
+CUTEst and SIFDecode need a Fortran compiler and Meson to build. Meson requires
+Python 3.
+Preinstalled CUTEst and SIFDecode do not require Meson or Ninja.
+
+`--download-cutest` installs single-, double-, and quadruple-precision libraries
+using 32-bit CUTEst integers for either PETSc index width. Problem sizes and
+CUTEst indices must fit in 32-bit integers. Building all three precisions requires
+a Fortran compiler with quadruple precision support and the quadmath library.
+
+For existing installations, use `--with-cutest-dir=/path/to/cutest` and
+`--with-sifdecode-dir=/path/to/sifdecode`. Alternatively specify
+`--with-sifdecode=1 --with-sifdecode-exec=/path/to/sifdecoder`.
+Configure checks for the selected precision's CUTEst library and required symbols.
+For these examples, an existing CUTEst library must support runtime problem
+loading (2.5.1 or newer), the same precision as PETSc, and 32-bit CUTEst integers.
+CUTEst is linked directly into the tutorial and Hessian checker. Use a compatible
+Fortran compiler for decoded problems.
+The tutorial and Hessian checker require real, double-precision PETSc scalars
+and dynamic-library support.
+
+The supplied SIF files are in `share/petsc/datafiles/cutest`, and the decoding
+makefile and runner are in `share/petsc/cutest`. The tutorial and Hessian checker
+share the callbacks in `include/petsc/private/taocutestimpl.h`. The decoding
+runner requires Python 3 and uses only its standard library.
+
+The following commands assume you are in `src/tao/unconstrained/tutorials`,
+with `PETSC_DIR` and `PETSC_ARCH` set for your PETSc build.
+
+### Solve the Rosenbrock example
+
+The file `share/petsc/datafiles/cutest/ROSENBR.SIF` contains the two-variable
+Rosenbrock problem, with starting point $(-1.2, 1)$ and minimum at $(1, 1)$.
+
+1. Build the TAO example:
+
+   ```sh
+   make cutest
+   ```
+
+2. Create a directory for the problem and use the supplied makefile to decode
+   and compile it:
+
+   ```sh
+   mkdir rosenbrock
+   cd rosenbrock
+   make -f "$PETSC_DIR/share/petsc/cutest/makefile" \
+     SIF="$PETSC_DIR/share/petsc/datafiles/cutest/ROSENBR.SIF"
+   ```
+
+   The makefile runs SIFDecode in PETSc's configured precision, compiles the generated
+   Fortran routines, and links them into `libcutest_ROSENBR.so`. The library
+   name uses the SIF filename without its directory or extension. It uses
+   PETSc's configured decoder, compiler, and shared-library flags. On platforms
+   with a different shared-library suffix, use the library filename produced
+   by the makefile in the commands below.
+
+   SIFDecode also creates `OUTSDIF.d`, which contains the decoded problem data.
+   Keep this file together with the library.
+
+3. Run the solver from the same `rosenbrock` directory:
+
+   ```sh
+   ../cutest -cutest_lib ./libcutest_ROSENBR.so -cutest_data ./OUTSDIF.d \
+     -tao_type ntr
+   ```
+
+This runs TAO's Newton trust-region method from CUTEst's starting point, and
+prints a readable summary. Add `-cutest_solution_view` to print the final
+solution vector.
+
+The decoded problem can be reused without decoding or compiling again.
+While still in `rosenbrock`, run TAO's limited-memory variable-metric method:
+
+```sh
+../cutest -cutest_lib ./libcutest_ROSENBR.so -cutest_data ./OUTSDIF.d \
+  -tao_type lmvm
+```
+
+or SNES inexact Newton with line search:
+
+```sh
+../cutest -cutest_lib ./libcutest_ROSENBR.so -cutest_data ./OUTSDIF.d \
+  -tao_type snes -snes_type newtonls
+```
+
+The driver assembles a sparse Hessian by default. Use `-cutest_hessian shell`
+for exact Hessian-vector products without assembling the Hessian. The usual
+TAO, SNES, KSP, and PC options configure the chosen solver.
+
+For another SIF file, create a separate problem directory and repeat the
+makefile command with `SIF` set to the full path of that file. Additional
+unconstrained problems are available from the
+[CUTEst SIF collection](https://github.com/ralna/SIF).
+
+The option `-cutest_result result.csv` replaces the screen summary with a CSV
+file containing the initial and final objective and gradient norm, termination
+reason, iteration count, callback evaluation counts, and Hessian-vector product
+counts.
+
+### Check the problem's Hessians
+
+While still in `rosenbrock`, build and run the Hessian checker using the same
+library and `OUTSDIF.d`:
+
+```sh
+make -C ../../../tests cutest
+../../../tests/cutest -cutest_lib ./libcutest_ROSENBR.so -cutest_data ./OUTSDIF.d \
+  -cutest_check_type matrix -info :mat | grep CheckHessian
+```
+
+The `matrix` check compares the assembled and shell Hessians and their
+transposes at five points, including after objective and gradient evaluations
+at trial points and after resetting solver shifts. Since each Hessian is
+symmetric, both multiplication directions must agree with the same reference.
+With `-info :mat`, the checker reports the relative differences.
+To compare forward and transpose products with random vectors, run:
+
+```sh
+../../../tests/cutest -cutest_lib ./libcutest_ROSENBR.so -cutest_data ./OUTSDIF.d \
+  -cutest_check_type mult
+```
+
+Use `-cutest_check_vectors n` to set the number of random vectors for each
+multiplication direction (default 8). The tests exercise both comparison methods
+with `ROSENBR.SIF` and the polynomial problem `COOHESS.SIF` from the same data
+directory.
+
 ```{rubric} Footnotes
 ```
 

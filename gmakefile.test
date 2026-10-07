@@ -240,6 +240,10 @@ $(TESTDIR)/snes/tests/ex1: PETSC_TEST_LIB = $(PETSC_SNES_LIB)
 $(TESTDIR)/ts/tests/ex2: PETSC_TEST_LIB = $(PETSC_TS_LIB)
 $(TESTDIR)/tao/tutorials/ex1: PETSC_TEST_LIB = $(PETSC_TAO_LIB)
 
+# CUTEst is linked directly by these examples and is not a libpetsc dependency.
+$(TESTDIR)/tao/unconstrained/tutorials/cutest: PETSC_TEST_LIB += $(CUTEST_LIB)
+$(TESTDIR)/tao/tests/cutest: PETSC_TEST_LIB += $(CUTEST_LIB)
+
 # MACOS FIREWALL HANDLING
 # - if run with MACOS_FIREWALL=1
 #   (automatically set in $PETSC_ARCH/lib/petsc/conf/petscvariables if configured --with-macos-firewall-rules),

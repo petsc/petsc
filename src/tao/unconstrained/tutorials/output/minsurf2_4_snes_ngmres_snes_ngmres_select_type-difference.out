@@ -69,4 +69,4 @@ Tao Object: 1 MPI process
   total number of iterations=10,                          (max: 10000)
   total number of function evaluations=53,                  (max: unlimited)
   total number of function/gradient evaluations=31,      (max: unlimited)
-  Solution converged:    User Terminated
+  Solution converged:    ||g(X)|| <= gatol

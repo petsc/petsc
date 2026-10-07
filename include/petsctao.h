@@ -311,12 +311,13 @@ PETSC_EXTERN PetscErrorCode TaoSolve(Tao);
 PETSC_EXTERN PetscErrorCode TaoRegister(const char[], PetscErrorCode (*)(Tao));
 PETSC_EXTERN PetscErrorCode TaoRegisterDestroy(void);
 
-PETSC_EXTERN PetscErrorCode TaoGetConvergedReason(Tao, TaoConvergedReason *);
-PETSC_EXTERN PetscErrorCode TaoGetConvergedReasonString(Tao, const char *[]);
-PETSC_EXTERN PetscErrorCode TaoGetSolutionStatus(Tao, PetscInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, TaoConvergedReason *);
-PETSC_EXTERN PetscErrorCode TaoSetConvergedReason(Tao, TaoConvergedReason);
-PETSC_EXTERN PetscErrorCode TaoSetSolution(Tao, Vec);
-PETSC_EXTERN PetscErrorCode TaoGetSolution(Tao, Vec *);
+PETSC_EXTERN PetscErrorCode     TaoGetConvergedReason(Tao, TaoConvergedReason *);
+PETSC_EXTERN TaoConvergedReason TaoConvergedReasonFromSNES(SNESConvergedReason);
+PETSC_EXTERN PetscErrorCode     TaoGetConvergedReasonString(Tao, const char *[]);
+PETSC_EXTERN PetscErrorCode     TaoGetSolutionStatus(Tao, PetscInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, TaoConvergedReason *);
+PETSC_EXTERN PetscErrorCode     TaoSetConvergedReason(Tao, TaoConvergedReason);
+PETSC_EXTERN PetscErrorCode     TaoSetSolution(Tao, Vec);
+PETSC_EXTERN PetscErrorCode     TaoGetSolution(Tao, Vec *);
 
 PETSC_EXTERN PetscErrorCode TaoSetObjective(Tao, PetscErrorCode (*)(Tao, Vec, PetscReal *, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode TaoGetObjective(Tao, PetscErrorCode (**)(Tao, Vec, PetscReal *, PetscCtx), PetscCtxRt);
@@ -547,6 +548,8 @@ PETSC_EXTERN PetscErrorCode TaoALMMGetMultipliers(Tao, Vec *);
 PETSC_EXTERN PetscErrorCode TaoALMMSetMultipliers(Tao, Vec);
 PETSC_EXTERN PetscErrorCode TaoALMMGetPrimalIS(Tao, IS *, IS *);
 PETSC_EXTERN PetscErrorCode TaoALMMGetDualIS(Tao, IS *, IS *);
+
+PETSC_EXTERN PetscErrorCode TaoSNESGetSNES(Tao, SNES *);
 
 PETSC_EXTERN PetscErrorCode TaoVecGetSubVec(Vec, IS, TaoSubsetType, PetscReal, Vec *);
 PETSC_EXTERN PetscErrorCode TaoMatGetSubMat(Mat, IS, Vec, TaoSubsetType, Mat *);

@@ -2552,6 +2552,50 @@ PetscErrorCode TaoGetConvergedReason(Tao tao, TaoConvergedReason *reason)
 }
 
 /*@
+  TaoConvergedReasonFromSNES - Returns the `TaoConvergedReason` corresponding to a `SNESConvergedReason`.
+
+  Not Collective, No Fortran Support
+
+  Input Parameter:
+. snesreason - the `SNESConvergedReason` to convert
+
+  Level: advanced
+
+  Notes:
+  Reasons with a `TaoConvergedReason` equivalent map to that value. Other positive reasons map to
+  `TAO_CONVERGED_USER`, other negative reasons map to `TAO_DIVERGED_USER`, and
+  `SNES_CONVERGED_ITERATING` maps to `TAO_CONTINUE_ITERATING`.
+
+  This function does not require a `Tao` or `SNES` object and is also used by `TAOSNES`.
+
+.seealso: [](ch_tao), `TaoConvergedReason`, `SNESConvergedReason`, `TAOSNES`, `TaoGetConvergedReason()`, `SNESGetConvergedReason()`
+@*/
+TaoConvergedReason TaoConvergedReasonFromSNES(SNESConvergedReason snesreason)
+{
+  switch (snesreason) {
+  case SNES_CONVERGED_FNORM_ABS:
+    return TAO_CONVERGED_GATOL;
+  case SNES_CONVERGED_FNORM_RELATIVE:
+    return TAO_CONVERGED_GTTOL;
+  case SNES_CONVERGED_SNORM_RELATIVE:
+    return TAO_CONVERGED_STEPTOL;
+  case SNES_DIVERGED_FUNCTION_COUNT:
+    return TAO_DIVERGED_MAXFCN;
+  case SNES_DIVERGED_FUNCTION_NANORINF:
+  case SNES_DIVERGED_OBJECTIVE_NANORINF:
+    return TAO_DIVERGED_NAN;
+  case SNES_DIVERGED_MAX_IT:
+    return TAO_DIVERGED_MAXITS;
+  case SNES_DIVERGED_LINE_SEARCH:
+    return TAO_DIVERGED_LS_FAILURE;
+  case SNES_DIVERGED_TR_DELTA:
+    return TAO_DIVERGED_TR_REDUCTION;
+  default:
+    return snesreason > 0 ? TAO_CONVERGED_USER : (snesreason < 0 ? TAO_DIVERGED_USER : TAO_CONTINUE_ITERATING);
+  }
+}
+
+/*@
   TaoGetConvergedReasonString - Return a human readable string for a `TaoConvergedReason`
 
   Not Collective

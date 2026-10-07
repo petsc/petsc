@@ -12,6 +12,14 @@
 ```{rubric} Configure/Build:
 ```
 
+- Add `--download-cutest` and `--download-sifdecode` for the CUTEst optimization testing environment and SIF problem decoder
+
+- Add Meson package builds, `--download-meson`, and `--download-package-meson-arguments` for additional Meson setup arguments
+
+- Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
+
+- Add `--with-meson-exec` to select an existing Meson executable
+
 ```{rubric} Sys:
 ```
 
@@ -76,6 +84,9 @@
 
 ```{rubric} TAO:
 ```
+
+- Add support for CUTEst unconstrained problems in TAO tutorials and tests
+- Map `TAOSNES` convergence and divergence reasons with the public `TaoConvergedReasonFromSNES()`, and add `TaoSNESGetSNES()` to access the underlying solver
 
 ```{rubric} TaoTerm:
 ```
