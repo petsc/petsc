@@ -46,6 +46,7 @@ public:
     PetscDesignatedInitializer(synchronize, synchronize),
     PetscDesignatedInitializer(getblashandle, nullptr),
     PetscDesignatedInitializer(getsolverhandle, nullptr),
+    PetscDesignatedInitializer(getsparsehandle, nullptr),
     PetscDesignatedInitializer(getstreamhandle, nullptr),
     PetscDesignatedInitializer(begintimer, nullptr),
     PetscDesignatedInitializer(endtimer, nullptr),

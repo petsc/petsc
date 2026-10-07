@@ -11,6 +11,8 @@ PETSC_INTERN int PetscDeviceCUPMRuntimeArch; // The real CUDA/HIP arch the code 
 /* logging support */
 PETSC_INTERN PetscLogEvent CUBLAS_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent CUSOLVER_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent CUSPARSE_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent HIPSPARSE_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent HIPSOLVER_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent HIPBLAS_HANDLE_CREATE;
 
@@ -233,6 +235,7 @@ struct _DeviceContextOps {
   PetscErrorCode (*synchronize)(PetscDeviceContext);
   PetscErrorCode (*getblashandle)(PetscDeviceContext, void *);
   PetscErrorCode (*getsolverhandle)(PetscDeviceContext, void *);
+  PetscErrorCode (*getsparsehandle)(PetscDeviceContext, void *);
   PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void **);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext, PetscLogDouble *);
@@ -335,6 +338,15 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
   PetscUseTypeMethod(dctx, getsolverhandle, handle);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode PetscDeviceContextGetSPARSEHandle_Internal(PetscDeviceContext dctx, void *handle)
+{
+  PetscFunctionBegin;
+  /* we do error checking here as this routine is an entry-point */
+  PetscValidDeviceContext(dctx, 1);
+  PetscUseTypeMethod(dctx, getsparsehandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

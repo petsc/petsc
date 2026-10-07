@@ -2,6 +2,8 @@
 
 PetscLogEvent CUBLAS_HANDLE_CREATE;
 PetscLogEvent CUSOLVER_HANDLE_CREATE;
+PetscLogEvent CUSPARSE_HANDLE_CREATE;
+PetscLogEvent HIPSPARSE_HANDLE_CREATE;
 PetscLogEvent HIPSOLVER_HANDLE_CREATE;
 PetscLogEvent HIPBLAS_HANDLE_CREATE;
 
@@ -143,10 +145,12 @@ PetscErrorCode PetscDeviceInitializePackage(void)
   if (PetscDefined(HAVE_CUDA)) {
     PetscCall(PetscDeviceRegisterEvent_Private("cuBLAS Init", PETSC_DEVICE_CONTEXT_CLASSID, &CUBLAS_HANDLE_CREATE));
     PetscCall(PetscDeviceRegisterEvent_Private("cuSolver Init", PETSC_DEVICE_CONTEXT_CLASSID, &CUSOLVER_HANDLE_CREATE));
+    PetscCall(PetscDeviceRegisterEvent_Private("cuSPARSE Init", PETSC_DEVICE_CONTEXT_CLASSID, &CUSPARSE_HANDLE_CREATE));
   }
   if (PetscDefined(HAVE_HIP)) {
     PetscCall(PetscDeviceRegisterEvent_Private("hipBLAS Init", PETSC_DEVICE_CONTEXT_CLASSID, &HIPBLAS_HANDLE_CREATE));
     PetscCall(PetscDeviceRegisterEvent_Private("hipSolver Init", PETSC_DEVICE_CONTEXT_CLASSID, &HIPSOLVER_HANDLE_CREATE));
+    PetscCall(PetscDeviceRegisterEvent_Private("hipSPARSE Init", PETSC_DEVICE_CONTEXT_CLASSID, &HIPSPARSE_HANDLE_CREATE));
   }
   PetscCall(PetscDeviceRegisterEvent_Private("DCtxCreate", PETSC_DEVICE_CONTEXT_CLASSID, &DCONTEXT_Create));
   PetscCall(PetscDeviceRegisterEvent_Private("DCtxDestroy", PETSC_DEVICE_CONTEXT_CLASSID, &DCONTEXT_Destroy));
