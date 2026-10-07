@@ -465,13 +465,8 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     CUPMBlasPointerModeGuard(const cupmBlasHandle_t &handle, cupmBlasPointerMode_t mode) noexcept : handle_{handle}
     {
       PetscFunctionBegin;
-      PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasGetPointerMode(handle, &this->old_));
-      if (this->old_ == mode) {
-        this->set_ = false;
-      } else {
-        this->set_ = true;
-        PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(handle, mode));
-      }
+      PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasGetPointerMode(handle, &this->saved_));
+      PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(handle, mode));
       PetscFunctionReturnVoid();
     }
 
@@ -480,14 +475,13 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     ~CUPMBlasPointerModeGuard() noexcept
     {
       PetscFunctionBegin;
-      if (this->set_) PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(this->handle_, this->old_));
+      PetscCallCUPMBLASAbort(PETSC_COMM_SELF, cupmBlasSetPointerMode(this->handle_, this->saved_));
       PetscFunctionReturnVoid();
     }
 
   private:
     cupmBlasHandle_t      handle_;
-    cupmBlasPointerMode_t old_;
-    bool                  set_;
+    cupmBlasPointerMode_t saved_;
   };
 };
 

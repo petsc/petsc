@@ -1384,15 +1384,15 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::true_type, Vec xin, PetscInt nv
   PetscCall(PetscDeviceContextFork(dctx, n_sub, &subctx));
   PetscCall(PetscLogGpuTimeBegin());
   for (PetscInt i = 0; i < nv; ++i) {
-    const auto            sub = subctx[i % n_sub];
-    cupmBlasHandle_t      handle;
-    cupmBlasPointerMode_t old_mode;
+    const auto       sub = subctx[i % n_sub];
+    cupmBlasHandle_t handle;
 
     PetscCall(GetHandlesFrom_(sub, &handle));
-    PetscCallCUPMBLAS(cupmBlasGetPointerMode(handle, &old_mode));
-    if (old_mode != CUPMBLAS_POINTER_MODE_DEVICE) PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, CUPMBLAS_POINTER_MODE_DEVICE));
-    PetscCallCUPMBLAS(cupmBlasXdot(handle, n, DeviceArrayRead(sub, yin[i]), 1, xptr.cupmdata(), 1, cupmScalarPtrCast(d_z + i)));
-    if (old_mode != CUPMBLAS_POINTER_MODE_DEVICE) PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, old_mode));
+    {
+      const auto pointer_mode = CUPMBlasPointerModeGuard{handle, CUPMBLAS_POINTER_MODE_DEVICE};
+
+      PetscCallCUPMBLAS(cupmBlasXdot(handle, n, DeviceArrayRead(sub, yin[i]), 1, xptr.cupmdata(), 1, cupmScalarPtrCast(d_z + i)));
+    }
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscDeviceContextJoin(dctx, n_sub, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &subctx));
