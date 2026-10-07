@@ -252,8 +252,9 @@ static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z)
   nr = bx->nb;
   _z = 0.0;
 
-  if (type == NORM_2) {
+  if (type == NORM_2 || type == NORM_FROBENIUS) {
     PetscScalar dot;
+
     PetscCall(VecDot(xin, xin, &dot));
     _z = PetscAbsScalar(PetscSqrtScalar(dot));
   } else if (type == NORM_1) {
@@ -266,6 +267,9 @@ static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z)
       PetscCall(VecNorm(bx->v[i], type, &z_i));
       if (z_i > _z) _z = z_i;
     }
+  } else if (type == NORM_1_AND_2) {
+    PetscCall(VecNorm_Nest(xin, NORM_1, &_z));
+    PetscCall(VecNorm_Nest(xin, NORM_2, z + 1));
   }
 
   *z = _z;

@@ -129,6 +129,17 @@ PetscErrorCode test_view(void)
   PetscCall(convert_from_nest(A, &vA));
   PetscCall(convert_from_nest(R, &vR));
   PetscCall(convert_from_nest(E, &vE));
+  {
+    PetscReal norm[2], ref[2];
+
+    PetscCall(VecNorm(A, NORM_FROBENIUS, norm));
+    PetscCall(VecNorm(vA, NORM_FROBENIUS, ref));
+    PetscCheck(PetscIsCloseAtTol(norm[0], ref[0], PETSC_SMALL, PETSC_SMALL), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Nested Frobenius norm differs from the CPU reference");
+    PetscCall(VecNorm(A, NORM_1_AND_2, norm));
+    PetscCall(VecNorm(vA, NORM_1_AND_2, ref));
+    PetscCheck(PetscIsCloseAtTol(norm[0], ref[0], PETSC_SMALL, PETSC_SMALL), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Nested 1-norm differs from the CPU reference");
+    PetscCheck(PetscIsCloseAtTol(norm[1], ref[1], PETSC_SMALL, PETSC_SMALL), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Nested 2-norm differs from the CPU reference");
+  }
   PetscCall(VecCopy(X, X2));
   PetscCall(VecDuplicate(vX, &vX2));
   PetscCall(VecCopy(vX, vX2));
