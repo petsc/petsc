@@ -4,7 +4,7 @@
 #include <petscpkg_version.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 
-#include <petsc/private/deviceimpl.h> // PetscDeviceContextGetOptionalNullContext_Internal()
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/randomimpl.h> // _p_PetscRandom
 #include <petsc/private/vecimpl.h>    // _p_Vec
 #include <petsc/private/cupmobject.hpp>
@@ -197,6 +197,28 @@ inline PetscErrorCode MatCreateSeqDenseCUPM(MPI_Comm comm, PetscInt m, PetscInt 
 {
   PetscFunctionBegin;
   PetscCall(impl::MatDense_Seq_CUPM<T>::CreateIMPLDenseCUPM(comm, m, n, m, n, data, A, dctx, preallocate));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, PetscMemType mtype, PetscMemoryAccessMode access>
+inline PetscErrorCode MatSeqDenseCUPMGetArray_Private(Mat A, PetscScalar **array, PetscDeviceContext dctx) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(array, 2);
+  PetscValidDeviceContext(dctx, 3);
+  PetscCall(impl::MatDense_Seq_CUPM<T>::template GetArray<mtype, access>(A, array, dctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, PetscMemType mtype, PetscMemoryAccessMode access>
+inline PetscErrorCode MatSeqDenseCUPMRestoreArray_Private(Mat A, PetscScalar **array, PetscDeviceContext dctx) noexcept
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  if (array) PetscAssertPointer(array, 2);
+  PetscValidDeviceContext(dctx, 3);
+  PetscCall(impl::MatDense_Seq_CUPM<T>::template RestoreArray<mtype, access>(A, array, dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -776,7 +798,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMatSolve_Factored_Dispatch_(Mat A
       // X's array cannot serve as the array (too small or not on device), B's array cannot
       // serve as the array (const), so allocate a new array
       ldy = m;
-      PetscCall(PetscCUPMMallocAsync(&y, nrhs * m));
+      PetscCall(PetscCUPMMallocAsync(&y, nrhs * m, stream));
     } else {
       // X's array should serve as the array
       ldy = ldx;
@@ -1177,7 +1199,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::GetArray(Mat m, PetscScalar **array,
 
   PetscFunctionBegin;
   static_assert((mtype == PETSC_MEMTYPE_HOST) || (mtype == PETSC_MEMTYPE_DEVICE), "");
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscValidDeviceContext(dctx, 3);
   if (hostmem) {
     if (read_access) {
       PetscCall(DeviceToHost_(m, dctx));
