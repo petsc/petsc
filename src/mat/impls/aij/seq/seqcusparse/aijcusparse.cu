@@ -24,7 +24,8 @@
 #include <thrust/unique.h>
 #include <thrust/gather.h>
 #include <thrust/binary_search.h> // for thrust::lower_bound
-#if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0)
+#include <thrust/version.h>
+#if THRUST_VERSION >= 200800
   #include <cuda/std/functional>
 #endif
 #if CCCL_VERSION >= 3004000
@@ -3379,7 +3380,7 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       PetscCallThrust(thrust::merge(thrust::device, Azb, Aze, Bzb, Bze, Czb, IJCompare4())); // put nonzeros in A and B to C in sorted order (by row and then by column)
       auto cci = thrust::make_counting_iterator(zero);
       auto cce = thrust::make_counting_iterator(c->nz);
-#if PETSC_PKG_CUDA_VERSION_LT(12, 9, 0) || PetscDefined(HAVE_THRUST)
+#if THRUST_VERSION < 200800
       auto pred = thrust::identity<int>();
 #else
       auto pred = cuda::std::identity();
