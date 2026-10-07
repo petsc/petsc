@@ -954,6 +954,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Convert_Dispatch_(Mat M, MatType typ
     }
 
     MatSetOp_CUPM(to_host, B, bindtocpu, nullptr, BindToCPU);
+    MatSetOp_CUPM(to_host, B, getcurrentmemtype, nullptr, GetCurrentMemType);
     MatSetOp_CUPM(to_host, B, destroy, MatDestroy_SeqDense, Destroy);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
