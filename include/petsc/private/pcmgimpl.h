@@ -98,5 +98,6 @@ PETSC_INTERN PetscErrorCode PCMGACycle_Private(PC, PC_MG_Levels **, PetscBool, P
 PETSC_INTERN PetscErrorCode PCMGFCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool, PCRichardsonConvergedReason *);
+PETSC_INTERN PetscErrorCode PCMGResetBlocks_Private(PC);
 
 PETSC_INTERN PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *);

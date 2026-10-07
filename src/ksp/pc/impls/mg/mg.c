@@ -29,6 +29,24 @@ static PetscErrorCode PCMGCheckSmootherDownGuess_Private(PC pc, KSP smoothd, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* destroys the work blocks of PCMatApply(), and so the products they keep, so that the next application sets them up again */
+PetscErrorCode PCMGResetBlocks_Private(PC pc)
+{
+  PC_MG         *mg       = (PC_MG *)pc->data;
+  PC_MG_Levels **mglevels = mg->levels;
+  PetscInt       levels   = mg->nlevels;
+
+  PetscFunctionBegin;
+  if (mglevels == NULL || levels < 1) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatDestroy(&mglevels[levels - 1]->R));
+  for (PetscInt i = 0; i < levels - 1; i++) {
+    PetscCall(MatDestroy(&mglevels[i]->R));
+    PetscCall(MatDestroy(&mglevels[i]->B));
+    PetscCall(MatDestroy(&mglevels[i]->X));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool transpose, PetscBool matapp, PCRichardsonConvergedReason *reason)
 {
   PC_MG        *mg = (PC_MG *)pc->data;
@@ -638,14 +656,7 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
     PetscCall(MatGetSize(mglevels[levels - 2]->X, NULL, &Xc));
     PetscCall(MatGetSize(mglevels[levels - 1]->B, NULL, &Bc));
     PetscCall(PetscObjectTypeCompare((PetscObject)mglevels[levels - 2]->X, ((PetscObject)mglevels[levels - 1]->X)->type_name, &flg));
-    if (Xc != Bc || !flg) {
-      PetscCall(MatDestroy(&mglevels[levels - 1]->R));
-      for (i = 0; i < levels - 1; i++) {
-        PetscCall(MatDestroy(&mglevels[i]->R));
-        PetscCall(MatDestroy(&mglevels[i]->B));
-        PetscCall(MatDestroy(&mglevels[i]->X));
-      }
-    }
+    if (Xc != Bc || !flg) PetscCall(PCMGResetBlocks_Private(pc));
   }
 
   if (mg->am == PC_MG_MULTIPLICATIVE) {
