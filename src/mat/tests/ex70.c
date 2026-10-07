@@ -833,16 +833,18 @@ int main(int argc, char **args)
     suffix: 1_reuse
     args: -testreusemodified
 
-  # MatCreateMAIJ() converts its result to MATAIJKOKKOS or MATAIJCUSPARSE, so the MAIJ matrix
-  # cached by MatTransposeMatMultSymbolic_MPIAIJ_MPIDense() holds a copy of A that goes stale
-  # when A's values change before a MAT_REUSE_MATRIX product
+  test:
+    output_file: output/empty.out
+    nsize: 2
+    suffix: 1_par_reuse
+    args: -testmatmatt 0 -testreusemodified
+
   test:
     output_file: output/empty.out
     nsize: 2
     requires: kokkos_kernels
     suffix: 1_par_kokkos_reuse
     args: -testmatmatt 0 -A_mat_type aijkokkos -testrart 0 -testreusemodified
-    TODO: MATPRODUCT_AtB with MATMPIAIJKOKKOS computes with stale values of A on MAT_REUSE_MATRIX
 
   test:
     output_file: output/empty.out
@@ -850,7 +852,6 @@ int main(int argc, char **args)
     requires: cuda
     suffix: 1_par_cuda_reuse
     args: -testnest 0 -testmatmatt 0 -matproduct_batch_size 3 -A_mat_type mpiaijcusparse -testreusemodified
-    TODO: MATPRODUCT_AtB with MATMPIAIJCUSPARSE computes with stale values of A on MAT_REUSE_MATRIX
 
   test:
     output_file: output/empty.out

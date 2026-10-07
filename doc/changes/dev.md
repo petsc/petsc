@@ -93,6 +93,7 @@
 - Add `MatGetRowSumAbs()` for `MATHYPRE`, on the host and the device, and device implementations of `MatGetRowSumAbs()` for `MATAIJCUSPARSE`, `MATAIJHIPSPARSE`, and `MATAIJKOKKOS`; previously the AIJ device types copied the matrix values to the host
 - Change `MatSetRandom()` to no longer assemble at the interface; `MATOP_SETRANDOM` implementations must leave the matrix assembled with increased state
 - Change `MatCreateSubMatricesMPI()` to return parallel submatrices of the same `MATAIJ` subtype as the input matrix, for example `MATAIJCUSPARSE`, instead of always `MATMPIAIJ`
+- Add device support for `MATPRODUCT_AtB` with a `MATMPIAIJCUSPARSE`, `MATMPIAIJHIPSPARSE`, or `MATMPIAIJKOKKOS` matrix and a `MATMPIDENSECUDA` or `MATMPIDENSEHIP` matrix, also with `-matproduct_batch_size`; previously a `MATMAIJ` product copied the dense matrices to the host
 
 ```{rubric} MatCoarsen:
 ```

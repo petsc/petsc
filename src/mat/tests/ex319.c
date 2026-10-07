@@ -1,4 +1,4 @@
-static char help[] = "Tests MatMatMult() of an MPIAIJ-family matrix with an MPIDENSE-family matrix, including the batched path, against a host reference\n\n";
+static char help[] = "Tests MatMatMult() and MatTransposeMatMult() of an MPIAIJ-family matrix with an MPIDENSE-family matrix, including the batched path, against a host reference\n\n";
 
 // Contributed by: Steven Dargaville
 
@@ -23,13 +23,68 @@ static PetscErrorCode CheckProduct(Mat C, Mat Ch, const char *label)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// C = A * B, or C = A^T * B if transpose is true
+static PetscErrorCode Product(Mat A, Mat B, MatReuse reuse, PetscBool transpose, Mat *C)
+{
+  PetscFunctionBeginUser;
+  if (transpose) PetscCall(MatTransposeMatMult(A, B, reuse, PETSC_DETERMINE, C));
+  else PetscCall(MatMatMult(A, B, reuse, PETSC_DETERMINE, C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Ch comes from the same batching and reduction code as C, so also check it against matrix-vector products
+static PetscErrorCode CheckTransposeReference(Mat Ah, Mat Bh, Mat Ch, const char *label)
+{
+  PetscBool flg;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatTransposeMatMultEqual(Ah, Bh, Ch, 10, &flg));
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "%s: wrong host reference", label);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Reuse Ch = Ah^T * Bh with an output whose leading dimension changes, on one process only and then on all of them
+static PetscErrorCode CheckChangedLDA(Mat Ah, Mat Bh, Mat Ch)
+{
+  Mat          C;
+  PetscScalar *store;
+  PetscInt     m, n, M, N;
+  PetscMPIInt  rank;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCall(MatGetLocalSize(Ch, &m, &n));
+  PetscCall(MatGetSize(Ch, &M, &N));
+  PetscCall(PetscMalloc1((m + 3) * N, &store));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, n, M, N, store, &C));
+  PetscCall(MatDenseSetLDA(C, m + 1));
+  PetscCall(MatProductCreateWithMat(Ah, Bh, NULL, C));
+  PetscCall(MatProductSetType(C, MATPRODUCT_AtB));
+  PetscCall(MatProductSetFromOptions(C));
+  PetscCall(MatProductSymbolic(C));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(CheckProduct(C, Ch, "lda m + 1"));
+  if (rank == 0) PetscCall(MatDenseSetLDA(C, m + 3));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(CheckProduct(C, Ch, "lda m + 3 on the first process"));
+  PetscCall(MatDenseSetLDA(C, m + 2));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(CheckProduct(C, Ch, "lda m + 2"));
+  PetscCall(MatDenseSetLDA(C, m + 1));
+  PetscCall(MatProductNumeric(C));
+  PetscCall(CheckProduct(C, Ch, "lda m + 1 again"));
+  PetscCall(MatDestroy(&C));
+  PetscCall(PetscFree(store));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
   Mat           A, B, C, Ah, Bh, Ch;
   char          atype[256], btype[256];
   PetscScalar   vals[4];
   PetscInt      m = 20, n = 7, rstart, rend, ncols, cols[4];
-  PetscBool     block_diagonal = PETSC_FALSE, check_copies = PETSC_FALSE, tridiagonal = PETSC_FALSE;
+  PetscBool     block_diagonal = PETSC_FALSE, change_lda = PETSC_FALSE, check_copies = PETSC_FALSE, tridiagonal = PETSC_FALSE, transpose = PETSC_FALSE;
   PetscLogEvent event;
   PetscMPIInt   size;
 
@@ -44,6 +99,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsFList("-B_mat_type", "Type of B", "MatSetType", MatList, btype, btype, sizeof(btype), NULL));
   PetscCall(PetscOptionsBool("-block_diagonal", "Only keep the columns of A owned by this process, so the off-diagonal blocks have no columns", NULL, block_diagonal, &block_diagonal, NULL));
   PetscCall(PetscOptionsBool("-tridiagonal", "Make A tridiagonal, so that only the first and last row of each off-diagonal block are nonempty and the block is stored in compressed-row format", NULL, tridiagonal, &tridiagonal, NULL));
+  PetscCall(PetscOptionsBool("-transpose", "Compute A^T * B with MatTransposeMatMult() instead of A * B", NULL, transpose, &transpose, NULL));
+  PetscCall(PetscOptionsBool("-change_lda", "Reuse A^T * B with an output whose leading dimension changes", NULL, change_lda, &change_lda, NULL));
   PetscCall(PetscOptionsBool("-check_copies", "Check that a product of device matrices does not copy between the host and the device", NULL, check_copies, &check_copies, NULL));
   PetscOptionsEnd();
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
@@ -109,9 +166,10 @@ int main(int argc, char **args)
   PetscCall(MatDuplicate(Bh, MAT_COPY_VALUES, &B));
   PetscCall(MatConvert(B, btype, MAT_INPLACE_MATRIX, &B));
 
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatMatMult(Ah, Bh, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Ch));
+  PetscCall(Product(A, B, MAT_INITIAL_MATRIX, transpose, &C));
+  PetscCall(Product(Ah, Bh, MAT_INITIAL_MATRIX, transpose, &Ch));
   PetscCall(CheckProduct(C, Ch, "MAT_INITIAL_MATRIX"));
+  if (transpose) PetscCall(CheckTransposeReference(Ah, Bh, Ch, "MAT_INITIAL_MATRIX"));
 
   /* change the values of both pairs identically and reuse the products */
   PetscCall(MatScale(A, 2.0));
@@ -121,14 +179,16 @@ int main(int argc, char **args)
   PetscCall(MatShift(Ah, 1.0));
   PetscCall(MatScale(Bh, -0.5));
 
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
-  PetscCall(MatMatMult(Ah, Bh, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Ch));
+  PetscCall(Product(A, B, MAT_REUSE_MATRIX, transpose, &C));
+  PetscCall(Product(Ah, Bh, MAT_REUSE_MATRIX, transpose, &Ch));
   PetscCall(CheckProduct(C, Ch, "MAT_REUSE_MATRIX"));
+  if (transpose) PetscCall(CheckTransposeReference(Ah, Bh, Ch, "MAT_REUSE_MATRIX"));
+  if (change_lda) PetscCall(CheckChangedLDA(Ah, Bh, Ch));
 
   /* the reuse above brings the modified values to the device (MatShift() may run on the host), so any copy logged
      in a further reuse is made by the product itself */
   PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
-  PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
+  PetscCall(Product(A, B, MAT_REUSE_MATRIX, transpose, &C));
   PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
   PetscCall(CheckProduct(C, Ch, "MAT_REUSE_MATRIX again"));
 
@@ -138,8 +198,8 @@ int main(int argc, char **args)
     PetscEventPerfInfo info;
 
     PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
-    PetscCheck(info.GpuToCpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected GPU to CPU copies (%g bytes) in MatMatMult()", info.GpuToCpuCount, info.GpuToCpuSize);
-    PetscCheck(info.CpuToGpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected CPU to GPU copies (%g bytes) in MatMatMult()", info.CpuToGpuCount, info.CpuToGpuSize);
+    PetscCheck(info.GpuToCpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected GPU to CPU copies (%g bytes) in the product", info.GpuToCpuCount, info.GpuToCpuSize);
+    PetscCheck(info.CpuToGpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected CPU to GPU copies (%g bytes) in the product", info.CpuToGpuCount, info.CpuToGpuSize);
   }
 #endif
 
@@ -161,12 +221,22 @@ int main(int argc, char **args)
     test:
       suffix: host
       nsize: {{1 3}}
-      args: -block_diagonal {{0 1}}
+      args: -block_diagonal {{0 1}} -transpose {{0 1}}
 
     test:
       suffix: host_batch
       nsize: 3
-      args: -matproduct_batch_size {{2 3 4}} -tridiagonal {{0 1}}
+      args: -matproduct_batch_size {{2 3 4}} -tridiagonal {{0 1}} -transpose {{0 1}}
+
+    test:
+      suffix: host_change_lda
+      nsize: {{1 3}}
+      args: -transpose -change_lda
+
+    test:
+      suffix: host_change_lda_batch
+      nsize: 3
+      args: -transpose -change_lda -matproduct_batch_size {{2 3}}
 
     # the local block of B is a host MATSEQDENSE here, so the scatter of the off-process rows
     # does not go through device memory and -use_gpu_aware_mpi would only duplicate the runs
@@ -174,16 +244,16 @@ int main(int argc, char **args)
       suffix: kokkos
       requires: kokkos_kernels
       nsize: {{1 3}}
-      args: -A_mat_type aijkokkos
+      args: -A_mat_type aijkokkos -transpose {{0 1}}
 
     test:
       suffix: kokkos_batch
       requires: kokkos_kernels
       nsize: 3
-      args: -A_mat_type aijkokkos -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}}
+      args: -A_mat_type aijkokkos -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -transpose {{0 1}}
 
   # -check_copies in parallel requires GPU-aware MPI: without it PetscSF stages the device buffers of the
-  # scatter through the host, and those copies are logged inside MatMatMult(). The plain device tests run
+  # scatter through the host, and those copies are logged inside the product. The plain device tests run
   # with that staging, which is valid on every build, and the _copies_par tests cover the GPU-aware path
 
   testset:
@@ -194,19 +264,19 @@ int main(int argc, char **args)
     test:
       suffix: kokkos_cuda
       nsize: 3
-      args: -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0
+      args: -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0 -transpose {{0 1}}
 
     test:
       suffix: kokkos_cuda_copies
       nsize: 1
       requires: defined(PETSC_USE_LOG)
-      args: -check_copies
+      args: -check_copies -transpose {{0 1}}
 
     test:
       suffix: kokkos_cuda_copies_par
       nsize: 3
       requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
-      args: -check_copies -matproduct_batch_size {{0 3}}
+      args: -check_copies -matproduct_batch_size {{0 3}} -transpose {{0 1}}
 
   testset:
     requires: cuda
@@ -216,19 +286,19 @@ int main(int argc, char **args)
     test:
       suffix: cuda
       nsize: 3
-      args: -B_mat_type {{dense densecuda}} -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0
+      args: -B_mat_type {{dense densecuda}} -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0 -transpose {{0 1}}
 
     test:
       suffix: cuda_copies
       nsize: 1
       requires: defined(PETSC_USE_LOG)
-      args: -B_mat_type densecuda -check_copies
+      args: -B_mat_type densecuda -check_copies -transpose {{0 1}}
 
     test:
       suffix: cuda_copies_par
       nsize: 3
       requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
-      args: -B_mat_type densecuda -check_copies -matproduct_batch_size {{0 3}}
+      args: -B_mat_type densecuda -check_copies -matproduct_batch_size {{0 3}} -transpose {{0 1}}
 
   testset:
     requires: hip kokkos_kernels
@@ -238,19 +308,19 @@ int main(int argc, char **args)
     test:
       suffix: kokkos_hip
       nsize: 3
-      args: -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0
+      args: -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0 -transpose {{0 1}}
 
     test:
       suffix: kokkos_hip_copies
       nsize: 1
       requires: defined(PETSC_USE_LOG)
-      args: -check_copies
+      args: -check_copies -transpose {{0 1}}
 
     test:
       suffix: kokkos_hip_copies_par
       nsize: 3
       requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
-      args: -check_copies -matproduct_batch_size {{0 3}}
+      args: -check_copies -matproduct_batch_size {{0 3}} -transpose {{0 1}}
 
   testset:
     requires: hip
@@ -260,18 +330,18 @@ int main(int argc, char **args)
     test:
       suffix: hip
       nsize: 3
-      args: -B_mat_type {{dense densehip}} -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0
+      args: -B_mat_type {{dense densehip}} -matproduct_batch_size {{0 3}} -tridiagonal {{0 1}} -use_gpu_aware_mpi 0 -transpose {{0 1}}
 
     test:
       suffix: hip_copies
       nsize: 1
       requires: defined(PETSC_USE_LOG)
-      args: -B_mat_type densehip -check_copies
+      args: -B_mat_type densehip -check_copies -transpose {{0 1}}
 
     test:
       suffix: hip_copies_par
       nsize: 3
       requires: defined(PETSC_HAVE_MPI_GPU_AWARE) defined(PETSC_USE_LOG)
-      args: -B_mat_type densehip -check_copies -matproduct_batch_size {{0 3}}
+      args: -B_mat_type densehip -check_copies -matproduct_batch_size {{0 3}} -transpose {{0 1}}
 
 TEST*/
