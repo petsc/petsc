@@ -135,13 +135,12 @@ struct Mat_SeqAIJCUSPARSETriFactorStruct {
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
 struct Mat_SeqAIJCUSPARSETriFactors {
-  THRUSTINTARRAY  *rpermIndices; /* indices used for any reordering */
-  THRUSTINTARRAY  *cpermIndices; /* indices used for any reordering */
-  THRUSTARRAY     *workVector;
-  cusparseHandle_t handle; /* a handle to the cusparse library */
-  PetscInt         nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  cudaDeviceProp   dev_prop;
-  PetscBool        init_dev_prop;
+  THRUSTINTARRAY *rpermIndices; /* indices used for any reordering */
+  THRUSTINTARRAY *cpermIndices; /* indices used for any reordering */
+  THRUSTARRAY    *workVector;
+  PetscInt        nnz; /* number of nonzeros ... need this for accurate logging between ICC and ILU */
+  cudaDeviceProp  dev_prop;
+  PetscBool       init_dev_prop;
 
   PetscScalar *csrVal, *diag;             // the diagonal D in UtDU of Cholesky
   int         *csrRowPtr32, *csrColIdx32; // i,j of M. cusparseScsrilu02/ic02() etc require 32-bit indices
@@ -214,8 +213,6 @@ struct Mat_SeqAIJCUSPARSE {
   PetscInt                      nrows;             /* number of rows of the matrix seen by GPU */
   MatCUSPARSEStorageFormat      format;            /* the storage format for the matrix on the device */
   PetscBool                     use_cpu_solve;     /* Use AIJ_Seq (I)LU solve */
-  cudaStream_t                  stream;            /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
-  cusparseHandle_t              handle;            /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState              nonzerostate;      /* track nonzero state to possibly recreate the GPU matrix */
   size_t                        csr2cscBufferSize; /* stuff used to compute the matTranspose above */
   void                         *csr2cscBuffer;     /* This is used as a C struct and is calloc'ed by PetscNew() */
