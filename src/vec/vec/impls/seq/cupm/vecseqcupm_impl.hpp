@@ -1313,6 +1313,10 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::false_type, Vec xin, PetscInt n
     // fiddly to do so presently
     PetscCall(PetscDeviceContextGetStreamType(dctx, &stype));
     if (stype == PETSC_STREAM_DEFAULT || stype == PETSC_STREAM_DEFAULT_WITH_BARRIER) stype = PETSC_STREAM_NONBLOCKING;
+    if (num_sub_streams) {
+      // Upload inputs before forking so child contexts cannot race on repeated vectors.
+      for (PetscInt i = 0; i < nv; ++i) PetscCall(CopyToDevice_(dctx, yin[i]));
+    }
     // If we have a default stream create nonblocking streams instead (as we can
     // locally exploit the parallelism). Otherwise use the prescribed stream type.
     PetscCall(PetscDeviceContextForkWithStreamType(dctx, stype, num_sub_streams, &sub));
@@ -1381,6 +1385,8 @@ inline PetscErrorCode VecSeq_CUPM<T>::MDot_(std::true_type, Vec xin, PetscInt nv
   PetscFunctionBegin;
   PetscCall(GetHandlesFrom_(dctx, &stream));
   PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_CUPM(), nv, &d_z));
+  // Upload inputs before forking so child contexts cannot race on repeated vectors.
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(CopyToDevice_(dctx, yin[i]));
   PetscCall(PetscDeviceContextFork(dctx, n_sub, &subctx));
   PetscCall(PetscLogGpuTimeBegin());
   for (PetscInt i = 0; i < nv; ++i) {
