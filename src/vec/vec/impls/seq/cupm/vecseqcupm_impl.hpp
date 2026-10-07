@@ -1586,7 +1586,10 @@ inline PetscErrorCode VecSeq_CUPM<T>::CopyAsync(Vec xin, Vec yout, PetscDeviceCo
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "Unknown cupmMemcpyKind %d", static_cast<int>(mode));
     }
-    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
+    // Host-to-host copies are synchronous, even through the Async copy API.
+    // Complete device-to-host copies before CPU operations can access yout.
+    if (mode == cupmMemcpyDeviceToHost) PetscCall(PetscDeviceContextSynchronize(dctx));
+    else PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   } else {
     PetscCall(MaybeIncrementEmptyLocalVec(yout));
   }
