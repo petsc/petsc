@@ -2038,7 +2038,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 
 /*@
   VecGetArray - Returns a pointer to a contiguous array that contains this
-  MPI processes's portion of the vector data
+  MPI process's portion of the vector data
 
   Logically Collective
 
@@ -2194,7 +2194,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar *a[])
 
 /*@
   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
-  MPI processes's portion of the vector data.
+  MPI process's portion of the vector data.
 
   Logically Collective
 
@@ -2335,7 +2335,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 /*@
   VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g.,
   `VECCUDA`), the returned pointer will be a device pointer to the device memory that contains
-  this MPI processes's portion of the vector data.
+  this MPI process's portion of the vector data.
 
   Logically Collective; No Fortran Support
 

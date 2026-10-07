@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
     PetscCall(VecGetArrayRead(local, &local_array));
     for (PetscInt i = 0; i < N; i++) {
-      PetscCheck(copy_array[i] == local_array[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecGetLocalVector() value mismatch: local[%" PetscInt_FMT "] = %g, global[%" PetscInt_FMT "] = %g", i, (double)PetscRealPart(local_array[i]), i, PetscRealPart(copy_array[i]));
+      PetscCheck(copy_array[i] == local_array[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "VecGetLocalVector() value mismatch: local[%" PetscInt_FMT "] = %g, global[%" PetscInt_FMT "] = %g", i, (double)PetscRealPart(local_array[i]), i, (double)PetscRealPart(copy_array[i]));
     }
     PetscCall(VecRestoreArrayRead(local, &local_array));
   }

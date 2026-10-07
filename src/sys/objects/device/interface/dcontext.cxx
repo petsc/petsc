@@ -884,9 +884,6 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
     auto &ctxlist = nullContexts[dtype];
 
     PetscCheck(devid >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Device ID (%" PetscInt_FMT ") must be positive", devid);
-    // need to resize the container if not big enough because incrementing the iterator in
-    // std::next() (if we haven't initialized that ctx yet) may cause it to fall outside the
-    // current size of the container.
     if (static_cast<std::size_t>(devid) >= ctxlist.size()) PetscCallCXX(ctxlist.resize(devid + 1));
     if (PetscUnlikely(!ctxlist[devid])) {
       // we have not seen this device before
@@ -903,8 +900,7 @@ static PetscErrorCode PetscDeviceContextGetNullContextForDevice_Private(PetscBoo
       PetscCall(PetscDeviceContextSetStreamType(*dctx, PETSC_STREAM_DEFAULT));
       PetscCall(PetscDeviceContextSetDevice_Private(*dctx, device, user_set_device));
       PetscCall(PetscDeviceContextSetUp(*dctx));
-      // would use ctxlist.cbegin() but GCC 4.8 can't handle const iterator insert!
-      PetscCallCXX(ctxlist.insert(std::next(ctxlist.begin(), devid), *dctx));
+      ctxlist[devid] = *dctx;
     } else *dctx = ctxlist[devid];
   }
   PetscFunctionReturn(PETSC_SUCCESS);

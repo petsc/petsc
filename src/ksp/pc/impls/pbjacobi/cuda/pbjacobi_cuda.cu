@@ -98,8 +98,8 @@ PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc, Mat diagVB)
   size = sizeof(PetscScalar) * jac->bs * jac->bs * jac->mbs;
 
   /* PBJacobi_CUDA is simple so that we use jac->spptr as if it is diag_d */
-  if (!jac->spptr) PetscCallCUDAVoid(cudaMalloc(&jac->spptr, size));
-  PetscCallCUDAVoid(cudaMemcpy(jac->spptr, jac->diag, size, cudaMemcpyHostToDevice));
+  if (!jac->spptr) PetscCallCUDA(cudaMalloc(&jac->spptr, size));
+  PetscCallCUDA(cudaMemcpy(jac->spptr, jac->diag, size, cudaMemcpyHostToDevice));
   PetscCall(PetscLogCpuToGpu(size));
 
   pc->ops->apply          = PCApply_PBJacobi_CUDA;
