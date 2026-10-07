@@ -15,20 +15,26 @@ static PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool);
+PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool, cudaStream_t);
 
 static PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
 {
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
   size_t              nn     = n < 0 ? (size_t)(-2 * n) : (size_t)n; /* handle complex case */
+  PetscDeviceContext  dctx;
+  cudaStream_t       *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
+  PetscCallCURAND(curandSetStream(curand->gen, *stream));
 #if PetscDefined(USE_REAL_SINGLE)
   PetscCallCURAND(curandGenerateUniform(curand->gen, val, nn));
 #else
   PetscCallCURAND(curandGenerateUniformDouble(curand->gen, val, nn));
 #endif
-  if (r->iset) PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0)));
+  if (r->iset) PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0), *stream));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
