@@ -1364,29 +1364,6 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A, MatFacto
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat A)
-{
-  Mat_SeqAIJ                   *a    = (Mat_SeqAIJ *)A->data;
-  Mat_SeqAIJCUSPARSE           *cusp = (Mat_SeqAIJCUSPARSE *)A->spptr;
-  Mat_SeqAIJCUSPARSETriFactors *fs   = (Mat_SeqAIJCUSPARSETriFactors *)A->spptr;
-
-  PetscFunctionBegin;
-  if (A->offloadmask == PETSC_OFFLOAD_GPU) {
-    PetscCall(PetscLogEventBegin(MAT_CUSPARSECopyFromGPU, A, 0, 0, 0));
-    if (A->factortype == MAT_FACTOR_NONE) {
-      CsrMatrix *matrix = (CsrMatrix *)cusp->mat->mat;
-      PetscCallCUDA(cudaMemcpy(a->a, matrix->values->data().get(), a->nz * sizeof(PetscScalar), cudaMemcpyDeviceToHost));
-    } else if (fs->csrVal) {
-      /* We have a factorized matrix on device and are able to copy it to host */
-      PetscCallCUDA(cudaMemcpy(a->a, fs->csrVal, a->nz * sizeof(PetscScalar), cudaMemcpyDeviceToHost));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for copying this type of factorized matrix from device to host");
-    PetscCall(PetscLogGpuToCpu(a->nz * sizeof(PetscScalar)));
-    PetscCall(PetscLogEventEnd(MAT_CUSPARSECopyFromGPU, A, 0, 0, 0));
-    A->offloadmask = PETSC_OFFLOAD_BOTH;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /* Policy struct for MatSeqAIJCUSPARSE_CUPM shared template (CUDA specialisation) */
 struct MatSeqAIJCUSPARSE_Policy {
   typedef Mat_SeqAIJCUSPARSE           mat_struct_type;
@@ -1425,6 +1402,33 @@ const char *MatSeqAIJCUSPARSE_Policy::product_self_c            = "MatProductSet
 const char *MatSeqAIJCUSPARSE_Policy::seq_convert_hypre_c       = "MatConvert_seqaijcusparse_hypre_C";
 
 using MatSeqAIJCUSPARSE_CUPM_t = Petsc::mat::aij::cupm::impl::MatSeqAIJCUSPARSE_CUPM<Petsc::device::cupm::DeviceType::CUDA, MatSeqAIJCUSPARSE_Policy>;
+
+static PetscErrorCode MatSeqAIJCUSPARSECopyFromGPU(Mat A)
+{
+  Mat_SeqAIJ                   *a    = (Mat_SeqAIJ *)A->data;
+  Mat_SeqAIJCUSPARSE           *cusp = (Mat_SeqAIJCUSPARSE *)A->spptr;
+  Mat_SeqAIJCUSPARSETriFactors *fs   = (Mat_SeqAIJCUSPARSETriFactors *)A->spptr;
+  PetscDeviceContext            dctx;
+  cudaStream_t                  stream;
+
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJCUSPARSE_CUPM_t::GetHandles_(&dctx, &stream));
+  if (A->offloadmask == PETSC_OFFLOAD_GPU) {
+    PetscCall(PetscLogEventBegin(MAT_CUSPARSECopyFromGPU, A, 0, 0, 0));
+    if (A->factortype == MAT_FACTOR_NONE) {
+      CsrMatrix *matrix = (CsrMatrix *)cusp->mat->mat;
+      PetscCallCUDA(cudaMemcpyAsync(a->a, matrix->values->data().get(), a->nz * sizeof(PetscScalar), cudaMemcpyDeviceToHost, stream));
+    } else if (fs->csrVal) {
+      /* We have a factorized matrix on device and are able to copy it to host */
+      PetscCallCUDA(cudaMemcpyAsync(a->a, fs->csrVal, a->nz * sizeof(PetscScalar), cudaMemcpyDeviceToHost, stream));
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for copying this type of factorized matrix from device to host");
+    PetscCall(PetscDeviceContextSynchronize(dctx));
+    PetscCall(PetscLogGpuToCpu(a->nz * sizeof(PetscScalar)));
+    PetscCall(PetscLogEventEnd(MAT_CUSPARSECopyFromGPU, A, 0, 0, 0));
+    A->offloadmask = PETSC_OFFLOAD_BOTH;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 static PetscErrorCode MatSeqAIJGetArray_SeqAIJCUSPARSE(Mat A, PetscScalar *array[])
 {
