@@ -205,7 +205,8 @@ inline PetscErrorCode VecCUPMGetArrayAsync_Private(Vec v, PetscScalar **a, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(a, 2);
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  if (!dctx) PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+  PetscValidDeviceContext(dctx, 3);
   PetscCall(impl::VecSeq_CUPM<T>::template GetArray<PETSC_MEMTYPE_DEVICE, mode>(v, a, dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -215,7 +216,8 @@ inline PetscErrorCode VecCUPMRestoreArrayAsync_Private(Vec v, PetscScalar **a, P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  if (!dctx) PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+  PetscValidDeviceContext(dctx, 3);
   PetscCall(impl::VecSeq_CUPM<T>::template RestoreArray<PETSC_MEMTYPE_DEVICE, mode>(v, a, dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
