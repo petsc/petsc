@@ -2491,7 +2491,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
       opA       = herm ? HIPSPARSE_OPERATION_CONJUGATE_TRANSPOSE : HIPSPARSE_OPERATION_TRANSPOSE;
       matstruct = (Mat_SeqAIJHIPSPARSEMultStruct *)hipsparsestruct->mat;
     } else {
-      if (!hipsparsestruct->matTranspose) PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(A));
+      if (!A->transupdated) PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(A));
       matstruct = (Mat_SeqAIJHIPSPARSEMultStruct *)hipsparsestruct->matTranspose;
     }
   }

@@ -198,6 +198,48 @@ static PetscErrorCode TestSparseSolves(PetscDeviceType type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestTransposeUpdate(PetscDeviceType type)
+{
+  Mat                A;
+  Vec                x, y;
+  PetscScalar       *values;
+  const PetscScalar *a;
+  const PetscScalar  ones[] = {1, 1, 1, 1};
+
+  PetscFunctionBeginUser;
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, 4, 4, 1, NULL, &A));
+  for (PetscInt i = 0; i < 4; ++i) PetscCall(MatSetValue(A, i, i, 2, INSERT_VALUES));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatConvert(A, type == PETSC_DEVICE_CUDA ? MATSEQAIJCUSPARSE : MATSEQAIJHIPSPARSE, MAT_INPLACE_MATRIX, &A));
+  PetscCall(MatSetOption(A, MAT_FORM_EXPLICIT_TRANSPOSE, PETSC_TRUE));
+  PetscCall(MatCreateVecs(A, &x, &y));
+  PetscCall(VecSet(x, 2));
+  PetscCall(MatMultTranspose(A, x, y));
+#if PetscDefined(HAVE_CUDA)
+  if (type == PETSC_DEVICE_CUDA) {
+    PetscCall(MatSeqAIJCUSPARSEGetArray(A, &values));
+    PetscCallCUDA(cudaMemcpy(values, ones, sizeof(ones), cudaMemcpyHostToDevice));
+    PetscCall(MatSeqAIJCUSPARSERestoreArray(A, &values));
+  }
+#endif
+#if PetscDefined(HAVE_HIP)
+  if (type == PETSC_DEVICE_HIP) {
+    PetscCall(MatSeqAIJHIPSPARSEGetArray(A, &values));
+    PetscCallHIP(hipMemcpy(values, ones, sizeof(ones), hipMemcpyHostToDevice));
+    PetscCall(MatSeqAIJHIPSPARSERestoreArray(A, &values));
+  }
+#endif
+  PetscCall(MatMultTranspose(A, x, y));
+  PetscCall(VecGetArrayRead(y, &a));
+  for (PetscInt i = 0; i < 4; ++i) PetscCheck(a[i] == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Transpose multiply used stale values at entry %" PetscInt_FMT, i);
+  PetscCall(VecRestoreArrayRead(y, &a));
+  PetscCall(VecDestroy(&y));
+  PetscCall(VecDestroy(&x));
+  PetscCall(MatDestroy(&A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   PetscDeviceContext dctx;
@@ -212,6 +254,7 @@ int main(int argc, char **argv)
   PetscCall(TestSELLChunks(type));
 #endif
   PetscCall(TestSparseSolves(type));
+  PetscCall(TestTransposeUpdate(type));
   PetscCall(PetscFinalize());
   return 0;
 }
