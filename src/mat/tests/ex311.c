@@ -3,6 +3,7 @@ static const char help[] = "Test MatDiagonalScale() on dense matrices with scali
 // Contributed by: Steven Dargaville
 
 #include <petscmat.h>
+#include <petsc/private/petscimpl.h>
 
 /* The scaling Vecs take their type from -vec_type, independently of the Mat type set
    with -mat_type. Scaling is verified against a duplicate matrix scaled with VECSTANDARD
@@ -16,12 +17,19 @@ int main(int argc, char **args)
   PetscInt      m = 5, n = 4, mloc, nloc, rstart, rend;
   PetscBool     equal = PETSC_FALSE, check_copies = PETSC_FALSE;
   PetscLogEvent event;
+  PetscMPIInt   size;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_copies", &check_copies, NULL));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  /* PetscSF stages device buffers through the host when GPU-aware MPI is disabled. */
+  if (check_copies && size > 1 && !use_gpu_aware_mpi) {
+    PetscCall(PetscInfo(NULL, "Skipping copy checks because GPU-aware MPI is disabled; numerical checks remain enabled\n"));
+    check_copies = PETSC_FALSE;
+  }
   if (check_copies) PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscLogEventRegister("ScaleCheck", MAT_CLASSID, &event));
 
