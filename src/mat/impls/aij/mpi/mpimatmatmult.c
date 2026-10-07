@@ -414,14 +414,45 @@ static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(PetscCtxRt ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Creates the parts of the scatter that depend on contents->blda: the strided PetscSFs on the device, the send datatypes on the host */
+static PetscErrorCode MatMPIDenseScatterSetUpLDA_Private(VecScatter ctx, PetscInt bs, Mat B, MPIAIJ_MPIDense *contents)
+{
+  PetscInt        nrows = contents->workB->rmap->n;
+  MPI_Datatype    type1;
+  const PetscInt *sindices, *sstarts;
+  PetscMPIInt    *disp;
+  PetscMPIInt     nsends, nrows_to, bs_mpi;
+
+  PetscFunctionBegin;
+  if (contents->ondevice) {
+    PetscCheck(ctx->vscat.bs <= 1 || contents->blda % ctx->vscat.bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Leading dimension %" PetscInt_FMT " of the dense matrix must be a multiple of the block size %" PetscInt_FMT, contents->blda, ctx->vscat.bs);
+    PetscCall(PetscSFCreateStridedSF(ctx, contents->ncols[0], contents->blda, nrows, &contents->sf[0]));
+    if (contents->ncols[1] > 0) PetscCall(PetscSFCreateStridedSF(ctx, contents->ncols[1], contents->blda, nrows, &contents->sf[1]));
+  } else {
+    PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(PetscMalloc1(PetscMax(B->rmap->n, 1), &disp));
+    PetscCall(PetscMPIIntCast(bs, &bs_mpi));
+    for (PetscMPIInt i = 0; i < nsends; i++) {
+      PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
+      for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
+      PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
+      PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
+      PetscCallMPI(MPI_Type_free(&type1));
+    }
+    PetscCall(PetscFree(disp));
+    PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, PetscInt Am, Mat B, Mat C, MPIAIJ_MPIDense *contents, PetscInt *batchSize, PetscInt *numBatches)
 {
-  PetscInt        Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbs, numBb, ncols;
+  PetscInt        BN = B->cmap->N, Bbn, Bbs, numBb, ncols;
   MPI_Comm        comm;
   MPI_Datatype    type1;
-  const PetscInt *sindices, *sstarts, *rstarts;
-  PetscMPIInt    *disp;
-  PetscMPIInt     nsends, nrecvs, nrows_to, nrows_from, bs_mpi;
+  const PetscInt *rstarts;
+  PetscMPIInt     nsends, nrecvs, nrows_from, disp = 0;
   PetscBool       flg;
 
   PetscFunctionBegin;
@@ -461,15 +492,10 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
   contents->ondevice = (PetscBool)!flg;
   if (contents->ondevice) {
     /* Use strided PetscSFs, which support device memory, instead of the MPI derived data types below */
-    PetscCheck(ctx->vscat.bs <= 1 || contents->blda % ctx->vscat.bs == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Leading dimension %" PetscInt_FMT " of the dense matrix must be a multiple of the block size %" PetscInt_FMT, contents->blda, ctx->vscat.bs);
     contents->ncols[0] = ncols;
-    PetscCall(PetscSFCreateStridedSF(ctx, ncols, contents->blda, nrows, &contents->sf[0]));
-    if (numBb && BN % Bbn) {
-      contents->ncols[1] = BN % Bbn;
-      PetscCall(PetscSFCreateStridedSF(ctx, BN % Bbn, contents->blda, nrows, &contents->sf[1]));
-    }
+    if (numBb > 0 && BN % Bbn != 0) contents->ncols[1] = BN % Bbn;
   } else {
-    PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE, &nsends, NULL, NULL, NULL, NULL));
     PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE, &nrecvs, &rstarts, NULL, NULL, NULL));
 
     /* Use MPI derived data type to reduce memory required by the send/recv buffers */
@@ -477,31 +503,19 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
     contents->nsends = nsends;
     contents->nrecvs = nrecvs;
 
-    PetscCall(PetscMalloc1(PetscMax(Bm, 1), &disp));
-    PetscCall(PetscMPIIntCast(bs, &bs_mpi));
-    for (PetscMPIInt i = 0; i < nsends; i++) {
-      PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
-      for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j] * bs, &disp[j]));
-      PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, bs_mpi, disp, MPIU_SCALAR, &type1));
-      PetscCallMPI(MPI_Type_create_resized(type1, 0, contents->blda * sizeof(PetscScalar), &contents->stype[i]));
-      PetscCallMPI(MPI_Type_commit(&contents->stype[i]));
-      PetscCallMPI(MPI_Type_free(&type1));
-    }
-
     for (PetscMPIInt i = 0; i < nrecvs; i++) {
       /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
       PetscCall(PetscMPIIntCast((rstarts[i + 1] - rstarts[i]) * bs, &nrows_from));
-      disp[0] = 0;
-      PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
+      PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, &disp, MPIU_SCALAR, &type1));
       PetscCallMPI(MPI_Type_create_resized(type1, 0, nrows * sizeof(PetscScalar), &contents->rtype[i]));
       PetscCallMPI(MPI_Type_commit(&contents->rtype[i]));
       PetscCallMPI(MPI_Type_free(&type1));
     }
 
-    PetscCall(PetscFree(disp));
-    PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, NULL, NULL));
+    PetscCall(VecScatterRestoreRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, NULL, NULL, NULL, NULL));
     PetscCall(VecScatterRestoreRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, NULL, NULL));
   }
+  PetscCall(MatMPIDenseScatterSetUpLDA_Private(ctx, bs, B, contents));
   if (batchSize) *batchSize = Bbn;
   if (numBatches) *numBatches = numBb;
   PetscFunctionReturn(PETSC_SUCCESS);
