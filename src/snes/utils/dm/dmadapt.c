@@ -1375,7 +1375,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
   for (adaptIter = 0; adaptIter < numAdapt - 1; ++adaptIter) PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_(comm)));
   for (adaptIter = 0; adaptIter < numAdapt; ++adaptIter) {
     PetscBool adapted = PETSC_FALSE;
-    DM        dm      = adaptIter ? *adm : adaptor->idm, odm;
+    DM        dm = adaptIter ? *adm : adaptor->idm, odm = NULL;
     Vec       x = adaptIter ? *ax : inx, locX = NULL, ox;
     Vec       error = NULL;
 
@@ -1397,8 +1397,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     switch (adaptor->adaptCriterion) {
     case DM_ADAPTATION_REFINE:
       PetscCall(DMRefine(dm, comm, &odm));
-      PetscCheck(odm, comm, PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
-      adapted = PETSC_TRUE;
+      adapted = odm ? PETSC_TRUE : PETSC_FALSE;
       PetscCall(DMAdaptorMonitor(adaptor, adaptIter, dm, dm, 1, &errorNorm, NULL));
       break;
     case DM_ADAPTATION_LABEL: {
