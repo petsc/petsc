@@ -37,15 +37,11 @@ static PetscErrorCode TestQueryIdle(PetscDeviceContext dctx)
   PetscCall(CheckIdle(dctx, "duplication"));
 
   // Another ctx waiting on it (which may make the other ctx non-idle) should not make the
-  // current one non-idle...
+  // current one non-idle.
   PetscCall(PetscDeviceContextWaitForContext(other, dctx));
-  // ...unless it is the null ctx, in which case it being "idle" is equivalent to asking
-  // whether the whole device (which includes other streams) is idle. Since the other ctx might
-  // be busy, we should explicitly synchronize on the null ctx
-  PetscCall(PetscDeviceContextSynchronize(NULL /* equivalently dctx if dctx = NULL */));
-  PetscCall(CheckIdle(dctx, "other context waited on it, and synchronizing the NULL context"));
-  // both contexts should be idle
-  PetscCall(CheckIdle(other, "waiting on other context, and synchronizing the NULL context"));
+  PetscCall(PetscDeviceContextSynchronize(other));
+  PetscCall(CheckIdle(dctx, "other context waited on it"));
+  PetscCall(CheckIdle(other, "synchronizing the waiting context"));
 
   PetscCall(PetscDeviceContextDestroy(&other));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -81,6 +77,79 @@ static PetscErrorCode TestDelay(PetscDeviceContext dctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestDefaultContext(void)
+{
+  PetscDeviceContext saved, standard, work, resolved, host;
+  PetscDevice        device;
+  PetscDeviceType    type;
+  PetscStreamType    streamtype;
+  PetscBool          initialized[PETSC_DEVICE_MAX];
+  PetscInt           value  = 0;
+  PetscInt          *empty  = NULL;
+  const PetscInt    *source = &value;
+  void              *stream;
+
+  PetscFunctionBeginUser;
+  PetscCheck(PetscDeviceContextDefault, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Default placeholder is null");
+  // No-work calls must not initialize a device just to resolve the placeholder.
+  for (PetscInt i = 0; i < PETSC_DEVICE_MAX; ++i) initialized[i] = PetscDeviceInitialized((PetscDeviceType)i);
+  PetscCall(PetscDeviceMalloc(PetscDeviceContextDefault, PETSC_MEMTYPE_HOST, 0, PETSC_DECIDE, &empty));
+  PetscCheck(!empty, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero-length allocation returned a pointer");
+  PetscCall(PetscDeviceCalloc(PetscDeviceContextDefault, PETSC_MEMTYPE_HOST, 0, PETSC_DECIDE, &empty));
+  PetscCheck(!empty, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero-length allocation returned a pointer");
+  PetscCall(PetscDeviceMemcpy(PetscDeviceContextDefault, NULL, NULL, 0));
+  PetscCall(PetscDeviceMemcpy(PetscDeviceContextDefault, &value, source, sizeof(value)));
+  PetscCall(PetscDeviceMemset(PetscDeviceContextDefault, NULL, 0, 0));
+  PetscCall(PetscDeviceFree(PetscDeviceContextDefault, empty));
+  PetscCall(PetscDeviceContextDelay(PetscDeviceContextDefault, 0));
+  PetscCall(PetscDeviceContextWaitForContext(PetscDeviceContextDefault, PetscDeviceContextDefault));
+  for (PetscInt i = 0; i < PETSC_DEVICE_MAX; ++i) PetscCheck(PetscDeviceInitialized((PetscDeviceType)i) == initialized[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "No-work call initialized device type %s", PetscDeviceTypes[i]);
+  // The placeholder must work before any explicit context creation, including lazy initialization.
+  PetscCall(PetscDeviceContextSetUp(PetscDeviceContextDefault));
+  PetscCall(PetscDeviceContextGetStreamType(PetscDeviceContextDefault, &streamtype));
+  PetscCheck(streamtype == PETSC_STREAM_DEFAULT, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect default stream type");
+  PetscCall(PetscDeviceContextGetDefaultContext(&standard));
+  PetscCheck(standard != PetscDeviceContextDefault, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Getter returned the placeholder");
+  PetscCall(PetscDeviceContextGetCurrentContext(&saved));
+  PetscCall(PetscDeviceContextDuplicate(PetscDeviceContextDefault, &work));
+  PetscCall(PetscDeviceContextSetStreamType(work, PETSC_STREAM_NONBLOCKING));
+  PetscCall(PetscDeviceContextSetUp(work));
+  PetscCall(PetscDeviceContextSetCurrentContext(work));
+  PetscCall(PetscDeviceContextGetDefaultContext(&resolved));
+  PetscCheck(resolved == standard, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Changing streams changed the default context");
+  PetscCall(PetscDeviceContextGetStreamType(PetscDeviceContextDefault, &streamtype));
+  PetscCheck(streamtype == PETSC_STREAM_DEFAULT, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Placeholder selected the current stream");
+  PetscCall(PetscDeviceContextGetDeviceType(PetscDeviceContextDefault, &type));
+  if (type != PETSC_DEVICE_HOST) PetscCall(PetscDeviceContextGetStreamHandle(PetscDeviceContextDefault, &stream));
+  PetscCall(PetscDeviceContextDelay(PetscDeviceContextDefault, 0));
+  PetscCall(PetscDeviceContextWaitForContext(work, PetscDeviceContextDefault));
+  PetscCall(PetscDeviceContextWaitForContext(PetscDeviceContextDefault, work));
+  PetscCall(PetscDeviceContextSynchronize(PetscDeviceContextDefault));
+  PetscCall(CheckIdle(PetscDeviceContextDefault, "default context synchronization"));
+  PetscCall(PetscDeviceContextViewFromOptions(PetscDeviceContextDefault, NULL, "-default_context_view"));
+
+  PetscCall(PetscDeviceCreate(PETSC_DEVICE_HOST, PETSC_DECIDE, &device));
+  PetscCall(PetscDeviceConfigure(device));
+  PetscCall(PetscDeviceContextCreate(&host));
+  PetscCall(PetscDeviceContextSetDevice(host, device));
+  PetscCall(PetscDeviceDestroy(&device));
+  PetscCall(PetscDeviceContextSetUp(host));
+  PetscCall(PetscDeviceContextSetCurrentContext(host));
+  PetscCall(PetscDeviceContextGetDeviceType(PetscDeviceContextDefault, &type));
+  PetscCheck(type == PETSC_DEVICE_HOST, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Placeholder did not follow the current device");
+  PetscCall(PetscDeviceContextGetDefaultContext(&resolved));
+  PetscCall(PetscDeviceContextGetDeviceType(standard, &type));
+  PetscCheck((resolved == standard) == (type == PETSC_DEVICE_HOST), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Default contexts were not cached per device");
+  PetscCall(PetscDeviceContextSetCurrentContext(work));
+  PetscCall(PetscDeviceContextSetCurrentContext(PetscDeviceContextDefault));
+  PetscCall(PetscDeviceContextGetCurrentContext(&resolved));
+  PetscCheck(resolved == standard, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Setting current did not resolve the placeholder");
+  PetscCall(PetscDeviceContextSetCurrentContext(saved));
+  PetscCall(PetscDeviceContextDestroy(&host));
+  PetscCall(PetscDeviceContextDestroy(&work));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx = NULL;
@@ -88,6 +157,7 @@ int main(int argc, char *argv[])
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(TestDefaultContext());
 
   PetscCall(PetscDeviceContextCreate(&dctx));
   PetscCall(PetscDeviceContextSetStreamType(dctx, PETSC_STREAM_DEFAULT));
@@ -97,9 +167,11 @@ int main(int argc, char *argv[])
   if (type == PETSC_DEVICE_HOST || type == PETSC_DEVICE_CUDA || type == PETSC_DEVICE_HIP) PetscCall(TestDelay(dctx));
   PetscCall(PetscDeviceContextDestroy(&dctx));
 
-  PetscCall(TestQueryIdle(NULL));
+  PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+  PetscCall(TestQueryIdle(dctx));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
+  PetscCall(PetscDeviceContextSetCurrentContext(PetscDeviceContextDefault));
   PetscCall(PetscFinalize());
   return 0;
 }

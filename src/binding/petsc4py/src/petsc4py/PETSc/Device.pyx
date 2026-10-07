@@ -225,6 +225,8 @@ cdef class DeviceContext(Object):
 
     Represents an abstract handle to a device context.
 
+    Use `create`, `getCurrent`, or `getDefault` before calling context operations.
+
     See Also
     --------
     Device, petsc.PetscDeviceContext
@@ -375,7 +377,7 @@ cdef class DeviceContext(Object):
         CHKERR(PetscDeviceContextQueryIdle(self.dctx, &is_idle))
         return toBool(is_idle)
 
-    def waitFor(self, other: DeviceContext | None) -> None:
+    def waitFor(self, DeviceContext other not None) -> None:
         """Make this instance wait for ``other``.
 
         Not collective.
@@ -383,17 +385,14 @@ cdef class DeviceContext(Object):
         Parameters
         ----------
         other
-            The other `DeviceContext` to wait for
+            The initialized `DeviceContext` to wait for.
 
         See Also
         --------
         fork, join, petsc.PetscDeviceContextWaitForContext
 
         """
-        cdef PetscDeviceContext cother = NULL
-
-        if other is not None:
-            cother = PyPetscDeviceContext_Get(other)
+        cdef PetscDeviceContext cother = PyPetscDeviceContext_Get(other)
         CHKERR(PetscDeviceContextWaitForContext(self.dctx, cother))
 
     def fork(self, n: int, stream_type: DeviceContext.StreamType | str | None = None) -> list[DeviceContext]:
@@ -455,21 +454,25 @@ cdef class DeviceContext(Object):
         join_mode
             The type of join to perform.
         py_sub_ctxs
-            The list of device contexts to join.
+            The list of initialized device contexts to join; entries cannot be `None`.
 
         See Also
         --------
         fork, waitFor, petsc.PetscDeviceContextJoin
 
         """
+        cdef DeviceContext dctx
         cdef PetscDeviceContext *np_subctx = NULL
         cdef PetscDeviceContextJoinMode cjoin_mode = asJoinMode(join_mode)
         cdef Py_ssize_t nctxs = len(py_sub_ctxs)
 
+        for dctx in py_sub_ctxs:
+            if dctx is None:
+                raise TypeError("join requires DeviceContext objects")
         CHKERR(PetscMalloc(<size_t>(nctxs) * sizeof(PetscDeviceContext), &np_subctx))
         for i from 0 <= i < nctxs:
             dctx = py_sub_ctxs[i]
-            np_subctx[i] = (<DeviceContext?>dctx).dctx if dctx is not None else NULL
+            np_subctx[i] = dctx.dctx
         CHKERR(PetscDeviceContextJoin(self.dctx, <PetscInt>nctxs, cjoin_mode, &np_subctx))
 
         if cjoin_mode == PETSC_DEVICE_CONTEXT_JOIN_DESTROY:
@@ -533,7 +536,28 @@ cdef class DeviceContext(Object):
         return PyPetscDeviceContext_New(dctx)
 
     @staticmethod
-    def setCurrent(dctx: DeviceContext | None) -> None:
+    def getDefault() -> DeviceContext:
+        """Return the default-stream context for the current device.
+
+        Not collective.
+
+        The context is created lazily. This wrapper holds a reference to a
+        concrete context, even if the current device subsequently changes.
+        Do not change its device or stream type, or configure it from options.
+        Use `duplicate` to create an independently configurable context.
+        Destroying this wrapper releases its reference; PETSc retains ownership.
+
+        See Also
+        --------
+        getCurrent, duplicate, petsc.PetscDeviceContextGetDefaultContext
+
+        """
+        cdef PetscDeviceContext dctx = NULL
+        CHKERR(PetscDeviceContextGetDefaultContext(&dctx))
+        return PyPetscDeviceContext_New(dctx)
+
+    @staticmethod
+    def setCurrent(DeviceContext dctx not None) -> None:
         """Set the current device context.
 
         Not collective.
@@ -541,18 +565,15 @@ cdef class DeviceContext(Object):
         Parameters
         ----------
         dctx
-            The `DeviceContext` to set as current (or `None` to use
-            the default context).
+            The initialized `DeviceContext` to set as current. Save the previous
+            context with `getCurrent` and pass it here to restore it.
 
         See Also
         --------
         current, getCurrent, petsc.PetscDeviceContextSetCurrentContext
 
         """
-        cdef PetscDeviceContext cdctx = NULL
-
-        if dctx is not None:
-            cdctx = PyPetscDeviceContext_Get(dctx)
+        cdef PetscDeviceContext cdctx = PyPetscDeviceContext_Get(dctx)
         CHKERR(PetscDeviceContextSetCurrentContext(cdctx))
 
     property stream_type:
@@ -576,7 +597,7 @@ cdef class DeviceContext(Object):
         def __get__(self) -> DeviceContext:
             return self.getCurrent()
 
-        def __set__(self, dctx: DeviceContext | None) -> None:
+        def __set__(self, DeviceContext dctx not None) -> None:
             self.setCurrent(dctx)
 
 # --------------------------------------------------------------------

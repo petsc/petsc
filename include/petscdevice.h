@@ -45,6 +45,40 @@ PETSC_EXTERN PetscErrorCode  PetscDeviceInitialize(PetscDeviceType);
 PETSC_EXTERN PetscBool       PetscDeviceInitialized(PetscDeviceType);
 
 /* PetscDeviceContext */
+/*MC
+  PetscDeviceContextDefault - Placeholder for the default-stream context on the current device
+
+  Level: beginner
+
+  Notes:
+  Pass this symbol to device-memory operations or to device-context operations that inspect,
+  synchronize, duplicate, or fork a context. It is also accepted by `PetscDeviceContextSetUp()`,
+  `PetscDeviceContextSetCurrentContext()`, and as the parent argument of `PetscDeviceContextJoin()`.
+  When a call needs a context, it resolves this symbol to a PETSc-owned `PETSC_STREAM_DEFAULT` context
+  for the backend and device attached to the current context, creating that context lazily. It does
+  not select the current stream. No-work returns do not resolve the placeholder or initialize a device.
+
+  Saving this placeholder does not capture a context. After changing the current device, another call
+  resolves it for the new device. Use `PetscDeviceContextGetDefaultContext()` to capture a concrete
+  handle. A fork and its destroying join must resolve to the same parent; keep the device unchanged
+  between those calls or capture the parent first. Join child arrays must contain concrete handles.
+
+  This symbol cannot be destroyed, reconfigured with `PetscDeviceContextSetDevice()`,
+  `PetscDeviceContextSetStreamType()`, or `PetscDeviceContextSetFromOptions()`, or passed to generic
+  `PetscObject` routines. It does not represent a `NULL` pointer. Default-stream selection does not
+  synchronize unrelated nonblocking streams or establish dependencies on them.
+
+  Developer Note:
+  This placeholder is for application use. Resolve it at public API boundaries before ordinary
+  object validation, object access, or backend dispatch.
+
+  Some private helpers accept a `NULL` context to request the current context. They resolve it to
+  a concrete context before passing it to a public device API or accessing its state.
+
+.seealso: `PetscDeviceContext`, `PetscDeviceContextGetDefaultContext()`, `PetscDeviceContextGetCurrentContext()`, `PetscStreamType`
+M*/
+PETSC_EXTERN PetscDeviceContext const PetscDeviceContextDefault;
+
 PETSC_EXTERN PetscErrorCode PetscDeviceContextCreate(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext, PetscStreamType);
@@ -67,6 +101,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetStreamHandle(PetscDeviceContext, void **);
+PETSC_EXTERN PetscErrorCode PetscDeviceContextGetDefaultContext(PetscDeviceContext *);
 
 /* memory */
 PETSC_EXTERN PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, size_t, void **PETSC_RESTRICT);
@@ -84,7 +119,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx      - The `PetscDeviceContext` used to allocate the memory, or `NULL` for the null context on the current device
++ dctx      - The `PetscDeviceContext` used to allocate the memory, or `PetscDeviceContextDefault`
 . mtype     - The type of memory to allocate
 . n         - The amount (in elements) to allocate
 - alignment - The requested alignment in bytes, a positive power of two or `PETSC_DECIDE`
@@ -101,8 +136,8 @@ PETSC_EXTERN PetscErrorCode PetscDeviceMemset(PetscDeviceContext, void *PETSC_RE
 
   CUDA and HIP contexts allocate `PETSC_MEMTYPE_HOST` memory from a pinned host pool and
   `PETSC_MEMTYPE_DEVICE` memory from their device pool. There is no separate pinned host
-  memory type. The context selects the backend; `NULL` selects the null context associated
-  with the current device, not a host context.
+  memory type. The supplied context selects the backend. Obtain the current context with
+  `PetscDeviceContextGetCurrentContext()` to use the same context as high-level PETSc operations.
 
   If the context has no memory allocation operation, only `PETSC_MEMTYPE_HOST` is supported
   and allocation uses `PetscMalloc1()`. In the C device-interface fallback, `dctx` and `mtype`
@@ -181,7 +216,7 @@ M*/
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx      - The `PetscDeviceContext` used to allocate the memory, or `NULL` for the null context on the current device
++ dctx      - The `PetscDeviceContext` used to allocate the memory, or `PetscDeviceContextDefault`
 . mtype     - The type of memory to allocate
 . n         - The amount (in elements) to allocate
 - alignment - The requested alignment in bytes, a positive power of two or `PETSC_DECIDE`

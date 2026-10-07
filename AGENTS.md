@@ -70,6 +70,7 @@ unrelated conversations or prescribe the user's conversational style.
 - Function typedef names should end in `Fn`.
 - `MPI_Comm_size()` → local `size`; `MPI_Comm_rank()` → `rank`. No prefixed variants (`comm_size`, `nprocs`). If `size` is taken, rename the other local.
 - Reserve the `_p_` prefix for struct tags associated with PETSc objects, such as `_p_Mat`; other struct tags must not use it.
+- Library operations must use concrete `PetscDeviceContext` handles. `PetscDeviceContextDefault` is for application use.
 
 ## PETSc Data Type Rules
 

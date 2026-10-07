@@ -520,6 +520,17 @@ PETSC_EXTERN const char *const PetscDeviceContextJoinModes[];
 
   Level: beginner
 
+  Notes:
+  Public APIs taking a `PetscDeviceContext` require a valid context or, where supported, `PetscDeviceContextDefault`.
+  Obtain the current context with
+  `PetscDeviceContextGetCurrentContext()` and pass it explicitly; `NULL` does not select an implicit context.
+  This requirement also applies to operations with no work, such as zero-length memory operations.
+  `PetscDeviceContextDestroy()` accepts the address of a null handle.
+
+  In builds using the C-only device-interface fallback, `PetscDeviceContextCreate()` and
+  `PetscDeviceContextGetCurrentContext()` return null handles. These handles remain valid arguments to
+  the fallback APIs. This exception does not apply to host contexts in builds using the C++ device interface.
+
 .seealso: `PetscDevice`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`,
 `PetscDeviceContextDestroy()`, `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
 S*/

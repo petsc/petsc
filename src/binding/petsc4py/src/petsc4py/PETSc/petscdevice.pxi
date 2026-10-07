@@ -61,6 +61,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm, PetscDeviceContext)
     PetscErrorCode PetscDeviceContextView(PetscDeviceContext, PetscViewer)
     PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, const char name[])
+    PetscErrorCode PetscDeviceContextGetDefaultContext(PetscDeviceContext *)
     PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *)
     PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext)
 

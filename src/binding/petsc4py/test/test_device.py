@@ -19,6 +19,53 @@ class TestDevice(unittest.TestCase):
         del device
         del dctx
 
+    def testDefault(self):
+        saved = PETSc.DeviceContext.getCurrent()
+        self.addCleanup(saved.destroy)
+        standard = PETSc.DeviceContext.getDefault()
+        self.addCleanup(standard.destroy)
+        if not standard:
+            return
+        work = standard.duplicate()
+        self.addCleanup(work.destroy)
+        self.addCleanup(PETSc.DeviceContext.setCurrent, saved)
+        work.setStreamType(PETSc.DeviceContext.StreamType.NONBLOCKING)
+        work.setUp()
+        PETSc.DeviceContext.setCurrent(work)
+        default = PETSc.DeviceContext.getDefault()
+        self.addCleanup(default.destroy)
+        self.assertEqual(default, standard)
+        self.assertNotEqual(default, work)
+        self.assertEqual(default.getStreamType(), 'DEFAULT')
+        work.waitFor(default)
+        default.waitFor(work)
+        default.synchronize()
+        self.assertTrue(default.idle())
+        PETSc.DeviceContext.setCurrent(default)
+        current = PETSc.DeviceContext.getCurrent()
+        self.addCleanup(current.destroy)
+        self.assertEqual(current, default)
+
+    def testSetCurrent(self):
+        saved = PETSc.DeviceContext.getCurrent()
+        if not saved:
+            return
+        work = saved.duplicate()
+        self.addCleanup(saved.destroy)
+        self.addCleanup(work.destroy)
+        self.addCleanup(PETSc.DeviceContext.setCurrent, saved)
+        PETSc.DeviceContext.setCurrent(work)
+        current = PETSc.DeviceContext.getCurrent()
+        self.assertEqual(current, work)
+        current.destroy()
+        work.waitFor(saved)
+        work.synchronize()
+        self.assertTrue(work.idle())
+        work.current = saved
+        current = PETSc.DeviceContext.getCurrent()
+        self.assertEqual(current, saved)
+        current.destroy()
+
     def testDevice(self):
         device = PETSc.Device.create()
         device.configure()

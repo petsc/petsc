@@ -46,6 +46,8 @@
 - Move the PETSc memory-management API (`PetscMalloc()`, `PetscFree()`, and related routines) into the new header `petscmem.h`; the API remains available through `petscsys.h`
 - Move the `PetscPreLoad*` functionality into `petscpreload.h`
 - Remove the `--with-serialize-functions` configure option and the associated function-pointer serialization feature (`PETSC_SERIALIZE_FUNCTIONS`)
+- Replace implicit `NULL` contexts with `PetscDeviceContextDefault` in device-context and device-memory APIs to retain default-stream selection, or pass an explicit context. Add `PetscDeviceContextGetDefaultContext()` and petsc4py `DeviceContext.getDefault()` to capture the default context for the current device. The cached default contexts are now named `default context N` with options prefix `default_context_N_`, instead of `null context N` and `null_context_N_`
+- Reject `None` in petsc4py `DeviceContext.setCurrent()`, assignments to `DeviceContext.current`, and `DeviceContext.waitFor()`, and reject `None` entries in `DeviceContext.join()` lists. Use `DeviceContext.getDefault()` for the default-stream context; to restore a previous current context, save it with `DeviceContext.getCurrent()` and pass it to `DeviceContext.setCurrent()`
 - Add an alignment argument before the output pointer to `PetscDeviceMalloc()` and `PetscDeviceCalloc()`; pass `PETSC_DECIDE` to retain inferred alignment, or a positive power of two to request stronger alignment
 - Add `PetscDeviceContextDelay()` to queue a timed host callback for testing CUDA and HIP stream ordering
 

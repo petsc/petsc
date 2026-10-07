@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   PetscCall(TestView(dup));
   PetscCall(PetscDeviceContextDestroy(&dup));
 
-  PetscCall(TestView(NULL));
+  PetscCall(TestView(PetscDeviceContextDefault));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());

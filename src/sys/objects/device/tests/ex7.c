@@ -616,9 +616,8 @@ int main(int argc, char *argv[])
     PetscCall(TestAlignmentStress(dctx, PETSC_MEMTYPE_DEVICE));
     PetscCall(TestAlignmentOrdering(dctx, PETSC_MEMTYPE_HOST));
     PetscCall(TestAlignmentOrdering(dctx, PETSC_MEMTYPE_DEVICE));
-    // NULL selects the null context for the current device, including its host pool.
-    PetscCall(TestTypeAlignment(NULL));
-    PetscCall(PetscDeviceContextSynchronize(NULL));
+    PetscCall(TestTypeAlignment(PetscDeviceContextDefault));
+    PetscCall(PetscDeviceContextSynchronize(PetscDeviceContextDefault));
   } else {
     // A vile hack. The -info output is used to test correctness in this test which prints --
     // among other things -- the PetscObjectId of the PetscDevicContext and the allocated memory.

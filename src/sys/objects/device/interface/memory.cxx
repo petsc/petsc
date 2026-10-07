@@ -271,7 +271,7 @@ PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT ptr, PetscMe
   Not Collective, Asynchronous, Auto-dependency aware
 
   Input Parameters:
-+ dctx                - The context, or `NULL` for the null context on the current device
++ dctx                - The context used to allocate the memory
 . clear               - Whether to zero the allocation
 . mtype               - The memory type
 . n                   - The size in bytes
@@ -311,11 +311,12 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
   std::size_t   alignment;
 
   PetscFunctionBegin;
+  PetscValidDeviceContextOrDefault(dctx, 1);
   PetscAssertPointer(ptr, 7);
   *ptr = nullptr;
   if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceContextResolveDefault_Private(&dctx));
   PetscCall(memory_map.register_finalize());
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(PetscDeviceGetAllocationAlignment_Private(requested_alignment, type_alignment, PetscBool(!dctx->ops->memalloc), &alignment));
 
   // get our pointer here
@@ -371,6 +372,7 @@ PetscErrorCode PetscDeviceAllocate_Private(PetscDeviceContext dctx, PetscBool cl
 PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETSC_RESTRICT ptr)
 {
   PetscFunctionBegin;
+  PetscValidDeviceContextOrDefault(dctx, 1);
   if (ptr) {
     auto      &map      = memory_map.map;
     const auto found_it = map.find(const_cast<MemoryMap::map_type::key_type>(ptr));
@@ -391,7 +393,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to deallocate pointer %p which is a suballocation of %p (memtype %s, id %" PetscInt64_FMT ", size %zu bytes)", ptr, it->first, PetscMemTypeToString(attr.mtype), attr.id, attr.size);
     }
     auto &&attr = found_it->second;
-    PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+    PetscCall(PetscDeviceContextResolveDefault_Private(&dctx));
     // mark intent BEFORE we free, note we mark as write so that we are made to wait on any
     // outstanding reads (don't want to kill the pointer before they are done)
     PetscCall(PetscDeviceContextMarkIntentFromID(dctx, attr.id, PETSC_MEMORY_ACCESS_WRITE, "memory deallocation"));
@@ -448,11 +450,12 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
 PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT dest, const void *PETSC_RESTRICT src, std::size_t n)
 {
   PetscFunctionBegin;
+  PetscValidDeviceContextOrDefault(dctx, 1);
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(dest, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy to a NULL pointer");
   PetscCheck(src, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to copy from a NULL pointer");
   if (dest == src) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscCall(PetscDeviceContextResolveDefault_Private(&dctx));
   {
     const auto &dest_attr = memory_map.search_for(dest, true)->second;
     const auto &src_attr  = memory_map.search_for(src, true)->second;
@@ -521,9 +524,10 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
 PetscErrorCode PetscDeviceMemset(PetscDeviceContext dctx, void *ptr, PetscInt v, std::size_t n)
 {
   PetscFunctionBegin;
+  PetscValidDeviceContextOrDefault(dctx, 1);
   if (PetscUnlikely(!n)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Trying to memset a NULL pointer");
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscCall(PetscDeviceContextResolveDefault_Private(&dctx));
   {
     const auto &attr = memory_map.search_for(ptr, true)->second;
 
