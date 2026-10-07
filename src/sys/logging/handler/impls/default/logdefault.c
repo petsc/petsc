@@ -1523,10 +1523,10 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   }
 #if PetscDefined(HAVE_DEVICE)
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 1e-6 * (sum of flop on GPU over all processes)/(max GPU time over all processes)\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 1e-6 * (total size of CPU to GPU copies per processor)\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Size (Mbytes): 1e-6 * (total size of GPU to CPU copies per processor)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: max number of CPU to GPU copies over all processes\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 1e-6 * (sum of size of CPU to GPU copies over all processes)/(number of processes)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Count: max number of GPU to CPU copies over all processes\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Size (Mbytes): 1e-6 * (sum of size of GPU to CPU copies over all processes)/(number of processes)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU %%F: percent flops on GPU in this event\n"));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------\n"));
@@ -1620,8 +1620,9 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           PetscCallMPI(MPIU_Allreduce(&event_info->mallocIncreaseEvent, &emalmax, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         }
 #if PetscDefined(HAVE_DEVICE)
-        PetscCallMPI(MPIU_Allreduce(&event_info->CpuToGpuCount, &cct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
-        PetscCallMPI(MPIU_Allreduce(&event_info->GpuToCpuCount, &gct, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+        /* the counts are the maximum over the processes, so that a copy done on a subset of them is not rounded away by an average below one half */
+        PetscCallMPI(MPIU_Allreduce(&event_info->CpuToGpuCount, &cct, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+        PetscCallMPI(MPIU_Allreduce(&event_info->GpuToCpuCount, &gct, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
         PetscCallMPI(MPIU_Allreduce(&event_info->CpuToGpuSize, &csz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         PetscCallMPI(MPIU_Allreduce(&event_info->GpuToCpuSize, &gsz, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
         PetscCallMPI(MPIU_Allreduce(&event_info->GpuFlops, &gflops, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
@@ -1697,9 +1698,9 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           if (gmaxt != 0.0) gflopr = gflops / gmaxt;
           else gflopr = 0.0;
           if (PetscIsNanReal(gflopr)) {
-            PetscCall(PetscViewerASCIIPrintf(viewer, "    n/a    %4.0f %3.2e %4.0f %3.2e %2.0f", cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "    n/a    %4.0f %3.2e %4.0f %3.2e %2.0f", cct, csz / (1.0e6 * size), gct, gsz / (1.0e6 * size), 100.0 * fracgflops));
           } else {
-            PetscCall(PetscViewerASCIIPrintf(viewer, "   %5.0f   %4.0f %3.2e %4.0f %3.2e %2.0f", PetscAbs(gflopr) / 1.0e6, cct / size, csz / (1.0e6 * size), gct / size, gsz / (1.0e6 * size), 100.0 * fracgflops));
+            PetscCall(PetscViewerASCIIPrintf(viewer, "   %5.0f   %4.0f %3.2e %4.0f %3.2e %2.0f", PetscAbs(gflopr) / 1.0e6, cct, csz / (1.0e6 * size), gct, gsz / (1.0e6 * size), 100.0 * fracgflops));
           }
           if (PetscLogGpuEnergyFlag || PetscLogGpuEnergyMeterFlag) {
             if (gjoules != 0.0) geff = gflops / gjoules;
