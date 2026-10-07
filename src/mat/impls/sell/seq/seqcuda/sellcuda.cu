@@ -1,5 +1,6 @@
 #include <petscdevice_cuda.h>
 #include <petsc/private/cupmatomics.hpp>
+#include <petsc/private/deviceimpl.h>
 #include <../src/mat/impls/sell/seq/sell.h> /*I   "petscmat.h"  I*/
 
 #define SLICE_HEIGHT 16
@@ -19,6 +20,17 @@ typedef struct {
   PetscInt        *chunk_slice_map; /* starting slice for each chunk, device pointer */
 } Mat_SeqSELLCUDA;
 
+static PetscErrorCode MatSeqSELLCUDAGetContext(PetscDeviceContext *dctx, cudaStream_t *stream)
+{
+  void *handle;
+
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(*dctx, &handle));
+  *stream = *(cudaStream_t *)handle;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSeqSELLCUDA_Destroy(Mat_SeqSELLCUDA **cudastruct)
 {
   PetscFunctionBegin;
@@ -34,15 +46,18 @@ static PetscErrorCode MatSeqSELLCUDA_Destroy(Mat_SeqSELLCUDA **cudastruct)
 
 static PetscErrorCode MatSeqSELLCUDACopyToGPU(Mat A)
 {
-  Mat_SeqSELLCUDA *cudastruct = (Mat_SeqSELLCUDA *)A->spptr;
-  Mat_SeqSELL     *a          = (Mat_SeqSELL *)A->data;
+  Mat_SeqSELLCUDA   *cudastruct = (Mat_SeqSELLCUDA *)A->spptr;
+  Mat_SeqSELL       *a          = (Mat_SeqSELL *)A->data;
+  PetscDeviceContext dctx;
+  cudaStream_t       stream = nullptr;
 
   PetscFunctionBegin;
+  PetscCall(MatSeqSELLCUDAGetContext(&dctx, &stream));
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     PetscCall(PetscLogEventBegin(MAT_CUDACopyToGPU, A, 0, 0, 0));
     if (cudastruct->sliidx && A->nonzerostate == cudastruct->nonzerostate) {
       /* copy values only */
-      PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpyAsync(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), cudaMemcpyHostToDevice, stream));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
     } else {
       PetscCallCUDA(cudaFree(cudastruct->colidx));
@@ -56,16 +71,16 @@ static PetscErrorCode MatSeqSELLCUDACopyToGPU(Mat A)
       PetscCallCUDA(cudaMalloc((void **)&cudastruct->colidx, a->maxallocmat * sizeof(*cudastruct->colidx)));
       PetscCallCUDA(cudaMalloc((void **)&cudastruct->val, a->maxallocmat * sizeof(*cudastruct->val)));
       /* copy values, nz or maxallocmat? */
-      PetscCallCUDA(cudaMemcpy(cudastruct->colidx, a->colidx, a->sliidx[a->totalslices] * sizeof(*a->colidx), cudaMemcpyHostToDevice));
-      PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(*a->val), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpyAsync(cudastruct->colidx, a->colidx, a->sliidx[a->totalslices] * sizeof(*a->colidx), cudaMemcpyHostToDevice, stream));
+      PetscCallCUDA(cudaMemcpyAsync(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(*a->val), cudaMemcpyHostToDevice, stream));
 
       PetscCallCUDA(cudaMalloc((void **)&cudastruct->sliidx, (a->totalslices + 1) * sizeof(*cudastruct->sliidx)));
-      PetscCallCUDA(cudaMemcpy(cudastruct->sliidx, a->sliidx, (a->totalslices + 1) * sizeof(*a->sliidx), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpyAsync(cudastruct->sliidx, a->sliidx, (a->totalslices + 1) * sizeof(*a->sliidx), cudaMemcpyHostToDevice, stream));
       PetscCallCUDA(cudaMalloc((void **)&cudastruct->chunk_slice_map, a->totalchunks * sizeof(*cudastruct->chunk_slice_map)));
-      PetscCallCUDA(cudaMemcpy(cudastruct->chunk_slice_map, a->chunk_slice_map, a->totalchunks * sizeof(*a->chunk_slice_map), cudaMemcpyHostToDevice));
+      PetscCallCUDA(cudaMemcpyAsync(cudastruct->chunk_slice_map, a->chunk_slice_map, a->totalchunks * sizeof(*a->chunk_slice_map), cudaMemcpyHostToDevice, stream));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar) + sizeof(PetscInt)) + (a->totalslices + 1 + a->totalchunks) * sizeof(PetscInt)));
     }
-    PetscCallCUDA(WaitForCUDA());
+    PetscCall(PetscDeviceContextSynchronize(dctx));
     PetscCall(PetscLogEventEnd(MAT_CUDACopyToGPU, A, 0, 0, 0));
     cudastruct->nonzerostate = A->nonzerostate;
     A->offloadmask           = PETSC_OFFLOAD_BOTH;
@@ -580,8 +595,11 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscReal maxoveravg;
 #endif
+  PetscDeviceContext dctx;
+  cudaStream_t       stream;
 
   PetscFunctionBegin;
+  PetscCall(MatSeqSELLCUDAGetContext(&dctx, &stream));
   PetscCheck(32 % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of 32, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
   PetscCheck(!(cudastruct->kernelchoice >= 2 && cudastruct->kernelchoice <= 6 && sliceheight != SLICE_HEIGHT), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be 16, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLCUDACopyToGPU(A));
@@ -599,59 +617,59 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   case 9:
     nblocks = 1 + (nrows - 1) / sliceheight;
     if (cudastruct->blocky == 2) {
-      matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 4) {
-      matmult_seqsell_tiled_kernel9<4><<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<4><<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 8) {
-      matmult_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 16) {
-      matmult_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 32) {
-      matmult_seqsell_tiled_kernel9<32><<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<32><<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else {
-      matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     }
     break;
   case 7:
     nblocks = 1 + (nrows - 1) / (2 * sliceheight);
     if (cudastruct->blocky == 2) {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 4) {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 8) {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 16) {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else if (cudastruct->blocky == 32) {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     } else {
-      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+      matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     }
     break;
 #endif
   case 6:
     nblocks = 1 + (nrows - 1) / (blocksize / 32); /* 1 slice per block if blocksize=512 */
-    matmult_seqsell_tiled_kernel6<<<nblocks, block32>>>(nrows, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_tiled_kernel6<<<nblocks, block32, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y);
     break;
   case 5:
     nblocks = 1 + (nrows - 1) / (blocksize / 16); /* 2 slices per block if blocksize=512*/
-    matmult_seqsell_tiled_kernel5<<<nblocks, block16>>>(nrows, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_tiled_kernel5<<<nblocks, block16, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y);
     break;
   case 4:
     nblocks = 1 + (nrows - 1) / (blocksize / 8); /* 4 slices per block if blocksize=512 */
-    matmult_seqsell_tiled_kernel4<<<nblocks, block8>>>(nrows, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_tiled_kernel4<<<nblocks, block8, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y);
     break;
   case 3:
     nblocks = 1 + (nrows - 1) / (blocksize / 4); /* 8 slices per block if blocksize=512 */
-    matmult_seqsell_tiled_kernel3<<<nblocks, block4>>>(nrows, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_tiled_kernel3<<<nblocks, block4, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y);
     break;
   case 2: /* 16 slices per block if blocksize=512 */
     nblocks = 1 + (nrows - 1) / (blocksize / 2);
-    matmult_seqsell_tiled_kernel2<<<nblocks, block2>>>(nrows, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_tiled_kernel2<<<nblocks, block2, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y);
     break;
   case 1: /* 32 slices per block if blocksize=512 */
     nblocks = 1 + (nrows - 1) / blocksize;
-    matmult_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+    matmult_seqsell_basic_kernel<<<nblocks, blocksize, 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
     break;
 #if !PetscDefined(USE_COMPLEX)
   case 0:
@@ -664,34 +682,34 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
       nblocks         = 1 + (nchunks - 1) / chunksperblock;
       chunk_slice_map = cudastruct->chunk_slice_map;
       if (blocky == 2) {
-        matmult_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       } else if (blocky == 4) {
-        matmult_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       } else if (blocky == 8) {
-        matmult_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       } else if (blocky == 16) {
-        matmult_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       } else if (blocky == 32) {
-        matmult_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       } else {
-        matmult_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y);
       }
     } else {
       PetscInt avgslicesize = sliceheight * a->avgslicewidth;
       if (avgslicesize <= 432) {
         if (sliceheight * a->maxslicewidth < 2048 && nrows > 100000) {
           nblocks = 1 + (nrows - 1) / (2 * sliceheight); /* two slices per block */
-          matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+          matmult_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
         } else {
           nblocks = 1 + (nrows - 1) / sliceheight;
-          matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+          matmult_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
         }
       } else if (avgslicesize <= 2400) {
         nblocks = 1 + (nrows - 1) / sliceheight;
-        matmult_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
       } else {
         nblocks = 1 + (nrows - 1) / sliceheight;
-        matmult_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
+        matmult_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y);
       }
     }
     break;
@@ -699,6 +717,8 @@ static PetscErrorCode MatMult_SeqSELLCUDA(Mat A, Vec xx, Vec yy)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unsupported kernel choice %" PetscInt_FMT " for MatMult_SeqSELLCUDA.", cudastruct->kernelchoice);
   }
+  PetscCallCUDA(cudaGetLastError());
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecCUDARestoreArrayRead(xx, &x));
   PetscCall(VecCUDARestoreArrayWrite(yy, &y));
@@ -721,8 +741,11 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
   PetscInt  blocky = cudastruct->blocky;
 #endif
+  PetscDeviceContext dctx;
+  cudaStream_t       stream;
 
   PetscFunctionBegin;
+  PetscCall(MatSeqSELLCUDAGetContext(&dctx, &stream));
   PetscCheck(32 % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of 32, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
   PetscCheck(!(cudastruct->kernelchoice >= 2 && cudastruct->kernelchoice <= 6 && sliceheight != SLICE_HEIGHT), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be 16, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLCUDACopyToGPU(A));
@@ -742,17 +765,17 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
     case 9:
       nblocks = 1 + (nrows - 1) / sliceheight;
       if (blocky == 2) {
-        matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 4) {
-        matmultadd_seqsell_tiled_kernel9<4><<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<4><<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 8) {
-        matmultadd_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 16) {
-        matmultadd_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 32) {
-        matmultadd_seqsell_tiled_kernel9<32><<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<32><<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else {
-        matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       }
       break;
     case 8:
@@ -763,59 +786,59 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
       nblocks         = 1 + (nchunks - 1) / chunksperblock;
       chunk_slice_map = cudastruct->chunk_slice_map;
       if (blocky == 2) {
-        matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 4) {
-        matmultadd_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 8) {
-        matmultadd_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 16) {
-        matmultadd_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 32) {
-        matmultadd_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       } else {
-        matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
       }
       break;
     case 7:
       nblocks = 1 + (nrows - 1) / (2 * sliceheight);
       if (blocky == 2) {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 4) {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 8) {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 16) {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else if (blocky == 32) {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       } else {
-        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+        matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       }
       break;
 #endif
     case 6:
       nblocks = 1 + (nrows - 1) / (blocksize / 32);
-      matmultadd_seqsell_tiled_kernel6<<<nblocks, block32>>>(nrows, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_tiled_kernel6<<<nblocks, block32, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y, z);
       break;
     case 5:
       nblocks = 1 + (nrows - 1) / (blocksize / 16);
-      matmultadd_seqsell_tiled_kernel5<<<nblocks, block16>>>(nrows, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_tiled_kernel5<<<nblocks, block16, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y, z);
       break;
     case 4:
       nblocks = 1 + (nrows - 1) / (blocksize / 8);
-      matmultadd_seqsell_tiled_kernel4<<<nblocks, block8>>>(nrows, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_tiled_kernel4<<<nblocks, block8, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y, z);
       break;
     case 3:
       nblocks = 1 + (nrows - 1) / (blocksize / 4);
-      matmultadd_seqsell_tiled_kernel3<<<nblocks, block4>>>(nrows, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_tiled_kernel3<<<nblocks, block4, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y, z);
       break;
     case 2:
       nblocks = 1 + (nrows - 1) / (blocksize / 2);
-      matmultadd_seqsell_tiled_kernel2<<<nblocks, block2>>>(nrows, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_tiled_kernel2<<<nblocks, block2, 0, stream>>>(nrows, acolidx, aval, sliidx, x, y, z);
       break;
     case 1:
       nblocks = 1 + (nrows - 1) / blocksize;
-      matmultadd_seqsell_basic_kernel<<<nblocks, blocksize>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+      matmultadd_seqsell_basic_kernel<<<nblocks, blocksize, 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
       break;
 #if !PetscDefined(USE_COMPLEX)
     case 0:
@@ -828,34 +851,34 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
         nblocks         = 1 + (nchunks - 1) / chunksperblock;
         chunk_slice_map = cudastruct->chunk_slice_map;
         if (blocky == 2) {
-          matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         } else if (blocky == 4) {
-          matmultadd_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<4><<<nblocks, dim3(32, 4), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         } else if (blocky == 8) {
-          matmultadd_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         } else if (blocky == 16) {
-          matmultadd_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         } else if (blocky == 32) {
-          matmultadd_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<32><<<nblocks, dim3(32, 32), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         } else {
-          matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel8<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, chunksperblock, nchunks, chunk_slice_map, acolidx, aval, sliidx, x, y, z);
         }
       } else {
         PetscInt avgslicesize = sliceheight * a->avgslicewidth;
         if (avgslicesize <= 432) {
           if (sliceheight * a->maxslicewidth < 2048 && nrows > 100000) {
             nblocks = 1 + (nrows - 1) / (2 * sliceheight); /* two slices per block */
-            matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+            matmultadd_seqsell_tiled_kernel7<<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
           } else {
             nblocks = 1 + (nrows - 1) / sliceheight;
-            matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+            matmultadd_seqsell_tiled_kernel9<2><<<nblocks, dim3(32, 2), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
           }
         } else if (avgslicesize <= 2400) {
           nblocks = 1 + (nrows - 1) / sliceheight;
-          matmultadd_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel9<8><<<nblocks, dim3(32, 8), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
         } else {
           nblocks = 1 + (nrows - 1) / sliceheight;
-          matmultadd_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16)>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
+          matmultadd_seqsell_tiled_kernel9<16><<<nblocks, dim3(32, 16), 0, stream>>>(nrows, sliceheight, acolidx, aval, sliidx, x, y, z);
         }
       }
       break;
@@ -863,6 +886,8 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unsupported kernel choice %" PetscInt_FMT " for MatMult_SeqSELLCUDA.", cudastruct->kernelchoice);
     }
+    PetscCallCUDA(cudaGetLastError());
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(VecCUDARestoreArrayRead(xx, &x));
     PetscCall(VecCUDARestoreArrayRead(yy, &y));
@@ -922,20 +947,24 @@ static PetscErrorCode MatAssemblyEnd_SeqSELLCUDA(Mat A, MatAssemblyType mode)
 
 static PetscErrorCode MatZeroEntries_SeqSELLCUDA(Mat A)
 {
-  PetscBool    both = PETSC_FALSE;
-  Mat_SeqSELL *a    = (Mat_SeqSELL *)A->data;
+  PetscBool          both = PETSC_FALSE;
+  Mat_SeqSELL       *a    = (Mat_SeqSELL *)A->data;
+  PetscDeviceContext dctx;
+  cudaStream_t       stream;
 
   PetscFunctionBegin;
+  PetscCall(MatSeqSELLCUDAGetContext(&dctx, &stream));
   if (A->factortype == MAT_FACTOR_NONE) {
     Mat_SeqSELLCUDA *cudastruct = (Mat_SeqSELLCUDA *)A->spptr;
     if (cudastruct->val) {
       both = PETSC_TRUE;
-      PetscCallCUDA(cudaMemset(cudastruct->val, 0, a->sliidx[a->totalslices] * sizeof(*cudastruct->val)));
+      PetscCallCUDA(cudaMemsetAsync(cudastruct->val, 0, a->sliidx[a->totalslices] * sizeof(*cudastruct->val), stream));
     }
   }
   PetscCall(PetscArrayzero(a->val, a->sliidx[a->totalslices]));
   if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
   else A->offloadmask = PETSC_OFFLOAD_CPU;
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
