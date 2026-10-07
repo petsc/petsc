@@ -175,7 +175,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
 + dctx - The `PetscDeviceContext`
 - type - The `PetscStreamType`
 
-  Level: beginner
+  Level: intermediate
 
   Note:
   See `PetscStreamType` in `include/petscdevicetypes.h` for more information on the available
@@ -213,7 +213,7 @@ PetscErrorCode PetscDeviceContextSetStreamType(PetscDeviceContext dctx, PetscStr
   Output Parameter:
 . type - The `PetscStreamType`
 
-  Level: beginner
+  Level: intermediate
 
   Note:
   See `PetscStreamType` in `include/petscdevicetypes.h` for more information on the available
@@ -347,7 +347,7 @@ PetscErrorCode PetscDeviceContextGetDevice(PetscDeviceContext dctx, PetscDevice 
   Output Parameter:
 . type - The `PetscDeviceType`
 
-  Level: beginner
+  Level: intermediate
 
   Note:
   This routine is a convenience shorthand for `PetscDeviceContextGetDevice()` ->
@@ -472,7 +472,7 @@ PetscErrorCode PetscDeviceContextDuplicate(PetscDeviceContext dctx, PetscDeviceC
   Output Parameter:
 . idle - `PETSC_TRUE` if `dctx` has NO work, `PETSC_FALSE` if it has work
 
-  Level: intermediate
+  Level: beginner
 
   Note:
   This routine only refers a singular context and does NOT take any of its children into
@@ -504,7 +504,7 @@ PetscErrorCode PetscDeviceContextQueryIdle(PetscDeviceContext dctx, PetscBool *i
 + dctxa - The `PetscDeviceContext` object that is waiting
 - dctxb - The `PetscDeviceContext` object that is being waited on
 
-  Level: beginner
+  Level: advanced
 
   Notes:
   Serializes two `PetscDeviceContext`s. Serialization is performed asynchronously; the host
@@ -564,7 +564,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   Output Parameter:
 . dsub - The created child context(s)
 
-  Level: intermediate
+  Level: advanced
 
   Notes:
   This routine creates `n` edges of a DAG from a source node which are causally dependent on the
@@ -671,7 +671,7 @@ PetscErrorCode PetscDeviceContextForkWithStreamType(PetscDeviceContext dctx, Pet
   Output Parameter:
 . dsub - The created child context(s)
 
-  Level: beginner
+  Level: advanced
 
   Notes:
   Behaves identically to `PetscDeviceContextForkWithStreamType()` except that the prescribed
@@ -713,7 +713,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
 . joinMode - The type of join to perform
 - dsub     - The sub contexts to converge
 
-  Level: beginner
+  Level: advanced
 
   Notes:
   If `PetscDeviceContextFork()` creates `n` edges from a source node which all depend on the source
@@ -1141,7 +1141,7 @@ PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext dctx, PetscO
   Output Parameter:
 . handle - A pointer to the handle to the stream
 
-  Level: developer
+  Level: advanced
 
   Note:
   This routine is dangerous. It exists only for the most experienced users and

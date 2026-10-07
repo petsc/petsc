@@ -130,8 +130,11 @@ user should provide the `ordname` as the second input argument of
 PETSc matrices interface to a variety of external factorization/solver packages via the `MatSolverType` which can be
 `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `MATSOLVERPASTIX`, `MATSOLVERMKL_PARDISO`, `MATSOLVERMKL_CPARDISO`,
 `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `MATSOLVERKLU`,
-`MATSOLVERCUSPARSE`, and `MATSOLVERCUDA`.
-The last three of which can run on GPUs, while `MATSOLVERSUPERLU_DIST` can partially run on GPUs.
+`MATSOLVERCUSPARSE`, `MATSOLVERCUDA`, `MATSOLVERHIPSPARSE`, and `MATSOLVERHIP`.
+The CUDA and HIP solver backends provide GPU support. To build
+`MATSOLVERSUPERLU_DIST` with GPU support, configure PETSc with
+`--download-superlu_dist` and either `--with-cuda` or `--with-hip`;
+see {any}`doc_config_accel` for backend setup.
 See {any}`doc_linsolve` for a table of the factorization based solvers in PETSc.
 
 Most of these packages compute their own orderings and cannot use ones provided so calls to the following routines with those

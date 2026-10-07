@@ -28,7 +28,7 @@ PetscErrorCode PetscDeviceGetAllocationAlignment_Private(size_t requested, size_
   Output Parameter:
 . type - The `PetscMemType` of the pointer
 
-  Level: intermediate
+  Level: beginner
 
   Notes:
   Currently only CUDA and HIP memtypes are supported.

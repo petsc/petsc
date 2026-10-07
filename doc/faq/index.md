@@ -231,41 +231,40 @@ See GPU development {ref}`roadmap <doc_gpu_roadmap>` for the latest information
 regarding the state of PETSc GPU integration.
 
 See GPU install {ref}`documentation <doc_config_accel>` for up-to-date information on
-installing PETSc to use GPU's.
+installing PETSc to use GPUs. See {any}`ch_device` for device contexts, streams,
+and host access.
 :::
 
-Quick summary of usage with CUDA:
+Select the vector and matrix types at runtime after configuring the corresponding
+backend:
 
-- The `VecType` `VECSEQCUDA`, `VECMPICUDA`, or `VECCUDA` may be used with
-  `VecSetType()` or `-vec_type seqcuda`, `mpicuda`, or `cuda` when
-  `VecSetFromOptions()` is used.
-- The `MatType` `MATSEQAIJCUSPARSE`, `MATMPIAIJCUSPARSE`, or `MATAIJCUSPARSE`
-  may be used with `MatSetType()` or `-mat_type seqaijcusparse`, `mpiaijcusparse`, or
-  `aijcusparse` when `MatSetFromOptions()` is used.
-- If you are creating the vectors and matrices with a `DM`, you can use `-dm_vec_type
-  cuda` and `-dm_mat_type aijcusparse`.
+| Backend | Vector option | Sparse matrix option |
+|---------|---------------|----------------------|
+| CUDA | `-vec_type cuda` | `-mat_type aijcusparse` |
+| HIP | `-vec_type hip` | `-mat_type aijhipsparse` |
+| Kokkos | `-vec_type kokkos` | `-mat_type aijkokkos` |
+| OpenCL/ViennaCL (legacy) | `-vec_type viennacl` | `-mat_type aijviennacl` |
 
-Quick summary of usage with OpenCL (provided by the ViennaCL library):
-
-- The `VecType` `VECSEQVIENNACL`, `VECMPIVIENNACL`, or `VECVIENNACL` may be used
-  with `VecSetType()` or `-vec_type seqviennacl`, `mpiviennacl`, or `viennacl`
-  when `VecSetFromOptions()` is used.
-- The `MatType` `MATSEQAIJVIENNACL`, `MATMPIAIJVIENNACL`, or `MATAIJVIENNACL`
-  may be used with `MatSetType()` or `-mat_type seqaijviennacl`, `mpiaijviennacl`, or
-  `aijviennacl` when `MatSetFromOptions()` is used.
-- If you are creating the vectors and matrices with a `DM`, you can use `-dm_vec_type
-  viennacl` and `-dm_mat_type aijviennacl`.
+The application must call `VecSetFromOptions()` and `MatSetFromOptions()` for
+these options to take effect. The types can also be selected with `VecSetType()`
+and `MatSetType()`. When a `DM` creates the vectors and matrices, use
+`-dm_vec_type type` and `-dm_mat_type type` instead, for example
+`-dm_vec_type hip -dm_mat_type aijhipsparse`.
 
 General hints:
 
 - It is useful to develop your code with the default vectors and then run production runs
   with the command line options to use the GPU since debugging on GPUs is difficult.
-- All of the Krylov methods except `KSPIBCGS` run on the GPU.
-- Parts of most preconditioners run directly on the GPU. After setup, `PCGAMG` runs
-  fully on GPUs, without any memory copies between the CPU and GPU.
+- Most Krylov methods use the selected vector and matrix implementations for their
+  linear algebra. Some methods, including `KSPIBCGS`, access vector entries on the CPU.
+- GPU support varies between preconditioners. For multigrid methods such as
+  `PCGAMG`, the smoothers and coarse solver also determine whether computations
+  stay on the GPU. Use `-log_view` to check work and transfers; see
+  {any}`sec_profgpu` for the GPU columns.
 
-Some GPU systems (for example many laptops) only run with single precision; thus, PETSc
-must be built with the `configure` option `--with-precision=single`.
+Choose single or double precision according to the accuracy needed and the
+capabilities of the device and its libraries. Double-precision performance varies
+between GPUs; GPU use does not itself require `--with-precision=single`.
 
 (doc_faq_extendedprecision)=
 

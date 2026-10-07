@@ -639,33 +639,30 @@ Edward A. Lee, [The Problem with Threads](https://digitalassets.lib.berkeley.edu
 
 ## GPU kernel parallelism
 
-GPUs offer at least two levels of clearly defined parallelism. Kernel-level parallelism is much like SIMD parallelism applied to loops;
-many "iterations" of the loop index run on different hardware in "lock-step".
-PETSc utilizes this parallelism with three similar but slightly different models:
+GPU kernels execute many operations in parallel, such as applying the same
+calculation to different vector entries. PETSc provides several implementations:
 
-- CUDA, which is provided by NVIDIA and runs on NVIDIA GPUs
-- HIP, provided by AMD, which can, in theory, run on both AMD and NVIDIA GPUs
-- and Kokkos, an open-source package that provides a slightly higher-level programming model to utilize GPU kernels.
+- CUDA for NVIDIA GPUs: `VECCUDA` and `MATAIJCUSPARSE`.
+- HIP for AMD GPUs: `VECHIP` and `MATAIJHIPSPARSE`.
+- Kokkos for NVIDIA, AMD, and Intel GPUs through CUDA, HIP, and SYCL,
+  respectively: `VECKOKKOS` and `MATAIJKOKKOS`.
 
-To utilize this one configures PETSc with either `--with-cuda` or `--with-hip` and, if they plan to use Kokkos, also `--download-kokkos --download-kokkos-kernels`.
+Configure PETSc with `--with-cuda`, `--with-hip`, or `--with-sycl` for the
+chosen backend. For Kokkos, also use `--download-kokkos --download-kokkos-kernels`;
+see {any}`doc_config_accel_kokkos` for details.
 
-In the GPU programming model that PETSc uses, the GPU memory is distinct from the CPU memory. This means that data that resides on the CPU
-memory must be copied to the GPU (often, this copy is done automatically by the libraries, and the user does not need to manage it)
-if one wishes to use the GPU computational power on it. This memory copy is slow compared to the GPU speed; hence, it is crucial to minimize these copies. This often
-translates to trying to do almost all the computation on the GPU and not constantly switching between computations on the CPU and the GPU on the same data.
-
-PETSc utilizes GPUs by providing vector and matrix classes (`Vec` and `Mat`) specifically written to run on the GPU. However, since it is difficult to
-write an entire PETSc code that runs only on the GPU, one can also access and work with (for example, put entries into) the vectors and matrices
-on the CPU. The implementations include
-`VECCUDA`, `MATAIJCUSPARSE`, `VECKOKKOS`, `MATAIJKOKKOS`, `VECHIP`, and `MATAIJHIPSPARSE`.
-
-More details on using GPUs from PETSc will follow in this document.
+GPU vectors and matrices also allow CPU access. PETSc transfers values between
+host and device storage as needed, but frequent transfers can dominate execution
+time. Keep successive computations on the GPU when possible.
 
 (sec_gpu_streams)=
 
 ## GPU stream parallelism
 
-Please contribute to this document.
+A stream executes submitted work in order. Independent work on different streams
+may overlap, but shared data requires explicit ordering. PETSc represents a stream
+and its associated library handles with a `PetscDeviceContext`. See
+{any}`ch_device` for its use, synchronization, and the current limits of host access.
 
 ```{raw} latex
 \newpage

@@ -508,6 +508,7 @@ locally. Rather, one should organize the code in such a way that *most*
 values are generated locally.
 
 The routine `MatCreateAIJCUSPARSE()` allows one to create GPU based matrices for NVIDIA systems.
+`MatCreateAIJHIPSPARSE()` creates matrices for AMD GPUs.
 `MatCreateAIJKokkos()` can create matrices for use with CPU, OpenMP, NVIDIA, AMD, or Intel based GPU systems.
 
 It is sometimes difficult to compute the required preallocation information efficiently, hence PETSc provides a

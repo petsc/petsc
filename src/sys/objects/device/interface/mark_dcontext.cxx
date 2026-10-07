@@ -644,6 +644,8 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 . mode - The desired access intent
 - name - The object name (for debug purposes, ignored in optimized builds)
 
+  Level: developer
+
   Notes:
   This routine formally informs the dependency system that `dctx` will access the object
   represented by `id` with `mode` and adds `dctx` to `id`'s list of dependencies (termed
@@ -651,8 +653,6 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 
   If the existing set of leaves have an incompatible `PetscMemoryAccessMode` to `mode`, `dctx`
   will be serialized against them.
-
-  Level: intermediate
 
 .seealso: `PetscDeviceContextWaitForContext()`, `PetscDeviceContextSynchronize()`,
 `PetscObjectGetId()`, `PetscMemoryAccessMode`

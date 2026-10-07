@@ -129,6 +129,22 @@ If this is problematic then it is also possible to examine
 the profiling information in a nested format. For more information see
 {any}`sec_nestedevents`.
 
+(sec_profgpu)=
+
+### GPU Work and Data Transfers
+
+For GPU runs, `-log_view` includes `CpuToGpu` and `GpuToCpu` columns for each
+event. `Count` is the maximum number of logged transfers over MPI processes;
+`Size` is their volume in megabytes ($10^6$ bytes), averaged over processes. Repeated
+transfers inside a solver often indicate alternating CPU and GPU access to the
+same data; see {any}`ch_device` for the memory model. `GPU %F` reports the
+percentage of an event's logged floating point operations performed on the GPU.
+
+Use `-log_view -log_view_gpu_time` to collect GPU timings. Without GPU timing,
+many event times and GPU flop rates are reported as `n/a`. Timing individual
+GPU operations with `-log_view_gpu_time` can slow the computation; see
+`PetscLogGpuTime()`.
+
 (sec_parperformance)=
 
 ### Interpreting `-log_view` Output: Parallel Performance
@@ -673,34 +689,29 @@ For example, in serial
 $ nsys profile -t nvtx,cuda -o file --stats=true --force-overwrite true ./a.out
 ```
 
-will generate a file `file.qdstrm` with performance data that is
-annotated with PETSc events (methods) and Kokkos device kernel names.
-The Nsight Systems GUI, `nsys-ui`, can be used to navigate this file
-(<https://developer.nvidia.com/nsight-systems>). The Nsight Systems GUI
-lets you see a timeline of code performance information like kernels,
-memory mallocs and frees, CPU-GPU communication, and high-level data like time, sizes
-of memory copies, and more, in a popup window when the mouse
-hovers over the section.
-To view the data, start `nsys-ui` without any arguments and then `Import` the
-`.qdstrm` file in the GUI.
-A side effect of this viewing process is the generation of a file `file.nsys-rep`, which can be viewed directly
-with `nsys-ui` in the future.
+generates `file.nsys-rep`, normally converted automatically from the intermediate
+`file.qdstrm`. Open the report with `nsys-ui` to inspect kernels, allocations,
+transfers, and PETSc event ranges.
 
-For an MPI parallel job, only one process can call `nsys`,
-say have rank zero output `nsys` data and have all other
-ranks call the executable directly. For example with MPICH
-or Open MPI - we can run a parallel job on 4 MPI tasks as:
+For MPI jobs, each rank can run under `nsys`; use a distinct output name for each
+rank. For example, with Open MPI:
+
+```console
+$ mpiexec -n 4 nsys profile -t nvtx,cuda -o 'profile_%q{OMPI_COMM_WORLD_RANK}' ./a.out
+```
+
+Alternatively, profile just one rank to reduce the amount of trace data. With
+MPICH or Open MPI:
 
 ```console
 $ mpiexec -n 1 nsys profile -t nvtx,cuda -o file_name --stats=true --force-overwrite true ./a.out : -n 3 ./a.out
 ```
 
-Note: The Nsight GUI can open profiling reports from elsewhere. For
-example, a report from a compute node can be analyzed on your local
-machine, but care should be taken to use the exact same versions of
-Nsight Systems that generated the report.
-To check the version of Nsight on the compute node run `nsys-ui` and
-note the version number at the top of the window.
+Reports collected on a compute node can be opened locally with the same or a
+newer GUI version. Importing an unconverted `.qdstrm` requires matching versions.
+Check the collector version with `nsys --version`. See the
+[Nsight Systems User Guide](https://docs.nvidia.com/nsight-systems/UserGuide/index.html)
+for launcher-specific examples and report compatibility.
 
 ## ROCProfiler profiling
 

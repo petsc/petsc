@@ -242,6 +242,8 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
 . mtype - The `PetscMemType` of the pointer
 - size  - The size (in bytes) of the memory region
 
+  Level: developer
+
   Notes:
   `ptr` need not point to the beginning of the memory range, however the user should register
   the
@@ -250,8 +252,6 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
   however the given `mtype` and `size` must match the original registration.
 
   `size` may be 0 (in which case this routine does nothing).
-
-  Level: intermediate
 
 .seealso: `PetscDeviceMalloc()`, `PetscDeviceArrayCopy()`, `PetscDeviceFree()`,
 `PetscDeviceArrayZero()`
@@ -420,7 +420,7 @@ PetscErrorCode PetscDeviceDeallocate_Private(PetscDeviceContext dctx, void *PETS
 . src  - The pointer to copy from
 - n    - The amount (in bytes) to copy
 
-  Level: intermediate
+  Level: beginner
 
   Notes:
   Both `dest` and `src` must have been allocated by `PetscDeviceMalloc()` or
@@ -493,7 +493,7 @@ PetscErrorCode PetscDeviceMemcpy(PetscDeviceContext dctx, void *PETSC_RESTRICT d
 . v    - The value to set
 - n    - The amount (in bytes) to set
 
-  Level: intermediate
+  Level: beginner
 
   Notes:
   `ptr` must have been allocated by `PetscDeviceMalloc()` or `PetscDeviceCalloc()`.
