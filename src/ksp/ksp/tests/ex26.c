@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   Mat         A, B, X;
   GridCtx     fine_ctx;
   KSP         ksp;
-  PetscBool   Brand = PETSC_FALSE, transpose = PETSC_FALSE, flg;
+  PetscBool   Brand = PETSC_FALSE, transpose = PETSC_FALSE, new_interpolation = PETSC_FALSE, flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -86,6 +86,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rand", &Brand, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-lda_shift", &lda_shift, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-new_interpolation", &new_interpolation, NULL));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n", fine_ctx.mx, fine_ctx.my));
 
   /* Set up distributed array for fine grid */
@@ -170,6 +171,37 @@ int main(int argc, char **argv)
     PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
     PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution with a larger leading dimension has error %g relative to %g", (double)err, (double)norm);
     PetscCall(MatDestroy(&B2));
+    PetscCall(MatDestroy(&X2));
+  }
+
+  if (new_interpolation) { /* solve again after replacing the finest interpolation and restriction by a copy with an explicit zero in a new off-process column */
+    PC        pc;
+    Mat       Pf, P2, X2;
+    PetscInt  nlevels, rstart, cend, N;
+    PetscReal norm, err;
+
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCMGGetLevels(pc, &nlevels));
+    PetscCall(PCMGGetInterpolation(pc, nlevels - 1, &Pf));
+    PetscCall(MatDuplicate(Pf, MAT_COPY_VALUES, &P2));
+    PetscCall(MatGetOwnershipRange(P2, &rstart, NULL));
+    PetscCall(MatGetOwnershipRangeColumn(P2, NULL, &cend));
+    PetscCall(MatGetSize(P2, NULL, &N));
+    PetscCall(MatSetOption(P2, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatSetValue(P2, rstart, cend < N ? N - 1 : 0, 0.0, ADD_VALUES));
+    PetscCall(MatAssemblyBegin(P2, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(P2, MAT_FINAL_ASSEMBLY));
+    PetscCall(PCMGSetInterpolation(pc, nlevels - 1, P2));
+    PetscCall(PCMGSetRestriction(pc, nlevels - 1, P2));
+    PetscCall(MatDestroy(&P2));
+    PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &X2));
+    PetscCall(MatZeroEntries(X2));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X2));
+    else PetscCall(KSPMatSolve(ksp, B, X2));
+    PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(X2, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution after replacing the interpolation has error %g relative to %g", (double)err, (double)norm);
     PetscCall(MatDestroy(&X2));
   }
 
@@ -290,6 +322,12 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       suffix: matcycles_richardson_guess
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -ksp_initial_guess_nonzero -ksp_norm_type unpreconditioned -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      # a second solve after the finest interpolation and restriction are replaced by a matrix with an extra off-process column
+      suffix: matcycles_new_interpolation
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -new_interpolation
 
     test:
       # a second solve with blocks of a larger leading dimension

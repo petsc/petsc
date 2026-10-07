@@ -21,6 +21,7 @@ typedef struct {
   Mat      B;
   Mat      X;
   Mat      R;
+  Mat      W;           /* coarse correction interpolated to this level when it cannot be computed into X directly, see PCMGMatInterpolate_Private() */
   Mat      coarseSpace; /* A vector space which should be accurately captured by the next coarser mesh,
                                                   and thus accurately interpolated. The columns of this dense matrix
                                                   correspond to the same function discretized in
@@ -98,6 +99,7 @@ PETSC_INTERN PetscErrorCode PCMGACycle_Private(PC, PC_MG_Levels **, PetscBool, P
 PETSC_INTERN PetscErrorCode PCMGFCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool, PCRichardsonConvergedReason *);
+PETSC_INTERN PetscErrorCode PCMGMatInterpolate_Private(PC_MG_Levels *, Mat, Mat, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGResetBlocks_Private(PC);
 
 PETSC_INTERN PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *);

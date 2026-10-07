@@ -222,6 +222,7 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set MG levels before calling");
   PetscCheck(l, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Do not set interpolation routine for coarsest level");
+  if (mat != mglevels[l]->interpolate) PetscCall(PCMGResetBlocks_Private(pc)); /* the kept block products were set up with the old matrix */
   PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&mglevels[l]->interpolate));
 
@@ -325,6 +326,7 @@ PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 3);
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Must set MG levels before calling");
   PetscCheck(l, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Do not set restriction routine for coarsest level");
+  if (mat != mglevels[l]->restrct) PetscCall(PCMGResetBlocks_Private(pc)); /* the kept block products were set up with the old matrix */
   PetscCall(PetscObjectReference((PetscObject)mat));
   PetscCall(MatDestroy(&mglevels[l]->restrct));
 

@@ -39,10 +39,26 @@ PetscErrorCode PCMGResetBlocks_Private(PC pc)
   PetscFunctionBegin;
   if (mglevels == NULL || levels < 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDestroy(&mglevels[levels - 1]->R));
+  PetscCall(MatDestroy(&mglevels[levels - 1]->W));
   for (PetscInt i = 0; i < levels - 1; i++) {
     PetscCall(MatDestroy(&mglevels[i]->R));
+    PetscCall(MatDestroy(&mglevels[i]->W));
     PetscCall(MatDestroy(&mglevels[i]->B));
     PetscCall(MatDestroy(&mglevels[i]->X));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* X = P Xc, or X += P Xc when add is PETSC_TRUE; goes through W when adding or on the finest level, as MatMatInterpolate() only keeps the
+   product on a block it created and X there belongs to the caller */
+PetscErrorCode PCMGMatInterpolate_Private(PC_MG_Levels *mglevels, Mat P, Mat Xc, PetscBool add)
+{
+  PetscFunctionBegin;
+  if (!add && mglevels->level < mglevels->levels - 1) PetscCall(MatMatInterpolate(P, Xc, &mglevels->X));
+  else {
+    PetscCall(MatMatInterpolate(P, Xc, &mglevels->W));
+    if (add) PetscCall(MatAXPY(mglevels->X, 1.0, mglevels->W, UNKNOWN_NONZERO_PATTERN));
+    else PetscCall(MatCopy(mglevels->W, mglevels->X, UNKNOWN_NONZERO_PATTERN));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -119,7 +135,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     while (cycles--) PetscCall(PCMGMCycle_Private(pc, mglevelsin - 1, transpose, matapp, reason));
     if (mglevels->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels->eventinterprestrict, 0, 0, 0, 0));
     if (!transpose) {
-      if (matapp) PetscCall(MatMatInterpolateAdd(mglevels->interpolate, mgc->X, mglevels->X, &mglevels->X));
+      if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels, mglevels->interpolate, mgc->X, PETSC_TRUE));
       else PetscCall(MatInterpolateAdd(mglevels->interpolate, mgc->x, mglevels->x, mglevels->x));
     } else {
       PetscCall(MatInterpolateAdd(mglevels->restrct, mgc->x, mglevels->x, mglevels->x));
@@ -252,6 +268,7 @@ PetscErrorCode PCReset_MG(PC pc)
       PetscCall(VecDestroy(&mglevels[i]->b));
       PetscCall(VecDestroy(&mglevels[i]->x));
       PetscCall(MatDestroy(&mglevels[i + 1]->R));
+      PetscCall(MatDestroy(&mglevels[i + 1]->W));
       PetscCall(MatDestroy(&mglevels[i]->B));
       PetscCall(MatDestroy(&mglevels[i]->X));
       PetscCall(VecDestroy(&mglevels[i]->crx));
