@@ -1,4 +1,4 @@
-static const char help[] = "Compare LMVM updates, products, and solves with host results.\n";
+static const char help[] = "Compare LMVM updates, products, and solves on nonblocking contexts with host results.\n";
 
 #include <petscksp.h>
 #include <petscdevice.h>
@@ -62,12 +62,14 @@ static PetscErrorCode TestLMVM(Vec x, PetscDeviceContext dctx)
     PetscCall(VecCopy(hx, x));
     PetscCall(VecCopy(hf, f));
     PetscCall(MatLMVMUpdate(reference, hx, hf));
+    PetscCall(PetscDeviceContextDelay(dctx, 0.02));
     PetscCall(MatLMVMUpdate(B, x, f));
     // Repeated applications exercise cached products as well as new history.
     for (PetscInt repeat = 0; repeat < 2; ++repeat) {
       for (PetscInt solve = 0; solve < 2; ++solve) {
         if (solve) PetscCall(MatSolve(reference, hf, expected));
         else PetscCall(MatMult(reference, hf, expected));
+        PetscCall(PetscDeviceContextDelay(dctx, 0.02));
         if (solve) PetscCall(MatSolve(B, f, result));
         else PetscCall(MatMult(B, f, result));
         PetscCall(PetscDeviceContextSynchronize(dctx));
@@ -89,7 +91,7 @@ int main(int argc, char **argv)
 {
   Vec                   x;
   PetscDeviceContext    saved, dctx;
-  const PetscStreamType streams[] = {PETSC_STREAM_DEFAULT};
+  const PetscStreamType streams[] = {PETSC_STREAM_NONBLOCKING, PETSC_STREAM_NONBLOCKING_WITH_BARRIER};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

@@ -472,6 +472,12 @@ PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *unused)
       suffix: hpddm_2
       args: -t 2 -pc_type jacobi -ksp_monitor -ksp_type gmres -s2_ksp_type hpddm -s2_ksp_hpddm_type gcrodr -s2_ksp_hpddm_recycle 10 -s2_pc_type jacobi -s2_ksp_monitor
 
+   test:
+      requires: hpddm cuda
+      suffix: hpddm_cuda_streams
+      output_file: output/empty.out
+      args: -t 2 -mat_type aijcusparse -vec_type cuda -pc_type jacobi -s2_pc_type jacobi -ksp_type hpddm -s2_ksp_type hpddm -ksp_error_if_not_converged -s2_ksp_error_if_not_converged -ksp_hpddm_precision {{single double}shared output} -s2_ksp_hpddm_precision {{single double}shared output} -root_device_context_stream_type {{default nonblocking nonblocking_with_barrier}separate output}
+
    testset:
       requires: hpddm
       output_file: output/ex9_hpddm_cg.out
