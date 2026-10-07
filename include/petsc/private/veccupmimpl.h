@@ -212,10 +212,11 @@ public:
   static PetscErrorCode RestoreArray(Vec, PetscScalar **, PetscDeviceContext) noexcept;
   template <PetscMemType, PetscMemoryAccessMode>
   static PetscErrorCode RestoreArray(Vec, PetscScalar **) noexcept;
-  template <PetscMemoryAccessMode>
+  template <PetscMemoryAccessMode, bool = false>
   static PetscErrorCode GetArrayAndMemtype(Vec, PetscScalar **, PetscMemType *, PetscDeviceContext) noexcept;
-  template <PetscMemoryAccessMode>
+  template <PetscMemoryAccessMode, bool = false>
   static PetscErrorCode GetArrayAndMemtype(Vec, PetscScalar **, PetscMemType *) noexcept;
+  static PetscErrorCode GetArrayAndMemtypeAsync(Vec, PetscMemoryAccessMode, PetscScalar **, PetscMemType *) noexcept;
   template <PetscMemoryAccessMode>
   static PetscErrorCode RestoreArrayAndMemtype(Vec, PetscScalar **, PetscDeviceContext) noexcept;
   template <PetscMemoryAccessMode>
@@ -677,25 +678,45 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::RestoreArray(Vec v, PetscScalar **a) n
 }
 
 template <device::cupm::DeviceType T, typename D>
-template <PetscMemoryAccessMode access>
+template <PetscMemoryAccessMode access, bool force>
 inline PetscErrorCode Vec_CUPMBase<T, D>::GetArrayAndMemtype(Vec v, PetscScalar **a, PetscMemType *mtype, PetscDeviceContext dctx) noexcept
 {
   PetscFunctionBegin;
-  if (a) PetscCall(D::template GetArray<PETSC_MEMTYPE_DEVICE, access>(v, a, dctx));
+  if (a) PetscCall(D::template GetArray<PETSC_MEMTYPE_DEVICE, access, force>(v, a, dctx));
   if (mtype) *mtype = (PetscDefined(HAVE_NVSHMEM) && VecCUPMCast(v)->nvshmem) ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUPM();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // v->ops->getarrayandmemtype
 template <device::cupm::DeviceType T, typename D>
-template <PetscMemoryAccessMode access>
+template <PetscMemoryAccessMode access, bool force>
 inline PetscErrorCode Vec_CUPMBase<T, D>::GetArrayAndMemtype(Vec v, PetscScalar **a, PetscMemType *mtype) noexcept
 {
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
   PetscCall(GetHandles_(&dctx));
-  PetscCall(D::template GetArrayAndMemtype<access>(v, a, mtype, dctx));
+  PetscCall(D::template GetArrayAndMemtype<access, force>(v, a, mtype, dctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <device::cupm::DeviceType T, typename D>
+inline PetscErrorCode Vec_CUPMBase<T, D>::GetArrayAndMemtypeAsync(Vec v, PetscMemoryAccessMode access, PetscScalar **a, PetscMemType *mtype) noexcept
+{
+  PetscFunctionBegin;
+  switch (access) {
+  case PETSC_MEMORY_ACCESS_READ:
+    PetscCall(D::template GetArrayAndMemtype<PETSC_MEMORY_ACCESS_READ, true>(v, a, mtype));
+    break;
+  case PETSC_MEMORY_ACCESS_WRITE:
+    PetscCall(D::template GetArrayAndMemtype<PETSC_MEMORY_ACCESS_WRITE, true>(v, a, mtype));
+    break;
+  case PETSC_MEMORY_ACCESS_READ_WRITE:
+    PetscCall(D::template GetArrayAndMemtype<PETSC_MEMORY_ACCESS_READ_WRITE, true>(v, a, mtype));
+    break;
+  default:
+    SETERRQ(PetscObjectComm(PetscObjectCast(v)), PETSC_ERR_ARG_OUTOFRANGE, "Invalid memory access mode %d", (int)access);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1023,6 +1044,7 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
 
   VecSetOp_CUPM(getarrayreadandmemtype, nullptr, [](Vec v, const PetscScalar **a, PetscMemType *m) { return D::template GetArrayAndMemtype<PETSC_MEMORY_ACCESS_READ>(v, const_cast<PetscScalar **>(a), m); });
   VecSetOp_CUPM(restorearrayreadandmemtype, nullptr, [](Vec v, const PetscScalar **a) { return D::template RestoreArrayAndMemtype<PETSC_MEMORY_ACCESS_READ>(v, const_cast<PetscScalar **>(a)); });
+  VecSetOp_CUPM(getarrayandmemtypeasync, nullptr, GetArrayAndMemtypeAsync);
 
   // set the functions that are always sequential
   using VecSeq_T = VecSeq_CUPM<T>;

@@ -111,6 +111,7 @@ struct _VecOps {
   PetscErrorCode (*errorwnorm)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
   PetscErrorCode (*maxpby)(Vec, PetscInt, const PetscScalar *, PetscScalar, Vec *); /* y = beta y + alpha[j] x[j] */
   PetscErrorCode (*setstdbasis)(Vec, PetscInt);
+  PetscErrorCode (*getarrayandmemtypeasync)(Vec, PetscMemoryAccessMode, PetscScalar **, PetscMemType *);
 };
 
 #if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))

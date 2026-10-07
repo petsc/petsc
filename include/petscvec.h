@@ -656,10 +656,13 @@ PETSC_EXTERN PetscErrorCode VecRestoreLocalVector(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecGetLocalVectorRead(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecRestoreLocalVectorRead(Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecGetArrayAndMemType(Vec, PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode VecGetArrayAndMemTypeAsync(Vec, PetscScalar *[], PetscMemType *);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayAndMemType(Vec, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode VecGetArrayReadAndMemType(Vec, const PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode VecGetArrayReadAndMemTypeAsync(Vec, const PetscScalar *[], PetscMemType *);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayReadAndMemType(Vec, const PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode VecGetArrayWriteAndMemType(Vec, PetscScalar *[], PetscMemType *);
+PETSC_EXTERN PetscErrorCode VecGetArrayWriteAndMemTypeAsync(Vec, PetscScalar *[], PetscMemType *);
 PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar *[]);
 
 /*@

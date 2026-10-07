@@ -540,6 +540,7 @@ static struct _VecOps DvOps = {
   PetscDesignatedInitializer(errorwnorm, NULL),
   PetscDesignatedInitializer(maxpby, NULL),
   PetscDesignatedInitializer(setstdbasis, NULL),
+  PetscDesignatedInitializer(getarrayandmemtypeasync, NULL),
 };
 
 /*
