@@ -42,6 +42,8 @@ public:
   static PetscErrorCode deallocate(value_type *, const StreamBase<U> *) noexcept;
   template <typename U>
   static PetscErrorCode uninitialized_copy(value_type *, const value_type *, size_type, const StreamBase<U> *) noexcept;
+  template <typename U>
+  static PetscErrorCode set_canary(value_type *, size_type, const StreamBase<U> *) noexcept;
 };
 
 template <DeviceType T, typename P>
@@ -145,6 +147,16 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 
   PetscFunctionBegin;
   PetscCallThrust(THRUST_CALL(thrust::fill, stream->get_stream(), xptr, xptr + n, canary));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T, typename P>
+template <typename U>
+inline PetscErrorCode HostAllocator<T, P>::set_canary(value_type *ptr, size_type n, const StreamBase<U> *stream) noexcept
+{
+  PetscFunctionBegin;
+  // Reused pinned storage may still be read by a transfer ordered before this allocation.
+  PetscCall(DeviceAllocator<T, P>::set_canary(ptr, n, stream));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

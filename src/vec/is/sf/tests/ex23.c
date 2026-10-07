@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n2, &yh));
   PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, &xd));
   PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, &yd));
+  PetscCall(PetscDeviceContextSynchronize(dctx));
 
   for (PetscInt i = 0; i < n; i++) {
     xh[i] = xh[i + n] = i + rstart;
