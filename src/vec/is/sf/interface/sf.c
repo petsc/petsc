@@ -72,12 +72,12 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   b->use_gpu_aware_mpi    = use_gpu_aware_mpi;
   b->use_stream_aware_mpi = PETSC_FALSE;
   b->unknown_input_stream = PETSC_FALSE;
-  #if PetscDefined(HAVE_KOKKOS) /* Prefer kokkos over cuda*/
-  b->backend = PETSCSF_BACKEND_KOKKOS;
-  #elif PetscDefined(HAVE_CUDA)
+  #if PetscDefined(HAVE_CUDA)
   b->backend = PETSCSF_BACKEND_CUDA;
   #elif PetscDefined(HAVE_HIP)
   b->backend = PETSCSF_BACKEND_HIP;
+  #elif PetscDefined(HAVE_KOKKOS)
+  b->backend = PETSCSF_BACKEND_KOKKOS;
   #endif
 
   #if PetscDefined(HAVE_NVSHMEM)
@@ -330,8 +330,8 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
                                      If true, this option only works with `-use_gpu_aware_mpi 1`.
 . -sf_use_stream_aware_mpi         - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
                                      If true, this option only works with `-use_gpu_aware_mpi 1`.
-- -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `kokkos`.
-                                     On other devices, the only available is `kokkos`.
+- -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).
+                                     On other devices, the only available backend is `kokkos`.
 
   Level: intermediate
 

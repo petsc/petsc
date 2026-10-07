@@ -363,9 +363,10 @@ PETSC_INTERN PetscBool      VecTaggerRegisterAllCalled;
 PETSC_INTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
 PETSC_INTERN PetscMPIInt    Petsc_Reduction_keyval;
 
-PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
-PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
-PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
+PETSC_INTERN PetscInt                      VecGetSubVectorSavedStateId;
+PETSC_INTERN PetscErrorCode                VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
+PETSC_INTERN PetscErrorCode                VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScatterSynchronizeKokkos_Private(VecScatter, Vec, Vec, PetscBool);
 
 #if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);

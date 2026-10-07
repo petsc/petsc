@@ -69,6 +69,8 @@
 ```{rubric} VecScatter / PetscSF:
 ```
 
+- Prefer the native CUDA/HIP `PetscSF` backend when available so communication follows the current device context; retain Kokkos as a fallback and as an explicit choice with `-sf_backend kokkos`
+
 ```{rubric} PF:
 ```
 

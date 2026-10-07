@@ -1,4 +1,4 @@
-static const char help[] = "Test CUDA/HIP SF link reuse, cleanup, and completion on barrier contexts.\n";
+static const char help[] = "Test CUDA/HIP SF link reuse, cleanup, and completion on barrier contexts, and Kokkos VecScatter ordering with the current context.\n";
 
 #include <petscsf.h>
 #include <petscdevice.h>
@@ -8,6 +8,73 @@ static const char help[] = "Test CUDA/HIP SF link reuse, cleanup, and completion
 #if PetscDefined(HAVE_HIP)
   #include <petscdevice_hip.h>
 #endif
+
+static PetscErrorCode TestKokkosScatter(PetscDeviceContext saved, PetscDeviceContext dctx[])
+{
+  Vec                x, y;
+  VecScatter         scatter;
+  IS                 from, to;
+  PetscDeviceContext current;
+  const PetscScalar *values;
+  PetscInt           source[2], target[] = {0, 2};
+  PetscMPIInt        rank, size;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  // Initialize Kokkos on a context that stays alive until PetscFinalize().
+  PetscCall(PetscDeviceContextSetCurrentContext(saved));
+  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+  PetscCall(VecSetSizes(x, 4, PETSC_DECIDE));
+  PetscCall(VecSetType(x, VECMPIKOKKOS));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &y));
+  PetscCall(VecSetSizes(y, 4, 4));
+  PetscCall(VecSetType(y, VECSEQKOKKOS));
+  source[0] = 4 * rank + 3;
+  source[1] = 4 * ((rank + 1) % size) + 1;
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 2, source, PETSC_COPY_VALUES, &from));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 2, target, PETSC_COPY_VALUES, &to));
+  PetscCall(VecScatterCreate(x, from, y, to, &scatter));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+
+  // Warm the cached links on Kokkos' stream, then reuse them on two different streams.
+  for (PetscInt pass = 0; pass < 3; ++pass) {
+    current = pass ? dctx[pass - 1] : saved;
+    PetscCall(PetscDeviceContextSetCurrentContext(current));
+    for (PetscInt local = 0; local < 2; ++local) {
+      for (PetscInt reverse = 0; reverse < 2; ++reverse) {
+        Vec         input = reverse ? y : x, output = reverse ? x : y;
+        ScatterMode mode = reverse ? (local ? SCATTER_REVERSE_LOCAL : SCATTER_REVERSE) : (local ? SCATTER_FORWARD_LOCAL : SCATTER_FORWARD);
+
+        PetscCall(VecSet(input, 1));
+        PetscCall(VecSet(output, 0));
+        PetscCall(PetscDeviceContextSynchronize(saved));
+        PetscCall(PetscDeviceContextDelay(saved, 0.05));
+        PetscCall(VecScale(input, 2));
+        PetscCall(VecScatterBegin(scatter, input, output, INSERT_VALUES, mode));
+        PetscCall(PetscDeviceContextDelay(current, 0.05));
+        PetscCall(VecScatterEnd(scatter, input, output, INSERT_VALUES, mode));
+        PetscCall(VecScale(output, 3));
+        PetscCall(PetscDeviceContextSynchronize(saved));
+        PetscCall(PetscDeviceContextSynchronize(current));
+        PetscCall(VecGetArrayRead(output, &values));
+        for (PetscInt i = 0; i < 4; ++i) {
+          PetscScalar expected = 0;
+
+          if (i == (reverse ? 3 : 0) || (i == (reverse ? 1 : 2) && (!local || size == 1))) expected = 6;
+          PetscCheck(values[i] == expected, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Pass %" PetscInt_FMT ", mode %d: incorrect Kokkos scatter result at local entry %" PetscInt_FMT, pass, (int)mode, i);
+        }
+        PetscCall(VecRestoreArrayRead(output, &values));
+      }
+    }
+  }
+  PetscCall(VecScatterDestroy(&scatter));
+  PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&y));
+  PetscCall(PetscDeviceContextSetCurrentContext(saved));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 int main(int argc, char **argv)
 {
@@ -21,11 +88,12 @@ int main(int argc, char **argv)
   PetscInt           local[]    = {0, 2};
   PetscInt          *root, *leaf, *update, *input, *output;
   PetscMPIInt        rank, size;
-  PetscBool          cleanup = PETSC_FALSE;
+  PetscBool          kokkos = PETSC_FALSE, cleanup = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetEnum(NULL, NULL, "-stream_type", PetscStreamTypes, (PetscEnum *)&streamtype, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_kokkos", &kokkos, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_cleanup", &cleanup, NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
@@ -142,6 +210,7 @@ int main(int argc, char **argv)
     }
   }
 
+  if (kokkos) PetscCall(TestKokkosScatter(saved, dctx));
   PetscCall(PetscSFDestroy(&sf));
   PetscCall(PetscDeviceFree(dctx[0], root));
   PetscCall(PetscDeviceFree(dctx[0], leaf));
@@ -171,6 +240,20 @@ int main(int argc, char **argv)
       suffix: hip
       requires: hip
       args: -sf_backend hip
+
+  test:
+    suffix: kokkos_cuda
+    requires: kokkos_kernels cuda
+    nsize: {{1 2}}
+    args: -test_kokkos -sf_type {{basic neighbor}} -sf_backend cuda -use_gpu_aware_mpi 0
+    output_file: output/empty.out
+
+  test:
+    suffix: kokkos_hip
+    requires: kokkos_kernels hip
+    nsize: {{1 2}}
+    args: -test_kokkos -sf_type {{basic neighbor}} -sf_backend hip -use_gpu_aware_mpi 0
+    output_file: output/empty.out
 
   test:
     suffix: cuda_nvshmem

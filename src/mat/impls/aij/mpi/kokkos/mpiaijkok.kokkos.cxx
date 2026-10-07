@@ -666,6 +666,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
         }
       });
     }));
+  PetscCall(PetscSFSynchronizeKokkos_Private(reduceSF, PETSC_TRUE));
   PetscCall(PetscSFReduceWithMemTypeBegin(reduceSF, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, leafBuf.data(), PETSC_MEMTYPE_KOKKOS, rootBuf.data(), MPI_REPLACE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -687,6 +688,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm, KokkosCsrMatrix, Kokkos
 
   PetscFunctionBegin;
   PetscCall(PetscSFReduceEnd(reduceSF, MPIU_SCALAR, leafBuf.data(), rootBuf.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(reduceSF, PETSC_FALSE));
 
   // Reduce data in rootBuf to Fd and Fo
   PetscCallCXX(Kokkos::parallel_for(
@@ -993,6 +995,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
         }
       });
     }));
+  PetscCall(PetscSFSynchronizeKokkos_Private(bcastSF, PETSC_TRUE));
   PetscCall(PetscSFBcastWithMemTypeBegin(bcastSF, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, rootBuf.data(), PETSC_MEMTYPE_KOKKOS, leafBuf.data(), MPI_REPLACE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1019,6 +1022,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat, PetscSF, MatReuse, PetscInt *
   PetscInt             workSets     = (Fm + rowsPerTeam - 1) / rowsPerTeam;
 
   PetscCall(PetscSFBcastEnd(bcastSF, MPIU_SCALAR, rootBuf.data(), leafBuf.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(bcastSF, PETSC_FALSE));
 
   // Update Fda and Foa with new data in leafBuf (as if it is Fa)
   PetscCallCXX(Kokkos::parallel_for(
@@ -1616,6 +1620,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
   Kokkos::parallel_for(Kokkos::RangePolicy<>(exec, 0, vsend.extent(0)), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
 
   /* Send remote entries to their owner and overlap the communication with local computation */
+  PetscCall(PetscSFSynchronizeKokkos_Private(coo->sf, PETSC_TRUE));
   PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));
   /* Add local entries to A and B in one kernel */
   Kokkos::parallel_for(
@@ -1631,6 +1636,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
       }
     });
   PetscCall(PetscSFReduceEnd(coo->sf, MPIU_SCALAR, vsend.data(), v2.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(coo->sf, PETSC_FALSE));
 
   /* Add received remote entries to A and B in one kernel */
   Kokkos::parallel_for(
