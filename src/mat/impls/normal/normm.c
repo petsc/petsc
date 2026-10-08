@@ -267,16 +267,18 @@ static PetscErrorCode MatConvert_Normal_HYPRE(Mat A, MatType type, MatReuse reus
 #endif
 
 typedef struct {
-  Mat work[2];
+  Mat work[3];
 } Normal_Dense;
 
 static PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
 {
-  Mat           A, B;
-  Normal_Dense *contents;
-  Mat_Normal   *a;
-  Vec           right;
-  PetscScalar  *array, scale;
+  Mat                A, B;
+  Normal_Dense      *contents;
+  Mat_Normal        *a;
+  Vec                left, right;
+  PetscScalar       *array, scale;
+  const PetscScalar *read = NULL;
+  PetscInt           lda;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
@@ -285,20 +287,30 @@ static PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   PetscCall(MatShellGetContext(A, &a));
   contents = (Normal_Dense *)C->product->data;
   PetscCheck(contents, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
-  PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  PetscCall(MatDenseGetLDA(C, &lda));
   if (right) {
     PetscCall(MatCopy(B, C, SAME_NONZERO_PATTERN));
     PetscCall(MatDiagonalScale(C, right, NULL));
+    PetscCall(MatDenseGetArrayRead(C, &read));
+    PetscCall(MatDenseSetLDA(contents->work[2], lda));
+    PetscCall(MatDensePlaceArray(contents->work[2], read));
   }
   PetscCall(MatProductNumeric(contents->work[0]));
+  if (right) {
+    PetscCall(MatDenseResetArray(contents->work[2]));
+    PetscCall(MatDenseRestoreArrayRead(C, &read));
+  }
   PetscCall(MatDenseGetArrayWrite(C, &array));
+  PetscCall(MatDenseSetLDA(contents->work[1], lda));
   PetscCall(MatDensePlaceArray(contents->work[1], array));
   PetscCall(MatProductNumeric(contents->work[1]));
-  PetscCall(MatDenseRestoreArrayWrite(C, &array));
   PetscCall(MatDenseResetArray(contents->work[1]));
+  PetscCall(MatDenseRestoreArrayWrite(C, &array));
   PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatDiagonalScale(C, left, NULL));
   PetscCall(MatScale(C, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -310,6 +322,7 @@ static PetscErrorCode MatNormal_DenseDestroy(PetscCtxRt ctx)
   PetscFunctionBegin;
   PetscCall(MatDestroy(contents->work));
   PetscCall(MatDestroy(contents->work + 1));
+  PetscCall(MatDestroy(contents->work + 2));
   PetscCall(PetscFree(contents));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -319,16 +332,16 @@ static PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
   Mat           A, B;
   Normal_Dense *contents = NULL;
   Mat_Normal   *a;
-  Vec           right;
+  Vec           left, right;
   PetscScalar  *array, scale;
-  PetscInt      n, N, m, M;
+  PetscInt      n, N, m, M, lda;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   A = C->product->A;
   B = C->product->B;
-  PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  PetscCall(MatShellGetScalingShifts(A, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(MatGetLocalSize(B, NULL, &n));
   PetscCall(MatGetSize(B, NULL, &N));
@@ -341,19 +354,26 @@ static PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
   PetscCall(PetscNew(&contents));
   C->product->data    = contents;
   C->product->destroy = MatNormal_DenseDestroy;
-  if (right) PetscCall(MatProductCreate(a->A, C, NULL, contents->work));
-  else PetscCall(MatProductCreate(a->A, B, NULL, contents->work));
+  PetscCall(MatDenseGetLDA(C, &lda));
+  if (right) {
+    /* use a view of C to avoid a reference cycle */
+    PetscCall(MatDenseGetArrayWrite(C, &array));
+    PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)C), PETSC_MEMTYPE_HOST, m, n, M, N, lda, array, contents->work + 2));
+    PetscCall(MatSetVecType(contents->work[2], C->defaultvectype));
+    PetscCall(MatDenseRestoreArrayWrite(C, &array));
+    PetscCall(MatProductCreate(a->A, contents->work[2], NULL, contents->work));
+  } else PetscCall(MatProductCreate(a->A, B, NULL, contents->work));
   PetscCall(MatProductSetType(contents->work[0], MATPRODUCT_AB));
   PetscCall(MatProductSetFromOptions(contents->work[0]));
   PetscCall(MatProductSymbolic(contents->work[0]));
-  PetscCall(MatProductCreate(a->A, contents->work[0], NULL, contents->work + 1));
+  PetscCall(MatDenseGetArrayWrite(C, &array));
+  PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)C), PETSC_MEMTYPE_HOST, m, n, M, N, lda, array, contents->work + 1));
+  PetscCall(MatSetVecType(contents->work[1], C->defaultvectype));
+  PetscCall(MatDenseRestoreArrayWrite(C, &array));
+  PetscCall(MatProductCreateWithMat(a->A, contents->work[0], NULL, contents->work[1]));
   PetscCall(MatProductSetType(contents->work[1], MATPRODUCT_AtB));
   PetscCall(MatProductSetFromOptions(contents->work[1]));
   PetscCall(MatProductSymbolic(contents->work[1]));
-  PetscCall(MatDenseGetArrayWrite(C, &array));
-  PetscCall(MatSeqDenseSetPreallocation(contents->work[1], array));
-  PetscCall(MatMPIDenseSetPreallocation(contents->work[1], array));
-  PetscCall(MatDenseRestoreArrayWrite(C, &array));
   C->ops->productnumeric = MatProductNumeric_Normal_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
