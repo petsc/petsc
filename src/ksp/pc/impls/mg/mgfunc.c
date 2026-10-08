@@ -414,7 +414,11 @@ PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale)
   When evaluating a function on a coarse level one does not want to do F(R * x) one does F(rscale * R * x) where rscale is 1 over the row sums of R.
   It is preferable to use `PCMGGetInjection()` to control moving primal vectors.
 
-.seealso: [](ch_ksp), `PCMG`, `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`
+  The scaling is computed using vectors compatible with the matrix returned by `PCMGGetRestriction()`.
+  If this matrix is square, it is treated as an interpolation matrix and its transpose is used. For a square restriction matrix,
+  set the scaling explicitly with `PCMGSetRScale()`.
+
+.seealso: [](ch_ksp), `PCMG`, `PCMGSetInterpolation()`, `PCMGGetRestriction()`, `PCMGGetInjection()`, `PCMGSetRScale()`
 @*/
 PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
 {
@@ -433,7 +437,6 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
     PetscCall(PCMGGetRestriction(pc, l, &R));
     PetscCall(MatCreateVecs(R, &X, &Y));
     PetscCall(MatGetSize(R, &M, &N));
-    PetscCheck(N != M, PetscObjectComm((PetscObject)R), PETSC_ERR_SUP, "Restriction matrix is square, cannot determine which Vec is coarser");
     if (M < N) {
       fine   = X;
       coarse = Y;
