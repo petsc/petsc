@@ -2172,18 +2172,91 @@ static PetscErrorCode MatRestoreRow_HYPRE(Mat A, PetscInt row, PetscInt *nz, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+static PetscErrorCode MatGetValues_HYPRE_Device(Mat A, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
+{
+  hypre_ParCSRMatrix *parcsr;
+  hypre_CSRMatrix    *block[2];
+  const HYPRE_BigInt *col_map_offd;
+  HYPRE_Int          *hj      = NULL;
+  PetscScalar        *ha      = NULL;
+  PetscInt            nzalloc = 0;
+  PetscInt            rstart, cstart, cend;
+
+  PetscFunctionBegin;
+  PetscCheck(sizeof(PetscScalar) == sizeof(HYPRE_Complex), PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing handling of incompatible PetscScalar and HYPRE_Complex sizes");
+  PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
+  block[0]     = hypre_ParCSRMatrixDiag(parcsr);
+  block[1]     = hypre_ParCSRMatrixOffd(parcsr);
+  col_map_offd = hypre_ParCSRMatrixColMapOffd(parcsr);
+  rstart       = A->rmap->rstart;
+  cstart       = A->cmap->rstart;
+  cend         = A->cmap->rend;
+  PetscCheck(!hypre_CSRMatrixNumCols(block[1]) || col_map_offd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "hypre matrix has off-diagonal columns but no host column map to resolve them");
+
+  for (PetscInt i = 0; i < m; i++) {
+    if (idxm[i] < 0) continue; /* ignore negative row indices */
+    for (PetscInt j = 0; j < n; j++) {
+      if (idxn[j] >= 0) v[i * n + j] = 0.0; /* ignore negative column indices */
+    }
+
+    /* the diagonal block holds the locally owned columns, the off-diagonal block the rest */
+    for (PetscInt b = 0; b < 2; b++) {
+      HYPRE_MemoryLocation mem;
+      HYPRE_Int           *bi = hypre_CSRMatrixI(block[b]);
+      HYPRE_Int            rowptr[2];
+      PetscInt             nz;
+
+      if (!bi) continue;
+      mem = hypre_CSRMatrixMemoryLocation(block[b]);
+      hypre_TMemcpy(rowptr, bi + idxm[i] - rstart, HYPRE_Int, 2, HYPRE_MEMORY_HOST, mem);
+      nz = (PetscInt)(rowptr[1] - rowptr[0]);
+      if (!nz) continue;
+      if (nz > nzalloc) {
+        PetscCall(PetscFree2(hj, ha));
+        nzalloc = nz;
+        PetscCall(PetscMalloc2(nzalloc, &hj, nzalloc, &ha));
+      }
+      hypre_TMemcpy(hj, hypre_CSRMatrixJ(block[b]) + rowptr[0], HYPRE_Int, nz, HYPRE_MEMORY_HOST, mem);
+      hypre_TMemcpy(ha, hypre_CSRMatrixData(block[b]) + rowptr[0], PetscScalar, nz, HYPRE_MEMORY_HOST, mem);
+
+      for (PetscInt j = 0; j < n; j++) {
+        PetscBool owned;
+
+        if (idxn[j] < 0) continue; /* ignore negative column indices */
+        owned = (PetscBool)(idxn[j] >= cstart && idxn[j] < cend);
+        if (owned != (b == 0)) continue; /* this column belongs to the other block */
+        for (PetscInt k = 0; k < nz; k++) {
+          if ((b == 0 ? (PetscInt)hj[k] + cstart : (PetscInt)col_map_offd[hj[k]]) == idxn[j]) {
+            v[i * n + j] = ha[k];
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  PetscCall(PetscFree2(hj, ha));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
+
 static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
 {
   Mat_HYPRE    *hA = (Mat_HYPRE *)A->data;
   HYPRE_Int     hypre_host_n;
   HYPRE_BigInt  hypre_host_idxm;
-  HYPRE_BigInt *device_idxm = NULL, *device_idxn = NULL, *hypre_host_idxn;
-  HYPRE_Int    *device_n      = NULL;
-  PetscScalar  *device_values = NULL;
-  PetscBool     hypre_on_host = PETSC_TRUE;
+  HYPRE_BigInt *hypre_host_idxn;
 
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(PETSC_SUCCESS);
+
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+  if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
+    PetscCall(MatGetValues_HYPRE_Device(A, m, idxm, n, idxn, v));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+#endif
 
   PetscCall(PetscHYPREIntCast(n, &hypre_host_n));
 
@@ -2199,47 +2272,17 @@ static PetscErrorCode MatGetValues_HYPRE(Mat A, PetscInt m, const PetscInt idxm[
   // Check compatibility of PetscScalar and HYPRE_Complex
   PetscCheck(sizeof(PetscScalar) == sizeof(HYPRE_Complex), PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing handling of incompatible PetscScalar and HYPRE_Complex sizes");
 
-#if PetscDefined(HAVE_HYPRE_DEVICE)
-  if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
-    hypre_on_host = PETSC_FALSE;
-    device_idxm   = hypre_TAlloc(HYPRE_BigInt, 1, HYPRE_MEMORY_DEVICE);
-    device_n      = hypre_TAlloc(HYPRE_Int, 1, HYPRE_MEMORY_DEVICE);
-    device_values = hypre_TAlloc(PetscScalar, n, HYPRE_MEMORY_DEVICE);
-    device_idxn   = hypre_TAlloc(HYPRE_BigInt, n, HYPRE_MEMORY_DEVICE);
-    hypre_TMemcpy(device_idxn, hypre_host_idxn, HYPRE_BigInt, n, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
-    hypre_TMemcpy(device_n, &hypre_host_n, HYPRE_Int, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
-  }
-#endif
-
   /* Ignore negative row indices
    * And negative column indices should be automatically ignored in hypre
    * */
   for (PetscInt i = 0; i < m; i++) {
     if (idxm[i] >= 0) {
-      HYPRE_BigInt  *rows, *cols;
-      HYPRE_Int     *ncols;
-      HYPRE_Complex *values;
       hypre_host_idxm = idxm[i];
-      if (!hypre_on_host) hypre_TMemcpy(device_idxm, &hypre_host_idxm, HYPRE_BigInt, 1, HYPRE_MEMORY_DEVICE, HYPRE_MEMORY_HOST);
-      ncols  = hypre_on_host ? &hypre_host_n : device_n;
-      rows   = hypre_on_host ? &hypre_host_idxm : device_idxm;
-      cols   = hypre_on_host ? hypre_host_idxn : device_idxn;
-      values = hypre_on_host ? (HYPRE_Complex *)(v + i * n) : (HYPRE_Complex *)device_values;
-      PetscCallHYPRE(HYPRE_IJMatrixGetValues2(hA->ij, 1, ncols, rows, NULL, cols, values));
-
-      if (!hypre_on_host) hypre_TMemcpy((HYPRE_Complex *)(v + i * n), device_values, HYPRE_Complex, n, HYPRE_MEMORY_HOST, HYPRE_MEMORY_DEVICE);
+      PetscCallHYPRE(HYPRE_IJMatrixGetValues2(hA->ij, 1, &hypre_host_n, &hypre_host_idxm, NULL, hypre_host_idxn, (HYPRE_Complex *)(v + i * n)));
     }
   }
 
   if (sizeof(PetscInt) < sizeof(HYPRE_BigInt)) PetscCall(PetscFree(hypre_host_idxn));
-#if PetscDefined(HAVE_HYPRE_DEVICE)
-  if (hypre_IJMatrixMemoryLocation(hA->ij) == HYPRE_MEMORY_DEVICE) {
-    hypre_TFree(device_idxm, HYPRE_MEMORY_DEVICE);
-    hypre_TFree(device_idxn, HYPRE_MEMORY_DEVICE);
-    hypre_TFree(device_values, HYPRE_MEMORY_DEVICE);
-    hypre_TFree(device_n, HYPRE_MEMORY_DEVICE);
-  }
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
