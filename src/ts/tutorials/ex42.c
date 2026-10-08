@@ -260,7 +260,7 @@ int main(int argc, char **argv)
   /*
    * Allocate the jacobian matrix
    */
-  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2 * user.nb_cells, 2 * user.nb_cells, 4, 0, &J));
+  PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2 * user.nb_cells, 2 * user.nb_cells, 4, NULL, &J));
 
   /*
    * Provide the call-back for the non-linear function we are evaluating.

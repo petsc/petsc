@@ -103,8 +103,8 @@ int main(int argc, char **argv)
   /*
      Set an optional user-defined monitoring routine
   */
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, 0, 0, 0, 400, 400, &monP.viewer));
-  PetscCall(SNESMonitorSet(snes, Monitor, &monP, 0));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, NULL, 0, 0, 400, 400, &monP.viewer));
+  PetscCall(SNESMonitorSet(snes, Monitor, &monP, NULL));
 
   /*
      Set names for some vectors to facilitate monitoring (optional)

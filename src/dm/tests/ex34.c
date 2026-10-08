@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
   PetscMPIInt     rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
-  PetscCall(PetscOptionsGetInt(NULL, 0, "-dim", &dim, 0));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   switch (dim) {
   case 2:
     PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3, 5, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   }
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(DMDAGetInfo(da, 0, 0, 0, 0, &m, &n, &p, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, &m, &n, &p, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMDAGetOwnershipRanges(da, &lx, &ly, &lz));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 

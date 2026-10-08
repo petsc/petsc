@@ -73,7 +73,7 @@ int main(int argc, char **argv)
      routine FormJacobian()
   */
   /*  PetscCall(SNESSetJacobian(snes,NULL,JPrec,FormJacobian,0)); */
-  PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, 0));
+  PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
   /*  PetscCall(SNESSetJacobian(snes,J,JPrec,FormJacobian,0)); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

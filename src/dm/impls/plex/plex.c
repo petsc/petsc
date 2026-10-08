@@ -6111,8 +6111,9 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(DM dm, PetscSecti
     PetscCall(PetscDualSpaceGetDimension(dsp, &dual_space_size));
     PetscCall(PetscDualSpaceLagrangeGetContinuity(dsp, continuous));
     PetscCall(PetscDualSpaceLagrangeGetTensor(dsp, tensor));
+    /* The roots below are integers in exact arithmetic, so round to nearest. */
     if (*tensor) {
-      *k = (PetscInt)PetscCeilReal(PetscPowReal(dual_space_size / *Nc, 1.0 / dim)) - 1;
+      *k = (PetscInt)PetscRintReal(PetscPowReal(dual_space_size / *Nc, 1.0 / dim)) - 1;
     } else {
       switch (dim) {
       case 1:
@@ -6120,12 +6121,12 @@ static PetscErrorCode PetscSectionFieldGetTensorDegree_Private(DM dm, PetscSecti
         break;
       case 2:
         // N = (k + 1) (k + 2) / 2, k^2 + 3 k - 2 (N - 1) = 0, k = (sqrt(8 N + 1) - 3) / 2
-        *k = (PetscInt)PetscCeilReal((PetscSqrtReal(8 * dual_space_size / *Nc + 1) - 3) / 2);
+        *k = (PetscInt)PetscRintReal((PetscSqrtReal(8 * dual_space_size / *Nc + 1) - 3) / 2);
         break;
       case 3: {
         // N = (k + 1) (k + 2) (k + 3) / 6, k = (sqrt(3) sqrt(243 N^2 - 1) + 27 N)^(1/3)/3^(2/3) + 1/(3^(1/3) (sqrt(3) sqrt(243 N^2 - 1) + 27 N)^(1/3)) - 2
         PetscInt N = dual_space_size / *Nc;
-        *k         = (PetscInt)PetscCeilReal(PetscPowReal((PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N) / 9, 1.0 / 3.0) + 1 / PetscPowReal(3 * (PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N), 1.0 / 3.0)) - 2;
+        *k         = (PetscInt)PetscRintReal(PetscPowReal((PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N) / 9, 1.0 / 3.0) + 1 / PetscPowReal(3 * (PetscSqrtReal(3 * (243 * N * N - 1)) + 27 * N), 1.0 / 3.0)) - 2;
       } break;
       default:
         *k = -1;

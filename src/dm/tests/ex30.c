@@ -16,12 +16,12 @@ int main(int argc, char *argv[])
   Vec          x, b, lf;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscOptionsBegin(comm, 0, "Options for DMSliced test", 0);
+  PetscOptionsBegin(comm, NULL, "Options for DMSliced test", NULL);
   {
     PetscCall(PetscOptionsInt("-n", "Global number of nodes", "", N, &N, NULL));
     PetscCall(PetscOptionsInt("-bs", "Block size (1 or 2)", "", bs, &bs, NULL));

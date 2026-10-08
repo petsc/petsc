@@ -119,7 +119,7 @@ int main(int argc, char **args)
     PetscCall(VecSetValues(u, 1, &rows[i], &y, INSERT_VALUES));
     PetscCall(VecSetValues(b, 1, &rows[i], &y, INSERT_VALUES));
   }
-  PetscCall(MatZeroRows(A, 4 * m, rows, 1.0, 0, 0));
+  PetscCall(MatZeroRows(A, 4 * m, rows, 1.0, NULL, NULL));
   PetscCall(PetscFree(rows));
 
   PetscCall(VecAssemblyBegin(u));

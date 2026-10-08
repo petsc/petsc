@@ -176,7 +176,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
 
 static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet, IS *neumann)
 {
-  IS         temp_dirichlet = 0, temp_neumann = 0;
+  IS         temp_dirichlet = NULL, temp_neumann = NULL;
   PetscInt   localsize, i, j, k, *indices;
   PetscBool *touched;
 
@@ -334,7 +334,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   PetscInt     ie, je, ke, i, j, k, ig, jg, kg, ii, ming;
   PetscInt    *indexg, *cols, *colsg;
   PetscScalar *vals;
-  Mat          temp_local_mat, elem_mat_DBC = 0, *usedmat;
+  Mat          temp_local_mat, elem_mat_DBC = NULL, *usedmat;
   IS           submatIS;
 
   PetscFunctionBeginUser;
@@ -705,9 +705,9 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
   GLLData                gll;
-  Mat                    local_mat = 0, temp_A = 0;
-  ISLocalToGlobalMapping matis_map   = 0;
-  IS                     dirichletIS = 0;
+  Mat                    local_mat = NULL, temp_A = NULL;
+  ISLocalToGlobalMapping matis_map   = NULL;
+  IS                     dirichletIS = NULL;
 
   PetscFunctionBeginUser;
   /* Compute some stuff of Gauss-Legendre-Lobatto quadrature rule */
@@ -806,7 +806,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp)
 {
   KSP          temp_ksp;
   PC           pc;
-  IS           primals, dirichletIS = 0, neumannIS = 0, *bddc_dofs_splitting;
+  IS           primals, dirichletIS = NULL, neumannIS = NULL, *bddc_dofs_splitting;
   PetscInt     vidx[8], localsize, *xadj = NULL, *adjncy = NULL;
   MatNullSpace near_null_space;
 

@@ -95,13 +95,13 @@ int main(int argc, char **argv)
   PetscInt mx, my, mz;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   mx = 2;
   my = 2;
   mz = 2;
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, 0));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-mz", &mz, NULL));
   PetscCall(test1_DAInjection3d(mx, my, mz));
   PetscCall(PetscFinalize());
   return 0;

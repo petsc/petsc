@@ -78,7 +78,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
 
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_ngs_as_npc", &use_ngs_as_npc, 0));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_ngs_as_npc", &use_ngs_as_npc, NULL));
 
   if (use_ngs_as_npc) {
     PetscCall(SNESGetNPC(snes, &psnes));

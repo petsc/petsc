@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
   PetscBool              diag, blocked;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
 
   PetscOptionsBegin(comm, NULL, "LocalRef Test Options", NULL);
@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
     col_bs  = 2;
     diag    = PETSC_FALSE;
     blocked = PETSC_FALSE;
-    PetscCall(PetscOptionsInt("-top_bs", "Block size of top-level matrix", 0, top_bs, &top_bs, NULL));
-    PetscCall(PetscOptionsInt("-row_bs", "Block size of row map", 0, row_bs, &row_bs, NULL));
-    PetscCall(PetscOptionsInt("-col_bs", "Block size of col map", 0, col_bs, &col_bs, NULL));
-    PetscCall(PetscOptionsBool("-diag", "Extract a diagonal black", 0, diag, &diag, NULL));
-    PetscCall(PetscOptionsBool("-blocked", "Use block insertion", 0, blocked, &blocked, NULL));
+    PetscCall(PetscOptionsInt("-top_bs", "Block size of top-level matrix", NULL, top_bs, &top_bs, NULL));
+    PetscCall(PetscOptionsInt("-row_bs", "Block size of row map", NULL, row_bs, &row_bs, NULL));
+    PetscCall(PetscOptionsInt("-col_bs", "Block size of col map", NULL, col_bs, &col_bs, NULL));
+    PetscCall(PetscOptionsBool("-diag", "Extract a diagonal black", NULL, diag, &diag, NULL));
+    PetscCall(PetscOptionsBool("-blocked", "Use block insertion", NULL, blocked, &blocked, NULL));
   }
   PetscOptionsEnd();
 
@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
   PetscCall(MatSetSizes(J, 6, 6, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSize(J, top_bs));
   PetscCall(MatSetFromOptions(J));
-  PetscCall(MatSeqBAIJSetPreallocation(J, top_bs, PETSC_DECIDE, 0));
-  PetscCall(MatMPIBAIJSetPreallocation(J, top_bs, PETSC_DECIDE, 0, PETSC_DECIDE, 0));
+  PetscCall(MatSeqBAIJSetPreallocation(J, top_bs, PETSC_DECIDE, NULL));
+  PetscCall(MatMPIBAIJSetPreallocation(J, top_bs, PETSC_DECIDE, NULL, PETSC_DECIDE, NULL));
   PetscCall(MatSetUp(J));
   PetscCall(MatGetSize(J, &m, &n));
   PetscCall(MatGetOwnershipRange(J, &rstart, &rend));

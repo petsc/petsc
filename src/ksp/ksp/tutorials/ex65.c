@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 129, 1, 1, 0, &da));
+  PetscCall(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 129, 1, 1, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(MyDMShellCreate(PETSC_COMM_WORLD, da, &shell));
@@ -173,7 +173,7 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &shell));
   PetscCall(DMShellGetContext(shell, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   h = 1.0 / (mx - 1);
   PetscCall(VecSet(b, h));
   idx[0] = 0;
@@ -195,8 +195,8 @@ static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &shell));
   PetscCall(DMShellGetContext(shell, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   h = 1.0 / (mx - 1);
 
   for (i = xs; i < xs + xm; i++) {

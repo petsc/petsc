@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetFieldName(da, 0, "Heat equation: u"));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dt = 1.0 / (ctx.kappa * Mx * Mx);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

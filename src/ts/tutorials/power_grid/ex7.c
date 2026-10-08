@@ -118,7 +118,7 @@ PetscErrorCode PostStep(TS ts)
   PetscCall(TSGetSolution(ts, &X));
 
   PetscCall(DMGetCoordinateDM(user->da, &cda));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMGetCoordinates(user->da, &gc));
   PetscCall(DMDAVecGetArrayRead(cda, gc, &coors));
   PetscCall(DMDAVecGetArrayRead(user->da, X, &p));
@@ -162,7 +162,7 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user)
   PetscCall(DMGetCoordinates(user->da, &gc));
   PetscCall(DMDAVecGetArray(cda, gc, &coors));
   PetscCall(DMDAVecGetArray(user->da, X, &p));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
 
   /* mux and muy need to be grid points in the x and y-direction otherwise the solution goes unstable
      muy is set by choosing the y domain, no. of grid points along y-direction so that muy is a grid point
@@ -261,7 +261,7 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, PetscCtx ct
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(user->da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateDM(user->da, &cda));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
 
   PetscCall(DMGetLocalVector(user->da, &localX));
   PetscCall(DMGetLocalVector(user->da, &localXdot));
@@ -310,7 +310,7 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(user->da, NULL, &M, &N, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(DMGetCoordinateDM(user->da, &cda));
-  PetscCall(DMDAGetCorners(cda, &xs, &ys, 0, &xm, &ym, 0));
+  PetscCall(DMDAGetCorners(cda, &xs, &ys, NULL, &xm, &ym, NULL));
 
   PetscCall(DMGetCoordinatesLocal(user->da, &gc));
   PetscCall(DMDAVecGetArrayRead(cda, gc, &coors));

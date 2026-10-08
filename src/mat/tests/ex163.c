@@ -33,14 +33,14 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-view_mats", &viewmats));
   if (viewmats) {
     if (rank == 0) printf("A_aij:\n");
-    PetscCall(MatView(A, 0));
+    PetscCall(MatView(A, NULL));
   }
 
   /* Test MatTransposeMatMult_aij_aij() */
   PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, fill, &C));
   if (viewmats) {
     if (rank == 0) printf("\nC = A_aij^T * A_aij:\n");
-    PetscCall(MatView(C, 0));
+    PetscCall(MatView(C, NULL));
   }
   PetscCall(MatDestroy(&C));
   PetscCall(MatGetLocalSize(A, &m, &n));
@@ -71,7 +71,7 @@ int main(int argc, char **args)
   PetscCall(PetscFree3(rows, cols, array));
   if (viewmats) {
     if (rank == 0) printf("\nBdense:\n");
-    PetscCall(MatView(Bdense, 0));
+    PetscCall(MatView(Bdense, NULL));
   }
 
   /* Test MatTransposeMatMult_aij_dense() */
@@ -79,7 +79,7 @@ int main(int argc, char **args)
   PetscCall(MatTransposeMatMult(A, Bdense, MAT_REUSE_MATRIX, fill, &C));
   if (viewmats) {
     if (rank == 0) printf("\nC=A^T*Bdense:\n");
-    PetscCall(MatView(C, 0));
+    PetscCall(MatView(C, NULL));
   }
 
   /* Check accuracy */
@@ -118,7 +118,7 @@ int main(int argc, char **args)
   PetscCall(MatDenseRestoreArray(Cdense, &Carray));
   if (viewmats) {
     if (rank == 0) printf("\nCdense:\n");
-    PetscCall(MatView(Cdense, 0));
+    PetscCall(MatView(Cdense, NULL));
   }
 
   PetscCall(MatEqual(C, Cdense, &flg));

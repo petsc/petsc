@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(SNESSolve(snes, 0, 0));
+  PetscCall(SNESSolve(snes, NULL, NULL));
   PetscCall(SNESGetIterationNumber(snes, &its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

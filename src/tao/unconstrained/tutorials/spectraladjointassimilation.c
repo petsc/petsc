@@ -486,7 +486,7 @@ PetscErrorCode RHSLaplacian(TS ts, PetscReal t, Vec X, Mat A, Mat BB, PetscCtx c
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecReciprocal(appctx->SEMop.mass));
-  PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, 0));
+  PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, NULL));
   PetscCall(VecReciprocal(appctx->SEMop.mass));
 
   PetscCall(PetscGaussLobattoLegendreElementLaplacianDestroy(appctx->SEMop.gll.n, appctx->SEMop.gll.nodes, appctx->SEMop.gll.weights, &temp));
@@ -537,7 +537,7 @@ PetscErrorCode RHSAdvection(TS ts, PetscReal t, Vec X, Mat A, Mat BB, PetscCtx c
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecReciprocal(appctx->SEMop.mass));
-  PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, 0));
+  PetscCall(MatDiagonalScale(A, appctx->SEMop.mass, NULL));
   PetscCall(VecReciprocal(appctx->SEMop.mass));
 
   PetscCall(PetscGaussLobattoLegendreElementAdvectionDestroy(appctx->SEMop.gll.n, appctx->SEMop.gll.nodes, appctx->SEMop.gll.weights, &temp));

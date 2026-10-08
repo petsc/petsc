@@ -32,8 +32,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-lf", &lf, NULL));
 
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, 0, 0, 0, 0, 400, 400, &viewer1));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, 0, 0, 400, 0, 400, 400, &viewer2));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, NULL, 0, 0, 400, 400, &viewer1));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_SELF, NULL, NULL, 400, 0, 400, 400, &viewer2));
 
   PetscCall(MatCreate(PETSC_COMM_SELF, &C));
   PetscCall(MatSetSizes(C, m * n, m * n, m * n, m * n));

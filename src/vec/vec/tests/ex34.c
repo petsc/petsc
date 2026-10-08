@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBegin;
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = MPI_COMM_SELF;
 
   PetscCall(VecCreate(comm, &V));

@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, m, n, PETSC_DECIDE, PETSC_DECIDE, dof, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, m, n, PETSC_DECIDE, PETSC_DECIDE, dof, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   PetscCall(DMGetCoordinates(da, &xy));
 
   PetscCall(DMDACreatePF(da, &pf));
-  PetscCall(PFSet(pf, myfunction, 0, 0, 0, 0));
+  PetscCall(PFSet(pf, myfunction, NULL, NULL, NULL, NULL));
   PetscCall(PFSetFromOptions(pf));
 
   PetscCall(PFApplyVec(pf, xy, u));

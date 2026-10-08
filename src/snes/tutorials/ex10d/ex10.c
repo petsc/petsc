@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   PetscReal    tiny = 1.0e-10, zero = 0.0, one = 1.0, big = 1.0e+10;
   PetscInt    *tmp1, *tmp2;
 #endif
-  MatFDColoring matfdcoloring        = 0;
+  MatFDColoring matfdcoloring        = NULL;
   PetscBool     fd_jacobian_coloring = PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -389,7 +389,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(SNESSetFunction(snes, r, FormFunction, (void *)&user));
 
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd_jacobian_coloring", &fd_jacobian_coloring, 0));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-fd_jacobian_coloring", &fd_jacobian_coloring, NULL));
   if (!fd_jacobian_coloring) {
     PetscCall(SNESSetJacobian(snes, Jac, Jac, FormJacobian, (void *)&user));
   } else { /* Use matfdcoloring */

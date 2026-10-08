@@ -128,10 +128,10 @@ int main(int argc, char **args)
       PetscCall(VecSetValues(u, 1, &rows[i], &val, INSERT_VALUES));
       PetscCall(VecSetValues(b, 1, &rows[i], &val, INSERT_VALUES));
     }
-    if (usezerorows) PetscCall(MatZeroRows(C, 4 * m, rows, 1.0, 0, 0));
+    if (usezerorows) PetscCall(MatZeroRows(C, 4 * m, rows, 1.0, NULL, NULL));
     PetscCall(PetscFree(rows));
   } else {
-    if (usezerorows) PetscCall(MatZeroRows(C, 0, NULL, 1.0, 0, 0));
+    if (usezerorows) PetscCall(MatZeroRows(C, 0, NULL, 1.0, NULL, NULL));
   }
   PetscCall(VecAssemblyBegin(u));
   PetscCall(VecAssemblyEnd(u));

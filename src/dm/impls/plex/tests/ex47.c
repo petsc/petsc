@@ -626,7 +626,7 @@ int main(int argc, char **argv)
 
   PetscCall(DMPlexDistributeOverlap(ddm, lNbCellsInOverlap, &lSFMigrationOvl, &ddm_with_overlap));
 
-  IS lISCellWithOvl = 0;
+  IS lISCellWithOvl = NULL;
   /* This is the buggy call with prisms since commit 5ae96e2b862 */
   PetscCall(DMPlexCreateCellNumbering(ddm_with_overlap, PETSC_TRUE, &lISCellWithOvl));
   /* Here, we can see the elements in the overlap within the IS: they are the ones with negative indices */

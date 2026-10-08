@@ -387,7 +387,7 @@ static PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
               mask     = (__mmask8)(0xff >> (8 - (nz & 0x07)));
               vec_idx  = _mm256_loadu_si256((__m256i const *)&aj[ipos]);
               vec_vals = _mm512_loadu_pd(&aa[ipos]);
-              vec_x    = _mm512_mask_i32gather_pd(vec_x, mask, vec_idx, x, _MM_SCALE_8);
+              vec_x    = _mm512_mask_i32gather_pd(_mm512_setzero_pd(), mask, vec_idx, x, _MM_SCALE_8);
               vec_y    = _mm512_mask3_fmadd_pd(vec_x, vec_vals, vec_y, mask);
             } else if ((nz & 0x07) == 2) {
               yp[i] += aa[ipos] * x[aj[ipos]];

@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     if (Jtype == 1) { /* slow finite difference J; */
       PetscCall(SNESSetJacobian(snes, Jmf, J, SNESComputeJacobianDefault, NULL));
     } else if (Jtype == 2) { /* Use coloring to compute  finite difference J efficiently */
-      PetscCall(SNESSetJacobian(snes, Jmf, J, SNESComputeJacobianDefaultColor, 0));
+      PetscCall(SNESSetJacobian(snes, Jmf, J, SNESComputeJacobianDefaultColor, NULL));
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Jtype is not supported");
   }
 

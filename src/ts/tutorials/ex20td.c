@@ -91,7 +91,7 @@ typedef enum {
   SA_TRACK,
   SA_GLOBAL
 } SAMethod;
-static const char *const SAMethods[] = {"TRACK", "GLOBAL", "SAMethod", "SA_", 0};
+static const char *const SAMethods[] = {"TRACK", "GLOBAL", "SAMethod", "SA_", NULL};
 
 /* ----------------------- Explicit form of the ODE  -------------------- */
 

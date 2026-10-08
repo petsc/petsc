@@ -3,7 +3,8 @@
 Fetch and prepare the diff reviewed by the review skills in .agents/skills/.
 
   ai_review_fetch.py mr [IID]      remote merge request state; needs glab
-  ai_review_fetch.py branch [REF]  local REF against origin/main or origin/release
+  ai_review_fetch.py branch [REF]  local REF against origin/main or origin/release; refuses to run
+                                   when tracked files have uncommitted changes
 
 Both modes change to the repository root and write there the diff that is
 reviewed (mr-IID-diff.txt or branch-review.txt), in which the bodies of .out
@@ -187,6 +188,10 @@ def cmd_mr(args):
 def cmd_branch(args):
   src = args.ref
   if not REF_RE.match(src): die('invalid ref %r' % src)
+  # Uncommitted work is unrecorded and can be lost to an LLM session, so require it to be committed first
+  code, _, _ = run(['git', 'diff', '--quiet', 'HEAD'], args.timeout, check=False)
+  if code > 1: die('git diff --quiet HEAD exited %d' % code)
+  if code: die('tracked files have uncommitted changes; commit them, for example as a WIP commit, before reviewing')
   for ref in ('origin/main', 'origin/release'):
     code, _, _ = run(['git', 'rev-parse', '--verify', '-q', ref], args.timeout, check=False)
     if code:

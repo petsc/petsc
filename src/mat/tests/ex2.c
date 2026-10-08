@@ -77,7 +77,7 @@ static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErro
 
 int main(int argc, char **argv)
 {
-  Mat         mat, tmat = 0;
+  Mat         mat, tmat = NULL;
   PetscInt    m = 7, n, i, j, rstart, rend, rect = 0;
   PetscMPIInt size, rank;
   PetscBool   flg;

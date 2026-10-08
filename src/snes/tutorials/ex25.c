@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 5, 5, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (DMDASNESFunctionFn *)FormFunctionLocal, NULL));
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
   PetscCall(SNESSetFromOptions(snes));
 
-  PetscCall(SNESSolve(snes, 0, 0));
+  PetscCall(SNESSolve(snes, NULL, NULL));
   PetscCall(SNESGetIterationNumber(snes, &its));
   PetscCall(SNESGetLinearSolveIterations(snes, &lits));
   litspit = ((PetscReal)lits) / ((PetscReal)its);

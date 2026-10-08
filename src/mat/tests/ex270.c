@@ -4,6 +4,93 @@
 
 static const char help[] = "Test MatGetValue/Row for hypre matrix on device\n";
 
+static PetscErrorCode CheckBandedMatrix(MPI_Comm comm, PetscInt N, PetscInt bw, const char fill[])
+{
+  Mat         A;
+  PetscInt    rstart, rend;
+  PetscBool   iscoo, isconvert, ok = PETSC_TRUE;
+  PetscScalar expected;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscStrcmp(fill, "coo", &iscoo));
+  PetscCall(PetscStrcmp(fill, "convert", &isconvert));
+
+  PetscCall(MatCreate(comm, &A));
+  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N));
+  PetscCall(MatSetType(A, isconvert ? MATAIJ : MATHYPRE));
+  PetscCall(MatSeqAIJSetPreallocation(A, 2 * bw + 1, NULL));
+  PetscCall(MatMPIAIJSetPreallocation(A, 2 * bw + 1, NULL, 2 * bw + 1, NULL));
+  PetscCall(MatSetUp(A));
+  PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
+
+  if (iscoo) {
+    PetscCount   ncoo = 0;
+    PetscInt    *coo_i, *coo_j;
+    PetscInt     nmax = (rend - rstart) * (2 * bw + 1); /* an upper bound; rows at the ends hold fewer */
+    PetscScalar *coo_v;
+
+    PetscCall(PetscMalloc3(nmax, &coo_i, nmax, &coo_j, nmax, &coo_v));
+    for (PetscInt i = rstart; i < rend; i++) {
+      for (PetscInt j = PetscMax(0, i - bw); j <= PetscMin(N - 1, i + bw); j++) {
+        coo_i[ncoo] = i;
+        coo_j[ncoo] = j;
+        coo_v[ncoo] = (PetscScalar)(100 * (i + 1) + j + 1);
+        ncoo++;
+      }
+    }
+    PetscCall(MatSetPreallocationCOO(A, ncoo, coo_i, coo_j));
+    PetscCall(MatSetValuesCOO(A, coo_v, INSERT_VALUES));
+    PetscCall(PetscFree3(coo_i, coo_j, coo_v));
+  } else {
+    for (PetscInt i = rstart; i < rend; i++) {
+      for (PetscInt j = PetscMax(0, i - bw); j <= PetscMin(N - 1, i + bw); j++) {
+        expected = (PetscScalar)(100 * (i + 1) + j + 1);
+        PetscCall(MatSetValues(A, 1, &i, 1, &j, &expected, INSERT_VALUES));
+      }
+    }
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  }
+
+  if (isconvert) {
+    Mat H;
+
+    PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &H));
+    PetscCall(MatDestroy(&A));
+    A = H;
+    /* the conversion leaves the matrix on the host; the reordering only matters once it moves */
+    PetscCall(MatBindToCPU(A, PETSC_FALSE));
+  }
+
+  for (PetscInt i = rstart; i < rend && ok; i++) {
+    const PetscInt    *cols;
+    const PetscScalar *rowvals;
+    PetscInt           ncols;
+
+    /* MatGetValues() over the whole row range, so that structural zeros are covered too */
+    for (PetscInt j = 0; j < N; j++) {
+      PetscScalar got;
+
+      expected = (j >= i - bw && j <= i + bw) ? (PetscScalar)(100 * (i + 1) + j + 1) : 0.0;
+      PetscCall(MatGetValues(A, 1, &i, 1, &j, &got));
+      if (PetscAbsScalar(got - expected) > PETSC_SMALL) ok = PETSC_FALSE;
+    }
+
+    PetscCall(MatGetRow(A, i, &ncols, &cols, &rowvals));
+    for (PetscInt k = 0; k < ncols; k++) {
+      expected = (PetscScalar)(100 * (i + 1) + cols[k] + 1);
+      if (PetscAbsScalar(rowvals[k] - expected) > PETSC_SMALL) ok = PETSC_FALSE;
+    }
+    PetscCall(MatRestoreRow(A, i, &ncols, &cols, &rowvals));
+  }
+
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ok, 1, MPI_C_BOOL, MPI_LAND, comm));
+  PetscCall(PetscPrintf(comm, "Banded matrix check (%s fill): %s\n", fill, ok ? "OK" : "FAILED"));
+
+  PetscCall(MatDestroy(&A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   PetscInt  n = 10;   // elements
@@ -117,6 +204,18 @@ int main(int argc, char **argv)
   // --------------------------------------------------------------------------
 
   PetscCall(MatDestroy(&M));
+
+  {
+    PetscInt  bw = 3;
+    PetscBool flg;
+    char      fill[16];
+
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-bw", &bw, NULL));
+    PetscCall(PetscOptionsGetString(NULL, NULL, "-fill", fill, sizeof(fill), &flg));
+    if (!flg) PetscCall(PetscStrncpy(fill, "setvalues", sizeof(fill)));
+    PetscCall(CheckBandedMatrix(PETSC_COMM_WORLD, N, bw, fill));
+  }
+
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -133,5 +232,19 @@ int main(int argc, char **argv)
       suffix: 2
       args: -mat_type hypre
       nsize: 4
+
+   test:
+      requires: hypre
+      suffix: coo
+      output_file: output/ex270_coo.out
+      args: -mat_type hypre -fill coo
+      nsize: {{1 4}}
+
+   test:
+      requires: hypre
+      suffix: convert
+      output_file: output/ex270_convert.out
+      args: -mat_type hypre -fill convert
+      nsize: {{1 4}}
 
 TEST*/

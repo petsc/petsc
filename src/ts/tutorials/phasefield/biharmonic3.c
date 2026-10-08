@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetFieldName(da, 0, "Biharmonic heat equation: w = -kappa*u_xx"));
   PetscCall(DMDASetFieldName(da, 1, "Biharmonic heat equation: u"));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dt = 1.0 / (10. * ctx.kappa * Mx * Mx * Mx * Mx);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -40,14 +40,14 @@ int main(int argc, char **argv)
   PetscReal     dt, ftime, ftime_original;
   TS            ts;
   PetscViewer   viewfile;
-  Mat           J = 0;
+  Mat           J = NULL;
   Vec           x;
   Data          data;
   PetscInt      mn;
   PetscBool     flg;
   MatColoring   mc;
   ISColoring    iscoloring;
-  MatFDColoring matfdcoloring        = 0;
+  MatFDColoring matfdcoloring        = NULL;
   PetscBool     fd_jacobian_coloring = PETSC_FALSE;
   SNES          snes;
   KSP           ksp;

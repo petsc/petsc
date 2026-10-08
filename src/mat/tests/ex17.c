@@ -49,7 +49,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
 
   PetscCall(ISCreateStride(PETSC_COMM_SELF, (m * n) / 2, 0, 2, &isrow));
-  PetscCall(MatZeroRowsIS(C, isrow, five, 0, 0));
+  PetscCall(MatZeroRowsIS(C, isrow, five, NULL, NULL));
 
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, m * n, &u));
   PetscCall(VecDuplicate(u, &x));

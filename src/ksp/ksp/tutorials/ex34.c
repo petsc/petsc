@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   dof = 1;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-da_dof", &dof, NULL));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
-  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 12, 12, 12, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, 0, 0, 0, &da));
+  PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 12, 12, 12, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetInterpolationType(da, DMDA_Q0));
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(r, NORM_2, &norm));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %g\n", (double)norm));
 
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   Hx = 1.0 / (PetscReal)mx;
   Hy = 1.0 / (PetscReal)my;
   Hz = 1.0 / (PetscReal)mz;
@@ -102,7 +102,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   Hx = 1.0 / (PetscReal)mx;
   Hy = 1.0 / (PetscReal)my;
   Hz = 1.0 / (PetscReal)mz;
@@ -124,7 +124,7 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, PetscCtx ctx)
   /* force right-hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */
 
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
   PetscCall(MatNullSpaceRemove(nullspace, b));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -141,7 +141,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, &mz, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, &mz, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   Hx      = 1.0 / (PetscReal)mx;
   Hy      = 1.0 / (PetscReal)my;
   Hz      = 1.0 / (PetscReal)mz;
@@ -298,7 +298,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, PetscCtx ctx)
     PetscCall(MatViewFromOptions(J2, NULL, "-view_conv_err"));
     PetscCall(MatDestroy(&J2));
   }
-  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace));
+  PetscCall(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nullspace));
   PetscCall(MatSetNullSpace(J, nullspace));
   PetscCall(MatNullSpaceDestroy(&nullspace));
   PetscFunctionReturn(PETSC_SUCCESS);

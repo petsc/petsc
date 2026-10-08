@@ -27,9 +27,9 @@ int main(int argc, char **argv)
 
   PetscCheck(nproc >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "This test must have at least two processes to run");
 
-  PetscCall(PetscOptionsGetBool(NULL, 0, "-world2sub", &world2sub, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, 0, "-sub2sub", &sub2sub, NULL));
-  PetscCall(PetscOptionsGetBool(NULL, 0, "-world2subs", &world2subs, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-world2sub", &world2sub, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-sub2sub", &sub2sub, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-world2subs", &world2subs, NULL));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-vectype", vectypename, sizeof(vectypename), &optionflag));
   if (optionflag) {
     PetscCall(PetscStrncmp(vectypename, "cuda", (size_t)4, &compareflag));

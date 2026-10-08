@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 300, 0, 300, 300, &viewer));
+  PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, NULL, "", 300, 0, 300, 300, &viewer));
 #if PetscDefined(HAVE_MATLAB)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   if (size == 1) PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, "tmp.mat", FILE_MODE_WRITE, &mviewer));

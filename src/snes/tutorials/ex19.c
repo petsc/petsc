@@ -105,13 +105,13 @@ int main(int argc, char **argv)
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 4, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(SNESSetDM(snes, da));
   PetscCall(SNESSetNGS(snes, NonlinearGS, (void *)&user));
 
-  PetscCall(DMDAGetInfo(da, 0, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
   /*
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
   */
@@ -191,7 +191,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
   PetscFunctionBeginUser;
   grashof = user->grashof;
 
-  PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &mx, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   dx = 1.0 / (mx - 1);
 
   /*

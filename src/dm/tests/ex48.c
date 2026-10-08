@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
   PetscBool namefields;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dof = 2;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
   namefields = PETSC_FALSE;

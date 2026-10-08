@@ -664,9 +664,9 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
   if (n & 0x07) {
     __mmask8 mask;
     mask     = (__mmask8)(0xff >> (8 - (n & 0x07)));
-    vec_idx  = _mm256_mask_loadu_epi32(vec_idx, mask, aj);
-    vec_vals = _mm512_mask_loadu_pd(vec_vals, mask, aa);
-    vec_x    = _mm512_mask_i32gather_pd(vec_x, mask, vec_idx, x, _MM_SCALE_8);
+    vec_idx  = _mm256_maskz_loadu_epi32(mask, aj);
+    vec_vals = _mm512_maskz_loadu_pd(mask, aa);
+    vec_x    = _mm512_mask_i32gather_pd(_mm512_setzero_pd(), mask, vec_idx, x, _MM_SCALE_8);
     vec_y    = _mm512_mask3_fmadd_pd(vec_x, vec_vals, vec_y, mask);
   }
   *sum += _mm512_reduce_add_pd(vec_y);

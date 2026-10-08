@@ -14,8 +14,8 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscOptionsGetInt(NULL, 0, "-stencil_width", &stencil_width, 0));
-  PetscCall(PetscOptionsGetInt(NULL, 0, "-dof", &dof, 0));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-stencil_width", &stencil_width, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
 
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_MIRROR, DM_BOUNDARY_MIRROR, DM_BOUNDARY_MIRROR, DMDA_STENCIL_STAR, M, N, P, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, stencil_width, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));

@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
   PetscBool    iscuda;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));

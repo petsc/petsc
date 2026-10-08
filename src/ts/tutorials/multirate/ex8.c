@@ -129,8 +129,8 @@ PetscErrorCode FVSample_3WaySplit(FVCtx *ctx, DM da, PetscReal time, Vec U)
 
   PetscFunctionBeginUser;
   PetscCheck(ctx->physics2.sample2, PETSC_COMM_SELF, PETSC_ERR_SUP, "Physics has not provided a sampling function");
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
   PetscCall(DMDAVecGetArray(da, U, &u));
   PetscCall(PetscMalloc1(dof, &uj));
 
@@ -229,8 +229,8 @@ PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscFunctionBeginUser;
   ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
-  PetscCall(DMGetLocalVector(da, &Xloc));                                 /* Xloc contains ghost points                                     */
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0)); /* Mx is the number of center points                              */
+  PetscCall(DMGetLocalVector(da, &Xloc));                                                                  /* Xloc contains ghost points                                     */
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL)); /* Mx is the number of center points                              */
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -243,7 +243,7 @@ PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscCall(DMDAVecGetArray(da, F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope)); /* contains ghost points                                           */
 
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -405,7 +405,7 @@ PetscErrorCode FVRHSFunctionslow_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   ctx->cfl_idt = 0;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -415,7 +415,7 @@ PetscErrorCode FVRHSFunctionslow_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -535,7 +535,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_3WaySplit(TS ts, PetscReal time, Vec X, V
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -545,7 +545,7 @@ PetscErrorCode FVRHSFunctionslowbuffer_3WaySplit(TS ts, PetscReal time, Vec X, V
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -684,7 +684,7 @@ PetscErrorCode FVRHSFunctionmedium_3WaySplit(TS ts, PetscReal time, Vec X, Vec F
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -694,7 +694,7 @@ PetscErrorCode FVRHSFunctionmedium_3WaySplit(TS ts, PetscReal time, Vec X, Vec F
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -832,7 +832,7 @@ PetscErrorCode FVRHSFunctionmediumbuffer_3WaySplit(TS ts, PetscReal time, Vec X,
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -842,7 +842,7 @@ PetscErrorCode FVRHSFunctionmediumbuffer_3WaySplit(TS ts, PetscReal time, Vec X,
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -981,7 +981,7 @@ PetscErrorCode FVRHSFunctionfast_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGetLocalVector(da, &Xloc));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
   hxs = (ctx->xmax - ctx->xmin) / 8.0 / ctx->sm;
   hxm = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->mf - ctx->sm);
   hxf = (ctx->xmax - ctx->xmin) / 4.0 / (ctx->fm - ctx->mf);
@@ -991,7 +991,7 @@ PetscErrorCode FVRHSFunctionfast_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(DMDAVecGetArray(da, Xloc, &x));
   PetscCall(VecGetArray(F, &f));
   PetscCall(DMDAGetArray(da, PETSC_TRUE, &slope));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i = xs - 2; i < 0; i++) {
@@ -1083,7 +1083,7 @@ PetscErrorCode FVRHSFunctionfast_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
 int main(int argc, char *argv[])
 {
   char              lname[256] = "mc", physname[256] = "advect", final_fname[256] = "solution.m";
-  PetscFunctionList limiters = 0, physics = 0;
+  PetscFunctionList limiters = NULL, physics = NULL;
   MPI_Comm          comm;
   TS                ts;
   DM                da;
@@ -1094,7 +1094,7 @@ int main(int argc, char *argv[])
   PetscReal         ptime;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscMemzero(&ctx, sizeof(ctx)));
 
@@ -1150,8 +1150,8 @@ int main(int argc, char *argv[])
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i = 0; i < ctx.physics2.dof; i++) PetscCall(DMDASetFieldName(da, i, ctx.physics2.fieldname[i]));
-  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
-  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, NULL, &Mx, NULL, NULL, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
+  PetscCall(DMDAGetCorners(da, &xs, NULL, NULL, &xm, NULL, NULL));
 
   /* Set coordinates of cell centers */
   PetscCall(DMDASetUniformCoordinates(da, ctx.xmin + 0.5 * (ctx.xmax - ctx.xmin) / Mx, ctx.xmax + 0.5 * (ctx.xmax - ctx.xmin) / Mx, 0, 0, 0, 0));

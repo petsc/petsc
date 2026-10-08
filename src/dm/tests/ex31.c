@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
   DM  da, daf;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, 0, help));
-  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 5, PETSC_DECIDE, PETSC_DECIDE, 41, 1, 0, 0, &da));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 5, PETSC_DECIDE, PETSC_DECIDE, 41, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
   PetscCall(DMRefine(da, PETSC_COMM_WORLD, &daf));

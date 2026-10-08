@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscInt             row, col, m, n;
   MatScalar            one = 1.0, val;
   MatColoring          mc;
-  MatTransposeColoring matcoloring = 0;
+  MatTransposeColoring matcoloring = NULL;
   ISColoring           iscoloring;
   PetscBool            equal;
   PetscMPIInt          size;
