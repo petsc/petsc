@@ -21,6 +21,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-tensor_coords", &tensorCoords, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-order", &order, NULL));
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetFromOptions(dm));
@@ -45,6 +46,20 @@ int main(int argc, char **argv)
   }
 
   PetscCall(DMCreateLocalVector(dm, &U_loc));
+  {
+    /* The tensor permutation is stored per closure size, so a wrong degree leaves the cell closure silently unpermuted */
+    PetscSection section;
+    PetscScalar *vals = NULL;
+    PetscInt     cStart, clSize;
+    IS           perm;
+
+    PetscCall(DMGetLocalSection(dm, &section));
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+    PetscCall(DMPlexVecGetClosure(dm, section, U_loc, cStart, &clSize, &vals));
+    PetscCall(DMPlexVecRestoreClosure(dm, section, U_loc, cStart, &clSize, &vals));
+    PetscCall(PetscSectionGetClosurePermutation(section, (PetscObject)dm, dim, clSize, &perm));
+    PetscCall(ISDestroy(&perm));
+  }
   PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, U_loc, 1., NULL, NULL, NULL));
   PetscCall(VecViewFromOptions(U_loc, NULL, "-u_loc_vec_view"));
   PetscCall(VecDestroy(&U_loc));
@@ -60,4 +75,10 @@ int main(int argc, char **argv)
   test:
     suffix: 3d
     args: -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 3,3,3 -u_loc_vec_view
+  test:
+    # The tensor degree is recovered from the dual space size with a floating-point cube root, which overshoots in
+    # single precision for order >= 4
+    suffix: 3d_q4
+    output_file: output/empty.out
+    args: -dm_plex_simplex 0 -dm_plex_dim 3 -dm_plex_box_faces 1,1,1 -order 4 -tensor_coords 0
 TEST*/
