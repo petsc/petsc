@@ -471,7 +471,7 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
   Number = {ANL-21/39 - Revision 3.26},\n\
-  Doi = {10.2172/2998643},\n\
+  Doi = {10.2172/17154913},\n\
   Institution = {Argonne National Laboratory},\n\
   Year = {2026}\n}\n",
                                    NULL));
