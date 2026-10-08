@@ -879,6 +879,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAddColumnRange_Dispatch_(Mat 
   }
   if (y != yy) PetscCall(VecDestroy(&y));
   if (x != xx) PetscCall(VecDestroy(&x));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
