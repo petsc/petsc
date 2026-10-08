@@ -463,7 +463,7 @@ PetscErrorCode PetscCitationsInitialize(void)
 
   PetscCall(PetscCitationsRegister("@TechReport{petsc-user-ref,\n\
   Author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Steven Benson and Jed Brown\n\
-    and Peter Brune and Kris Buschelman and Emil Constantinescu and Lisandro Dalcin and Alp Dener\n\
+    and Peter Brune and Kris Buschelman and Emil~M. Constantinescu and Lisandro Dalcin and Alp Dener\n\
     and Victor Eijkhout and Jacob Faibussowitsch and William~D. Gropp and V\'{a}clav Hapla and Tobin Isaac and Pierre Jolivet\n\
     and Dmitry Karpeev and Dinesh Kaushik and Matthew~G. Knepley and Fande Kong and Scott Kruger\n\
     and Dave~A. May and Lois Curfman McInnes and Richard Tran Mills and Lawrence Mitchell and Todd Munson\n\
