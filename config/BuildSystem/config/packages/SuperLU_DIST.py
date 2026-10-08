@@ -84,6 +84,7 @@ class Configure(config.package.CMakePackage):
 
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')
+    args.append('-Denable_python=0')
     empty = not ('MSYSTEM' in os.environ and 'HAVE_MSMPI' in self.mpi.defines)
     if empty and 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
       empty = (not '-DMPI_GUESS_LIBRARY_NAME=' in self.argDB['download-superlu_dist-cmake-arguments'])
