@@ -1155,8 +1155,8 @@ constructor (or the `-mat_type` from the command line). For instance,
   >   Frobenius norm is below `thr` times the largest such block norm in that fine node's rows, then each row is corrected to
   >   maintain the constraint $P B_c = B$. A value of 0 disables filtering (default). Typical values are 0.01-0.1. This can
   >   reduce operator complexity and improve solve time with minimal impact on convergence. On matrix types that do not
-  >   implement `MatEliminateZeros()`, and on HIPSPARSE where it is bypassed due to a known issue, dropped entries are zeroed
-  >   but remain in the sparsity pattern, so the complexity reduction is not realized. See `PCGAMGSetProlongatorFilter()`.
+  >   implement `MatEliminateZeros()`, dropped entries are zeroed but remain in the sparsity pattern, so the complexity reduction
+  >   is not realized. See `PCGAMGSetProlongatorFilter()`.
   > - `-pc_gamg_prolongator_filter_scale scale` Scale the prolongator filter threshold by `scale` on each successive coarser
   >   level; the threshold on level $l$ is `thr` times `scale` to the power $l$, with $l=0$ the finest level. A value below 1
   >   filters less aggressively on the coarser levels, where the prolongator is denser; values above 1 are not allowed. The
@@ -1499,10 +1499,9 @@ large a threshold degrades convergence. A value of 0.03 is a reasonable first
 try, or start with 0 and ramp up. Note also that the reduction in complexity is
 not realized on every matrix type: the dropped entries are zeroed and removed
 from the sparsity pattern with `MatEliminateZeros()`, and on types that do not
-implement it, and on HIPSPARSE where it is bypassed because of a known issue,
-the zeros remain in the pattern, so the solve is unchanged but the memory and
-the Galerkin work are not reduced. `-info :pc` reports when the elimination is
-skipped.
+implement it, the zeros remain in the pattern, so the solve is unchanged but
+the memory and the Galerkin work are not reduced. `-info :pc` reports when
+the elimination is skipped.
 
 #### Adaptive Interpolation
 

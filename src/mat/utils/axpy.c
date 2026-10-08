@@ -612,15 +612,11 @@ PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool kee
     else PetscCall(PetscInfo(NULL, "Warning: %" PetscInt_FMT " edges to filter with %" PetscInt_FMT " rows\n", nnz0, maxRows));
   }
   if (compress && A->ops->eliminatezeros) {
-    Mat       B;
-    PetscBool flg;
+    Mat B;
 
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
-    if (!flg) {
-      PetscCall(MatEliminateZeros(A, keep));
-      PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
-      PetscCall(MatHeaderReplace(A, &B));
-    }
+    PetscCall(MatEliminateZeros(A, keep));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+    PetscCall(MatHeaderReplace(A, &B));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -193,7 +193,7 @@ int main(int argc, char **argv)
          args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijcusparse -M {{1 2}shared output}
       test:
          requires: hip
-         nsize: 4 # this is broken with a single process, see https://gitlab.com/petsc/petsc/-/issues/1529
+         nsize: {{1 4}}
          suffix: real_fieldsplit_hip
          args: -ksp_type preonly -pc_type fieldsplit -fieldsplit_ksp_type preonly -fieldsplit_pc_type redundant -fieldsplit_redundant_ksp_type preonly -fieldsplit_redundant_pc_type lu -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_schur_precondition full -mat_type aijhipsparse -M {{1 2}shared output}
       test:
