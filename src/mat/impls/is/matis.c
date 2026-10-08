@@ -2932,13 +2932,27 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A, PetscInt n, const
     PetscCall(MatZeroRows(is->A, n, rows, diag, NULL, NULL));
   }
   if (diag != 0.) {
-    const PetscScalar *array;
+    const PetscScalar *counter;
+    PetscBool          hassetvalues;
 
-    PetscCall(VecGetArrayRead(is->counter, &array));
-    for (PetscInt i = 0; i < n; i++) PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / (array[rows[i]]), INSERT_VALUES));
-    PetscCall(VecRestoreArrayRead(is->counter, &array));
-    PetscCall(MatAssemblyBegin(is->A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(is->A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatHasOperation(is->A, MATOP_SET_VALUES, &hassetvalues));
+    PetscCall(VecGetArrayRead(is->counter, &counter));
+    if (hassetvalues) {
+      // Avoid inserting diagonal entries in rows that were not zeroed.
+      for (PetscInt i = 0; i < n; i++) PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / counter[rows[i]], INSERT_VALUES));
+      PetscCall(VecRestoreArrayRead(is->counter, &counter));
+      PetscCall(MatAssemblyBegin(is->A, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(is->A, MAT_FINAL_ASSEMBLY));
+    } else {
+      PetscScalar *diagonal;
+
+      PetscCall(VecSet(is->y, 0.));
+      PetscCall(VecGetArray(is->y, &diagonal));
+      for (PetscInt i = 0; i < n; i++) diagonal[rows[i]] = diag / counter[rows[i]] - diag;
+      PetscCall(VecRestoreArray(is->y, &diagonal));
+      PetscCall(VecRestoreArrayRead(is->counter, &counter));
+      PetscCall(MatDiagonalSet(is->A, is->y, ADD_VALUES));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
