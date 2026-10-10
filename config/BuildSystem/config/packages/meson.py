@@ -7,7 +7,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.version           = '1.9.2'
     self.download          = ['https://github.com/mesonbuild/meson/releases/download/'+self.version+'/meson-'+self.version+'.tar.gz']
-    self.lookforbydefault  = 1
+    self.lookforbydefault  = 0
     self.useddirectly      = 0
     self.linkedbypetsc     = 0
     self.publicInstall     = 0

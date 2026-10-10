@@ -11,7 +11,7 @@ class Configure(config.package.Package):
     self.version           = '1.13.1'
     self.minversion        = '1.8.2'
     self.download          = ['https://github.com/ninja-build/ninja/archive/refs/tags/v'+self.version+'.tar.gz']
-    self.lookforbydefault  = 1
+    self.lookforbydefault  = 0
     self.publicInstall     = 0
     self.linkedbypetsc     = 0
     self.useddirectly      = 0
