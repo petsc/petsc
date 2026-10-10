@@ -653,10 +653,10 @@ memory must be copied to the GPU (often, this copy is done automatically by the 
 if one wishes to use the GPU computational power on it. This memory copy is slow compared to the GPU speed; hence, it is crucial to minimize these copies. This often
 translates to trying to do almost all the computation on the GPU and not constantly switching between computations on the CPU and the GPU on the same data.
 
-PETSc utilizes GPUs by providing vector and matrix classes (Vec and Mat) specifically written to run on the GPU. However, since it is difficult to
+PETSc utilizes GPUs by providing vector and matrix classes (`Vec` and `Mat`) specifically written to run on the GPU. However, since it is difficult to
 write an entire PETSc code that runs only on the GPU, one can also access and work with (for example, put entries into) the vectors and matrices
-on the CPU. The vector classes
-are `VECCUDA`, `MATAIJCUSPARSE`, `VECKOKKOS`, `MATAIJKOKKOS`, and `VECHIP` (matrices are not yet supported by PETSc with HIP).
+on the CPU. The implementations include
+`VECCUDA`, `MATAIJCUSPARSE`, `VECKOKKOS`, `MATAIJKOKKOS`, `VECHIP`, and `MATAIJHIPSPARSE`.
 
 More details on using GPUs from PETSc will follow in this document.
 
