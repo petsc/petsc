@@ -96,6 +96,15 @@ static PetscErrorCode TestProperties(Mat B)
   }
   PetscCall(MatLMVMReset(B, PETSC_FALSE));
   PetscCall(CheckProperties(B, symmetric, spd));
+  PetscCall(MatLMVMReset(B, PETSC_TRUE));
+  PetscCall(MatSetUp(B));
+  PetscCall(CheckProperties(B, symmetric, spd));
+  for (PetscInt i = 0; i <= m; ++i) {
+    PetscCall(VecSetRandom(x, rand));
+    PetscCall(VecPointwiseMult(f, d, x));
+    PetscCall(MatLMVMUpdate(B, x, f));
+    PetscCall(CheckProperties(B, symmetric, spd));
+  }
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(VecDestroy(&d));
   PetscCall(VecDestroy(&f));

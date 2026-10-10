@@ -41,8 +41,9 @@ PETSC_INTERN PetscErrorCode LMProductsCreate(LMBasis basis, LMBlockType block_ty
 
 PETSC_INTERN PetscErrorCode LMProductsDestroy(LMProducts *dots_p)
 {
-  PetscFunctionBegin;
   LMProducts dots = *dots_p;
+
+  PetscFunctionBegin;
   if (dots == NULL) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDestroy(&dots->full));
   PetscCall(VecDestroy(&dots->diagonal_dup));
@@ -50,7 +51,7 @@ PETSC_INTERN PetscErrorCode LMProductsDestroy(LMProducts *dots_p)
   PetscCall(VecDestroy(&dots->diagonal_global));
   PetscCall(VecDestroy(&dots->rhs_local));
   PetscCall(VecDestroy(&dots->lhs_local));
-  PetscCall(PetscFree(dots));
+  PetscCall(PetscFree(*dots_p));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
