@@ -426,6 +426,7 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
   PetscCall(MatCreate_LMVM(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATLMVMSR1));
   PetscCall(MatSetOption(B, MAT_HERMITIAN, PETSC_TRUE));
+  if (!PetscDefined(USE_COMPLEX)) PetscCall(MatSetOption(B, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
   B->ops->destroy = MatDestroy_LMVMSR1;
 
   lmvm                          = (Mat_LMVM *)B->data;
