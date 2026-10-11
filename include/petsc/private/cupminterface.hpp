@@ -264,9 +264,9 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::CUDA> 
   PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemsetAsync, cudaMemset, 1)
   #endif
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2D, cudaMemcpy2D)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemcpy2DAsync, cudaMemcpy2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2DAsync, cudaMemcpy2DAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, cudaMemset2D)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemset2DAsync, cudaMemset2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2DAsync, cudaMemset2DAsync)
 
   // launch control
   PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, cudaLaunchHostFunc)
@@ -406,9 +406,9 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset, hipMemset)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemsetAsync, hipMemsetAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2D, hipMemcpy2D)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemcpy2DAsync, hipMemcpy2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2DAsync, hipMemcpy2DAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, hipMemset2D)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemset2DAsync, hipMemset2DAsync, 1)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2DAsync, hipMemset2DAsync)
 
   // launch control
   // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
