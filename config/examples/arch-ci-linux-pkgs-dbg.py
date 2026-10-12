@@ -24,7 +24,7 @@ configure_options = [
   '--download-superlu_dist',
   '--download-scalapack',
   '--download-mumps',
-  # '--download-elemental', # disabled since its maxCxxVersion is c++14, but Kokkos-4.0's minCxxVersion is c++17
+  '--download-elemental',
   '--download-spai',
   '--download-moab',
   '--download-parms',
