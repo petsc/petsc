@@ -5,6 +5,7 @@
 % * Use imperative, e.g., Add, Improve, Change, etc.
 % * Don't use a period (.) at the end of entries
 % * If multiple sentences are needed, use a period or semicolon to divide sentences, but not at the end of the final sentence
+% * Do not put blank lines between entries within a section; keep the blank lines that surround the section rubrics
 
 ```{rubric} General:
 ```
@@ -13,11 +14,8 @@
 ```
 
 - Add `--download-cutest` and `--download-sifdecode` for the CUTEst optimization testing environment and SIF problem decoder
-
 - Add Meson package builds, `--download-meson`, and `--download-package-meson-arguments` for additional Meson setup arguments
-
 - Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
-
 - Add `--with-meson-exec` to select an existing Meson executable
 
 ```{rubric} Sys:
