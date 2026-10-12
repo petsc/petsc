@@ -24,6 +24,21 @@ int main(int argc, char **args)
   PetscCall(PetscLogDefaultBegin());
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This example requires 4 processes");
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-pc_hpddm_coarse_mat_mumps_use_omp_threads", &N, NULL));
+  if (N > 1) {
+    PetscShmComm pshmcomm;
+    MPI_Comm     comm;
+
+    PetscCall(PetscShmCommGet(PETSC_COMM_WORLD, &pshmcomm));
+    PetscCall(PetscShmCommGetMpiShmComm(pshmcomm, &comm));
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    if (size != 4) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Skipping OpenMP test: all 4 processes must share memory\n"));
+      PetscCall(PetscOptionsSetValue(NULL, "-options_left", "false"));
+      PetscCall(PetscFinalize());
+      return 0;
+    } else N = 1;
+  }
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-rhs", &N, NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
@@ -470,12 +485,11 @@ int main(int argc, char **args)
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 2[26]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -ksp_use_explicittranspose {{false true}shared output} -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
       test:
-        TODO: broken # slightly different convergence rate, which may be a sign of something wrong somewhere
         requires: cuda
         suffix: geneo_transpose_cuda
         output_file: output/ex76_geneo_share.out
-        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[2-4]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -pc_hpddm_coarse_correction balanced -mat_type aijcusparse
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 14/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -transpose -pc_hpddm_coarse_correction balanced -pc_hpddm_levels_1_st_shift 1e-5 -random_type rander48 -mat_type aijcusparse
       test:
         suffix: geneo_explicittranspose
         output_file: output/ex76_geneo_share.out
@@ -539,7 +553,7 @@ int main(int argc, char **args)
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES) mumps defined(PETSC_HAVE_OPENMP_SUPPORT)
-      filter: grep -E -e "Linear solve" -e "      executing" | sed -e "s/MPI =      1/MPI =      2/g" -e "s/OMP =      1/OMP =      2/g"
+      filter: grep -E -e "(Linear solve|      executing|^Skipping)" | sed -E -e "s/(MPI|OMP) =      1/\\1 =      2/g"
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_coarse_p {{1 2}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_coarse_pc_factor_mat_solver_type mumps -pc_hpddm_coarse_mat_mumps_icntl_4 2 -pc_hpddm_coarse_mat_mumps_use_omp_threads {{1 2}shared output}
       test:
