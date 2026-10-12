@@ -614,6 +614,17 @@ Even with the use of `clang-format` there are still many decisions about code fo
     a corresponding `XXXRestoreYYY()` to return that resource. See, for example, `VecGetArray()` and `VecRestoreArray()`.
     Note that the Fortran API sometimes has a restore API function that is not needed in C.
 
+## GPU portability software layer
+
+Because the CUDA and HIP programming interfaces are nearly identical in
+structure (for example, `cudaMalloc()` and `hipMalloc()`), PETSc implements
+its vector, matrix, and device-management support for both of these once, through a shared
+abstraction called the CUDA-like Programming Model (CUPM), {cite}`mills2024`. A single
+templated code path is specialized at compile time to either backend, so
+features generally reach CUDA and HIP together and behave consistently across
+them. The C preprocessor macro `PETSC_HAVE_CUPM` is defined whenever either backend is
+available. CUPM is an internal implementation detail in the developer-level API rather than a user-facing API.
+
 ## Formatted Comments
 
 PETSc uses formatted comments to generate documentation (manual pages).
