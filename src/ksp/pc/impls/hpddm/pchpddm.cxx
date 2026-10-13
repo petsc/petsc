@@ -342,8 +342,8 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems PetscOption
   PC_HPDDM                   *data = (PC_HPDDM *)pc->data;
   char                        prefix[256], deprecated[256];
   int                         i = 1;
-  PetscMPIInt                 size, previous;
   PetscInt                    n, overlap = 1;
+  PetscMPIInt                 size, previous;
   PCHPDDMCoarseCorrectionType type;
   PetscBool                   flg = PETSC_TRUE, set;
 
@@ -1798,21 +1798,18 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   PC_HPDDM                                  *data = (PC_HPDDM *)pc->data;
   PC                                         inner;
   KSP                                       *ksp = nullptr;
-  Mat                                       *sub, A, P, N, C = nullptr, uaux = nullptr, weighted, subA[2], S;
+  Mat                                       *sub, A, P, N, C = nullptr, uaux = nullptr, weighted, subA[2], S, ev, daux = nullptr;
   Vec                                        xin, v;
   std::vector<Vec>                           initial;
-  IS                                         is[1], loc, uis = data->is, unsorted = nullptr;
+  IS                                         is[1], loc, uis = data->is, unsorted = nullptr, dis = nullptr;
   ISLocalToGlobalMapping                     l2g;
   char                                       prefix[256];
   const char                                *pcpre;
-  Mat                                        ev;
   PetscInt                                   n, requested, reused = 0, overlap = -1;
   MatStructure                               structure  = UNKNOWN_NONZERO_PATTERN;
   PetscBool                                  subdomains = PETSC_FALSE, flg = PETSC_FALSE, ismatis, swap = PETSC_FALSE, algebraic = PETSC_FALSE, block = PETSC_FALSE;
   DM                                         dm;
-  std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *ctx  = nullptr;
-  IS                                         dis  = nullptr;
-  Mat                                        daux = nullptr;
+  std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *ctx = nullptr;
 
   PetscFunctionBegin;
   if (!data->levels) PetscCall(PetscInfo(pc, "No level allocated, defaulting to a single level, PCSetFromOptions() should be called before PCSetUp() to avoid this\n"));
@@ -2478,6 +2475,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (!flg) ++overlap;
               if (data->share) {
                 PetscInt n = -1;
+
                 PetscTryMethod(data->levels[0]->pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (data->levels[0]->pc, &n, nullptr, &ksp));
                 PetscCheck(n == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of subdomain solver %" PetscInt_FMT " != 1", n);
                 if (flg) {
