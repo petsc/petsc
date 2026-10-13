@@ -1094,18 +1094,12 @@ static PetscErrorCode PCPatchGetGlobalDofs(PC pc, PetscSection dofSection[], Pet
       PC_PATCH *patch = (PC_PATCH *)pc->data;
       PetscInt  fdof;
 
+      PetscCheck(!off, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "off cannot be determined for PCPatchGetGlobalDofs if f is not provided because it is ambiguous");
       if (dof) {
         *dof = 0;
         for (PetscInt g = 0; g < patch->nsubspaces; ++g) {
           PetscCall(PetscSectionGetDof(dofSection[g], p, &fdof));
           *dof += fdof;
-        }
-      }
-      if (off) {
-        *off = 0;
-        for (PetscInt g = 0; g < patch->nsubspaces; ++g) {
-          PetscCall(PetscSectionGetOffset(dofSection[g], p, &fdof));
-          *off += fdof;
         }
       }
     } else {
@@ -2914,7 +2908,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
     PetscCall(PetscLogEventBegin(PC_Patch_CreatePatches, pc, 0, 0, 0));
 
     isNonlinear = patch->isNonlinear;
-    if (!patch->nsubspaces) {
+    if (!patch->nsubspaces) { // PCPatchSetDiscretisationInfo()/PCPatchSetDiscretisationInfoCombined() not called
       DM           dm, plex;
       PetscSection s;
       PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, **cellDofs;
