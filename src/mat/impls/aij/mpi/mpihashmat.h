@@ -1,4 +1,11 @@
 /*
+   Hash-table assembly is the fallback for a matrix without any preallocation. MatSetUp_MPI_Hash() creates hash-table
+   diagonal and off-diagonal blocks and replaces the matrix operations so that MatSetValues() records entries in them, and
+   the first MatAssemblyEnd() with MAT_FINAL_ASSEMBLY builds the nonzero pattern from them, restores the regular operations,
+   and clears hash_active. A routine that provides the preallocation itself, such as
+   MatMPIAIJSetPreallocation() or MatSetPreallocationCOO(), replaces both blocks, so it must end hash mode on entry by
+   restoring the saved operations and clearing hash_active.
+
    used by MPIAIJ, BAIJ and SBAIJ to reduce code duplication
 
      define TYPE to AIJ BAIJ or SBAIJ

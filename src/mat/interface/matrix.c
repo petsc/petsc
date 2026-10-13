@@ -1070,8 +1070,9 @@ PetscErrorCode MatResetHash(Mat A)
   Level: advanced
 
   Notes:
-  If the user has not set preallocation for this matrix then an efficient algorithm will be used for the first round of
-  setting values in the matrix.
+  If no preallocation has been provided for a `MATAIJ`, `MATBAIJ`, or `MATSBAIJ` matrix, `MatSetUp()` makes it record the
+  values given to `MatSetValues()` in a hash table, and the first assembly determines the nonzero pattern from it. Providing
+  preallocation instead, for example with `MatXAIJSetPreallocation()` or `MatSetPreallocationCOO()`, disables hash-table mode.
 
   This routine is called internally by other `Mat` functions when needed so rarely needs to be called by users
 

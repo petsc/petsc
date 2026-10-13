@@ -1,3 +1,11 @@
+/*
+  Hash-table assembly is the fallback for a matrix without any preallocation. MatSetUp_Seq_Hash() replaces the matrix
+  operations so that MatSetValues() records entries in a hash table, and the first MatAssemblyEnd() builds the nonzero
+  pattern from it, restores the regular operations, and clears hash_active. A routine that provides the preallocation itself,
+  such as MatSeqAIJSetPreallocation() or MatSetPreallocationCOO(), builds storage that replaces the hash table, so it must end
+  hash mode on entry by restoring the saved operations, freeing the hash table, and clearing hash_active.
+*/
+
 static PetscErrorCode MatCopyHashToXAIJ_Seq_Hash(Mat A, Mat B)
 {
   PetscConcat(Mat_Seq, TYPE) *a = (PetscConcat(Mat_Seq, TYPE) *)A->data;

@@ -414,6 +414,7 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     cupmStream_t         stream;
 
     PetscFunctionBegin;
+    PetscCall(MatSeqAIJCheckCOONonzeroState(A));
     if (!dev->mat) PetscCall(Policy::CopyToGPU(A));
 
     PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));

@@ -100,8 +100,88 @@ int main(int argc, char **args)
   if (!equal) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatSetValuesCOO() on duplicated matrix failed\n"));
   PetscCall(MatViewFromOptions(C, NULL, "-c_view"));
 
-  /* Test aij->diag on COO matrix are correctly set up */
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATHYPRE, &isHypre));
+
+  /* Test MatSetValues() on a matrix preallocated with MatSetPreallocationCOO() with no intervening
+     MatSetValuesCOO() that would perform matrix assembly.
+
+     MATHYPRE is left out because this sequence trips a separate defect in hypre's device IJ
+     assemble, which reads the off-diagonal column map without mirroring it to the device
+     (hypre-space/hypre#1625). */
+  if (!isHypre) {
+    Mat          D;
+    PetscInt     rstart, rend, remote_col, ncoo;
+    PetscInt    *coo_i, *coo_j;
+    PetscScalar  readback;
+    PetscScalar *coo_v;
+    PetscBool    isHostAIJ;
+
+    PetscCall(MatCreate(PETSC_COMM_WORLD, &D));
+    PetscCall(MatSetSizes(D, PETSC_DECIDE, PETSC_DECIDE, M, N));
+    PetscCall(MatSetFromOptions(D));
+    PetscCall(MatGetOwnershipRange(D, &rstart, &rend));
+
+    /* A diagonal entry and one in the first column past this rank's rows, which another rank owns
+       whenever there is more than one */
+    remote_col = rend % N;
+    ncoo       = 2 * (rend - rstart);
+    PetscCall(PetscMalloc2(ncoo, &coo_i, ncoo, &coo_j));
+    for (PetscInt r = rstart, k = 0; r < rend; r++) {
+      coo_i[k] = r;
+      coo_j[k] = r;
+      k++;
+      coo_i[k] = r;
+      coo_j[k] = remote_col;
+      k++;
+    }
+    PetscCall(MatSetPreallocationCOO(D, ncoo, coo_i, coo_j));
+    PetscCall(PetscFree2(coo_i, coo_j));
+
+    for (PetscInt r = rstart; r < rend; r++) {
+      PetscCall(MatSetValue(D, r, r, 2.0, INSERT_VALUES));
+      PetscCall(MatSetValue(D, r, remote_col, 5.0, INSERT_VALUES));
+    }
+    PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
+
+    PetscCall(MatGetValue(D, rstart, remote_col, &readback));
+    if (readback != 5.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSetValues() after MatSetPreallocationCOO() gave %g, expected 5\n", (double)PetscRealPart(readback)));
+
+    /* MatSetValues() above only wrote into the preallocated nonzero pattern, so MatSetValuesCOO() remains usable */
+    PetscCall(PetscMalloc1(ncoo, &coo_v));
+    for (PetscInt k = 0; k < ncoo; k++) coo_v[k] = (k % 2) ? 7.0 : 0.0;
+    PetscCall(MatSetValuesCOO(D, coo_v, INSERT_VALUES));
+    PetscCall(MatGetValue(D, rstart, remote_col, &readback));
+    if (readback != 7.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSetValuesCOO() after MatSetValues() gave %g, expected 7\n", (double)PetscRealPart(readback)));
+
+    /* Zeroing no rows leaves the nonzero pattern, and so MatSetValuesCOO(), intact */
+    PetscCall(MatZeroRows(D, 0, NULL, 1.0, NULL, NULL));
+    PetscCall(MatSetValuesCOO(D, coo_v, ADD_VALUES));
+    PetscCall(MatGetValue(D, rstart, remote_col, &readback));
+    if (readback != 14.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSetValuesCOO() after an empty MatZeroRows() gave %g, expected 14\n", (double)PetscRealPart(readback)));
+
+    /* MatAXPY() with DIFFERENT_NONZERO_PATTERN of a matrix whose nonzeros are a subset of those of D leaves the nonzero pattern,
+       and so MatSetValuesCOO(), intact. Device implementations of MatAXPY(), such as that of MATAIJKOKKOS, replace the matrix,
+       so only the host types MATSEQAIJ and MATMPIAIJ are tested. */
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)D, &isHostAIJ, MATSEQAIJ, MATMPIAIJ, ""));
+    if (isHostAIJ) {
+      Mat Diag;
+
+      PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, rend - rstart, rend - rstart, M, N, 1, NULL, 0, NULL, &Diag));
+      for (PetscInt r = rstart; r < rend; r++) PetscCall(MatSetValue(Diag, r, r, 1.0, INSERT_VALUES));
+      PetscCall(MatAssemblyBegin(Diag, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAssemblyEnd(Diag, MAT_FINAL_ASSEMBLY));
+      PetscCall(MatAXPY(D, 1.0, Diag, DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatDestroy(&Diag));
+      PetscCall(MatSetValuesCOO(D, coo_v, INSERT_VALUES));
+      PetscCall(MatGetValue(D, rstart, remote_col, &readback));
+      if (readback != 7.0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSetValuesCOO() after MatAXPY() gave %g, expected 7\n", (double)PetscRealPart(readback)));
+    }
+    PetscCall(PetscFree(coo_v));
+    PetscCall(MatDestroy(&D));
+  }
+
+  /* Test that aij->diag is set up correctly on COO matrices */
   if (!isHypre) { // TODO: MATHYPRE currently does not support MatSetValues
     PetscCall(MatShift(A, 2.0));
     PetscCall(MatShift(B, 2.0));
