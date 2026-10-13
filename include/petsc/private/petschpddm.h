@@ -28,10 +28,11 @@ struct PC_HPDDM_Level {
 
 struct PC_HPDDM {
   PC_HPDDM_Level            **levels;                                       /* array of shells */
-  Mat                         aux;                                          /* local auxiliary matrix defined at the finest level on PETSC_COMM_SELF */
-  Mat                         B;                                            /* right-hand side matrix defined at the finest level on PETSC_COMM_SELF */
+  Mat                         aux;                                          /* local auxiliary matrix, or deflation matrix if the PetscBool deflation is PETSC_TRUE, defined at the finest level on PETSC_COMM_SELF */
+  Mat                         B;                                            /* right-hand side matrix, defined at the finest level on PETSC_COMM_SELF */
   Vec                         normal;                                       /* temporary Vec when preconditioning the normal equations with KSPLSQR */
-  IS                          is;                                           /* global numbering of the auxiliary matrix */
+  Vec                         scaling;                                      /* user-supplied scaling in the ordering of the IS is, defined at the finest level on PETSC_COMM_SELF */
+  IS                          is;                                           /* global numbering of the rows of the Mat aux and of the entries of the Vec scaling */
   PetscInt                    N;                                            /* number of levels */
   PCHPDDMCoarseCorrectionType correction;                                   /* type of coarse correction */
   PetscBool3                  Neumann;                                      /* aux is the local Neumann matrix? */

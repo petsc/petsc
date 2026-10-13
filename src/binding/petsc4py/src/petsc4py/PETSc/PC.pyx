@@ -2824,7 +2824,7 @@ cdef class PC(Object):
         CHKERR(PCHPDDMGetSTShareSubKSP(self.pc, &cval))
         return toBool(cval)
 
-    def setHPDDMDeflationMat(self, IS uis, Mat U) -> None:
+    def setHPDDMDeflationMat(self, IS uis=None, Mat U=None) -> None:
         """Set the deflation space used to assemble a coarse operator.
 
         Logically collective.
@@ -2832,16 +2832,51 @@ cdef class PC(Object):
         Parameters
         ----------
         uis
-            The `IS` of the local deflation matrix.
+            The `IS` of the local deflation matrix, shared with
+            `setHPDDMScaling`, or `None` to use the stored one.
         U
-            The deflation sequential matrix of type `Mat.Type.DENSE`.
+            The deflation sequential matrix of type `Mat.Type.DENSE`, or
+            `None` to remove the deflation space. ``uis`` must then be `None`,
+            and the stored `IS` is discarded unless a scaling still uses it.
 
         See Also
         --------
-        petsc.PCHPDDMSetDeflationMat
+        setHPDDMScaling, petsc.PCHPDDMSetDeflationMat
 
         """
-        CHKERR(PCHPDDMSetDeflationMat(self.pc, uis.iset, U.mat))
+        cdef PetscIS ciset = NULL
+        cdef PetscMat umat = NULL
+        if uis is not None: ciset = uis.iset
+        if U is not None: umat = U.mat
+        CHKERR(PCHPDDMSetDeflationMat(self.pc, ciset, umat))
+
+    def setHPDDMScaling(self, IS uis=None, Vec scaling=None) -> None:
+        """Set a diagonal scaling for the deflation space and `PC.Type.ASM`.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        uis
+            The `IS` of the local scaling, shared with `setHPDDMDeflationMat`,
+            or `None` to use the stored one.
+        scaling
+            The single-process scaling vector, in the ordering of the `IS`, or
+            `None` to restore the default Boolean scaling before setup. ``uis`` must
+            then be `None`, and the stored `IS` is discarded unless a deflation
+            matrix still uses it. The vector must contain finite, real,
+            nonnegative entries; do not change them after this call.
+
+        See Also
+        --------
+        setHPDDMDeflationMat, petsc.PCHPDDMSetScaling
+
+        """
+        cdef PetscIS ciset = NULL
+        cdef PetscVec scaling_vec = NULL
+        if uis is not None: ciset = uis.iset
+        if scaling is not None: scaling_vec = scaling.vec
+        CHKERR(PCHPDDMSetScaling(self.pc, ciset, scaling_vec))
 
     # --- SPAI ---
 
