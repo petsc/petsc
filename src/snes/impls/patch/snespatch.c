@@ -372,26 +372,28 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
   Logically Collective
 
   Input Parameters:
-+ snes            - the `SNESPATCH` solver
-. nsubspaces      - the number of discretisation subspaces (e.g. fields)
-. dms             - array of length `nsubspaces` of `DM`s, one per subspace
-. bs              - array of length `nsubspaces` giving the block size of each subspace
-. dofsPerCell     - array of length `nsubspaces` giving the number of DoFs per cell for each subspace
-. cellDofMap      - array of length `nsubspaces`; entry `i` is a cell-to-DoF map for subspace `i`
-. subspaceOffsets - array of length `nsubspaces + 1` giving the starting global dof offset of each subspace
-. numGhostBcs     - number of ghost (off-process) boundary-condition dofs
-. ghostBcDofs     - array of length `numGhostBcs` of the ghost boundary-condition dof indices
-. numGlobalBcs    - number of global boundary-condition dofs
-- globalBcDofs    - array of length `numGlobalBcs` of the global boundary-condition dof indices
++ snes         - the `SNESPATCH` solver
+. nsubspaces   - the number of discretisation subspaces (e.g. fields)
+. dms          - array of length `nsubspaces` of `DM`s, one per subspace
+. isets        - array of length `nsubspaces` of `IS`s, mapping subspace DoFs to DoFs in the full local mixed space
+. dofsPerCell  - array of length `nsubspaces` giving the number of DoFs per cell for each subspace
+. cellDofMap   - array of length `nsubspaces`; entry `i` is a cell-to-DoF map for subspace `i`
+. numGhostBcs  - number of ghost (off-process) boundary-condition dofs
+. ghostBcDofs  - array of length `numGhostBcs` of the ghost boundary-condition dof indices
+. numGlobalBcs - number of global boundary-condition dofs
+- globalBcDofs - array of length `numGlobalBcs` of the global boundary-condition dof indices
 
   Level: advanced
 
   Note:
   A `DM` must already be attached to `snes` (via `SNESSetDM()`) before calling this routine. Internally, the information is forwarded to the underlying `PCPATCH` via `PCPatchSetDiscretisationInfo()`.
 
+  The `isets` must together index each degree of freedom of the full local space exactly once; the size of that
+  space is taken to be the sum of their local sizes.
+
 .seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetDiscretisationInfo()`, `SNESPatchSetComputeOperator()`, `SNESPatchSetComputeFunction()`
 @*/
-PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt dofsPerCell[], const PetscInt **cellDofMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcDofs[], PetscInt numGlobalBcs, const PetscInt globalBcDofs[])
+PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], const IS isets[], PetscInt dofsPerCell[], const PetscInt **cellDofMap, PetscInt numGhostBcs, const PetscInt ghostBcDofs[], PetscInt numGlobalBcs, const PetscInt globalBcDofs[])
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
   DM          dm;
@@ -400,7 +402,7 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   PetscCall(SNESGetDM(snes, &dm));
   PetscCheck(dm, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch SNES");
   PetscCall(PCSetDM(patch->pc, dm));
-  PetscCall(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, dofsPerCell, cellDofMap, subspaceOffsets, numGhostBcs, ghostBcDofs, numGlobalBcs, globalBcDofs));
+  PetscCall(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, isets, dofsPerCell, cellDofMap, numGhostBcs, ghostBcDofs, numGlobalBcs, globalBcDofs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

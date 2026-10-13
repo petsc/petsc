@@ -141,8 +141,9 @@ static PetscErrorCode TestPatchFacetResidual(void)
   PetscInt          cStart, cEnd, pStart, pEnd, vStart, vEnd, cell, closureSize, numDofs, numCells;
   PetscInt         *cellNodeMap = NULL, *closure = NULL;
   const PetscInt   *cellNodeMaps[1];
-  PetscInt          bs[1] = {1}, nodesPerCell[1] = {nodesPerCellValue}, subspaceOffsets[2] = {0, 0};
+  PetscInt          nodesPerCell[1] = {nodesPerCellValue};
   DM                dms[1];
+  IS                isets[1];
   SNES              snes;
   Vec               x, f, rhs;
   PatchFacetTestCtx test = {0, NULL, 0, 0, 0};
@@ -165,7 +166,7 @@ static PetscErrorCode TestPatchFacetResidual(void)
   PetscCall(PetscSectionSetUp(section));
   PetscCall(DMSetLocalSection(dm, section));
   PetscCall(PetscSectionGetStorageSize(section, &numDofs));
-  subspaceOffsets[1] = numDofs;
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, numDofs, 0, 1, &isets[0]));
 
   PetscCall(PetscMalloc1(numCells * nodesPerCellValue, &cellNodeMap));
   for (cell = cStart; cell < cEnd; ++cell) {
@@ -198,7 +199,7 @@ static PetscErrorCode TestPatchFacetResidual(void)
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(SNESSetFunction(snes, f, TestPatchOuterFunction, NULL));
   PetscCall(SNESPatchSetConstructType(snes, PC_PATCH_USER, TestPatchConstruct, &test));
-  PetscCall(SNESPatchSetDiscretisationInfo(snes, 1, dms, bs, nodesPerCell, cellNodeMaps, subspaceOffsets, 0, NULL, 0, NULL));
+  PetscCall(SNESPatchSetDiscretisationInfo(snes, 1, dms, isets, nodesPerCell, cellNodeMaps, 0, NULL, 0, NULL));
   PetscCall(SNESPatchSetComputeFunction(snes, TestPatchComputeFunction, &test));
   PetscCall(SNESPatchSetComputeOperator(snes, TestPatchComputeOperator, NULL));
   PetscCall(SNESSetTolerances(snes, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1, PETSC_CURRENT));
@@ -212,6 +213,7 @@ static PetscErrorCode TestPatchFacetResidual(void)
   PetscCall(VecDestroy(&f));
   PetscCall(VecDestroy(&x));
   PetscCall(PetscFree(cellNodeMap));
+  PetscCall(ISDestroy(&isets[0]));
   PetscCall(PetscSectionDestroy(&section));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFree(test.patchPoints));
