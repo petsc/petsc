@@ -1850,7 +1850,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reused, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
     const int *addr = data->levels[0]->P ? data->levels[0]->P->getAddrLocal() : &i_0;
 
-    if (*addr != 0 && reused != data->N - 1) {
+    if (!data->deflation && *addr != 0 && reused != data->N - 1) {
       /* reuse previously computed eigenvectors */
       ev = data->levels[0]->P->getMat();
       if (ev) {
