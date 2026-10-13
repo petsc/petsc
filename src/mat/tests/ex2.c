@@ -138,6 +138,54 @@ int main(int argc, char **argv)
       PetscCall(MatNorm(D, types[t], &nd));
       PetscCheck(PetscIsCloseAtTol(nd, nc, PETSC_SMALL, 0.0), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "NORM_%s of -A is %g, but %g for a MATAIJ copy of A", NormTypes[types[t]], (double)nd, (double)nc);
     }
+    PetscCall(MatHasOperation(D, MATOP_GET_ROW_SUM_ABS, &flg));
+    if (flg) {
+      Vec vc, vd;
+
+      PetscCall(MatCreateVecs(C, NULL, &vc));
+      PetscCall(MatCreateVecs(D, NULL, &vd));
+      PetscCall(MatGetRowSumAbs(C, vc));
+      PetscCall(MatGetRowSumAbs(D, vd));
+      PetscCall(VecAXPY(vd, -1.0, vc));
+      PetscCall(VecNorm(vd, NORM_INFINITY, &nd));
+      PetscCheck(nd <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatGetRowSumAbs() of -A differs by %g from that of a MATAIJ copy of A", (double)nd);
+      PetscCall(VecDestroy(&vd));
+      PetscCall(VecDestroy(&vc));
+    }
+    PetscCall(MatDestroy(&D));
+    PetscCall(MatDestroy(&C));
+  }
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-test_comm_self", &flg));
+  if (flg) {
+    /* Each rank builds its own matrix of the requested type on PETSC_COMM_SELF, so a parallel type has a single-rank
+       communicator even when PETSC_COMM_WORLD has several. The entries are negative so that the row sums only match
+       if absolute values are taken, and they depend on the rank to keep the matrices distinct */
+    Mat       C, D;
+    Vec       vc, vd;
+    PetscReal diff;
+
+    PetscCall(MatCreate(PETSC_COMM_SELF, &D));
+    PetscCall(MatSetSizes(D, m, n, m, n));
+    PetscCall(MatSetFromOptions(D));
+    PetscCall(MatSetUp(D));
+    for (i = 0; i < m; i++) {
+      for (j = 0; j < n; j++) {
+        v = -(i + j + rank + 1.0);
+        PetscCall(MatSetValues(D, 1, &i, 1, &j, &v, INSERT_VALUES));
+      }
+    }
+    PetscCall(MatAssemblyBegin(D, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(D, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatConvert(D, MATSEQAIJ, MAT_INITIAL_MATRIX, &C));
+    PetscCall(MatCreateVecs(C, NULL, &vc));
+    PetscCall(MatCreateVecs(D, NULL, &vd));
+    PetscCall(MatGetRowSumAbs(C, vc));
+    PetscCall(MatGetRowSumAbs(D, vd));
+    PetscCall(VecAXPY(vd, -1.0, vc));
+    PetscCall(VecNorm(vd, NORM_INFINITY, &diff));
+    PetscCheck(diff <= PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MatGetRowSumAbs() of a PETSC_COMM_SELF matrix differs by %g from that of a MATSEQAIJ copy", (double)diff);
+    PetscCall(VecDestroy(&vd));
+    PetscCall(VecDestroy(&vc));
     PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&C));
   }
@@ -357,6 +405,14 @@ int main(int argc, char **argv)
       output_file: output/ex2_21.out
       requires: kokkos_kernels
       filter: grep -v type | grep -v " MPI process"
+
+   test:
+      suffix: 2_mpiaijkokkos_comm_self
+      nsize: 3
+      args: -mat_type mpiaijkokkos -test_comm_self
+      output_file: output/ex2_23.out
+      requires: kokkos_kernels
+      filter: grep -v type | grep -v "MPI processes"
 
    test:
       suffix: 2_aijcusparse_2

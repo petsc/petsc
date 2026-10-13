@@ -1,6 +1,7 @@
 static char help[] = "Tests MatHYPRE\n";
 
 #include <petscmathypre.h>
+#include <petscpkg_version.h>
 
 int main(int argc, char **args)
 {
@@ -362,6 +363,28 @@ int main(int argc, char **args)
     }
   }
   PetscCall(MatDestroy(&B));
+
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 19, 0)
+  {
+    Vec y, y2;
+
+    PetscCall(MatConvert(A, MATHYPRE, MAT_INITIAL_MATRIX, &B));
+    PetscCall(MatCreateVecs(A, NULL, &y));
+    PetscCall(MatCreateVecs(B, NULL, &y2));
+    PetscCall(MatGetRowSumAbs(A, y));
+    PetscCall(MatGetRowSumAbs(B, y2));
+    PetscCall(VecAXPY(y2, -1.0, y));
+    PetscCall(VecNorm(y2, NORM_INFINITY, &err));
+    if (err > PETSC_SMALL) {
+      PetscCall(VecViewFromOptions(y, NULL, "-view_rowsumabs_diff"));
+      PetscCall(VecViewFromOptions(y2, NULL, "-view_rowsumabs_diff"));
+      SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Error MatGetRowSumAbs %g", (double)err);
+    }
+    PetscCall(MatDestroy(&B));
+    PetscCall(VecDestroy(&y));
+    PetscCall(VecDestroy(&y2));
+  }
+#endif
 
   PetscCall(MatHasCongruentLayouts(A, &flg));
   if (flg) {

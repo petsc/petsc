@@ -222,7 +222,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
         PetscCall(VecDuplicate(diag, &true_diag));
         PetscCall(MatGetDiagonal(pc->pmat, true_diag));
         PetscCall(VecGetLocalSize(diag, &n));
-        PetscCall(VecGetArrayWrite(diag, &x2));
+        PetscCall(VecGetArray(diag, &x2));
         PetscCall(VecGetArrayRead(true_diag, &x)); // to make more general -todo
         for (PetscInt i = 0; i < n; i++) {
           if (PetscRealPart(x[i]) < 0.0) {
@@ -231,7 +231,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
           }
         }
         PetscCall(VecRestoreArrayRead(true_diag, &x));
-        PetscCall(VecRestoreArrayWrite(diag, &x2));
+        PetscCall(VecRestoreArray(diag, &x2));
         PetscCheck(!jac->useabs || !negflag, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Jacobi use_abs and l1 not compatible with negative diagonal");
         PetscCall(VecDestroy(&true_diag));
       }

@@ -130,6 +130,22 @@ __global__ void GetDiagonal_CSR(const PetscInt *row, const PetscInt *col, const 
   }
 }
 
+/* --------------------------------------------------------------------------
+   Shared __global__ kernel: sum the absolute values of each CSR row.
+   With compressed rows, cprow maps CSR row i to its row in the matrix.
+   -------------------------------------------------------------------------- */
+__global__ void GetRowSumAbs_CSR(const PetscInt *rowptr, const PetscScalar *val, const PetscInt *cprow, const PetscInt m, PetscScalar *sum)
+{
+  const size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i < (size_t)m) {
+    PetscReal s = 0.0;
+
+    for (PetscInt k = rowptr[i]; k < rowptr[i + 1]; k++) s += PetscAbsScalar(val[k]);
+    sum[cprow ? cprow[i] : (PetscInt)i] = s;
+  }
+}
+
 /* ==========================================================================
    MatSeqAIJCUSPARSE_CUPM<T, Policy>
 
@@ -540,6 +556,41 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     } else {
       PetscCall(MatGetDiagonal_SeqAIJ(A, diag));
     }
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  /* GetRowSumAbs: kernel-based sum of the absolute values of each CSR row */
+  static PetscErrorCode GetRowSumAbs(Mat A, Vec v) noexcept
+  {
+    PetscInt n;
+
+    PetscFunctionBegin;
+    PetscCheck(!A->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
+    PetscCall(VecGetLocalSize(v, &n));
+    PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
+    if (A->offloadmask == PETSC_OFFLOAD_BOTH || A->offloadmask == PETSC_OFFLOAD_GPU) {
+      MatStructType  *devstruct = (MatStructType *)A->spptr;
+      MultStructType *matstruct = (MultStructType *)devstruct->mat;
+      CsrMatrix      *mat       = (CsrMatrix *)matstruct->mat;
+      const PetscInt  m         = mat->num_rows;
+      const PetscInt *cprow     = matstruct->cprowIndices ? matstruct->cprowIndices->data().get() : nullptr;
+      PetscScalar    *varray;
+      cupmStream_t    stream;
+
+      PetscCheck(devstruct->format == (decltype(devstruct->format))Policy::storage_format_csr(), PETSC_COMM_SELF, PETSC_ERR_SUP, "Only CSR format supported");
+      if (n > 0) {
+        PetscCall(Policy::VecGetArrayWrite(v, &varray));
+        PetscCall(GetHandles_(&stream));
+        // compressed rows leave the empty rows unwritten by the kernel
+        if (matstruct->cprowIndices) PetscCallCUPM(cupmMemsetAsync(varray, 0, n * sizeof(*varray), stream));
+        if (m > 0) {
+          PetscCallCUPM(cupmLaunchKernel(GetRowSumAbs_CSR, (unsigned int)((m + 255) / 256), 256u, (size_t)0, stream, mat->row_offsets->data().get(), mat->values->data().get(), cprow, m, varray));
+          PetscCallCUPM(cupmGetLastError());
+        }
+        PetscCall(Policy::VecRestoreArrayWrite(v, &varray));
+        PetscCall(PetscLogGpuFlops(mat->num_entries));
+      }
+    } else PetscCall(MatGetRowSumAbs_SeqAIJ(A, v));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
