@@ -45,10 +45,10 @@ PetscErrorCode PCMGACycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
   for (i = 1; i < l; i++) {
     if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
     if (!transpose) {
-      if (matapp) PetscCall(MatMatInterpolateAdd(mglevels[i]->interpolate, mglevels[i - 1]->X, mglevels[i]->X, &mglevels[i]->X));
+      if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels[i], mglevels[i]->interpolate, mglevels[i - 1]->X, PETSC_TRUE));
       else PetscCall(MatInterpolateAdd(mglevels[i]->interpolate, mglevels[i - 1]->x, mglevels[i]->x, mglevels[i]->x));
     } else {
-      if (matapp) PetscCall(MatMatInterpolateAdd(mglevels[i]->restrct, mglevels[i - 1]->X, mglevels[i]->X, &mglevels[i]->X));
+      if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels[i], mglevels[i]->restrct, mglevels[i - 1]->X, PETSC_TRUE));
       else PetscCall(MatInterpolateAdd(mglevels[i]->restrct, mglevels[i - 1]->x, mglevels[i]->x, mglevels[i]->x));
     }
     if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));

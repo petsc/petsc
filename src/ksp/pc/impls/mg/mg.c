@@ -29,6 +29,40 @@ static PetscErrorCode PCMGCheckSmootherDownGuess_Private(PC pc, KSP smoothd, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* destroys the work blocks of PCMatApply(), and so the products they keep, so that the next application sets them up again */
+PetscErrorCode PCMGResetBlocks_Private(PC pc)
+{
+  PC_MG         *mg       = (PC_MG *)pc->data;
+  PC_MG_Levels **mglevels = mg->levels;
+  PetscInt       levels   = mg->nlevels;
+
+  PetscFunctionBegin;
+  if (mglevels == NULL || levels < 1) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatDestroy(&mglevels[levels - 1]->R));
+  PetscCall(MatDestroy(&mglevels[levels - 1]->W));
+  for (PetscInt i = 0; i < levels - 1; i++) {
+    PetscCall(MatDestroy(&mglevels[i]->R));
+    PetscCall(MatDestroy(&mglevels[i]->W));
+    PetscCall(MatDestroy(&mglevels[i]->B));
+    PetscCall(MatDestroy(&mglevels[i]->X));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* X = P Xc, or X += P Xc when add is PETSC_TRUE; goes through W when adding or on the finest level, as MatMatInterpolate() only keeps the
+   product on a block it created and X there belongs to the caller */
+PetscErrorCode PCMGMatInterpolate_Private(PC_MG_Levels *mglevels, Mat P, Mat Xc, PetscBool add)
+{
+  PetscFunctionBegin;
+  if (!add && mglevels->level < mglevels->levels - 1) PetscCall(MatMatInterpolate(P, Xc, &mglevels->X));
+  else {
+    PetscCall(MatMatInterpolate(P, Xc, &mglevels->W));
+    if (add) PetscCall(MatAXPY(mglevels->X, 1.0, mglevels->W, UNKNOWN_NONZERO_PATTERN));
+    else PetscCall(MatCopy(mglevels->W, mglevels->X, UNKNOWN_NONZERO_PATTERN));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool transpose, PetscBool matapp, PCRichardsonConvergedReason *reason)
 {
   PC_MG        *mg = (PC_MG *)pc->data;
@@ -101,7 +135,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     while (cycles--) PetscCall(PCMGMCycle_Private(pc, mglevelsin - 1, transpose, matapp, reason));
     if (mglevels->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels->eventinterprestrict, 0, 0, 0, 0));
     if (!transpose) {
-      if (matapp) PetscCall(MatMatInterpolateAdd(mglevels->interpolate, mgc->X, mglevels->X, &mglevels->X));
+      if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels, mglevels->interpolate, mgc->X, PETSC_TRUE));
       else PetscCall(MatInterpolateAdd(mglevels->interpolate, mgc->x, mglevels->x, mglevels->x));
     } else {
       PetscCall(MatInterpolateAdd(mglevels->restrct, mgc->x, mglevels->x, mglevels->x));
@@ -234,6 +268,7 @@ PetscErrorCode PCReset_MG(PC pc)
       PetscCall(VecDestroy(&mglevels[i]->b));
       PetscCall(VecDestroy(&mglevels[i]->x));
       PetscCall(MatDestroy(&mglevels[i + 1]->R));
+      PetscCall(MatDestroy(&mglevels[i + 1]->W));
       PetscCall(MatDestroy(&mglevels[i]->B));
       PetscCall(MatDestroy(&mglevels[i]->X));
       PetscCall(VecDestroy(&mglevels[i]->crx));
@@ -638,14 +673,7 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
     PetscCall(MatGetSize(mglevels[levels - 2]->X, NULL, &Xc));
     PetscCall(MatGetSize(mglevels[levels - 1]->B, NULL, &Bc));
     PetscCall(PetscObjectTypeCompare((PetscObject)mglevels[levels - 2]->X, ((PetscObject)mglevels[levels - 1]->X)->type_name, &flg));
-    if (Xc != Bc || !flg) {
-      PetscCall(MatDestroy(&mglevels[levels - 1]->R));
-      for (i = 0; i < levels - 1; i++) {
-        PetscCall(MatDestroy(&mglevels[i]->R));
-        PetscCall(MatDestroy(&mglevels[i]->B));
-        PetscCall(MatDestroy(&mglevels[i]->X));
-      }
-    }
+    if (Xc != Bc || !flg) PetscCall(PCMGResetBlocks_Private(pc));
   }
 
   if (mg->am == PC_MG_MULTIPLICATIVE) {
@@ -660,6 +688,24 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
     PetscCall(PCMGFCycle_Private(pc, mglevels, transpose, matapp));
   }
   if (mg->stageApply) PetscCall(PetscLogStagePop());
+  if (matapp && levels > 1 && mglevels[levels - 1]->W != NULL) {
+    /* bind the kept products that take the caller's X or B as input to W so they do not keep them alive; skipped when the type differs from
+       that of W, since rebinding would redo the symbolic phase */
+    Mat       W = mglevels[levels - 1]->W, R = mglevels[levels - 1]->R, Bc = mglevels[levels - 2]->B, in = NULL;
+    PetscBool flg;
+
+    if (R != NULL) PetscCall(MatProductGetMats(R, NULL, &in, NULL));
+    if (in == X) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)W, ((PetscObject)X)->type_name, &flg));
+      if (flg) PetscCall(MatProductReplaceMats(NULL, W, NULL, R));
+    }
+    in = NULL;
+    if (Bc != NULL) PetscCall(MatProductGetMats(Bc, NULL, &in, NULL));
+    if (in == B) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)W, ((PetscObject)B)->type_name, &flg));
+      if (flg) PetscCall(MatProductReplaceMats(NULL, W, NULL, Bc));
+    }
+  }
   if (!changeu && !changed) {
     if (matapp) {
       mglevels[levels - 1]->B = NULL;

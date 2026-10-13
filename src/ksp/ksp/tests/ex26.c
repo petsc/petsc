@@ -42,14 +42,36 @@ typedef struct {
 
 static PetscErrorCode FormJacobian_Grid(GridCtx *, Mat);
 
+/* Copies A into a new dense matrix of the same type, VecType, and layout, stored with a leading dimension larger by shift */
+static PetscErrorCode DuplicateWithLDA(Mat A, PetscInt shift, Mat *B)
+{
+  MatType  type;
+  VecType  vtype;
+  PetscInt m, n, M, N;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetType(A, &type));
+  PetscCall(MatGetVecType(A, &vtype));
+  PetscCall(MatGetLocalSize(A, &m, &n));
+  PetscCall(MatGetSize(A, &M, &N));
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
+  PetscCall(MatSetSizes(*B, m, n, M, N));
+  PetscCall(MatSetType(*B, type));
+  PetscCall(MatSetVecType(*B, vtype));
+  PetscCall(MatDenseSetLDA(*B, m + shift));
+  PetscCall(MatSetUp(*B));
+  PetscCall(MatCopy(A, *B, SAME_NONZERO_PATTERN));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1;
+  PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1, lda_shift = 0;
   PetscScalar one = 1.0;
-  Mat         A, B, X;
+  Mat         A, P = NULL, B, X;
   GridCtx     fine_ctx;
   KSP         ksp;
-  PetscBool   Brand = PETSC_FALSE, transpose = PETSC_FALSE, flg;
+  PetscBool   Brand = PETSC_FALSE, transpose = PETSC_FALSE, product = PETSC_FALSE, new_pattern = PETSC_FALSE, new_interpolation = PETSC_FALSE, check_copies = PETSC_FALSE, check_references = PETSC_FALSE, flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -63,6 +85,13 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &Ny, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-rand", &Brand, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-product_into_solution", &product, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-lda_shift", &lda_shift, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-new_pattern", &new_pattern, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-new_interpolation", &new_interpolation, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_copies", &check_copies, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_references", &check_references, NULL));
+  if (check_copies) PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n", fine_ctx.mx, fine_ctx.my));
 
   /* Set up distributed array for fine grid */
@@ -87,7 +116,9 @@ int main(int argc, char **argv)
 
   /* set options, then solve system */
   PetscCall(KSPSetFromOptions(ksp)); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
-  PetscCall(KSPSetOperators(ksp, A, A));
+  /* with -new_pattern the nonzero pattern of A changes after the first solve, while the preconditioner is built from an unchanged copy, so that PCSetUp() is not run again */
+  if (new_pattern) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &P));
+  PetscCall(KSPSetOperators(ksp, A, new_pattern ? P : A));
   PetscCall(KSPSolve(ksp, fine_ctx.b, fine_ctx.x));
   PetscCall(VecViewFromOptions(fine_ctx.x, NULL, "-debug"));
   PetscCall(KSPGetIterationNumber(ksp, &its));
@@ -114,6 +145,31 @@ int main(int argc, char **argv)
   }
   if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X));
   else PetscCall(KSPMatSolve(ksp, B, X));
+  if (check_copies) { /* the first solve sets the solver up, including the products it keeps, so a second solve with the same blocks runs on the device only */
+    PetscLogEvent event;
+
+    PetscCall(PetscLogEventRegister("SolveCheck", KSP_CLASSID, &event));
+    PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X));
+    else PetscCall(KSPMatSolve(ksp, B, X));
+    PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
+#if PetscDefined(HAVE_DEVICE)
+    {
+      PetscEventPerfInfo info;
+
+      PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
+      PetscCheck(info.GpuToCpuCount == 0 && info.CpuToGpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected copies in the second block solve: %g GPU to CPU (%g bytes) and %g CPU to GPU (%g bytes)", info.GpuToCpuCount, info.GpuToCpuSize, info.CpuToGpuCount,
+                 info.CpuToGpuSize);
+    }
+#endif
+  }
+  if (check_references) { /* the solver must not keep the blocks of the caller alive once the solve returns */
+    PetscInt nb, nx;
+
+    PetscCall(PetscObjectGetReference((PetscObject)B, &nb));
+    PetscCall(PetscObjectGetReference((PetscObject)X, &nx));
+    PetscCheck(nb == 1 && nx == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The solver keeps references to the blocks of the caller: %" PetscInt_FMT " to B and %" PetscInt_FMT " to X", nb, nx);
+  }
   PetscCall(MatViewFromOptions(X, NULL, "-debug"));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ksp, KSPPREONLY, &flg));
@@ -133,6 +189,89 @@ int main(int argc, char **argv)
     PetscCall(VecRestoreArrayRead(fine_ctx.x, &xx));
   }
 
+  if (lda_shift > 0) { /* solve again with the same blocks stored with a larger leading dimension, which the solver must handle with what it kept from the first solve */
+    Mat       B2, X2;
+    PetscReal norm, err;
+
+    PetscCall(DuplicateWithLDA(B, lda_shift, &B2));
+    PetscCall(DuplicateWithLDA(X, lda_shift, &X2));
+    PetscCall(MatZeroEntries(X2));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B2, X2));
+    else PetscCall(KSPMatSolve(ksp, B2, X2));
+    PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(X2, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution with a larger leading dimension has error %g relative to %g", (double)err, (double)norm);
+    PetscCall(MatDestroy(&B2));
+    PetscCall(MatDestroy(&X2));
+  }
+
+  if (new_pattern) { /* solve again after storing an explicit zero at a new location of A, which changes its nonzero pattern and the columns its rows couple to on other processes, but not the solution */
+    Mat       X2;
+    PetscInt  rstart, M;
+    PetscReal norm, err;
+
+    PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
+    PetscCall(MatGetSize(A, &M, NULL));
+    PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatSetValue(A, rstart, (rstart + M / 2) % M, 0.0, ADD_VALUES));
+    PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &X2));
+    PetscCall(MatZeroEntries(X2));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X2));
+    else PetscCall(KSPMatSolve(ksp, B, X2));
+    PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(X2, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution after the change of nonzero pattern has error %g relative to %g", (double)err, (double)norm);
+    PetscCall(MatDestroy(&X2));
+  }
+
+  if (new_interpolation) { /* solve again after replacing the finest interpolation and restriction by a copy with an explicit zero in a new off-process column */
+    PC        pc;
+    Mat       Pf, P2, X2;
+    PetscInt  nlevels, rstart, cend, N;
+    PetscReal norm, err;
+
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCMGGetLevels(pc, &nlevels));
+    PetscCall(PCMGGetInterpolation(pc, nlevels - 1, &Pf));
+    PetscCall(MatDuplicate(Pf, MAT_COPY_VALUES, &P2));
+    PetscCall(MatGetOwnershipRange(P2, &rstart, NULL));
+    PetscCall(MatGetOwnershipRangeColumn(P2, NULL, &cend));
+    PetscCall(MatGetSize(P2, NULL, &N));
+    PetscCall(MatSetOption(P2, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+    PetscCall(MatSetValue(P2, rstart, cend < N ? N - 1 : 0, 0.0, ADD_VALUES));
+    PetscCall(MatAssemblyBegin(P2, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(P2, MAT_FINAL_ASSEMBLY));
+    PetscCall(PCMGSetInterpolation(pc, nlevels - 1, P2));
+    PetscCall(PCMGSetRestriction(pc, nlevels - 1, P2));
+    PetscCall(MatDestroy(&P2));
+    PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &X2));
+    PetscCall(MatZeroEntries(X2));
+    if (transpose) PetscCall(KSPMatSolveTranspose(ksp, B, X2));
+    else PetscCall(KSPMatSolve(ksp, B, X2));
+    PetscCall(MatNorm(X, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(X2, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(X2, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution after replacing the interpolation has error %g relative to %g", (double)err, (double)norm);
+    PetscCall(MatDestroy(&X2));
+  }
+
+  if (product) { /* a dense matrix created by the caller can be the result of MatMatMult() with MAT_REUSE_MATRIX, so the solve must not leave a MatProduct on the block of solutions */
+    Mat       C;
+    PetscReal norm, err;
+
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+    PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &X));
+    PetscCall(MatNorm(C, NORM_FROBENIUS, &norm));
+    PetscCall(MatAXPY(C, -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(MatNorm(C, NORM_FROBENIUS, &err));
+    PetscCheck(err <= PETSC_SMALL * norm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Product into the block of solutions has error %g relative to %g", (double)err, (double)norm);
+    PetscCall(MatDestroy(&C));
+  }
+
   /* free data structures */
   PetscCall(VecDestroy(&fine_ctx.x));
   PetscCall(VecDestroy(&fine_ctx.b));
@@ -140,6 +279,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&fine_ctx.localX));
   PetscCall(VecDestroy(&fine_ctx.localF));
   PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&P));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&X));
   PetscCall(KSPDestroy(&ksp));
@@ -239,7 +379,7 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
     test:
       suffix: matcycles
       nsize: {{1 2}}
-      args: -ksp_view_final_residual -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+      args: -ksp_view_final_residual -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output} -product_into_solution -check_references
 
     test:
       suffix: matcycles_richardson
@@ -250,6 +390,117 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       suffix: matcycles_richardson_guess
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -ksp_initial_guess_nonzero -ksp_norm_type unpreconditioned -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    test:
+      # the products interpolating and restricting the blocks, and the block residual, are set up once per level and reused by the following applications
+      suffix: matcycles_product_reuse
+      nsize: 2
+      requires: defined(PETSC_USE_INFO)
+      args: -ksp_type richardson -ksp_max_it 3 -ksp_richardson_scale 0.9 -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7 -pc_mg_type {{additive multiplicative full kaskade}separate output} -info ex26info:mat
+      filter: grep -h "MatProduct API\|the supplied dense matrix" "ex26info.0" | sed -e "s/^\[0\] <[^>]*> [A-Za-z_]*(): //" | sort -b | uniq -c | sed -e "s/^ \{1,\}//"
+
+    test:
+      # a second solve after the nonzero pattern of the operator changes, the coarse operators are built from an unchanged copy
+      suffix: matcycles_new_pattern
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -pc_use_amat -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin both -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -new_pattern
+      output_file: output/ex26_matcycles_new_interpolation.out
+
+    test:
+      # a second solve after the finest interpolation and restriction are replaced by a matrix with an extra off-process column
+      suffix: matcycles_new_interpolation
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -new_interpolation
+
+    # a second block solve must not copy between host and device; PCJACOBI on the coarse level since PCLU factors on the host, and GPU-aware
+    # MPI in parallel, where MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE still computes the restrictions on the host
+    testset:
+      requires: cuda kokkos_kernels defined(PETSC_USE_LOG)
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densecuda -rhs_mat_vec_type kokkos -check_copies
+      output_file: output/ex26_matcycles_copies.out
+
+      test:
+        suffix: matcycles_kokkos_cuda_copies
+
+      test:
+        suffix: matcycles_kokkos_cuda_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
+
+    testset:
+      requires: cuda defined(PETSC_USE_LOG)
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -dm_mat_type aijcusparse -dm_vec_type cuda -rhs_mat_type densecuda -check_copies
+      output_file: output/ex26_matcycles_copies.out
+
+      test:
+        suffix: matcycles_cuda_copies
+
+      test:
+        suffix: matcycles_cuda_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
+
+    testset:
+      requires: hip kokkos_kernels defined(PETSC_USE_LOG)
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densehip -rhs_mat_vec_type kokkos -check_copies
+      output_file: output/ex26_matcycles_copies.out
+
+      test:
+        suffix: matcycles_kokkos_hip_copies
+
+      test:
+        suffix: matcycles_kokkos_hip_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
+
+    testset:
+      requires: hip defined(PETSC_USE_LOG)
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -dm_mat_type aijhipsparse -dm_vec_type hip -rhs_mat_type densehip -check_copies
+      output_file: output/ex26_matcycles_copies.out
+
+      test:
+        suffix: matcycles_hip_copies
+
+      test:
+        suffix: matcycles_hip_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
+
+    test:
+      # a second solve with blocks of a larger leading dimension
+      suffix: matcycles_lda
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}shared output} -lda_shift 3
+
+    # the same on the device, solving the whole block at once so that the kept products get the new leading dimension
+    testset:
+      nsize: 2
+      args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -lda_shift 3
+      output_file: output/ex26_matcycles_lda.out
+
+      test:
+        suffix: matcycles_lda_kokkos_cuda
+        requires: cuda kokkos_kernels
+        args: -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densecuda -rhs_mat_vec_type kokkos
+
+      test:
+        suffix: matcycles_lda_cuda
+        requires: cuda
+        args: -dm_mat_type aijcusparse -dm_vec_type cuda -rhs_mat_type densecuda
+
+      test:
+        suffix: matcycles_lda_kokkos_hip
+        requires: hip kokkos_kernels
+        args: -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densehip -rhs_mat_vec_type kokkos
+
+      test:
+        suffix: matcycles_lda_hip
+        requires: hip
+        args: -dm_mat_type aijhipsparse -dm_vec_type hip -rhs_mat_type densehip
 
     test:
       suffix: matcycles_richardson_transpose

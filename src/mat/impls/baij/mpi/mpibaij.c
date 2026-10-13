@@ -2855,11 +2855,14 @@ static PetscErrorCode MatMatMultNumeric_MPIBAIJ_MPIDense(Mat A, Mat B, Mat C)
   Mat_MPIDense     *cdense = (Mat_MPIDense *)C->data;
   Mat               workB;
   MPIBAIJ_MPIDense *data;
+  PetscInt          bs;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   data = (MPIBAIJ_MPIDense *)C->product->data;
+  PetscCall(MatGetBlockSize(A, &bs));
+  PetscCall(MatMPIDenseScatterUpdateLDA_Private(baij->Mvctx, bs, B, C, &data->scatter));
   if (!cdense->A->product) {
     PetscCall(MatProductCreateWithMat(baij->A, bdense->A, NULL, cdense->A));
     PetscCall(MatProductSetType(cdense->A, MATPRODUCT_AB));

@@ -1,0 +1,6 @@
+3 Calling MatProduct API with MAT_INITIAL_MATRIX and product type AB
+2 Calling MatProduct API with MAT_INITIAL_MATRIX and product type AtB
+17 Calling MatProduct API with MAT_REUSE_MATRIX with product present and product type AB
+18 Calling MatProduct API with MAT_REUSE_MATRIX with product present and product type AtB
+10 Reusing the AB product attached to the supplied dense matrix
+2 Setting up the AB product into the supplied dense matrix

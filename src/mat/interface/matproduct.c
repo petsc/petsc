@@ -849,6 +849,7 @@ PetscErrorCode MatProductSymbolic(Mat mat)
     PetscCheck(!missing, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Unspecified symbolic phase for product %s. The product is not supported", errstr);
     PetscCheck(mat->product, PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Missing struct after symbolic phase for product %s", errstr);
   }
+  PetscCall(MatGetNonzeroState(mat->product->A, &mat->product->Anonzerostate));
 #if PetscDefined(HAVE_DEVICE)
   PetscBool bindingpropagates;
   bindingpropagates = (PetscBool)((A->boundtocpu && A->bindingpropagates) || (B->boundtocpu && B->bindingpropagates));
