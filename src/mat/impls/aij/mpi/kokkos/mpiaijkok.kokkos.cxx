@@ -1769,6 +1769,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
   B->ops->destroy               = MatDestroy_MPIAIJKokkos;
   B->ops->shift                 = MatShift_MPIAIJKokkos;
   B->ops->norm                  = MatNorm_MPIAIJKokkos;
+  B->ops->getrowsumabs          = MatGetRowSumAbs_AIJKokkos;
   B->ops->getcurrentmemtype     = MatGetCurrentMemType_MPIAIJ;
   B->ops->bindtocpu             = MatBindToCPU_SeqAIJKokkos;
 
