@@ -762,8 +762,8 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A, Mat *B)
   Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
   const PetscInt *ranges;
   MPI_Comm        acomm, bcomm;
-  MPI_Group       agroup, bgroup;
-  PetscMPIInt     i, size, nranks, *ranks;
+  PetscInt        m, N;
+  PetscMPIInt     i, size, nranks;
 
   PetscFunctionBegin;
   *B = NULL;
@@ -779,26 +779,17 @@ static PetscErrorCode MatMPIAdjCreateNonemptySubcommMat_MPIAdj(Mat A, Mat *B)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(PetscMalloc1(nranks, &ranks));
-  for (i = 0, nranks = 0; i < size; i++) {
-    if (ranges[i + 1] - ranges[i] > 0) ranks[nranks++] = i;
-  }
-  PetscCallMPI(MPI_Comm_group(acomm, &agroup));
-  PetscCallMPI(MPI_Group_incl(agroup, nranks, ranks, &bgroup));
-  PetscCall(PetscFree(ranks));
-  PetscCallMPI(MPI_Comm_create(acomm, bgroup, &bcomm));
-  PetscCallMPI(MPI_Group_free(&agroup));
-  PetscCallMPI(MPI_Group_free(&bgroup));
+  PetscCall(MatGetLocalSize(A, &m, NULL));
+  PetscCall(MatGetSize(A, NULL, &N));
+  PetscCall(PetscCommCreateNonempty(acomm, ranges, &bcomm));
   if (bcomm != MPI_COMM_NULL) {
-    PetscInt    m, N;
     Mat_MPIAdj *b;
-    PetscCall(MatGetLocalSize(A, &m, NULL));
-    PetscCall(MatGetSize(A, NULL, &N));
+
     PetscCall(MatCreateMPIAdj(bcomm, m, N, a->i, a->j, a->values, B));
     b          = (Mat_MPIAdj *)(*B)->data;
     b->freeaij = PETSC_FALSE;
-    PetscCallMPI(MPI_Comm_free(&bcomm));
   }
+  PetscCall(PetscCommDestroyNonempty(acomm, &bcomm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
