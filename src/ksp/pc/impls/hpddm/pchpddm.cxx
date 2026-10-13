@@ -766,7 +766,7 @@ static PetscErrorCode PCSetUp_HPDDMShell(PC pc)
     PetscCall(VecDuplicateVecs(x, 2, &ctx->v[1]));
     PetscCall(VecDestroy(&x));
   }
-  std::fill_n(ctx->V, 3, nullptr);
+  for (PetscInt i = 0; i < 3; ++i) PetscCall(MatDestroy(ctx->V + i));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
