@@ -2732,6 +2732,13 @@ static PetscErrorCode MatGetDiagonal_SeqAIJHIPSPARSE(Mat A, Vec diag)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetRowSumAbs_SeqAIJHIPSPARSE(Mat A, Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJHIPSPARSE_CUPM_t::GetRowSumAbs(A, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDiagonalScale_SeqAIJHIPSPARSE(Mat A, Vec ll, Vec rr)
 {
   PetscFunctionBegin;
@@ -2767,6 +2774,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
 
     A->ops->scale                     = MatScale_SeqAIJ;
     A->ops->getdiagonal               = MatGetDiagonal_SeqAIJ;
+    A->ops->getrowsumabs              = MatGetRowSumAbs_SeqAIJ;
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJ;
     A->ops->axpy                      = MatAXPY_SeqAIJ;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJ;
@@ -2788,6 +2796,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
   } else {
     A->ops->scale                     = MatScale_SeqAIJHIPSPARSE;
     A->ops->getdiagonal               = MatGetDiagonal_SeqAIJHIPSPARSE;
+    A->ops->getrowsumabs              = MatGetRowSumAbs_SeqAIJHIPSPARSE;
     A->ops->diagonalscale             = MatDiagonalScale_SeqAIJHIPSPARSE;
     A->ops->axpy                      = MatAXPY_SeqAIJHIPSPARSE;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJHIPSPARSE;
