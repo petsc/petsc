@@ -726,16 +726,20 @@ static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
                    PCHPDDMCoarseCorrectionTypes[data->correction], ((PetscObject)ksp)->type_name, ((PetscObject)pc)->prefix ? ((PetscObject)pc)->prefix : "", PCHPDDMCoarseCorrectionTypes[data->correction], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_BALANCED]);
       }
       for (PetscInt n = 0; n < data->N; ++n) {
-        if (data->levels[n]->pc) {
-          PetscCall(PetscObjectTypeCompare((PetscObject)data->levels[n]->pc, PCASM, &flg));
+        PC inner = data->levels[n]->pc;
+
+        /* with a single level, no inner PCSHELL is used; inspect directly the PC attached to the KSP */
+        if (!inner && data->N == 1) PetscCall(KSPGetPC(data->levels[n]->ksp, &inner));
+        if (inner) {
+          PetscCall(PetscObjectTypeCompare((PetscObject)inner, PCASM, &flg));
           if (flg) {
             PCASMType type;
 
-            PetscCall(PCASMGetType(data->levels[n]->pc, &type));
-            if (type == PC_ASM_RESTRICT || type == PC_ASM_INTERPOLATE) {
-              PetscCall(PetscOptionsHasName(((PetscObject)data->levels[n]->pc)->options, ((PetscObject)data->levels[n]->pc)->prefix, "-pc_asm_type", &flg));
-              PetscCheck(flg, PetscObjectComm((PetscObject)data->levels[n]->pc), PETSC_ERR_ARG_INCOMP, "PCASMType %s is known to be not symmetric, but KSPType %s requires a symmetric PC, if you insist on using this configuration, use the additional option -%spc_asm_type %s, or alternatively, switch to a symmetric PCASMType such as %s", PCASMTypes[type],
-                         ((PetscObject)ksp)->type_name, ((PetscObject)data->levels[n]->pc)->prefix, PCASMTypes[type], PCASMTypes[PC_ASM_BASIC]);
+            PetscCall(PCASMGetType(inner, &type));
+            if (type == PC_ASM_RESTRICT || type == PC_ASM_INTERPOLATE || type == PC_ASM_WEIGHTED) {
+              PetscCall(PetscOptionsHasName(((PetscObject)inner)->options, ((PetscObject)inner)->prefix, "-pc_asm_type", &flg));
+              PetscCheck(flg, PetscObjectComm((PetscObject)inner), PETSC_ERR_ARG_INCOMP, "PCASMType %s is known to be not symmetric, but KSPType %s requires a symmetric PC, if you insist on using this configuration, use the additional option -%spc_asm_type %s, or alternatively, switch to a symmetric PCASMType such as %s", PCASMTypes[type],
+                         ((PetscObject)ksp)->type_name, ((PetscObject)inner)->prefix, PCASMTypes[type], PCASMTypes[PC_ASM_BASIC]);
             }
           }
         }
