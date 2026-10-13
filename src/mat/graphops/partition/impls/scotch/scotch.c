@@ -267,10 +267,11 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   PetscBool                 flg, distributed;
   PetscBool                 proc_weight_flg;
-  PetscInt                  i, j, p, bs = 1, nold;
+  PetscInt                  i, j, p, bs = 1, nold, nparts = part->n;
   PetscInt                 *NDorder = NULL;
+  PetscInt                 *locals, *velotab, *veloloctab, *edloloctab;
+  SCOTCH_Num                vertlocnbr, edgelocnbr;
   PetscReal                *vwgttab, deltval;
-  SCOTCH_Num               *locals, *velotab, *veloloctab, *edloloctab, vertlocnbr, edgelocnbr, nparts = part->n;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)part, &pcomm));
@@ -339,7 +340,7 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
           for (j = 0; j < nparts; j++) vwgttab[j] /= deltval;
         }
       }
-      for (i = 0; i < nparts; i++) velotab[i] = (SCOTCH_Num)(vwgttab[i] + 0.5);
+      for (i = 0; i < nparts; i++) velotab[i] = (PetscInt)(vwgttab[i] + 0.5);
       PetscCall(PetscFree(vwgttab));
     }
 
@@ -374,10 +375,10 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
       PetscCallExternal(SCOTCH_dgraphMapInit, &grafdat, &mappdat, &archdat, locals);
       PetscCallExternal(SCOTCH_dgraphMapCompute, &grafdat, &mappdat, &stradat);
 
-      SCOTCH_dgraphMapExit(&grafdat, &mappdat);
-      SCOTCH_archExit(&archdat);
-      SCOTCH_stratExit(&stradat);
-      SCOTCH_dgraphExit(&grafdat);
+      PetscCallExternalVoid("SCOTCH_dgraphMapExit", SCOTCH_dgraphMapExit(&grafdat, &mappdat));
+      PetscCallExternalVoid("SCOTCH_archExit", SCOTCH_archExit(&archdat));
+      PetscCallExternalVoid("SCOTCH_stratExit", SCOTCH_stratExit(&stradat));
+      PetscCallExternalVoid("SCOTCH_dgraphExit", SCOTCH_dgraphExit(&grafdat));
 
     } else if (rank == p) {
       SCOTCH_Graph grafdat;
@@ -393,12 +394,12 @@ static PetscErrorCode MatPartitioningApply_PTScotch_Private(MatPartitioning part
         PetscCallExternal(SCOTCH_archInit, &archdat);
         PetscCallExternal(SCOTCH_archCmpltw, &archdat, nparts, velotab);
         PetscCallExternal(SCOTCH_graphMap, &grafdat, &archdat, &stradat, locals);
-        SCOTCH_archExit(&archdat);
+        PetscCallExternalVoid("SCOTCH_archExit", SCOTCH_archExit(&archdat));
       } else {
         PetscCallExternal(SCOTCH_graphPart, &grafdat, nparts, &stradat, locals);
       }
-      SCOTCH_stratExit(&stradat);
-      SCOTCH_graphExit(&grafdat);
+      PetscCallExternalVoid("SCOTCH_stratExit", SCOTCH_stratExit(&stradat));
+      PetscCallExternalVoid("SCOTCH_graphExit", SCOTCH_graphExit(&grafdat));
     }
 
     PetscCall(PetscFree(velotab));

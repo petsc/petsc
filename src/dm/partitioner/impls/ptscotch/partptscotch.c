@@ -26,11 +26,6 @@ typedef struct {
 
 #if PetscDefined(HAVE_PTSCOTCH)
 
-  #define PetscCallPTSCOTCH(...) \
-    do { \
-      PetscCheck(!(__VA_ARGS__), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error calling PT-Scotch library"); \
-    } while (0)
-
 static int PTScotch_Strategy(PetscInt strategy)
 {
   switch (strategy) {
@@ -79,20 +74,20 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &flg, NULL));
     if (!flg) velotab = NULL;
   }
-  PetscCallPTSCOTCH(SCOTCH_graphInit(&grafdat));
-  PetscCallPTSCOTCH(SCOTCH_graphBuild(&grafdat, 0, vertnbr, xadj, xadj + 1, velotab, NULL, edgenbr, adjncy, edlotab));
-  PetscCallPTSCOTCH(SCOTCH_stratInit(&stradat));
-  PetscCallPTSCOTCH(SCOTCH_stratGraphMapBuild(&stradat, flagval, nparts, kbalval));
-  PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
+  PetscCallExternal(SCOTCH_graphInit, &grafdat);
+  PetscCallExternal(SCOTCH_graphBuild, &grafdat, 0, vertnbr, xadj, xadj + 1, velotab, NULL, edgenbr, adjncy, edlotab);
+  PetscCallExternal(SCOTCH_stratInit, &stradat);
+  PetscCallExternal(SCOTCH_stratGraphMapBuild, &stradat, flagval, nparts, kbalval);
+  PetscCallExternal(SCOTCH_archInit, &archdat);
   if (tpart) {
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, PetscMin(nparts, n), tpart));
+    PetscCallExternal(SCOTCH_archCmpltw, &archdat, PetscMin(nparts, n), tpart);
   } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, PetscMin(nparts, n)));
+    PetscCallExternal(SCOTCH_archCmplt, &archdat, PetscMin(nparts, n));
   }
-  PetscCallPTSCOTCH(SCOTCH_graphMap(&grafdat, &archdat, &stradat, part));
-  SCOTCH_archExit(&archdat);
-  SCOTCH_stratExit(&stradat);
-  SCOTCH_graphExit(&grafdat);
+  PetscCallExternal(SCOTCH_graphMap, &grafdat, &archdat, &stradat, part);
+  PetscCallExternalVoid("SCOTCH_archExit", SCOTCH_archExit(&archdat));
+  PetscCallExternalVoid("SCOTCH_stratExit", SCOTCH_stratExit(&stradat));
+  PetscCallExternalVoid("SCOTCH_graphExit", SCOTCH_graphExit(&grafdat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -127,22 +122,22 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
   vertlocnbr = vtxdist[proclocnum + 1] - vtxdist[proclocnum];
   edgelocnbr = xadj[vertlocnbr];
 
-  PetscCallPTSCOTCH(SCOTCH_dgraphInit(&grafdat, comm));
-  PetscCallPTSCOTCH(SCOTCH_dgraphBuild(&grafdat, 0, vertlocnbr, vertlocnbr, xadj, xadj + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adjncy, NULL, edloloctab));
-  PetscCallPTSCOTCH(SCOTCH_stratInit(&stradat));
-  PetscCallPTSCOTCH(SCOTCH_stratDgraphMapBuild(&stradat, flagval, procglbnbr, nparts, kbalval));
-  PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
+  PetscCallExternal(SCOTCH_dgraphInit, &grafdat, comm);
+  PetscCallExternal(SCOTCH_dgraphBuild, &grafdat, 0, vertlocnbr, vertlocnbr, xadj, xadj + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adjncy, NULL, edloloctab);
+  PetscCallExternal(SCOTCH_stratInit, &stradat);
+  PetscCallExternal(SCOTCH_stratDgraphMapBuild, &stradat, flagval, procglbnbr, nparts, kbalval);
+  PetscCallExternal(SCOTCH_archInit, &archdat);
   if (tpart) { /* target partition weights */
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, nparts, tpart));
+    PetscCallExternal(SCOTCH_archCmpltw, &archdat, nparts, tpart);
   } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, nparts));
+    PetscCallExternal(SCOTCH_archCmplt, &archdat, nparts);
   }
-  PetscCallPTSCOTCH(SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, part));
-  PetscCallPTSCOTCH(SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat));
-  SCOTCH_dgraphMapExit(&grafdat, &mappdat);
-  SCOTCH_archExit(&archdat);
-  SCOTCH_stratExit(&stradat);
-  SCOTCH_dgraphExit(&grafdat);
+  PetscCallExternal(SCOTCH_dgraphMapInit, &grafdat, &mappdat, &archdat, part);
+  PetscCallExternal(SCOTCH_dgraphMapCompute, &grafdat, &mappdat, &stradat);
+  PetscCallExternalVoid("SCOTCH_dgraphMapExit", SCOTCH_dgraphMapExit(&grafdat, &mappdat));
+  PetscCallExternalVoid("SCOTCH_archExit", SCOTCH_archExit(&archdat));
+  PetscCallExternalVoid("SCOTCH_stratExit", SCOTCH_stratExit(&stradat));
+  PetscCallExternalVoid("SCOTCH_dgraphExit", SCOTCH_dgraphExit(&grafdat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
