@@ -68,6 +68,7 @@
 - Add support for `MatZeroRows()` and `MatZeroRowsColumns()` with a nonzero diagonal value on a `MATIS` whose local matrix does not implement `MatSetValues()`, such as `MATSHELL`
 - Change `MatSetValuesCOO()` for `MATAIJ` and its device subtypes to generate an error when the nonzero pattern has changed since `MatSetPreallocationCOO()`, for example because `MatSetValues()` inserted a new nonzero; values were previously written into wrong locations in such a sequence of events
 - Change `MatAXPY()` with `DIFFERENT_NONZERO_PATTERN` for `MATSEQAIJ` and `MATMPIAIJ` to add in place when the nonzeros of `X` are a subset of those of `Y`, keeping the nonzero pattern and nonzero state of `Y`, as well as the options that survive assembly, such as `MAT_SYMMETRY_ETERNAL`
+- Add `MatGetRowSumAbs()` for `MATHYPRE`, on the host and the device, and device implementations of `MatGetRowSumAbs()` for `MATAIJCUSPARSE`, `MATAIJHIPSPARSE`, and `MATAIJKOKKOS`; previously the AIJ device types copied the matrix values to the host
 
 ```{rubric} MatCoarsen:
 ```

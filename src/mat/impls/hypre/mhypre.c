@@ -2392,6 +2392,37 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 19, 0)
+static PetscErrorCode MatGetRowSumAbs_HYPRE(Mat A, Vec v)
+{
+  hypre_ParCSRMatrix  *parcsr;
+  HYPRE_Complex       *a;
+  HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
+  PetscInt             n;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
+  PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
+  #if PetscDefined(HAVE_HYPRE_DEVICE)
+  mem = hypre_ParCSRMatrixMemoryLocation(parcsr);
+  #endif
+  /* both hypre calls below accumulate with "add", so the vector must start at zero */
+  PetscCall(VecSet(v, 0.0));
+  if (mem != HYPRE_MEMORY_HOST) {
+    PetscMemType mtype;
+
+    PetscCall(VecGetArrayAndMemType(v, (PetscScalar **)&a, &mtype));
+    PetscCheck(PetscMemTypeDevice(mtype), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vector must provide device memory for a MATHYPRE matrix on the device");
+  } else PetscCall(VecGetArray(v, (PetscScalar **)&a));
+  hypre_CSRMatrixComputeRowSum(hypre_ParCSRMatrixDiag(parcsr), NULL, NULL, a, 1, 1.0, "add");
+  hypre_CSRMatrixComputeRowSum(hypre_ParCSRMatrixOffd(parcsr), NULL, NULL, a, 1, 1.0, "add");
+  if (mem != HYPRE_MEMORY_HOST) PetscCall(VecRestoreArrayAndMemType(v, (PetscScalar **)&a));
+  else PetscCall(VecRestoreArray(v, (PetscScalar **)&a));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+#endif
+
 #include <petscblaslapack.h>
 
 static PetscErrorCode MatAXPY_HYPRE(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -2605,6 +2636,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->axpy                  = MatAXPY_HYPRE;
   B->ops->productsetfromoptions = MatProductSetFromOptions_HYPRE;
   B->ops->getcurrentmemtype     = MatGetCurrentMemType_HYPRE;
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 19, 0)
+  B->ops->getrowsumabs = MatGetRowSumAbs_HYPRE;
+#endif
 #if PetscDefined(HAVE_HYPRE_DEVICE)
   B->ops->bindtocpu = MatBindToCPU_HYPRE;
   /* Get hypre's default memory location. Users can control this using the corresponding HYPRE_SetMemoryLocation API */
