@@ -376,13 +376,13 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 . nsubspaces      - the number of discretisation subspaces (e.g. fields)
 . dms             - array of length `nsubspaces` of `DM`s, one per subspace
 . bs              - array of length `nsubspaces` giving the block size of each subspace
-. nodesPerCell    - array of length `nsubspaces` giving the number of nodes per cell for each subspace
-. cellNodeMap     - array of length `nsubspaces`; entry `i` is a cell-to-node map for subspace `i`
+. dofsPerCell     - array of length `nsubspaces` giving the number of DoFs per cell for each subspace
+. cellDofMap      - array of length `nsubspaces`; entry `i` is a cell-to-DoF map for subspace `i`
 . subspaceOffsets - array of length `nsubspaces + 1` giving the starting global dof offset of each subspace
 . numGhostBcs     - number of ghost (off-process) boundary-condition dofs
-. ghostBcNodes    - array of length `numGhostBcs` of the ghost boundary-condition dof indices
+. ghostBcDofs     - array of length `numGhostBcs` of the ghost boundary-condition dof indices
 . numGlobalBcs    - number of global boundary-condition dofs
-- globalBcNodes   - array of length `numGlobalBcs` of the global boundary-condition dof indices
+- globalBcDofs    - array of length `numGlobalBcs` of the global boundary-condition dof indices
 
   Level: advanced
 
@@ -391,7 +391,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 
 .seealso: [](ch_snes), `SNESPATCH`, `PCPATCH`, `PCPatchSetDiscretisationInfo()`, `SNESPatchSetComputeOperator()`, `SNESPatchSetComputeFunction()`
 @*/
-PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt nodesPerCell[], const PetscInt **cellNodeMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcNodes[], PetscInt numGlobalBcs, const PetscInt globalBcNodes[])
+PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM dms[], PetscInt bs[], PetscInt dofsPerCell[], const PetscInt **cellDofMap, const PetscInt subspaceOffsets[], PetscInt numGhostBcs, const PetscInt ghostBcDofs[], PetscInt numGlobalBcs, const PetscInt globalBcDofs[])
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
   DM          dm;
@@ -400,7 +400,7 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
   PetscCall(SNESGetDM(snes, &dm));
   PetscCheck(dm, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch SNES");
   PetscCall(PCSetDM(patch->pc, dm));
-  PetscCall(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, nodesPerCell, cellNodeMap, subspaceOffsets, numGhostBcs, ghostBcNodes, numGlobalBcs, globalBcNodes));
+  PetscCall(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, dofsPerCell, cellDofMap, subspaceOffsets, numGhostBcs, ghostBcDofs, numGlobalBcs, globalBcDofs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
