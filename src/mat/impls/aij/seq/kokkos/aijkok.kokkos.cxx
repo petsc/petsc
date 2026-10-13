@@ -1369,6 +1369,15 @@ PetscErrorCode MatSeqAIJKokkosGetFrobeniusSquared_Private(Mat A, PetscReal *sum)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// sum_j |a_ij| over row i of the CSR matrix (ai, aa), computed by the team t
+KOKKOS_INLINE_FUNCTION static PetscReal RowAbsSum_Private(const KokkosTeamMemberType &t, const MatRowMapKokkosView &ai, const MatScalarKokkosView &aa, PetscInt i)
+{
+  PetscReal sum = 0.0;
+
+  Kokkos::parallel_reduce(Kokkos::TeamThreadRange(t, ai(i), ai(i + 1)), [&](PetscInt k, PetscReal &s) { s += PetscAbsScalar(aa(k)); }, sum);
+  return sum;
+}
+
 // Max over rows i of sum_j |A_ij| + sum_j |B_ij|; B is optional and, if given, has the same number of rows as A
 PetscErrorCode MatSeqAIJKokkosGetMaxRowAbsSum_Private(Mat A, Mat B, PetscReal *nrm)
 {
@@ -1382,23 +1391,23 @@ PetscErrorCode MatSeqAIJKokkosGetMaxRowAbsSum_Private(Mat A, Mat B, PetscReal *n
   *nrm = 0.0;
   if (!m) PetscFunctionReturn(PETSC_SUCCESS); // the Max reducer of an empty range is not zero
   PetscCall(MatSeqAIJKokkosSyncDevice(A));
-  if (B) PetscCall(MatSeqAIJKokkosSyncDevice(B));
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  bijkok = B ? static_cast<Mat_SeqAIJKokkos *>(B->spptr) : aijkok;
   Aa     = aijkok->a_dual.view_device();
   Ai     = aijkok->i_dual.view_device();
-  Ba     = bijkok->a_dual.view_device();
-  Bi     = bijkok->i_dual.view_device();
+  if (B) {
+    PetscCall(MatSeqAIJKokkosSyncDevice(B));
+    bijkok = static_cast<Mat_SeqAIJKokkos *>(B->spptr);
+    Ba     = bijkok->a_dual.view_device();
+    Bi     = bijkok->i_dual.view_device();
+  }
   PetscCallCXX(Kokkos::parallel_reduce(
     "MatNorm_Infinity", Kokkos::TeamPolicy<>(PetscGetKokkosExecutionSpace(), m, Kokkos::AUTO()),
     KOKKOS_LAMBDA(const KokkosTeamMemberType &t, PetscReal &update) {
-      PetscInt  i    = t.league_rank(); // row i
-      PetscReal sumA = 0.0, sumB = 0.0;
+      PetscInt  i   = t.league_rank(); // row i
+      PetscReal sum = RowAbsSum_Private(t, Ai, Aa, i) + (hasB ? RowAbsSum_Private(t, Bi, Ba, i) : 0.0);
 
-      Kokkos::parallel_reduce(Kokkos::TeamThreadRange(t, Ai(i), Ai(i + 1)), [&](PetscInt k, PetscReal &s) { s += PetscAbsScalar(Aa(k)); }, sumA);
-      if (hasB) Kokkos::parallel_reduce(Kokkos::TeamThreadRange(t, Bi(i), Bi(i + 1)), [&](PetscInt k, PetscReal &s) { s += PetscAbsScalar(Ba(k)); }, sumB);
       Kokkos::single(Kokkos::PerTeam(t), [&]() {
-        if (sumA + sumB > update) update = sumA + sumB;
+        if (sum > update) update = sum;
       });
     },
     Kokkos::Max<PetscReal>(*nrm)));
