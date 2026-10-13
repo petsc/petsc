@@ -1,4 +1,5 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
+#include <petsc/private/matimpl.h>
 
 #if PetscDefined(HAVE_PTSCOTCH)
 EXTERN_C_BEGIN
@@ -26,11 +27,6 @@ typedef struct {
 
 #if PetscDefined(HAVE_PTSCOTCH)
 
-  #define PetscCallPTSCOTCH(...) \
-    do { \
-      PetscCheck(!(__VA_ARGS__), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error calling PT-Scotch library"); \
-    } while (0)
-
 static int PTScotch_Strategy(PetscInt strategy)
 {
   switch (strategy) {
@@ -53,97 +49,6 @@ static int PTScotch_Strategy(PetscInt strategy)
   default:
     return SCOTCH_STRATDEFAULT;
   }
-}
-
-static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalance, SCOTCH_Num n, SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[])
-{
-  SCOTCH_Arch  archdat;
-  SCOTCH_Graph grafdat;
-  SCOTCH_Strat stradat;
-  SCOTCH_Num   vertnbr = n;
-  SCOTCH_Num   edgenbr = xadj[n];
-  SCOTCH_Num  *velotab = vtxwgt;
-  SCOTCH_Num  *edlotab = adjwgt;
-  SCOTCH_Num   flagval = strategy;
-  double       kbalval = imbalance;
-
-  PetscFunctionBegin;
-  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
-  {
-    PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject(PETSC_COMM_SELF, NULL, "-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
-    /*
-       Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
-       has already been checked in PetscPartitionerSetFromOptions().
-    */
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &flg, NULL));
-    if (!flg) velotab = NULL;
-  }
-  PetscCallPTSCOTCH(SCOTCH_graphInit(&grafdat));
-  PetscCallPTSCOTCH(SCOTCH_graphBuild(&grafdat, 0, vertnbr, xadj, xadj + 1, velotab, NULL, edgenbr, adjncy, edlotab));
-  PetscCallPTSCOTCH(SCOTCH_stratInit(&stradat));
-  PetscCallPTSCOTCH(SCOTCH_stratGraphMapBuild(&stradat, flagval, nparts, kbalval));
-  PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
-  if (tpart) {
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, PetscMin(nparts, n), tpart));
-  } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, PetscMin(nparts, n)));
-  }
-  PetscCallPTSCOTCH(SCOTCH_graphMap(&grafdat, &archdat, &stradat, part));
-  SCOTCH_archExit(&archdat);
-  SCOTCH_stratExit(&stradat);
-  SCOTCH_graphExit(&grafdat);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalance, SCOTCH_Num vtxdist[], SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[], MPI_Comm comm)
-{
-  PetscMPIInt     procglbnbr;
-  PetscMPIInt     proclocnum;
-  SCOTCH_Arch     archdat;
-  SCOTCH_Dgraph   grafdat;
-  SCOTCH_Dmapping mappdat;
-  SCOTCH_Strat    stradat;
-  SCOTCH_Num      vertlocnbr;
-  SCOTCH_Num      edgelocnbr;
-  SCOTCH_Num     *veloloctab = vtxwgt;
-  SCOTCH_Num     *edloloctab = adjwgt;
-  SCOTCH_Num      flagval    = strategy;
-  double          kbalval    = imbalance;
-
-  PetscFunctionBegin;
-  {
-    PetscBool flg = PETSC_TRUE;
-    PetscCall(PetscOptionsDeprecatedNoObject(comm, NULL, "-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
-    /*
-       Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
-       has already been checked in PetscPartitionerSetFromOptions().
-    */
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &flg, NULL));
-    if (!flg) veloloctab = NULL;
-  }
-  PetscCallMPI(MPI_Comm_size(comm, &procglbnbr));
-  PetscCallMPI(MPI_Comm_rank(comm, &proclocnum));
-  vertlocnbr = vtxdist[proclocnum + 1] - vtxdist[proclocnum];
-  edgelocnbr = xadj[vertlocnbr];
-
-  PetscCallPTSCOTCH(SCOTCH_dgraphInit(&grafdat, comm));
-  PetscCallPTSCOTCH(SCOTCH_dgraphBuild(&grafdat, 0, vertlocnbr, vertlocnbr, xadj, xadj + 1, veloloctab, NULL, edgelocnbr, edgelocnbr, adjncy, NULL, edloloctab));
-  PetscCallPTSCOTCH(SCOTCH_stratInit(&stradat));
-  PetscCallPTSCOTCH(SCOTCH_stratDgraphMapBuild(&stradat, flagval, procglbnbr, nparts, kbalval));
-  PetscCallPTSCOTCH(SCOTCH_archInit(&archdat));
-  if (tpart) { /* target partition weights */
-    PetscCallPTSCOTCH(SCOTCH_archCmpltw(&archdat, nparts, tpart));
-  } else {
-    PetscCallPTSCOTCH(SCOTCH_archCmplt(&archdat, nparts));
-  }
-  PetscCallPTSCOTCH(SCOTCH_dgraphMapInit(&grafdat, &mappdat, &archdat, part));
-  PetscCallPTSCOTCH(SCOTCH_dgraphMapCompute(&grafdat, &mappdat, &stradat));
-  SCOTCH_dgraphMapExit(&grafdat, &mappdat);
-  SCOTCH_archExit(&archdat);
-  SCOTCH_stratExit(&stradat);
-  SCOTCH_dgraphExit(&grafdat);
-  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_PTSCOTCH */
@@ -210,22 +115,17 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   PetscInt   *vwgt   = NULL;       /* Vertex weights */
   PetscInt   *adjwgt = NULL;       /* Edge weights */
   PetscInt    v, i, *assignment, *points;
-  PetscMPIInt size, rank, p;
-  PetscBool   hasempty = PETSC_FALSE;
-  PetscInt   *tpwgts   = NULL;
+  PetscMPIInt size, p;
+  PetscInt   *tpwgts = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)part, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscMalloc2(size + 1, &vtxdist, PetscMax(nvtxs, 1), &assignment));
   /* Calculate vertex distribution */
   vtxdist[0] = 0;
   PetscCallMPI(MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm));
-  for (p = 2; p <= size; ++p) {
-    hasempty = (PetscBool)(hasempty || !vtxdist[p - 1] || !vtxdist[p]);
-    vtxdist[p] += vtxdist[p - 1];
-  }
+  for (p = 2; p <= size; ++p) vtxdist[p] += vtxdist[p - 1];
   /* null graph */
   if (vtxdist[size] == 0) {
     PetscCall(PetscFree2(vtxdist, assignment));
@@ -257,30 +157,19 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
   }
 
   {
-    PetscPartitioner_PTScotch *pts   = (PetscPartitioner_PTScotch *)part->data;
-    int                        strat = PTScotch_Strategy(pts->strategy);
-    double                     imbal = (double)pts->imbalance;
+    PetscPartitioner_PTScotch *pts     = (PetscPartitioner_PTScotch *)part->data;
+    PetscBool                  usevwgt = PETSC_TRUE;
+    int                        strat   = PTScotch_Strategy(pts->strategy);
 
-    for (p = 0; !vtxdist[p + 1] && p < size; ++p);
-    if (vtxdist[p + 1] == vtxdist[size]) {
-      if (rank == p) PetscCall(PTScotch_PartGraph_Seq(strat, imbal, nvtxs, xadj, adjncy, vwgt, adjwgt, nparts, tpwgts, assignment));
-    } else {
-      MPI_Comm pcomm = pts->pcomm;
-
-      if (hasempty) {
-        PetscInt cnt;
-
-        PetscCallMPI(MPI_Comm_split(pts->pcomm, !!nvtxs, rank, &pcomm));
-        for (p = 0, cnt = 0; p < size; p++) {
-          if (vtxdist[p + 1] != vtxdist[p]) {
-            vtxdist[cnt + 1] = vtxdist[p + 1];
-            cnt++;
-          }
-        }
-      }
-      if (nvtxs) PetscCall(PTScotch_PartGraph_MPI(strat, imbal, vtxdist, xadj, adjncy, vwgt, adjwgt, nparts, tpwgts, assignment, pcomm));
-      if (hasempty) PetscCallMPI(MPI_Comm_free(&pcomm));
-    }
+    PetscCall(PetscOptionsDeprecatedNoObject(comm, NULL, "-petscpartititoner_ptscotch_vertex_weight", "-petscpartitioner_use_vertex_weights", "3.13", NULL));
+    /*
+       Cannot remove the PetscOptionsGetBool() below since the PetscOptionsDeprecatedNoObject() above is called after the non-deprecated version
+       has already been checked in PetscPartitionerSetFromOptions().
+    */
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-petscpartititoner_use_vertex_weight", &usevwgt, NULL));
+    /* edgeSection is the same on every process, so it reports edge weights where adjwgt cannot:
+       a process owning no edges allocates nothing and passes a null array. */
+    PetscCall(PetscPTSCOTCHPartitionGraph_Private(pts->pcomm, vtxdist, xadj, adjncy, usevwgt ? vwgt : NULL, adjwgt, (PetscBool)(edgeSection != NULL), nparts, tpwgts, strat, (double)pts->imbalance, assignment));
   }
   PetscCall(PetscFree(vwgt));
   PetscCall(PetscFree(adjwgt));

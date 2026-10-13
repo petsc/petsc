@@ -440,6 +440,8 @@ PETSC_EXTERN PetscErrorCode PetscCommDuplicate(MPI_Comm, MPI_Comm *, int *);
 PETSC_EXTERN PetscErrorCode PetscCommDestroy(MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscCommGetComm(MPI_Comm, MPI_Comm *);
 PETSC_EXTERN PetscErrorCode PetscCommRestoreComm(MPI_Comm, MPI_Comm *);
+PETSC_EXTERN PetscErrorCode PetscCommCreateNonempty(MPI_Comm, const PetscInt[], MPI_Comm *);
+PETSC_EXTERN PetscErrorCode PetscCommDestroyNonempty(MPI_Comm, MPI_Comm *);
 
 #if PetscDefined(HAVE_KOKKOS)
 PETSC_EXTERN PetscErrorCode PetscKokkosInitializeCheck(void); /* Initialize Kokkos if not yet. */

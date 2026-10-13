@@ -590,6 +590,9 @@ struct _p_MatPartitioning {
 /* needed for parallel nested dissection by ParMETIS */
 PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt, PetscInt[], PetscInt[], PetscInt[]);
 
+/* shared by the MatPartitioning and PetscPartitioner bindings to PT-SCOTCH */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscPTSCOTCHPartitionGraph_Private(MPI_Comm, const PetscInt[], PetscInt[], PetscInt[], PetscInt[], PetscInt[], PetscBool, PetscInt, PetscInt[], PetscInt, double, PetscInt[]);
+
 /*
     Object for coarsen graphs
 */
