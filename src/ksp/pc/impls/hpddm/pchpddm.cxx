@@ -907,7 +907,15 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscE
     PetscCallCXX(ctx->P->start(N));
   }
   if (N == prev || container) { /* when MatProduct container is attached, always need to MatProductReplaceMats() since KSPHPDDM may have replaced the Mat as well */
+    MatProductType ptype;
+
     PetscCall(MatProductReplaceMats(nullptr, !transpose ? Y : ctx->V[2], nullptr, ctx->V[1]));
+    PetscCall(MatProductGetType(ctx->V[1], &ptype));
+    if (ptype != (!transpose ? MATPRODUCT_AB : MATPRODUCT_AtB)) { /* MatProduct previously setup for the other type, e.g., by PCMatApply() before PCMatApplyTranspose() */
+      PetscCall(MatProductSetType(ctx->V[1], !transpose ? MATPRODUCT_AB : MATPRODUCT_AtB));
+      PetscCall(MatProductSetFromOptions(ctx->V[1]));
+      PetscCall(MatProductSymbolic(ctx->V[1]));
+    }
     if (container && ctx->parent->correction != PC_HPDDM_COARSE_CORRECTION_BALANCED) {
       PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, &type));
       if (PetscMemTypeHost(type)) {
