@@ -3046,7 +3046,7 @@ static PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetRowSumAbs_SeqAIJ(Mat A, Vec v)
+PETSC_INTERN PetscErrorCode MatGetRowSumAbs_SeqAIJ(Mat A, Vec v)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
   PetscInt         i, j, m = A->rmap->n, *ai, ncols, n;

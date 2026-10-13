@@ -449,6 +449,7 @@ PETSC_INTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat, PetscInt, PetscInt *, Pets
 PETSC_INTERN PetscErrorCode MatScale_SeqAIJ(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatDiagonalScale_SeqAIJ(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_SeqAIJ(Mat, Vec, InsertMode);
+PETSC_INTERN PetscErrorCode MatGetRowSumAbs_SeqAIJ(Mat, Vec);
 PETSC_INTERN PetscErrorCode MatAXPY_SeqAIJ(Mat, PetscScalar, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscBool *);
 PETSC_INTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat, PetscInt, PetscBool, PetscBool, PetscInt *, const PetscInt *[], const PetscInt *[], PetscBool *);
