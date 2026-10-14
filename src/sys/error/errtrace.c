@@ -6,7 +6,6 @@
   #include <unistd.h>
 #endif
 #include "err.h"
-#include <petsc/private/logimpl.h> // PETSC_TLS
 
 #if PetscDefined(HAVE_CUPM)
   #include <petsc/private/deviceimpl.h>

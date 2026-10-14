@@ -195,18 +195,6 @@ typedef struct _n_PetscLogHandlerHot {
   PetscErrorCode (*objectDestroy)(PetscLogHandler, PetscObject);
 } PetscLogHandlerHot;
 
-/* Handle multithreading */
-#if PetscDefined(HAVE_THREADSAFETY)
-  #if defined(__cplusplus)
-    #define PETSC_TLS thread_local
-  #else
-    #define PETSC_TLS _Thread_local
-  #endif
-  #define PETSC_EXTERN_TLS extern PETSC_TLS PETSC_VISIBILITY_PUBLIC
-#else
-  #define PETSC_EXTERN_TLS PETSC_EXTERN
-  #define PETSC_TLS
-#endif
 #if PetscDefined(HAVE_THREADSAFETY) && PetscDefined(USE_LOG)
 PETSC_EXTERN PetscErrorCode PetscAddLogDouble(PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
 PETSC_EXTERN PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
@@ -270,22 +258,22 @@ PETSC_EXTERN PetscLogDouble petsc_wait_all_ct;
 PETSC_EXTERN PetscLogDouble petsc_sum_of_waits_ct;
 
 /* Thread local storage */
-PETSC_EXTERN_TLS PetscLogDouble petsc_TotalFlops_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_irecv_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_isend_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_recv_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_send_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_irecv_len_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_isend_len_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_recv_len_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_send_len_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_allreduce_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gather_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_scatter_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_wait_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_wait_any_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_wait_all_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_sum_of_waits_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_TotalFlops_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_irecv_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_isend_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_recv_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_send_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_irecv_len_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_isend_len_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_recv_len_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_send_len_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_allreduce_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gather_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_scatter_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_wait_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_wait_any_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_wait_all_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_sum_of_waits_ct_th;
 
 /* Global GPU counters */
 PETSC_EXTERN PetscLogDouble petsc_ctog_ct;
@@ -302,16 +290,16 @@ PETSC_EXTERN PetscLogDouble petsc_genergy;
 PETSC_EXTERN PetscLogDouble petsc_genergy_meter;
 
 /* Thread local storage */
-PETSC_EXTERN_TLS PetscLogDouble petsc_ctog_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gtoc_ct_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_ctog_sz_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gtoc_sz_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_ctog_ct_scalar_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gtoc_ct_scalar_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_ctog_sz_scalar_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gtoc_sz_scalar_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gflops_th;
-PETSC_EXTERN_TLS PetscLogDouble petsc_gtime_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_ctog_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gtoc_ct_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_ctog_sz_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gtoc_sz_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_ctog_ct_scalar_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gtoc_ct_scalar_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_ctog_sz_scalar_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gtoc_sz_scalar_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gflops_th;
+PETSC_EXTERN PETSC_TLS PetscLogDouble petsc_gtime_th;
 
 PETSC_EXTERN PetscBool PetscLogMemory;
 PETSC_EXTERN PetscBool PetscLogSyncOn; /* true if logging synchronization is enabled */
@@ -1131,9 +1119,5 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
   #define PetscLogGpuEnergyMeterEnd()   PETSC_SUCCESS
 
 #endif /* PETSC_USE_LOG && PETSC_HAVE_DEVICE */
-
-/* remove TLS defines */
-#undef PETSC_EXTERN_TLS
-#undef PETSC_TLS
 
 #include <petsclogdeprecated.h>

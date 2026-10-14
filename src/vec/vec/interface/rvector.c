@@ -3807,8 +3807,8 @@ PetscErrorCode VecLockGet(Vec x, PetscInt *state)
   Level: developer
 
   Notes:
-  Only produces meaningful output when PETSc is built with `PETSC_USE_DEBUG` and without threadsafety; otherwise `NULL`
-  and 0 are returned. Intended to help debug read-lock violations reported by `VecGetArray()` and similar routines.
+  Only produces meaningful output when PETSc is built with `PETSC_USE_DEBUG`; otherwise `NULL` and 0 are returned.
+  Intended to help debug read-lock violations reported by `VecGetArray()` and similar routines.
 
   If the location was not recorded, the returned strings explain whether the stack exceeded `PETSCSTACKSIZE`
   or function markers may be missing or mismatched, and `line` is 0.
@@ -3825,7 +3825,7 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
   *file = NULL;
   *func = NULL;
   *line = 0;
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   if (x->lockstack.currentsize > 0) {
     PETSC_UNUSED PetscBool valid = PetscStackGetValidFrame_Private(&x->lockstack, x->lockstack.currentsize - 1, file, func, line);
   }
@@ -3856,7 +3856,7 @@ PetscErrorCode VecLockReadPush(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(x->lock++ >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector is already locked for exclusive write access but you want to read it");
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   {
     const char *file, *func;
     int         index = petscstack.currentsize - 2, line, petscroutine = 2;
@@ -3886,7 +3886,7 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(--x->lock >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector has been unlocked from read-only access too many times");
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   {
     const int   index    = x->lockstack.currentsize - 1;
     const char *previous = index >= 0 && index < PETSCSTACKSIZE ? x->lockstack.function[index] : "unknown_function";

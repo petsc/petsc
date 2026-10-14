@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 /*TEST
 
   build:
-    requires: debug !threadsafety
+    requires: debug
 
   test:
     args: -checkstack {{0 1}}

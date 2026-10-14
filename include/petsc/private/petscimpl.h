@@ -36,7 +36,7 @@ static inline PetscBool PetscStackGetValidFrame_Private(const PetscStack *stack,
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...) __VA_ARGS__
 #endif
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);

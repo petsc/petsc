@@ -1419,13 +1419,15 @@ PETSC_EXTERN PetscErrorCode PetscDetermineInitialFPTrap(void);
   Level: developer
 
   Notes:
-  The global stack `petscstack` is maintained only when PETSc is configured `--with-debugging` and without thread safety;
-  in other configurations the stack-manipulation macros become no-ops. Inspect a stack with `PetscStackView()` or `PetscStackViewSAWs()`.
+  The default stack is a global variable called `petscstack`. It is maintained only when PETSc is configured `--with-debugging`;
+  otherwise the stack-manipulation macros become no-ops. With thread safety enabled, `petscstack` is declared with `PETSC_TLS`,
+  which gives each thread its own instance using thread-local storage.
+  Inspect a stack with `PetscStackView()` or `PetscStackViewSAWs()`.
 
   Only the first `PETSCSTACKSIZE` frames are stored; the `currentsize` field counts all active calls, including frames that are not stored,
   so that the stack unwinds correctly.
 
-.seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturn()`, `PetscStackView()`, `PetscStackViewSAWs()`, `PetscMallocGetStack()`
+.seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturn()`, `PetscStackView()`, `PetscStackViewSAWs()`, `PetscMallocGetStack()`, `PETSC_TLS`
 S*/
 typedef struct {
   const char *function[PETSCSTACKSIZE];
@@ -1434,10 +1436,11 @@ typedef struct {
   int         petscroutine[PETSCSTACKSIZE]; /* 0 external called from PETSc, 1 PETSc functions, 2 PETSc user functions */
   int         currentsize;
   int         hotdepth;
-  PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */
+  PetscBool3  check; /* check Push/Pop semantics; UNKNOWN initializes petscstack from the process-wide default */
 } PetscStack;
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
-PETSC_EXTERN PetscStack petscstack;
+#if PetscDefined(USE_DEBUG)
+PETSC_EXTERN PETSC_TLS PetscStack petscstack;
+PETSC_EXTERN PetscBool            petscstackcheck;
 #endif
 
 #if PetscDefined(SERIALIZE_FUNCTIONS)
@@ -1478,7 +1481,7 @@ PETSC_EXTERN PetscStack petscstack;
     (void)(func__); \
     (void)(line__)
   #define PetscStackPop_Private(stack__, func__) (void)(func__)
-#elif PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#elif PetscDefined(USE_DEBUG)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
     do { \
@@ -1500,9 +1503,9 @@ PETSC_EXTERN PetscStack petscstack;
   /* uses PetscCheckAbort() because may be used in a function that does not return an error code */
   #define PetscStackPop_Private(stack__, func__) \
     do { \
-      PetscCheckAbort(!(stack__).check || (stack__).currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", (stack__).currentsize, func__, __FILE__, __LINE__); \
+      PetscCheckAbort(!PetscBool3ToBool((stack__).check) || (stack__).currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", (stack__).currentsize, func__, __FILE__, __LINE__); \
       if ((stack__).currentsize > 0 && --(stack__).currentsize < PETSCSTACKSIZE) { \
-        PetscCheckAbort(!(stack__).check || (stack__).petscroutine[(stack__).currentsize] != 1 || (stack__).function[(stack__).currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", \
+        PetscCheckAbort(!PetscBool3ToBool((stack__).check) || (stack__).petscroutine[(stack__).currentsize] != 1 || (stack__).function[(stack__).currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", \
                         (stack__).function[(stack__).currentsize], (stack__).file[(stack__).currentsize], (stack__).line[(stack__).currentsize], func__, __FILE__, __LINE__); \
         (stack__).function[(stack__).currentsize]     = PETSC_NULLPTR; \
         (stack__).file[(stack__).currentsize]         = PETSC_NULLPTR; \
@@ -1539,6 +1542,7 @@ PETSC_EXTERN PetscStack petscstack;
    Use `PetscStackPushExternal()` for a function call that is about to be made to a non-PETSc or user function (such as BLAS etc).
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
           `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPush()`, `PetscStackPop`,
@@ -1547,6 +1551,7 @@ M*/
   #define PetscStackPushNoCheck(funct, petsc_routine, hot) \
     do { \
       PetscStackSAWsTakeAccess(); \
+      if (petscstack.check == PETSC_BOOL3_UNKNOWN) petscstack.check = PetscBoolToBool3(petscstackcheck); \
       PetscStackPush_Private(petscstack, __FILE__, funct, __LINE__, petsc_routine, hot); \
       PetscStackSAWsGrantAccess(); \
     } while (0)
@@ -1571,6 +1576,7 @@ M*/
    help debug the problem.
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
    This is used by `PetscCall()` and is otherwise not like to be needed
 
@@ -1605,6 +1611,7 @@ M*/
    help debug the problem.
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
    This is to be used when calling an external package function such as a BLAS function.
 
@@ -1642,6 +1649,7 @@ M*/
    help debug the problem.
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
    Developer Note:
    `PetscStackPopNoCheck()` takes a function argument while  `PetscStackPop` does not, this difference is likely just historical.
@@ -1782,6 +1790,7 @@ M*/
    help debug the problem.
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPopNoCheck()`, `PetscCall()`, `PetscFunctionBegin()`,
           `PetscFunctionReturn()`, `PetscFunctionBeginHot()`, `PetscFunctionBeginUser()`, `PetscStackPushNoCheck()`, `PetscStackPop`
@@ -1810,6 +1819,7 @@ M*/
    help debug the problem.
 
    The default stack is a global variable called `petscstack`.
+   With thread safety enabled, this variable has a separate instance for each thread.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`, `PetscStackPushNoCheck()`, `PetscStackPopNoCheck()`, `PetscStackPush()`
 M*/

@@ -246,8 +246,11 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) checkstack = PETSC_TRUE;
+  if (PetscDefined(USE_DEBUG)) checkstack = PETSC_TRUE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkstack", &checkstack, NULL));
+#if PetscDefined(USE_DEBUG)
+  petscstackcheck = checkstack;
+#endif
   PetscCall(PetscStackSetCheck(checkstack));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkfunctionlist", &PetscPrintFunctionList, NULL));
