@@ -235,6 +235,8 @@ int main(int argc, char **args)
 
     /* A square matrix whose last process owns no rows, which on one process is a 0 x 0 matrix */
     PetscCall(TestShiftCOO(PetscGlobalRank == size - 1 ? 0 : 3, PetscGlobalRank == size - 1 ? 0 : 3));
+    /* A matrix with more rows than columns */
+    PetscCall(TestShiftCOO(3, 2));
   }
 
   PetscCall(PetscFree(vals));

@@ -1673,7 +1673,7 @@ static PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v)
   const PetscInt *diag;
   const PetscInt *ii    = (const PetscInt *)a->i;
   const PetscInt  ndiag = PetscMin(A->rmap->n, A->cmap->n);
-  PetscBool       diagDense;
+  PetscBool       diagDense, hasDiag;
 
   PetscFunctionBegin;
   /* If A is preallocated but has no nonzeros, preallocate it again only if it is not 0 x n or m x 0, otherwise the nonzero state
@@ -1685,11 +1685,18 @@ static PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v)
   }
 
   PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, &diag, &diagDense));
-  if (diagDense) {
+  /* Reallocate A only if a diagonal entry is missing, otherwise the nonzero state would increase even though the shift creates no
+     new nonzeros. diagDense alone cannot tell, as it also counts the rows past the last column, which cannot have a diagonal entry */
+  hasDiag = diagDense;
+  if (!hasDiag) {
+    hasDiag = PETSC_TRUE;
+    for (PetscInt i = 0; i < ndiag && hasDiag; i++) hasDiag = (PetscBool)(diag[i] < ii[i + 1]);
+  }
+  if (hasDiag) {
     PetscScalar *Aa;
 
     PetscCall(MatSeqAIJGetArray(A, &Aa));
-    for (PetscInt i = 0; i < A->rmap->n; i++) Aa[diag[i]] += v;
+    for (PetscInt i = 0; i < ndiag; i++) Aa[diag[i]] += v;
     PetscCall(MatSeqAIJRestoreArray(A, &Aa));
   } else {
     PetscScalar       *olda = a->a; /* preserve pointers to current matrix nonzeros structure and values */
