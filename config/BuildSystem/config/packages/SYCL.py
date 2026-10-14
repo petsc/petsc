@@ -92,7 +92,18 @@ class Configure(config.package.Package):
           else:
             devArg = self.syclArch
           compFlags = ' -fsycl-targets=spir64_gen'
-          ldFlags = '-Xsycl-target-backend "-device '+ devArg + '"' # If it's used at compile time, icpx will warn: argument unused during compilation: '-Xsycl-target-backend -device 12.60.7'
+          # Use -Xs to pass arguments to the OpenCL offline compiler (ocloc) for code generation.
+          # icpx --help
+          #   -Xs <arg> Pass <arg> to the offline compiler.
+          #   -Xs<arg>  Pass <arg> to the offline compiler, adding the option specifier '-' to the <arg>.
+          # ocloc compile --help
+          #   -q   Will silence output messages (except errors).
+          #   -qq  Will silence most of output messages.
+          # Note: without -Xsq, we saw these kinds of messages when linking libpetsc.so:
+          #   Compilation from IR - skipping loading of FCL
+          #   Build succeeded.
+          #   warning: Adding 32 occurrences of additional control flow due to presence of generic address space operations in function ...
+          ldFlags = '-Xsq -Xsycl-target-backend "-device '+ devArg + '"' # If it's used at compile time, icpx will warn: argument unused during compilation: '-Xsycl-target-backend -device 12.60.7'
           self.targets = 'spir64_gen'
           self.addDefine('SYCL_DEVICE', devArg)
         else:
