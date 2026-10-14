@@ -1206,6 +1206,7 @@ static PetscErrorCode MatSetRandom_MPIDense(Mat x, PetscRandom rctx)
 #if PetscDefined(HAVE_DEVICE)
   x->offloadmask = d->A->offloadmask;
 #endif
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

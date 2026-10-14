@@ -2556,18 +2556,18 @@ static PetscErrorCode MatInvertBlockDiagonal_MPIAIJ(Mat A, const PetscScalar **v
 
 static PetscErrorCode MatSetRandom_MPIAIJ(Mat x, PetscRandom rctx)
 {
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)x->data;
+  Mat_MPIAIJ *aij              = (Mat_MPIAIJ *)x->data;
+  PetscBool   nooffprocentries = x->nooffprocentries;
 
   PetscFunctionBegin;
-  PetscCheck(x->assembled || x->preallocated, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "MatSetRandom on an unassembled and unpreallocated MATMPIAIJ is not allowed");
+  PetscCheck(x->assembled || x->preallocated, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "MatSetRandom() on an unassembled and unpreallocated MATMPIAIJ is not allowed");
   PetscCall(MatSetRandom(aij->A, rctx));
-  if (x->assembled) {
-    PetscCall(MatSetRandom(aij->B, rctx));
-  } else {
-    PetscCall(MatSetRandomSkipColumnRange_SeqAIJ_Private(aij->B, x->cmap->rstart, x->cmap->rend, rctx));
-  }
+  if (x->assembled) PetscCall(MatSetRandom(aij->B, rctx));
+  else PetscCall(MatSetRandomSkipColumnRange_SeqAIJ_Private(aij->B, x->cmap->rstart, x->cmap->rend, rctx));
+  PetscCall(MatSetOption(x, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(x, MAT_NO_OFF_PROC_ENTRIES, nooffprocentries));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

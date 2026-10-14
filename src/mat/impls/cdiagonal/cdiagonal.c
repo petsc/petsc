@@ -248,6 +248,7 @@ static PetscErrorCode MatSetRandom_ConstantDiagonal(Mat A, PetscRandom rand)
   if (!rank) PetscCall(PetscRandomGetValue(rand, &v));
   PetscCallMPI(MPI_Bcast(&v, 1, MPIU_SCALAR, 0, comm));
   ctx->diag = v;
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

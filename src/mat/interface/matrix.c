@@ -59,13 +59,6 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
 - rctx - the `PetscRandom` object, formed by `PetscRandomCreate()`, or `NULL` and
           it will create one internally.
 
-  Example:
-.vb
-     PetscRandomCreate(PETSC_COMM_WORLD,&rctx);
-     MatSetRandom(x,rctx);
-     PetscRandomDestroy(rctx);
-.ve
-
   Level: intermediate
 
   Notes:
@@ -74,6 +67,20 @@ const char *const MatFactorTypes[] = {"NONE", "LU", "CHOLESKY", "ILU", "ICC", "I
   for sparse matrices that already have nonzero locations, it fills the locations with random numbers.
 
   It generates an error if used on unassembled sparse matrices that have not been preallocated.
+
+  If values have been inserted with `MatSetValues()`, call `MatAssemblyBegin()` and `MatAssemblyEnd()` before calling this routine.
+  The matrix is assembled on return.
+
+  Example Usage:
+.vb
+     PetscRandomCreate(PETSC_COMM_WORLD, &rctx);
+     MatSetRandom(x, rctx);
+     PetscRandomDestroy(&rctx);
+.ve
+
+  Developer Notes:
+  Implementations must leave the matrix assembled with increased object state, assembling it themselves when it is not already the case.
+  Implementations that insert only local entries can temporarily set `MAT_NO_OFF_PROC_ENTRIES` to `PETSC_TRUE` during assembly, restoring its previous value afterwards.
 
 .seealso: [](ch_matrices), `Mat`, `PetscRandom`, `PetscRandomCreate()`, `MatZeroEntries()`, `MatSetValues()`, `PetscRandomDestroy()`
 @*/
@@ -85,6 +92,7 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
   PetscValidHeaderSpecific(x, MAT_CLASSID, 1);
   if (rctx) PetscValidHeaderSpecific(rctx, PETSC_RANDOM_CLASSID, 2);
   PetscValidType(x, 1);
+  PetscCheck(x->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for matrices where you have set values but not yet assembled");
   MatCheckPreallocated(x, 1);
 
   if (!rctx) {
@@ -99,8 +107,6 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
   PetscUseTypeMethod(x, setrandom, rctx);
   PetscCall(PetscLogEventEnd(MAT_SetRandom, x, rctx, 0, 0));
 
-  PetscCall(MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscRandomDestroy(&randObj));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

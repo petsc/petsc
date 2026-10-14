@@ -143,10 +143,9 @@ static PetscErrorCode MatDuplicate_Diagonal(Mat A, MatDuplicateOption op, Mat *B
   Level: developer
 
   Note:
-  The user must call
-  `MatDiagonalRestoreDiagonal()` before using the matrix again.
+  The user must call `MatDiagonalRestoreDiagonal()` before using the matrix again.
 
-  For a copy of the diagonal values, rather than a reference, use `MatGetDiagonal()`
+  For a copy of the diagonal values, rather than a reference, use `MatGetDiagonal()`.
 
   Any changes to the obtained vector immediately change the action of the `Mat`.
   The matrix can be changed more efficiently by accessing this vector and changing its values, instead of filling a work vector and using `MatDiagonalSet()`
