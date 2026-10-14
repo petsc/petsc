@@ -201,7 +201,7 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where PetscTrMallocDefault() was called, not the PetscFunctionBegin; */
-  head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
+  if (head->stack.currentsize > 1 && head->stack.currentsize - 2 < PETSCSTACKSIZE) head->stack.line[head->stack.currentsize - 2] = lineno;
   head->stack.currentsize--;
   #if PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
@@ -406,7 +406,8 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
-  head->stack.line[PetscMax(head->stack.currentsize - 2, 0)] = lineno;
+  if (head->stack.currentsize > 1 && head->stack.currentsize - 2 < PETSCSTACKSIZE) head->stack.line[head->stack.currentsize - 2] = lineno;
+  head->stack.currentsize--;
 #endif
 
   /*

@@ -1422,7 +1422,8 @@ PETSC_EXTERN PetscErrorCode PetscDetermineInitialFPTrap(void);
   The global stack `petscstack` is maintained only when PETSc is configured `--with-debugging` and without thread safety;
   in other configurations the stack-manipulation macros become no-ops. Inspect a stack with `PetscStackView()` or `PetscStackViewSAWs()`.
 
-  The depth is bounded by `PETSCSTACKSIZE`; deeper call chains silently saturate at that depth
+  Only the first `PETSCSTACKSIZE` frames are stored; the `currentsize` field counts all active calls, including frames that are not stored,
+  so that the stack unwinds correctly.
 
 .seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturn()`, `PetscStackView()`, `PetscStackViewSAWs()`, `PetscMallocGetStack()`
 S*/
@@ -1499,9 +1500,9 @@ PETSC_EXTERN PetscStack petscstack;
   /* uses PetscCheckAbort() because may be used in a function that does not return an error code */
   #define PetscStackPop_Private(stack__, func__) \
     do { \
-      PetscCheckAbort(!(stack__).check || (stack__).currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d.\n", (stack__).currentsize, func__, __FILE__, __LINE__); \
-      if (--(stack__).currentsize < PETSCSTACKSIZE) { \
-        PetscCheckAbort(!(stack__).check || (stack__).petscroutine[(stack__).currentsize] != 1 || (stack__).function[(stack__).currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d.\n", \
+      PetscCheckAbort(!(stack__).check || (stack__).currentsize > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack size %d, pop %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", (stack__).currentsize, func__, __FILE__, __LINE__); \
+      if ((stack__).currentsize > 0 && --(stack__).currentsize < PETSCSTACKSIZE) { \
+        PetscCheckAbort(!(stack__).check || (stack__).petscroutine[(stack__).currentsize] != 1 || (stack__).function[(stack__).currentsize] == func__, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid stack: push from %s %s:%d. Pop from %s %s:%d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", \
                         (stack__).function[(stack__).currentsize], (stack__).file[(stack__).currentsize], (stack__).line[(stack__).currentsize], func__, __FILE__, __LINE__); \
         (stack__).function[(stack__).currentsize]     = PETSC_NULLPTR; \
         (stack__).file[(stack__).currentsize]         = PETSC_NULLPTR; \
@@ -1577,7 +1578,7 @@ M*/
 M*/
   #define PetscStackUpdateLine \
     do { \
-      if (petscstack.currentsize > 0 && petscstack.currentsize < PETSCSTACKSIZE && petscstack.function[petscstack.currentsize - 1] == PETSC_FUNCTION_NAME) petscstack.line[petscstack.currentsize - 1] = __LINE__; \
+      if (petscstack.currentsize > 0 && petscstack.currentsize <= PETSCSTACKSIZE && petscstack.function[petscstack.currentsize - 1] == PETSC_FUNCTION_NAME) petscstack.line[petscstack.currentsize - 1] = __LINE__; \
     } while (0)
 
   /*MC

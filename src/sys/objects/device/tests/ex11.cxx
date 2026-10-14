@@ -37,6 +37,17 @@ static constexpr auto mem_write      = Marker{PETSC_MEMORY_ACCESS_WRITE};
 static constexpr auto mem_read_write = Marker{PETSC_MEMORY_ACCESS_READ_WRITE};
 static constexpr auto mark_funcs     = Petsc::util::make_array(mem_read, mem_write, mem_read_write);
 
+static PetscErrorCode TestDeepStack(PetscDeviceContext dctx, PetscContainer cont, int remaining)
+{
+  PetscFunctionBeginUser;
+  if (remaining) PetscCall(TestDeepStack(dctx, cont, remaining - 1));
+  else {
+    PetscCall(mem_read(dctx, cont));
+    PetscCall(PetscDeviceContextSynchronize(dctx));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MarkedObjectMapView(PetscViewer vwr, std::size_t nkeys, const PetscObjectId *keys, const PetscMemoryAccessMode *modes, const std::size_t *ndeps, const PetscEvent **dependencies)
 {
   PetscFunctionBegin;
@@ -284,6 +295,9 @@ int main(int argc, char *argv[])
 
   // ensure they are all idle
   PetscCall(sync_all());
+  PetscCall(CheckMapEqual({}));
+
+  PetscCall(TestDeepStack(dctx_a, x, PETSCSTACKSIZE + 2));
   PetscCall(CheckMapEqual({}));
 
   // do the bulk combination tests, these test only the very basic combinations for simple

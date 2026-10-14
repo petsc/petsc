@@ -356,10 +356,11 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
           /* if the PETSc function the user calls is not a create then this object was NOT directly created by them */
           PetscCall(PetscMallocGetStack(h, &stack));
           if (stack) {
-            k = stack->currentsize - 2;
+            k = PetscMin(stack->currentsize - 2, PETSCSTACKSIZE - 1);
             if (!all) {
               k = 0;
-              while (!stack->petscroutine[k]) k++;
+              while (k < PetscStackGetSize_Private(stack) && !stack->petscroutine[k]) k++;
+              if (k == PetscStackGetSize_Private(stack)) continue;
               PetscCall(PetscStrstr(stack->function[k], "Create", &create));
               if (!create) PetscCall(PetscStrstr(stack->function[k], "Get", &create));
               PetscCall(PetscStrstr(stack->function[k], h->class_name, &rclass));
