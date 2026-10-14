@@ -1671,11 +1671,14 @@ static PetscErrorCode MatShift_SeqAIJ(Mat A, PetscScalar v)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   const PetscInt *diag;
-  const PetscInt *ii = (const PetscInt *)a->i;
+  const PetscInt *ii    = (const PetscInt *)a->i;
+  const PetscInt  ndiag = PetscMin(A->rmap->n, A->cmap->n);
   PetscBool       diagDense;
 
   PetscFunctionBegin;
-  if (!A->preallocated || !a->nz) {
+  /* If A is preallocated but has no nonzeros, preallocate it again only if it is not 0 x n or m x 0, otherwise the nonzero state
+     would increase even though the shift creates no new nonzeros */
+  if (!A->preallocated || (!a->nz && ndiag > 0)) {
     PetscCall(MatSeqAIJSetPreallocation(A, 1, NULL));
     PetscCall(MatShift_Basic(A, v));
     PetscFunctionReturn(PETSC_SUCCESS);
