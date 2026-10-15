@@ -188,15 +188,18 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   /* Initialize objective function
      obj = 1/2 x^T A x - x^T b */
   testobj = (PetscBool)(cg->obj_min < 0.0);
-  PetscCall(VecXDot(R, X, &a));
-  cg->obj = 0.5 * PetscRealPart(a);
-  PetscCall(VecXDot(B, X, &a));
-  cg->obj -= 0.5 * PetscRealPart(a);
+  cg->obj = 0.0;
+  if (!ksp->guess_zero) {
+    PetscCall(VecXDot(R, X, &a));
+    cg->obj = -0.5 * PetscRealPart(a);
+    PetscCall(VecXDot(B, X, &a));
+    cg->obj -= 0.5 * PetscRealPart(a);
+  }
 
   if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
+  ksp->rnorm = dp;
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, ksp->its, dp));
-  ksp->rnorm = dp;
 
   PetscCall((*ksp->converged)(ksp, ksp->its, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
 
