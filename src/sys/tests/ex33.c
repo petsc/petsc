@@ -1,5 +1,6 @@
 static char help[] = "Tests bounded stack storage and unwinding.\n\n";
 
+// PetscStackCopy() is declared in this private header.
 #include <petsc/private/petscimpl.h>
 #if PetscDefined(HAVE_THREADSAFETY) && PetscDefined(HAVE_OPENMP)
   #include <omp.h>
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
 #endif
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkstack", &check, NULL));
+  /* Use private push/pop macros to test an empty local stack. The public macros operate on petscstack
+     and cannot target this local stack. */
   for (int i = 0; i < 2; ++i) {
     PetscStack stack = {{NULL}, {NULL}, {0}, {0}, 0, 0, PETSC_BOOL3_FALSE};
 
