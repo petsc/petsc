@@ -21,19 +21,12 @@ static PetscErrorCode CheckStack(int depth, int remaining, PetscBool check)
   }
   if (remaining) PetscCall(CheckStack(depth + 1, remaining - 1, check));
   else {
-#if !PetscDefined(HAVE_THREADSAFETY)
     PetscStack *stack;
-#endif
-    FILE *file;
-    char  line[1024];
-#if !PetscDefined(HAVE_THREADSAFETY)
-    char *ptr;
-#endif
-    int frames = 0;
-#if !PetscDefined(HAVE_THREADSAFETY)
-    PetscBool mdebug;
-#endif
-    PetscBool truncated = PETSC_FALSE;
+    FILE       *file;
+    char        line[1024];
+    char       *ptr;
+    int         frames = 0;
+    PetscBool   mdebug, truncated = PETSC_FALSE;
 
     file = tmpfile();
     PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_SYS, "Cannot create temporary stack output file");
@@ -45,7 +38,6 @@ static PetscErrorCode CheckStack(int depth, int remaining, PetscBool check)
     }
     PetscCheck(frames == PetscMin(depth, PETSCSTACKSIZE), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect number of viewed frames: %d", frames);
     PetscCheck(truncated == (depth > PETSCSTACKSIZE ? PETSC_TRUE : PETSC_FALSE), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect stack truncation diagnostic");
-#if !PetscDefined(HAVE_THREADSAFETY)
     PetscCall(PetscMallocGetDebug(&mdebug, NULL, NULL));
     PetscCall(PetscMalloc1(8, &ptr));
     PetscCall(PetscMallocGetStack(ptr, &stack));
@@ -55,7 +47,6 @@ static PetscErrorCode CheckStack(int depth, int remaining, PetscBool check)
     PetscCheck(mdebug ? stack && stack->currentsize == depth : !stack, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect reallocation stack");
     PetscCall(PetscMallocDump(file));
     PetscCall(PetscFree(ptr));
-#endif
     PetscCallExternal(fclose, file);
   }
   PetscStackPushExternal("external");

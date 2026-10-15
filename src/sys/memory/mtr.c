@@ -25,7 +25,7 @@ typedef struct _trSPACE {
   const char *filename;
   const char *functionname;
   PetscInt    specialcookie;
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   PetscStack stack;
 #endif
   struct _trSPACE *next, *prev;
@@ -198,7 +198,7 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
     }
   }
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where PetscTrMallocDefault() was called, not the PetscFunctionBegin; */
   if (head->stack.currentsize > 1 && head->stack.currentsize - 2 < PETSCSTACKSIZE) head->stack.line[head->stack.currentsize - 2] = lineno;
@@ -403,7 +403,7 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
     }
   }
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
   if (head->stack.currentsize > 1 && head->stack.currentsize - 2 < PETSCSTACKSIZE) head->stack.line[head->stack.currentsize - 2] = lineno;
@@ -637,7 +637,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 @*/
 PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 {
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   TRSPACE *head;
 
   PetscFunctionBegin;
@@ -706,7 +706,7 @@ PetscErrorCode PetscMallocDump(FILE *fp)
 
     PetscCall(PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib));
     if (!isLib) {
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
       fprintf(fp, "[%2d] %.0f bytes\n", rank, (PetscLogDouble)(TRrequestedSize ? head->rsize : head->size));
       PetscCall(PetscStackPrint(&head->stack, fp));
 #else
