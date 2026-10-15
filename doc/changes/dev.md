@@ -82,6 +82,9 @@
 ```{rubric} KSP:
 ```
 
+- Add `KSPCGTRNormType`, `KSPCGSetTRNormType()`, and `KSPCGGetTRNormType()` to select the trust-region norm in `KSPCG`, `KSPSTCG`, `KSPNASH`, and `KSPGLTR`
+- Deprecate `KSPCGGetNormD()` in favor of `KSPCGGetTRSolutionNorm()` and `-ksp_cg_dtype` in favor of `-ksp_cg_tr_norm_type`
+
 ```{rubric} SNES:
 ```
 

@@ -71,6 +71,33 @@ static PetscErrorCode KSPCGGetObjFcn_CG(KSP ksp, PetscReal *obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPCGSetTRNormType_CG(KSP ksp, KSPCGTRNormType dtype)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->dtype = dtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGGetTRNormType_CG(KSP ksp, KSPCGTRNormType *dtype)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  *dtype = cg->dtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGGetTRSolutionNorm_CG(KSP ksp, PetscReal *norm_d)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  *norm_d = cg->norm_d;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* Intersections of x + t p with the trust-region boundary, avoiding cancellation near the boundary. */
 static PetscErrorCode KSPCGBoundarySteps_Private(PetscReal norm_p, PetscReal dMp, PetscReal gap, PetscReal *positive, PetscReal *negative)
 {
@@ -146,7 +173,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   Vec         X, B, Z, R, P, W;
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   testobj, computenorm;
+  PetscBool   testobj, computenorm, boundary = PETSC_FALSE;
 
   PetscFunctionBegin;
   cg            = (KSP_CG *)ksp->data;
@@ -183,6 +210,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     PetscCall(VecCopy(B, R)); /*    r <- b (x is 0)                   */
     norm_d = 0.0;
   }
+  cg->norm_d = PetscSqrtReal(norm_d);
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
   PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
 
@@ -296,6 +324,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
         PetscCall(KSPCGBoundarySteps_Private(norm_p, dMp, r2 - norm_d, &positive, &negative));
         a = positive;
         if (PetscRealPart(negative * (0.5 * negative * dpi - beta)) < PetscRealPart(positive * (0.5 * positive * dpi - beta))) a = negative;
+        boundary = (PetscBool)(norm_p > 0.0);
       }
       if (ksp->converged_neg_curve) {
         PetscCall(PetscInfo(ksp, "converged due to negative curvature: %g\n", (double)(PetscRealPart(dpi))));
@@ -320,13 +349,19 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
           ksp->reason = KSP_CONVERGED_STEP_LENGTH;
           PetscCall(PetscInfo(ksp, "converged to the trust region radius %g\n", (double)cg->radius));
           PetscCall(KSPCGBoundarySteps_Private(norm_p, dMp, r2 - norm_d, &positive, &negative));
-          a = positive;
+          a        = positive;
+          boundary = (PetscBool)(norm_p > 0.0);
         }
       }
     }
     PetscCall(VecAXPY(X, a, P));  /*     x <- x + ap                      */
     PetscCall(VecAXPY(R, -a, W)); /*     r <- r - aw                      */
-    if (cg->radius) PetscCall(VecDotRealPart(X, X, &norm_d));
+    if (cg->radius) {
+      PetscCall(VecDotRealPart(X, X, &norm_d));
+      cg->norm_d = PetscSqrtReal(norm_d);
+    }
+    /* TAO uses exact equality with the radius to recognize a boundary step. */
+    if (boundary) cg->norm_d = cg->radius;
     cg->obj += PetscRealPart(a * (0.5 * a * dpi - betaold));
     computenorm = (PetscBool)(ksp->reason || ksp->chknorm < i + 2 || i + 1 == ksp->max_it || (testobj && cg->obj <= cg->obj_min));
     if (ksp->normtype == KSP_NORM_PRECONDITIONED && computenorm) {
@@ -367,6 +402,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (!cg->radius) PetscCall(VecNorm(X, NORM_2, &cg->norm_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -567,6 +603,9 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -638,9 +677,11 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
   if (cg->singlereduction) {
     ksp->ops->solve = KSPSolve_CG_SingleReduction;
     PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   } else {
     ksp->ops->solve = KSPSolve_CG;
     PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_CG));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -707,6 +748,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&cg));
   cg->type    = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
+  cg->dtype   = KSP_CG_TR_NORM_UNPRECONDITIONED;
   cg->obj_min = 0.0;
   ksp->data   = (void *)cg;
 
@@ -737,5 +779,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetObjectiveTarget_C", KSPCGSetObjectiveTarget_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", KSPCGSetTRNormType_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", KSPCGGetTRNormType_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_CG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -17,8 +17,8 @@
 #include <petsc/private/kspimpl.h>
 
 typedef struct {
-  PetscReal radius;
-  PetscReal norm_d;
-  PetscReal o_fcn;
-  PetscInt  dtype;
+  PetscReal       radius;
+  PetscReal       norm_d;
+  PetscReal       o_fcn;
+  KSPCGTRNormType dtype;
 } KSPCG_NASH;
