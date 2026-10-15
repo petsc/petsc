@@ -41,6 +41,8 @@ typedef struct {
 
   // Window of stored iterates that the least-squares problem uses
   PetscInt  window_size; /* maximum number of stored iterates in the window, at most msize */
+  PetscReal lsnorm;      /* least-squares objective, the norm of the minimized combination of residuals */
+  PetscReal gamma;       /* least-squares objective divided by the residual norm of the candidate solution */
   PetscInt *window;      /* history indices of the iterates in the window, in increasing order */
   Vec      *Fwindow;     /* array of references to the residuals in the window, not new Vec objects */
   Vec      *Xwindow;     /* array of references to the solutions in the window, not new Vec objects */

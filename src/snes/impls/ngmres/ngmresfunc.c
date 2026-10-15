@@ -65,7 +65,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   PetscScalar *beta       = ngmres->beta;
   PetscScalar *xi         = ngmres->xi;
   PetscScalar  alph_total = 0.;
-  PetscReal    nu;
+  PetscReal    nu, obj;
   Vec          Y = snes->vec_sol_update;
   PetscBool    changed_y, changed_w;
 
@@ -112,6 +112,17 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   for (PetscInt i = 0; i < l; i++) PetscCheck(!PetscIsInfOrNanScalar(beta[i]), PetscObjectComm((PetscObject)snes), PETSC_ERR_LIB, "SVD generated inconsistent output");
   alph_total = 0.;
   for (PetscInt i = 0; i < l; i++) alph_total += beta[i];
+
+  /*
+    The right-hand side nu - xi lies in the range of h, so the least-squares solution beta satisfies the normal equations,
+    and the squared objective at the minimizer is nu - sum_i beta_i (nu - xi_i).
+  */
+  obj = nu;
+  for (PetscInt i = 0; i < l; i++) obj -= PetscRealPart(beta[i] * (nu - xi[i]));
+  // Floating-point roundoff can make the computed squared norm slightly negative, so clamp it before taking the square root.
+  obj            = PetscSqrtReal(PetscMax(obj, 0.0));
+  ngmres->lsnorm = obj;
+  ngmres->gamma  = fMnorm > 0.0 ? obj / fMnorm : 0.0;
 
   PetscCall(VecAXPBY(XA, 1.0 - alph_total, 0.0, XM));
   PetscCall(VecMAXPY(XA, l, beta, Xwindow));
