@@ -937,6 +937,17 @@ int main(int argc, char **argv)
      args: -da_grid_x 81 -da_grid_y 81 -snes_monitor -snes_max_it 50 -par 6.0 -snes_type ngmres -snes_ngmres_m 10 -npc_snes_type nrichardson -npc_snes_max_it 3
      output_file: output/ex5_5_ngmres_richardson.out
 
+   testset:
+     requires: !single
+     args: -da_grid_x 33 -da_grid_y 33 -snes_monitor -par 6.0 -snes_type ngmres -snes_ngmres_select_type none -snes_ngmres_restart_type none -snes_ngmres_adaptive -snes_ngmres_monitor -npc_snes_type newtonls -npc_snes_max_it 1 -npc_snes_linesearch_type basic -npc_ksp_type gmres -npc_pc_type none
+     test:
+       suffix: 5_ngmres_adaptive
+       args: -snes_rtol 1.e-10 -snes_max_it 40 -snes_ngmres_adaptive_m 2 -npc_ksp_rtol 1.e-1
+     test:
+       # the window of 3 stored solutions never grows and moves through the circular history of 7 stored solutions
+       suffix: 5_ngmres_window
+       args: -snes_max_it 12 -snes_ngmres_m 7 -snes_ngmres_adaptive_m 3 -snes_ngmres_adaptive_tol 0 -npc_ksp_rtol 0.7
+
    test:
      suffix: 5_nrichardson
      args: -da_grid_x 81 -da_grid_y 81 -snes_monitor -snes_max_it 50 -par 6.0 -snes_type nrichardson
