@@ -42,6 +42,23 @@
 
 /* ========================================================================== */
 /* This facilitates using the C version of PETSc from C++ and the C++ version from C. */
+/* A build configured with --with-cxx=0 never probed a C++ compiler, so configure wrote no
+   PETSC_FUNCTION_NAME_CXX and no PETSC_CXX_RESTRICT. That says nothing about the application:
+   a C-only PETSc is perfectly usable from C++, and every C++ translation unit that includes a
+   PETSc header then stops on an undeclared identifier. Both have a portable spelling, so fill
+   them in rather than require a reconfigure. */
+#if defined(__cplusplus) && !defined(PETSC_FUNCTION_NAME_CXX)
+  #define PETSC_FUNCTION_NAME_CXX __func__ /* standard since C++11 */
+#endif
+
+#if defined(__cplusplus) && !defined(PETSC_CXX_RESTRICT)
+  #if defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER)
+    #define PETSC_CXX_RESTRICT __restrict
+  #else
+    #define PETSC_CXX_RESTRICT
+  #endif
+#endif
+
 #if defined(__cplusplus)
   #define PETSC_FUNCTION_NAME PETSC_FUNCTION_NAME_CXX
 #else
@@ -224,6 +241,47 @@ M*/
   #define PetscHasBuiltin(name) __is_identifier(name)
 #else
   #define PetscHasBuiltin(name) __has_builtin(name)
+#endif
+
+/*
+   petscconf.h records what the compiler that ran configure supported, and spells some macros
+   directly in that compiler's dialect. The headers, however, are compiled by whatever compiler
+   the application uses, which need not be the same one: a library configured with gcc, clang or
+   icx is routinely consumed by MSVC on Windows. Where petscconf.h hands down a GNU spelling that
+   the compiler in use does not accept, re-derive it here from the compiler actually compiling
+   this translation unit. Everything below this point, and every header PETSc installs, then sees
+   a spelling its own compiler understands.
+*/
+#if !PetscHasAttribute(deprecated)
+  #undef PETSC_DEPRECATED_ENUM_BASE
+  #undef PETSC_DEPRECATED_FUNCTION_BASE
+  #undef PETSC_DEPRECATED_OBJECT_BASE
+  #undef PETSC_DEPRECATED_TYPEDEF_BASE
+  /* __attribute__((deprecated)) is accepted both before and after the declarator, and PETSc
+     relies on both placements. MSVC's __declspec(deprecated) is only accepted before it, so it
+     can stand in for the two macros used in prefix position; the two used in postfix position
+     (on enumerators and on typedefs) have no MSVC equivalent and are dropped. */
+  #if defined(_MSC_VER)
+    #define PETSC_DEPRECATED_FUNCTION_BASE(string_literal_why) __declspec(deprecated(string_literal_why))
+    #define PETSC_DEPRECATED_OBJECT_BASE(string_literal_why)   __declspec(deprecated(string_literal_why))
+  #else
+    #define PETSC_DEPRECATED_FUNCTION_BASE(string_literal_why)
+    #define PETSC_DEPRECATED_OBJECT_BASE(string_literal_why)
+  #endif
+  #define PETSC_DEPRECATED_ENUM_BASE(string_literal_why)
+  #define PETSC_DEPRECATED_TYPEDEF_BASE(string_literal_why)
+#endif
+
+/* PETSC_DEPRECATED_MACRO_BASE() emits a "GCC warning" pragma, which other compilers ignore with
+   a diagnostic of their own. MSVC has no equivalent, so drop the notice rather than warn on it. */
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__GNUC__)
+  #undef PETSC_DEPRECATED_MACRO_BASE
+  #define PETSC_DEPRECATED_MACRO_BASE(string_literal_why)
+#endif
+
+#if !PetscHasAttribute(unused)
+  #undef PETSC_UNUSED
+  #define PETSC_UNUSED
 #endif
 
 #if !defined(PETSC_SKIP_ATTRIBUTE_MPI_TYPE_TAG)
@@ -563,7 +621,7 @@ M*/
 .seealso: `PetscLikely()`, `PetscUnlikelyDebug()`, `PetscCall()`, `PetscDefined()`, `PetscHasAttribute()`,
           `PETSC_ATTRIBUTE_COLD`
 M*/
-#if defined(PETSC_HAVE_BUILTIN_EXPECT)
+#if defined(PETSC_HAVE_BUILTIN_EXPECT) && PetscHasBuiltin(__builtin_expect)
   #define PetscUnlikely(cond) __builtin_expect(!!(cond), 0)
 #else
   #define PetscUnlikely(cond) (cond)
@@ -598,7 +656,7 @@ M*/
 
 .seealso: `PetscUnlikely()`, `PetscDefined()`, `PetscHasAttribute()`, `PETSC_ATTRIBUTE_COLD`
 M*/
-#if defined(PETSC_HAVE_BUILTIN_EXPECT)
+#if defined(PETSC_HAVE_BUILTIN_EXPECT) && PetscHasBuiltin(__builtin_expect)
   #define PetscLikely(cond) __builtin_expect(!!(cond), 1)
 #else
   #define PetscLikely(cond) (cond)
