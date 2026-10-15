@@ -626,7 +626,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 . ptr - the memory location
 
   Output Parameter:
-. stack - the stack indicating where the program allocated this memory
+. stack - the stack indicating where the program allocated this memory, or `NULL` if unavailable
 
   Level: intermediate
 
@@ -641,6 +641,8 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
   TRSPACE *head;
 
   PetscFunctionBegin;
+  *stack = NULL;
+  if (PetscTrMalloc != PetscTrMallocDefault) PetscFunctionReturn(PETSC_SUCCESS);
   head   = (TRSPACE *)((char *)ptr - HEADER_BYTES);
   *stack = &head->stack;
   PetscFunctionReturn(PETSC_SUCCESS);
