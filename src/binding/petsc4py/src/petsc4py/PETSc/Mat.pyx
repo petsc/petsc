@@ -4542,6 +4542,8 @@ cdef class Mat(Object):
 
         Collective.
 
+        The zeroed entries are kept in the sparsity pattern.
+
         See Also
         --------
         petsc.MatFilter
