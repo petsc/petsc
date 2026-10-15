@@ -2366,29 +2366,26 @@ static PetscErrorCode MatCopy_HYPRE(Mat A, Mat B, MatStructure str)
 
 static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
 {
-  hypre_ParCSRMatrix *parcsr;
-  hypre_CSRMatrix    *dmat;
-  HYPRE_Complex      *a;
-  PetscBool           cong;
+  hypre_ParCSRMatrix  *parcsr;
+  HYPRE_Complex       *a;
+  HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
+  PetscMemType         mtype;
+  PetscBool            cong;
 
   PetscFunctionBegin;
   PetscCall(MatHasCongruentLayouts(A, &cong));
   PetscCheck(cong, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only for square matrices with same local distributions of rows and columns");
   PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
-  dmat = hypre_ParCSRMatrixDiag(parcsr);
-  if (dmat) {
 #if PetscDefined(HAVE_HYPRE_DEVICE)
-    HYPRE_MemoryLocation mem = hypre_CSRMatrixMemoryLocation(dmat);
-#else
-    HYPRE_MemoryLocation mem = HYPRE_MEMORY_HOST;
+  mem = hypre_ParCSRMatrixMemoryLocation(parcsr);
 #endif
-
-    if (mem != HYPRE_MEMORY_HOST) PetscCall(VecGetArrayWriteAndMemType(d, (PetscScalar **)&a, NULL));
-    else PetscCall(VecGetArrayWrite(d, (PetscScalar **)&a));
-    hypre_CSRMatrixExtractDiagonal(dmat, a, 0);
-    if (mem != HYPRE_MEMORY_HOST) PetscCall(VecRestoreArrayWriteAndMemType(d, (PetscScalar **)&a));
-    else PetscCall(VecRestoreArrayWrite(d, (PetscScalar **)&a));
-  }
+  if (mem != HYPRE_MEMORY_HOST) {
+    PetscCall(VecGetArrayWriteAndMemType(d, (PetscScalar **)&a, &mtype));
+    PetscCheck(PetscMemTypeDevice(mtype), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Vector must provide device memory for a MATHYPRE matrix on the device");
+  } else PetscCall(VecGetArrayWrite(d, (PetscScalar **)&a));
+  hypre_CSRMatrixExtractDiagonal(hypre_ParCSRMatrixDiag(parcsr), a, 0);
+  if (mem != HYPRE_MEMORY_HOST) PetscCall(VecRestoreArrayWriteAndMemType(d, (PetscScalar **)&a));
+  else PetscCall(VecRestoreArrayWrite(d, (PetscScalar **)&a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2671,6 +2668,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijcusparse_hypre_C", MatProductSetFromOptions_HYPRE));
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
   PetscCall(MatSetVecType(B, VECCUDA));
+  #endif
+  #if defined(HYPRE_USING_SYCL) && PetscDefined(HAVE_SYCL) && PetscDefined(HAVE_KOKKOS_KERNELS)
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_SYCL));
+  PetscCall(MatSetVecType(B, VECKOKKOS));
   #endif
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
