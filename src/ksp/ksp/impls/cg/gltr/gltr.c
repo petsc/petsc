@@ -1,12 +1,6 @@
 #include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h> /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
-#define GLTR_PRECONDITIONED_DIRECTION   0
-#define GLTR_UNPRECONDITIONED_DIRECTION 1
-#define GLTR_DIRECTION_TYPES            2
-
-static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
-
 /*@
   KSPGLTRGetMinEig - Get minimum eigenvalue computed by `KSPGLTR`
 
@@ -264,7 +258,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   dMp    = 0.0;
   norm_d = 0.0;
   switch (cg->dtype) {
-  case GLTR_PRECONDITIONED_DIRECTION:
+  case KSP_CG_TR_NORM_PRECONDITIONED:
     norm_p = rz;
     break;
 
@@ -391,7 +385,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
     switch (cg->dtype) {
-    case GLTR_PRECONDITIONED_DIRECTION:
+    case KSP_CG_TR_NORM_PRECONDITIONED:
       norm_d = norm_dp1;
       break;
 
@@ -468,7 +462,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscCall(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
     switch (cg->dtype) {
-    case GLTR_PRECONDITIONED_DIRECTION:
+    case KSP_CG_TR_NORM_PRECONDITIONED:
       dMp    = beta * (dMp + alpha * norm_p);
       norm_p = beta * (rzm1 + beta * norm_p);
       break;
@@ -909,12 +903,32 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscFree5(cg->diag, cg->offd, cg->alpha, cg->beta, cg->norm_r));
   if (cg->alloced) PetscCall(PetscFree2(cg->rwork, cg->iwork));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGSetTRNormType_GLTR(KSP ksp, KSPCGTRNormType dtype)
+{
+  KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->dtype = dtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGGetTRNormType_GLTR(KSP ksp, KSPCGTRNormType *dtype)
+{
+  KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
+
+  PetscFunctionBegin;
+  *dtype = cg->dtype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -927,7 +941,7 @@ static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode KSPCGGetTRSolutionNorm_GLTR(KSP ksp, PetscReal *norm_d)
 {
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
@@ -965,20 +979,24 @@ static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
-  KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
+  KSPCG_GLTR     *cg    = (KSPCG_GLTR *)ksp->data;
+  KSPCGTRNormType dtype = cg->dtype;
+  PetscBool       flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP GLTR options");
 
   PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
 
-  PetscCall(PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL));
+  PetscCall(PetscOptionsDeprecated("-ksp_cg_dtype", "-ksp_cg_tr_norm_type", "3.27", NULL));
+  PetscCall(PetscOptionsEnum("-ksp_cg_tr_norm_type", "Norm used for the trust-region constraint", "KSPCGSetTRNormType", KSPCGTRNormTypes, (PetscEnum)dtype, (PetscEnum *)&dtype, &flg));
+  if (flg) PetscCall(KSPCGSetTRNormType(ksp, dtype));
 
   PetscCall(PetscOptionsReal("-ksp_cg_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, NULL));
   PetscCall(PetscOptionsReal("-ksp_cg_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, NULL));
   PetscCall(PetscOptionsReal("-ksp_cg_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, NULL));
 
-  PetscCall(PetscOptionsInt("-ksp_cg_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, NULL));
+  PetscCall(PetscOptionsInt("-ksp_cg_gltr_max_lanczos_its", "Maximum additional iterations after reaching the trust-region boundary", "", cg->max_lanczos_its, &cg->max_lanczos_its, NULL));
   PetscCall(PetscOptionsInt("-ksp_cg_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, NULL));
 
   PetscOptionsHeadEnd();
@@ -988,8 +1006,9 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOp
 /*MC
    KSPGLTR -   Code to run conjugate gradient method subject to a constraint on the solution norm, used within trust region methods {cite}`gould1999solving`
 
-   Options Database Key:
-.  -ksp_cg_radius radius - Trust Region Radius
+   Options Database Keys:
++  -ksp_cg_radius radius                                  - Trust Region Radius
+-  -ksp_cg_tr_norm_type (preconditioned|unpreconditioned) - Norm used for the trust-region constraint
 
    Level: developer
 
@@ -1021,7 +1040,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOp
 
   This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
-.seealso: [](ch_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
+.seealso: [](ch_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGSetTRNormType()`, `KSPCGGetTRSolutionNorm()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
@@ -1031,7 +1050,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&cg));
   cg->radius = 0.0;
-  cg->dtype  = GLTR_UNPRECONDITIONED_DIRECTION;
+  cg->dtype  = KSP_CG_TR_NORM_UNPRECONDITIONED;
 
   cg->init_pert  = 1.0e-8;
   cg->eigen_tol  = 1.0e-10;
@@ -1061,8 +1080,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = NULL;
 
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", KSPCGSetTRNormType_GLTR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", KSPCGGetTRNormType_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_GLTR));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", KSPCGGetNormD_GLTR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetMinEig_C", KSPGLTRGetMinEig_GLTR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGLTRGetLambda_C", KSPGLTRGetLambda_GLTR));

@@ -1140,9 +1140,35 @@ PETSC_EXTERN const char *const KSPCGTypes[];
 PETSC_EXTERN PetscErrorCode KSPCGSetType(KSP, KSPCGType);
 PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP, PetscBool);
 
+/*E
+  KSPCGTRNormType - Norm used for the trust-region constraint in `KSPCG`, `KSPSTCG`, `KSPNASH`, and `KSPGLTR`
+
+  Values:
++ `KSP_CG_TR_NORM_PRECONDITIONED`   - use $\sqrt{x^H M x}$, where the preconditioner applies $M^{-1}$
+- `KSP_CG_TR_NORM_UNPRECONDITIONED` - use the Euclidean norm $\sqrt{x^H x}$ (default)
+
+  Level: advanced
+
+  Note:
+  These norms measure the solution vector $x$. The residual norm used for convergence is selected independently with `KSPSetNormType()`.
+
+.seealso: [](ch_ksp), `KSP`, `KSPCGSetTRNormType()`, `KSPCGGetTRNormType()`, `KSPCGGetTRSolutionNorm()`, `KSPCGSetRadius()`, `KSPNormType`
+E*/
+typedef enum {
+  KSP_CG_TR_NORM_PRECONDITIONED,
+  KSP_CG_TR_NORM_UNPRECONDITIONED
+} KSPCGTRNormType;
+PETSC_EXTERN const char *const KSPCGTRNormTypes[];
+
+PETSC_EXTERN PetscErrorCode KSPCGSetTRNormType(KSP, KSPCGTRNormType);
+PETSC_EXTERN PetscErrorCode KSPCGGetTRNormType(KSP, KSPCGTRNormType *);
 PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGSetObjectiveTarget(KSP, PetscReal);
-PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP, PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGetTRSolutionNorm(KSP, PetscReal *);
+PETSC_DEPRECATED_FUNCTION(3, 27, 0, "KSPCGGetTRSolutionNorm()", ) static inline PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm)
+{
+  return KSPCGGetTRSolutionNorm(ksp, norm);
+}
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP, PetscReal *);

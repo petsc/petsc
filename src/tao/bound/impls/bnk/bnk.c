@@ -442,9 +442,9 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
   tao->ksp_its += kspits;
   tao->ksp_tot_its += kspits;
-  PetscCall(PetscObjectHasFunction((PetscObject)tao->ksp, "KSPCGGetNormD_C", &kspTR));
+  PetscCall(PetscObjectHasFunction((PetscObject)tao->ksp, "KSPCGGetTRSolutionNorm_C", &kspTR));
   if (kspTR) {
-    PetscCall(KSPCGGetNormD(tao->ksp, &bnk->dnorm));
+    PetscCall(KSPCGGetTRSolutionNorm(tao->ksp, &bnk->dnorm));
 
     if (0.0 == tao->trust) {
       /* Radius was uninitialized; use the norm of the direction */
@@ -468,7 +468,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
         tao->ksp_its += kspits;
         tao->ksp_tot_its += kspits;
-        PetscCall(KSPCGGetNormD(tao->ksp, &bnk->dnorm));
+        PetscCall(KSPCGGetTRSolutionNorm(tao->ksp, &bnk->dnorm));
 
         PetscCheck(bnk->dnorm != 0.0, PetscObjectComm((PetscObject)tao), PETSC_ERR_PLIB, "Initial direction zero");
       }

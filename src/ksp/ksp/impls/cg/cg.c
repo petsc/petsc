@@ -71,6 +71,54 @@ static PetscErrorCode KSPCGGetObjFcn_CG(KSP ksp, PetscReal *obj)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPCGSetTRNormType_CG(KSP ksp, KSPCGTRNormType dtype)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  cg->dtype = dtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGGetTRNormType_CG(KSP ksp, KSPCGTRNormType *dtype)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  *dtype = cg->dtype;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPCGGetTRSolutionNorm_CG(KSP ksp, PetscReal *norm_d)
+{
+  KSP_CG *cg = (KSP_CG *)ksp->data;
+
+  PetscFunctionBegin;
+  *norm_d = cg->norm_d;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Intersections of x + t p with the trust-region boundary, avoiding cancellation near the boundary. */
+static PetscErrorCode KSPCGBoundarySteps_Private(PetscReal norm_p, PetscReal dMp, PetscReal gap, PetscReal *positive, PetscReal *negative)
+{
+  PetscReal root;
+
+  PetscFunctionBegin;
+  *positive = *negative = 0.0;
+  if (norm_p > 0.0) {
+    gap  = PetscMax(0.0, gap);
+    root = PetscSqrtReal(dMp * dMp + norm_p * gap);
+    if (dMp >= 0.0) {
+      *negative = -(dMp + root) / norm_p;
+      if (*negative) *positive = -gap / (norm_p * *negative);
+    } else {
+      *positive = (root - dMp) / norm_p;
+      *negative = -gap / (norm_p * *positive);
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method.
 
@@ -106,6 +154,57 @@ static PetscErrorCode KSPSetUp_CG(KSP ksp)
 */
 #define VecXDot(x, y, a) (cg->type == KSP_CG_HERMITIAN ? VecDot(x, y, a) : VecTDot(x, y, a))
 
+/* Return a bounded gradient step when the first preconditioner application is indefinite. */
+static PetscErrorCode KSPCGGradientStep_Private(KSP ksp, Mat Amat, PetscReal norm_d)
+{
+  KSP_CG     *cg = (KSP_CG *)ksp->data;
+  Vec         X = ksp->vec_sol, R = ksp->work[0], Z = ksp->work[1];
+  PetscScalar rr, rAr, beta;
+  PetscReal   xTr = 0.0, positive, negative, step, dp = 0.0;
+
+  PetscFunctionBegin;
+  PetscCall(VecXDot(R, R, &rr));
+  if (!ksp->guess_zero) PetscCall(VecDotRealPart(X, R, &xTr));
+  PetscCall(KSPCGBoundarySteps_Private(PetscRealPart(rr), xTr, PetscSqr(cg->radius) - norm_d, &positive, &negative));
+  step = PetscMin(1.0, positive);
+  PetscCall(KSP_MatMult(ksp, Amat, R, Z));
+  PetscCall(VecXDot(R, Z, &rAr));
+  KSPCheckDot(ksp, rAr);
+  if (ksp->calc_sings) cg->d[0] = rAr / rr;
+  PetscCall(VecAXPY(X, step, R));
+  PetscCall(VecAXPY(R, -step, Z));
+  PetscCall(VecDotRealPart(X, X, &norm_d));
+  cg->norm_d = positive <= 1.0 ? cg->radius : PetscSqrtReal(norm_d);
+  cg->obj += PetscRealPart(step * (0.5 * step * rAr - rr));
+
+  switch (ksp->normtype) {
+  case KSP_NORM_PRECONDITIONED:
+    PetscCall(KSP_PCApply(ksp, R, Z));
+    PetscCall(VecNorm(Z, NORM_2, &dp));
+    KSPCheckNorm(ksp, dp);
+    break;
+  case KSP_NORM_UNPRECONDITIONED:
+    PetscCall(VecNorm(R, NORM_2, &dp));
+    KSPCheckNorm(ksp, dp);
+    break;
+  case KSP_NORM_NATURAL:
+    PetscCall(KSP_PCApply(ksp, R, Z));
+    PetscCall(VecXDot(Z, R, &beta));
+    KSPCheckDot(ksp, beta);
+    dp = PetscSqrtReal(PetscAbsScalar(beta));
+    break;
+  case KSP_NORM_NONE:
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  }
+  if (cg->obj_min < 0.0) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
+  ksp->rnorm = dp;
+  PetscCall(KSPLogResidualHistory(ksp, dp));
+  PetscCall(KSPMonitor(ksp, ksp->its, dp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
      KSPSolve_CG - This routine actually applies the conjugate gradient method
 
@@ -121,11 +220,11 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   PetscInt    i, stored_max_it, eigs;
   PetscScalar dpi = 0.0, a = 1.0, beta, betaold = 1.0, b = 0, *e = NULL, *d = NULL, dpiold;
   PetscReal   dp = 0.0;
-  PetscReal   r2, norm_p, norm_d, dMp;
+  PetscReal   r2, norm_p = 0.0, norm_d = 0.0, dMp = 0.0;
   Vec         X, B, Z, R, P, W;
   KSP_CG     *cg;
   Mat         Amat, Pmat;
-  PetscBool   testobj;
+  PetscBool   testobj, metric, computenorm, boundary = PETSC_FALSE;
 
   PetscFunctionBegin;
   cg            = (KSP_CG *)ksp->data;
@@ -138,6 +237,12 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
   P             = ksp->work[2];
   W             = Z;
   r2            = PetscSqr(cg->radius);
+  metric        = (PetscBool)(cg->dtype == KSP_CG_TR_NORM_PRECONDITIONED);
+  testobj       = (PetscBool)(cg->obj_min < 0.0);
+
+  PetscCheck(cg->radius >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Trust-region radius must be nonnegative");
+  PetscCheck(!metric || ksp->guess_zero, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "A nonzero initial guess is not supported with the preconditioned trust-region norm");
+  PetscCheck(!PetscDefined(USE_COMPLEX) || cg->type == KSP_CG_HERMITIAN || (!cg->radius && !testobj && !metric), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Trust-region constraints and objective targets require Hermitian CG for complex scalars");
 
   if (eigs) {
     e    = cg->e;
@@ -151,14 +256,14 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     PetscCall(KSP_MatMult(ksp, Amat, X, R)); /*    r <- b - Ax                       */
 
     PetscCall(VecAYPX(R, -1.0, B));
-    if (cg->radius) { /* XXX direction? */
-      PetscCall(VecNorm(X, NORM_2, &norm_d));
-      norm_d *= norm_d;
-    }
+    PetscCall(VecNorm(X, NORM_2, &norm_d));
+    PetscCheck(!cg->radius || norm_d <= cg->radius * (1.0 + 10.0 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Initial guess norm %g exceeds trust-region radius %g", (double)norm_d, (double)cg->radius);
+    norm_d *= norm_d;
   } else {
     PetscCall(VecCopy(B, R)); /*    r <- b (x is 0)                   */
     norm_d = 0.0;
   }
+  cg->norm_d = PetscSqrtReal(norm_d);
   /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
   PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
 
@@ -187,16 +292,18 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
 
   /* Initialize objective function
      obj = 1/2 x^T A x - x^T b */
-  testobj = (PetscBool)(cg->obj_min < 0.0);
-  PetscCall(VecXDot(R, X, &a));
-  cg->obj = 0.5 * PetscRealPart(a);
-  PetscCall(VecXDot(B, X, &a));
-  cg->obj -= 0.5 * PetscRealPart(a);
+  cg->obj = 0.0;
+  if (!ksp->guess_zero) {
+    PetscCall(VecXDot(R, X, &a));
+    cg->obj = -0.5 * PetscRealPart(a);
+    PetscCall(VecXDot(B, X, &a));
+    cg->obj -= 0.5 * PetscRealPart(a);
+  }
 
   if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", ksp->its, (double)cg->obj));
+  ksp->rnorm = dp;
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, ksp->its, dp));
-  ksp->rnorm = dp;
 
   PetscCall((*ksp->converged)(ksp, ksp->its, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
 
@@ -215,10 +322,17 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
 
   i = 0;
   do {
-    ksp->its = i + 1;
     if (beta == 0.0) {
       ksp->reason = KSP_CONVERGED_ATOL;
       PetscCall(PetscInfo(ksp, "converged due to beta = 0\n"));
+      break;
+    } else if ((metric || cg->radius || testobj) && PetscRealPart(beta) < 0.0) {
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Trust-region minimization requires a positive definite preconditioner, r^H z = %g", (double)PetscRealPart(beta));
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      if (!i && !metric && cg->radius) {
+        ksp->its = i + 1;
+        PetscCall(KSPCGGradientStep_Private(ksp, Amat, norm_d));
+      }
       break;
 #if !PetscDefined(USE_COMPLEX)
     } else if (i > 0 && beta * betaold < 0.0) {
@@ -228,11 +342,12 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       break;
 #endif
     }
+    ksp->its = i + 1;
     if (!i) {
       PetscCall(VecCopy(Z, P)); /*     p <- z                           */
-      if (cg->radius) {
-        PetscCall(VecNorm(P, NORM_2, &norm_p));
-        norm_p *= norm_p;
+      if (metric) norm_p = PetscRealPart(beta);
+      else if (cg->radius) {
+        PetscCall(VecDotRealPart(P, P, &norm_p));
         dMp = 0.0;
         if (!ksp->guess_zero) PetscCall(VecDotRealPart(X, P, &dMp));
       }
@@ -244,10 +359,12 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
         e[i] = PetscSqrtReal(PetscAbsScalar(b)) / a;
       }
       PetscCall(VecAYPX(P, b, Z)); /*     p <- z + b* p                    */
-      if (cg->radius) {
+      if (metric) {
+        dMp    = PetscRealPart(b) * (dMp + PetscRealPart(a) * norm_p);
+        norm_p = PetscRealPart(beta) + PetscSqr(PetscRealPart(b)) * norm_p;
+      } else if (cg->radius) {
         PetscCall(VecDotRealPart(X, P, &dMp));
-        PetscCall(VecNorm(P, NORM_2, &norm_p));
-        norm_p *= norm_p;
+        PetscCall(VecDotRealPart(P, P, &norm_p));
       }
     }
     dpiold = dpi;
@@ -256,56 +373,62 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     KSPCheckDot(ksp, dpi);
     betaold = beta;
 
-    if ((dpi == 0.0) || ((i > 0) && ((PetscSign(PetscRealPart(dpi)) * PetscSign(PetscRealPart(dpiold))) < 0.0))) {
+    if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b)) * e[i] + dpi / beta;
+    /* Stop for nonpositive curvature if requested or a trust-region radius is active.
+       Always stop at zero curvature (avoiding division by zero) or a curvature sign
+       change (indicating an indefinite matrix). */
+    if (((ksp->converged_neg_curve || cg->radius) && PetscRealPart(dpi) <= 0.0) || (dpi == 0.0) || ((i > 0) && ((PetscSign(PetscRealPart(dpi)) * PetscSign(PetscRealPart(dpiold))) < 0.0))) {
+      a = 0.0;
       if (cg->radius) {
-        a = 0.0;
-        if (i == 0) {
-          if (norm_p > 0.0) {
-            a = PetscSqrtReal(r2 / norm_p);
-          } else {
-            PetscCall(VecNorm(R, NORM_2, &dp));
-            a = cg->radius > dp ? 1.0 : cg->radius / dp;
-          }
-        } else if (norm_p > 0.0) {
-          a = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
-        }
-        PetscCall(VecAXPY(X, a, P)); /*     x <- x + ap                      */
-        cg->obj += PetscRealPart(a * (0.5 * a * dpi - betaold));
+        PetscReal positive, negative;
+
+        PetscCall(KSPCGBoundarySteps_Private(norm_p, dMp, r2 - norm_d, &positive, &negative));
+        a = positive;
+        if (PetscRealPart(negative * (0.5 * negative * dpi - beta)) < PetscRealPart(positive * (0.5 * positive * dpi - beta))) a = negative;
+        boundary = (PetscBool)(norm_p > 0.0);
       }
-      if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " N obj %g\n", i + 1, (double)cg->obj));
       if (ksp->converged_neg_curve) {
         PetscCall(PetscInfo(ksp, "converged due to negative curvature: %g\n", (double)(PetscRealPart(dpi))));
         ksp->reason = KSP_CONVERGED_NEG_CURVE;
+      } else if (cg->radius) {
+        PetscCall(PetscInfo(ksp, "converged to the trust region radius %g along a nonpositive curvature direction\n", (double)cg->radius));
+        ksp->reason = KSP_CONVERGED_STEP_LENGTH;
       } else {
         PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "Diverged due to indefinite matrix, dpi %g, dpiold %g", (double)PetscRealPart(dpi), (double)PetscRealPart(dpiold));
         ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
         PetscCall(PetscInfo(ksp, "diverging due to indefinite matrix\n"));
       }
-      break;
-    }
-    a = beta / dpi; /*     a = beta/p'w                     */
-    if (eigs) d[i] = PetscSqrtReal(PetscAbsScalar(b)) * e[i] + 1.0 / a;
-    if (cg->radius) { /* Steihaugh-Toint */
-      PetscReal norm_dp1 = norm_d + PetscRealPart(a) * (2.0 * dMp + PetscRealPart(a) * norm_p);
-      if (norm_dp1 > r2) {
-        ksp->reason = KSP_CONVERGED_STEP_LENGTH;
-        PetscCall(PetscInfo(ksp, "converged to the trust region radius %g\n", (double)cg->radius));
-        if (norm_p > 0.0) {
-          dp = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
-          PetscCall(VecAXPY(X, dp, P)); /*     x <- x + ap                      */
-          cg->obj += PetscRealPart(dp * (0.5 * dp * dpi - beta));
+    } else {
+      PetscCheck(PetscRealPart(dpi) >= 0.0 || !testobj, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "An objective target is not supported when continuing CG with negative curvature");
+      a = beta / dpi; /*     a = beta/p'w                     */
+      if (cg->radius) {
+        PetscReal norm_dp1 = norm_d + PetscRealPart(a) * (2.0 * dMp + PetscRealPart(a) * norm_p);
+
+        if (norm_dp1 >= r2) {
+          PetscReal positive, negative;
+
+          ksp->reason = KSP_CONVERGED_STEP_LENGTH;
+          PetscCall(PetscInfo(ksp, "converged to the trust region radius %g\n", (double)cg->radius));
+          PetscCall(KSPCGBoundarySteps_Private(norm_p, dMp, r2 - norm_d, &positive, &negative));
+          a        = positive;
+          boundary = (PetscBool)(norm_p > 0.0);
         }
-        if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " R obj %g\n", i + 1, (double)cg->obj));
-        break;
       }
     }
     PetscCall(VecAXPY(X, a, P));  /*     x <- x + ap                      */
     PetscCall(VecAXPY(R, -a, W)); /*     r <- r - aw                      */
-    if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i + 2) {
+    if (metric) norm_d = PetscMax(0.0, norm_d + PetscRealPart(a) * (2.0 * dMp + PetscRealPart(a) * norm_p));
+    else if (cg->radius) PetscCall(VecDotRealPart(X, X, &norm_d));
+    if (metric || cg->radius) cg->norm_d = PetscSqrtReal(norm_d);
+    /* TAO uses exact equality with the radius to recognize a boundary step. */
+    if (boundary) cg->norm_d = cg->radius;
+    cg->obj += PetscRealPart(a * (0.5 * a * dpi - betaold));
+    computenorm = (PetscBool)(ksp->reason || ksp->chknorm < i + 2 || i + 1 == ksp->max_it || (testobj && cg->obj <= cg->obj_min));
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED && computenorm) {
       PetscCall(KSP_PCApply(ksp, R, Z));  /*     z <- Br                          */
       PetscCall(VecNorm(Z, NORM_2, &dp)); /*     dp <- z'*z                       */
       KSPCheckNorm(ksp, dp);
-    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i + 2) {
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && computenorm) {
       PetscCall(VecNorm(R, NORM_2, &dp)); /*     dp <- r'*r                       */
       KSPCheckNorm(ksp, dp);
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
@@ -316,13 +439,12 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     } else {
       dp = 0.0;
     }
-    cg->obj -= PetscRealPart(0.5 * a * betaold);
     if (testobj) PetscCall(PetscInfo(ksp, "it %" PetscInt_FMT " obj %g\n", i + 1, (double)cg->obj));
 
     ksp->rnorm = dp;
     PetscCall(KSPLogResidualHistory(ksp, dp));
     PetscCall(KSPMonitor(ksp, i + 1, dp));
-    PetscCall((*ksp->converged)(ksp, i + 1, dp, &ksp->reason, ksp->cnvP));
+    if (!ksp->reason) PetscCall((*ksp->converged)(ksp, i + 1, dp, &ksp->reason, ksp->cnvP));
 
     if (!ksp->reason && testobj && cg->obj <= cg->obj_min) {
       PetscCall(PetscInfo(ksp, "converged to objective target minimum\n"));
@@ -330,11 +452,6 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     }
 
     if (ksp->reason) break;
-
-    if (cg->radius) {
-      PetscCall(VecNorm(X, NORM_2, &norm_d));
-      norm_d *= norm_d;
-    }
 
     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->normtype != KSP_NORM_NATURAL) || ksp->chknorm >= i + 2) PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                          */
     if (ksp->normtype != KSP_NORM_NATURAL || ksp->chknorm >= i + 2) {
@@ -345,6 +462,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (!metric && !cg->radius) PetscCall(VecNorm(X, NORM_2, &cg->norm_d));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -379,6 +497,11 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
   P             = ksp->work[2];
   S             = ksp->work[3];
   W             = ksp->work[4];
+
+  PetscCheck(!cg->radius, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Single-reduction CG does not support a trust-region radius");
+  PetscCheck(cg->obj_min >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Single-reduction CG does not support an objective target");
+  PetscCheck(!ksp->converged_neg_curve, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Single-reduction CG does not support convergence at negative curvature");
+  PetscCheck(cg->dtype == KSP_CG_TR_NORM_UNPRECONDITIONED, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Single-reduction CG does not support the preconditioned trust-region norm");
 
   if (eigs) {
     e    = cg->e;
@@ -545,6 +668,9 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGUseSingleReduction_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -574,13 +700,24 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
 PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_CG   *cg = (KSP_CG *)ksp->data;
-  PetscBool flg, flg2;
+  PetscBool flg, flg2, hasradius;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP CG and CGNE options");
   if (PetscDefined(USE_COMPLEX)) PetscCall(PetscOptionsEnum("-ksp_cg_type", "Matrix is Hermitian or complex symmetric", "KSPCGSetType", KSPCGTypes, (PetscEnum)cg->type, (PetscEnum *)&cg->type, NULL));
   PetscCall(PetscOptionsBool("-ksp_cg_single_reduction", "Merge inner products into single MPI_Allreduce()", "KSPCGUseSingleReduction", cg->singlereduction, &flg2, &flg));
   if (flg) PetscCall(KSPCGUseSingleReduction(ksp, flg2));
+  PetscCall(PetscObjectHasFunction((PetscObject)ksp, "KSPCGSetRadius_C", &hasradius));
+  if (hasradius) {
+    KSPCGTRNormType dtype  = cg->dtype;
+    PetscReal       radius = cg->radius;
+
+    PetscCall(PetscOptionsReal("-ksp_cg_radius", "Trust-region radius", "KSPCGSetRadius", radius, &radius, &flg));
+    if (flg) PetscCall(KSPCGSetRadius(ksp, radius));
+    PetscCall(PetscOptionsDeprecated("-ksp_cg_dtype", "-ksp_cg_tr_norm_type", "3.27", NULL));
+    PetscCall(PetscOptionsEnum("-ksp_cg_tr_norm_type", "Norm used for the trust-region constraint", "KSPCGSetTRNormType", KSPCGTRNormTypes, (PetscEnum)dtype, (PetscEnum *)&dtype, &flg));
+    if (flg) PetscCall(KSPCGSetTRNormType(ksp, dtype));
+  }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -616,9 +753,11 @@ static PetscErrorCode KSPCGUseSingleReduction_CG(KSP ksp, PetscBool flg)
   if (cg->singlereduction) {
     ksp->ops->solve = KSPSolve_CG_SingleReduction;
     PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   } else {
     ksp->ops->solve = KSPSolve_CG;
     PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
+    PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_CG));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -635,8 +774,10 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method {cite}`hs:52` and {cite}`malek2014preconditioning` for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_cg_type (hermitian|symmetric) - (for complex matrices only) indicates the matrix is Hermitian or symmetric, see `KSPCGSetType()`
--   -ksp_cg_single_reduction           - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
++   -ksp_cg_type (hermitian|symmetric)                     - (for complex matrices only) indicates the matrix is Hermitian or symmetric, see `KSPCGSetType()`
+.   -ksp_cg_single_reduction                               - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
+.   -ksp_cg_radius radius                                  - trust-region radius, see `KSPCGSetRadius()`
+-   -ksp_cg_tr_norm_type (preconditioned|unpreconditioned) - norm used for the trust-region constraint, see `KSPCGSetTRNormType()`
 
    Level: beginner
 
@@ -644,6 +785,17 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    The `KSPCG` method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite.
 
    `KSPCG` is the best Krylov method, `KSPType`, when the matrix and preconditioner are symmetric positive definite (SPD).
+
+   By default, consistently negative curvature is allowed when solving a negative definite system; a change of curvature sign indicates an indefinite matrix.
+   An active trust-region radius makes CG stop at the first nonpositive curvature direction, take a boundary step, and return `KSP_CONVERGED_STEP_LENGTH`.
+   With `KSPSetConvergedNegativeCurvature()`, CG instead stops at the first nonpositive curvature direction and returns `KSP_CONVERGED_NEG_CURVE`.
+   When an objective target is enabled with `KSPCGSetObjectiveTarget()`, continuing ordinary CG through negative curvature is unsupported.
+   Enable convergence on negative curvature with `KSPSetConvergedNegativeCurvature()` or provide a trust-region radius with `KSPCGSetRadius()`.
+   The reported quadratic objective remains $\frac{1}{2} x^H A x - b^H x$; for a negative definite matrix the solution maximizes this quadratic.
+
+   `KSPSTCG` uses this implementation with convergence at negative curvature enabled and the unpreconditioned residual norm by default.
+   Trust-region minimization requires a fixed symmetric positive definite preconditioner. Nonzero initial guesses must be feasible and
+   are supported only with the Euclidean norm. Complex trust-region problems require the Hermitian variant.
 
    Only left preconditioning is supported with `KSPCG`; there are several ways to motivate preconditioned CG, but they all produce the same algorithm.
    One can interpret preconditioning $A$ with $B$ to mean any of the following\:
@@ -669,7 +821,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    indicate it to the `KSP` object.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`,
-          `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
+          `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPCGSetRadius()`, `KSPCGSetTRNormType()`, `KSPSTCG`, `KSPPIPECG`, `KSPGROPPCG`
 M*/
 
 /*
@@ -685,6 +837,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   PetscFunctionBegin;
   PetscCall(PetscNew(&cg));
   cg->type    = !PetscDefined(USE_COMPLEX) ? KSP_CG_SYMMETRIC : KSP_CG_HERMITIAN;
+  cg->dtype   = KSP_CG_TR_NORM_UNPRECONDITIONED;
   cg->obj_min = 0.0;
   ksp->data   = (void *)cg;
 
@@ -715,5 +868,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetObjectiveTarget_C", KSPCGSetObjectiveTarget_CG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", KSPCGSetTRNormType_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", KSPCGGetTRNormType_CG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_CG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

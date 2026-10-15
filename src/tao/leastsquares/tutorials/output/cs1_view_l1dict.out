@@ -35,11 +35,11 @@ Tao Object: 1 MPI process
         Gradient steps: 0
         KSP termination reasons:
           atol: 0
-          rtol: 5
+          rtol: 6
           ctol: 13
           negc: 0
           dtol: 0
-          iter: 1
+          iter: 0
           othr: 0
       TaoLineSearch Object: (tao_brgn_subsolver_) 1 MPI process
         type: more-thuente
@@ -79,9 +79,9 @@ Tao Object: 1 MPI process
         Mat Object: 1 MPI process
           type: shell
           rows=5, cols=5
-      total KSP iterations: 60
+      total KSP iterations: 61
       convergence tolerances: gatol=1e-06,       grtol=1e-08,       steptol=0.,       gttol=0.
-      Residual in Function/Gradient:=7.45232e-07
+      Residual in Function/Gradient:=7.45133e-07
       Objective value=0.000199924
       total number of iterations=19,                              (max: 10000)
       total number of function/gradient evaluations=96,          (max: unlimited)

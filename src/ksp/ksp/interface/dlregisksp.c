@@ -107,6 +107,7 @@ PetscErrorCode PCInitializePackage(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+const char *const        KSPCGTRNormTypes[]                       = {"preconditioned", "unpreconditioned", "KSPCGTRNormType", "KSP_CG_TR_NORM_", NULL};
 const char *const        KSPCGTypes[]                             = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
 const char *const        KSPOrthogonalizationCGSRefinementTypes[] = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPOrthogonalizationCGSRefinementType", "KSP_ORTHOGONALIZATION_CGS_", NULL};
 const char *const        KSPNormTypes_Shifted[]                   = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};

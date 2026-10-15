@@ -53,6 +53,10 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
 
   It requires two extra work vectors than the conventional implementation in PETSc.
 
+  An active trust-region radius, a preconditioned trust-region norm, a negative objective target, or convergence at negative curvature
+  is unsupported and raises an error during `KSPSolve()` when this variant is enabled.
+  This variant does not compute the objective returned by `KSPCGGetObjFcn()` or the solution norm returned by `KSPCGGetTRSolutionNorm()`.
+
   See also `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG` that use non-blocking reductions. [](sec_pipelineksp),
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`
@@ -67,18 +71,84 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
 }
 
 /*@
-  KSPCGSetRadius - Sets the radius of the trust region used by the `KSPCG` when the solver is used inside `SNESNEWTONTR`
+  KSPCGSetTRNormType - Sets the norm used for the trust-region constraint
+
+  Logically Collective
+
+  Input Parameters:
++ ksp      - the iterative context
+- normtype - the trust-region norm type
+
+  Options Database Key:
+. -ksp_cg_tr_norm_type (preconditioned|unpreconditioned) - select the trust-region norm
+
+  Level: advanced
+
+  Notes:
+  Supported by `KSPCG`, `KSPSTCG`, `KSPNASH`, and `KSPGLTR`. The default is `KSP_CG_TR_NORM_UNPRECONDITIONED`.
+  This choice does not change the residual norm selected by `KSPSetNormType()`.
+
+  If the preconditioner applies $M^{-1}$, `KSP_CG_TR_NORM_PRECONDITIONED` uses $\sqrt{x^H M x}$ for the solution vector $x$.
+  The preconditioner must be symmetric positive definite. `KSP_CG_TR_NORM_UNPRECONDITIONED` uses
+  the Euclidean norm.
+
+  `KSPCG` and `KSPSTCG` support nonzero initial guesses only with the Euclidean norm.
+
+.seealso: [](ch_ksp), `KSP`, `KSPCGTRNormType`, `KSPCGGetTRNormType()`, `KSPCGSetRadius()`, `KSPSetNormType()`
+@*/
+PetscErrorCode KSPCGSetTRNormType(KSP ksp, KSPCGTRNormType normtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscValidLogicalCollectiveEnum(ksp, normtype, 2);
+  PetscTryMethod(ksp, "KSPCGSetTRNormType_C", (KSP, KSPCGTRNormType), (ksp, normtype));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPCGGetTRNormType - Gets the norm used for the trust-region constraint
+
+  Not Collective
+
+  Input Parameter:
+. ksp - the iterative context
+
+  Output Parameter:
+. normtype - the trust-region norm type
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `KSP`, `KSPCGTRNormType`, `KSPCGSetTRNormType()`, `KSPCGSetRadius()`
+@*/
+PetscErrorCode KSPCGGetTRNormType(KSP ksp, KSPCGTRNormType *normtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
+  PetscAssertPointer(normtype, 2);
+  PetscUseMethod(ksp, "KSPCGGetTRNormType_C", (KSP, KSPCGTRNormType *), (ksp, normtype));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPCGSetRadius - Sets the trust-region radius for a conjugate gradient solver
 
   Logically Collective
 
   Input Parameters:
 + ksp    - the iterative context
-- radius - the trust region radius (0 is the default that disable the use of the radius)
+- radius - the nonnegative trust-region radius (0, the default, disables the constraint)
+
+  Options Database Key:
+. -ksp_cg_radius radius - trust-region radius
 
   Level: advanced
 
-  Note:
-  When radius is greater than 0, the Steihaugh-Toint trick is used
+  Notes:
+  Supported by `KSPCG`, `KSPSTCG`, `KSPNASH`, and `KSPGLTR`.
+  `KSPCG` and `KSPSTCG` truncate steps at the boundary using the norm selected by `KSPCGSetTRNormType()`.
+  An active radius also causes them to take a boundary step at the first nonpositive curvature direction.
+  The convergence reason is `KSP_CONVERGED_STEP_LENGTH`, or `KSP_CONVERGED_NEG_CURVE` if `KSPSetConvergedNegativeCurvature()` is enabled.
+  A nonzero initial guess must satisfy the constraint.
 
 .seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
@@ -119,24 +189,31 @@ PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 }
 
 /*@
-  KSPCGGetNormD - Get norm of the direction when the solver is used inside `SNESNEWTONTR`
+  KSPCGGetTRSolutionNorm - Gets the solution norm used for the trust-region constraint
 
-  Not collective
+  Not Collective
 
-  Input Parameters:
-+ ksp    - the iterative context
-- norm_d - the norm of the direction
+  Input Parameter:
+. ksp - the iterative context
+
+  Output Parameter:
+. norm - the solution norm
 
   Level: advanced
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
+  Notes:
+  The solution norm is computed using the norm type selected by `KSPCGSetTRNormType()` and is available after `KSPSolve()`.
+  For `KSPCG` and `KSPSTCG` with an active radius, it is also updated before each monitor call.
+  The single-reduction variant does not provide this quantity.
+
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `KSPCGSetTRNormType()`, `SNESNEWTONTR`
 @*/
-PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
+PetscErrorCode KSPCGGetTRSolutionNorm(KSP ksp, PetscReal *norm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscAssertPointer(norm_d, 2);
-  PetscUseMethod(ksp, "KSPCGGetNormD_C", (KSP, PetscReal *), (ksp, norm_d));
+  PetscAssertPointer(norm, 2);
+  PetscUseMethod(ksp, "KSPCGGetTRSolutionNorm_C", (KSP, PetscReal *), (ksp, norm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
