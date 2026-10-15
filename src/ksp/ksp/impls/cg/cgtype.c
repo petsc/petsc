@@ -53,6 +53,10 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
 
   It requires two extra work vectors than the conventional implementation in PETSc.
 
+  An active trust-region radius, a preconditioned trust-region norm, a negative objective target, or convergence at negative curvature
+  is unsupported and raises an error during `KSPSolve()` when this variant is enabled.
+  This variant does not compute the objective returned by `KSPCGGetObjFcn()` or the solution norm returned by `KSPCGGetTRSolutionNorm()`.
+
   See also `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG` that use non-blocking reductions. [](sec_pipelineksp),
 
 .seealso: [](ch_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`
