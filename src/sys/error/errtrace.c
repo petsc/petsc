@@ -87,8 +87,7 @@ PetscErrorCode PetscErrorPrintfNone(const char format[], ...)
 @*/
 PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 {
-  va_list          Argp;
-  static PetscBool PetscErrorPrintfCalled = PETSC_FALSE;
+  va_list Argp;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -96,8 +95,6 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 
       This function does not do error checking because it is called by the error handlers.
   */
-
-  if (!PetscErrorPrintfCalled) PetscErrorPrintfCalled = PETSC_TRUE;
 
   (void)PetscFPrintf(PETSC_COMM_SELF, PETSC_STDERR, "[%d]PETSC ERROR: ", PetscGlobalRank);
   va_start(Argp, format);

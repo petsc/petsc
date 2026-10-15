@@ -411,10 +411,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   */
   if (func) {
     (void)PetscStrncmp(func, "main", 4, &ismain);
-    if (ismain) {
-      if (petscwaitonerrorflg) (void)PetscSleep(1000);
-      PETSCABORT(comm, ierr);
-    }
+    if (ismain) PETSCABORT(comm, ierr);
   }
 #if PetscDefined(CLANGUAGE_CXX)
   if (p == PETSC_ERROR_IN_CXX) PetscCxxErrorThrow();
