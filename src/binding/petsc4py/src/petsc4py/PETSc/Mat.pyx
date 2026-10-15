@@ -4542,15 +4542,67 @@ cdef class Mat(Object):
 
         Collective.
 
-        The zeroed entries are kept in the sparsity pattern.
+        The zeroed entries are kept in the sparsity pattern. Use `filter`
+        with ``compress=True`` to remove them from it.
 
         See Also
         --------
-        petsc.MatFilter
+        filter, eliminateZeros, petsc.MatFilter
 
         """
         cdef PetscReal rval = asReal(tol)
         CHKERR(MatFilter(self.mat, rval, PETSC_FALSE, PETSC_FALSE))
+
+    def filter(self, tol: float, compress: bool = False, keep_diagonal: bool = False) -> None:
+        """Set entries with an absolute value of at most tol to zero.
+
+        Collective.
+
+        Parameters
+        ----------
+        tol
+            The zero tolerance.
+        compress
+            Whether the storage should be compressed once the entries of
+            at most ``tol`` are set to zero, removing them from the
+            sparsity pattern rather than storing them as zeros. Ignored
+            by matrix types that do not support `eliminateZeros`, such as
+            dense matrices, which keep the zeroed entries.
+        keep_diagonal
+            If ``compress`` is `True` and the diagonal coefficient of a
+            row is at most ``tol``, whether to leave it in the structure
+            rather than eliminate it as well.
+
+        See Also
+        --------
+        chop, eliminateZeros, petsc.MatFilter
+
+        """
+        cdef PetscReal rval = asReal(tol)
+        cdef PetscBool ccompress = asBool(compress)
+        cdef PetscBool ckeep = asBool(keep_diagonal)
+        CHKERR(MatFilter(self.mat, rval, ccompress, ckeep))
+
+    def eliminateZeros(self, keep_diagonal: bool = False) -> None:
+        """Eliminate the zero entries from the sparsity pattern.
+
+        Collective.
+
+        The matrix is modified in place, reusing the same memory.
+
+        Parameters
+        ----------
+        keep_diagonal
+            If the diagonal coefficient of a row is zero, whether to
+            leave it in the structure rather than eliminate it as well.
+
+        See Also
+        --------
+        filter, petsc.MatEliminateZeros
+
+        """
+        cdef PetscBool ckeep = asBool(keep_diagonal)
+        CHKERR(MatEliminateZeros(self.mat, ckeep))
 
     def setRandom(self, Random random=None) -> None:
         """Set random values in the matrix.

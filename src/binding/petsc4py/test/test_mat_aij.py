@@ -319,6 +319,30 @@ class BaseTestMatAnyAIJ:
         self.assertTrue(np.array_equal(aj, aj2))
         self.assertTrue(np.allclose(av2, np.where(abs(av) > tol, av, 0)))
 
+    def testFilter(self):
+        tol, (_, aj, av) = self._assemble_with_small_entries()
+        self.A.filter(tol)
+        _, aj2, av2 = self._get_values_csr()
+        self.assertTrue(np.array_equal(aj, aj2))
+        self.assertTrue(np.allclose(av2, np.where(abs(av) > tol, av, 0)))
+
+    def testFilterCompress(self):
+        if 'crl' in self.A.getType():
+            self.skipTest('AIJCRL does not support compressing the pattern')
+        tol, (_, aj, av) = self._assemble_with_small_entries()
+        self.A.filter(tol, compress=True)
+        _, aj2, av2 = self._get_values_csr()
+        self.assertTrue(np.array_equal(aj2, aj[abs(av) > tol]))
+        self.assertTrue(np.allclose(av2, av[abs(av) > tol]))
+
+    def testEliminateZeros(self):
+        tol, (_, aj, av) = self._assemble_with_small_entries()
+        self.A.chop(tol)
+        self.A.eliminateZeros()
+        _, aj2, av2 = self._get_values_csr()
+        self.assertTrue(np.array_equal(aj2, aj[abs(av) > tol]))
+        self.assertTrue(np.allclose(av2, av[abs(av) > tol]))
+
     def testConvertToSAME(self):
         self._preallocate()
         self._set_values_ijv()
