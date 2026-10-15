@@ -513,7 +513,7 @@ static PetscErrorCode KSPCGDestroy_NASH(KSP ksp)
   /***************************************************************************/
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
 
   /***************************************************************************/
@@ -533,7 +533,7 @@ static PetscErrorCode KSPCGSetRadius_NASH(KSP ksp, PetscReal radius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPCGGetNormD_NASH(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode KSPCGGetTRSolutionNorm_NASH(KSP ksp, PetscReal *norm_d)
 {
   KSPCG_NASH *cg = (KSPCG_NASH *)ksp->data;
 
@@ -603,7 +603,7 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems PetscOp
 
    The preconditioner supplied must be symmetric and positive definite.
 
-.seealso: [](ch_ksp), `KSPQCG`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
+.seealso: [](ch_ksp), `KSPQCG`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetTRSolutionNorm()`, `KSPCGGetObjFcn()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
@@ -636,7 +636,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->view           = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_NASH));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", KSPCGGetNormD_NASH));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_NASH));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_NASH));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

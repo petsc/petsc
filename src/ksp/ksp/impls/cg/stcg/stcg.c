@@ -536,7 +536,7 @@ static PetscErrorCode KSPCGDestroy_STCG(KSP ksp)
   /***************************************************************************/
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", NULL));
 
   /***************************************************************************/
@@ -556,7 +556,7 @@ static PetscErrorCode KSPCGSetRadius_STCG(KSP ksp, PetscReal radius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPCGGetNormD_STCG(KSP ksp, PetscReal *norm_d)
+static PetscErrorCode KSPCGGetTRSolutionNorm_STCG(KSP ksp, PetscReal *norm_d)
 {
   KSPCG_STCG *cg = (KSPCG_STCG *)ksp->data;
 
@@ -623,7 +623,7 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems PetscOp
 
   The preconditioner supplied should be symmetric and positive definite.
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPNASH`, `KSPGLTR`, `KSPQCG`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetTRSolutionNorm()`, `KSPCGGetObjFcn()`, `KSPNASH`, `KSPGLTR`, `KSPQCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
@@ -657,7 +657,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)
   ksp->ops->view           = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetRadius_C", KSPCGSetRadius_STCG));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetNormD_C", KSPCGGetNormD_STCG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRSolutionNorm_C", KSPCGGetTRSolutionNorm_STCG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetObjFcn_C", KSPCGGetObjFcn_STCG));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

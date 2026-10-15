@@ -1142,7 +1142,11 @@ PETSC_EXTERN PetscErrorCode KSPCGUseSingleReduction(KSP, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPCGSetRadius(KSP, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPCGSetObjectiveTarget(KSP, PetscReal);
-PETSC_EXTERN PetscErrorCode KSPCGGetNormD(KSP, PetscReal *);
+PETSC_EXTERN PetscErrorCode KSPCGGetTRSolutionNorm(KSP, PetscReal *);
+PETSC_DEPRECATED_FUNCTION(3, 27, 0, "KSPCGGetTRSolutionNorm()", ) static inline PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm)
+{
+  return KSPCGGetTRSolutionNorm(ksp, norm);
+}
 PETSC_EXTERN PetscErrorCode KSPCGGetObjFcn(KSP, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode KSPGLTRGetMinEig(KSP, PetscReal *);

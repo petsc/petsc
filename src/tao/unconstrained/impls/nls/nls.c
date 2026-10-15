@@ -278,7 +278,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
       PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
       tao->ksp_its += kspits;
       tao->ksp_tot_its += kspits;
-      PetscCall(KSPCGGetNormD(tao->ksp, &norm_d));
+      PetscCall(KSPCGGetTRSolutionNorm(tao->ksp, &norm_d));
 
       if (0.0 == tao->trust) {
         /* Radius was uninitialized; use the norm of the direction */
@@ -302,7 +302,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
           PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
           tao->ksp_its += kspits;
           tao->ksp_tot_its += kspits;
-          PetscCall(KSPCGGetNormD(tao->ksp, &norm_d));
+          PetscCall(KSPCGGetTRSolutionNorm(tao->ksp, &norm_d));
 
           PetscCheck(norm_d != 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Initial direction zero");
         }

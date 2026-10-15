@@ -119,24 +119,26 @@ PetscErrorCode KSPCGSetObjectiveTarget(KSP ksp, PetscReal obj)
 }
 
 /*@
-  KSPCGGetNormD - Get norm of the direction when the solver is used inside `SNESNEWTONTR`
+  KSPCGGetTRSolutionNorm - Gets the solution norm used for the trust-region constraint
 
-  Not collective
+  Not Collective
 
-  Input Parameters:
-+ ksp    - the iterative context
-- norm_d - the norm of the direction
+  Input Parameter:
+. ksp - the iterative context
+
+  Output Parameter:
+. norm - the solution norm
 
   Level: advanced
 
 .seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/
-PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
+PetscErrorCode KSPCGGetTRSolutionNorm(KSP ksp, PetscReal *norm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscAssertPointer(norm_d, 2);
-  PetscUseMethod(ksp, "KSPCGGetNormD_C", (KSP, PetscReal *), (ksp, norm_d));
+  PetscAssertPointer(norm, 2);
+  PetscUseMethod(ksp, "KSPCGGetTRSolutionNorm_C", (KSP, PetscReal *), (ksp, norm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
