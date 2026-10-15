@@ -22,7 +22,6 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-parms=1',
-  # no with-cxx-dialect=C++11 support '--download-elemental=1',
   #'--download-hdf5',
   '--download-sundials2=1',
   '--download-hypre=1',
