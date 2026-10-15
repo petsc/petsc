@@ -322,6 +322,7 @@ class Installer(script.Script):
       # petsc is installed in site-packages
       petscdir = os.path.join(pysitedir, 'petsc')
       petsclibdir = os.path.join(petscdir, 'lib')
+      pydir_from_petsc = os.path.relpath(pydir, petscdir)
     for filename in (
       self.destIncludeDir + '/petscconf.h',
       self.destIncludeDir + '/petscconfiginfo.h',
@@ -339,7 +340,6 @@ class Installer(script.Script):
       contents = contents.replace(self.installDir, '${PETSC_DIR}')
       contents = contents.replace(self.rootDir, '${PETSC_DIR}')
       if self.relocate_py_env:
-        pydir_from_petsc = os.path.relpath(pydir, petscdir)
         contents = contents.replace(pydir, os.path.join('${PETSC_DIR}', pydir_from_petsc))
       contents = re.sub(
         r'^(PYTHON(_EXE)?) = (.*)$',
@@ -356,6 +356,8 @@ class Installer(script.Script):
       with open(filename, 'r') as oldFile:
         contents = oldFile.read()
       contents = contents.replace(self.installDir, '${pcfiledir}/../..')
+      if self.relocate_py_env:
+        contents = contents.replace(pydir, os.path.join('${pcfiledir}/../..', pydir_from_petsc))
       with open(filename, 'w') as newFile:
         newFile.write(contents)
     #
