@@ -52,6 +52,10 @@ cdef extern from * nogil:
     PetscKSPType KSPIDR
     PetscKSPType KSPEKSM
 
+    ctypedef enum PetscKSPCGTRNormType "KSPCGTRNormType":
+        KSP_CG_TR_NORM_PRECONDITIONED
+        KSP_CG_TR_NORM_UNPRECONDITIONED
+
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_DEFAULT
         KSP_NORM_NONE
@@ -247,6 +251,11 @@ cdef extern from * nogil:
     PetscErrorCode KSPEKSMGetShift(PetscKSP, PetscScalar*)
 
     PetscErrorCode KSPCGGetObjFcn(PetscKSP, PetscReal*)
+    PetscErrorCode KSPCGSetRadius(PetscKSP, PetscReal)
+    PetscErrorCode KSPCGSetObjectiveTarget(PetscKSP, PetscReal)
+    PetscErrorCode KSPCGGetTRSolutionNorm(PetscKSP, PetscReal*)
+    PetscErrorCode KSPCGSetTRNormType(PetscKSP, PetscKSPCGTRNormType)
+    PetscErrorCode KSPCGGetTRNormType(PetscKSP, PetscKSPCGTRNormType*)
 
     PetscErrorCode KSPPythonSetType(PetscKSP, char[])
     PetscErrorCode KSPPythonGetType(PetscKSP, char*[])
@@ -262,6 +271,15 @@ cdef extern from * nogil: # custom.h
     PetscErrorCode KSPAddConvergenceTest(PetscKSP, PetscKSPConvergedFunction, PetscBool)
 
 # -----------------------------------------------------------------------------
+
+cdef inline PetscKSPCGTRNormType asCGTRNormType(object normtype) except <PetscKSPCGTRNormType>(-1):
+    if isinstance(normtype, str):
+        normtype = normtype.upper()
+        try:
+            return getattr(KSP.CGTRNormType, normtype)
+        except AttributeError:
+            raise ValueError("unknown CG trust-region norm type: %s" % normtype)
+    return normtype
 
 cdef inline KSP ref_KSP(PetscKSP ksp):
     cdef KSP ob = <KSP> KSP()

@@ -228,6 +228,24 @@ class KSPType(object):
     EKSM       = S_(KSPEKSM)
 
 
+class KSPCGTRNormType(object):
+    """`petsc.KSPCG` norm types for the trust-region constraint.
+
+    `PRECONDITIONED`
+        Use the norm induced by the symmetric positive definite matrix whose
+        inverse is applied by the preconditioner.
+    `UNPRECONDITIONED`
+        Use the Euclidean norm (default).
+
+    See Also
+    --------
+    KSP.setCGTRNormType, petsc.KSPCGTRNormType
+
+    """
+    PRECONDITIONED   = KSP_CG_TR_NORM_PRECONDITIONED
+    UNPRECONDITIONED = KSP_CG_TR_NORM_UNPRECONDITIONED
+
+
 class KSPNormType(object):
     """KSP norm type.
 
@@ -410,6 +428,7 @@ cdef class KSP(Object):
     """
 
     Type            = KSPType
+    CGTRNormType    = KSPCGTRNormType
     NormType        = KSPNormType
     ConvergedReason = KSPConvergedReason
     HPDDMType       = KSPHPDDMType
@@ -1976,6 +1995,104 @@ cdef class KSP(Object):
         CHKERR(KSPCGGetObjFcn(self.ksp, &cval))
         return cval
 
+    def setCGTRNormType(self, normtype: KSP.CGTRNormType | str) -> None:
+        """Set the norm type for the `petsc.KSPCG` trust-region constraint.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        normtype
+            The trust-region norm type, as a `CGTRNormType` value or the string
+            ``'preconditioned'`` or ``'unpreconditioned'``.
+
+        Notes
+        -----
+        The norm type selects the norm used for the trust-region
+        constraint in `petsc.KSPCG`, `petsc.KSPSTCG`, `petsc.KSPNASH`, and
+        `petsc.KSPGLTR`. It does not change the residual norm selected by
+        `setNormType`.
+
+        See Also
+        --------
+        getCGTRNormType, setCGRadius, petsc.KSPCGSetTRNormType
+
+        """
+        cdef PetscKSPCGTRNormType ctype = asCGTRNormType(normtype)
+        CHKERR(KSPCGSetTRNormType(self.ksp, ctype))
+
+    def getCGTRNormType(self) -> KSP.CGTRNormType:
+        """Return the norm type for the `petsc.KSPCG` trust-region constraint.
+
+        Not collective.
+
+        See Also
+        --------
+        setCGTRNormType, petsc.KSPCGGetTRNormType
+
+        """
+        cdef PetscKSPCGTRNormType ctype = KSP_CG_TR_NORM_UNPRECONDITIONED
+        CHKERR(KSPCGGetTRNormType(self.ksp, &ctype))
+        return ctype
+
+    def setCGRadius(self, radius: float) -> None:
+        """Set the `petsc.KSPCG` trust-region radius.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        radius
+            Nonnegative radius. Zero, the default, disables the constraint.
+
+        See Also
+        --------
+        setCGTRNormType, getCGTRSolutionNorm, petsc.KSPCGSetRadius
+
+        """
+        cdef PetscReal rval = asReal(radius)
+        CHKERR(KSPCGSetRadius(self.ksp, rval))
+
+    def setCGObjectiveTarget(self, target: float) -> None:
+        """Set the target value for the `petsc.KSPCG` quadratic objective.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        target
+            Stop when the quadratic objective reaches this value or less.
+            A nonnegative value, including the default zero, disables the test.
+
+        See Also
+        --------
+        getCGObjectiveValue, petsc.KSPCGSetObjectiveTarget
+
+        """
+        cdef PetscReal rval = asReal(target)
+        CHKERR(KSPCGSetObjectiveTarget(self.ksp, rval))
+
+    def getCGTRSolutionNorm(self) -> float:
+        """Return the solution norm used for the trust-region constraint.
+
+        Not collective.
+
+        Notes
+        -----
+        Computed using the norm type selected by `setCGTRNormType` and
+        available after `solve`. `petsc.KSPCG` and `petsc.KSPSTCG` also update
+        it before each monitor call when the radius is active. The
+        single-reduction `petsc.KSPCG` variant does not provide this quantity.
+
+        See Also
+        --------
+        setCGTRNormType, setCGRadius, petsc.KSPCGGetTRSolutionNorm
+
+        """
+        cdef PetscReal rval = 0
+        CHKERR(KSPCGGetTRSolutionNorm(self.ksp, &rval))
+        return toReal(rval)
+
     def setHPDDMType(self, hpddm_type: HPDDMType) -> None:
         """Set the Krylov solver type.
 
@@ -2758,6 +2875,7 @@ cdef class KSP(Object):
 # --------------------------------------------------------------------
 
 del KSPType
+del KSPCGTRNormType
 del KSPNormType
 del KSPConvergedReason
 del KSPHPDDMType

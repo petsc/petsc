@@ -284,6 +284,98 @@ class BaseTestKSP:
 # --------------------------------------------------------------------
 
 
+class TestKSPCGTRNormType(unittest.TestCase):
+    def setUp(self):
+        self.ksp = PETSc.KSP().create(PETSc.COMM_SELF)
+        self.ksp.setOptionsPrefix('cg_tr_norm_')
+        self.opts = PETSc.Options(self.ksp)
+
+    def tearDown(self):
+        del self.opts['ksp_cg_tr_norm_type']
+        self.ksp.destroy()
+
+    def testTRNormType(self):
+        dtype = PETSc.KSP.CGTRNormType
+        for solver in (
+            PETSc.KSP.Type.CG,
+            PETSc.KSP.Type.STCG,
+            PETSc.KSP.Type.NASH,
+            PETSc.KSP.Type.GLTR,
+        ):
+            with self.subTest(solver=solver):
+                self.ksp.setType(solver)
+                self.assertEqual(self.ksp.getCGTRNormType(), dtype.UNPRECONDITIONED)
+                self.ksp.setNormType(PETSc.KSP.NormType.UNPRECONDITIONED)
+                for name, value in (
+                    ('preconditioned', dtype.PRECONDITIONED),
+                    ('unpreconditioned', dtype.UNPRECONDITIONED),
+                ):
+                    for selection in (value, name, name.upper()):
+                        self.ksp.setCGTRNormType(selection)
+                        self.ksp.setFromOptions()
+                        self.assertEqual(self.ksp.getCGTRNormType(), value)
+                        self.assertEqual(
+                            self.ksp.getNormType(), PETSc.KSP.NormType.UNPRECONDITIONED
+                        )
+                for name, value in (
+                    ('preconditioned', dtype.PRECONDITIONED),
+                    ('unpreconditioned', dtype.UNPRECONDITIONED),
+                ):
+                    self.opts['ksp_cg_tr_norm_type'] = name
+                    self.ksp.setFromOptions()
+                    del self.opts['ksp_cg_tr_norm_type']
+                    self.assertEqual(self.ksp.getCGTRNormType(), value)
+
+
+class TestKSPCGTrustRegion(unittest.TestCase):
+    def setUp(self):
+        self.A = PETSc.Mat().createAIJ([2, 2], nnz=2, comm=PETSc.COMM_SELF)
+        self.A.setValues([0, 1], [0, 1], [[2, 1], [1, 3]])
+        self.A.assemble()
+        self.x, self.b = self.A.createVecs()
+        self.work = self.x.duplicate()
+        self.b.set(1)
+        self.ksp = PETSc.KSP().create(PETSc.COMM_SELF)
+        self.ksp.setOperators(self.A)
+        self.ksp.getPC().setType(PETSc.PC.Type.NONE)
+
+    def tearDown(self):
+        self.ksp.destroy()
+        self.work.destroy()
+        self.x.destroy()
+        self.b.destroy()
+        self.A.destroy()
+
+    def checkObjective(self):
+        self.A.mult(self.x, self.work)
+        objective = (0.5 * self.x.dot(self.work) - self.x.dot(self.b)).real
+        self.assertAlmostEqual(self.ksp.getCGObjectiveValue(), objective)
+
+    def testRadius(self):
+        for solver in (PETSc.KSP.Type.CG, PETSc.KSP.Type.STCG):
+            with self.subTest(solver=solver):
+                self.ksp.setType(solver)
+                self.ksp.setCGRadius(0.25)
+                self.ksp.solve(self.b, self.x)
+                self.assertEqual(
+                    self.ksp.reason, PETSc.KSP.ConvergedReason.CONVERGED_STEP_LENGTH
+                )
+                self.assertAlmostEqual(self.x.norm(), 0.25)
+                self.assertAlmostEqual(self.ksp.getCGTRSolutionNorm(), self.x.norm())
+                self.checkObjective()
+
+    def testObjectiveTarget(self):
+        for solver in (PETSc.KSP.Type.CG, PETSc.KSP.Type.STCG):
+            with self.subTest(solver=solver):
+                self.ksp.setType(solver)
+                self.ksp.setCGObjectiveTarget(-0.2)
+                self.ksp.solve(self.b, self.x)
+                self.assertEqual(self.ksp.its, 1)
+                self.assertLessEqual(self.ksp.getCGObjectiveValue(), -0.2)
+                self.assertAlmostEqual(self.ksp.getCGTRSolutionNorm(), self.x.norm())
+                self.checkObjective()
+
+
 class TestKSPPREONLY(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.PREONLY
     PC_TYPE = PETSc.PC.Type.LU
