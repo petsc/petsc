@@ -931,6 +931,8 @@ static PetscErrorCode MatSetRandom_Nest(Mat A, PetscRandom rctx)
       if (bA->m[i][j]) PetscCall(MatSetRandom(bA->m[i][j], rctx));
     }
   }
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

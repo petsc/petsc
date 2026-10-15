@@ -838,13 +838,16 @@ static PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **
 
 static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
 {
-  Mat_MPISELL *sell = (Mat_MPISELL *)x->data;
+  Mat_MPISELL *sell             = (Mat_MPISELL *)x->data;
+  PetscBool    nooffprocentries = x->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(MatSetRandom(sell->A, rctx));
   PetscCall(MatSetRandom(sell->B, rctx));
+  PetscCall(MatSetOption(x, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(MatAssemblyBegin(x, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(x, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(x, MAT_NO_OFF_PROC_ENTRIES, nooffprocentries));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
