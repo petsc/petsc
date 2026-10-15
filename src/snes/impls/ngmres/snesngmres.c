@@ -24,6 +24,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscCall(SNESReset_NGMRES(snes));
   PetscCall(PetscFree4(ngmres->h, ngmres->beta, ngmres->xi, ngmres->q));
   PetscCall(PetscFree3(ngmres->xnorms, ngmres->fnorms, ngmres->s));
+  PetscCall(PetscFree3(ngmres->window, ngmres->Fwindow, ngmres->Xwindow));
 #if PetscDefined(USE_COMPLEX)
   PetscCall(PetscFree(ngmres->rwork));
 #endif
@@ -61,6 +62,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     /* explicit least squares minimization solve */
     PetscCall(PetscCalloc4(hsize, &ngmres->h, msize, &ngmres->beta, msize, &ngmres->xi, hsize, &ngmres->q));
     PetscCall(PetscMalloc3(msize, &ngmres->xnorms, msize, &ngmres->fnorms, msize, &ngmres->s));
+    PetscCall(PetscMalloc3(msize, &ngmres->window, msize, &ngmres->Fwindow, msize, &ngmres->Xwindow));
     ngmres->nrhs = 1;
     PetscCall(PetscBLASIntCast(msize, &ngmres->lda));
     PetscCall(PetscBLASIntCast(msize, &ngmres->ldb));
@@ -202,9 +204,10 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, F, fnorm, X));
 
-  k_restart = 1;
-  l         = 1;
-  ivec      = 0;
+  k_restart           = 1;
+  l                   = 1;
+  ivec                = 0;
+  ngmres->window_size = ngmres->msize;
   for (k = 1; k < snes->max_its + 1; k++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
@@ -290,7 +293,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
       PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, FM, fMnorm, XM));
     } else {
       /* select the current size of the subspace */
-      if (l < ngmres->msize) l++;
+      if (l < ngmres->window_size) l++;
       k_restart++;
       /* place the current entry in the list of previous entries */
       if (ngmres->candidate) {
