@@ -1,6 +1,49 @@
 static char help[] = "Test MatSetValuesCOO() for MPIAIJ and its subclasses \n\n";
 
 #include <petscmat.h>
+
+/*
+  Checks that MatSetValuesCOO() can still be called after MatShift() on a matrix with m local rows and n local columns, whose COO
+  pattern already contains every diagonal entry so the shift creates no new nonzeros
+*/
+static PetscErrorCode TestShiftCOO(PetscInt m, PetscInt n)
+{
+  Mat          D;
+  PetscInt     rstart, rend, N, ncoo;
+  PetscInt    *coo_i, *coo_j;
+  PetscScalar  readback, expected;
+  PetscScalar *coo_v;
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &D));
+  PetscCall(MatSetSizes(D, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetFromOptions(D));
+  PetscCall(MatGetOwnershipRange(D, &rstart, &rend));
+  ncoo = 2 * (rend - rstart);
+  PetscCall(PetscMalloc3(ncoo, &coo_i, ncoo, &coo_j, ncoo, &coo_v));
+  for (PetscInt r = rstart, k = 0; r < rend; r++) {
+    coo_i[k]   = r;
+    coo_j[k++] = r % N;
+    coo_i[k]   = r;
+    coo_j[k++] = (r + 1) % N;
+  }
+  for (PetscInt k = 0; k < ncoo; k++) coo_v[k] = 1.0;
+  PetscCall(MatSetPreallocationCOO(D, ncoo, coo_i, coo_j));
+  PetscCall(MatSetValuesCOO(D, coo_v, INSERT_VALUES));
+  PetscCall(MatShift(D, 2.0));
+  PetscCall(MatShift(D, 2.0));
+  PetscCall(MatSetValuesCOO(D, coo_v, ADD_VALUES));
+  for (PetscInt r = rstart; r < rend; r++) {
+    PetscCall(MatGetValue(D, r, r % N, &readback));
+    expected = r < N ? 6.0 : 2.0;
+    if (readback != expected) PetscCall(PetscPrintf(PETSC_COMM_SELF, "MatSetValuesCOO() after MatShift() gave %g in row %" PetscInt_FMT ", expected %g\n", (double)PetscRealPart(readback), r, (double)PetscRealPart(expected)));
+  }
+  PetscCall(PetscFree3(coo_i, coo_j, coo_v));
+  PetscCall(MatDestroy(&D));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
   Mat            A, B, C;
@@ -9,6 +52,7 @@ int main(int argc, char **args)
   PetscScalar   *vals;
   PetscBool      flg = PETSC_FALSE, freecoo = PETSC_FALSE, missing_diagonal = PETSC_FALSE;
   PetscInt       ncoos = 1;
+  PetscMPIInt    size;
 
   // clang-format off
   /* Construct 18 x 18 matrices, which are big enough to have complex communication patterns but still small enough for debugging */
@@ -37,6 +81,7 @@ int main(int argc, char **args)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ignore_remote", &flg, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncoos", &ncoos, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-missing_diagonal", &missing_diagonal, NULL));
@@ -187,6 +232,11 @@ int main(int argc, char **args)
     PetscCall(MatShift(B, 2.0));
     PetscCall(MatMultEqual(A, B, 10, &equal));
     if (!equal) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatShift() on a duplicated COO matrix failed\n"));
+
+    /* A square matrix whose last process owns no rows, which on one process is a 0 x 0 matrix */
+    PetscCall(TestShiftCOO(PetscGlobalRank == size - 1 ? 0 : 3, PetscGlobalRank == size - 1 ? 0 : 3));
+    /* A matrix with more rows than columns */
+    PetscCall(TestShiftCOO(3, 2));
   }
 
   PetscCall(PetscFree(vals));

@@ -2648,7 +2648,9 @@ static PetscErrorCode MatShift_MPIAIJ(Mat Y, PetscScalar a)
   PetscFunctionBegin;
   if (!Y->preallocated) {
     PetscCall(MatMPIAIJSetPreallocation(Y, 1, NULL, 0, NULL));
-  } else if (!aij->nz) { /* It does not matter if diagonals of Y only partially lie in maij->A. We just need an estimated preallocation. */
+  } else if (!aij->nz && PetscMax(Y->rmap->rstart, Y->cmap->rstart) < PetscMin(Y->rmap->rend, Y->cmap->rend)) {
+    /* If maij->A has no nonzeros, preallocate it again only if one of the local rows has its diagonal entry in maij->A, otherwise
+       its nonzero state would increase even though the shift creates no new nonzeros in it */
     PetscInt nonew = aij->nonew;
     PetscCall(MatSeqAIJSetPreallocation(maij->A, 1, NULL));
     aij->nonew = nonew;
