@@ -344,6 +344,7 @@ cdef extern from * nogil:
     PetscErrorCode MatScale(PetscMat, PetscScalar)
     PetscErrorCode MatShift(PetscMat, PetscScalar)
     PetscErrorCode MatFilter(PetscMat, PetscReal, PetscBool, PetscBool)
+    PetscErrorCode MatEliminateZeros(PetscMat, PetscBool)
     PetscErrorCode MatSetRandom(PetscMat, PetscRandom)
     PetscErrorCode MatAXPY(PetscMat, PetscScalar, PetscMat, PetscMatStructure)
     PetscErrorCode MatAYPX(PetscMat, PetscScalar, PetscMat, PetscMatStructure)
