@@ -67,9 +67,9 @@ static constexpr CooPair<U> make_coo_pair(U *&device, U *&host, PetscCount size)
 
 // forward declarations
 template <device::cupm::DeviceType>
-class VecSeq_CUPM;
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL VecSeq_CUPM;
 template <device::cupm::DeviceType>
-class VecMPI_CUPM;
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL VecMPI_CUPM;
 
 // ==========================================================================================
 // Vec_CUPMBase
@@ -79,7 +79,7 @@ class VecMPI_CUPM;
 // VecSeq or VecMPI. This is in effect "inside-out" polymorphism.
 // ==========================================================================================
 template <device::cupm::DeviceType T, typename Derived>
-class Vec_CUPMBase : protected device::cupm::impl::CUPMObject<T> {
+class PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL Vec_CUPMBase : protected device::cupm::impl::CUPMObject<T> {
 public:
   PETSC_CUPMOBJECT_HEADER(T);
 
