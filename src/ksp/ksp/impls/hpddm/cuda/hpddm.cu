@@ -7,12 +7,7 @@
 PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *data, const PetscScalar *b, PetscScalar *x, PetscInt n, MPI_Comm comm)
 {
   const PetscInt N = data->op->getDof() * n;
-#if PetscDefined(USE_REAL_DOUBLE)
-  typedef HPDDM::downscaled_type<PetscScalar> K;
-#endif
-#if PetscDefined(USE_REAL_SINGLE)
-  typedef HPDDM::upscaled_type<PetscScalar> K;
-#endif
+  using K          = std::conditional_t<PetscDefined(USE_REAL_DOUBLE), HPDDM::downscaled_type<PetscScalar>, HPDDM::upscaled_type<PetscScalar>>;
 
   PetscFunctionBegin; // TODO: remove all cudaMemcpy() once HPDDM::IterativeMethod::solve() handles device pointers
   if (data->precision != PETSC_SCALAR_PRECISION) {

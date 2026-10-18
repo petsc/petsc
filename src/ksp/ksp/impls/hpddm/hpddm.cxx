@@ -222,29 +222,30 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
-  typedef HPDDM::downscaled_type<PetscReal> PetscDownscaledReal PETSC_ATTRIBUTE_MAY_ALIAS;
   #if !PetscDefined(USE_COMPLEX)
-  PetscDownscaledReal *low[2];
+  using PetscDownscaled PETSC_ATTRIBUTE_MAY_ALIAS = HPDDM::downscaled_type<PetscReal>;
   #else
-  typedef PetscReal PetscAliasedReal   PETSC_ATTRIBUTE_MAY_ALIAS;
-  HPDDM::downscaled_type<PetscScalar> *low[2];
-  PetscAliasedReal                    *x_r;
-  PetscDownscaledReal                 *low_r;
+  using PetscDownscaled                               = HPDDM::downscaled_type<PetscScalar>;
+  using PetscAliasedReal    PETSC_ATTRIBUTE_MAY_ALIAS = PetscReal;
+  using PetscDownscaledReal PETSC_ATTRIBUTE_MAY_ALIAS = HPDDM::downscaled_type<PetscReal>;
+  PetscAliasedReal         *x_r;
+  PetscDownscaledReal      *low_r;
   #endif
-#endif
-#if PetscDefined(HAVE_CUDA)
-  Mat     A;
-  VecType vtype;
+  PetscDownscaled *low[2];
 #endif
 
   PetscFunctionBegin;
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(KSPGetOperators(ksp, &A, nullptr));
-  PetscCall(MatGetVecType(A, &vtype));
-  std::initializer_list<std::string>                 list = {VECCUDA, VECSEQCUDA, VECMPICUDA};
-  std::initializer_list<std::string>::const_iterator it   = std::find(list.begin(), list.end(), std::string(vtype));
-  PetscCheck(type != PETSC_MEMTYPE_HOST || it == list.end(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "MatGetVecType() must return a Vec with the same PetscMemType as the right-hand side and solution, PetscMemType(%s) != %s", vtype, PetscMemTypeToString(type));
-#endif
+  if (PetscDefined(HAVE_CUDA)) {
+    Mat                                                A;
+    VecType                                            vtype;
+    std::initializer_list<std::string>                 list = {VECCUDA, VECSEQCUDA, VECMPICUDA};
+    std::initializer_list<std::string>::const_iterator it;
+
+    PetscCall(KSPGetOperators(ksp, &A, nullptr));
+    PetscCall(MatGetVecType(A, &vtype));
+    it = std::find(list.begin(), list.end(), std::string(vtype));
+    PetscCheck(type != PETSC_MEMTYPE_HOST || it == list.end(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "MatGetVecType() must return a Vec with the same PetscMemType as the right-hand side and solution, PetscMemType(%s) != %s", vtype, PetscMemTypeToString(type));
+  }
   if (n > 1) {
     if (ksp->converged == KSPConvergedDefault) {
       PetscCheck(!ctx->mininitialrtol, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support KSPConvergedDefaultSetUMIRNorm()", ((PetscObject)ksp)->type_name);
@@ -269,12 +270,9 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
       PetscCall(PetscFree2(high[0], high[1]));
     } else {
       PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_SINGLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
-  #if PetscDefined(HAVE_CUDA)
-    #if PetscDefined(HAVE_HPDDM)
+      PetscCheck(PetscDefined(HAVE_HPDDM), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
+  #if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_HPDDM)
       PetscCall(KSPSolve_HPDDM_CUDA_Private(data, b, x, n, PetscObjectComm((PetscObject)ksp)));
-    #else
-      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
-    #endif
   #endif
     }
 #else
@@ -284,11 +282,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
     if (type == PETSC_MEMTYPE_HOST) {
       PetscCall(PetscMalloc1(N, low));
-  #if !PetscDefined(USE_COMPLEX)
-      low[1] = reinterpret_cast<PetscDownscaledReal *>(x);
-  #else
-      low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
-  #endif
+      low[1] = reinterpret_cast<PetscDownscaled *>(x);
       std::copy_n(b, N, low[0]);
       for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
       PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
@@ -301,12 +295,9 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
       PetscCall(PetscFree(low[0]));
     } else {
       PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_DOUBLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
-  #if PetscDefined(HAVE_CUDA)
-    #if PetscDefined(HAVE_HPDDM)
+      PetscCheck(PetscDefined(HAVE_HPDDM), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
+  #if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_HPDDM)
       PetscCall(KSPSolve_HPDDM_CUDA_Private(data, b, x, n, PetscObjectComm((PetscObject)ksp)));
-    #else
-      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
-    #endif
   #endif
     }
 #else

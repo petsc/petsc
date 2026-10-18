@@ -1207,7 +1207,7 @@ M*/
 . a - a static array of any type
 
   Output Parameter:
-. <return_value> -  the length of the array
+. <return_value> - the length of the array
 
   Example:
 .vb
