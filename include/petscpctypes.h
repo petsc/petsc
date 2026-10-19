@@ -515,23 +515,23 @@ typedef enum {
     Notes:
     At each level other than the coarsest, let $Z$ denote the deflation matrix, $E = Z^H Pmat Z$, and $Q = Z E^{-1} Z^H$. The coarse corrections applied by `PCApply()` are
 .vb
-   (1) y =                  Pmat^-1              x + Q x,
-   (2) y =                  Pmat^-1 (I - Amat Q) x + Q x (default),
-   (3) y = (I - Q^T Amat^T) Pmat^-1 (I - Amat Q) x + Q x,
-   (4) y =                  Pmat^-1              x,
-   (5) y =     (I - Q Amat) Pmat^-1              x + Q x.
+   (1) y =              Pmat^-1              x + Q x,
+   (2) y =              Pmat^-1 (I - Amat Q) x + Q x (default),
+   (3) y = (I - Q Amat) Pmat^-1 (I - Amat Q) x + Q x,
+   (4) y =              Pmat^-1              x,
+   (5) y = (I - Q Amat) Pmat^-1              x + Q x.
 .ve
     The corresponding operations applied by `PCApplyTranspose()` are
 .vb
    (1) y =                  Pmat^-T                  x + Q^T x,
    (2) y = (I - Q^T Amat^T) Pmat^-T                  x + Q^T x (default),
-   (3) y = (I - Q^T Amat^T) Pmat^-T (I - Amat Q)     x + Q^T x,
+   (3) y = (I - Q^T Amat^T) Pmat^-T (I - Amat^T Q^T) x + Q^T x,
    (4) y =                  Pmat^-T                  x,
    (5) y =                  Pmat^-T (I - Amat^T Q^T) x + Q^T x.
 .ve
     The options of Pmat^-1 = pc(Pmat) are prefixed by `-pc_hpddm_levels_1_pc_`. $Z$ is a tall-and-skinny matrix assembled by HPDDM. The number of processes on which $E$ is aggregated is set via `-pc_hpddm_coarse_p`.
     The options of (Z^H Pmat Z)^-1 = ksp(Z^H Pmat Z) are prefixed by `-pc_hpddm_coarse_` (`KSPPREONLY` and `PCCHOLESKY` by default), unless a multilevel correction is turned on, in which case, the correction above is applied recursively at each level except the coarsest one.
-    For `PCApply()`, corrections (1), (2), and (5) visit the next coarser level once per application, while (3) visits it twice. For `PCApplyTranspose()`, (1) and (5) visit it once, (2) twice, and (3) three times.
+    For `PCApply()`, corrections (1), (2), and (5) visit the next coarser level once per application, while (3) visits it twice. For `PCApplyTranspose()`, (1) and (5) visit it once, and (2) and (3) twice.
     Corrections (2) and (5) are not symmetric even when both Amat and Pmat are symmetric.
 
 .seealso: [](sec_pc), `PCHPDDM`, `PC`, `PCSetType()`, `PCApply()`, `PCApplyTranspose()`, `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMGetCoarseCorrectionType()`
