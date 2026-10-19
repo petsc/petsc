@@ -19,7 +19,7 @@ CreateStarGraphEdgeList - Create a k-Star Graph Edgelist on current processor
 */
 PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[])
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *ne = k;
   PetscCall(PetscCalloc1(2 * k, edgelist));
 
@@ -38,8 +38,8 @@ PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt 
 }
 
 /*
-CreateSimpleStarGraph - Create a Distributed k-Star Graph DMNetwork with a single PetscInt component on
-all edges and vertices, a selectable number of dofs on vertices and edges. Intended mostly to be used for testing purposes.
+StarGraphCreate() - Create a distributed k-star graph with integer components on all points and
+additional scalar and integer components on edges to exercise component storage alignment and header resizing.
 
   Input Parameters:
 . comm       - the communicator of the dm
@@ -55,16 +55,18 @@ PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numd
 {
   DM          dm;
   PetscMPIInt rank;
-  PetscInt    ne       = 0, compkey, eStart, eEnd, vStart, vEnd, e, v;
-  PetscInt   *edgelist = NULL, *compedge, *compvert;
+  PetscInt    ne        = 0, compkey, scalarkey, eStart, eEnd, vStart, vEnd, e, v;
+  PetscInt   *edgelist  = NULL, *compedge, *compvert;
+  PetscScalar scalar[2] = {1.25, 2.5};
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMNetworkCreate(comm, &dm));
   PetscCall(DMNetworkSetNumSubNetworks(dm, PETSC_DECIDE, 1));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) PetscCall(StarGraphCreateEdgeList(k, directin, &ne, &edgelist));
   PetscCall(DMNetworkAddSubnetwork(dm, "Main", ne, edgelist, NULL));
   PetscCall(DMNetworkRegisterComponent(dm, "unused", sizeof(PetscInt), &compkey));
+  PetscCall(DMNetworkRegisterComponent(dm, "scalar", sizeof(scalar), &scalarkey));
   PetscCall(DMNetworkLayoutSetUp(dm));
   PetscCall(PetscFree(edgelist));
   PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
@@ -73,6 +75,9 @@ PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numd
   for (e = eStart; e < eEnd; e++) {
     compedge[e - eStart] = e;
     PetscCall(DMNetworkAddComponent(dm, e, compkey, &compedge[e - eStart], numdofedge));
+    PetscCall(DMNetworkAddComponent(dm, e, scalarkey, scalar, 0));
+    PetscCall(DMNetworkAddComponent(dm, e, compkey, &compedge[e - eStart], 0));
+    PetscCall(DMNetworkAddComponent(dm, e, scalarkey, scalar, 0));
   }
   for (v = vStart; v < vEnd; v++) {
     compvert[v - vStart] = v;
@@ -88,14 +93,37 @@ PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numd
 
 PetscErrorCode StarGraphTestQuery(DM dm, PetscInt ne)
 {
-  PetscInt globalnumvert, localnumvert, globalnumedge, localnumedge;
+  PetscInt globalnumvert, localnumvert, globalnumedge, localnumedge, eStart, eEnd;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(DMNetworkGetNumEdges(dm, &localnumedge, &globalnumedge));
   PetscCall(DMNetworkGetNumVertices(dm, &localnumvert, &globalnumvert));
 
   PetscCheck(globalnumedge == ne, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Global number of edges should be %" PetscInt_FMT "instead was %" PetscInt_FMT, ne, globalnumedge);
   PetscCheck(globalnumvert == ne + 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Global number of vertices should be %" PetscInt_FMT "instead was %" PetscInt_FMT, ne + 1, globalnumvert);
+  PetscCall(DMNetworkGetEdgeRange(dm, &eStart, &eEnd));
+  for (PetscInt e = eStart; e < eEnd; ++e) {
+    PetscInt ncomp, index;
+
+    PetscCall(DMNetworkGetNumComponents(dm, e, &ncomp));
+    PetscCheck(ncomp == 4, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected four edge components, got %" PetscInt_FMT, ncomp);
+    PetscCall(DMNetworkGetGlobalEdgeIndex(dm, e, &index));
+    for (PetscInt c = 0; c < ncomp; ++c) {
+      PetscInt key;
+
+      if (c % 2) {
+        PetscScalar *value;
+
+        PetscCall(DMNetworkGetComponent(dm, e, c, &key, &value, NULL));
+        PetscCheck(key == 1 && value[0] == (PetscScalar)1.25 && value[1] == (PetscScalar)2.5, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect scalar component");
+      } else {
+        PetscInt *value;
+
+        PetscCall(DMNetworkGetComponent(dm, e, c, &key, &value, NULL));
+        PetscCheck(key == 0 && *value == index, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect integer component");
+      }
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -111,6 +139,7 @@ int main(int argc, char **argv)
   /* create a distributed k-Star graph DMNetwork */
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ne", &ne, NULL));
   PetscCall(StarGraphCreate(PETSC_COMM_WORLD, 1, 0, ne, PETSC_TRUE, &dm));
+  PetscCall(StarGraphTestQuery(dm, ne));
   PetscCall(DMNetworkDistribute(&dm, 0));
   /* Test if query functions for DMNetwork run successfully */
   PetscCall(StarGraphTestQuery(dm, ne));
