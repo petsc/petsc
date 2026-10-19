@@ -9,7 +9,7 @@ const char *const        PCGASMTypes[]           = {"NONE", "RESTRICT", "INTERPO
 const char *const        PCCompositeTypes[]      = {"ADDITIVE", "MULTIPLICATIVE", "SYMMETRIC_MULTIPLICATIVE", "SPECIAL", "SCHUR", "GKB", "PCCompositeType", "PC_COMPOSITE", NULL};
 const char *const        PCPARMSGlobalTypes[]    = {"RAS", "SCHUR", "BJ", "PCPARMSGlobalType", "PC_PARMS_", NULL};
 const char *const        PCPARMSLocalTypes[]     = {"ILU0", "ILUK", "ILUT", "ARMS", "PCPARMSLocalType", "PC_PARMS_", NULL};
-const char *const        PCPatchConstructTypes[] = {"star", "vanka", "pardecomp", "user", "python", "PCPatchSetConstructType", "PC_PATCH_", NULL};
+const char *const        PCPatchConstructTypes[] = {"STAR", "VANKA", "PARDECOMP", "USER", "PYTHON", "PCPatchSetConstructType", "PC_PATCH_", NULL};
 
 const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR", "FACTOR_NOERROR", "FACTOR_STRUCT_ZEROPIVOT", "FACTOR_NUMERIC_ZEROPIVOT", "FACTOR_OUTMEMORY", "FACTOR_OTHER", "PC_INCONSISTENT_RHS", "SUBPC_ERROR", NULL};
 const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1;
