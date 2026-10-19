@@ -832,7 +832,7 @@ static PetscErrorCode MatConvertToTriples_seqaij_seqaij(Mat A, PetscInt shift, M
     PetscCall(PetscMalloc2(nz, &row, nz, &col));
     for (PetscCount i = k = 0; i < M; i++) {
       rnz = ai[i + 1] - ai[i];
-      ajj = aj + ai[i];
+      ajj = PetscSafePointerPlusOffset(aj, ai[i]);
       for (PetscCount j = 0; j < rnz; j++) {
         PetscCall(PetscMUMPSIntCast(i + shift, &row[k]));
         PetscCall(PetscMUMPSIntCast(ajj[j] + shift, &col[k]));
@@ -1235,12 +1235,12 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A, PetscInt shift, M
   jj   = 0;
   irow = rstart;
   for (i = 0; i < m; i++) {
-    ajj    = aj + ai[i]; /* ptr to the beginning of this row */
+    ajj    = PetscSafePointerPlusOffset(aj, ai[i]); /* ptr to the beginning of this row */
     countA = ai[i + 1] - ai[i];
     countB = bi[i + 1] - bi[i];
-    bjj    = bj + bi[i];
-    v1     = av + ai[i];
-    v2     = bv + bi[i];
+    bjj    = PetscSafePointerPlusOffset(bj, bi[i]);
+    v1     = PetscSafePointerPlusOffset(av, ai[i]);
+    v2     = PetscSafePointerPlusOffset(bv, bi[i]);
 
     /* A-part */
     for (j = 0; j < countA; j++) {
