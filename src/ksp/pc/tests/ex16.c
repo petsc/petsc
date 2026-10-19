@@ -10,8 +10,9 @@ static const char help[] = "Tests PCHPDDM with a user-supplied deflation space a
     conditions would, so that the local solvers A_p differ from the restrictions of A.
 
   After each setup, PCApply() and PCMatApply() must match the reference operator
-    T = Q + B (I - A Q)    with -pc_hpddm_coarse_correction deflated,
-    T = B + Q (I - A B)    with -pc_hpddm_coarse_correction deflated_reversed,
+    T = Q + B (I - A Q)           with -pc_hpddm_coarse_correction deflated,
+    T = B + Q (I - A B)           with -pc_hpddm_coarse_correction deflated_reversed,
+    T = Q + (I - Q A) B (I - A Q) with -pc_hpddm_coarse_correction balanced,
   where Q = Z (Z^H A Z)^{-1} Z^H is the coarse correction with Z = [R_p^T D_p U_p], and B is the
   fine-level correction, see FineLevelType.
   Also checks without deflation (-scaling_only) and then T = B.
@@ -226,13 +227,15 @@ static PetscErrorCode CreateCoarseReference(Mat A, PetscBool empty_rank0, Mat *Q
 
 /*
   Reference two-level operator T = first + second (I - A first), see the description at the top of this file: the
-  deflated correction applies the coarse level first, the reversed one applies the fine level first.
+  deflated correction applies the coarse level first, the reversed one applies the fine level first. The balanced
+  correction also multiplies second (I - A first) on the left by (I - first A).
 */
 static PetscErrorCode CreateReference(Mat A, PetscBool empty_rank0, FineLevelType fine, PCHPDDMCoarseCorrectionType correction, Mat *T)
 {
   Mat B, Q, first, second, IA;
 
   PetscFunctionBeginUser;
+  PetscCheck(correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED || correction == PC_HPDDM_COARSE_CORRECTION_BALANCED, PETSC_COMM_WORLD, PETSC_ERR_SUP, "No reference for PCHPDDMCoarseCorrectionType %s, use %s, %s, or %s", PCHPDDMCoarseCorrectionTypes[correction], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_DEFLATED], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_BALANCED]);
   PetscCall(CreateFineReference(A, fine, &B));
   PetscCall(CreateCoarseReference(A, empty_rank0, &Q));
   if (correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED) {
@@ -246,6 +249,17 @@ static PetscErrorCode CreateReference(Mat A, PetscBool empty_rank0, FineLevelTyp
   PetscCall(MatScale(IA, -1.0));
   PetscCall(MatShift(IA, 1.0)); // I - A first
   PetscCall(MatMatMult(second, IA, MAT_INITIAL_MATRIX, PETSC_DETERMINE, T));
+  if (correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
+    Mat product;
+
+    PetscCall(MatDestroy(&IA));
+    PetscCall(MatMatMult(first, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &IA));
+    PetscCall(MatScale(IA, -1.0));
+    PetscCall(MatShift(IA, 1.0)); // I - first A
+    PetscCall(MatMatMult(IA, *T, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &product));
+    PetscCall(MatDestroy(T));
+    *T = product;
+  }
   PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B)); // T is dense, and MatAXPY() needs B in the same format; in place, so first still refers to B
   PetscCall(MatAXPY(*T, 1.0, first, SAME_NONZERO_PATTERN));
   PetscCall(MatDestroy(&B));
@@ -457,6 +471,9 @@ int main(int argc, char **argv)
       # same fine level with the fine-level correction applied first
       suffix: weighted_reversed
       args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction deflated_reversed
+    test:
+      suffix: balanced
+      args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction balanced
     test:
       # PCASM of type PC_ASM_BASIC: the scaling only applies to the coarse space
       # with one subdomain per process, multiplicative composition gives the same operator as additive, but it checks
