@@ -1262,11 +1262,19 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             continue
           elif 'with-'+dep.package+'-dir' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-dir']:
             continue
+          elif 'with-'+dep.package+'-exec' in self.framework.clArgDB and self.argDB['with-'+dep.package+'-exec']:
+            continue
           elif dep.download:
             emsg = '--download-'+dep.package+' or '
           else:
             emsg = ''
-          msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. \n  Perhaps you want '+emsg+'--with-'+dep.package+'-dir=directory or --with-'+dep.package+'-lib=libraries and --with-'+dep.package+'-include=directory\n'
+          if dep.skippackagelibincludedirs:
+            hmsg = '--with-'+dep.package
+            if self.argDB.hasType('with-'+dep.package+'-exec'):
+              hmsg += ' or --with-'+dep.package+'-exec=executable'
+          else:
+            hmsg = '--with-'+dep.package+'-dir=directory or --with-'+dep.package+'-lib=libraries and --with-'+dep.package+'-include=directory'
+          msg += 'Package '+child.package+' requested but dependency '+dep.package+' not requested. \n  Perhaps you want '+emsg+hmsg+'\n'
         if msg: raise RuntimeError(msg)
         if 'Cxx' in child.buildLanguages and ('with-cxx' in self.framework.clArgDB) and (self.argDB['with-cxx'] == '0'): raise RuntimeError('Package '+child.package+' requested requires C++ but compiler turned off.')
         if 'FC'  in child.buildLanguages and ('with-fc' in self.framework.clArgDB) and (self.argDB['with-fc'] == '0'): raise RuntimeError('Package '+child.package+' requested requires Fortran but compiler turned off.')

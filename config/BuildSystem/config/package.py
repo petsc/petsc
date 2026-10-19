@@ -2152,10 +2152,12 @@ class MesonPackage(Package):
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
     self.meson = framework.require('config.packages.meson', self)
+    self.deps = []
     if self.argDB['download-'+self.downloadname.lower()]:
+      self.deps = [self.meson]
       self.meson.maxminMesonVersion = max(self.minMesonVersion, self.meson.maxminMesonVersion)
     self.ninja = framework.require('config.packages.ninja', self)
-    self.odeps = [self.meson, self.ninja]
+    self.odeps = [self.ninja]
 
   def formMesonConfigureArgs(self):
     import shlex

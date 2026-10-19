@@ -3652,11 +3652,13 @@ and general constraints are not yet supported. PETSc must be
 configured with cutest and sifdecode support, i.e. using
 
 ```console
---download-cutest --download-sifdecode
+--download-cutest --download-sifdecode --with-meson --with-ninja
 ```
 
 CUTEst and SIFDecode need a Fortran compiler and Meson to build. Meson requires
-Python 3.
+Python 3. Configure does not search for Meson and its Ninja backend on its own:
+use `--with-meson` and `--with-ninja` for existing installations, or
+`--download-meson` and `--download-ninja` to build them.
 Preinstalled CUTEst and SIFDecode do not require Meson or Ninja.
 
 `--download-cutest` installs single-, double-, and quadruple-precision libraries
