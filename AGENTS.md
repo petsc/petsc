@@ -52,7 +52,9 @@ unrelated conversations or prescribe the user's conversational style.
 
 - Lead with the result and why it matters. Make the text understandable without the drafting conversation; include relevant verification, limitations, and reproduction details.
 - Write clear, grammatical, concise prose for peer mathematicians and engineers. Explain unfamiliar terms, preserve PETSc terminology and exact API names, commands, and diagnostics, and remove repetition and boilerplate before presenting.
-- Prefer self-explanatory code. Use comments and docstrings for non-obvious behavior, correctness constraints, rationale, or required documentation. Preserve accurate comments; omit process narration and edit history.
+- Prefer self-explanatory code. Add no comment for a trivial change. Use comments and docstrings for non-obvious behavior, correctness constraints, rationale, or required documentation. Keep a comment to one line unless more is unavoidable. Preserve accurate comments. Omit process narration and edit history.
+- Write commit messages and code comments in plain structure: active voice, one idea per sentence, no semicolons, no phrasal verbs. If an ASD-STE100 skill is available, use it in STE-flavored mode for a final pass.
+- Keep a commit subject to one line of about 50 characters, at most 72. In the body, list significant changes as bullets, not paragraphs. Wrap commit message bodies at 72 characters. A list item may run to 90 characters to stay on one line. Never break trailers, URLs, commands, code blocks, or tables. Keep compiler output and other logs verbatim. The structure and wrapping rules do not apply to them.
 - Credit LLM assistance with an `Assisted-by:` trailer naming the tool and model, for example `Assisted-by: Claude Opus 5.5 <noreply@anthropic.com>`, never `Co-authored-by:`. When rewriting history, keep existing trailers, but change an LLM `Co-authored-by:` to `Assisted-by:` with the same value. `python3 lib/petsc/bin/maint/check_commit_trailers.py BASE..HEAD`, with `BASE` the branch's merge base, checks this without a `PETSC_ARCH`. CI runs it as `make checkbadCommitMessage`.
 
 ## PETSc Naming And API Conventions
