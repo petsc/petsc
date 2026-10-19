@@ -1062,9 +1062,10 @@ static PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *local
     PetscReal          normal[9]         = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
     PetscReal         *lowerIntPoints[3] = {&intPoints[0 * 6 * 6 * 3], &intPoints[1 * 6 * 6 * 3], &intPoints[2 * 6 * 6 * 3]};
     PetscReal         *upperIntPoints[3] = {&intPoints[3 * 6 * 6 * 3], &intPoints[4 * 6 * 6 * 3], &intPoints[5 * 6 * 6 * 3]};
-    PetscReal          lp[3], up[3], *tmp;
-    PetscInt           numCoords, idx, dlim[6], lowerInt[3], upperInt[3];
-    PetscBool          isDG, lower[3], upper[3];
+    PetscReal          lp[3] = {0., 0., 0.}, up[3] = {0., 0., 0.};
+    PetscReal         *tmp;
+    PetscInt           numCoords, idx, dlim[6], lowerInt[3], upperInt[3] = {0, 0, 0};
+    PetscBool          isDG, lower[3], upper[3] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
 
     PetscCall(PetscFindInt(c, Nl, leaves, &idx));
     if (idx >= 0) continue;
