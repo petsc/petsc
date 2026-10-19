@@ -429,9 +429,9 @@ int main(int argc, char **args)
     }
   }
 
-  /* Test that MAT_REUSE_MATRIX computes with the current values of A after they have been changed */
+  /* Test that MAT_REUSE_MATRIX uses the current values of A after they change, and uses another matrix A2 when given one */
   if (testreusemodified) {
-    Mat E;
+    Mat E, A2;
 
     PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
     PetscCall(MatScale(A, 2.0));
@@ -439,7 +439,20 @@ int main(int argc, char **args)
     PetscCall(MatTransposeMatMultEqual(A, X, E, 10, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage after MatScale() (MatTransposeMat)\n"));
     PetscCall(MatScale(A, 0.5));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
+    PetscCall(MatScale(A2, 3.0));
+    PetscCall(MatTransposeMatMult(A2, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &E));
+    PetscCall(MatTransposeMatMultEqual(A2, X, E, 10, &flg));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage with another A (MatTransposeMat)\n"));
     PetscCall(MatDestroy(&E));
+    if (testmatmatt) {
+      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
+      PetscCall(MatMatTransposeMult(A2, Bt, MAT_REUSE_MATRIX, PETSC_DETERMINE, &E));
+      PetscCall(MatMatTransposeMultEqual(A2, Bt, E, 10, &flg));
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage with another A (MatMatTranspose)\n"));
+      PetscCall(MatDestroy(&E));
+    }
+    PetscCall(MatDestroy(&A2));
   }
 
   /* Test projection operations (PtAP and RARt) */
@@ -814,6 +827,11 @@ int main(int argc, char **args)
     requires: kokkos_kernels
     suffix: 1_par_kokkos
     args: -local {{0 1}} -testmatmatt 0 -A_mat_type aijkokkos -testrart 0
+
+  test:
+    output_file: output/empty.out
+    suffix: 1_reuse
+    args: -testreusemodified
 
   # MatCreateMAIJ() converts its result to MATAIJKOKKOS or MATAIJCUSPARSE, so the MAIJ matrix
   # cached by MatTransposeMatMultSymbolic_MPIAIJ_MPIDense() holds a copy of A that goes stale

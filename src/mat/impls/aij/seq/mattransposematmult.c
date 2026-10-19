@@ -70,12 +70,20 @@ static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscScalar                   *Carray;
   MatProductCtx_MatTransMatMult *atb;
   Vec                            bt, ct;
+  Mat                            Aw;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->type == MATPRODUCT_ABt || C->product->type == MATPRODUCT_AtB, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[C->product->type]);
   atb = (MatProductCtx_MatTransMatMult *)C->product->data;
   PetscCheck(atb, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing product struct");
+  /* Build the MATMAIJ matrix of the symbolic phase again if it does not wrap the current A, which MatProductReplaceMats() or MAT_REUSE_MATRIX may have changed.
+     With more than one dof, MatCreateMAIJ() gives a device A a converted copy that never wraps A, so this happens on every numeric and picks up the current values of A */
+  PetscCall(MatMAIJGetAIJ(atb->mA, &Aw));
+  if (Aw != A) {
+    PetscCall(MatDestroy(&atb->mA));
+    PetscCall(MatCreateMAIJ(A, mdof, &atb->mA));
+  }
   bt = atb->bt;
   ct = atb->ct;
 
