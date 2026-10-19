@@ -375,8 +375,7 @@ pause-for-approval:
       fi
       if [ "$AI_CLI" = "opencode" ]; then
         # stderr is dropped, not captured: it is very verbose and dumps the environment.
-        # --variant sets reasoning effort; providers defining no variants ignore it.
-        opencode run --model "$AI_MODEL" --variant xhigh --auto "Review MR $CI_MERGE_REQUEST_IID using the skill $REVIEW_SKILL" 2> /dev/null
+        opencode run --model "$AI_MODEL" --auto "Review MR $CI_MERGE_REQUEST_IID using the skill $REVIEW_SKILL" 2> /dev/null
       elif [ "$AI_CLI" = "claude" ]; then
         # 200 turns: large MRs hit the 30-turn default before the review finished.
         claude -p "/${REVIEW_SKILL} ${CI_MERGE_REQUEST_IID}" --model "$AI_MODEL" --dangerously-skip-permissions --max-turns 200
@@ -405,10 +404,10 @@ ai-review:
   parallel:
     matrix:
       - AI_CLI: claude
-        AI_MODEL: [sonnet, opus]
+        AI_MODEL: [opus]
         AI_TIER: paid
       - AI_CLI: opencode
-        AI_MODEL: [alcf/nemotron, opencode/spark]
+        AI_MODEL: [alcf/nemotron, alcf/spark]
         AI_TIER: free
 
 #
