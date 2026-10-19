@@ -207,9 +207,9 @@ class MarkedObjectMap : public Petsc::RegisterFinalizeable<MarkedObjectMap> {
 public:
   // Note we derive from PetscStackFrame so that the empty base class optimization can kick
   // in. If it were just a member it would still take up storage in optimized builds
-  class snapshot_type : private PetscStackFrame<PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)> {
+  class snapshot_type : private PetscStackFrame<PetscDefined(USE_DEBUG)> {
   public:
-    using frame_type = PetscStackFrame<PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)>;
+    using frame_type = PetscStackFrame<PetscDefined(USE_DEBUG)>;
 
     snapshot_type() = default;
     snapshot_type(PetscDeviceContext, frame_type) noexcept;
@@ -641,11 +641,11 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 @*/
 PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, const char name[])
 {
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
-  const auto index    = petscstack.currentsize > 2 ? petscstack.currentsize - 2 : 0;
-  const auto file     = petscstack.file[index];
-  const auto function = petscstack.function[index];
-  const auto line     = petscstack.line[index];
+#if PetscDefined(USE_DEBUG)
+  const auto             index = petscstack.currentsize > 2 ? petscstack.currentsize - 2 : 0;
+  const char            *file, *function;
+  int                    line;
+  PETSC_UNUSED PetscBool valid = PetscStackGetValidFrame_Private(&petscstack, index, &file, &function, &line);
 #else
   constexpr const char *file     = nullptr;
   constexpr const char *function = nullptr;

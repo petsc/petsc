@@ -1,7 +1,9 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
-PetscStack petscstack;
+#if PetscDefined(USE_DEBUG)
+PETSC_TLS PetscStack petscstack = {{NULL}, {NULL}, {0}, {0}, 0, 0, PETSC_BOOL3_UNKNOWN};
+/* Set during initialization, before worker threads enter PETSc. */
+PetscBool petscstackcheck = PETSC_FALSE;
 #endif
 
 #if PetscDefined(HAVE_SAWS)
@@ -99,22 +101,23 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 }
 #endif /* PETSC_HAVE_SAWS */
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
 PetscErrorCode PetscStackSetCheck(PetscBool check)
 {
-  petscstack.check = check;
+  petscstack.check = PetscBoolToBool3(check);
   return PETSC_SUCCESS;
 }
 
 PetscErrorCode PetscStackReset(void)
 {
   memset(&petscstack, 0, sizeof(petscstack));
+  petscstack.check = PETSC_BOOL3_UNKNOWN;
   return PETSC_SUCCESS;
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
 /*@
-  PetscStackView - Print the current (default) PETSc stack to an ASCII file
+  PetscStackView - Print the calling thread's default PETSc stack to an ASCII file
 
   Not Collective, No Fortran Support
 
@@ -130,10 +133,11 @@ PetscErrorCode PetscStackReset(void)
 
   If `file` is `PETSC_STDERR` (or `NULL`) then `PetscErrorPrintf()` is used to print the stack, otherwise `fprintf()` is used.
 
-  The stack is maintained only when PETSc is configured `--with-debugging` and without thread safety; in other configurations this becomes a no-op that returns `PETSC_SUCCESS`.
+  The stack is maintained only when PETSc is configured `--with-debugging`; otherwise this becomes a no-op that returns `PETSC_SUCCESS`.
 
   Developer Note:
   The default stack is a global variable called `petscstack`.
+  With thread safety enabled, this variable has a separate instance for each thread.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
 @*/
@@ -141,22 +145,23 @@ PetscErrorCode PetscStackView(FILE *file)
 {
   if (!file) file = PETSC_STDERR;
   if (petscstack.currentsize < 0) {
-    /* < 0 is absolutely a corrupted stack, but this function is usually called in an error
-     * handler, which are not capable of recovering from errors so best we can do is print
-     * this warning */
-    fprintf(file, "PetscStack is definitely corrupted with stack size %d\n", petscstack.currentsize);
+    /* Error handlers cannot recover from a corrupted stack, so only report it here. */
+    if (file == PETSC_STDERR) PetscCall((*PetscErrorPrintf)("PetscStack is corrupted with stack size %d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", petscstack.currentsize));
+    else fprintf(file, "PetscStack is corrupted with stack size %d. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn.\n", petscstack.currentsize);
   } else if (petscstack.currentsize == 0) {
-    if (file == PETSC_STDERR) {
-      PetscCall((*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n"));
-    } else {
-      fprintf(file, "No error traceback is available, the problem could be in the main program. \n");
-    }
+    if (file == PETSC_STDERR) PetscCall((*PetscErrorPrintf)("No error traceback is available. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn, including PetscFunctionBeginUser in main().\n"));
+    else fprintf(file, "No error traceback is available. Check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn, including PetscFunctionBeginUser in main().\n");
   } else {
     char *ptr = NULL;
 
+    if (petscstack.currentsize > PETSCSTACKSIZE) {
+      if (file == PETSC_STDERR) PetscCall((*PetscErrorPrintf)("Only the first %d of %d stack frames are available.\n", PETSCSTACKSIZE, petscstack.currentsize));
+      else fprintf(file, "Only the first %d of %d stack frames are available.\n", PETSCSTACKSIZE, petscstack.currentsize);
+    }
+
     if (file == PETSC_STDERR) {
       PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback may not be exact.\n"));
-      for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
+      for (int i = PetscStackGetSize_Private(&petscstack) - 1, j = 1; i >= 0; --i, ++j) {
         if (petscstack.file[i]) PetscCall((*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i])));
         else {
           PetscCall(PetscStrstr(petscstack.function[i], " ", &ptr));
@@ -166,7 +171,7 @@ PetscErrorCode PetscStackView(FILE *file)
       }
     } else {
       fprintf(file, "The line numbers in the error traceback are not always exact.\n");
-      for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
+      for (int i = PetscStackGetSize_Private(&petscstack) - 1, j = 1; i >= 0; --i, ++j) {
         if (petscstack.file[i]) fprintf(file, "[%d] #%d %s() at %s:%d\n", PetscGlobalRank, j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i]));
         else {
           PetscCall(PetscStrstr(petscstack.function[i], " ", &ptr));
@@ -202,7 +207,7 @@ PetscErrorCode PetscStackView(FILE *file)
 PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 {
   if (sint) {
-    for (int i = 0; i < sint->currentsize; ++i) {
+    for (int i = 0; i < PetscStackGetSize_Private(sint); ++i) {
       sout->function[i]     = sint->function[i];
       sout->file[i]         = sint->file[i];
       sout->line[i]         = sint->line[i];
@@ -233,6 +238,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
   recommended to use the debugger if extensive information is needed to help debug the problem.
 
   The default stack is a global variable called `petscstack`.
+  With thread safety enabled, this variable has a separate instance for each thread.
 
   Developer Note:
   `PetscStackPrint()` and `PetscStackView()` should be merged into a single API.
@@ -242,7 +248,8 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp)
 {
   if (sint) {
-    for (int i = sint->currentsize; i >= 0; --i) {
+    if (sint->currentsize > PETSCSTACKSIZE) fprintf(fp, "Only the first %d of %d stack frames are available.\n", PETSCSTACKSIZE, sint->currentsize);
+    for (int i = PetscStackGetSize_Private(sint) - 1; i >= 0; --i) {
       if (sint->file[i]) fprintf(fp, "      [%d]  %s() at %s:%d\n", PetscGlobalRank, sint->function[i], PetscCIFilename(sint->file[i]), PetscCILinenumber(sint->line[i]));
       else fprintf(fp, "      [%d]  %s()\n", PetscGlobalRank, sint->function[i]);
     }

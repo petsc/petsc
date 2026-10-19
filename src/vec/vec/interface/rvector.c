@@ -3806,9 +3806,12 @@ PetscErrorCode VecLockGet(Vec x, PetscInt *state)
 
   Level: developer
 
-  Note:
-  Only produces meaningful output when PETSc is built with `PETSC_USE_DEBUG` and without threadsafety; otherwise `NULL`
-  and 0 are returned. Intended to help debug read-lock violations reported by `VecGetArray()` and similar routines.
+  Notes:
+  Only produces meaningful output when PETSc is built with `PETSC_USE_DEBUG`; otherwise `NULL` and 0 are returned.
+  Intended to help debug read-lock violations reported by `VecGetArray()` and similar routines.
+
+  If the location was not recorded, the returned strings explain whether the stack exceeded `PETSCSTACKSIZE`
+  or function markers may be missing or mismatched, and `line` is 0.
 
 .seealso: `Vec`, `VecLockGet()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecGetArray()`
 @*/
@@ -3819,18 +3822,13 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
   PetscAssertPointer(file, 2);
   PetscAssertPointer(func, 3);
   PetscAssertPointer(line, 4);
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
-  {
-    const int index = x->lockstack.currentsize - 1;
-
-    *file = index < 0 ? NULL : x->lockstack.file[index];
-    *func = index < 0 ? NULL : x->lockstack.function[index];
-    *line = index < 0 ? 0 : x->lockstack.line[index];
-  }
-#else
   *file = NULL;
   *func = NULL;
   *line = 0;
+#if PetscDefined(USE_DEBUG)
+  if (x->lockstack.currentsize > 0) {
+    PETSC_UNUSED PetscBool valid = PetscStackGetValidFrame_Private(&x->lockstack, x->lockstack.currentsize - 1, file, func, line);
+  }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3858,23 +3856,14 @@ PetscErrorCode VecLockReadPush(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(x->lock++ >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector is already locked for exclusive write access but you want to read it");
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   {
     const char *file, *func;
-    int         index, line;
+    int         index = petscstack.currentsize - 2, line, petscroutine = 2;
 
-    if ((index = petscstack.currentsize - 2) < 0) {
-      // vec was locked "outside" of petsc, either in user-land or main. the error message will
-      // now show this function as the culprit, but it will include the stacktrace
-      file = "unknown user-file";
-      func = "unknown_user_function";
-      line = 0;
-    } else {
-      file = petscstack.file[index];
-      func = petscstack.function[index];
-      line = petscstack.line[index];
-    }
-    PetscStackPush_Private(x->lockstack, file, func, line, petscstack.petscroutine[index], PETSC_FALSE);
+    /* A user frame retains the diagnostic file string when the caller is unavailable. */
+    if (PetscStackGetValidFrame_Private(&petscstack, index, &file, &func, &line)) petscroutine = petscstack.petscroutine[index];
+    PetscStackPush_Private(x->lockstack, file, func, line, petscroutine, PETSC_FALSE);
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3897,9 +3886,10 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(--x->lock >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector has been unlocked from read-only access too many times");
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
   {
-    const char *previous = x->lockstack.function[x->lockstack.currentsize - 1];
+    const int   index    = x->lockstack.currentsize - 1;
+    const char *previous = index >= 0 && index < PETSCSTACKSIZE ? x->lockstack.function[index] : "unknown_function";
 
     PetscStackPop_Private(x->lockstack, previous);
   }

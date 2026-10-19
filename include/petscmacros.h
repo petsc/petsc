@@ -104,6 +104,46 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   #define PETSC_INTERN extern PETSC_VISIBILITY_INTERNAL
 #endif
 
+/*MC
+  PETSC_TLS - Marks a variable as thread-local when PETSc is configured with thread safety
+
+  Synopsis:
+  #include <petscmacros.h>
+  PETSC_TLS type variable;
+
+  Level: developer
+
+  Notes:
+  When configured with `--with-threadsafety=1`, each thread has its own instance of the variable, whose lifetime is the lifetime of that thread.
+  With `--with-threadsafety=0`, `PETSC_TLS` expands to nothing.
+
+  In C, this macro uses C11 `_Thread_local`. In C++, it uses C++11 `thread_local`, except with Clang, where it uses `_Thread_local`
+  to allow C++ code to access thread-local variables defined in C without requiring C++ initialization wrappers.
+
+  Use `PETSC_EXTERN PETSC_TLS` for an exported declaration or `PETSC_INTERN PETSC_TLS` for an internal declaration.
+
+  Example Usage:
+.vb
+  // In a header
+  PETSC_EXTERN PETSC_TLS int counter;
+
+  // In the source file that defines the variable
+  PETSC_TLS int counter = 0;
+.ve
+
+.seealso: `PetscStack`, `PetscStackView()`
+M*/
+#if defined(PETSC_HAVE_THREADSAFETY)
+  /* Clang's C++ thread_local can require initialization wrappers absent from C definitions. */
+  #if defined(__cplusplus) && !defined(__clang__)
+    #define PETSC_TLS thread_local
+  #else
+    #define PETSC_TLS _Thread_local
+  #endif
+#else
+  #define PETSC_TLS
+#endif
+
 #if defined(PETSC_USE_SINGLE_LIBRARY)
   #define PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PETSC_VISIBILITY_INTERNAL
   #define PETSC_SINGLE_LIBRARY_INTERN              PETSC_INTERN

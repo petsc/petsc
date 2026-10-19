@@ -6,13 +6,37 @@
 
 /* SUBMANSEC = Sys */
 
+static inline int PetscStackGetSize_Private(const PetscStack *stack)
+{
+  return PetscMin(stack->currentsize, PETSCSTACKSIZE);
+}
+
+/* Return non-null diagnostic strings even when the requested frame is unavailable.
+   The return value indicates whether the frame was stored. Do not modify the stack here. */
+static inline PetscBool PetscStackGetValidFrame_Private(const PetscStack *stack, int index, const char **file, const char **function, int *line)
+{
+  *file     = "unknown file (check for missing or mismatched PetscFunctionBegin/PetscFunctionReturn)";
+  *function = "unknown_function";
+  *line     = 0;
+  if (index < 0 || index >= stack->currentsize) return PETSC_FALSE;
+  if (index >= PETSCSTACKSIZE) {
+    *file = "unknown file (stack depth exceeds PETSCSTACKSIZE=" PetscStringize(PETSCSTACKSIZE) ")";
+    return PETSC_FALSE;
+  }
+  if (!stack->function[index]) return PETSC_FALSE;
+  *file     = stack->file[index] ? stack->file[index] : "unknown file";
+  *function = stack->function[index];
+  *line     = stack->line[index];
+  return PETSC_TRUE;
+}
+
 #if PetscDefined(CLANG_STATIC_ANALYZER)
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...)
 #else
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(...) __VA_ARGS__
 #endif
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_EXTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);

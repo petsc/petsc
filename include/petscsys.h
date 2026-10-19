@@ -3127,7 +3127,7 @@ M*/
 /* this is required to force PetscDevice to be visible at the system level for the Fortran interface */
 #include <petscdevicetypes.h>
 
-#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
+#if PetscDefined(USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscStackView(FILE *);
 #else
   #define PetscStackView(file) PETSC_SUCCESS
