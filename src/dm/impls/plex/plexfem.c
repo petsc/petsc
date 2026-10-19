@@ -5076,7 +5076,7 @@ PetscErrorCode DMPlexComputeBdResidualSingleByKey(DM dm, PetscWeakForm wf, Petsc
       PetscCall(PetscFEIntegrateBdResidual(prob, wf, key, Ne, chunkGeom, u, u_t, probAux, a, t, elemVec));
       PetscCall(PetscFEGeomRestoreChunk(fgeom, 0, offset, &chunkGeom));
       PetscCall(PetscFEGeomGetChunk(fgeom, offset, numFaces, &chunkGeom));
-      PetscCall(PetscFEIntegrateBdResidual(prob, wf, key, Nr, chunkGeom, &u[offset * totDim], PetscSafePointerPlusOffset(u_t, offset * totDim), probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, &elemVec[offset * totDim]));
+      PetscCall(PetscFEIntegrateBdResidual(prob, wf, key, Nr, chunkGeom, PetscSafePointerPlusOffset(u, offset * totDim), PetscSafePointerPlusOffset(u_t, offset * totDim), probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, PetscSafePointerPlusOffset(elemVec, offset * totDim)));
       PetscCall(PetscFEGeomRestoreChunk(fgeom, offset, numFaces, &chunkGeom));
     }
     for (face = 0; face < numFaces; ++face) {
@@ -6110,9 +6110,9 @@ PetscErrorCode DMPlexComputeBdJacobianSingleByLabel(DM dm, PetscWeakForm wf, DML
       for (fieldJ = 0; fieldJ < Nf; ++fieldJ) {
         key.field = fieldI * Nf + fieldJ;
         if (hasJac)
-          PetscCall(PetscFEIntegrateBdJacobian(ds, wf, PETSCFE_JACOBIAN, key, Nr, chunkGeom, &u[offset * totDim], PetscSafePointerPlusOffset(u_t, offset * totDim), dsAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, X_tShift, &elemMat[offset * totDim * totDim]));
+          PetscCall(PetscFEIntegrateBdJacobian(ds, wf, PETSCFE_JACOBIAN, key, Nr, chunkGeom, PetscSafePointerPlusOffset(u, offset * totDim), PetscSafePointerPlusOffset(u_t, offset * totDim), dsAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, X_tShift, PetscSafePointerPlusOffset(elemMat, offset * totDim * totDim)));
         if (hasPrec)
-          PetscCall(PetscFEIntegrateBdJacobian(ds, wf, PETSCFE_JACOBIAN_PRE, key, Nr, chunkGeom, &u[offset * totDim], PetscSafePointerPlusOffset(u_t, offset * totDim), dsAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, X_tShift, &elemMatP[offset * totDim * totDim]));
+          PetscCall(PetscFEIntegrateBdJacobian(ds, wf, PETSCFE_JACOBIAN_PRE, key, Nr, chunkGeom, PetscSafePointerPlusOffset(u, offset * totDim), PetscSafePointerPlusOffset(u_t, offset * totDim), dsAux, PetscSafePointerPlusOffset(a, offset * totDimAux), t, X_tShift, PetscSafePointerPlusOffset(elemMatP, offset * totDim * totDim)));
       }
       PetscCall(PetscFEGeomRestoreChunk(fgeom, offset, numFaces, &chunkGeom));
     }
