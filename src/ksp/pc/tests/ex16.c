@@ -413,8 +413,14 @@ int main(int argc, char **argv)
           PetscCall(PCHPDDMSetScaling(pc, is, D));
           PetscCall(PCHPDDMSetDeflationMat(pc, NULL, U));
         } else {
+          IS copy;
+
           PetscCall(PCHPDDMSetDeflationMat(pc, is, U));
-          PetscCall(PCHPDDMSetScaling(pc, is, D));
+          PetscCall(ISDuplicate(is, &copy)); // replace the stored IS while keeping the deflation matrix
+          PetscCall(PCHPDDMSetScaling(pc, copy, D));
+          PetscCall(CheckReferences(is, PETSC_FALSE));
+          PetscCall(CheckReferences(copy, PETSC_TRUE));
+          PetscCall(ISDestroy(&copy));
         }
       }
       PetscCall(VecDestroy(&D)); // the PC keeps its own reference
