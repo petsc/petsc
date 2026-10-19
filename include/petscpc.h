@@ -38,6 +38,8 @@ PETSC_EXTERN const char *const        PCMGGalerkinTypes[];
 PETSC_EXTERN const char *const        PCMGCoarseSpaceTypes[];
 PETSC_EXTERN const char *const        PCExoticTypes[];
 PETSC_EXTERN const char *const        PCPatchConstructTypes[];
+PETSC_EXTERN const char *const        PCHPDDMCoarseCorrectionTypes[];
+PETSC_EXTERN const char *const        PCHPDDMSchurPreTypes[];
 PETSC_EXTERN const char *const *const PCFailedReasons;
 
 PETSC_EXTERN PetscErrorCode PCCreate(MPI_Comm, PC *);

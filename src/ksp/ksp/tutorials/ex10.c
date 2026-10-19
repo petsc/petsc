@@ -279,10 +279,19 @@ int main(int argc, char **args)
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_orthogonalization cgs -mat_type baij -pc_type bjacobi -trans
 
-   test:
-      suffix: 3
+   testset:
       requires: double complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64 -ksp_type bicg
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/nh-complex-int32-float64
+      test:
+         suffix: 3
+         args: -ksp_type bicg
+      test:
+         suffix: 3_hpddm
+         nsize: 2
+         requires: hpddm slepc defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+         # KSPCG is used with a nonsymmetric operator and PC, but this case is well-behaved enough to converge
+         args: -ksp_type cg -ksp_rtol 1e-8 -ksp_max_it 10 -ksp_error_if_not_converged -ksp_converged_reason
+         args: -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_eps_threshold_absolute 1.1 -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_pc_asm_type restrict -pc_hpddm_coarse_correction deflated
 
    test:
       suffix: 4
