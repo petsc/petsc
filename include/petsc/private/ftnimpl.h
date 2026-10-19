@@ -184,11 +184,12 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
     } \
   } while (0)
 
+// Function arguments are code addresses and cannot be dereferenced by FORTRANNULLOBJECT().
 #define CHKFORTRANNULLFUNCTION(a) \
   do { \
     if (FORTRANNULLFUNCTION(a)) { \
       (a) = PETSC_NULLPTR; \
-    } else if (FORTRANNULLOBJECT(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
+    } else if (FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLBOOL(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { \
       *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Use PETSC_NULL_FUNCTION"); \
       *ierr = PETSC_ERR_ARG_BADPTR; \
       return; \
