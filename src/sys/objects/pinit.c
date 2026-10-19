@@ -463,7 +463,7 @@ PetscErrorCode PetscCitationsInitialize(void)
 
   PetscCall(PetscCitationsRegister("@TechReport{petsc-user-ref,\n\
   Author = {Satish Balay and Shrirang Abhyankar and Mark~F. Adams and Steven Benson and Jed Brown\n\
-    and Peter Brune and Kris Buschelman and Emil Constantinescu and Lisandro Dalcin and Alp Dener\n\
+    and Peter Brune and Kris Buschelman and Emil~M. Constantinescu and Lisandro Dalcin and Alp Dener\n\
     and Victor Eijkhout and Jacob Faibussowitsch and William~D. Gropp and V\'{a}clav Hapla and Tobin Isaac and Pierre Jolivet\n\
     and Dmitry Karpeev and Dinesh Kaushik and Matthew~G. Knepley and Fande Kong and Scott Kruger\n\
     and Dave~A. May and Lois Curfman McInnes and Richard Tran Mills and Lawrence Mitchell and Todd Munson\n\
@@ -471,7 +471,7 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
   Number = {ANL-21/39 - Revision 3.26},\n\
-  Doi = {10.2172/2998643},\n\
+  Doi = {10.2172/17154913},\n\
   Institution = {Argonne National Laboratory},\n\
   Year = {2026}\n}\n",
                                    NULL));
