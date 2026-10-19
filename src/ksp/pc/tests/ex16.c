@@ -27,7 +27,7 @@ static const char help[] = "Tests PCHPDDM with a user-supplied deflation space a
 typedef enum {
   FINE_ASM_WEIGHTED, // default with a user-supplied scaling: B = sum_p R_p^T D_p A_p^{-1} R_p
   FINE_ASM_BASIC,    // -pc_hpddm_levels_1_pc_asm_type basic: B = sum_p R_p^T A_p^{-1} R_p
-  FINE_JACOBI        // -pc_hpddm_levels_1_pc_type jacobi: B = diag(A)^{-1}
+  FINE_JACOBI        // -pc_hpddm_levels_1_pc_type jacobi:    B = diag(A)^{-1}
 } FineLevelType;
 
 static PetscScalar TestScalar(PetscReal real, PetscReal imag)
@@ -71,7 +71,7 @@ static PetscScalar LocalShift(void)
   return TestScalar(0.35, 0.2);
 }
 
-static PetscErrorCode ModifySubmatrices(PC pc, PetscInt n, const IS rows[], const IS cols[], Mat sub[], void *ctx)
+static PetscErrorCode ModifySubmatrices(PC pc, PetscInt n, const IS rows[], const IS cols[], Mat sub[], PetscCtx ctx)
 {
   PetscFunctionBeginUser;
   for (PetscInt i = 0; i < n; ++i) PetscCall(MatShift(sub[i], LocalShift()));
@@ -456,7 +456,7 @@ int main(int argc, char **argv)
       suffix: weighted_reversed
       args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction deflated_reversed
     test:
-      # PCASM of type basic: the scaling only applies to the coarse space
+      # PCASM of type PC_ASM_BASIC: the scaling only applies to the coarse space
       # with one subdomain per process, multiplicative composition gives the same operator as additive, but it checks
       # that the second setup keeps the selected PCASMType instead of reverting to PC_ASM_WEIGHTED
       suffix: basic
