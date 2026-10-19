@@ -2604,46 +2604,75 @@ cdef class PC(Object):
         """Set the cell numbering."""
         CHKERR(PCPatchSetCellNumbering(self.pc, sec.sec))
 
-    def setPatchDiscretisationInfo(self, dms, bs,
-                                   cellNodeMaps,
-                                   subspaceOffsets,
-                                   ghostBcNodes,
-                                   globalBcNodes) -> None:
-        """Set discretisation info."""
-        cdef PetscInt numSubSpaces = 0
+    def setPatchDiscretisationInfo(self,
+                                   dms: Sequence[DM],
+                                   isets: Sequence[IS],
+                                   cellDofMaps: Sequence[Sequence[Sequence[int]]],
+                                   ghostBcDofs: Sequence[int],
+                                   globalBcDofs: Sequence[int]) -> None:
+        """Provide per-subspace discretisation information for PCPATCH.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        dms
+            `DM` for each subspace, from which the local sections and section
+            `SF` are obtained.
+        isets
+            `IS` for each subspace mapping subspace DoFs to DoFs in the full
+            local mixed space.
+        cellDofMaps
+            Cell to DoF map for each subspace, each of shape
+            ``(num_cells, dofs_per_cell)``.
+        ghostBcDofs
+            The ghost boundary-condition DoF indices.
+        globalBcDofs
+            The global boundary-condition DoF indices.
+
+        See Also
+        --------
+        petsc.PCPatchSetDiscretisationInfo
+
+        """
+        cdef PetscInt numSubSpaces = len(dms)
         cdef PetscInt numGhostBcs = 0, numGlobalBcs = 0
-        cdef PetscInt *nodesPerCell = NULL
-        cdef const PetscInt **ccellNodeMaps = NULL
+        cdef PetscInt *dofsPerCell = NULL
+        cdef const PetscInt **ccellDofMaps = NULL
         cdef PetscDM *cdms = NULL
-        cdef PetscInt *cbs = NULL
-        cdef PetscInt *csubspaceOffsets = NULL
-        cdef PetscInt *cghostBcNodes = NULL
-        cdef PetscInt *cglobalBcNodes = NULL
+        cdef PetscIS *cisets = NULL
+        cdef PetscInt *cghostBcDofs = NULL
+        cdef PetscInt *cglobalBcDofs = NULL
         cdef PetscInt i = 0
+        cdef list cellDofMapArrays = []
 
-        bs = iarray_i(bs, &numSubSpaces, &cbs)
-        ghostBcNodes = iarray_i(ghostBcNodes, &numGhostBcs, &cghostBcNodes)
-        globalBcNodes = iarray_i(globalBcNodes, &numGlobalBcs, &cglobalBcNodes)
-        subspaceOffsets = iarray_i(subspaceOffsets, NULL, &csubspaceOffsets)
+        for i in range(numSubSpaces):
+            if len(asarray(cellDofMaps[i]).shape) != 2:
+                raise ValueError(f"cellDofMaps[{i}] does not have 2D shape")
 
-        CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt), &nodesPerCell))
+        ghostBcDofs = iarray_i(ghostBcDofs, &numGhostBcs, &cghostBcDofs)
+        globalBcDofs = iarray_i(globalBcDofs, &numGlobalBcs, &cglobalBcDofs)
+
+        CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt), &dofsPerCell))
         CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscDM), &cdms))
-        CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt*), &ccellNodeMaps))
+        CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscInt*), &ccellDofMaps))
+        CHKERR(PetscMalloc(<size_t>numSubSpaces*sizeof(PetscIS*), &cisets))
         for i in range(numSubSpaces):
             cdms[i] = (<DM?>dms[i]).dm
-            _, nodes = asarray(cellNodeMaps[i]).shape
-            cellNodeMaps[i] = iarray_i(cellNodeMaps[i], NULL, <PetscInt**>&ccellNodeMaps[i])
-            nodesPerCell[i] = asInt(nodes)
+            _, dofs = asarray(cellDofMaps[i]).shape
+            cellDofMapArrays.append(iarray_i(cellDofMaps[i], NULL, <PetscInt**>&ccellDofMaps[i]))
+            dofsPerCell[i] = asInt(dofs)
+            cisets[i] = (<IS?>isets[i]).iset
 
-        # TODO: refactor on the PETSc side to take ISes?
         CHKERR(PCPatchSetDiscretisationInfo(self.pc, numSubSpaces,
-                                            cdms, cbs, nodesPerCell,
-                                            ccellNodeMaps, csubspaceOffsets,
-                                            numGhostBcs, cghostBcNodes,
-                                            numGlobalBcs, cglobalBcNodes))
-        CHKERR(PetscFree(nodesPerCell))
+                                            cdms, cisets,
+                                            dofsPerCell, ccellDofMaps,
+                                            numGhostBcs, cghostBcDofs,
+                                            numGlobalBcs, cglobalBcDofs))
+        CHKERR(PetscFree(dofsPerCell))
         CHKERR(PetscFree(cdms))
-        CHKERR(PetscFree(ccellNodeMaps))
+        CHKERR(PetscFree(ccellDofMaps))
+        CHKERR(PetscFree(cisets))
 
     def setPatchComputeOperator(self, operator, args=None, kargs=None) -> None:
         """Set compute operator callbacks."""

@@ -227,7 +227,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESNASMGetNumber(PetscSNES, PetscInt*)
 
     PetscErrorCode SNESPatchSetCellNumbering(PetscSNES, PetscSection)
-    PetscErrorCode SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
+    PetscErrorCode SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscIS[], PetscInt*, const PetscInt**, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     PetscErrorCode SNESPatchSetComputeOperator(PetscSNES, PetscPCPatchComputeOperator, void*)
     PetscErrorCode SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
     PetscErrorCode SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)

@@ -32,29 +32,29 @@ typedef struct {
   PetscSection pointCounts;   /* Maps patch -> # points with dofs in patch */
   IS           points;        /* [patch][point in patch]: Point number */
   /* Dof layout */
-  PetscBool     combined;        /* Use a combined space with all fields */
-  PetscInt      nsubspaces;      /* Number of fields */
-  PetscSF       sectionSF;       /* Combined SF mapping process local to global */
-  PetscSection *dofSection;      /* ?? For each field, patch -> # dofs in patch */
-  PetscInt     *subspaceOffsets; /* Plex: NULL Firedrake: offset of each field in concatenated process local numbering for mixed spaces */
-  PetscInt    **cellNodeMap;     /* [field][cell][dof in cell]: global dofs in cell TODO Free this after its use in PCPatchCreateCellPatchDiscretisationInfo() */
-  IS            dofs;            /* [patch][cell in patch][dof in cell]: patch local dof */
-  IS            offs;            /* [patch][point in patch]: patch local offset (same layout as 'points', used for filling up patchSection) */
+  PetscBool     combined;   /* Use a combined space with all fields */
+  PetscInt      nsubspaces; /* Number of fields */
+  PetscInt      localSize;  /* Number of local DoFs */
+  PetscSF       sectionSF;  /* Combined SF mapping process local to global */
+  PetscSection *dofSection; /* ?? For each field, patch -> # dofs in patch */
+  IS           *isets;      /* Index set mapping unknowns in a subspace to the full local space */
+  PetscInt    **cellDofMap; /* [field][cell][dof in cell]: global dofs in cell TODO Free this after its use in PCPatchCreateCellPatchDiscretisationInfo() */
+  IS            dofs;       /* [patch][cell in patch][dof in cell]: patch local dof */
+  IS            offs;       /* [patch][point in patch]: patch local offset (same layout as 'points', used for filling up patchSection) */
   IS            dofsWithArtificial;
   IS            offsWithArtificial;
   IS            dofsWithAll;
   IS            offsWithAll;
   PetscSection  patchSection;             /* Maps points -> patch local dofs */
-  IS            globalBcNodes;            /* Global dofs constrained by global Dirichlet conditions TODO Replace these with process local constrained dofs */
-  IS            ghostBcNodes;             /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
+  IS            globalBcDofs;             /* Global dofs constrained by global Dirichlet conditions TODO Replace these with process local constrained dofs */
+  IS            ghostBcDofs;              /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
   PetscSection  gtolCounts;               /* ?? Indices to extract from local to patch vectors */
   PetscSection  gtolCountsWithArtificial; /* ?? Indices to extract from local to patch vectors including those with artificial bcs*/
   PetscSection  gtolCountsWithAll;        /* ?? Indices to extract from local to patch vectors including those in artificial or global bcs*/
   IS            gtol;
   IS            gtolWithArtificial;
   IS            gtolWithAll;
-  PetscInt     *bs;                   /* [field] block size per field (can come from global operators?) */
-  PetscInt     *nodesPerCell;         /* [field] Dofs per cell TODO Change "node" to "dof" everywhere */
+  PetscInt     *dofsPerCell;          /* [field] Dofs per cell */
   PetscInt      totalDofsPerCell;     /* Dofs per cell counting all fields */
   PetscHSetI    subspaces_to_exclude; /* If you don't want any other dofs from a particular subspace you can exclude them with this.
                                                 Used for Vanka in Stokes, for example, to eliminate all pressure dofs not on the vertex

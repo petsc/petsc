@@ -320,7 +320,7 @@ cdef extern from * nogil:
                                                              void*) except PETSC_ERR_PYTHON
     PetscErrorCode PCPatchGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
     PetscErrorCode PCPatchSetCellNumbering(PetscPC, PetscSection)
-    PetscErrorCode PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
+    PetscErrorCode PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscIS[], PetscInt*, const PetscInt**, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     PetscErrorCode PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
     PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PetscPC, PetscPCPatchComputeOperator, void*)
     PetscErrorCode PCPatchSetComputeFunction(PetscPC, PetscPCPatchComputeFunction, void*)

@@ -78,6 +78,7 @@
 ```
 
 - Add `PCHPDDMSetScaling()` to supply a diagonal scaling `Vec` for the deflation space set with `PCHPDDMSetDeflationMat()`. If the fine level is a `PCASM`, its default `PCASMType` is set to `PC_ASM_WEIGHTED`, in which case the scaling is forwarded accordingly
+- Change interface to `PCPatchSetDiscretisationInfo()` to address subspace DoFs using `IS`s instead of with offsets and block sizes
 
 ```{rubric} KSP:
 ```
@@ -89,6 +90,8 @@
 
 ```{rubric} SNES:
 ```
+
+- Change interface to `SNESPatchSetDiscretisationInfo()` to address subspace DoFs using `IS`s instead of with offsets and block sizes
 
 ```{rubric} SNESLineSearch:
 ```
