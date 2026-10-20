@@ -276,7 +276,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
     }
   }
 
-  PetscCall(ISCreateBlock(comm, dof, nn - IXs + Xs, &idx[IXs - Xs], PETSC_USE_POINTER, &from));
+  PetscCall(ISCreateBlock(comm, dof, nn - IXs + Xs, PetscSafePointerPlusOffset(idx, IXs - Xs), PETSC_USE_POINTER, &from));
   PetscCall(VecScatterCreate(global, from, local, to, &gtol));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));

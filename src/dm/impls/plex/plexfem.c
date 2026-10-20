@@ -2559,7 +2559,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, 0, offset, &chunkGeom));
       PetscCall(PetscFEIntegrate(prob, f, Ne, chunkGeom, u, probAux, a, cintegral));
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, offset, numCells, &chunkGeom));
-      PetscCall(PetscFEIntegrate(prob, f, Nr, chunkGeom, &u[offset * totDim], probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), &cintegral[offset * Nf]));
+      PetscCall(PetscFEIntegrate(prob, f, Nr, chunkGeom, PetscSafePointerPlusOffset(u, offset * totDim), probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), PetscSafePointerPlusOffset(cintegral, offset * Nf)));
       PetscCall(PetscFEGeomRestoreChunk(cgeomFEM, offset, numCells, &chunkGeom));
       if (!affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
     } else if (id == PETSCFV_CLASSID) {
