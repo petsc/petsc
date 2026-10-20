@@ -160,6 +160,22 @@ extern void PetscCheckCompatibleDeviceContexts(T, int, U, int);
 /* if someone is ready to rock with more than 128 GPUs on hand then we're in real trouble */
 #define PETSC_DEVICE_MAX_DEVICES 128
 
+// If hwloc is not present, this macro will not be defined in petscpkg_version.h and block following will fail to compile
+#if !defined(PETSC_PKG_HWLOC_VERSION_GE)
+  #define PETSC_PKG_HWLOC_VERSION_GE(MAJ, MIN, PAT) 0
+#endif
+
+#if PetscDefined(HAVE_HWLOC) && PetscDefined(HAVE_CUPM) && PETSC_PKG_HWLOC_VERSION_GE(2, 0, 0)
+  #define PETSC_DEVICE_TOPOLOGY_AWARE -2
+  // help string and lower bound for the "-device_select" option, shared by device.cxx and impldevicebase.hpp
+  #define PETSC_DEVICE_SELECT_HELP \
+    "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide, " PetscStringize(PETSC_DEVICE_TOPOLOGY_AWARE) " to use a topology-aware selection algorithm or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device"
+  #define PETSC_DEVICE_SELECT_LOWER_BOUND PETSC_DEVICE_TOPOLOGY_AWARE
+#else
+  #define PETSC_DEVICE_SELECT_HELP        "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device"
+  #define PETSC_DEVICE_SELECT_LOWER_BOUND PETSC_DECIDE
+#endif
+
 /*
   the configure-time default device type, used as the initial the value of
   PETSC_DEVICE_DEFAULT() as well as what it is restored to during PetscFinalize()

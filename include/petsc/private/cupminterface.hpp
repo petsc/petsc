@@ -210,6 +210,7 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceFlags, cudaGetDeviceFlags)
   PETSC_CUPM_ALIAS_FUNCTION(cupmSetDeviceFlags, cudaSetDeviceFlags)
   PETSC_CUPM_ALIAS_FUNCTION(cupmPointerGetAttributes, cudaPointerGetAttributes)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetPCIBusId, cudaDeviceGetPCIBusId)
   #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, cudaDeviceGetMemPool)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, cudaMemPoolSetAttribute)
@@ -355,6 +356,7 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceFlags, hipGetDeviceFlags)
   PETSC_CUPM_ALIAS_FUNCTION(cupmSetDeviceFlags, hipSetDeviceFlags)
   PETSC_CUPM_ALIAS_FUNCTION(cupmPointerGetAttributes, hipPointerGetAttributes)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetPCIBusId, hipDeviceGetPCIBusId)
   #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, hipDeviceGetMemPool)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, hipMemPoolSetAttribute)
@@ -490,6 +492,7 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmGetDeviceFlags; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmSetDeviceFlags; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmPointerGetAttributes; \
+  using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceGetPCIBusId; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmDeviceGetMemPool; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmMemPoolSetAttribute; \
   using ::Petsc::device::cupm::impl::InterfaceImpl<T>::cupmInit; \
