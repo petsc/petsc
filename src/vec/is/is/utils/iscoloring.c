@@ -271,7 +271,7 @@ PetscErrorCode ISColoringGetIS(ISColoring iscoloring, PetscCopyMode mode, PetscI
 
       PetscCall(PetscMalloc1(nc, &ii));
       PetscCall(PetscMalloc1(n, &ii[0]));
-      for (i = 1; i < nc; i++) ii[i] = ii[i - 1] + mcolors[i - 1];
+      for (i = 1; i < nc; i++) ii[i] = PetscSafePointerPlusOffset(ii[i - 1], mcolors[i - 1]);
       PetscCall(PetscArrayzero(mcolors, nc));
 
       if (iscoloring->ctype == IS_COLORING_GLOBAL) {
