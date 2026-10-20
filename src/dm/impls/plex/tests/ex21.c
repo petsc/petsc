@@ -136,6 +136,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscFunctionBegin;
   options->fname[0] = '\0';
+  options->shell    = PETSC_FALSE;
   PetscOptionsBegin(comm, "", "DMPlex View/Load Test Options", "DMPLEX");
   PetscCall(PetscOptionsString("-fname", "The output mesh file", "ex12.c", options->fname, options->fname, sizeof(options->fname), &flg));
   PetscCall(PetscOptionsBool("-shell", "Use DMShell to wrap sections", "ex12.c", options->shell, &options->shell, NULL));
