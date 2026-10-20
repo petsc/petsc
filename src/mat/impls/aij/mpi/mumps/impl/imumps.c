@@ -1134,12 +1134,12 @@ static PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A, PetscInt shif
   jj   = 0;
   irow = rstart;
   for (i = 0; i < mbs; i++) {
-    ajj    = aj + ai[i]; /* ptr to the beginning of this row */
+    ajj    = PetscSafePointerPlusOffset(aj, ai[i]); /* ptr to the beginning of this row */
     countA = ai[i + 1] - ai[i];
     countB = bi[i + 1] - bi[i];
-    bjj    = bj + bi[i];
-    v1     = av + ai[i] * bs2;
-    v2     = bv + bi[i] * bs2;
+    bjj    = PetscSafePointerPlusOffset(bj, bi[i]);
+    v1     = PetscSafePointerPlusOffset(av, ai[i] * bs2);
+    v2     = PetscSafePointerPlusOffset(bv, bi[i] * bs2);
 
     if (bs > 1) {
       /* A-part */
@@ -1372,7 +1372,7 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A, PetscInt shift,
     for (i = 0; i < m; i++) {
       nza += (ai[i + 1] - adiag[i]);
       countB = bi[i + 1] - bi[i];
-      bjj    = bj + bi[i];
+      bjj    = PetscSafePointerPlusOffset(bj, bi[i]);
       for (j = 0; j < countB; j++) {
         if (garray[bjj[j]] > rstart) nzb++;
       }
@@ -1392,12 +1392,12 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A, PetscInt shift,
   jj   = 0;
   irow = rstart;
   for (i = 0; i < m; i++) {
-    ajj    = aj + adiag[i]; /* ptr to the beginning of the diagonal of this row */
-    v1     = av + adiag[i];
+    ajj    = PetscSafePointerPlusOffset(aj, adiag[i]); /* ptr to the beginning of the diagonal of this row */
+    v1     = PetscSafePointerPlusOffset(av, adiag[i]);
     countA = ai[i + 1] - adiag[i];
     countB = bi[i + 1] - bi[i];
-    bjj    = bj + bi[i];
-    v2     = bv + bi[i];
+    bjj    = PetscSafePointerPlusOffset(bj, bi[i]);
+    v2     = PetscSafePointerPlusOffset(bv, bi[i]);
 
     /* A-part */
     for (j = 0; j < countA; j++) {
