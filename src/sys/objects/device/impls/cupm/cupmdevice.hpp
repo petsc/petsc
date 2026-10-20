@@ -43,6 +43,9 @@ private:
   // have we tried looking for devices
   static bool initialized_;
 
+  // Do we have a deferred error stored
+  static cupmError_t deferredError_;
+
   // clean-up
   static PetscErrorCode finalize_() noexcept;
 
@@ -63,6 +66,9 @@ int Device<T>::defaultDevice_ = PETSC_CUPM_DEVICE_NONE;
 
 template <DeviceType T>
 bool Device<T>::initialized_ = false;
+
+template <DeviceType T>
+typename Device<T>::cupmError_t Device<T>::deferredError_ = cupmSuccess;
 
 } // namespace cupm
 

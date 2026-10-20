@@ -213,6 +213,7 @@ template <DeviceType T>
 PetscErrorCode Device<T>::finalize_() noexcept
 {
   PetscFunctionBegin;
+  deferredError_ = cupmSuccess;
   if (PetscUnlikely(!initialized_)) PetscFunctionReturn(PETSC_SUCCESS);
   for (auto &&device : devices_) {
     if (device) PetscCall(device->shutdown());
@@ -264,13 +265,12 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
     // we won't be initializing anything anyways
     initType.first = PETSC_DEVICE_INIT_NONE;
     // save the error code for later
-    initId.first = -static_cast<decltype(initId.first)>(cerr);
+    deferredError_ = cerr;
   }
 
   // check again for init type, since the device count may have changed it
   if (initType.first == PETSC_DEVICE_INIT_NONE) {
-    // id < 0 (excluding PETSC_DECIDE) indicates an error has occurred during setup
-    if (initId.first > 0 || initId.first == PETSC_DECIDE) initId.first = PETSC_CUPM_DEVICE_NONE;
+    initId.first = PETSC_CUPM_DEVICE_NONE;
     // initType overrides initView
     initView.first = PETSC_FALSE;
   } else {
@@ -310,14 +310,12 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 template <DeviceType T>
 PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept
 {
-  const auto id   = *inid == PETSC_DECIDE ? defaultDevice_ : (int)*inid;
-  const auto cerr = static_cast<cupmError_t>(-defaultDevice_);
+  const auto id = *inid == PETSC_DECIDE ? defaultDevice_ : (int)*inid;
 
   PetscFunctionBegin;
+  PetscCheck(deferredError_ == cupmSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "Cannot lazily initialize PetscDevice: %s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(deferredError_), cupmGetErrorName(deferredError_), cupmGetErrorString(deferredError_));
   PetscCheck(defaultDevice_ != PETSC_CUPM_DEVICE_NONE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Trying to retrieve a %s PetscDevice when it has been disabled", cupmName());
-  PetscCheck(defaultDevice_ >= 0, PETSC_COMM_SELF, PETSC_ERR_GPU, "Cannot lazily initialize PetscDevice: %s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
   PetscAssert(static_cast<decltype(devices_.size())>(id) < devices_.size(), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only supports %zu number of devices but trying to get device with id %d", devices_.size(), id);
-
   if (!devices_[id]) devices_[id] = util::make_unique<DeviceInternal>(id);
   PetscAssert(id == devices_[id]->id(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Entry %d contains device with mismatching id %d", id, devices_[id]->id());
   PetscCall(devices_[id]->initialize());
