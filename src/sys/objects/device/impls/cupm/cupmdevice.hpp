@@ -55,6 +55,8 @@ private:
   static PetscErrorCode configure_device_(PetscDevice) noexcept;
   static PetscErrorCode view_device_(PetscDevice, PetscViewer) noexcept;
   static PetscErrorCode get_attribute_(PetscInt, PetscDeviceAttribute, void *) noexcept;
+  static PetscErrorCode select_device_petsc_decide_(MPI_Comm, PetscInt, int *) noexcept;
+  static PetscErrorCode select_device_(MPI_Comm, int *) noexcept;
 };
 
 // define static variables

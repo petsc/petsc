@@ -237,70 +237,91 @@ PETSC_NODISCARD static PETSC_CONSTEXPR_14 const char *CUPM_VISIBLE_DEVICES() noe
   return "PETSC_ERROR_PLIB";
 }
 
+template <DeviceType T>
+PetscErrorCode Device<T>::select_device_petsc_decide_(MPI_Comm comm, PetscInt ndev, int *initId) noexcept
+{
+  PetscFunctionBegin;
+  if (ndev) {
+    // TORCHELASTIC_RUN_ID is used as a proxy to determine if the current process was launched with torchrun
+    char *pytorch_exists = (char *)getenv("TORCHELASTIC_RUN_ID");
+    char *pytorch_rank   = (char *)getenv("LOCAL_RANK");
+
+    if (pytorch_exists && pytorch_rank) {
+      char *endptr;
+
+      *initId = (int)strtol(pytorch_rank, &endptr, 10);
+      PetscCheck(*initId < ndev, PETSC_COMM_SELF, PETSC_ERR_LIB, "PyTorch environmental variable LOCAL_RANK %s > number devices %" PetscInt_FMT, pytorch_rank, ndev);
+    } else {
+      PetscMPIInt rank;
+
+      PetscCallMPI(MPI_Comm_rank(comm, &rank));
+      *initId = rank % ndev;
+    }
+  } else *initId = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
      The default device ID is
        MPI     -- rank % number_local_devices
        PyTorch -- getenv("LOCAL_RANK")
 */
 template <DeviceType T>
+PetscErrorCode Device<T>::select_device_(MPI_Comm comm, int *dev_id) noexcept
+{
+  int         ndev = 0;
+  cupmError_t cerr = cupmSuccess;
+
+  PetscFunctionBegin;
+  if ((cerr = cupmGetDeviceCount(&ndev))) {
+    auto PETSC_UNUSED ignored = cupmGetLastError();
+    deferredError_            = cerr;
+    *dev_id                   = PETSC_CUPM_DEVICE_NONE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscDeviceCheckDeviceCount_Internal(ndev));
+  if (*dev_id == PETSC_DECIDE) PetscCall(select_device_petsc_decide_(comm, ndev, dev_id));
+  PetscCall(PetscInfo(nullptr, "GPU device id selected: %" PetscInt32_FMT "\n", *dev_id));
+  static_assert(std::is_same<PetscMPIInt, decltype(defaultDevice_)>::value, "");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
 PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept
 {
   auto initId   = std::make_pair(*defaultDeviceId, PETSC_FALSE);
   auto initView = std::make_pair(*defaultView, PETSC_FALSE);
   auto initType = std::make_pair(*defaultInitType, PETSC_FALSE);
-  int  ndev     = 0;
+  int  dev_id;
 
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(PETSC_SUCCESS);
   initialized_ = true;
+  static_assert(std::is_same<PetscMPIInt, decltype(dev_id)>::value, "");
   PetscCall(PetscRegisterFinalize(finalize_));
   PetscCall(base_type::PetscOptionDeviceAll(comm, initType, initId, initView));
 
+  PetscCall(PetscMPIIntCast(initId.first, &dev_id));
   if (initType.first == PETSC_DEVICE_INIT_NONE) {
-    initId.first = PETSC_CUPM_DEVICE_NONE;
-  } else if (const auto cerr = cupmGetDeviceCount(&ndev)) {
-    auto PETSC_UNUSED ignored = cupmGetLastError();
-
-    PetscCheck((initType.first != PETSC_DEVICE_INIT_EAGER) && !initView.first, comm, PETSC_ERR_USER_INPUT, "Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s", cupmName(), cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
-    // we won't be initializing anything anyways
-    initType.first = PETSC_DEVICE_INIT_NONE;
-    // save the error code for later
-    deferredError_ = cerr;
-  }
-
-  // check again for init type, since the device count may have changed it
-  if (initType.first == PETSC_DEVICE_INIT_NONE) {
-    initId.first = PETSC_CUPM_DEVICE_NONE;
     // initType overrides initView
+    dev_id         = PETSC_CUPM_DEVICE_NONE;
     initView.first = PETSC_FALSE;
   } else {
-    PetscCall(PetscDeviceCheckDeviceCount_Internal(ndev));
-    if (initId.first == PETSC_DECIDE) {
-      if (ndev) {
-        /* TORCHELASTIC_RUN_ID is used as a proxy to determine if the current process was launched with torchrun */
-        char *pytorch_exists = (char *)getenv("TORCHELASTIC_RUN_ID");
-        char *pytorch_rank   = (char *)getenv("LOCAL_RANK");
-
-        if (pytorch_exists && pytorch_rank) {
-          char *endptr;
-
-          initId.first = (PetscInt)strtol(pytorch_rank, &endptr, 10);
-          PetscCheck(initId.first < ndev, PETSC_COMM_SELF, PETSC_ERR_LIB, "PyTorch environmental variable LOCAL_RANK %s > number devices %d", pytorch_rank, ndev);
-        } else {
-          PetscMPIInt rank;
-
-          PetscCallMPI(MPI_Comm_rank(comm, &rank));
-          initId.first = rank % ndev;
-        }
-      } else initId.first = 0;
-    }
+    PetscCall(select_device_(comm, &dev_id));
     if (initView.first) initType.first = PETSC_DEVICE_INIT_EAGER;
   }
+  initId.first = dev_id;
 
-  static_assert(std::is_same<PetscMPIInt, decltype(defaultDevice_)>::value, "");
-  // initId.first is PetscInt, _defaultDevice is int
-  PetscCall(PetscMPIIntCast(initId.first, &defaultDevice_));
+  // Something went wrong in device selection
+  if (deferredError_ != cupmSuccess) {
+    PetscCheck((initType.first != PETSC_DEVICE_INIT_EAGER) && !initView.first, comm, PETSC_ERR_USER_INPUT, "Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s", cupmName(), cupmName(), static_cast<PetscErrorCode>(deferredError_), cupmGetErrorName(deferredError_), cupmGetErrorString(deferredError_));
+    initType.first = PETSC_DEVICE_INIT_NONE;
+    initId.first   = PETSC_CUPM_DEVICE_NONE;
+    initView.first = PETSC_FALSE;
+  }
+
   // record the results of the initialization
+  defaultDevice_   = dev_id;
   *defaultDeviceId = initId.first;
   *defaultView     = initView.first;
   *defaultInitType = initType.first;
