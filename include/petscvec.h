@@ -25,6 +25,21 @@
 S*/
 typedef struct _p_Vec *Vec;
 
+/*S
+   VecState - Snapshot of the state of a `Vec`
+
+   Level: developer
+
+   Note:
+   A `VecState` records the object id and state of a `Vec`.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetState()`, `VecStateCompare()`, `VecStateCompareUpdate()`, `VecStateInvalidate()`, `PetscObjectGetId()`, `PetscObjectStateGet()`
+S*/
+typedef struct {
+  PetscObjectId    id;
+  PetscObjectState state;
+} VecState;
+
 /*E
   ScatterMode - Determines the direction of a scatter in `VecScatterBegin()` and `VecScatterEnd()`
 
@@ -147,7 +162,26 @@ PETSC_EXTERN PetscErrorCode VecZeroEntries(Vec);
 PETSC_EXTERN PetscErrorCode VecSetOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecAppendOptionsPrefix(Vec, const char[]);
 PETSC_EXTERN PetscErrorCode VecGetOptionsPrefix(Vec, const char *[]);
-PETSC_EXTERN PetscErrorCode VecGetState(Vec, PetscObjectState *);
+PETSC_EXTERN PetscErrorCode VecGetState(Vec, VecState *);
+PETSC_EXTERN PetscErrorCode VecStateCompare(VecState, VecState, PetscBool *);
+PETSC_EXTERN PetscErrorCode VecStateCompareUpdate(Vec, VecState *, PetscBool *);
+/*MC
+  VecStateInvalidate - Invalidates a vector state snapshot
+
+  Synopsis:
+  #include <petscvec.h>
+  PetscErrorCode VecStateInvalidate(VecState state)
+
+  Not Collective
+
+  Input/Output Parameter:
+. state - the vector state
+
+  Level: developer
+
+.seealso: [](ch_vectors), `Vec`, `VecState`, `VecGetState()`, `VecStateCompare()`, `VecStateCompareUpdate()`
+M*/
+#define VecStateInvalidate(s) ((s).id = 0, (s).state = -1, PETSC_SUCCESS)
 
 PETSC_EXTERN PetscErrorCode VecSetSizes(Vec, PetscInt, PetscInt);
 

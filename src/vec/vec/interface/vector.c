@@ -1813,31 +1813,86 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
 }
 
 /*@
-  VecGetState - Gets the state of a `Vec`.
+  VecGetState - Gets a snapshot of the state of a `Vec`
 
   Not Collective
 
   Input Parameter:
-. v - the `Vec` context
+. v - the vector
 
   Output Parameter:
-. state - the object state
+. state - the vector state
 
-  Level: advanced
+  Level: developer
 
   Note:
-  Object state is an integer which gets increased every time
-  the object is changed. By saving and later querying the object state
-  one can determine whether information about the object is still current.
+  The snapshot includes the vector object id and state. Use `VecStateCompare()` to determine whether two snapshots are the same, or `VecStateCompareUpdate()` to compare and update a saved snapshot.
 
-.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `PetscObjectStateGet()`
+.seealso: [](ch_vectors), `Vec`, `VecState`, `VecStateCompare()`, `VecStateCompareUpdate()`, `VecStateInvalidate()`, `PetscObjectStateGet()`, `PetscObjectGetId()`
 @*/
-PetscErrorCode VecGetState(Vec v, PetscObjectState *state)
+PetscErrorCode VecGetState(Vec v, VecState *state)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(state, 2);
-  PetscCall(PetscObjectStateGet((PetscObject)v, state));
+  state->id    = ((PetscObject)v)->id;
+  state->state = ((PetscObject)v)->state;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecStateCompare - Compares two vector state snapshots
+
+  Not Collective
+
+  Input Parameters:
++ state1 - the first vector state
+- state2 - the second vector state
+
+  Output Parameter:
+. same - `PETSC_TRUE` if the vector object id and state are the same, `PETSC_FALSE` otherwise
+
+  Level: developer
+
+.seealso: [](ch_vectors), `Vec`, `VecState`, `VecGetState()`, `VecStateCompareUpdate()`, `VecStateInvalidate()`
+@*/
+PetscErrorCode VecStateCompare(VecState state1, VecState state2, PetscBool *same)
+{
+  PetscFunctionBegin;
+  PetscAssertPointer(same, 3);
+  *same = (PetscBool)(state1.id == state2.id && state1.state == state2.state);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecStateCompareUpdate - Compares a vector with a state snapshot, then updates the snapshot
+
+  Not Collective
+
+  Input Parameter:
+. v - the vector
+
+  Input/Output Parameter:
+. state - the vector state snapshot to compare with and update
+
+  Output Parameter:
+. same - `PETSC_TRUE` if the vector state matched the snapshot before it was updated, `PETSC_FALSE` otherwise
+
+  Level: developer
+
+.seealso: [](ch_vectors), `Vec`, `VecState`, `VecGetState()`, `VecStateCompare()`, `VecStateInvalidate()`
+@*/
+PetscErrorCode VecStateCompareUpdate(Vec v, VecState *state, PetscBool *same)
+{
+  VecState current;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscAssertPointer(state, 2);
+  PetscAssertPointer(same, 3);
+  PetscCall(VecGetState(v, &current));
+  PetscCall(VecStateCompare(current, *state, same));
+  *state = current;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
