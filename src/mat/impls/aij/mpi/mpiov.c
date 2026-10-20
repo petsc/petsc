@@ -2805,7 +2805,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         PetscCall(MatGetRow_MPIAIJ(C, old_row, &ncols, &cols, C->structure_only ? NULL : &vals));
         mat_i = imat_i[row];
         mat_a = PetscSafePointerPlusOffset(imat_a, mat_i);
-        mat_j = imat_j + mat_i;
+        mat_j = PetscSafePointerPlusOffset(imat_j, mat_i);
         if (!allcolumns[i]) {
           for (PetscInt k = 0; k < ncols; k++) {
 #if PetscDefined(USE_CTABLE)
@@ -2902,7 +2902,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       for (PetscInt j = 0; j < jmax; j++) {
         mat_i = imat_i[j];
         mat_a = PetscSafePointerPlusOffset(imat_a, mat_i);
-        mat_j = imat_j + mat_i;
+        mat_j = PetscSafePointerPlusOffset(imat_j, mat_i);
         if (C->structure_only) PetscCall(PetscSortInt(imat_ilen[j], mat_j));
         else PetscCall(PetscSortIntWithScalarArray(imat_ilen[j], mat_j, mat_a));
       }

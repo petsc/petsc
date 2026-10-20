@@ -42,7 +42,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m, PetscInt *ai, PetscInt *aj, P
   ia[0] = shiftout;
   for (row = 0; row < m; row++) {
     nz = ai[row + 1] - ai[row];
-    j  = aj + ai[row] + shiftin;
+    j  = PetscSafePointerPlusOffset(aj, ai[row] + shiftin);
     while (nz--) {
       col = *j++ + shiftin;
       if (lower_triangular) {
@@ -70,7 +70,7 @@ PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt m, PetscInt *ai, PetscInt *aj, P
   /* loop over lower triangular part putting into ja */
   for (row = 0; row < m; row++) {
     nz = ai[row + 1] - ai[row];
-    j  = aj + ai[row] + shiftin;
+    j  = PetscSafePointerPlusOffset(aj, ai[row] + shiftin);
     while (nz--) {
       col = *j++ + shiftin;
       if (lower_triangular) {

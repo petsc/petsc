@@ -284,7 +284,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
     PetscCall(PetscLLCondensedClean(pN, apnz, current_space->array, lnk, lnkbt));
     PetscCall(MatPreallocateSet(i + rstart, apnz, current_space->array, dnz, onz));
 
-    current_space->array += apnz;
+    current_space->array = PetscSafePointerPlusOffset(current_space->array, apnz);
     current_space->local_used += apnz;
     current_space->local_remaining -= apnz;
   }
