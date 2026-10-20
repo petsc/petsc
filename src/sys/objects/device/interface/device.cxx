@@ -82,10 +82,13 @@ sypm::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 
   Input Parameters:
 + type  - The type of `PetscDevice`
-- devid - The numeric ID# of the device (pass `PETSC_DECIDE` to assign automatically)
+- devid - The device selection strategy or the numeric ID# of the device
 
   Output Parameter:
 . device - The `PetscDevice`
+
+  Options Database Key:
+. -device_select N - The device selection strategy or the numeric ID# of the device
 
   Level: beginner
 
@@ -93,7 +96,86 @@ sypm::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
   This routine may initialize `PetscDevice`. If this is the case, it may cause some sort of
   device synchronization.
 
-  `devid` is what you might pass to `cudaSetDevice()` for example.
+  Available device selection strategies\:
+
+  | Value | Behavior                                                      |
+  |-------|---------------------------------------------------------------|
+  | -1    |  Use the configured default device (`PETSC_DECIDE`)           |
+  | -2    |  Topology-aware allocation (CUDA/HIP with hwloc 2.0 or later) |
+  | >=0   |  Select a specific GPU device by index                        |
+
+  SYCL gives -2 its own meaning, the host device, so in a CUPM and SYCL build
+  `-device_select -2` is topology-aware for CUDA or HIP but the host device for SYCL.
+
+  When `PETSC_DECIDE` (-1) is passed to `-device_select` and to this function, either
+  a round-robin allocation across all available GPUs is used, or if `torchrun` was used to
+  launch the application, the value of the `LOCAL_RANK` environment variable set by
+  `torchrun` is selected. When the "Topology-aware allocation" strategy is selected, PETSc
+  uses `hwloc` to inspect the hardware layout of the current system and determine which GPU
+  is closest to the CPU core(s) the current process has been bound to. Each process must
+  actually be bound (e.g. `mpiexec -bind-to core`, `srun --cpu-bind=cores`); an unbound process
+  has no locality to use and falls back to `PETSC_DECIDE`. For example, the LUMI, Frontier and
+  Setonix HPC systems all have nodes comprised of 64-core AMD EPYC "Trento" CPUs connected
+  to 4 AMD MI250X GPUs, each of which is comprised of two Graphics Compute Die (GCD) that
+  appears to the operating system as a distinct GPU device. The CPU is divided into four NUMA
+  nodes, each of which is divided into two chiplets with a direct connection to each GCD. Each
+  GCD is assigned an index from 0 to 7 by the GPU runtime. The diagram below shows how `hwloc`
+  sees one of these nodes.
+
+  ![Node diagram](/images/manual/gpu_topo.svg)
+
+  In order to construct a mapping between the GCD index and the devices found by `hwloc`, we
+  inspect the PCIe Bus ID for each GCD. The results of this are shown in the table below
+
+  | PCIe Bus ID | GCD Index |
+  |-------------|----------:|
+  | d1:00.0     |         4 |
+  | d6:00.0     |         5 |
+  | c9:00.0     |         2 |
+  | ce:00.0     |         3 |
+  | d9:00.0     |         6 |
+  | de:00.0     |         7 |
+  | c1:00.0     |         0 |
+  | c6:00.0     |         1 |
+
+  By cross-referencing the figure and the table, we can see that the 'closest' GPU to e.g. core 0 has the PCIe
+  Bus ID `d1:00.0`, which corresponds to GCD 4.
+
+  `hwloc` uses the notion of "depth" of devices to describe the different layers of the topology it
+  discovers. The top layer is always Machine and is assigned a value 0. Beneath that is the Package
+  layer, which is assigned depth 1 and generally corresponds to CPU sockets. In order to determine which GCD
+  is topologically closest, PETSc uses `hwloc` to determine the depth value of the nearest common ancestor
+  for the CPU the current process is bound to and each device on the system. The higher the depth value,
+  the closer the hardware controller for the device is to CPU core 0, and therefore the closer the GCD
+  is to CPU core 0. The table below shows the nearest common ancestor between CPU core 0 and each of the
+  GCDs identified on the system
+
+  | PCIe Bus ID | Nearest Common Ancestor to Core 0 | Depth |
+  |-------------|----------------------------------:|------:|
+  | d1:00.0     | L3 (chiplet)                      |     3 |
+  | d6:00.0     | Group (NUMA Node)                 |     2 |
+  | c9:00.0     | Package (CPU socket)              |     1 |
+  | ce:00.0     | Package (CPU socket)              |     1 |
+  | d9:00.0     | Package (CPU socket)              |     1 |
+  | de:00.0     | Package (CPU socket)              |     1 |
+  | c1:00.0     | Package (CPU socket)              |     1 |
+  | c6:00.0     | Package (CPU socket)              |     1 |
+
+  Choosing the device with the highest depth value gives the intuitive result that CPU
+  core 0 is closest to the GCD on PCIe Bus ID d1:00.0, or GCD 4. In the case where multiple devices
+  are found at the same depth, the logical ordering of the CPU cores under the device at that depth
+  is used to determine which device to select. For instance, a system with 2 GPUs at the same depth
+  and 16 cores will assign device 0 to processes on cores 0-7 and device 1 to processes on cores 8-15.
+  A summary of the topologically aware device selection method is as follows.
+
+  - If there is a single GPU on the system, select it and return
+  - Enumerate all devices on the system and map PCIe Bus ID to device ID
+  - Discover system topology with hwloc
+  - Determine current process's CPU binding
+  - Find GPU devices by PCIe Bus ID in discovered topology
+  - Find the depth of nearest common ancestor between current CPU core and every GPU device
+  - If there is a single device at a maximum depth, select that device and return
+  - If there are multiple devices at the same depth, select between those devices based on logical CPU core ordering
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`,
 `PetscDeviceInitialize()`, `PetscDeviceInitialized()`, `PetscDeviceConfigure()`,
@@ -548,7 +630,7 @@ PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDev
   PetscOptionsBegin(comm, nullptr, "PetscDevice Options", "Sys");
   PetscCall(PetscOptionsEList("-device_enable", "How (or whether) to initialize PetscDevices", "PetscDeviceInitialize", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[initIdx], &initIdx, nullptr));
   PetscCall(PetscOptionsEList("-default_device_type", "Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT()", "PetscDeviceSetDefaultDeviceType", PetscDeviceTypes, PETSC_DEVICE_MAX, PetscDeviceTypes[initDeviceIdx], &initDeviceIdx, defaultDeviceIdSet));
-  PetscCall(PetscOptionsRangeInt("-device_select", "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate", *defaultDeviceId, defaultDeviceId, nullptr, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
+  PetscCall(PetscOptionsRangeInt("-device_select", PETSC_DEVICE_SELECT_HELP, "PetscDeviceCreate", *defaultDeviceId, defaultDeviceId, nullptr, PETSC_DEVICE_SELECT_LOWER_BOUND, PETSC_DEVICE_MAX_DEVICES));
   PetscCall(PetscOptionsBool("-device_view", "Display device information and assignments (forces eager initialization)", "PetscDeviceView", *defaultView, defaultView, &flg));
   PetscOptionsEnd();
 

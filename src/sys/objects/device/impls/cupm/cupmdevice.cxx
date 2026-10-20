@@ -6,7 +6,9 @@
 #include <csetjmp> // for cuda mpi awareness
 #include <csignal> // SIGSEGV
 #include <iterator>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 namespace Petsc
 {
@@ -16,6 +18,23 @@ namespace device
 
 namespace cupm
 {
+
+#if PetscDefined(HAVE_HWLOC)
+  #if PETSC_PKG_HWLOC_VERSION_GE(2, 0, 0)
+struct HwlocBitmapCleaner {
+  void operator()(hwloc_bitmap_t bitmap) const noexcept { hwloc_bitmap_free(bitmap); }
+};
+using HwlocBitmap = std::unique_ptr<hwloc_bitmap_s, HwlocBitmapCleaner>;
+
+struct HwlocTopologyCleaner {
+  void operator()(hwloc_topology_t topo) const noexcept
+  {
+    if (topo != nullptr) hwloc_topology_destroy(topo);
+  }
+};
+using HwlocTopology = std::unique_ptr<hwloc_topology, HwlocTopologyCleaner>;
+  #endif
+#endif
 
 // internal "impls" class for CUPMDevice. Each instance represents a single cupm device
 template <DeviceType T>
@@ -267,6 +286,180 @@ PetscErrorCode Device<T>::select_device_petsc_decide_(MPI_Comm comm, PetscInt nd
        MPI     -- rank % number_local_devices
        PyTorch -- getenv("LOCAL_RANK")
 */
+#if PetscDefined(HAVE_HWLOC)
+  #if PETSC_PKG_HWLOC_VERSION_GE(2, 0, 0)
+template <DeviceType T>
+PetscErrorCode Device<T>::get_device_placement_in_cpuset_(PetscInt dev_count, hwloc_cpuset_t superset_cpuset, hwloc_obj_t process_cpu_obj, hwloc_topology_t topology, PetscInt *relative_device_index) noexcept
+{
+  // hwloc_bitmap_weight() returns the number of non-zero entries in a cpuset.
+  PetscInt cores_in_anc_obj = hwloc_bitmap_weight(superset_cpuset);
+  PetscInt ctr              = 0;
+
+  PetscFunctionBegin;
+  // Enumerate cpuset in topological order
+  for (auto this_cpu = hwloc_get_next_obj_inside_cpuset_by_type(topology, superset_cpuset, HWLOC_OBJ_PU, nullptr); this_cpu != nullptr; this_cpu = hwloc_get_next_obj_inside_cpuset_by_type(topology, superset_cpuset, HWLOC_OBJ_PU, this_cpu)) {
+    // If the first CPU core in this thread's cpuset is found, set relative_device_index and return.
+    if (this_cpu->logical_index == process_cpu_obj->logical_index) {
+      *relative_device_index = dev_count * ctr / cores_in_anc_obj;
+      break;
+    }
+    ctr++;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
+PetscErrorCode Device<T>::select_device_topology_aware_(PetscInt ndev, int *initId, PetscBool *success) noexcept
+{
+  PetscFunctionBegin;
+  if (ndev == 0) *initId = PETSC_DECIDE;
+  else if (ndev == 1) *initId = 0;
+  else {
+    PetscInt                 selected_device = -1;
+    PetscInt                 max_depth       = -1;
+    PetscInt                 max_count       = 1;
+    PetscInt                 this_max_depth;
+    PetscBool                same_devices;
+    std::vector<hwloc_obj_t> hwloc_devs(ndev);
+    std::vector<hwloc_obj_t> common_ancestors(ndev);
+    std::vector<PetscInt>    device_depths(ndev);
+    std::vector<std::string> device_addrs(ndev, std::string(32, '\0'));
+    hwloc_obj_t              first_cpu = nullptr;
+    hwloc_topology_t         raw_topo  = nullptr;
+    HwlocBitmap              cpuset_mine(hwloc_bitmap_alloc());
+    HwlocBitmap              sibling_cpuset(hwloc_bitmap_alloc());
+    HwlocTopology            topology;
+
+    /* Ensure *initId is set to a sensible fallback value if any hwloc
+       calls fail. */
+    *initId = PETSC_DECIDE;
+
+    // Get PCI Bus addresses for each CUPM device
+    for (PetscInt idev = 0; idev < ndev; idev++) {
+      auto cerr = cupmDeviceGetPCIBusId(&device_addrs[idev][0], 32, idev);
+
+      if (cerr != cupmSuccess) {
+        /* Do not set deferredError_ here to allow fallback to select_device_petsc_decide_()
+           which doesn't rely on any cupm calls. */
+        auto PETSC_UNUSED ignored = cupmGetLastError();
+
+        *success = PETSC_FALSE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
+
+    if (hwloc_topology_init(&raw_topo) == -1) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    topology.reset(raw_topo);
+
+    /* Causes binding functions to call OS-specific system calls - required for determining
+       current CPU binding */
+    if (hwloc_topology_set_flags(topology.get(), HWLOC_TOPOLOGY_FLAG_IS_THISSYSTEM) == -1) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    /* By default IO devices (i.e. GPUs, storage, etc.) are filtered out. GPUs are considered
+       important. This filter makes sure those are included in the detected topology. */
+    if (hwloc_topology_set_io_types_filter(topology.get(), HWLOC_TYPE_FILTER_KEEP_IMPORTANT) == -1) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    if (hwloc_topology_load(topology.get()) == -1) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+
+    // Get the current thread's CPU binding mask
+    if (cpuset_mine.get() == nullptr) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    if (hwloc_get_cpubind(topology.get(), cpuset_mine.get(), HWLOC_CPUBIND_THREAD) == -1) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    // An unbound process reports every PU, which would send all ranks to the same GPU
+    if (hwloc_bitmap_isincluded(hwloc_topology_get_topology_cpuset(topology.get()), cpuset_mine.get())) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+    /* The cpuset returned from hwloc_get_cpubind() is in OS-order, which is not necessarily
+       the same as the topological order. Create a PU object from the first CPU detected
+       in this cpuset. A PU object is the lowest object in any hwloc topology. It is not
+       allowed to have any child objects. */
+    first_cpu = hwloc_get_pu_obj_by_os_index(topology.get(), hwloc_bitmap_first(cpuset_mine.get()));
+    if (first_cpu == nullptr) {
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+
+    for (PetscInt idev = 0; idev < ndev; idev++) {
+      /* Use the PCI Bus address of each GPU to find it among the hwloc
+         topology object */
+      hwloc_devs[idev] = hwloc_get_pcidev_by_busidstring(topology.get(), device_addrs[idev].c_str());
+      if (hwloc_devs[idev] == nullptr) {
+        *success = PETSC_FALSE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+      /* hwloc does not consider IO devices to have ancestor or child objects, therefore
+         a call to hwloc_get_non_io_ancestor_obj() is required for each device to find the
+         nearest non-IO device that has the same locality as the GPU. hwloc_get_common_ancestor_obj()
+         object returns the lowest-level object ('Group', CPU socket, Machine, etc) that contains
+         both the GPU and the first CPU core in the current cpuset. */
+      common_ancestors[idev] = hwloc_get_common_ancestor_obj(topology.get(), first_cpu, hwloc_get_non_io_ancestor_obj(topology.get(), hwloc_devs[idev]));
+      /* Every object at depth n+1 contains a subset of the PU and IO objects at depth n. Therefore
+         the smallest object containing both device idev and CPU core will have the largest
+         'depth' value. */
+      if (common_ancestors[idev]->depth > max_depth) {
+        max_depth       = common_ancestors[idev]->depth;
+        max_count       = 1;
+        selected_device = idev;
+        // Prepare for the case where multiple devices are reported at the same depth level.
+      } else if (common_ancestors[idev]->depth == max_depth) max_count++;
+    }
+    if (max_count == 1) *initId = selected_device;
+    else {
+      /* Fallback method to handle the case where multiple devices are reported at the same depth level.
+         Evenly distribute processes among closest devices sequentially. */
+      std::vector<PetscInt> devices_at_max_depth(max_count);
+      PetscInt              ctr                 = 0;
+      PetscInt              relative_device_idx = 0;
+      auto                  global_cpuset       = hwloc_topology_get_allowed_cpuset(topology.get());
+
+      for (PetscInt idev = 0; idev < ndev; idev++) {
+        if (common_ancestors[idev]->depth == max_depth) {
+          devices_at_max_depth[ctr] = idev;
+          ctr++;
+        }
+      }
+      // Construct a cpuset of CPUs with the same set of closest devices as this process.
+      if (sibling_cpuset.get() == nullptr) {
+        *success = PETSC_FALSE;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+      // Repeat the common ancestor depth calculation for every CPU core detected in the current cgroup
+      for (auto this_cpu = hwloc_get_next_obj_inside_cpuset_by_type(topology.get(), global_cpuset, HWLOC_OBJ_PU, nullptr); this_cpu != nullptr; this_cpu = hwloc_get_next_obj_inside_cpuset_by_type(topology.get(), global_cpuset, HWLOC_OBJ_PU, this_cpu)) {
+        same_devices = PETSC_TRUE;
+        for (PetscInt jdev = 0; jdev < ndev; jdev++) device_depths[jdev] = hwloc_get_common_ancestor_obj(topology.get(), this_cpu, hwloc_get_non_io_ancestor_obj(topology.get(), hwloc_devs[jdev]))->depth;
+        this_max_depth = *std::max_element(device_depths.begin(), device_depths.end());
+        // Identify a CPU as a sibling when it has the same view of device depths that the current CPU has.
+        for (PetscInt jdev = 0; jdev < ndev && (same_devices == PETSC_TRUE); jdev++) same_devices = ((device_depths[jdev] == this_max_depth) == (common_ancestors[jdev]->depth == max_depth));
+        if (same_devices == PETSC_TRUE && hwloc_bitmap_set(sibling_cpuset.get(), this_cpu->os_index) == -1) {
+          *success = PETSC_FALSE;
+          PetscFunctionReturn(PETSC_SUCCESS);
+        }
+      }
+      PetscCall(get_device_placement_in_cpuset_(max_count, sibling_cpuset.get(), first_cpu, topology.get(), &relative_device_idx));
+      *initId = devices_at_max_depth[relative_device_idx];
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+  #endif // PETSC_PKG_HWLOC_VERSION_GE(2, 0, 0)
+#endif   // PETSC_HAVE_HWLOC
+
 template <DeviceType T>
 PetscErrorCode Device<T>::select_device_(MPI_Comm comm, int *dev_id) noexcept
 {
@@ -281,6 +474,18 @@ PetscErrorCode Device<T>::select_device_(MPI_Comm comm, int *dev_id) noexcept
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscDeviceCheckDeviceCount_Internal(ndev));
+#if PetscDefined(HAVE_HWLOC)
+  #if PETSC_PKG_HWLOC_VERSION_GE(2, 0, 0)
+  if (*dev_id == PETSC_DEVICE_TOPOLOGY_AWARE) {
+    PetscBool hwloc_success = PETSC_TRUE;
+
+    PetscCall(select_device_topology_aware_(ndev, dev_id, &hwloc_success));
+    /* If select_device_topology_aware_() fails, it will set *dev_id to
+       PETSC_DECIDE in order to fall through to the default algorithm */
+    if (hwloc_success == PETSC_FALSE) PetscCall(PetscInfo(nullptr, "Topology aware GPU device allocation failed. Falling back to default algorithm\n"));
+  }
+  #endif
+#endif
   if (*dev_id == PETSC_DECIDE) PetscCall(select_device_petsc_decide_(comm, ndev, dev_id));
   PetscCall(PetscInfo(nullptr, "GPU device id selected: %" PetscInt32_FMT "\n", *dev_id));
   static_assert(std::is_same<PetscMPIInt, decltype(defaultDevice_)>::value, "");

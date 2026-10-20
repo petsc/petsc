@@ -52,4 +52,16 @@ int main(int argc, char *argv[])
       args: -device_enable_hip {{none lazy eager}separate output}
       suffix: hip_env_set_empty
 
+  test:
+    requires: cuda hwloc hwloc_version_ge(2,0,0)
+    suffix: cuda_topology_aware
+    args: -device_enable_cuda eager -device_select_cuda -2
+    output_file: output/empty.out
+
+  test:
+    requires: hip hwloc hwloc_version_ge(2,0,0)
+    suffix: hip_topology_aware
+    args: -device_enable_hip eager -device_select_hip -2
+    output_file: output/empty.out
+
 TEST*/
