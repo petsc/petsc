@@ -214,13 +214,14 @@ PetscErrorCode Device<T>::finalize_() noexcept
 {
   PetscFunctionBegin;
   deferredError_ = cupmSuccess;
+  if (defaultDeviceSet_) defaultDevice_ = PETSC_CUPM_DEVICE_NONE; // disabled by default
+  defaultDeviceSet_ = PETSC_FALSE;
   if (PetscUnlikely(!initialized_)) PetscFunctionReturn(PETSC_SUCCESS);
   for (auto &&device : devices_) {
     if (device) PetscCall(device->shutdown());
     device.reset();
   }
-  defaultDevice_ = PETSC_CUPM_DEVICE_NONE; // disabled by default
-  initialized_   = false;
+  initialized_ = false;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -296,7 +297,8 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
 
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(PETSC_SUCCESS);
-  initialized_ = true;
+  // Somehow back here after something has already gone wrong, bail immediately
+  if (deferredError_ != cupmSuccess) PetscFunctionReturn(PETSC_SUCCESS);
   static_assert(std::is_same<PetscMPIInt, decltype(dev_id)>::value, "");
   PetscCall(PetscRegisterFinalize(finalize_));
   PetscCall(base_type::PetscOptionDeviceAll(comm, initType, initId, initView));
@@ -321,26 +323,41 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   }
 
   // record the results of the initialization
-  defaultDevice_   = dev_id;
-  *defaultDeviceId = initId.first;
-  *defaultView     = initView.first;
-  *defaultInitType = initType.first;
+  defaultDevice_    = dev_id;
+  defaultDeviceSet_ = PETSC_TRUE;
+  *defaultDeviceId  = initId.first;
+  *defaultView      = initView.first;
+  *defaultInitType  = initType.first;
+  deviceComm_       = comm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
 PetscErrorCode Device<T>::init_device_id_(PetscInt *inid) const noexcept
 {
-  const auto id = *inid == PETSC_DECIDE ? defaultDevice_ : (int)*inid;
+  auto id = *inid == PETSC_DECIDE ? defaultDevice_ : (int)*inid;
 
   PetscFunctionBegin;
+  /* In this callpath, a negative inid may be passed from PetscDeviceCreate().
+     If this happens, -1 (PETSC_DECIDE) is intercepted above, but any other
+     negative value will be passed to select_device_(). Positive values
+     (i.e. the user has selected a specific device) always override
+     negative values. */
+
   PetscCheck(deferredError_ == cupmSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "Cannot lazily initialize PetscDevice: %s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(deferredError_), cupmGetErrorName(deferredError_), cupmGetErrorString(deferredError_));
   PetscCheck(defaultDevice_ != PETSC_CUPM_DEVICE_NONE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Trying to retrieve a %s PetscDevice when it has been disabled", cupmName());
+
+  if (id < 0) {
+    PetscCall(select_device_(deviceComm_, &id));
+    PetscCheck(deferredError_ == cupmSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "Cannot lazily initialize PetscDevice: %s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(deferredError_), cupmGetErrorName(deferredError_), cupmGetErrorString(deferredError_));
+    PetscCheck(id >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported %s device selection strategy %" PetscInt_FMT "; pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide", cupmName(), *inid);
+  }
   PetscAssert(static_cast<decltype(devices_.size())>(id) < devices_.size(), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only supports %zu number of devices but trying to get device with id %d", devices_.size(), id);
   if (!devices_[id]) devices_[id] = util::make_unique<DeviceInternal>(id);
   PetscAssert(id == devices_[id]->id(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Entry %d contains device with mismatching id %d", id, devices_[id]->id());
   PetscCall(devices_[id]->initialize());
-  *inid = id;
+  *inid        = id;
+  initialized_ = true;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -40,8 +40,14 @@ private:
   // this ranks default device, if < 0  then devices are specifically disabled
   static int defaultDevice_;
 
-  // have we tried looking for devices
+  // have we completed initialization
   static bool initialized_;
+
+  // have we tried looking for devices
+  static bool defaultDeviceSet_;
+
+  // Preserve MPI comm
+  static MPI_Comm deviceComm_;
 
   // Do we have a deferred error stored
   static cupmError_t deferredError_;
@@ -71,6 +77,12 @@ bool Device<T>::initialized_ = false;
 
 template <DeviceType T>
 typename Device<T>::cupmError_t Device<T>::deferredError_ = cupmSuccess;
+
+template <DeviceType T>
+bool Device<T>::defaultDeviceSet_ = PETSC_FALSE;
+
+template <DeviceType T>
+MPI_Comm Device<T>::deviceComm_ = PETSC_COMM_SELF;
 
 } // namespace cupm
 
