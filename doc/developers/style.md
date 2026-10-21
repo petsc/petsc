@@ -807,6 +807,11 @@ where noted, add a newline after the section headings.
 17. Every new API entry such as functions and typedefs must be listed in the `doc/changes/dev.md` file. A merge request cannot be accepted
     without said entries in the `doc/changes/dev.md` file.
 
+18. Mathematical formulas in documentation, both manual pages and MarkDown files, should be incorporated using LaTeX notation.
+    There should be no white space between the equation and the enclosing $.
+    Asterisks should not be used to indicate multiplication within LaTeX expressions.
+    Use `\|` rather than `||` to indicate a norm within LaTeX expressions.
+
 [^footnote-1]: Type also refers to the string name of the subclass.
 
 ### Makefile formatting
