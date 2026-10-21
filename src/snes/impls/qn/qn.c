@@ -494,7 +494,7 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       When using a nonlinear preconditioner, one has two options as to how the preconditioner is applied.  The first of
       these options, sequential, uses the preconditioner to generate a new solution and function and uses those at this
       iteration as the current iteration's values when constructing the approximate Jacobian.  The second, composed,
-      perturbs the problem the Jacobian represents to be $P(x, b) - x = 0 $, where $P(x, b)$ is the preconditioner.
+      perturbs the problem the Jacobian represents to be $P(x, b) - x = 0$, where $P(x, b)$ is the preconditioner.
 
       Uses left nonlinear preconditioning by default.
 

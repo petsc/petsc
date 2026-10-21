@@ -161,8 +161,8 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
   Level: intermediate
 
   Notes:
-  L-SymBadBrdn is a convex combination of L-DFP and L-BFGS such that $B^{-1} = (1 - \psi)*B_{\text{DFP}}^{-1} +
-  \psi*B_{\text{BFGS}}^{-1}$. The combination factor $\psi$ is restricted to the range $[0, 1]$, where the L-SymBadBrdn matrix
+  L-SymBadBrdn is a convex combination of L-DFP and L-BFGS such that $B^{-1} = (1 - \psi) B_{\text{DFP}}^{-1} +
+  \psi B_{\text{BFGS}}^{-1}$. The combination factor $\psi$ is restricted to the range $[0, 1]$, where the L-SymBadBrdn matrix
   is guaranteed to be symmetric positive-definite. Note that this combination is on the inverses and not on the
   forwards. For forward convex combinations, use the L-SymBrdn matrix (`MATLMVMSYMBROYDEN`).
 

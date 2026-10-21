@@ -981,12 +981,12 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
 - ctx - any context needed by the function
 
   Options Database Keys:
-. -mat_mffd_check_positivity (true|false) - Ensure that $U + h*a $ is non-negative
+. -mat_mffd_check_positivity (true|false) - Ensure that $U + h \, a$ is non-negative
 
   Level: advanced
 
   Notes:
-  For example, `MatMFFDCheckPositivity()` insures that all entries of U + h*a are non-negative
+  For example, `MatMFFDCheckPositivity()` insures that all entries of $U + h \, a$ are non-negative
 
   The function you provide is called after the default `h` has been computed and allows you to
   modify it.
@@ -1002,7 +1002,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, MatMFFDCheckhFn *fun, PetscCtx ctx)
 }
 
 /*@
-  MatMFFDCheckPositivity - Checks that all entries in $U + h*a $ are positive or
+  MatMFFDCheckPositivity - Checks that all entries in $U + h \, a$ are positive or
   zero, decreases `h` until this is satisfied for a `MATMFFD` matrix
 
   Logically Collective
@@ -1014,7 +1014,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, MatMFFDCheckhFn *fun, PetscCtx ctx)
 - h     - scaling factor on `a`, may be changed on output
 
   Options Database Keys:
-. -mat_mffd_check_positivity (true|false) - Ensure that $U + h*a$ is nonnegative
+. -mat_mffd_check_positivity (true|false) - Ensure that $U + h \, a$ is nonnegative
 
   Level: advanced
 

@@ -437,7 +437,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
       PetscCall(VecNorm(p[k], NORM_2, &rnorm));
       break;
     case KSP_NORM_UNPRECONDITIONED:
-    case KSP_NORM_NATURAL:
       PetscCall(VecNorm(r, NORM_2, &rnorm));
       break;
     default:
@@ -476,7 +475,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
         PetscCall(VecNorm(p[kp1], NORM_2, &rnorm));
         break;
       case KSP_NORM_UNPRECONDITIONED:
-      case KSP_NORM_NATURAL:
         PetscCall(VecNorm(r, NORM_2, &rnorm));
         break;
       default:
@@ -519,7 +517,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
         PetscCall(VecNorm(p[kp1], NORM_2, &rnorm));
         break;
       case KSP_NORM_UNPRECONDITIONED:
-      case KSP_NORM_NATURAL:
         PetscCall(VecNorm(r, NORM_2, &rnorm));
         break;
       default:
@@ -589,7 +586,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FourthKind(KSP ksp)
       PetscCall(VecNorm(Br, NORM_2, &rnorm));
       break;
     case KSP_NORM_UNPRECONDITIONED:
-    case KSP_NORM_NATURAL:
       PetscCall(VecNorm(r, NORM_2, &rnorm));
       break;
     default:
@@ -631,7 +627,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FourthKind(KSP ksp)
         PetscCall(VecNorm(Br, NORM_2, &rnorm));
         break;
       case KSP_NORM_UNPRECONDITIONED:
-      case KSP_NORM_NATURAL:
         PetscCall(VecNorm(r, NORM_2, &rnorm));
         break;
       default:
@@ -672,7 +667,6 @@ static PetscErrorCode KSPSolve_Chebyshev_FourthKind(KSP ksp)
         PetscCall(VecNorm(Br, NORM_2, &rnorm));
         break;
       case KSP_NORM_UNPRECONDITIONED:
-      case KSP_NORM_NATURAL:
         PetscCall(VecNorm(r, NORM_2, &rnorm));
         break;
       default:

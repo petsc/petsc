@@ -485,13 +485,13 @@ norm, `atol`, and the relative increase in the residual, `dtol`.
 Convergence is detected at iteration $k$ if
 
 $$
-\| r_k \|_2 < {\rm max} ( \text{rtol} * \| b \|_2, \text{atol}),
+\| r_k \|_2 < {\rm max} ( \text{rtol} \| b \|_2, \text{atol}),
 $$
 
 where $r_k = b - A x_k$. Divergence is detected if
 
 $$
-\| r_k \|_2 > \text{dtol} * \| b \|_2.
+\| r_k \|_2 > \text{dtol} \| b \|_2.
 $$
 
 These parameters, as well as the maximum number of allowable iterations,

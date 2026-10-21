@@ -884,7 +884,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
   Notes:
   This function exists so that a user can assemble the Jacobian pieces with functions not stores in the `DMTS`. This was necessary in `TSDISCGRAD` since two different representations of the formulation can be stored.
 
-  If $ F(t,U,\dot{U})=0 $ is the DAE, the required Jacobian is
+  If $F(t,U,\dot{U})=0$ is the DAE, the required Jacobian is
 .vb
    dF/dU + shift*dF/dUdot
 .ve
@@ -1009,7 +1009,7 @@ PetscErrorCode TSComputeIJacobian_Internal(TS ts, TSIJacobianFn *ijacobian, TSRH
   Level: developer
 
   Notes:
-  If $ F(t,U,\dot{U})=0 $ is the DAE, the required Jacobian is
+  If $F(t,U,\dot{U})=0$ is the DAE, the required Jacobian is
 .vb
    dF/dU + shift*dF/dUdot
 .ve
@@ -1621,7 +1621,7 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
   If $F(t,U,V,A) = 0$ is the DAE, the required Jacobian is
 
 $$
-  dF/dU + shiftV*dF/dV + shiftA*dF/dA
+  dF/dU + shiftV dF/dV + shiftA dF/dA
 $$
 
   Most users should not need to explicitly call this routine, as it
@@ -4835,7 +4835,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
   an implicit operator of the form
 
   $$
-  shift*M + J
+  shift M + J
   $$
 
   where J is the Jacobian of -F(U).  Support may be added in a future version of PETSc, but for now, the user must store

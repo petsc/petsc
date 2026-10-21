@@ -546,7 +546,7 @@ PetscErrorCode TSPseudoSetMaxTimeStep(TS ts, PetscReal maxdt)
 
 /*@
   TSPseudoIncrementDtFromInitialDt - Indicates that a new timestep
-  is computed via the formula $  dt = initial\_dt*initial\_fnorm/current\_fnorm $  rather than the default update, $  dt = current\_dt*previous\_fnorm/current\_fnorm.$
+  is computed via the formula $dt = initial\_dt \, initial\_fnorm/current\_fnorm$  rather than the default update, $dt = current\_dt \, previous\_fnorm/current\_fnorm.$
 
   Logically Collective
 
@@ -712,9 +712,9 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, PetscCtx ctx)
   Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
   $$
 
-  The Jacobian $ dF/dX + shift*dF/dXdot $ contains a non-zero $ dF/dXdot$ term. In the $ X' = F(X) $ case it
-  is $ dF/dX + shift*1/dt $. Hence  still contains the $ 1/dt $ term so the Jacobian is not simply the
-  Jacobian of $ F $ and thus this pseudo-transient continuation is not just Newton on $F(x)=0$.
+  The Jacobian $dF/dX + shift \, dF/dXdot$ contains a non-zero $dF/dXdot$ term. In the $X' = F(X)$ case it
+  is $dF/dX + shift \, 1/dt$. Hence  still contains the $1/dt$ term so the Jacobian is not simply the
+  Jacobian of $F$ and thus this pseudo-transient continuation is not just Newton on $F(x)=0$.
 
   Therefore, the linear system solved by the first Newton iteration is equivalent to the one
   described above and in the papers.  If the user chooses to perform multiple Newton iterations, the

@@ -5,8 +5,8 @@ typedef struct _n_TaoTerm_L1 TaoTerm_L1;
 struct _n_TaoTerm_L1 {
   PetscReal        epsilon;
   PetscBool        epsilon_warning;
-  Vec              diff; // caches $x - p$
-  Vec              d;    // caches $d_i = sqrt((diff_i)^2 + epsilon^2)
+  Vec              diff; // caches x - p
+  Vec              d;    // caches d_i = sqrt((diff_i)^2 + epsilon^2)
   PetscReal        d_epsilon;
   PetscReal        d_sum;
   PetscObjectId    d_x_id, d_p_id;

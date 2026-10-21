@@ -645,7 +645,7 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
 }
 
 /*@
-  PCApplyBAorAB - Applies the preconditioner and operator to a vector. $y = B*A*x $ or $ y = A*B*x$.
+  PCApplyBAorAB - Applies the preconditioner and operator to a vector. $y = B A x$ or $y = A B x$.
 
   Collective
 
@@ -699,8 +699,8 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
 
 /*@
   PCApplyBAorABTranspose - Applies the transpose of the preconditioner
-  and operator to a vector. That is, applies $B^T * A^T$ with left preconditioning,
-  NOT $(B*A)^T = A^T*B^T$.
+  and operator to a vector. That is, applies $B^T A^T$ with left preconditioning,
+  NOT $(B A)^T = A^T B^T$.
 
   Collective
 
@@ -717,7 +717,7 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
 
   Note:
   This routine is used internally so that the same Krylov code can be used to solve $A x = b$ and $A^T x = b$, with a preconditioner
-  defined by $B^T$. This is why this has the funny form that it computes $B^T * A^T$
+  defined by $B^T$. This is why this has the funny form that it computes $B^T A^T$
 
 .seealso: [](ch_ksp), `PC`, `PCApply()`, `PCApplyTranspose()`, `PCApplyBAorAB()`
 @*/

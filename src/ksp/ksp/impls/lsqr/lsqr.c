@@ -295,7 +295,7 @@ PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
   Notes:
   By default, `flg` = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
   For `flg` = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
-  This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of $||A||$ used in normal equation stopping criterion.
+  This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of $\|A\|$ used in normal equation stopping criterion.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetNorms()`, `KSPLSQRConvergedDefault()`
 @*/
@@ -347,8 +347,8 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
 . ksp - iterative context
 
   Output Parameters:
-+ arnorm - good estimate of $\|(A*Pmat^{-T})*r\|$, where $r = A x - b$, used in specific stopping criterion
-- anorm  - poor estimate of $\|A*Pmat^{-T}\|_{frobenius}$ used in specific stopping criterion
++ arnorm - good estimate of $\|(A \, Pmat^{-T}) r\|$, where $r = A x - b$, used in specific stopping criterion
+- anorm  - poor estimate of $\|A \, Pmat^{-T}\|_{frobenius}$ used in specific stopping criterion
 
   Level: intermediate
 
@@ -567,13 +567,13 @@ static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
   Notes:
   This is not called directly but rather is passed to `KSPSetConvergenceTest()`. It is used automatically by `KSPLSQR`
 
-  `KSPConvergedDefault()` is called first to check for convergence in $A*x=b$.
-  If that does not determine convergence then checks convergence for the least squares problem, i.e., in $ \min_x |b - A x| $.
+  `KSPConvergedDefault()` is called first to check for convergence in $A x=b$.
+  If that does not determine convergence then checks convergence for the least squares problem, i.e., in $\min_x |b - A x|$.
   Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS`
   and `KSP_CONVERGED_ATOL_NORMAL_EQUATIONS`.
 
-  `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS` is returned if $||A^T r|| < rtol ||A|| ||r||$.
-  The matrix norm $||A||$ is an iteratively refined estimate, see `KSPLSQRGetNorms()`.
+  `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS` is returned if $\|A^T r\| < rtol \|A\| \|r\|$.
+  The matrix norm $\|A\|$ is an iteratively refined estimate, see `KSPLSQRGetNorms()`.
   This criterion is largely compatible with that in MATLAB `lsqr()`.
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
@@ -610,7 +610,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    Options Database Keys:
 +  -ksp_lsqr_set_standard_error - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
 .  -ksp_lsqr_exact_mat_norm     - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
--  -ksp_lsqr_monitor            - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b $, and estimate of matrix norm $||A||$
+-  -ksp_lsqr_monitor            - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b$, and estimate of matrix norm $\|A\|$
 
    Level: beginner
 
@@ -634,7 +634,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
 
    Developer Note:
    How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
-   the preconditioner transpose times the preconditioner,  so one does not need to pass $A^T*A$ as the third argument to `KSPSetOperators()`.
+   the preconditioner transpose times the preconditioner,  so one does not need to pass $A^T A$ as the third argument to `KSPSetOperators()`.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSolve()`, `KSPLSQRConvergedDefault()`, `KSPLSQRSetComputeStandardErrorVec()`, `KSPLSQRGetStandardErrorVec()`, `KSPLSQRSetExactMatNorm()`, `KSPLSQRMonitorResidualDrawLGCreate()`, `KSPLSQRMonitorResidualDrawLG()`, `KSPLSQRMonitorResidual()`, `PETSCREGRESSORLINEAR`
 M*/

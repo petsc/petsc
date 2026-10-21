@@ -2368,7 +2368,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 
   If the equation is implicit or a DAE, then `TSSetEquationType()` needs to be set accordingly. Refer to the manual for further information.
 
-  Methods with an explicit stage can only be used with ODE in which the stiff part $ G(t,X,\dot{X}) $ has the form $ \dot{X} + \hat{G}(t,X)$.
+  Methods with an explicit stage can only be used with ODE in which the stiff part $G(t,X,\dot{X})$ has the form $\dot{X} + \hat{G}(t,X)$.
 
   Consider trying `TSROSW` if the stiff part is linear or weakly nonlinear.
 

@@ -715,9 +715,9 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 
   Note:
   Divergence breakdown occurs when the norm of the GMRES residual increases significantly at a restart.
-  This is defined to be $ | truenorm - gmresnorm | > tol * gmresnorm $ where $ gmresnorm $ is the norm computed
-  by the GMRES process at a restart iteration using the standard GMRES recursion formula and $ truenorm $ is computed after
-  the restart using the definition $ \| r \| = \| b - A x \|$.
+  This is defined to be $| truenorm - gmresnorm | > tol \, gmresnorm$ where $gmresnorm$ is the norm computed
+  by the GMRES process at a restart iteration using the standard GMRES recursion formula and $truenorm$ is computed after
+  the restart using the definition $\| r \| = \| b - A x \|$.
 
   Divergence breakdown stops the iterative solve with a `KSPConvergedReason` of `KSP_DIVERGED_BREAKDOWN` indicating the
   GMRES solver has not converged.

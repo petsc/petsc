@@ -1124,7 +1124,7 @@ PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar 
   Level: advanced
 
   Note:
-  The idea is to evaluate the functional as an integral $ n(f) = \int dx n(x) . f(x) $ where both n and f have Nc components.
+  The idea is to evaluate the functional as an integral $n(f) = \int dx \, n(x) \cdot f(x)$ where both `n` and `f` have `Nc` components.
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceCreate()`
 @*/
@@ -1551,7 +1551,7 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   Level: advanced
 
   Note:
-  The idea is to evaluate the functional as an integral $ n(f) = \int dx n(x) . f(x)$ where both n and f have Nc components.
+  The idea is to evaluate the functional as an integral $n(f) = \int dx \, n(x) \cdot f(x)$ where both `n` and `f` have `Nc` components.
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceCreate()`
 @*/

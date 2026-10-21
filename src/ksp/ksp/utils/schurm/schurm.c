@@ -148,13 +148,13 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 - A11  - (optional) the lower-right block of the original matrix $A = [A00 A01; A10 A11]$
 
   Output Parameter:
-. S - the matrix that behaves as the Schur complement $S = A11 - A10 ksp(A00,Ap00) A01$
+. S - the matrix that behaves as the Schur complement $S = A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Level: intermediate
 
   Notes:
   The Schur complement is NOT explicitly formed! Rather, this function returns a virtual Schur complement
-  that can compute the matrix-vector product by using formula $S = A11 - A10 A^{-1} A01$
+  that can compute the matrix-vector product by using formula $S = A11 - A10 \, A^{-1} \, A01$
   for Schur complement `S` and a `KSP` solver to approximate the action of $A^{-1}$.
 
   All four matrices must have the same MPI communicator.
@@ -199,7 +199,7 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
 
   Notes:
   The Schur complement is NOT explicitly formed! Rather, this
-  object performs the matrix-vector product of the Schur complement by using formula $S = A11 - A10 ksp(A00,Ap00) A01$
+  object performs the matrix-vector product of the Schur complement by using formula $S = A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   All four matrices must have the same MPI communicator.
 
@@ -259,12 +259,12 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
 }
 
 /*@
-  MatSchurComplementGetKSP - Gets the `KSP` object that is used to solve with `A00` in the Schur complement matrix $S = A11 - A10 ksp(A00,Ap00) A01$
+  MatSchurComplementGetKSP - Gets the `KSP` object that is used to solve with `A00` in the Schur complement matrix $S = A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Not Collective
 
   Input Parameter:
-. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $ A11 - A10 ksp(A00,Ap00) A01 $
+. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Output Parameter:
 . ksp - the linear solver object
@@ -289,7 +289,7 @@ PetscErrorCode MatSchurComplementGetKSP(Mat S, KSP *ksp)
 }
 
 /*@
-  MatSchurComplementSetKSP - Sets the `KSP` object that is used to solve with `A00` in the Schur complement matrix $ S = A11 - A10 ksp(A00,Ap00) A01$
+  MatSchurComplementSetKSP - Sets the `KSP` object that is used to solve with `A00` in the Schur complement matrix $S = A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Not Collective
 
@@ -329,7 +329,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
   Collective
 
   Input Parameters:
-+ S    - matrix obtained with `MatCreateSchurComplement()` (or `MatSchurSetSubMatrices()`) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
++ S    - matrix obtained with `MatCreateSchurComplement()` (or `MatSchurSetSubMatrices()`) and implementing the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
 . A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
 . Ap00 - matrix from which the preconditioner is constructed for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
 . A01  - the upper-right block of the original matrix $A = [A00 A01; A10 A11]$
@@ -409,7 +409,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
   Collective
 
   Input Parameter:
-. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
+. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Output Parameters:
 + A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
@@ -644,7 +644,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
 
   Output Parameters:
 + S  - exact Schur complement, often of type `MATSCHURCOMPLEMENT` which is difficult to use for preconditioning
-- Sp - approximate Schur complement from which a preconditioner can be built $A11 - A10 inv(DIAGFORM(A00)) A01$
+- Sp - approximate Schur complement from which a preconditioner can be built $A11 - A10 \, inv(DIAGFORM(A00)) \, A01$
 
   Level: advanced
 
@@ -701,9 +701,8 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
   Not Collective
 
   Input Parameters:
-+ S        - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
-- ainvtype - type of approximation to be used to form approximate Schur complement $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$:
-             `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
++ S        - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
+- ainvtype - type of approximation to be used to form the approximate Schur complement $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$, see `MatSchurComplementAinvType`.
 
   Options Database Key:
 . -mat_schur_complement_ainv_type (diag|lump|blockdiag|full) - set Schur complement type
@@ -734,11 +733,10 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
   Not Collective
 
   Input Parameter:
-. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
+. S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
 
   Output Parameter:
-. ainvtype - type of approximation used to form approximate Schur complement Sp = A11 - A10 inv(DIAGFORM(A00)) A01:
-             `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
+. ainvtype - type of approximation used to form approximate Schur complement $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$, see `MatSchurComplementAinvType`.
 
   Level: advanced
 
@@ -760,7 +758,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
 
 /*@
   MatCreateSchurComplementPmat - create a matrix for preconditioning the Schur complement by explicitly assembling the sparse matrix
-  $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$
+  $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$
 
   Collective
 
@@ -769,7 +767,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
 . A01      - (optional) the upper-right part of the original matrix $A = [A00 A01; A10 A11]$
 . A10      - (optional) the lower-left part of the original matrix $A = [A00 A01; A10 A11]$
 . A11      - (optional) the lower-right part of the original matrix $A = [A00 A01; A10 A11]$
-. ainvtype - type of approximation for DIAGFORM(A00) used when forming $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$. See `MatSchurComplementAinvType`.
+. ainvtype - type of approximation for $DIAGFORM(A00)$ used when forming $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$. See `MatSchurComplementAinvType`.
 - preuse   - `MAT_INITIAL_MATRIX` for a new `Sp`, or `MAT_REUSE_MATRIX` to reuse an existing `Sp`, or `MAT_IGNORE_MATRIX` to put nothing in `Sp`
 
   Output Parameter:
@@ -879,12 +877,12 @@ static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Ma
 }
 
 /*@
-  MatSchurComplementGetPmat - Obtain a matrix for preconditioning the Schur complement by assembling $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$
+  MatSchurComplementGetPmat - Obtain a matrix for preconditioning the Schur complement by assembling $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$
 
   Collective
 
   Input Parameters:
-+ S      - matrix obtained with MatCreateSchurComplement() (or equivalent) that implements the action of $A11 - A10 ksp(A00,Ap00) A01$
++ S      - matrix obtained with MatCreateSchurComplement() (or equivalent) that implements the action of $A11 - A10 \, ksp(A00,Ap00) \, A01$
 - preuse - `MAT_INITIAL_MATRIX` for a new `Sp`, or `MAT_REUSE_MATRIX` to reuse an existing `Sp`, or `MAT_IGNORE_MATRIX` to put nothing in `Sp`
 
   Output Parameter:

@@ -3711,7 +3711,7 @@ PETSC_EXTERN PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *mi
 . bs   - the block size, only a block size of 1 is supported
 . m    - number of local rows (Cannot be `PETSC_DECIDE`)
 . n    - This value should be the same as the local size used in creating the
-         x vector for the matrix-vector product $ y = Ax $. (or `PETSC_DECIDE` to have
+         x vector for the matrix-vector product $y = Ax$. (or `PETSC_DECIDE` to have
          calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)

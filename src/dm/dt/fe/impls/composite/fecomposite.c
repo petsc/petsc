@@ -243,9 +243,9 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
   Output Parameters:
 + numSubelements - The number of sub elements
-. v0             - The affine transformation for each element, an array of length $dim * Nc$. Pass `NULL` to ignore.
-. jac            - The Jacobian for each element, an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
-- invjac         - The inverse of the Jacobian, an array of length $dim^2 * Nc$. Pass `NULL` to ignore.
+. v0             - The affine transformation for each element, an array of length $dim \, Nc$. Pass `NULL` to ignore.
+. jac            - The Jacobian for each element, an array of length $dim^2 \, Nc$. Pass `NULL` to ignore.
+- invjac         - The inverse of the Jacobian, an array of length $dim^2 \, Nc$. Pass `NULL` to ignore.
 
   Level: intermediate
 

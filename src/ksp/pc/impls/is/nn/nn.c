@@ -46,7 +46,7 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
   PetscFunctionBegin;
   /*
     Dirichlet solvers.
-    Solving $ B_I^{(i)}r_I^{(i)} $ at each processor.
+    Solving $B_I^{(i)}r_I^{(i)}$ at each processor.
     Storing the local results at vec2_D
   */
   PetscCall(VecScatterBegin(pcis->global_to_D, r, pcis->vec1_D, INSERT_VALUES, SCATTER_FORWARD));
@@ -54,7 +54,7 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
   PetscCall(KSPSolve(pcis->ksp_D, pcis->vec1_D, pcis->vec2_D));
 
   /*
-    Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
+    Computing $r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)})$ .
     Storing the result in the interface portion of the global vector w.
   */
   PetscCall(MatMult(pcis->A_BI, pcis->vec2_D, pcis->vec1_B));
@@ -69,7 +69,7 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
   PetscCall(PCNNApplyInterfacePreconditioner(pc, w, z, pcis->work_N, pcis->vec1_B, pcis->vec2_B, pcis->vec3_B, pcis->vec1_D, pcis->vec3_D, pcis->vec1_N, pcis->vec2_N));
 
   /*
-    Computing $ t_I^{(i)} = A_{IB}^{(i)} \tilde R_i z_B $
+    Computing $t_I^{(i)} = A_{IB}^{(i)} \tilde R_i z_B$
     The result is stored in vec1_D.
   */
   PetscCall(VecScatterBegin(pcis->global_to_B, z, pcis->vec1_B, INSERT_VALUES, SCATTER_FORWARD));
@@ -78,8 +78,8 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
 
   /*
     Dirichlet solvers.
-    Computing $ B_I^{(i)}t_I^{(i)} $ and sticking into the global vector the blocks
-    $ B_I^{(i)}r_I^{(i)} - B_I^{(i)}t_I^{(i)} $.
+    Computing $B_I^{(i)}t_I^{(i)}$ and sticking into the global vector the blocks
+    $B_I^{(i)}r_I^{(i)} - B_I^{(i)}t_I^{(i)}$.
   */
   PetscCall(VecScatterBegin(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(pcis->global_to_D, pcis->vec2_D, z, INSERT_VALUES, SCATTER_REVERSE));
@@ -566,7 +566,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
    Historical note 01
 
    We considered the possibility of an alternative D_i that would still
-   provide a partition of unity (i.e., $ \sum_i  N_i D_i N_i^T = I $).
+   provide a partition of unity (i.e., $\sum_i  N_i D_i N_i^T = I$).
    The basic principle was still the pseudo-inverse of the counting
    function; the difference was that we would not count subdomains
    that do not contribute to the coarse space (i.e., not pure-Neumann

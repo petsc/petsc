@@ -181,9 +181,9 @@ PETSC_INTERN PetscErrorCode PetscDAEnsembleTFactor_Eigen(PetscDA da)
   Level: advanced
 
   Notes:
-  This function computes $T = (1/\rho) I + S^T * S$ (where $\rho$ is the inflation factor set via
+  This function computes $T = (1/\rho) I + S^T S$ (where $\rho$ is the inflation factor set via
   `PetscDAEnsembleSetInflation()`) and stores its symmetric eigendecomposition, i.e. eigenvectors
-  $V$ and eigenvalues $D$ such that $T = V * D * V^T$.
+  $V$ and eigenvalues $D$ such that $T = V D V^T$.
 
   The implementation uses matrix reuse (`MAT_REUSE_MATRIX`) to minimize memory allocation
   overhead when the ensemble size remains constant across analysis cycles.
@@ -379,9 +379,9 @@ static PetscErrorCode ApplySqrtTInverse_Eigen(PetscDA da, Mat U, Mat Y)
   Level: advanced
 
   Notes:
-  This function applies the symmetric inverse square root of $T = (1/\rho) I + S^T * S$ (with $\rho$
+  This function applies the symmetric inverse square root of $T = (1/\rho) I + S^T S$ (with $\rho$
   the inflation factor) using the stored eigendecomposition: $Y = V D^{-1/2} V^T U$. The result
-  satisfies $Y^T * T * Y = U^T * U$, preserving the metric.
+  satisfies $Y^T T Y = U^T U$, preserving the metric.
 
 .seealso: [](ch_da), `PetscDA`, `PETSCDALETKF`, `PetscDAEnsembleTFactor()`, `PetscDAEnsembleApplyTInverse()`
 @*/

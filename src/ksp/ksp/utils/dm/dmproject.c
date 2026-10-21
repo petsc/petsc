@@ -64,7 +64,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   a least-squares solution.  It is also assumed that `DMLocalToGlobalBegin()`/`DMLocalToGlobalEnd()` with mode `ADD_VALUES` is the adjoint of the
   global-to-local map, so that the least-squares solution may be found by the normal equations.
 
-  If the `DM` is of type `DMPLEX`, then `y` is the solution of $ L^T * D * L * y = L^T * D * x $, where $D$ is a diagonal mask that is 1 for every point in
+  If the `DM` is of type `DMPLEX`, then `y` is the solution of $L^T D L y = L^T D x$, where $D$ is a diagonal mask that is 1 for every point in
   the union of the closures of the local cells and 0 otherwise.  This difference is only relevant if there are anchor points that are not in the
   closure of any local cell (see `DMPlexGetAnchors()`/`DMPlexSetAnchors()`).
 
@@ -704,7 +704,7 @@ static PetscErrorCode DMSwarmProjectFields_DA_Internal(DM swarm, DM celldm, Pets
   \phi_i = \sum_{p=0}^{np} N_i(x_p) \phi_p dJ / \sum_{p=0}^{np} N_i(x_p) dJ
   $$
 
-  where $\phi_p $ is the swarm field at point $p$, $N_i()$ is the cell `DM` basis function at vertex $i$, $dJ$ is the determinant of the cell Jacobian and
+  where $\phi_p$ is the swarm field at point $p$, $N_i()$ is the cell `DM` basis function at vertex $i$, $dJ$ is the determinant of the cell Jacobian and
   $\phi_i$ is the projected vertex value of the field $\phi$.
 
   The user is responsible for destroying both the array and the individual `Vec` objects.

@@ -6098,7 +6098,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 . numVertices - The number of vertices to be owned by this process, or `PETSC_DECIDE`
 . NVertices   - The global number of vertices, or `PETSC_DETERMINE`
 . numCorners  - The number of vertices for each cell
-- cells       - An array of $ numCells \times numCorners$ numbers, the global vertex numbers for each cell
+- cells       - An array of $numCells \times numCorners$ numbers, the global vertex numbers for each cell
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
@@ -6145,7 +6145,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 
   If `numVertices` is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using `PetscLayout`.
 
-  If `NVertices` is `PETSC_DETERMINE` and `numVertices` is `PETSC_DECIDE`, `NVertices` is computed by PETSc as the maximum vertex index in $ cells + 1 $.
+  If `NVertices` is `PETSC_DETERMINE` and `numVertices` is `PETSC_DECIDE`, `NVertices` is computed by PETSc as the maximum vertex index in $cells + 1$.
 
   If only `NVertices` is `PETSC_DETERMINE`, it is computed as the sum of `numVertices` over all processes.
 
@@ -6733,9 +6733,9 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 . numVertices  - The number of vertices owned by this process, or `PETSC_DECIDE`, only on process 0
 . numCorners   - The number of vertices for each cell, only on process 0
 . interpolate  - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
-. cells        - An array of $ numCells \times numCorners$ numbers, the vertices for each cell, only on process 0
+. cells        - An array of $numCells \times numCorners$ numbers, the vertices for each cell, only on process 0
 . spaceDim     - The spatial dimension used for coordinates
-- vertexCoords - An array of $ numVertices \times spaceDim$ numbers, the coordinates of each vertex, only on process 0
+- vertexCoords - An array of $numVertices \times spaceDim$ numbers, the coordinates of each vertex, only on process 0
 
   Output Parameter:
 . dm - The `DM`, which only has points on process 0
@@ -6782,11 +6782,11 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   Input Parameters:
 + dm               - The empty `DM` object, usually from `DMCreate()` and `DMSetDimension()`
 . depth            - The depth of the DAG
-. numPoints        - Array of size $ depth + 1 $ containing the number of points at each `depth`
+. numPoints        - Array of size $depth + 1$ containing the number of points at each `depth`
 . coneSize         - The cone size of each point
 . cones            - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
 . coneOrientations - The orientation of each cone point
-- vertexCoords     - An array of $ numPoints[0] \times spacedim $ numbers representing the coordinates of each vertex, with `spacedim` the value set via `DMSetCoordinateDim()`
+- vertexCoords     - An array of $numPoints[0] \times spacedim$ numbers representing the coordinates of each vertex, with `spacedim` the value set via `DMSetCoordinateDim()`
 
   Output Parameter:
 . dm - The `DM`

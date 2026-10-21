@@ -211,7 +211,7 @@ typedef enum {
                                              computed after the previous preconditioner application
 .  `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE` - preconditioners are applied sequentially to the residual freshly
                                              computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditioners)
-.  `PC_COMPOSITE_SPECIAL`                  - This is very special for a matrix of the form $ \alpha I + R + S$
+.  `PC_COMPOSITE_SPECIAL`                  - This is very special for a matrix of the form $\alpha I + R + S$
                                              where the first preconditioner is built from $\alpha I + S$ and second from $\alpha I + R$
 .  `PC_COMPOSITE_SCHUR`                    - composes the Schur complement of the matrix from two blocks, see `PCFIELDSPLIT`
 -  `PC_COMPOSITE_GKB`                      - the generalized Golub-Kahan bidiagonalization preconditioner, see `PCFIELDSPLIT`

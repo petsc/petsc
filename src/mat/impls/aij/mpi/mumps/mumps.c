@@ -145,7 +145,7 @@ PetscErrorCode MatMumpsGetInverse(Mat F, Mat spRHS)
 }
 
 /*@
-  MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix $A^T $ <https://mumps-solver.org/index.php?page=doc>
+  MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix $A^T$ <https://mumps-solver.org/index.php?page=doc>
 
   Logically Collective
 

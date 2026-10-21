@@ -2858,7 +2858,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   The only preconditioners that currently work with this symbolic representation matrix object are `PCLSC` and `PCHPDDM`
 .     user - the preconditioner for the Schur complement is generated from the user provided matrix (pre argument
   to this function).
-.     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation $ Sp = A11 - A10 inv(diag(A00)) A01 $
+.     selfp - the preconditioning for the Schur complement is generated from an explicitly-assembled approximation $Sp = A11 - A10 \, inv(diag(A00)) \, A01$
   This is only a good preconditioner when diag(A00) is a good preconditioner for A00. Optionally, A00 can be
   lumped before extracting the diagonal using the additional option `-fieldsplit_1_mat_schur_complement_ainv_type lump`
 -     full - the preconditioner for the Schur complement is generated from the exact Schur complement matrix representation
@@ -3035,7 +3035,7 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
   \end{array}\right) = L D U,
   ```
 
-  where $ S = E - C A^{-1} B $. In practice, the full factorization is applied via block triangular solves with the grouping $L(DU)$. `upper` uses $DU$, `lower` uses $LD$,
+  where $S = E - C A^{-1} B$. In practice, the full factorization is applied via block triangular solves with the grouping $L(DU)$. `upper` uses $DU$, `lower` uses $LD$,
   and `diag` is the diagonal part with the sign of $S$ flipped (because this makes the preconditioner positive definite for many formulations,
   thus allowing the use of `KSPMINRES)`. Sign flipping of $S$ can be turned off with `PCFieldSplitSetSchurScale()`.
 
@@ -3229,7 +3229,7 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
   Level: intermediate
 
   Notes:
-  The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error $ ||u-u^k||_H $
+  The algorithm uses a lower bound estimate of the error in energy norm as stopping criterion. The lower bound of the error $\|u-u^k\|_H$
   is expressed as a truncated sum. The error at iteration k can only be measured at iteration (k + `delay`), and thus the algorithm needs
   at least (`delay` + 1) iterations to stop.
 
@@ -3667,7 +3667,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   ```{math}
     \left[\begin{array}{cc} A_{00} & A_{01} \\ A_{01}' & 0 \end{array}\right]
   ```
-  with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
+  with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := \frac{1}{\nu} I$ and the $(1,1)$-block of the matrix is modified to $H = A_{00} + \nu A_{01} A_{01}'$.
   A linear system $Hx = b$ has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix `-fieldsplit_0_`.
 
   Some `PCFIELDSPLIT` variants are called physics-based preconditioners, since the preconditioner takes into account the underlying physics of the

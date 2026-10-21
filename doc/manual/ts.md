@@ -129,7 +129,7 @@ To solve an ODE or DAE one uses:
   to note that
 
   $$
-  F(t^n,u^n,\dot{u}^n) = F(t^n,u^n,w+\sigma*u^n)
+  F(t^n,u^n,\dot{u}^n) = F(t^n,u^n,w+\sigma \, u^n)
   $$
 
   where $w$ is some linear combination of previous time solutions
@@ -155,11 +155,11 @@ To solve an ODE or DAE one uses:
   But $F_{\dot{u}} = 1$, in this special case, resulting in the
   expected Jacobian $I/\delta t - f_u(t,u^n)$.
 
-- Jacobian 
+- Jacobian
 
   $G_u$
 
-  If using a fully implicit method and the function 
+  If using a fully implicit method and the function
 
   $G()$
 
@@ -732,7 +732,7 @@ GLEE method is defined by
   solution ($\tilde{y}$ or $\varepsilon$) from a specified
   error vector ($\varepsilon$). It is currently implemented only
   for $r = 2$. We have $y_\text{aux} =
-  S_{error}[0]*\varepsilon + S_\text{error}[1]*y$, where
+  S_{error}[0] \varepsilon + S_\text{error}[1] y$, where
   $y_\text{aux}$ is the 2nd component of the working vector
   $Y$.
 
@@ -784,13 +784,13 @@ The API used by this `TS` method includes:
 The local error is estimated as $\varepsilon(n+1)-\varepsilon(n)$.
 This is to be used in the error control. The error in $y\tilde{y}$
 GLEE is
-$\varepsilon(n) = \frac{1}{1-\gamma} * (\tilde{y}(n) - y(n))$.
+$\varepsilon(n) = \frac{1}{1-\gamma} (\tilde{y}(n) - y(n))$.
 
 Note that $y$ and $\tilde{y}$ are reported to `TSAdapt`
 `basic` (`TSADAPTBASIC`), and thus it computes the local error as
 $\varepsilon_{loc} = (\tilde{y} -
 y)$. However, the actual local error is $\varepsilon_{loc}
-= \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} * [(\tilde{y} -
+= \varepsilon_{n+1} - \varepsilon_n = \frac{1}{1-\gamma} [(\tilde{y} -
 y)_{n+1} - (\tilde{y} - y)_n]$.
 
 {numref}`tab_IMEX_GLEE_PETSc` lists currently available GL schemes with global error estimation {cite}`constantinescu_tr2016b`.
@@ -1555,13 +1555,13 @@ a constant timestep over the entire grid, or it varies with location.
   default
 
   $$
-  dt^{n} = dt_{\mathrm{increment}}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
+  dt^{n} = dt_{\mathrm{increment}} dt^{n-1} \frac{\| F(u^{n-1}) \|}{\| F(u^{n})\|}
   $$
 
   or, the alternative,
 
   $$
-  dt^{n} = dt_{\mathrm{increment}}*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
+  dt^{n} = dt_{\mathrm{increment}} dt^{0} \frac{\| F(u^{0}) \|}{\| F(u^{n})\|}
   $$
 
   which can be set with the call

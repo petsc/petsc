@@ -759,7 +759,7 @@ PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCMPIGetKSP(PC, KSP *);
 
 /*E
-   KSPNormType - Norm calculated by the `KSP` and passed in the Krylov convergence
+   KSPNormType - Norm calculated by the `KSP` and used in the Krylov convergence
        test routines.
 
    Values:
@@ -767,7 +767,7 @@ PETSC_EXTERN PetscErrorCode PCMPIGetKSP(PC, KSP *);
 .  `KSP_NORM_NONE`             - use no norm calculation
 .  `KSP_NORM_PRECONDITIONED`   - use the preconditioned residual norm
 .  `KSP_NORM_UNPRECONDITIONED` - use the unpreconditioned residual norm
--  `KSP_NORM_NATURAL`          - use the natural norm (the norm induced by the linear operator)
+-  `KSP_NORM_NATURAL`          - use an approximation of the natural norm (the norm induced by the linear operator) of the error
 
    Level: advanced
 
@@ -802,7 +802,7 @@ PETSC_EXTERN const char *const *const KSPNormTypes;
 M*/
 
 /*MC
-   KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
+   KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual $B(b - Ax)$, if left preconditioning, and pass that to the
    convergence test routine.
 
    Level: advanced
@@ -811,7 +811,7 @@ M*/
 M*/
 
 /*MC
-   KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
+   KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual $(b - Ax)$ and pass that to the
    convergence test routine.
 
    Level: advanced
@@ -820,10 +820,25 @@ M*/
 M*/
 
 /*MC
-   KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the
-   convergence test routine. This is only supported by  `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPEGCR`
+  KSP_NORM_NATURAL - Computes $((b - Ax)^TB(b - Ax))^{1/2}$ and passes that to the
+  convergence test routine.
 
-   Level: advanced
+  Level: advanced
+
+  Notes:
+  This is supported by the conjugate gradient-type methods `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`, `KSPFCG`, `KSPPIPEFCG`, `KSPPIPELCG`, `KSPPIPEGCR`,
+  `KSPPIPECGRR`, `KSPPIPECG`, `KSPPIPECG2`, `KSPPIPEPRCG`, `KSPGROPPCG`, `KSPGLTR`, and `KSPNASH`.
+
+  `KSPFETIDP` and `KSPPREONLY` accept this setting for compatibility but do not use it directly.
+  For `KSPFETIDP`, configure the norm type on the inner `KSP` returned by `KSPFETIDPGetInnerKSP()`.
+
+  Since $(b - Ax)^TB(b - Ax) = e^TA^TBAe \approx e^TAe$, where $e$ is the error and $A$ is the discretization of the differential
+  operator arising from the weak formulation of the governing equations, the code is approximating the norm that operator induces on the error.
+  For many problems, the underlying norm is $H^1$, often
+  called the energy norm.
+
+  Since the application of $B$ to $(b - Ax)$ is already computed in the conjugate gradient and related routines, the use of `KSP_NORM_NATURAL` does not require
+  any additional operations over using other `KSPNormType`s.
 
 .seealso: [](ch_ksp), `KSPNormType`, `KSP`, `KSPSetNormType()`, `KSP_NORM_NONE`, `KSP_NORM_PRECONDITIONED`, `KSP_NORM_UNPRECONDITIONED`, `KSPSetConvergenceTest()`
 M*/
@@ -910,7 +925,7 @@ typedef enum { /* converged */
 PETSC_EXTERN const char *const *KSPConvergedReasons;
 
 /*MC
-   KSP_CONVERGED_RTOL - $||r|| \le rtol*||b||$ or $rtol*||b - A*x_0||$ if `KSPConvergedDefaultSetUIRNorm()` was called
+   KSP_CONVERGED_RTOL - $\|r\| \le rtol \|b\|$ or $rtol \|b - A x_0\|$ if `KSPConvergedDefaultSetUIRNorm()` was called
 
    Level: beginner
 
@@ -925,7 +940,7 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
 M*/
 
 /*MC
-   KSP_CONVERGED_ATOL - $||r|| \le atol$
+   KSP_CONVERGED_ATOL - $\|r\| \le atol$
 
    Level: beginner
 
@@ -940,7 +955,7 @@ M*/
 M*/
 
 /*MC
-   KSP_DIVERGED_DTOL - $||r|| \ge dtol*||b||$
+   KSP_DIVERGED_DTOL - $\|r\| \ge dtol \|b\|$
 
    Level: beginner
 
@@ -1258,9 +1273,18 @@ PETSC_EXTERN PetscErrorCode KSPSetInitialGuessKnoll(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP, PetscBool *);
 
 /*E
-    MatSchurComplementAinvType - Determines how to approximate the inverse of the (0,0) block in Schur complement matrix assembly routines
+  MatSchurComplementAinvType - Determines how to approximate the inverse of the (0,0) block in Schur complement matrix assembly routines
 
-    Level: intermediate
+  Values:
++ `MAT_SCHUR_COMPLEMENT_AINV_DIAG`       - invert the diagonal of `A00`
+. `MAT_SCHUR_COMPLEMENT_AINV_LUMP`       - invert the diagonal matrix containing the row sums of `A00` (mass lumping)
+. `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG` - invert the block diagonal of the matrix, where the blocks are determined by the block size of the matrix
+- `MAT_SCHUR_COMPLEMENT_AINV_FULL`       - invert the full matrix `A00`
+
+  Level: intermediate
+
+  Note:
+  In the documentation this inverse type is indicated with $inv(DIAGFORM(A00))$.
 
 .seealso: `MatSchurComplementGetAinvType()`, `MatSchurComplementSetAinvType()`, `MatSchurComplementGetPmat()`, `MatGetSchurComplement()`,
           `MatCreateSchurComplementPmat()`, `MatCreateSchurComplement()`

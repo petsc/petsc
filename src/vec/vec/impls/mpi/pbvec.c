@@ -932,7 +932,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 . N      - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . nghost - number of local ghost blocks
 . ghosts - global indices of ghost blocks (or `NULL` if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
-- array  - the space to store the vector values (as long as $n + nghost*bs$)
+- array  - the space to store the vector values (as long as $n + nghost \, bs$)
 
   Output Parameter:
 . vv - the global vector representation (without ghost points as part of vector)

@@ -2005,7 +2005,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
 - mf  - The field number for the flux
 
   Output Parameter:
-. eFlux - A global `Vec` which holds $||\nabla u_f - \mu_{mf}||$
+. eFlux - A global `Vec` which holds $\|\nabla u_f - \mu_{mf}\|$
 
   Level: advanced
 
@@ -2107,7 +2107,7 @@ PetscErrorCode DMPlexComputeL2FluxDiffVecLocal(Vec lu, PetscInt f, Vec lmu, Pets
 - mf - The field number for the flux
 
   Output Parameter:
-. eFlux - A global `Vec` which holds $||\nabla u_f - \mu_{mf}||$
+. eFlux - A global `Vec` which holds $\|\nabla u_f - \mu_{mf}\|$
 
   Level: advanced
 
@@ -2156,7 +2156,7 @@ PetscErrorCode DMPlexComputeL2FluxDiffVec(Vec u, PetscInt f, Vec mu, PetscInt mf
   Level: developer
 
   Note:
-  $ u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
+  $u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i|$ where $|T_i|$ is the cell volume
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
@@ -2288,7 +2288,7 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
   Level: developer
 
   Note:
-  $\nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
+  $\nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i|$ where $|T_i|$ is the cell volume
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/

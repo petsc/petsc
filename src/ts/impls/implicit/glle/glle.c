@@ -1380,7 +1380,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   \end{align*}
   $$
 
-  These estimates are accurate to $ O(h^{p+3})$.
+  These estimates are accurate to $O(h^{p+3})$.
 
   Changing the step size
 

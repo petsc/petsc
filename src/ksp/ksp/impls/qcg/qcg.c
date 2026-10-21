@@ -106,13 +106,13 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
   The quadratic function is
 
   $$
-  q(s) = g^T * s + 0.5 * s^T * H * s
+  q(s) = g^T s + 0.5 s^T H s
   $$
 
   which satisfies the Euclidean Norm trust region constraint
 
   $$
-  || D * s || \le delta,
+  \| D s \| \le delta,
   $$
 
   where
@@ -377,9 +377,9 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptio
    Notes:
    This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
-   Uses preconditioned conjugate gradient to compute
-   an approximate minimizer of the quadratic function $ q(s) = g^T * s + .5 * s^T * H * s $   subject to the Euclidean norm trust region constraint
-   $ || D * s || \le delta$, where
+   Uses preconditioned conjugate gradient to compute an approximate minimizer of the quadratic function $q(s) = g^T s + 0.5 s^T H s$
+   subject to the Euclidean norm trust region constraint
+   $\| D s \| \le delta$, where
 .vb
      delta is the trust region radius,
      g is the gradient vector, and
@@ -388,7 +388,7 @@ static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptio
 .ve
 
    `KSPConvergedReason` may include
-+  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
++  `KSP_CONVERGED_NEG_CURVE`   - if convergence is reached along a negative curvature direction,
 -  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step,
 
   Note:

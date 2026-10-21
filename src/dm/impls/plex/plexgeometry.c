@@ -2632,10 +2632,10 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 
   Output Parameters:
 + v    - the image of the transformed quadrature points, otherwise the image of the first vertex in the closure of the reference element. This is a
-         one-dimensional array of size $cdim * Nq$ where $cdim$ is the dimension of the `DM` coordinate space and $Nq$ is the number of quadrature points
-. J    - the Jacobian of the transform from the reference element at each quadrature point. This is a one-dimensional array of size $Nq * cdim * cdim$ containing
+         one-dimensional array of size $cdim \, Nq$ where $cdim$ is the dimension of the `DM` coordinate space and $Nq$ is the number of quadrature points
+. J    - the Jacobian of the transform from the reference element at each quadrature point. This is a one-dimensional array of size $Nq \, cdim \, cdim$ containing
          each Jacobian in column-major order.
-. invJ - the inverse of the Jacobian at each quadrature point. This is a one-dimensional array of size $Nq * cdim * cdim$ containing
+. invJ - the inverse of the Jacobian at each quadrature point. This is a one-dimensional array of size $Nq \, cdim \, cdim$ containing
          each inverse Jacobian in column-major order.
 - detJ - the Jacobian determinant at each quadrature point. This is a one-dimensional array of size $Nq$.
 

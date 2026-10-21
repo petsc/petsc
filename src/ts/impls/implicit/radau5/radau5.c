@@ -140,7 +140,7 @@ static PetscErrorCode TSDestroy_Radau5(TS ts)
 
   Uses its own memory for the dense matrix storage and factorization
 
-  Can only handle ODEs of the form $ \dot{u} = -F(t,u) + G(t,u) $
+  Can only handle ODEs of the form $\dot{u} = -F(t,u) + G(t,u)$
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/

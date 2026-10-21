@@ -813,10 +813,10 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
   TAONLS - Newton's method with linesearch for unconstrained minimization.
   At each iteration, the Newton line search method solves the symmetric
   system of equations to obtain the step direction dk:
-              $ H_k d_k = -g_k $
+              $H_k d_k = -g_k$
   a More-Thuente line search is applied on the direction dk to approximately
   solve
-              $ \min_t f(x_k + t d_k)$.
+              $\min_t f(x_k + t \, d_k)$.
 
     Options Database Keys:
 + -tao_nls_init_type   - "constant","direction","interpolation"

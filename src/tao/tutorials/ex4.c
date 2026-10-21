@@ -21,11 +21,11 @@ typedef struct _UserCtx {
   PetscReal   mu;      /* the augmented Lagrangian term in ADMM */
   PetscReal   abstol;
   PetscReal   reltol;
-  Mat         F;                     /* matrix in least squares component $(1/2) * || F x - d ||_2^2$ */
+  Mat         F;                     /* matrix in least squares component $(1/2) \| F x - d \|_2^2$ */
   Mat         W;                     /* Workspace matrix. ATA */
   Mat         Hm;                    /* Hessian Misfit*/
   Mat         Hr;                    /* Hessian Reg*/
-  Vec         d;                     /* RHS in least squares component $(1/2) * || F x - d ||_2^2$ */
+  Vec         d;                     /* RHS in least squares component $(1/2) \| F x - d \|_2^2$ */
   Vec         workLeft[NWORKLEFT];   /* Workspace for temporary vec */
   Vec         workRight[NWORKRIGHT]; /* Workspace for temporary vec */
   NormType    p;

@@ -20,14 +20,14 @@
   Level: developer
 
   Note:
-  This routine assumes that an iterative method, designed for $ A x = b $
+  This routine assumes that an iterative method, designed for $A x = b$
   will be used with a preconditioner, C, such that the actual problem is either
 .vb
   AC u = b (right preconditioning) or
   CA x = Cb (left preconditioning).
 .ve
   This means that the calculated residual will be preconditioned;
-  the true residual $ b-Ax $
+  the true residual $b-Ax$
   is returned in the `vt2` temporary work vector.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`

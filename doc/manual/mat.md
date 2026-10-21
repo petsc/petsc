@@ -841,8 +841,8 @@ MatMultAdd(Mat A,Vec x,Vec y,Vec w);
 MatMultTransposeAdd(Mat A,Vec x,Vec y,Vec w);
 ```
 
-These routines, respectively, produce $w = A*x + y$ and
-$w = A^{T}*x + y$ . In C it is legal for the vectors `y` and
+These routines, respectively, produce $w = A x + y$ and
+$w = A^{T} x + y$ . In C it is legal for the vectors `y` and
 `w` to be identical. In Fortran, this situation is forbidden by the
 language standard, but we allow it anyway.
 

@@ -785,7 +785,7 @@ PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
   evaluated via the chain rule, as in
 
   $$
-  dF/dP + shift * dF/dCdot dC/dP.
+  dF/dP + shift dF/dCdot dC/dP.
   $$
 
 .seealso: [](ch_ts), `DMTS`, `TS`, `TSBDF`, `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`, `TSTransientVariableFn`

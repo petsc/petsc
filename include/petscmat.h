@@ -1836,7 +1836,7 @@ PETSC_EXTERN PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring, PetscInt, P
 PETSC_EXTERN PetscErrorCode MatFDColoringSetValues(Mat, MatFDColoring, const PetscScalar *);
 
 /*S
-   MatTransposeColoring - Object for computing a sparse matrix product $C = A*B^T$ via coloring
+   MatTransposeColoring - Object for computing a sparse matrix product $C = A B^T$ via coloring
 
    Level: developer
 

@@ -1016,7 +1016,7 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOp
    Uses preconditioned conjugate gradient to compute  an approximate minimizer of the quadratic function
 
    $$
-   q(s) = g^T * s + .5 * s^T * H * s
+   q(s) = g^T s + 0.5 s^T H s
    $$
 
    subject to the trust region constraint

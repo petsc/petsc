@@ -200,7 +200,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 /*MC
    SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
    artificial $G(x)$ for which the `SNESFunctionFn` $F(x) = grad G(x)$. Therefore, this line search seeks
-   to find roots of the directional derivative via a secant method, that is $F(x_k - \lambda Y_k) \cdot Y_k / ||Y_k|| = 0$.
+   to find roots of the directional derivative via a secant method, that is $F(x_k - \lambda Y_k) \cdot Y_k / \|Y_k\| = 0$.
 
    Options Database Keys:
 +  -snes_linesearch_minlambda 1e\-12 - the minimum acceptable `lambda` (scaling of solution update)

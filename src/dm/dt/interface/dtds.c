@@ -1283,7 +1283,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscPointFn`, `PetscDS`, `PetscDSSetObjective()`, `PetscDSGetResidual()`
 @*/
@@ -1314,7 +1314,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, PetscPointFn **obj)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscPointFn`, `PetscDS`, `PetscDSGetObjective()`, `PetscDSSetResidual()`
 @*/
@@ -1344,7 +1344,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, PetscPointFn *obj)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscPointFn`, `PetscDS`, `PetscDSSetResidual()`
 @*/
@@ -1376,7 +1376,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, PetscPointFn **f0, Pet
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscPointFn`, `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -1407,7 +1407,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, PetscPointFn *f0, Pets
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscPointFn`, `PetscDS`, `PetscDSSetRHSResidual()`
 @*/
@@ -1439,7 +1439,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, PetscPointFn **f0, 
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $ \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $\int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
@@ -2971,7 +2971,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   tab(i)%ptr%K
   tab(i)%ptr%T(j)%ptr
 .ve
-  where $ i = 1, 2, ..., Nf $ and $ j = 1, 2, ..., tab(i)%ptr%K+1 $.
+  where $i = 1, 2, ..., Nf$ and `j` runs from 1 to `tab(i)%ptr%K+1`.
 
   Use `PetscDSRestoreTabulation()` to restore the array
 

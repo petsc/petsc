@@ -215,13 +215,13 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
 /*MC
    SNESLINESEARCHSECANT - Secant search in the L2 norm of the function or the objective function.
 
-   Attempts to solve $ \min_{\lambda} f(x_k + \lambda Y_k) $ using the secant method with the initial bracketing of $ \lambda $ between [0,damping].
-   $f(x_k + \lambda Y_k)$ is either the squared L2-norm of the function $||F(x_k + \lambda Y_k)||_2^2$,
+   Attempts to solve $\min_{\lambda} f(x_k + \lambda Y_k)$ using the secant method with the initial bracketing of $\lambda$ between [0,damping].
+   $f(x_k + \lambda Y_k)$ is either the squared L2-norm of the function $\|F(x_k + \lambda Y_k)\|_2^2$,
    or the objective function $G(x_k + \lambda Y_k)$ if it is provided with `SNESSetObjective()`
    Differences of $f()$ are used to approximate the first and second derivative of $f()$ with respect to
    $\lambda$, $f'()$ and $f''()$.
 
-   When an objective function is provided $f(w)$ is the objective function otherwise $f(w) = ||F(w)||^2$.
+   When an objective function is provided $f(w)$ is the objective function otherwise $f(w) = \|F(w)\|^2$.
    $x$ is the current step and $y$ is the search direction.
 
    Options Database Keys:
@@ -229,7 +229,7 @@ static PetscErrorCode SNESLineSearchApply_Secant(SNESLineSearch linesearch)
 .  -snes_linesearch_damping 1.0      - initial `lambda` on entry to the line search
 .  -snes_linesearch_minlambda 1e\-12 - minimum allowable `lambda`
 .  -snes_linesearch_maxlambda 1.0    - maximum `lambda` (scaling of solution update) allowed
-.  -snes_linesearch_atol 1e\-15      - absolute tolerance for the secant method $ f'() < atol $
+.  -snes_linesearch_atol 1e\-15      - absolute tolerance for the secant method $f'() < atol$
 -  -snes_linesearch_ltol 1e\-8       - minimum absolute change in `lambda` allowed
 
    Level: advanced

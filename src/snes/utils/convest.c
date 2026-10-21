@@ -515,11 +515,11 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   The convergence rate alpha is defined by
 
   $$
-  || u_\Delta - u_{exact} || < C \Delta^\alpha
+  \| u_\Delta - u_{exact} \| < C \Delta^\alpha
   $$
 
-  where $u_{\Delta} $ is the discrete solution, and $\Delta$ is a measure of the discretization size. We usually use $h$ for the
-  spatial resolution and $\Delta t $ for the temporal resolution.
+  where $u_{\Delta}$ is the discrete solution, and $\Delta$ is a measure of the discretization size. We usually use $h$ for the
+  spatial resolution and $\Delta t$ for the temporal resolution.
 
   We solve a series of problems using increasing resolution (refined meshes or decreased timesteps), calculate an error
   based upon the exact solution in the `PetscDS`, and then fit the result to our model above using linear regression.

@@ -275,12 +275,12 @@ M*/
 . A - the (possibly rectangular complex) matrix
 
   Output Parameter:
-. N - the matrix that represents $ A^* A$
+. N - the matrix that represents $A^* A$
 
   Level: intermediate
 
   Note:
-  The product $ A^* A$ is NOT actually formed! Rather the new matrix
+  The product $A^* A$ is NOT actually formed! Rather the new matrix
   object performs the matrix-vector product, `MatMult()`, by first multiplying by
   $A$ and then $A^*$
 

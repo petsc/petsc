@@ -165,7 +165,7 @@ static PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
    The principle of `TSIRM` algorithm  is to build an outer iteration over a Krylov method, called the inner solver, and to frequently store the current residual
    computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix
    composed by the saved residuals, in order to compute a better solution and to make new iterations if required.
-   The minimization step consists in solving the least-squares problem $\min||b-ASa||$ to find 'a' which minimizes the
+   The minimization step consists in solving the least-squares problem $\min\|b-ASa\|$ to find 'a' which minimizes the
    residuals $(b-AS)$. The minimization step is performed using two solvers of linear least-squares problems: `KSPCGLS` or `KSPLSQR`. A new solution x with
    a minimal residual is computed with $x=Sa$.
 

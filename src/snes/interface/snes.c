@@ -2389,7 +2389,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, PetscC
 }
 
 /*@
-  SNESSetPicard - Use `SNES` to solve the system $A(x) x = bp(x) + b $ via a Picard type iteration (Picard linearization)
+  SNESSetPicard - Use `SNES` to solve the system $A(x) x = bp(x) + b$ via a Picard type iteration (Picard linearization)
 
   Logically Collective
 
@@ -4005,8 +4005,8 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 
   Input Parameters:
 + snes   - the `SNES` context
-. abstol - the absolute convergence tolerance, $ F(x^n) \le abstol $
-. rtol   - the relative convergence tolerance, $ F(x^n) \le reltol * F(x^0) $
+. abstol - the absolute convergence tolerance, $F(x^n) \le abstol$
+. rtol   - the relative convergence tolerance, $F(x^n) \le reltol \, F(x^0)$
 . stol   - convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
 . maxit  - the maximum number of iterations allowed in the solver, default 50.
 - maxf   - the maximum number of function evaluations allowed in the solver (use `PETSC_UNLIMITED` indicates no limit), default 10,000
@@ -4091,7 +4091,7 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
 
   Input Parameters:
 + snes   - the `SNES` context
-- divtol - the divergence tolerance. Use `PETSC_UNLIMITED` to deactivate the test. If the residual norm $ F(x^n) \ge divtol * F(x^0) $ the solver
+- divtol - the divergence tolerance. Use `PETSC_UNLIMITED` to deactivate the test. If the residual norm $F(x^n) \ge divtol \, F(x^0)$ the solver
            is stopped due to divergence.
 
   Options Database Key:
@@ -4873,7 +4873,7 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
 }
 
 /*@
-  SNESSolve - Solves a nonlinear system $F(x) = b $ associated with a `SNES` object
+  SNESSolve - Solves a nonlinear system $F(x) = b$ associated with a `SNES` object
 
   Collective
 

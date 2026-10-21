@@ -1326,8 +1326,8 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx) PeNS
 }
 
 /*@
-  KSPConvergedDefaultSetUIRNorm - makes the default convergence test use $ || B*(b - A*(initial guess))||$
-  instead of $ || B*b ||$. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
+  KSPConvergedDefaultSetUIRNorm - makes the default convergence test use $\| B (b - A (initial guess))\|$
+  instead of $\| B b \|$. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
   is used there is no B in the above formula.
 
   Collective
@@ -1367,7 +1367,7 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
 }
 
 /*@
-  KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use $\min(|| B*(b - A*(initial guess))||,|| B*b ||)$
+  KSPConvergedDefaultSetUMIRNorm - makes the default convergence test use $\min(\| B (b - A (initial guess))\|,\| B b \|)$
   In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
   is used there is no $B$ in the above formula.
 

@@ -642,7 +642,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
   Input Parameters:
 + s      - the `PetscSection`
 . pStart - the first `point`
-- pEnd   - one past the last point, `pStart` $ \le $ `pEnd`
+- pEnd   - one past the last point, `pStart` $\le$ `pEnd`
 
   Level: intermediate
 
