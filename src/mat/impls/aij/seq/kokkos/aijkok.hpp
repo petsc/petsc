@@ -216,12 +216,13 @@ struct MatProductCtx_SeqAIJKokkos {
 PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat, Mat_SeqAIJKokkos *);
 PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithCSRMatrix(MPI_Comm, Mat_SeqAIJKokkos *, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosMergeMats(Mat, Mat, MatReuse, Mat *);
-PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetKokkosCsrMatrix(Mat, KokkosCsrMatrix *);
 PETSC_INTERN PetscErrorCode MatCreateSeqAIJKokkosWithKokkosCsrMatrix(MPI_Comm, KokkosCsrMatrix, Mat *);
 PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat);
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat, KokkosCsrMatrix *);
-PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat, const PetscIntKokkosView &, const PetscIntKokkosView &, const PetscIntKokkosView &, PetscScalarKokkosView &, PetscScalarKokkosView &);
 PETSC_INTERN PetscErrorCode MatBindToCPU_SeqAIJKokkos(Mat, PetscBool);
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat, const PetscIntKokkosView &, const PetscIntKokkosView &, const PetscIntKokkosView &, PetscScalarKokkosView &, PetscScalarKokkosView &);
