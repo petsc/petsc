@@ -229,7 +229,7 @@ M*/
   (vs "expands") is deliberate; even though `PetscHasBuiltin()` is a macro the underlying
   detector is itself is a compiler extension with implementation-defined return type and
   semantics. Some compilers implement it as a macro, others as a compiler function. In practice
-  however, all supporting compilers return an integer boolean as described.
+  however, all supporting compilers return an integer Boolean as described.
 
   Example Usage:
   Typical usage is in preprocessor directives
@@ -833,7 +833,7 @@ M*/
 . x - The token you would like to stringize
 
   Output Parameter:
-. <return-value> - The string representation of `x`
+. <return_value> - The string representation of `x`
 
   Level: beginner
 
@@ -905,19 +905,19 @@ M*/
   No Fortran Support
 
   Input Parameter:
-. b - Preprocessor variable, must expand to either integer literal 0 or 1
+. b - Preprocessor variable, must expand to either integer literal `0` or `1`
 
   Output Parameter:
-. <return-value> - Either integer literal 0 or 1
+. <return_value> - Either integer literal `0` or `1`
 
   Level: beginner
 
   Notes:
-  Expands to integer literal 0 if `b` expands to 1, or integer literal 1 if `b` expands to
-  0. Behavior is undefined if `b` expands to anything else. `PetscCompl()` will expand its
+  Expands to integer literal `0` if `b` expands to 1, or integer literal `1` if `b` expands to
+  `0`. Behavior is undefined if `b` expands to anything else. `PetscCompl()` will expand its
   argument before returning the complement.
 
-  This macro can be useful for negating `PetscDefined()` inside macros e.g.
+  This macro can be useful for negating `PetscDefined()` inside macros, e.g.,
 .vb
   #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
 .ve
@@ -945,7 +945,7 @@ M*/
 #define PetscDefined_(value)                                  PetscDefined__(PetscConcat_(PetscDefined_arg_, value))
 
 /*MC
-  PetscDefined - Determine whether a boolean macro is defined
+  PetscDefined - Determine whether a Boolean macro is defined
 
   Synopsis:
   #include <petscmacros.h>
@@ -957,15 +957,14 @@ M*/
 . def - PETSc-style preprocessor variable (without `PETSC_` prepended!)
 
   Output Parameter:
-. <return-value> - Either integer literal 0 or 1
+. <return_value> - Either integer literal `0` or `1`
 
   Level: intermediate
 
   Notes:
-  `PetscDefined()` returns 1 if and only if `PETSC_ ## def` is defined (but empty) or defined to
-  integer literal 1. In all other cases, `PetscDefined()` returns integer literal 0. Therefore
-  this macro should not be used if its argument may be defined to a non-empty value other than
-  1.
+  `PetscDefined()` returns `1` if and only if `PETSC_ ## def` is defined (but empty) or defined to
+  integer literal `1`. In all other cases, `PetscDefined()` returns integer literal `0`. Therefore
+  this macro should not be used if its argument may be defined to a non-empty value other than `1`.
 
   The prefix `PETSC_` is automatically prepended to `def`, which is treated as a literal suffix
   and is not macro-expanded. To avoid prepending `PETSC_`, say to add custom checks in user code,
@@ -976,12 +975,12 @@ M*/
 
   Developer Notes:
   Getting something that works in C and CPP for an arg that may or may not be defined is
-  tricky. Here, if we have "#define PETSC_HAVE_BOOGER 1" we match on the placeholder define,
-  insert the "0," for arg1 and generate the triplet (0, 1, 0). Then the last step cherry picks
-  the 2nd arg (a one). When PETSC_HAVE_BOOGER is not defined, we generate a (... 1, 0) pair,
-  and when the last step cherry picks the 2nd arg, we get a zero.
+  tricky. Here, if we have `#define PETSC_HAVE_BOOGER 1`, we match on the placeholder define,
+  insert the `0,` for `arg1` and generate the triplet `(0, 1, 0)`. Then, the last step cherry picks
+  the second argument (a one). When `PETSC_HAVE_BOOGER` is not defined, we generate a `(... 1, 0)` pair,
+  and when the last step cherry picks the second argument, we get a zero.
 
-  Our extra expansion via PetscDefined__take_second_expand() is needed with MSVC, which has a
+  Our extra expansion via `PetscDefined__take_second_expand()` is needed with MSVC, which has a
   nonconforming implementation of variadic macros. The `PETSC_` prefix must be pasted in
   `PetscDefined()` itself so that an unprefixed macro matching `def` cannot expand before the
   prefix is added.
@@ -1208,7 +1207,7 @@ M*/
 . a - a static array of any type
 
   Output Parameter:
-. <return-value> -  the length of the array
+. <return_value> - the length of the array
 
   Example:
 .vb

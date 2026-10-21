@@ -4,12 +4,13 @@ class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
     self.version                = '2.4.1'
-    self.gitcommit              = 'a3bcc7d0ef370ae51223d8110d55b3b79ad87ca4' # main oct-17-2026
+    self.gitcommit              = 'c784a757791c0cf0234290c0a91cd656f68f5bcf' # main oct-20-2026
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.4.0'
     self.versionname            = 'HPDDM_VERSION'
     self.versioninclude         = 'HPDDM_define.hpp'
     self.buildLanguages         = ['Cxx']
+    self.minCxxVersion          = 'c++14'
     self.functions              = []
     self.includes               = ['HPDDM.hpp']
     self.skippackagewithoptions = 1
