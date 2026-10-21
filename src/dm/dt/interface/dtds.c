@@ -2971,7 +2971,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   tab(i)%ptr%K
   tab(i)%ptr%T(j)%ptr
 .ve
-  where $ i = 1, 2, ..., Nf $ and $ j = 1, 2, ..., tab(i)%ptr%K+1 $.
+  where $i = 1, 2, ..., Nf$ and `j` runs from 1 to `tab(i)%ptr%K+1`.
 
   Use `PetscDSRestoreTabulation()` to restore the array
 

@@ -3667,7 +3667,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   ```{math}
     \left[\begin{array}{cc} A_{00} & A_{01} \\ A_{01}' & 0 \end{array}\right]
   ```
-  with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
+  with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := \frac{1}{\nu} I$ and the $(1,1)$-block of the matrix is modified to $H = A_{00} + \nu A_{01} A_{01}'$.
   A linear system $Hx = b$ has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix `-fieldsplit_0_`.
 
   Some `PCFIELDSPLIT` variants are called physics-based preconditioners, since the preconditioner takes into account the underlying physics of the

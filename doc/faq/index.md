@@ -838,7 +838,7 @@ All PETSc callbacks return `PetscErrorCode`.
 The update in Newton's method is computed as
 
 $$
-u^{n+1} = u^n - \lambda * \left[J(u^n)] * F(u^n) \right]^{\dagger}
+u^{n+1} = u^n - \lambda \left[J(u^n)\right]^{\dagger} F(u^n)
 $$
 
 The reason PETSc doesn't default to computing both the function and Jacobian at the same

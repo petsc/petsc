@@ -1258,9 +1258,18 @@ PETSC_EXTERN PetscErrorCode KSPSetInitialGuessKnoll(KSP, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP, PetscBool *);
 
 /*E
-    MatSchurComplementAinvType - Determines how to approximate the inverse of the (0,0) block in Schur complement matrix assembly routines
+  MatSchurComplementAinvType - Determines how to approximate the inverse of the (0,0) block in Schur complement matrix assembly routines
 
-    Level: intermediate
+  Values:
++ `MAT_SCHUR_COMPLEMENT_AINV_DIAG`       - invert the diagonal of `A00`
+. `MAT_SCHUR_COMPLEMENT_AINV_LUMP`       - invert the diagonal matrix containing the row sums of `A00` (mass lumping)
+. `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG` - invert the block diagonal of the matrix, where the blocks are determined by the block size of the matrix
+- `MAT_SCHUR_COMPLEMENT_AINV_FULL`       - invert the full matrix `A00`
+
+  Level: intermediate
+
+  Note:
+  In the documentation this inverse type is indicated with $inv(DIAGFORM(A00))$.
 
 .seealso: `MatSchurComplementGetAinvType()`, `MatSchurComplementSetAinvType()`, `MatSchurComplementGetPmat()`, `MatGetSchurComplement()`,
           `MatCreateSchurComplementPmat()`, `MatCreateSchurComplement()`

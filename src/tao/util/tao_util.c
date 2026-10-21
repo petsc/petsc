@@ -17,7 +17,7 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
 
   Input Parameters:
 + X - current point
-. F - function evaluated at x
+. F - function evaluated at `X`
 . L - lower bounds
 - U - upper bounds
 
@@ -30,7 +30,7 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
   The Fischer-Burmeister function is defined as
 
   $$
-  \phi(a,b) := \sqrt{a^2 + b^2} - a - b
+  \phi(a,b) = \sqrt{a^2 + b^2} - a - b
   $$
 
   and is used reformulate a complementarity problem as a semismooth
@@ -123,7 +123,7 @@ static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 
   Input Parameters:
 + X  - current point
-. F  - function evaluated at x
+. F  - function evaluated at `X`
 . L  - lower bounds
 . U  - upper bounds
 - mu - smoothing parameter
@@ -132,10 +132,8 @@ static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 . FB - The Smoothed Fischer-Burmeister function vector
 
   Notes:
-  The Smoothed Fischer-Burmeister function is defined as
-$        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
-  and is used reformulate a complementarity problem as a semismooth
-  system of equations.
+  The Smoothed Fischer-Burmeister function is defined as $\phi(a,b) = \sqrt{a^2 + b^2 + 2 \mu^2} - a - b$
+  and is used reformulate a complementarity problem as a semismooth system of equations.
 
   The result of this function is done by cases\:
 +  l[i] == -infinity, u[i] == infinity  -- fb[i] = -f[i] - 2*mu*x[i]
@@ -372,9 +370,9 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   Collective
 
   Input Parameters:
-+ jac - the jacobian of f at X
++ jac - the Jacobian of the function at `X`
 . X   - current point
-. Con - constraint function evaluated at X
+. Con - constraint function evaluated at `X`
 . XL  - lower bounds
 . XU  - upper bounds
 . mu  - smoothing parameter

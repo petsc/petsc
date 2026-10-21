@@ -702,8 +702,7 @@ PetscErrorCode MatGetSchurComplement(Mat A, IS isrow0, IS iscol0, IS isrow1, IS 
 
   Input Parameters:
 + S        - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
-- ainvtype - type of approximation to be used to form approximate Schur complement $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$:
-             `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
+- ainvtype - type of approximation to be used to form the approximate Schur complement $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$, see `MatSchurComplementAinvType`.
 
   Options Database Key:
 . -mat_schur_complement_ainv_type (diag|lump|blockdiag|full) - set Schur complement type
@@ -737,8 +736,7 @@ PetscErrorCode MatSchurComplementSetAinvType(Mat S, MatSchurComplementAinvType a
 . S - matrix obtained with `MatCreateSchurComplement()` (or equivalent) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
 
   Output Parameter:
-. ainvtype - type of approximation used to form approximate Schur complement Sp = A11 - A10 inv(DIAGFORM(A00)) A01:
-             `MAT_SCHUR_COMPLEMENT_AINV_DIAG`, `MAT_SCHUR_COMPLEMENT_AINV_LUMP`, `MAT_SCHUR_COMPLEMENT_AINV_BLOCK_DIAG`, or `MAT_SCHUR_COMPLEMENT_AINV_FULL`
+. ainvtype - type of approximation used to form approximate Schur complement $Sp = A11 - A10 \, inv(DIAGFORM(A00)) \, A01$, see `MatSchurComplementAinvType`.
 
   Level: advanced
 
