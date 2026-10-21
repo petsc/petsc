@@ -800,9 +800,9 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    Only left preconditioning is supported with `KSPCG`; there are several ways to motivate preconditioned CG, but they all produce the same algorithm.
    One can interpret preconditioning $A$ with $B$ to mean any of the following\:
 .vb
-   (1) Solve a left-preconditioned system $BAx = Bb $, using $ B^{-1}$ to define an inner product in the algorithm.
+   (1) Solve a left-preconditioned system $BAx = Bb$, using $B^{-1}$ to define an inner product in the algorithm.
    (2) Solve a right-preconditioned system $ABy = b, x = By,$ using $B$ to define an inner product in the algorithm.
-   (3) Solve a symmetrically-preconditioned system, $ E^TAEy = E^Tb, x = Ey, $ where $B = EE^T.$
+   (3) Solve a symmetrically-preconditioned system, $E^TAEy = E^Tb, x = Ey,$ where $B = EE^T.$
    (4) Solve $Ax=b$ with CG, but use the inner product defined by $B$ to define the method.
    In all cases, the resulting algorithm only requires application of $B$ to vectors, the other inner-product does not appear explicitly in the code
 .ve

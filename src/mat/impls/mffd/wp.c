@@ -3,7 +3,7 @@
    h used with the finite difference based matrix-free Jacobian. From Walker-Pernice {cite}`pw98`
 
    $$
-   h = error_rel * sqrt(1 + ||u||) / ||a||
+   h = error\_rel \sqrt{1 + \|u\|} / \|a\|
    $$
 
    Options Database Key:
@@ -12,9 +12,9 @@
    Level: intermediate
 
    Notes:
-   $ || U || $ does not change between linear iterations so is reused
+   $\| U \|$ does not change between linear iterations so is reused
 
-   In `KSPGMRES` $ || a || == 1 $ and so does not need to ever be computed except at restart
+   In `KSPGMRES` $\| a \| == 1$ and so does not need to ever be computed except at restart
     when it is recomputed.  Thus requires no global collectives when used with `KSPGMRES`
 
 .seealso: `MATMFFD`, `MATMFFD_DS`, `MatCreateMFFD()`, `MatCreateSNESMF()`, `MATMFFD_DS`
@@ -143,11 +143,11 @@ static PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
 
   Input Parameters:
 + A    - the `MATMFFD` matrix
-- flag - `PETSC_TRUE` causes it to compute $||U||$, `PETSC_FALSE` uses the previous value
+- flag - `PETSC_TRUE` causes it to compute $\|U\|$, `PETSC_FALSE` uses the previous value
 
   Options Database Key:
 . -mat_mffd_compute_normu (true|false) - true by default, false can save calculations but you
-                                         must be sure that $||U||$ has not changed in the mean time.
+                                         must be sure that $\|U\|$ has not changed in the mean time.
 
   Level: advanced
 

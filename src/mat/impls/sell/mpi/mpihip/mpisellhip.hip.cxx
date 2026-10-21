@@ -97,9 +97,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELLHIP(Mat A)
 + comm  - MPI communicator, set to `PETSC_COMM_SELF`
 . m     - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
            This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product $ y = Ax $.
+           y vector for the matrix-vector product $y = Ax$.
 . n     - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product $ y = Ax $. (or `PETSC_DECIDE` to have
+       x vector for the matrix-vector product $y = Ax$. (or `PETSC_DECIDE` to have
        calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M     - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 . N     - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)

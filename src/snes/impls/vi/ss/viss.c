@@ -152,7 +152,7 @@ static PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec
 
    Note:
    The semismooth jacobian matrix is given by
-   $ jac = Da + Db*jacfun $
+   $jac = Da + Db \, jacfun$
    where `Db` is the row scaling matrix stored as a vector,
          `Da` is the diagonal perturbation matrix stored as a vector
    and   `jacfun` is the Jacobian of the original nonlinear function.

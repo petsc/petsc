@@ -890,7 +890,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
   This is used when one can provide code for multiple steps of Richardson's method that is more efficient than computing a single step,
-  recomputing the residual via $ r = b - A x $, and then computing the next step. SOR is an algorithm for which this is true.
+  recomputing the residual via $r = b - A x$, and then computing the next step. SOR is an algorithm for which this is true.
 
 .seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`, `PCShellSetMatApplyRichardson()`, `KSPRICHARDSON`
 @*/

@@ -20,7 +20,7 @@ static PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
 }
 
 /*MC
-  MATCENTERING - matrix object that implements the (symmetric and idempotent) centering matrix, $ I - (1/N) * 1^T * 1$
+  MATCENTERING - matrix object that implements the (symmetric and idempotent) centering matrix, $I - (1/N) 1^T 1$
 
   Level: beginner
 
@@ -31,7 +31,7 @@ static PetscErrorCode MatMult_Centering(Mat A, Vec xx, Vec yy)
 M*/
 
 /*@
-  MatCreateCentering - Creates a new matrix object that implements the (symmetric and idempotent) centering matrix, $ I - (1/N) * 1^T * 1$
+  MatCreateCentering - Creates a new matrix object that implements the (symmetric and idempotent) centering matrix, $I - (1/N) 1^T 1$
 
   Collective
 
@@ -48,10 +48,10 @@ M*/
   Notes:
   The entries of the matrix `C` are not explicitly stored. Instead, the new matrix
   object is a shell that simply performs the action of the centering matrix, i.e.,
-  multiplying $ C*x$ subtracts the mean of the vector `x` from each of its elements.
+  multiplying $C x$ subtracts the mean of the vector `x` from each of its elements.
   This is useful for preserving sparsity when mean-centering the columns of a
   matrix is required. For instance, to perform principal components analysis with
-  a matrix `A`, the composite matrix $C*A$ can be passed to a partial SVD solver.
+  a matrix `A`, the composite matrix $C A$ can be passed to a partial SVD solver.
 
   Level: intermediate
 

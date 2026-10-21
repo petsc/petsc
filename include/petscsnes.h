@@ -259,9 +259,9 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
     SNESConvergedReason - reason a `SNESSolve()` was determined to have converged or diverged
 
    Values:
-+  `SNES_CONVERGED_FNORM_ABS`         - $ ||F|| \le abstol $
-.  `SNES_CONVERGED_FNORM_RELATIVE`    - $ ||F|| <= rtol*||F(x_0))|| $ where $x_0 $ is the initial guess
-.  `SNES_CONVERGED_SNORM_RELATIVE`    - The 2-norm of the last step $ \le stol * ||x|| $ where $ x $ is the current solution
++  `SNES_CONVERGED_FNORM_ABS`         - $\|F\| \le abstol$
+.  `SNES_CONVERGED_FNORM_RELATIVE`    - $\|F\| \le rtol \|F(x_0))\|$ where $x_0$ is the initial guess
+.  `SNES_CONVERGED_SNORM_RELATIVE`    - The 2-norm of the last step $\le stol \|x\|$ where $x$ is the current solution
 .  `SNES_CONVERGED_USER`              - The user has indicated convergence for an arbitrary reason
 .  `SNES_DIVERGED_FUNCTION_COUNT`     - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
 .  `SNES_DIVERGED_DTOL`               - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
@@ -288,23 +288,23 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
    testing with `-pc_type lu` to eliminate the linear solver as the cause of the problem).
 
    `SNES_DIVERGED_LOCAL_MIN` can only occur when using a `SNES` solver that uses a line search (`SNESLineSearch`).
-   The line search wants to $ \min Q(\alpha) = 1/2 || F(x + \alpha s) ||^2_2 $  this occurs
-   at $ Q'(\alpha) = s^T F'(x+\alpha s)^T F(x+\alpha s) = 0$. If $s$ is the Newton direction $ - F'(x)^(-1)F(x)$ then
-   $ Q'(\alpha) = -F(x)^T F'(x)^(-1)^T F'(x+\alpha s)F(x+\alpha s)$; when $\alpha = 0$
-   $Q'(0) = - ||F(x)||^2_2 $ which is always NEGATIVE if $F'(x)$ is invertible. This means the Newton
-   direction is a descent direction and the line search should succeed if $\alpha $ is small enough.
+   The line search wants to $\min Q(\alpha) = 1/2 \| F(x + \alpha \, s) \|^2_2$  this occurs
+   at $Q'(\alpha) = s^T F'(x+\alpha s)^T F(x+\alpha s) = 0$. If $s$ is the Newton direction $- F'(x)^{-1}F(x)$ then
+   $Q'(\alpha) = -F(x)^T F'(x)^{-T} F'(x+\alpha s)F(x+\alpha s)$; when $\alpha = 0$
+   $Q'(0) = - \|F(x)\|^2_2$ which is always NEGATIVE if $F'(x)$ is invertible. This means the Newton
+   direction is a descent direction and the line search should succeed if $\alpha$ is small enough.
 
-   If $F'(x)$ is NOT invertible AND $F'(x)^T F(x) = 0 $ then $Q'(0) = 0 $ and the Newton direction
+   If $F'(x)$ is NOT invertible AND $F'(x)^T F(x) = 0$ then $Q'(0) = 0$ and the Newton direction
    is NOT a descent direction so the line search will fail. All one can do at this point
    is change the initial guess and try again.
 
    An alternative explanation: Newton's method can be regarded as replacing the function with
    its linear approximation and minimizing the 2-norm of that. That is $F(x+s) \approx F(x) + F'(x)s$
-   so we minimize $ || F(x) + F'(x) s ||^2_2$ using Least Squares. If $F'(x)$ is invertible then
-   $s = - F'(x)^(-1)F(x)$ otherwise $F'(x)^T F'(x) s = -F'(x)^T F(x)$. If $F'(x)^T F(x)$ is NOT zero then there
+   so we minimize $\| F(x) + F'(x) \, s \|^2_2$ using Least Squares. If $F'(x)$ is invertible then
+   $s = - F'(x)^{-1}F(x)$ otherwise $F'(x)^T F'(x) s = -F'(x)^T F(x)$. If $F'(x)^T F(x)$ is NOT zero then there
    exists a nontrivial (that is $F'(x)s \ne 0$) solution to the equation and this direction is
-   $s = - [F'(x)^T F'(x)]^(-1) F'(x)^T F(x)$ so $Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^(-T) F'(x)^T F(x)
-   = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^(-T) (F'(x)^T F(x))$. Since we are assuming $(F'(x)^T F(x)) \ne 0$
+   $s = - [F'(x)^T F'(x)]^{-1} F'(x)^T F(x)$ so $Q'(0) = - F(x)^T F'(x) [F'(x)^T F'(x)]^{-T} F'(x)^T F(x)
+   = - (F'(x)^T F(x)) [F'(x)^T F'(x)]^{-T} (F'(x)^T F(x))$. Since we are assuming $(F'(x)^T F(x)) \ne 0$
    and $F'(x)^T F'(x)$ has no negative eigenvalues $Q'(0) < 0$ so $s$ is a descent direction and the line
    search should succeed for small enough $\alpha$.
 
@@ -347,7 +347,7 @@ typedef enum {                       /* converged */
 PETSC_EXTERN const char *const *SNESConvergedReasons;
 
 /*MC
-   SNES_CONVERGED_FNORM_ABS - $||F|| \le abstol$
+   SNES_CONVERGED_FNORM_ABS - $\|F\| \le abstol$
 
    Level: beginner
 
@@ -355,7 +355,7 @@ PETSC_EXTERN const char *const *SNESConvergedReasons;
 M*/
 
 /*MC
-   SNES_CONVERGED_FNORM_RELATIVE - $||F|| \le rtol*||F(x_0)||$ where $x_0$ is the initial guess
+   SNES_CONVERGED_FNORM_RELATIVE - $\|F\| \le rtol \|F(x_0)\|$ where $x_0$ is the initial guess
 
    Level: beginner
 
@@ -363,7 +363,7 @@ M*/
 M*/
 
 /*MC
-  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step $\le stol * ||x||$ where `x` is the current
+  SNES_CONVERGED_SNORM_RELATIVE - The 2-norm of the last step $\le stol \|x\|$ where `x` is the current
   solution and `stol` is the 4th argument to `SNESSetTolerances()`
 
   Options Database Key:

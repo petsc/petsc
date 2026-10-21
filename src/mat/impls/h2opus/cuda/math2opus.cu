@@ -1813,7 +1813,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
 }
 
 /*@
-  MatH2OpusLowRankUpdate - Perform a low-rank update of the form $ A = A + s * U * V^T $
+  MatH2OpusLowRankUpdate - Perform a low-rank update of the form $A = A + s U V^T$
 
   Input Parameters:
 + A - the hierarchical `MATH2OPUS` matrix

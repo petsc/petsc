@@ -384,7 +384,7 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
 /*MC
    SNESLINESEARCHBT - Backtracking line search {cite}`dennis:83`.
 
-   This line search finds the minimum of a polynomial fitting either $1/2 ||F(x_k + \lambda Y_k)||_2^2$,
+   This line search finds the minimum of a polynomial fitting either $1/2 \|F(x_k + \lambda Y_k)\|_2^2$,
    or the objective function $G(x_k + \lambda Y_k)$ if it is provided with `SNESSetObjective()`.
    If this fit does not satisfy the sufficient decrease conditions, the interval shrinks
    and the fit is reattempted at most `max_it` times or until $\lambda$ is below `minlambda`.

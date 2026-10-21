@@ -1308,7 +1308,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems PetscOp
    | A B^T | | v | = | f |
    | B 0   | | p | = | g |
 .ve
-   with B representing $ -\int_\Omega \nabla \cdot u q $. If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
+   with B representing $-\int_\Omega \nabla \cdot u \, q$. If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
 .vb
    | A B^T | | v | = | f |
    |-B 0   | | p | = |-g |

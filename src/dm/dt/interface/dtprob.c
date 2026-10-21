@@ -247,7 +247,7 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal unused[],
 - unused - ignored
 
   Output Parameter:
-. x - Coordinate in $[-\infty, \infty]^2 $
+. x - Coordinate in $[-\infty, \infty]^2$
 
   Level: beginner
 

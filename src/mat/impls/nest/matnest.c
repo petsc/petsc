@@ -1546,7 +1546,7 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - array of $ nr \times nc$ submatrices, or `NULL`
+- a      - array of $nr \times nc$ submatrices, or `NULL`
 
   Level: advanced
 

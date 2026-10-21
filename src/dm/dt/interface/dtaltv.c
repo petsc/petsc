@@ -677,7 +677,7 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
   Input Parameters:
 + N - the dimension of the vector space, $N \ge 0$
-- k - the degree of the k-forms on which `intvMat` from `PetscDTAltVInteriorMatrix()` acts, $ 0 le k le N $.
+- k - the degree of the k-forms on which `intvMat` from `PetscDTAltVInteriorMatrix()` acts, $0 \le k \le N$.
 
   Output Parameter:
 . indices - The interior product matrix `intvMat` has dimensions [(N choose (k-1)) x (N choose k)] and has (N choose k) * k

@@ -148,7 +148,7 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
    (F(x^n) - b)$, where $\lambda$ is obtained with either `SNESLineSearchSetDamping()` or `-snes_linesearch_damping` if
    using the `none` line search type, or determined by an actual line search algorithm.
    If an inner nonlinear preconditioner is provided (either with `-npc_snes_type` or `SNESSetNPC()`), then the inner
-   solver is called on the initial solution $x^n$ and the nonlinear Richardson uses $ x^{n+1} = x^{n} + \lambda d^{n}$
+   solver is called on the initial solution $x^n$ and the nonlinear Richardson uses $x^{n+1} = x^{n} + \lambda d^{n}$
    where $d^{n} = \hat{x}^{n} - x^{n}$ where $\hat{x}^{n}$ is the solution returned from the inner solver.
 
    The update, especially without inner nonlinear preconditioner, may be ill-scaled. If using the `none`

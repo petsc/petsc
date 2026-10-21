@@ -414,7 +414,7 @@ override the defaults by using the following options:
 - `-snes_linesearch_minlambda tol`
 
 Besides the backtracking linesearch, there are `SNESLINESEARCHSECANT`,
-which uses a polynomial secant minimization of $||F(x)||_2$ or an objective function
+which uses a polynomial secant minimization of $\|F(x)\|_2$ or an objective function
 if set, and `SNESLINESEARCHCP`, which minimizes $F(x) \cdot Y$ where
 $Y$ is the search direction. These are both potentially iterative
 line searches, which may be used to find a better-fitted steplength in
@@ -430,7 +430,7 @@ may prove useful due to its robustness. Similar to the critical point line searc
 `SNESLINESEARCHCP`, it seeks to find the root of $F(x) \cdot Y$.
 While the latter does so through a secant method, the bisection line search
 does so by iteratively bisecting the step length interval.
-It works as follows (with $f(\lambda)=F(x-\lambda Y) \cdot Y / ||Y||$ for brevity):
+It works as follows (with $f(\lambda)=F(x-\lambda Y) \cdot Y / \|Y\|$ for brevity):
 
 1. initialize: $j=1$, $\lambda_0 = \lambda_{\text{left}} = 0.0$, $\lambda_j = \lambda_{\text{right}} = \alpha$, compute $f(\lambda_0)$ and $f(\lambda_j)$
 
@@ -1068,7 +1068,7 @@ The Jacobian-vector product is approximated
 via the formula
 
 $$
-F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
+F'(u) a \approx \frac{F(u + h \, a) - F(u)}{h}
 $$
 
 where $h$ is computed via
@@ -1086,12 +1086,12 @@ This approach is taken from Brown and Saad
 
 $$
 \begin{aligned}
-        h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}\end{aligned}
+        h = \frac{\sqrt{1 + \|u\|}e_{rel}}{\|a\|}\end{aligned}
 $$
 
 This has no tunable parameters, but note that inside the nonlinear solve
 for the entire *linear* iterative process $u$ does not change
-hence $\sqrt{1 + ||u||}$ need be computed only once. This
+hence $\sqrt{1 + \|u\|}$ need be computed only once. This
 information may be set with the options
 
 ```
@@ -1292,7 +1292,7 @@ Jacobian matrix (denoted by $F_{:i}$) is approximated by the
 formula
 
 $$
-F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
+F'_{:i} \approx \frac{F(u + h \, dx_{i}) - F(u)}{h}
 $$
 
 where $h$ is computed via:

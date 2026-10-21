@@ -844,11 +844,11 @@ $$
 The reason PETSc doesn't default to computing both the function and Jacobian at the same
 time is:
 
-- In order to do the line search $F \left(u^n - \lambda * \text{step} \right)$ may
+- In order to do the line search $F \left(u^n - \lambda \text{step} \right)$ may
   need to be computed for several $\lambda$. The Jacobian is not needed for each of
   those and one does not know in advance which will be the final $\lambda$ until
   after the function value is computed, so many extra Jacobians may be computed.
-- In the final step if $|| F(u^p)||$ satisfies the convergence criteria then a
+- In the final step if $\| F(u^p)\|$ satisfies the convergence criteria then a
   Jacobian need not be computed.
 
 You are free to have your `FormFunction()` compute as much of the Jacobian at that point
@@ -2018,7 +2018,7 @@ I.e.
 This is actually not surprising! GMRES computes the norm of the residual at each iteration
 via a recurrence relation between the norms of the residuals at the previous iterations
 and quantities computed at the current iteration. It does not compute it via directly
-$|| b - A x^{n} ||$.
+$\| b - A x^{n} \|$.
 
 Sometimes, especially with an ill-conditioned matrix, or computation of the matrix-vector
 product via differencing, the residual norms computed by GMRES start to "drift" from the

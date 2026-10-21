@@ -971,7 +971,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 }
 
 /*@
-  VecPow - Replaces each component of a vector by $ x_i^p $
+  VecPow - Replaces each component of a vector by $x_i^p$
 
   Logically Collective
 

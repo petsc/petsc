@@ -221,7 +221,7 @@ computational rate (in units of MFlop/sec) is given for each phase in
 the final column of the phase summary table.
 
 $$
-{\rm Total\: Mflop/sec} \:=\: 10^{-6} * ({\rm sum\; of\; flop\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
+{\rm Total\: Mflop/sec} \:=\: 10^{-6} ({\rm sum\; of\; flop\; over\; all\; processors})/({\rm max\; time\; over\; all\; processors})
 $$
 
 *Note*: Total computational rates $<$ 1 MFlop are listed as 0 in

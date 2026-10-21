@@ -48,7 +48,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, PetscC
 }
 
 /*@
-  TSGetRHSJacobianP - Gets the function that computes the Jacobian of $G $ w.r.t. the parameters $p$ where $ U_t = G(U,p,t)$, as well as the location to store the matrix.
+  TSGetRHSJacobianP - Gets the function that computes the Jacobian of $G$ w.r.t. the parameters $p$ where $U_t = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
 
@@ -163,7 +163,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
 }
 
 /*@
-  TSGetIJacobianP - Gets the function that computes the Jacobian of $ F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t) $, as well as the location to store the matrix.
+  TSGetIJacobianP - Gets the function that computes the Jacobian of $F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
 
@@ -468,12 +468,12 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 
   The first Hessian function and the working array are required.
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
-  $Vl_n^T*F_UP*Vr$
+  $Vl_n^T F_UP Vr$
   where the vector $Vl_n$ (n-th element in the array `Vl`) and `Vr` are of size `N` and `M` respectively, and the Hessian $F_{UP}$ is of size $N x N x M.$
   Each entry of $F_{UP}$ corresponds to the derivative
-  $ F_UP[i][j][k] = \frac{\partial^2 F[i]}{\partial U[j] \partial P[k]}.$
+  $F_UP[i][j][k] = \frac{\partial^2 F[i]}{\partial U[j] \partial P[k]}.$
   The result of the vector-Hessian-vector product for $Vl_n$ needs to be stored in vector $VHV_n$ with the j-th entry being
-  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * F_UP[i][j][k] * Vr[k]}$
+  $VHV_n[j] = \sum_i \sum_k {Vl_n[i] F_UP[i][j][k] Vr[k]}$
   If the cost function is a scalar, there will be only one vector in `Vl` and `VHV`.
 
 .seealso: [](ch_ts), `TS`
@@ -696,12 +696,12 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
   The first Hessian function and the working array are required.
 
   As an example to implement the callback functions, the second callback function calculates the vector-Hessian-vector product
-  $ Vl_n^T*G_UP*Vr$
+  $Vl_n^T G_UP Vr$
   where the vector $Vl_n$ (n-th element in the array $Vl$) and $Vr$ are of size $N$ and $M$ respectively, and the Hessian $G_{UP}$ is of size $N x N x M$.
   Each entry of $G_{UP}$ corresponds to the derivative
-  $ G_UP[i][j][k] = \frac{\partial^2 G[i]}{\partial U[j] \partial P[k]}.$
+  $G_UP[i][j][k] = \frac{\partial^2 G[i]}{\partial U[j] \partial P[k]}.$
   The result of the vector-Hessian-vector product for $Vl_n$ needs to be stored in vector $VHV_n$ with j-th entry being
-  $ VHV_n[j] = \sum_i \sum_k {Vl_n[i] * G_UP[i][j][k] * Vr[k]}$
+  $VHV_n[j] = \sum_i \sum_k {Vl_n[i] G_UP[i][j][k] Vr[k]}$
   If the cost function is a scalar, there will be only one vector in $Vl$ and $VHV$.
 
 .seealso: `TS`, `TSAdjoint`

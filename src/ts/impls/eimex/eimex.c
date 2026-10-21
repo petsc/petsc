@@ -490,7 +490,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   Notes:
   The default is a 3-stage scheme, it can be changed with `TSEIMEXSetMaxRows()` or -ts_eimex_max_rows
 
-  This method currently only works with ODEs, for which the stiff part $ F(t,X,Xdot) $  has the form $ Xdot + Fhat(t,X)$.
+  This method currently only works with ODEs, for which the stiff part $F(t,X,Xdot)$  has the form $Xdot + Fhat(t,X)$.
 
   The general system is written as
 

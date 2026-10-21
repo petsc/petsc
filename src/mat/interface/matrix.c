@@ -2784,7 +2784,7 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
 }
 
 /*@
-  MatMultTranspose - Computes matrix transpose times a vector $y = A^T * x$.
+  MatMultTranspose - Computes matrix transpose times a vector $y = A^T x$.
 
   Neighbor-wise Collective
 
@@ -2842,7 +2842,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
 }
 
 /*@
-  MatMultHermitianTranspose - Computes matrix Hermitian-transpose times a vector $y = A^H * x$.
+  MatMultHermitianTranspose - Computes matrix Hermitian-transpose times a vector $y = A^H x$.
 
   Neighbor-wise Collective
 
@@ -2905,7 +2905,7 @@ PetscErrorCode MatMultHermitianTranspose(Mat mat, Vec x, Vec y)
 }
 
 /*@
-  MatMultAdd -  Computes $v3 = v2 + A * v1$.
+  MatMultAdd -  Computes $v3 = v2 + A v1$.
 
   Neighbor-wise Collective
 
@@ -2954,7 +2954,7 @@ PetscErrorCode MatMultAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 }
 
 /*@
-  MatMultTransposeAdd - Computes $v3 = v2 + A^T * v1$.
+  MatMultTransposeAdd - Computes $v3 = v2 + A^T v1$.
 
   Neighbor-wise Collective
 
@@ -3004,7 +3004,7 @@ PetscErrorCode MatMultTransposeAdd(Mat mat, Vec v1, Vec v2, Vec v3)
 }
 
 /*@
-  MatMultHermitianTransposeAdd - Computes $v3 = v2 + A^H * v1$.
+  MatMultHermitianTransposeAdd - Computes $v3 = v2 + A^H v1$.
 
   Neighbor-wise Collective
 
@@ -3985,7 +3985,7 @@ PetscErrorCode MatMatSolve(Mat A, Mat B, Mat X)
 }
 
 /*@
-  MatMatSolveTranspose - Solves $A^T X = B $, given a factored matrix.
+  MatMatSolveTranspose - Solves $A^T X = B$, given a factored matrix.
 
   Neighbor-wise Collective
 
@@ -4083,8 +4083,8 @@ PetscErrorCode MatMatTransposeSolve(Mat A, Mat Bt, Mat X)
 }
 
 /*@
-  MatForwardSolve - Solves $ L x = b $, given a factored matrix, $A = LU $, or
-  $U^T*D^(1/2) x = b$, given a factored symmetric matrix, $A = U^T*D*U$,
+  MatForwardSolve - Solves $L x = b$, given a factored matrix, $A = LU$, or
+  $U^T D^{1/2} x = b$, given a factored symmetric matrix, $A = U^T D U$,
 
   Neighbor-wise Collective
 
@@ -4105,8 +4105,8 @@ PetscErrorCode MatMatTransposeSolve(Mat A, Mat Bt, Mat X)
   call `MatForwardSolve`(A,x,x).
 
   For matrix in `MATSEQBAIJ` format with block size larger than 1,
-  the diagonal blocks are not implemented as $D = D^(1/2) * D^(1/2)$ yet.
-  `MatForwardSolve()` solves $U^T*D y = b$, and
+  the diagonal blocks are not implemented as $D = D^{1/2} D^{1/2}$ yet.
+  `MatForwardSolve()` solves $U^T D y = b$, and
   `MatBackwardSolve()` solves $U x = y$.
   Thus they do not provide a symmetric preconditioner.
 
@@ -4137,7 +4137,7 @@ PetscErrorCode MatForwardSolve(Mat mat, Vec b, Vec x)
 
 /*@
   MatBackwardSolve - Solves $U x = b$, given a factored matrix, $A = LU$.
-  $D^(1/2) U x = b$, given a factored symmetric matrix, $A = U^T*D*U$,
+  $D^{1/2} U x = b$, given a factored symmetric matrix, $A = U^T D U$,
 
   Neighbor-wise Collective
 
@@ -4158,8 +4158,8 @@ PetscErrorCode MatForwardSolve(Mat mat, Vec b, Vec x)
   call `MatBackwardSolve`(A,x,x).
 
   For matrix in `MATSEQBAIJ` format with block size larger than 1,
-  the diagonal blocks are not implemented as $D = D^(1/2) * D^(1/2)$ yet.
-  `MatForwardSolve()` solves $U^T*D y = b$, and
+  the diagonal blocks are not implemented as $D = D^{1/2} D^{1/2}$ yet.
+  `MatForwardSolve()` solves $U^T D y = b$, and
   `MatBackwardSolve()` solves $U x = y$.
   Thus they do not provide a symmetric preconditioner.
 
@@ -4189,7 +4189,7 @@ PetscErrorCode MatBackwardSolve(Mat mat, Vec b, Vec x)
 }
 
 /*@
-  MatSolveAdd - Computes $x = y + A^{-1}*b$, given a factored matrix.
+  MatSolveAdd - Computes $x = y + A^{-1} b$, given a factored matrix.
 
   Neighbor-wise Collective
 
@@ -9176,7 +9176,7 @@ PetscErrorCode MatStashSetInitialSize(Mat mat, PetscInt size, PetscInt bsize)
 }
 
 /*@
-  MatInterpolateAdd - $w = y + A*x$ or $A^T*x$ depending on the shape of
+  MatInterpolateAdd - $w = y + A x$ or $A^T x$ depending on the shape of
   the matrix
 
   Neighbor-wise Collective
@@ -9216,7 +9216,7 @@ PetscErrorCode MatInterpolateAdd(Mat A, Vec x, Vec y, Vec w)
 }
 
 /*@
-  MatInterpolate - $y = A*x$ or $A^T*x$ depending on the shape of
+  MatInterpolate - $y = A x$ or $A^T x$ depending on the shape of
   the matrix
 
   Neighbor-wise Collective
@@ -9252,7 +9252,7 @@ PetscErrorCode MatInterpolate(Mat A, Vec x, Vec y)
 }
 
 /*@
-  MatRestrict - $y = A*x$ or $A^T*x$
+  MatRestrict - $y = A x$ or $A^T x$
 
   Neighbor-wise Collective
 
@@ -9287,7 +9287,7 @@ PetscErrorCode MatRestrict(Mat A, Vec x, Vec y)
 }
 
 /*@
-  MatMatInterpolateAdd - $Y = W + A*X$ or $W + A^T*X$ depending on the shape of `A`
+  MatMatInterpolateAdd - $Y = W + A X$ or $W + A^T X$ depending on the shape of `A`
 
   Neighbor-wise Collective
 
@@ -9359,7 +9359,7 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
 }
 
 /*@
-  MatMatInterpolate - $Y = A*X$ or $A^T*X$ depending on the shape of `A`
+  MatMatInterpolate - $Y = A X$ or $A^T X$ depending on the shape of `A`
 
   Neighbor-wise Collective
 
@@ -9387,7 +9387,7 @@ PetscErrorCode MatMatInterpolate(Mat A, Mat x, Mat *y)
 }
 
 /*@
-  MatMatRestrict - $Y = A*X$ or $A^T*X$ depending on the shape of `A`
+  MatMatRestrict - $Y = A X$ or $A^T X$ depending on the shape of `A`
 
   Neighbor-wise Collective
 
@@ -10579,7 +10579,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 }
 
 /*@
-  MatPtAP - Creates the matrix product $C = P^T * A * P$
+  MatPtAP - Creates the matrix product $C = P^T A P$
 
   Neighbor-wise Collective
 
@@ -10637,7 +10637,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 }
 
 /*@
-  MatRARt - Creates the matrix product $C = R * A * R^T$
+  MatRARt - Creates the matrix product $C = R A R^T$
 
   Neighbor-wise Collective
 
@@ -10790,7 +10790,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 }
 
 /*@
-  MatMatMult - Performs matrix-matrix multiplication $ C=A*B $.
+  MatMatMult - Performs matrix-matrix multiplication $C=A B$.
 
   Neighbor-wise Collective
 
@@ -10844,7 +10844,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 }
 
 /*@
-  MatMatTransposeMult - Performs matrix-matrix multiplication $C = A*B^T$.
+  MatMatTransposeMult - Performs matrix-matrix multiplication $C = A B^T$.
 
   Neighbor-wise Collective
 
@@ -10891,7 +10891,7 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 }
 
 /*@
-  MatTransposeMatMult - Performs matrix-matrix multiplication $C = A^T*B$.
+  MatTransposeMatMult - Performs matrix-matrix multiplication $C = A^T B$.
 
   Neighbor-wise Collective
 
@@ -11436,7 +11436,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
 }
 
 /*@
-  MatTransposeColoringDestroy - Destroys a coloring context for matrix product $C = A*B^T$ that was created
+  MatTransposeColoringDestroy - Destroys a coloring context for matrix product $C = A B^T$ that was created
   via `MatTransposeColoringCreate()`.
 
   Collective
@@ -11470,7 +11470,7 @@ PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *c)
 }
 
 /*@
-  MatTransColoringApplySpToDen - Given a symbolic matrix product $C = A*B^T$ for which
+  MatTransColoringApplySpToDen - Given a symbolic matrix product $C = A B^T$ for which
   a `MatTransposeColoring` context has been created, computes a dense $B^T$ by applying
   `MatTransposeColoring` to sparse `B`.
 
@@ -11502,8 +11502,8 @@ PetscErrorCode MatTransColoringApplySpToDen(MatTransposeColoring coloring, Mat B
 }
 
 /*@
-  MatTransColoringApplyDenToSp - Given a symbolic matrix product $C_{sp} = A*B^T$ for which
-  a `MatTransposeColoring` context has been created and a dense matrix $C_{den} = A*B^T_{dense}$
+  MatTransColoringApplyDenToSp - Given a symbolic matrix product $C_{sp} = A B^T$ for which
+  a `MatTransposeColoring` context has been created and a dense matrix $C_{den} = A B^T_{dense}$
   in which `B^T_{dens}` is obtained from `MatTransColoringApplySpToDen()`, recover sparse matrix
   $C_{sp}$ from $C_{den}$.
 
@@ -11537,7 +11537,7 @@ PetscErrorCode MatTransColoringApplyDenToSp(MatTransposeColoring matcoloring, Ma
 }
 
 /*@
-  MatTransposeColoringCreate - Creates a matrix coloring context for the matrix product $C = A*B^T$.
+  MatTransposeColoringCreate - Creates a matrix coloring context for the matrix product $C = A B^T$.
 
   Collective
 

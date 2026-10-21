@@ -802,7 +802,7 @@ PETSC_EXTERN const char *const *const KSPNormTypes;
 M*/
 
 /*MC
-   KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual B*(b - A*x), if left preconditioning, and pass that to the
+   KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual $B(b - Ax)$, if left preconditioning, and pass that to the
    convergence test routine.
 
    Level: advanced
@@ -811,7 +811,7 @@ M*/
 M*/
 
 /*MC
-   KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the
+   KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual $(b - Ax)$ and pass that to the
    convergence test routine.
 
    Level: advanced
@@ -910,7 +910,7 @@ typedef enum { /* converged */
 PETSC_EXTERN const char *const *KSPConvergedReasons;
 
 /*MC
-   KSP_CONVERGED_RTOL - $||r|| \le rtol*||b||$ or $rtol*||b - A*x_0||$ if `KSPConvergedDefaultSetUIRNorm()` was called
+   KSP_CONVERGED_RTOL - $\|r\| \le rtol \|b\|$ or $rtol \|b - A x_0\|$ if `KSPConvergedDefaultSetUIRNorm()` was called
 
    Level: beginner
 
@@ -925,7 +925,7 @@ PETSC_EXTERN const char *const *KSPConvergedReasons;
 M*/
 
 /*MC
-   KSP_CONVERGED_ATOL - $||r|| \le atol$
+   KSP_CONVERGED_ATOL - $\|r\| \le atol$
 
    Level: beginner
 
@@ -940,7 +940,7 @@ M*/
 M*/
 
 /*MC
-   KSP_DIVERGED_DTOL - $||r|| \ge dtol*||b||$
+   KSP_DIVERGED_DTOL - $\|r\| \ge dtol \|b\|$
 
    Level: beginner
 

@@ -1909,7 +1909,7 @@ M*/
      Basic constants
 */
 /*MC
-  PETSC_PI - the value of $ \pi$ to the correct precision of `PetscReal`.
+  PETSC_PI - the value of $\pi$ to the correct precision of `PetscReal`.
 
   Level: beginner
 
@@ -1917,7 +1917,7 @@ M*/
 M*/
 
 /*MC
-  PETSC_PHI - the value of $ \phi$, the Golden Ratio, to the correct precision of `PetscReal`.
+  PETSC_PHI - the value of $\phi$, the Golden Ratio, to the correct precision of `PetscReal`.
 
   Level: beginner
 
@@ -1925,7 +1925,7 @@ M*/
 M*/
 
 /*MC
-  PETSC_SQRT2 - the value of $ \sqrt{2} $ to the correct precision of `PetscReal`.
+  PETSC_SQRT2 - the value of $\sqrt{2}$ to the correct precision of `PetscReal`.
 
   Level: beginner
 
@@ -1933,7 +1933,7 @@ M*/
 M*/
 
 /*MC
-  PETSC_E - the value of Euler's constant $ e $ to the correct precision of `PetscReal`.
+  PETSC_E - the value of Euler's constant $e$ to the correct precision of `PetscReal`.
 
   Level: beginner
 

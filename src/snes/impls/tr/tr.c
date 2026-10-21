@@ -1035,8 +1035,8 @@ PetscErrorCode SNESNewtonTRGetTolerances(SNES snes, PetscReal *delta_min, PetscR
   $
   \delta =
   \begin{cases}
-  \delta * t_1 ,& \rho < \eta_2 \\
-  \delta * t_2 ,& \rho > \eta_3 \\
+  \delta t_1 ,& \rho < \eta_2 \\
+  \delta t_2 ,& \rho > \eta_3 \\
   \end{cases}
   $
 

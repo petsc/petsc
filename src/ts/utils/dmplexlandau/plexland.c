@@ -771,7 +771,7 @@ static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, const char p
 /* Using some constant, c, we normalize the velocity vector into a */
 /* dimensionless variable according to v=c*x. Thus the density, $n$, becomes */
 
-/* $$ n=\int_{R^3} dx^3 \left(\frac{mc^2}{2\pi T}\right)^{3/2}\exp [- mc^2/(2T)*x^2] $$ */
+/* $$ n=\int_{R^3} dx^3 \left(\frac{mc^2}{2\pi T}\right)^{3/2}\exp [- mc^2/(2T) x^2] $$ */
 
 /* Defining $\theta=2T/mc^2$, we thus find that the probability density */
 /* for finding the particle within the interval in a box dx^3 around x is */

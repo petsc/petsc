@@ -180,7 +180,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 
    Notes:
    Eigenvalue computation routines including `KSPSetComputeEigenvalues()` and `KSPComputeEigenvalues()` will return information about the
-   spectrum of $A^T*A$, rather than $A$.
+   spectrum of $A^T A$, rather than $A$.
 
    `KSPCGNE` is a general-purpose non-symmetric method. It works well when the singular values are much better behaved than
    eigenvalues. A unitary matrix is a classic example where `KSPCGNE` converges in one iteration, but `KSPGMRES` and `KSPCGS` need N

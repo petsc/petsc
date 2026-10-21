@@ -361,9 +361,9 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 -   -snes_ncg_monitor                                                           - Print the beta values nonlinear Conjugate-Gradient used in the  iteration, .
 
    Notes:
-   This solves the nonlinear system of equations $ F(x) = 0 $ using the nonlinear generalization of the conjugate
+   This solves the nonlinear system of equations $F(x) = 0$ using the nonlinear generalization of the conjugate
    gradient method.  This may be used with a nonlinear preconditioner used to pick the new search directions, but otherwise
-   chooses the initial search direction as $ F(x) $ for the initial guess $x$.
+   chooses the initial search direction as $F(x)$ for the initial guess $x$.
 
    Only supports left non-linear preconditioning.
 

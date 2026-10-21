@@ -429,7 +429,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp, Vec t, Vec v, Vec *V)
    Level: beginner
 
    Notes:
-   $ x^{n+1} = x^{n} + scale*B(b - A x^{n})$
+   $x^{n+1} = x^{n} + scale \, B(b - A x^{n})$
 
    Here B is the application of the preconditioner
 

@@ -491,7 +491,7 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
    Very similar to the `SNESANDERSON` algorithm.
 
    Unlike the linear GMRES algorithm this algorithm does not compute a Krylov subspace using the Arnoldi process. Instead it stores a
-   collection of previous solutions and the residuals $ F(x) - b $ at those solutions.
+   collection of previous solutions and the residuals $F(x) - b$ at those solutions.
 
    This algorithm ignores any Jacobian provided with `SNESSetJacobian()`
 

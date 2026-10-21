@@ -496,7 +496,7 @@ static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems PetscOptio
 
 /*MC
   TAONTR - Newton's method with trust region for unconstrained minimization.
-  At each iteration, the Newton trust region method solves the system  $\min_d  .5 d^T Hk d + gk^T d,  s.t.   ||d|| < \Delta_k.$
+  At each iteration, the Newton trust region method solves the system $\min_d 0.5 d^T Hk d + gk^T d, s.t. \|d\| < \Delta_k$.
 
   Options Database Keys:
 + -tao_ntr_init_type   - "constant","direction","interpolation"

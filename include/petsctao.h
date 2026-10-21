@@ -234,9 +234,9 @@ PETSC_EXTERN PetscFunctionList TaoList;
     TaoConvergedReason - reason a `Tao` optimizer was said to have converged or diverged
 
    Values:
-+  `TAO_CONVERGED_GATOL`       - $||g(X)|| < gatol$
-.  `TAO_CONVERGED_GRTOL`       - $||g(X)|| / f(X)  < grtol$
-.  `TAO_CONVERGED_GTTOL`       - $||g(X)|| / ||g(X0)|| < gttol$
++  `TAO_CONVERGED_GATOL`       - $\|g(X)\| < gatol$
+.  `TAO_CONVERGED_GRTOL`       - $\|g(X)\| / f(X)  < grtol$
+.  `TAO_CONVERGED_GTTOL`       - $\|g(X)\| / \|g(X0)\| < gttol$
 .  `TAO_CONVERGED_STEPTOL`     - step size smaller than tolerance
 .  `TAO_CONVERGED_MINF`        - $F < F_min$
 .  `TAO_CONVERGED_USER`        - the user indicates the optimization has succeeded

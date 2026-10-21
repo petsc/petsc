@@ -1004,19 +1004,19 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   If you provide a matrix that has a `MatSetNullSpace()` and `MatSetTransposeNullSpace()` this will use that information to solve singular systems
   in the least squares sense with a norm minimizing solution.
 
-  $A x = b $  where $b = b_p + b_t$ where $b_t$ is not in the range of $A$ (and hence by the fundamental theorem of linear algebra is in the nullspace(A'), see `MatSetNullSpace()`).
+  $A x = b$  where $b = b_p + b_t$ where $b_t$ is not in the range of $A$ (and hence by the fundamental theorem of linear algebra is in the nullspace(A'), see `MatSetNullSpace()`).
 
   `KSP` first removes $b_t$ producing the linear system $A x = b_p$ (which has multiple solutions) and solves this to find the $\|x\|$ minimizing solution (and hence
   it finds the solution $x$ orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
   direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
 
   We recommend always using `KSPGMRES` for such singular systems.
-  If $ nullspace(A) = nullspace(A^T)$ (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
+  If $nullspace(A) = nullspace(A^T)$ (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
   If $nullspace(A) \neq nullspace(A^T)$ then left preconditioning will work but right preconditioning may not work (or it may).
 
   Developer Notes:
   The reason we cannot always solve  $nullspace(A) \neq nullspace(A^T)$ systems with right preconditioning is because we need to remove at each iteration
-  $ nullspace(AB) $ from the search direction. While we know the $nullspace(A)$, $nullspace(AB)$ equals $B^{-1}$ times $nullspace(A)$ but except for trivial preconditioners
+  $nullspace(AB)$ from the search direction. While we know the $nullspace(A)$, $nullspace(AB)$ equals $B^{-1}$ times $nullspace(A)$ but except for trivial preconditioners
   such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute $nullspace(AB)$.
 
   If using a direct method (e.g., via the `KSP` solver
@@ -1715,7 +1715,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp, PeOp PetscReal *rtol, PeOp PetscReal *a
   Level: intermediate
 
   Notes:
-  The tolerances are with respect to a norm of the residual of the equation $ \| b - A x^n \|$, they do not directly use the error of the equation.
+  The tolerances are with respect to a norm of the residual of the equation $\| b - A x^n \|$, they do not directly use the error of the equation.
   The norm used depends on the `KSPNormType` that has been set with `KSPSetNormType()`, the default depends on the `KSPType` used.
 
   All parameters must be non-negative.

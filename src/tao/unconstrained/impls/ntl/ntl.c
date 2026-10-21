@@ -703,7 +703,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
   At each iteration, the Newton trust region method solves the system for d
   and performs a line search in the d direction:
 
-            $\min_d  .5 d^T H_k d + g_k^T d,  s.t.   ||d|| < \Delta_k.$
+            $\min_d  .5 d^T H_k d + g_k^T d,  s.t.   \|d\| < \Delta_k.$
 
   Options Database Keys:
 + -tao_ntl_init_type    - "constant","direction","interpolation"

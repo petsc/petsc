@@ -178,7 +178,7 @@ PetscErrorCode SNESMSFinalizePackage(void)
   $$
   \begin{align*}
   X_0 = X^{(n)} \\
-  X_k = X_0 + \alpha_k * F(X_{k-1}), k = 1,\ldots,s \\
+  X_k = X_0 + \alpha_k F(X_{k-1}), k = 1,\ldots,s \\
   X^{(n+1)} = X_s
   \end{align*}
   $$

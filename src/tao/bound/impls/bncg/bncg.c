@@ -306,7 +306,7 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
 . -tao_bncg_delta_min r                 - Minimum bound for rescaling during restarted gradient descent steps
 . -tao_bncg_delta_max r                 - Maximum bound for rescaling during restarted gradient descent steps
 . -tao_bncg_min_quad i                  - Number of quadratic-like steps in a row necessary to do a dynamic restart
-. -tao_bncg_min_restart_num i           - This number, x, makes sure there is a gradient descent step every $x*n$ iterations, where `n` is the dimension of the problem
+. -tao_bncg_min_restart_num i           - This number, x, makes sure there is a gradient descent step every $x \, n$ iterations, where `n` is the dimension of the problem
 . -tao_bncg_spaced_restart (true|false) - whether or not to do gradient descent steps every x*n iterations
 . -tao_bncg_no_scaling b                - If true, eliminates all scaling, including defaults.
 - -tao_bncg_neg_xi b                    - Whether or not to use negative xi in the `kd` method under certain conditions

@@ -30,9 +30,9 @@ The flow can be driven with the lid or with buoyancy or both:\n\
 
     in the unit square, which is uniformly discretized in each of x and y in this simple encoding.
 
-    No-slip, rigid-wall Dirichlet conditions are used for $ [U,V]$.
+    No-slip, rigid-wall Dirichlet conditions are used for $[U,V]$.
     Dirichlet conditions are used for Omega, based on the definition of
-    vorticity: $ \Omega = - \nabla_y U + \nabla_x V$, where along each
+    vorticity: $\Omega = - \nabla_y U + \nabla_x V$, where along each
     constant coordinate boundary, the tangential derivative is zero.
     Dirichlet conditions are used for T on the left and right walls,
     and insulation homogeneous Neumann conditions are used for T on

@@ -409,7 +409,7 @@ M*/
 . A - the (possibly rectangular) matrix
 
   Output Parameter:
-. N - the matrix that represents $A^T A $
+. N - the matrix that represents $A^T A$
 
   Level: intermediate
 

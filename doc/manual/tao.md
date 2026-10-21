@@ -545,9 +545,9 @@ used to form an objective function, equipped with appropriate evaluation routine
 (objective, gradient, and/or Hessian).
 
 For an example, Tikhonov regularization (also known as
-Ridge Regression), can be formulated as $f(x) + \beta ||x||_2^2$.
-This can be viewed as the summation of two terms, $f(x) $ and
-$ \beta ||x||_2^2$.
+Ridge Regression), can be formulated as $f(x) + \beta \|x\|_2^2$.
+This can be viewed as the summation of two terms, $f(x)$ and
+$\beta \|x\|_2^2$.
 
 Each `TaoTerm` encapsulates the routines needed to
 evaluate its own contribution; `Tao` automatically manages aggregating (summing) the value, gradient,
@@ -777,9 +777,9 @@ constraints is less than $\epsilon_{crtol}$ and either
 
 $$
 \begin{array}{lcl}
-||g(X)|| &\leq& \epsilon_{gatol}, \\
-||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, \quad \text{or} \\
-||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
+\|g(X)\| &\leq& \epsilon_{gatol}, \\
+\|g(X)\|/|f(X)| &\leq& \epsilon_{grtol}, \quad \text{or} \\
+\|g(X)\|/|g(X_0)| &\leq& \epsilon_{gttol},
 \end{array}
 $$
 
@@ -968,7 +968,7 @@ For nonlinear least squares applications, we are solving the
 optimization problem
 
 $$
-\min_{x} \;\frac{1}{2}||r(x)||_2^2.
+\min_{x} \;\frac{1}{2}\|r(x)\|_2^2.
 $$
 
 For these problems, the objective function value should be computed as a
@@ -1371,7 +1371,7 @@ perturbation. These cases are described below.
    initialized to
 
    $$
-   \rho_{k+1} = \text{median}\left\{\text{imin}, \text{imfac} * \|g(x_k)\|, \text{imax}\right\},
+   \rho_{k+1} = \text{median}\left\{\text{imin}, \text{imfac} \|g(x_k)\|, \text{imax}\right\},
    $$
 
    where $g(x_k)$ is the gradient of the objective function and
@@ -1390,7 +1390,7 @@ perturbation. These cases are described below.
    increased to
 
    $$
-   \rho_{k+1} = \min\left\{\text{pmax}, \max\left\{\text{pgfac} * \rho_k, \text{pmgfac} * \|g(x_k)\|\right\}\right\},
+   \rho_{k+1} = \min\left\{\text{pmax}, \max\left\{\text{pgfac} \rho_k, \text{pmgfac} \|g(x_k)\|\right\}\right\},
    $$
 
    where $g(x_k)$ is the gradient of the objective function and
@@ -1404,7 +1404,7 @@ perturbation. These cases are described below.
    decreased to
 
    $$
-   \rho_{k+1} = \min\left\{\text{psfac} * \rho_k, \text{pmsfac} * \|g(x_k)\|\right\},
+   \rho_{k+1} = \min\left\{\text{psfac} \rho_k, \text{pmsfac} \|g(x_k)\|\right\},
    $$
 
    where $g(x_k)$ is the gradient of the objective function,
@@ -1969,7 +1969,7 @@ $$
 $$
 
 At each iteration, the bound tolerance is estimated as
-$\epsilon_{k+1} = \text{min}(\epsilon_k, ||w_k||_2)$ with
+$\epsilon_{k+1} = \text{min}(\epsilon_k, \|w_k\|_2)$ with
 $w_k = x_k - \mathfrak{B}(x_k - \beta D_k g_k)$, where the
 diagonal matrix $D_k$ is an approximation of the Hessian inverse
 $H_k^{-1}$. The initial bound tolerance $\epsilon_0$ and the
@@ -2209,7 +2209,7 @@ $f(x)$, and one for $g(z)$. With method of multipliers, one
 can form the augmented Lagrangian
 
 $$
-L_{\rho}(x,z,y) = f(x) + g(z) + y^T(Ax+Bz-c) + (\rho/2)||Ax+Bz-c||_2^2
+L_{\rho}(x,z,y) = f(x) + g(z) + y^T(Ax+Bz-c) + (\rho/2)\|Ax+Bz-c\|_2^2
 $$
 
 Then, ADMM consists of the iterations
@@ -2638,17 +2638,17 @@ The BRGN (`-tao_type brgn`) implementation adds a regularization term $\beta(x)$
 that
 
 $$
-\min_{x} \; \frac{1}{2}||R(x)||_2^2 + \lambda\beta(x),
+\min_{x} \; \frac{1}{2}\|R(x)\|_2^2 + \lambda\beta(x),
 $$
 
 where $\lambda$ is the scalar weight of the regularizer. BRGN
 provides two default implementations for $\beta(x)$:
 
-- **L2-norm** - $\beta(x) = \frac{1}{2}||x_k||_2^2$
+- **L2-norm** - $\beta(x) = \frac{1}{2}\|x_k\|_2^2$
 - **L2-norm Proximal Point** -
-  $\beta(x) = \frac{1}{2}||x_k - x_{k-1}||_2^2$
+  $\beta(x) = \frac{1}{2}\|x_k - x_{k-1}\|_2^2$
 - **L1-norm with Dictionary** -
-  $\beta(x) = ||Dx||_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon$
+  $\beta(x) = \|Dx\|_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon$
   where $y = Dx$ and $\epsilon$ is the smooth approximation
   parameter.
 
@@ -3064,7 +3064,7 @@ modified with the command `TaoGetKSP()`.
 
 BMRM is a numerical approach to optimizing an
 unconstrained objective in the form of
-$f(x) + 0.5 * \lambda \| x \|^2$. Here $f$ is a convex
+$f(x) + 0.5 \lambda \| x \|^2$. Here $f$ is a convex
 function that is finite on the whole space. $\lambda$ is a
 positive weight parameter, and $\| x \|$ is the Euclidean norm of
 $x$. The algorithm only requires a routine which, given an
