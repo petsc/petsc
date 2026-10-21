@@ -263,7 +263,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
    KSP_NORM_PRECONDITIONED   - the default for left-preconditioned solves, uses the 2-norm
                                of the preconditioned residual  $B^{-1}(b - A x)$.
    KSP_NORM_UNPRECONDITIONED - uses the 2-norm of the true $b - Ax$ residual.
-   KSP_NORM_NATURAL          - uses the $A$ norm of the true $b - Ax$ residual; supported by `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`
+   KSP_NORM_NATURAL          - uses an approximation to the $A$ norm of the error, see `KSP_NORM_NATURAL` for exact details
 .ve
 
   Options Database Key:
@@ -272,7 +272,8 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
   Level: advanced
 
   Notes:
-  The norm is always of the equations residual $\| b - A x^n \|$  (or an approximation to that norm), they are never a norm of the error in the equation.
+  Except for `KSP_NORM_NATURAL`, which approximates the $A$ norm of the error, the norms are of the residual of the
+  equations $\| b - A x^n \|$ (or an approximation to that norm), not of the error in the equation.
 
   Not all combinations of preconditioner side (see `KSPSetPCSide()`) and norm types are supported by all Krylov methods.
   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
