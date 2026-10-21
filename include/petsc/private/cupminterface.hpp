@@ -137,7 +137,7 @@ struct InterfaceImpl;
 
 #if PetscDefined(HAVE_CUDA)
 template <>
-struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
+struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   PETSC_CUPM_BASE_CLASS_HEADER(DeviceType::CUDA);
 
   // typedefs
@@ -284,7 +284,7 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
 
 #if PetscDefined(HAVE_HIP)
 template <>
-struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
+struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   PETSC_CUPM_BASE_CLASS_HEADER(DeviceType::HIP);
 
   // typedefs

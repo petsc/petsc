@@ -106,7 +106,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
 }
 
 /* Sync CSR data to device if not yet */
-PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
 {
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
 
@@ -1850,7 +1850,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   Output Parameter:
 .  diagVal - the (pre-allocated) buffer to store the inverted blocks (each block is stored in column-major order)
 */
-PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, const PetscIntKokkosView &bs, const PetscIntKokkosView &bs2, const PetscIntKokkosView &blkMap, PetscScalarKokkosView &work, PetscScalarKokkosView &diagVal)
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, const PetscIntKokkosView &bs, const PetscIntKokkosView &bs2, const PetscIntKokkosView &blkMap, PetscScalarKokkosView &work, PetscScalarKokkosView &diagVal)
 {
   Mat_SeqAIJKokkos *akok    = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
   PetscInt          nblocks = bs.extent(0) - 1;
