@@ -969,8 +969,7 @@ static PetscErrorCode SBRGetTetSplit_Private(DMPlexTransform tr, PetscInt code, 
   PetscInt          i;
 
   PetscFunctionBeginHot;
-  for (i = 0; i < sbr->Ncache; ++i)
-    if (sbr->cacheCode[i] == code) break;
+  PetscCall(PetscHMapIGetWithDefault(sbr->cacheMap, code, sbr->Ncache, &i));
   if (i == sbr->Ncache) {
     SBRTetSubdiv   sub;
     DMPolytopeType targetTmp[3];
@@ -1012,6 +1011,7 @@ static PetscErrorCode SBRGetTetSplit_Private(DMPlexTransform tr, PetscInt code, 
     sbr->cacheCode[i] = code;
     sbr->cacheNt[i]   = NtTmp;
     ++sbr->Ncache;
+    PetscCall(PetscHMapISet(sbr->cacheMap, code, i));
   }
   *Nt     = sbr->cacheNt[i];
   *target = sbr->cacheTarget[i];
@@ -1684,6 +1684,7 @@ static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
     PetscCall(PetscFree(sbr->cacheOrnt[i]));
   }
   PetscCall(PetscFree6(sbr->cacheCode, sbr->cacheNt, sbr->cacheTarget, sbr->cacheSize, sbr->cacheCone, sbr->cacheOrnt));
+  PetscCall(PetscHMapIDestroy(&sbr->cacheMap));
   PetscCall(PetscFree(sbr->edgeLen));
   PetscCall(PetscFree(sbr->rt));
   PetscCall(PetscSectionDestroy(&sbr->secEdgeLen));
@@ -1713,6 +1714,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCall(PetscNew(&f));
+  PetscCall(PetscHMapICreate(&f->cacheMap));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_SBR(tr));
