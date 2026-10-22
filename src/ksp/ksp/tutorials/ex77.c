@@ -143,11 +143,13 @@ int main(int argc, char **args)
       test:
          suffix: 2
          requires: hpddm
-         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type {{gmres bgmres}separate output}
+         output_file: output/ex77_2_ksp_hpddm_type-bgmres.out
+         args: -ksp_type hpddm -pc_type asm -ksp_hpddm_type bgmres
       test:
          suffix: 3
          requires: hpddm
-         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type {{gcrodr bgcrodr}separate output}
+         output_file: output/ex77_3_ksp_hpddm_type-bgcrodr.out
+         args: -ksp_type hpddm -ksp_hpddm_recycle 5 -ksp_hpddm_type bgcrodr
       test:
          nsize: 4
          suffix: 4

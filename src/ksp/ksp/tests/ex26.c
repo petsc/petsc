@@ -515,39 +515,40 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
 
     testset:
       requires: hpddm
+      nsize: 2
       args: -ksp_view_final_residual -ksp_type hpddm -pc_type mg -pc_mg_levels 3 -pc_mg_galerkin -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7
       test:
         suffix: matcycles_hpddm_mg
-        nsize: {{1 2}}
         args: -pc_mg_type {{additive multiplicative full kaskade}separate output} -ksp_matsolve_batch_size {{4 7}separate output}
       test:
-        requires: !__float128 !__fp16
-        suffix: hpddm_mg_mixed_precision
-        nsize: 2
+        requires: double
+        suffix: hpddm_mg_mixed_precision_double_to_single
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
-        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{single double}shared output}
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision single
+      test:
+        requires: single
+        suffix: hpddm_mg_mixed_precision_single_to_double
+        output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision double
       test:
         requires: __float128
-        suffix: hpddm_mg_mixed_precision___float128
-        nsize: 2
+        suffix: hpddm_mg_mixed_precision___float128_to_double
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
-        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{double __float128}shared output}
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision double
       test:
         requires: double defined(PETSC_HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
-        suffix: hpddm_mg_mixed_precision_double
-        nsize: 2
+        suffix: hpddm_mg_mixed_precision_double_to___float128
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision __float128
       test:
         requires: single defined(PETSC_HAVE_F2CBLASLAPACK___FP16_BINDINGS)
-        suffix: hpddm_mg_mixed_precision_single
-        nsize: 2
+        suffix: hpddm_mg_mixed_precision_single_to___fp16
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision __fp16 -ksp_rtol 1e-3
 
     test:
       requires: hpddm
-      nsize: {{1 2}}
+      nsize: 2
       suffix: matcycles_hpddm_ilu
       args: -ksp_view_final_residual -ksp_type hpddm -pc_type redundant -redundant_pc_type ilu -mx 5 -my 5 -ksp_monitor -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
 

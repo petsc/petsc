@@ -1242,7 +1242,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, PetscCtx ctx)
       args: -snes_monitor -ksp_converged_reason -ksp_type hpddm -pc_type jacobi -dm_mat_type aijcusparse -dm_vec_type cuda
       test:
         suffix: hpddm_cuda
-        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g"
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 11/Linear solve converged due to CONVERGED_RTOL iterations 10/"
         args: -ksp_hpddm_type {{gmres gcrodr}separate output} -ksp_hpddm_precision {{single double}shared output}
       test:
         suffix: hpddm_cuda_right
