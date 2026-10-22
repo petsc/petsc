@@ -900,10 +900,10 @@ PetscErrorCode MatDestroy_SeqSELL(Mat A)
   PetscCall(ISDestroy(&a->icol));
   PetscCall(PetscFree(a->saved_values));
   PetscCall(PetscFree2(a->getrowcols, a->getrowvals));
-  PetscCall(PetscFree(A->data));
 #if PetscDefined(HAVE_CUPM)
   PetscCall(PetscFree(a->chunk_slice_map));
 #endif
+  PetscCall(PetscFree(A->data));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatStoreValues_C", NULL));
@@ -1468,10 +1468,12 @@ PetscErrorCode MatAssemblyEnd_SeqSELL(Mat A, MatAssemblyType mode)
   a->reallocs = 0;
 
 #if PetscDefined(HAVE_CUPM)
-  if (!a->chunksize && a->totalslices) {
-    a->chunksize = 64;
-    while (a->chunksize < 1024 && 2 * a->chunksize <= a->sliidx[a->totalslices] / a->totalslices) a->chunksize *= 2;
-    totalchunks = 1 + (a->sliidx[a->totalslices] - 1) / a->chunksize;
+  if (a->totalslices) {
+    if (!a->chunksize) {
+      a->chunksize = 64;
+      while (a->chunksize < 1024 && 2 * a->chunksize <= a->sliidx[a->totalslices] / a->totalslices) a->chunksize *= 2;
+    }
+    totalchunks = PetscCeilInt(a->sliidx[a->totalslices], a->chunksize);
   }
   if (totalchunks != a->totalchunks) {
     PetscCall(PetscFree(a->chunk_slice_map));
@@ -1610,6 +1612,9 @@ PetscErrorCode MatCopy_SeqSELL(Mat A, Mat B, MatStructure str)
 
     PetscCheck(a->sliidx[a->totalslices] == b->sliidx[b->totalslices], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of nonzeros in two matrices are different");
     PetscCall(PetscArraycpy(b->val, a->val, a->sliidx[a->totalslices]));
+#if PetscDefined(HAVE_CUPM)
+    if (B->offloadmask != PETSC_OFFLOAD_UNALLOCATED) B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   } else {
     PetscCall(MatCopy_Basic(A, B, str));
   }
@@ -1932,6 +1937,9 @@ static PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   PetscCheck(a->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   PetscCheck(a->saved_values, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatStoreValues(A);first");
   PetscCall(PetscArraycpy(a->val, a->saved_values, a->sliidx[a->totalslices]));
+#if PetscDefined(HAVE_CUPM)
+  if (mat->offloadmask != PETSC_OFFLOAD_UNALLOCATED) mat->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2217,7 +2225,14 @@ static PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOpt
   PetscCall(PetscLayoutReference(A->cmap, &C->cmap));
 
   c->sliceheight = a->sliceheight;
-  PetscCall(PetscMalloc1(c->sliceheight * totalslices, &c->rlen));
+  c->totalslices = a->totalslices;
+#if PetscDefined(HAVE_CUPM)
+  c->chunksize   = a->chunksize;
+  c->totalchunks = a->totalchunks;
+  PetscCall(PetscMalloc1(c->totalchunks, &c->chunk_slice_map));
+  PetscCall(PetscArraycpy(c->chunk_slice_map, a->chunk_slice_map, c->totalchunks));
+#endif
+  PetscCall(PetscCalloc1(c->sliceheight * totalslices, &c->rlen));
   PetscCall(PetscMalloc1(totalslices + 1, &c->sliidx));
 
   for (i = 0; i < m; i++) c->rlen[i] = a->rlen[i];

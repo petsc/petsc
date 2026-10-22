@@ -1,4 +1,5 @@
 #include <petscdevice_cuda.h>
+#include <petsc/private/cupmblasinterface.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 #include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>
 
@@ -43,17 +44,19 @@ static PetscErrorCode PCApplyOrTranspose_PBJacobi_CUDA(PC pc, Vec x, Vec y, cubl
   PetscCall(VecCUDAGetArrayRead(x, &xx));
   PetscCall(VecCUDAGetArrayWrite(y, &yy));
   PetscCall(PetscCUBLASGetHandle(&handle));
-  PetscCallCUBLAS(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST)); /* alpha, beta are on host */
+  {
+    const Petsc::device::cupm::impl::BlasInterface<Petsc::device::cupm::DeviceType::CUDA>::CUPMBlasPointerModeGuard guard(handle, CUBLAS_POINTER_MODE_HOST);
 
 #if PETSC_PKG_CUDA_VERSION_GE(11, 7, 0)
-  /* y = alpha op(A) x + beta y */
-  const PetscScalar alpha = 1.0, beta = 0.0;
-  PetscCallCUBLAS(cublasXgemvStridedBatched(handle, op, bs, bs, &alpha, A, bs, bs * bs, xx, 1, bs, &beta, yy, 1, bs, mbs));
+    /* y = alpha op(A) x + beta y */
+    const PetscScalar alpha = 1.0, beta = 0.0;
+    PetscCallCUBLAS(cublasXgemvStridedBatched(handle, op, bs, bs, &alpha, A, bs, bs * bs, xx, 1, bs, &beta, yy, 1, bs, mbs));
 #else
-  PetscInt gridSize = PetscMin((bs * mbs + 255) / 256, 2147483647); /* <= 2^31-1 */
-  MatMultBatched<<<gridSize, 256>>>(bs, mbs, A, xx, yy, op == CUBLAS_OP_T ? PETSC_TRUE : PETSC_FALSE);
-  PetscCallCUDA(cudaGetLastError());
+    PetscInt gridSize = PetscMin((bs * mbs + 255) / 256, 2147483647); /* <= 2^31-1 */
+    MatMultBatched<<<gridSize, 256>>>(bs, mbs, A, xx, yy, op == CUBLAS_OP_T ? PETSC_TRUE : PETSC_FALSE);
+    PetscCallCUDA(cudaGetLastError());
 #endif
+  }
   PetscCall(VecCUDARestoreArrayRead(x, &xx));
   PetscCall(VecCUDARestoreArrayWrite(y, &yy));
   PetscCall(PetscLogGpuFlops(bs * bs * mbs * 2));

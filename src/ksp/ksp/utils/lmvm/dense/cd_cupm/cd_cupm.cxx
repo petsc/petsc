@@ -39,6 +39,7 @@ PetscErrorCode UpperTriangular<T>::SolveInPlace(PetscDeviceContext dctx, PetscBo
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(1.0 * N * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -77,6 +78,7 @@ PetscErrorCode UpperTriangular<T>::SolveInPlaceCyclic(PetscDeviceContext dctx, P
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(1.0 * N * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

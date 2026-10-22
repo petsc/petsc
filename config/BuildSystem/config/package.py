@@ -1342,15 +1342,13 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
           # this means that --download-package was requested, the package was not rebuilt, but there are newer releases of the package so it should be rebuilt
           suggest += ' after running "rm -rf ' + self.getDir() +'"\n'
           suggest += 'DO NOT DO THIS if you rely on the exact version of the currently installed ' + self.name
-    if self.minversion:
-      if parseVersion(self.minversion) > parseVersion(self.foundversion):
-        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
+    if self.minversion and parseVersion(self.minversion) > parseVersion(self.foundversion):
+      raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at least '+self.minversion+suggest+'\n')
     elif self.version:
       if parseVersion(zeroPatch(self.version)) > parseVersion(self.foundversion):
         self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)
-    if self.maxversion:
-      if parseVersion(self.maxversion) < parseVersion(self.foundversion):
-        raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at most '+self.maxversion+suggest+'\n')
+    if self.maxversion and parseVersion(self.maxversion) < parseVersion(self.foundversion):
+      raise RuntimeError(self.PACKAGE+' version is '+self.foundversion+', this version of PETSc needs at most '+self.maxversion+suggest+'\n')
     elif self.version:
       if parseVersion(infinitePatch(self.version)) < parseVersion(self.foundversion):
         self.logPrintWarning('Using version '+self.foundversion+' of package '+self.PACKAGE+', PETSc is tested with '+dropPatch(self.version)+suggest)

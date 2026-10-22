@@ -246,7 +246,15 @@ struct AtomicMult {
   atomicMax() is similar.
  */
 
-  #if PetscDefined(USE_REAL_DOUBLE)
+  #if PetscDefined(HAVE_HIPCUDA)
+    #define CUPM_HAVE_HIP_ATOMIC_MINMAX PETSC_PKG_HIP_VERSION_GE(5, 3, 0)
+  #else
+    #define CUPM_HAVE_HIP_ATOMIC_MINMAX 0
+  #endif
+
+  // HIP's NVIDIA backend provides these floating-point atomics starting in 5.3.
+  #if !CUPM_HAVE_HIP_ATOMIC_MINMAX
+    #if PetscDefined(USE_REAL_DOUBLE)
 __device__ static double atomicMin(double *address, double val)
 {
   ullint *address_as_ull = (ullint *)(address);
@@ -268,7 +276,7 @@ __device__ static double atomicMax(double *address, double val)
   } while (assumed != old);
   return __longlong_as_double(old);
 }
-  #elif PetscDefined(USE_REAL_SINGLE)
+    #elif PetscDefined(USE_REAL_SINGLE)
 __device__ static float atomicMin(float *address, float val)
 {
   int *address_as_int = (int *)(address);
@@ -290,7 +298,9 @@ __device__ static float atomicMax(float *address, float val)
   } while (assumed != old);
   return __int_as_float(old);
 }
+    #endif
   #endif
+  #undef CUPM_HAVE_HIP_ATOMIC_MINMAX
 
   /*
   atomicMin/Max(long long *, long long) are not in Nvidia's documentation. But on OLCF Summit we found

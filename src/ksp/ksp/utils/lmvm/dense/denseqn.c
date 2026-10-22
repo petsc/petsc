@@ -348,6 +348,7 @@ static PetscErrorCode MatUpdate_LMVMDQN(Mat B, Vec X, Vec F)
             PetscCall(PetscDeviceRegisterMemory(&stFprev, PETSC_MEMTYPE_HOST, 1 * sizeof(stFprev)));
             PetscCall(PetscDeviceRegisterMemory(StFprev, memtype, local_n * sizeof(*StFprev)));
             PetscCall(PetscDeviceArrayCopy(dctx, &StFprev[idx], &stFprev, 1));
+            PetscCall(PetscDeviceContextSynchronize(dctx));
           }
         }
         PetscCall(VecRestoreArrayAndMemType(lqn->StFprev, &StFprev));
@@ -892,6 +893,7 @@ static PetscErrorCode MatMult_LMVMDBFGS(Mat B, Vec X, Vec Z)
               PetscCall(PetscDeviceRegisterMemory(&yjtsi, PETSC_MEMTYPE_HOST, sizeof(yjtsi)));
               PetscCall(PetscDeviceRegisterMemory(workscalar, memtype, local_n * sizeof(*workscalar)));
               PetscCall(PetscDeviceArrayCopy(dctx, &yjtsi, &workscalar[idx_j], 1));
+              PetscCall(PetscDeviceContextSynchronize(dctx));
             }
           }
           PetscCallMPI(MPI_Bcast(&yjtsi, 1, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)B)));
@@ -903,6 +905,7 @@ static PetscErrorCode MatMult_LMVMDBFGS(Mat B, Vec X, Vec Z)
           /* Compute the pure BFGS component of the forward product */
           PetscCall(VecAXPBYPCZ(lbfgs->PQ[idx], -sjtpi / lbfgs->stp[idx_j], yjtsi / lbfgs->yts[idx_j], 1.0, lbfgs->PQ[idx_j], lbfgs->column_work2));
         }
+        PetscCall(VecRestoreArrayAndMemType(lbfgs->rwork3, &workscalar));
         PetscCall(VecDot(lbfgs->PQ[idx], lbfgs->column_work, &stp));
         lbfgs->stp[idx] = PetscRealPart(stp);
       }
@@ -920,6 +923,7 @@ static PetscErrorCode MatMult_LMVMDBFGS(Mat B, Vec X, Vec Z)
           PetscCall(PetscDeviceRegisterMemory(&ytx, PETSC_MEMTYPE_HOST, 1 * sizeof(ytx)));
           PetscCall(PetscDeviceRegisterMemory(workscalar, memtype, local_n * sizeof(*workscalar)));
           PetscCall(PetscDeviceArrayCopy(dctx, &ytx, &workscalar[idx], 1));
+          PetscCall(PetscDeviceContextSynchronize(dctx));
         }
       }
       PetscCallMPI(MPI_Bcast(&ytx, 1, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)B)));
@@ -1257,6 +1261,7 @@ static PetscErrorCode MatSolve_LMVMDDFP(Mat H, Vec F, Vec dX)
               PetscCall(PetscDeviceRegisterMemory(&sjtyi, PETSC_MEMTYPE_HOST, 1 * sizeof(sjtyi)));
               PetscCall(PetscDeviceRegisterMemory(workscalar, memtype, local_n * sizeof(*workscalar)));
               PetscCall(PetscDeviceArrayCopy(dctx, &sjtyi, &workscalar[idx_j], 1));
+              PetscCall(PetscDeviceContextSynchronize(dctx));
             }
           }
           PetscCallMPI(MPI_Bcast(&sjtyi, 1, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)H)));
@@ -1268,6 +1273,7 @@ static PetscErrorCode MatSolve_LMVMDDFP(Mat H, Vec F, Vec dX)
           /* Compute the pure BFGS component of the forward product */
           PetscCall(VecAXPBYPCZ(ldfp->PQ[idx], -yjtqi / ldfp->ytq[idx_j], sjtyi / ldfp->yts[idx_j], 1.0, ldfp->PQ[idx_j], ldfp->column_work2));
         }
+        PetscCall(VecRestoreArrayAndMemType(ldfp->rwork3, &workscalar));
         PetscCall(VecDot(ldfp->PQ[idx], ldfp->column_work, &ytq));
         ldfp->ytq[idx] = PetscRealPart(ytq);
       }
@@ -1285,6 +1291,7 @@ static PetscErrorCode MatSolve_LMVMDDFP(Mat H, Vec F, Vec dX)
           PetscCall(PetscDeviceRegisterMemory(&stf, PETSC_MEMTYPE_HOST, sizeof(stf)));
           PetscCall(PetscDeviceRegisterMemory(workscalar, memtype, local_n * sizeof(*workscalar)));
           PetscCall(PetscDeviceArrayCopy(dctx, &stf, &workscalar[idx], 1));
+          PetscCall(PetscDeviceContextSynchronize(dctx));
         }
       }
       PetscCallMPI(MPI_Bcast(&stf, 1, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)H)));

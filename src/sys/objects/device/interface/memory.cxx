@@ -173,6 +173,14 @@ static MemoryMap memory_map;
 // Utility functions
 // ==========================================================================================
 
+// Memory and object IDs share the dependency map, so keep memory IDs negative.
+static PetscObjectId PetscMemoryNewId_Internal(void)
+{
+  static PetscObjectId idcnt = -1;
+
+  return idcnt--;
+}
+
 static PetscErrorCode PetscDeviceCheckCapable_Private(PetscDeviceContext dctx, bool cond, const char descr[])
 {
   PetscFunctionBegin;
@@ -191,7 +199,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
   PetscFunctionBegin;
   if (it == map.cend()) {
     // pointer was never registered with the map, insert it and bail
-    const auto newid = PetscObjectNewId_Internal();
+    const auto newid = PetscMemoryNewId_Internal();
 
     if (PetscDefined(USE_DEBUG)) {
       const auto tmp = PointerAttributes(mtype, newid, size);

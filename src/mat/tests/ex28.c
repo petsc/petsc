@@ -150,4 +150,11 @@ int main(int argc, char **args)
       args: -mat_solver_type cusparse -mat_type aijcusparse -mat_factor_type {{lu cholesky ilu icc}separate output}
       requires: cuda
 
+   test:
+      suffix: hip_icc
+      args: -mat_solver_type hipsparse -mat_type aijhipsparse -mat_factor_type icc
+      requires: hip
+      filter: sed s/HIPSPARSE/CUSPARSE/
+      output_file: output/ex28_4_mat_factor_type-icc.out
+
 TEST*/

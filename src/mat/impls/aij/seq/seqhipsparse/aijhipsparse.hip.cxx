@@ -26,6 +26,7 @@
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 #include <thrust/gather.h>
+#include <thrust/functional.h>
 
 const char *const MatHIPSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatHIPSPARSEStorageFormat", "MAT_HIPSPARSE_", 0};
 const char *const MatHIPSPARSESpMVAlgorithms[] = {"MV_ALG_DEFAULT", "COOMV_ALG", "CSRMV_ALG1", "CSRMV_ALG2", "SPMV_ALG_DEFAULT", "SPMV_COO_ALG1", "SPMV_COO_ALG2", "SPMV_CSR_ALG1", "SPMV_CSR_ALG2", "hipsparseSpMVAlg_t", "HIPSPARSE_", 0};
@@ -217,7 +218,7 @@ static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat A, PetscOptionItems 
     PetscCall(
       PetscOptionsEnum("-mat_hipsparse_spmv_alg", "sets hipSPARSE algorithm used in sparse-mat dense-vector multiplication (SpMV)", "hipsparseSpMVAlg_t", MatHIPSPARSESpMVAlgorithms, (PetscEnum)hipsparsestruct->spmvAlg, (PetscEnum *)&hipsparsestruct->spmvAlg, &flg));
     /* If user did use this option, check its consistency with hipSPARSE, since PetscOptionsEnum() sets enum values based on their position in MatHIPSPARSESpMVAlgorithms[] */
-    PetscCheck(!flg || HIPSPARSE_CSRMV_ALG1 == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE enum hipsparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
+    PetscCheck(!flg || HIPSPARSE_SPMV_CSR_ALG1 == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE enum hipsparseSpMVAlg_t has been changed but PETSc has not been updated accordingly");
     PetscCall(
       PetscOptionsEnum("-mat_hipsparse_spmm_alg", "sets hipSPARSE algorithm used in sparse-mat dense-mat multiplication (SpMM)", "hipsparseSpMMAlg_t", MatHIPSPARSESpMMAlgorithms, (PetscEnum)hipsparsestruct->spmmAlg, (PetscEnum *)&hipsparsestruct->spmmAlg, &flg));
     PetscCheck(!flg || HIPSPARSE_SPMM_CSR_ALG1 == 4, PETSC_COMM_SELF, PETSC_ERR_SUP, "hipSPARSE enum hipsparseSpMMAlg_t has been changed but PETSc has not been updated accordingly");
@@ -369,6 +370,33 @@ static PetscErrorCode MatSeqAIJHIPSPARSEILUAnalysisAndCopyToGPU(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Affected rocSPARSE versions cache SpSV analysis with a descriptor-wide flag, so analysing an
+  ordinary solve causes subsequent transpose analysis to be skipped. This occurs in the inspected
+  ROCm releases from 5.0.0 through 7.2.0. Separate descriptors avoid sharing that flag while sharing
+  the CSR arrays. Upstream fixes the cache to distinguish operation and fill mode:
+  https://github.com/ROCm/rocm-libraries/pull/9295
+*/
+static PetscErrorCode MatSeqAIJHIPSPARSECreateTransposeSolveMat(hipsparseSpMatDescr_t mat, hipsparseSpMatDescr_t *trans)
+{
+  int64_t              rows, cols, nnz;
+  void                *rowptr, *colidx, *values;
+  hipsparseIndexType_t rowtype, coltype;
+  hipsparseIndexBase_t base;
+  hipDataType          datatype;
+  hipsparseFillMode_t  fill;
+  hipsparseDiagType_t  diag;
+
+  PetscFunctionBegin;
+  PetscCallHIPSPARSE(hipsparseCsrGet(mat, &rows, &cols, &nnz, &rowptr, &colidx, &values, &rowtype, &coltype, &base, &datatype));
+  PetscCallHIPSPARSE(hipsparseSpMatGetAttribute(mat, HIPSPARSE_SPMAT_FILL_MODE, &fill, sizeof(fill)));
+  PetscCallHIPSPARSE(hipsparseSpMatGetAttribute(mat, HIPSPARSE_SPMAT_DIAG_TYPE, &diag, sizeof(diag)));
+  PetscCallHIPSPARSE(hipsparseCreateCsr(trans, rows, cols, nnz, rowptr, colidx, values, rowtype, coltype, base, datatype));
+  PetscCallHIPSPARSE(hipsparseSpMatSetAttribute(*trans, HIPSPARSE_SPMAT_FILL_MODE, &fill, sizeof(fill)));
+  PetscCallHIPSPARSE(hipsparseSpMatSetAttribute(*trans, HIPSPARSE_SPMAT_DIAG_TYPE, &diag, sizeof(diag)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
 {
   Mat_SeqAIJ                    *a  = static_cast<Mat_SeqAIJ *>(A->data);
@@ -426,8 +454,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
       PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_U, &fs->spsvBufferSize_U));
       PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_U, fs->spsvBufferSize_U));
 
-      PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut)); // Ut solve uses the same matrix (spMatDescr_U), but different descr and buffer
-      PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
+      PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_U, &fs->spMatDescr_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
       PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Ut, fs->spsvBufferSize_Ut));
 
       // Record for reuse
@@ -450,7 +479,7 @@ static PetscErrorCode MatSeqAIJHIPSPARSEBuildFactoredMatrix_Cholesky(Mat A)
     {
       // Do hipsparseSpSV_analysis(), which is numeric and requires valid and up-to-date matrix values
       PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_U, fs->spsvBuffer_U));
-      PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+      PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
       fs->updatedSpSVAnalysis = PETSC_TRUE;
     }
   }
@@ -478,22 +507,22 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_Cholesky(Mat A, Vec b, Vec x)
 
   // Reorder b with the row permutation if needed, and wrap the result in fs->X
   if (fs->rpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
+    PetscCallThrust(thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
 
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->rpermIndices ? fs->X : (void *)barray));
 
   // Solve Ut Y = X
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_Y, fs->Y));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
 #endif
 
   // Solve diag(D) Z = Y. Actually just do Y = Y*D since D is already inverted in MatCholeskyFactorNumeric_SeqAIJ().
   // It is basically a vector element-wise multiplication, but cublas does not have it!
   auto multiplies = thrust::multiplies<PetscScalar>();
-  PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), multiplies));
+  PetscCallThrust(thrust::transform(thrust::device.on(PetscDefaultHipStream), thrust::device_pointer_cast(fs->Y), thrust::device_pointer_cast(fs->Y + m), thrust::device_pointer_cast(fs->diag), thrust::device_pointer_cast(fs->Y), multiplies));
 
   // Solve U X = Y
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->cpermIndices ? fs->X : xarray)); // if need to permute, we need to use the intermediate buffer X
@@ -506,8 +535,8 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_Cholesky(Mat A, Vec b, Vec x)
 
   // Reorder X with the column permutation if needed, and put the result back to x
   if (fs->cpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()),
-                                 thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
+    PetscCallThrust(
+      thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
 
   PetscCall(VecHIPRestoreArrayRead(b, &barray));
   PetscCall(VecHIPRestoreArrayWrite(x, &xarray));
@@ -680,7 +709,7 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
 
   // Reorder b with the row permutation if needed, and wrap the result in fs->X
   if (fs->rpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
+    PetscCallThrust(thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
 
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->rpermIndices ? fs->X : (void *)barray));
 
@@ -705,8 +734,8 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
 
   // Reorder X with the column permutation if needed, and put the result back to x
   if (fs->cpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()),
-                                 thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
+    PetscCallThrust(
+      thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
   PetscCall(VecHIPRestoreArrayRead(b, &barray));
   PetscCall(VecHIPRestoreArrayWrite(x, &xarray));
   PetscCall(PetscLogGpuTimeEnd());
@@ -729,21 +758,22 @@ static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   if (!fs->createdTransposeSpSVDescr) { // Call MatSolveTranspose() for the first time
+    PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_L, &fs->spMatDescr_Lt));
+    PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_U, &fs->spMatDescr_Ut));
     PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Lt));
-    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* The matrix is still L. We only do transpose solve with it */
-                                                fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
 
     PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Ut));
-    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
+    PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, &fs->spsvBufferSize_Ut));
     PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Lt, fs->spsvBufferSize_Lt));
     PetscCallHIP(hipMalloc((void **)&fs->spsvBuffer_Ut, fs->spsvBufferSize_Ut));
     fs->createdTransposeSpSVDescr = PETSC_TRUE;
   }
 
   if (!fs->updatedTransposeSpSVAnalysis) {
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
     fs->updatedTransposeSpSVAnalysis = PETSC_TRUE;
   }
 
@@ -754,31 +784,31 @@ static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_LU(Mat A, Vec b, Vec x)
 
   // Reorder b with the row permutation if needed, and wrap the result in fs->X
   if (fs->rpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
+    PetscCallThrust(thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->begin()), thrust::make_permutation_iterator(bGPU, fs->rpermIndices->end()), thrust::device_pointer_cast(fs->X)));
 
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->rpermIndices ? fs->X : (void *)barray));
 
   // Solve Ut Y = X
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_Y, fs->Y));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_U, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Ut, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, alg, fs->spsvDescr_Ut, fs->spsvBuffer_Ut));
 #endif
 
   // Solve Lt X = Y
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, fs->cpermIndices ? fs->X : xarray)); // if need to permute, we need to use the intermediate buffer X
 
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, opA, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, alg, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 #endif
 
   // Reorder X with the column permutation if needed, and put the result back to x
   if (fs->cpermIndices)
-    PetscCallThrust(thrust::copy(thrust::hip::par.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()),
-                                 thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
+    PetscCallThrust(
+      thrust::copy(thrust::device.on(PetscDefaultHipStream), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X), fs->cpermIndices->begin()), thrust::make_permutation_iterator(thrust::device_pointer_cast(fs->X + m), fs->cpermIndices->end()), xGPU));
 
   PetscCall(VecHIPRestoreArrayRead(b, &barray));
   PetscCall(VecHIPRestoreArrayWrite(x, &xarray));
@@ -893,8 +923,8 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJHIPSPARSE_ILU0(Mat fact, Mat A,
   PetscCall(MatSeqAIJHIPSPARSEGetIJ(A, PETSC_FALSE, &Ai, &Aj)); // Ai is uncompressed
 
   PetscCheck(nz <= INT_MAX && m <= INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "nnz %" PetscInt_FMT " and rows %" PetscInt_FMT " overflow C int", nz, m);
-  PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), Ai, Ai + m + 1, fs->csrRowPtr32, PetscIntToCInt()));
-  PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), Aj, Aj + nz, fs->csrColIdx32, PetscIntToCInt()));
+  PetscCallThrust(thrust::transform(thrust::device.on(PetscDefaultHipStream), Ai, Ai + m + 1, fs->csrRowPtr32, PetscIntToCInt()));
+  PetscCallThrust(thrust::transform(thrust::device.on(PetscDefaultHipStream), Aj, Aj + nz, fs->csrColIdx32, PetscIntToCInt()));
 
   /* ====================================================================== */
   /* Create descriptors for M, L, U                                         */
@@ -1027,10 +1057,10 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_ICC0(Mat fact, Vec b, Vec x)
   /* Solve Lt*x = y */
   PetscCallHIPSPARSE(hipsparseDnVecSetValues(fs->dnVecDescr_X, xarray));
 #if PETSC_PKG_HIP_VERSION_EQ(5, 6, 0) || PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* Lt X = Y */
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, /* Lt X = Y */
                                          fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt));
 #else
-  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, /* Lt X = Y */
+  PetscCallHIPSPARSE(hipsparseSpSV_solve(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, /* Lt X = Y */
                                          fs->dnVecDescr_Y, fs->dnVecDescr_X, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
 #endif
   PetscCall(VecHIPRestoreArrayRead(b, &barray));
@@ -1084,7 +1114,7 @@ static PetscErrorCode MatICCFactorNumeric_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A, 
     /* Note that cusparse reports this error if we use double and CUSPARSE_OPERATION_CONJUGATE_TRANSPOSE
     ** On entry to cusparseSpSV_analysis(): conjugate transpose (opA) is not supported for matA data type, current -> CUDA_R_64F
   */
-    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
+    PetscCallHIPSPARSE(hipsparseSpSV_analysis(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, fs->spsvBuffer_Lt));
     fs->updatedSpSVAnalysis = PETSC_TRUE;
   }
 
@@ -1146,8 +1176,8 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A,
   PetscCall(MatSeqAIJHIPSPARSEGetIJ(A, PETSC_FALSE, &Ai, &Aj)); // Ai is uncompressed
 
   PetscCheck(nz <= INT_MAX && m <= INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "nnz %" PetscInt_FMT " and rows %" PetscInt_FMT " overflow C int", nz, m);
-  PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), Ai, Ai + m + 1, fs->csrRowPtr32, PetscIntToCInt()));
-  PetscCallThrust(thrust::transform(thrust::hip::par.on(PetscDefaultHipStream), Aj, Aj + nz, fs->csrColIdx32, PetscIntToCInt()));
+  PetscCallThrust(thrust::transform(thrust::device.on(PetscDefaultHipStream), Ai, Ai + m + 1, fs->csrRowPtr32, PetscIntToCInt()));
+  PetscCallThrust(thrust::transform(thrust::device.on(PetscDefaultHipStream), Aj, Aj + nz, fs->csrColIdx32, PetscIntToCInt()));
 
   /* ====================================================================== */
   /* Create mat descriptors for M, L                                        */
@@ -1186,8 +1216,9 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(Mat fact, Mat A,
   PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_L));
   PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_NON_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_L, &fs->spsvBufferSize_L));
 
+  PetscCall(MatSeqAIJHIPSPARSECreateTransposeSolveMat(fs->spMatDescr_L, &fs->spMatDescr_Lt));
   PetscCallHIPSPARSE(hipsparseSpSV_createDescr(&fs->spsvDescr_Lt));
-  PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_L, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
+  PetscCallHIPSPARSE(hipsparseSpSV_bufferSize(fs->handle, HIPSPARSE_OPERATION_TRANSPOSE, &PETSC_HIPSPARSE_ONE, fs->spMatDescr_Lt, fs->dnVecDescr_X, fs->dnVecDescr_Y, hipsparse_scalartype, HIPSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
 
   /* To save device memory, we make the factorization buffer share with one of the solver buffer.
      See also comments in MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0().
@@ -2460,7 +2491,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
       opA       = herm ? HIPSPARSE_OPERATION_CONJUGATE_TRANSPOSE : HIPSPARSE_OPERATION_TRANSPOSE;
       matstruct = (Mat_SeqAIJHIPSPARSEMultStruct *)hipsparsestruct->mat;
     } else {
-      if (!hipsparsestruct->matTranspose) PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(A));
+      if (!A->transupdated) PetscCall(MatSeqAIJHIPSPARSEFormExplicitTranspose(A));
       matstruct = (Mat_SeqAIJHIPSPARSEMultStruct *)hipsparsestruct->matTranspose;
     }
   }
@@ -2500,7 +2531,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
         thrust::device_ptr<PetscScalar> xarr = thrust::device_pointer_cast(xarray);
         thrust::for_each(
 #if PetscDefined(HAVE_THRUST_ASYNC)
-          thrust::hip::par.on(PetscDefaultHipStream),
+          thrust::device.on(PetscDefaultHipStream),
 #endif
           thrust::make_zip_iterator(thrust::make_tuple(hipsparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))),
           thrust::make_zip_iterator(thrust::make_tuple(hipsparsestruct->workVector->begin(), thrust::make_permutation_iterator(xarr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(), VecHIPEqualsReverse());
@@ -2565,7 +2596,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJHIPSPARSE(Mat A, Vec xx, Vec yy, Ve
          */
 #if 0
         thrust::device_ptr<PetscScalar> zptr = thrust::device_pointer_cast(zarray);
-        thrust::async::for_each(thrust::hip::par.on(hipsparsestruct->stream),
+        thrust::async::for_each(thrust::device.on(hipsparsestruct->stream),
                          thrust::make_zip_iterator(thrust::make_tuple(hipsparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))),
                          thrust::make_zip_iterator(thrust::make_tuple(hipsparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(),
                          VecHIPPlusEquals());
@@ -2946,10 +2977,13 @@ static PetscErrorCode MatSeqAIJHIPSPARSEMultStruct_Destroy(Mat_SeqAIJHIPSPARSEMu
   PetscFunctionBegin;
   if (*matstruct) {
     if ((*matstruct)->mat) {
+#if !defined(CUDART_VERSION) || CUDART_VERSION < 11000
       if (format == MAT_HIPSPARSE_ELL || format == MAT_HIPSPARSE_HYB) {
         hipsparseHybMat_t hybMat = (hipsparseHybMat_t)(*matstruct)->mat;
         PetscCallHIPSPARSE(hipsparseDestroyHybMat(hybMat));
-      } else {
+      } else
+#endif
+      {
         mat = (CsrMatrix *)(*matstruct)->mat;
         PetscCall(CsrMatrix_Destroy(&mat));
       }
@@ -3004,6 +3038,9 @@ PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Reset(Mat_SeqAIJHIPSPARSETriFactors_
     PetscCallHIPSPARSE(hipsparseDestroyMatDescr(fs->matDescr_M));
     if (fs->spMatDescr_L) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_L));
     if (fs->spMatDescr_U) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_U));
+    if (fs->spMatDescr_Lt) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_Lt));
+    if (fs->spMatDescr_Ut) PetscCallHIPSPARSE(hipsparseDestroySpMat(fs->spMatDescr_Ut));
+    fs->spMatDescr_Lt = fs->spMatDescr_Ut = NULL;
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_L));
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_Lt));
     PetscCallHIPSPARSE(hipsparseSpSV_destroyDescr(fs->spsvDescr_U));
@@ -3236,8 +3273,8 @@ PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat A, PetscScalar *a[])
 struct IJCompare4 {
   __host__ __device__ inline bool operator()(const thrust::tuple<int, int, PetscScalar, int> &t1, const thrust::tuple<int, int, PetscScalar, int> &t2)
   {
-    if (t1.get<0>() < t2.get<0>()) return true;
-    if (t1.get<0>() == t2.get<0>()) return t1.get<1>() < t2.get<1>();
+    if (thrust::get<0>(t1) < thrust::get<0>(t2)) return true;
+    if (thrust::get<0>(t1) == thrust::get<0>(t2)) return thrust::get<1>(t1) < thrust::get<1>(t2);
     return false;
   }
 };
@@ -3358,7 +3395,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       PetscCallThrust(thrust::merge(thrust::device, Azb, Aze, Bzb, Bze, Czb, IJCompare4())); // put nonzeros in A and B to C in sorted order (by row and then by column)
       auto cci  = thrust::make_counting_iterator(zero);
       auto cce  = thrust::make_counting_iterator(c->nz);
-      auto pred = [](const int &x) { return x; };
+      auto pred = thrust::identity<PetscInt>();
       PetscCallThrust(thrust::copy_if(thrust::device, cci, cce, wPerm->begin(), p1, pred));
       PetscCallThrust(thrust::remove_copy_if(thrust::device, cci, cce, wPerm->begin(), p2, pred));
       // Implement a simplified hipsparseXcoo2csr() with Thrust (assuming the row indices are already sorted), as the former doesn't support 64-bit indices.

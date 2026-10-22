@@ -3,6 +3,7 @@ static char help[] = "Tests MatMatMult() of an MPIAIJ-family matrix with an MPID
 // Contributed by: Steven Dargaville
 
 #include <petscmat.h>
+#include <petsc/private/petscimpl.h>
 
 /* The product of the matrices whose types are set with -A_mat_type and -B_mat_type is compared against
    the product of host MATAIJ and MATDENSE copies holding the same values */
@@ -30,6 +31,7 @@ int main(int argc, char **args)
   PetscInt      m = 20, n = 7, rstart, rend, ncols, cols[4];
   PetscBool     block_diagonal = PETSC_FALSE, check_copies = PETSC_FALSE, tridiagonal = PETSC_FALSE;
   PetscLogEvent event;
+  PetscMPIInt   size;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -44,6 +46,12 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsBool("-tridiagonal", "Make A tridiagonal, so that only the first and last row of each off-diagonal block are nonempty and the block is stored in compressed-row format", NULL, tridiagonal, &tridiagonal, NULL));
   PetscCall(PetscOptionsBool("-check_copies", "Check that a product of device matrices does not copy between the host and the device", NULL, check_copies, &check_copies, NULL));
   PetscOptionsEnd();
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  /* PetscSF stages device buffers through the host when GPU-aware MPI is disabled. */
+  if (check_copies && size > 1 && !use_gpu_aware_mpi) {
+    PetscCall(PetscInfo(NULL, "Skipping copy checks because GPU-aware MPI is disabled; numerical checks remain enabled\n"));
+    check_copies = PETSC_FALSE;
+  }
   if (check_copies) PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscLogEventRegister("ProductCheck", MAT_CLASSID, &event));
 
