@@ -210,7 +210,7 @@ struct Mat_SeqAIJHIPSPARSETriFactors {
 
   /* Mixed mat descriptor types? yes, different hipsparse APIs use different types */
   hipsparseMatDescr_t   matDescr_M;
-  hipsparseSpMatDescr_t spMatDescr_L, spMatDescr_U;
+  hipsparseSpMatDescr_t spMatDescr_L, spMatDescr_U, spMatDescr_Lt, spMatDescr_Ut;
   hipsparseSpSVDescr_t  spsvDescr_L, spsvDescr_Lt, spsvDescr_U, spsvDescr_Ut;
   hipsparseDnVecDescr_t dnVecDescr_X, dnVecDescr_Y;
   PetscScalar          *X, *Y; /* data array of dnVec X and Y */

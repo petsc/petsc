@@ -46,7 +46,7 @@ PetscErrorCode PetscSleep(PetscReal s)
 #if PetscDefined(HAVE_SLEEP)
   else
     sleep((int)s);
-#elif PetscDefined(HAVE__SLEEP) && PetscDefined(HAVE__SLEEP_MILISEC)
+#elif PetscDefined(HAVE__SLEEP) && (PetscDefined(HAVE_WINDOWS_COMPILERS) || PetscDefined(HAVE__SLEEP_MILISEC))
   else _sleep((int)(s * 1000));
 #elif PetscDefined(HAVE__SLEEP)
   else _sleep((int)s);

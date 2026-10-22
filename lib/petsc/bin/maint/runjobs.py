@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+import argparse
+import ast
+import io
+import re
 import sys
 from subprocess import check_output
 
-#  runjobs.py [-f] [job1 job2 ... jobN]
+#  runjobs.py [-f] [job1 job2 ... jobN] [-p package1 package2 ... packageN] [-j ci_job1 ci_job2 ... ci_jobN]
 #
 #  Sets a list of jobs to run upon the next push of the branch that is in a merge request.
 #
@@ -12,9 +16,14 @@ from subprocess import check_output
 #      branch's contents at GitLab] - if the intention is to overwrite these differences with your local files.
 #      Otherwise, sync your local branch with "origin/branch" changes before running runjobs.py.
 #
+#  -p: select jobs whose configure scripts enable any of the listed packages, in addition to explicitly listed jobs.
+#  -j: retain named CI jobs, including jobs without configure scripts in config/examples.
+#
 #  Example usages:
 #      lib/petsc/bin/maint/runjobs.py -f linux-cuda-pkgs
 #      lib/petsc/bin/maint/runjobs.py -f freebsd-cxx-pkgs-opt linux-clang-avx linux-clang-ubsan
+#      lib/petsc/bin/maint/runjobs.py -p cuda hip
+#      lib/petsc/bin/maint/runjobs.py -p cuda hip -j docs-review
 #      lib/petsc/bin/maint/runjobs.py -f $(grep -lE "download-(mpich|openmpi)" config/examples/arch-ci-*.py | cut -d '/' -f 3 | sed -e 's/arch-ci-//' | sed -e 's/.py$//')
 #      lib/petsc/bin/maint/runjobs.py -f $(grep -lE "with-petsc4py" config/examples/arch-ci-*.py | cut -d '/' -f 3 | sed -e 's/arch-ci-//' | sed -e 's/.py$//')
 #
@@ -23,12 +32,35 @@ from subprocess import check_output
 #      lib/petsc/bin/maint/runjobs.py
 #
 
-jobs = sorted(set(sys.argv[1:]))
-force = False
-if ('-f' in jobs):
-  force = True
-  jobs.remove('-f')
-alljobs = (jobs == [])
+def select_jobs(args, ci):
+  jobs = set(args.jobs)
+  if args.packages:
+    package_options = set()
+    for package in args.packages:
+      package_options.update(['--download-'+package, '--with-'+package])
+      package_options.update('--with-'+package+'-'+suffix for suffix in ('dir', 'include', 'lib'))
+    for arch in re.findall(r'^\s+TEST_ARCH: arch-ci-(\S+)\s*$', ci, re.MULTILINE):
+      filename = 'config/examples/arch-ci-'+arch+'.py'
+      with open(filename, 'r') as fd:
+        tree = ast.parse(fd.read(), filename=filename)
+      # Inspect option strings without executing configure scripts; comments are excluded by the parser.
+      for node in ast.walk(tree):
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, str): continue
+        option, _, value = node.value.partition('=')
+        if option in package_options and value.lower() not in ('0', 'no', 'false'):
+          jobs.add(arch)
+          break
+    if not jobs and not args.ci_jobs: parser.error('No jobs use the requested packages: '+' '.join(args.packages))
+  return sorted(jobs)
+
+
+parser = argparse.ArgumentParser(description='Select CI jobs to run on the next push')
+parser.add_argument('-f', action='store_true', dest='force', help='force creation of the CI commit when the branch has diverged')
+parser.add_argument('-p', nargs='+', dest='packages', metavar='package', help='select jobs using any of these packages')
+parser.add_argument('-j', nargs='+', dest='ci_jobs', default=[], metavar='ci_job', help='retain named CI jobs, including jobs without example configure scripts')
+parser.add_argument('jobs', nargs='*', help='CI jobs to run in addition to package matches')
+args = parser.parse_args()
+force = args.force
 
 try:
   check_output(r'git diff-index --quiet HEAD --', shell=True)
@@ -61,13 +93,19 @@ Run_CMD = '# ' + ' '.join(sys.argv) + '\n'
 if (ci.find(File_Header) >= 0):
   try: commit = check_output('git rev-list -1 HEAD .gitlab-ci.yml', shell=True).decode('utf-8').strip()
   except Exception: commit = ''
-  saved_jobs = sorted(set((ci.splitlines()[1]).split()[2:]))
-  if ('-f' in saved_jobs): saved_jobs.remove('-f')
-  if (saved_jobs == jobs):
-    print(Success_Message + commit)
+  saved_args = parser.parse_args((ci.splitlines()[1]).split()[2:])
+  if set(saved_args.jobs) == set(args.jobs) and set(saved_args.packages or []) == set(args.packages or []) and set(saved_args.ci_jobs) == set(args.ci_jobs):
+    if args.packages:
+      print('runjobs.py already generated this selection; to refresh package matches, rerun after you REMOVE commit '+commit)
+    else:
+      print(Success_Message + commit)
   else:
     print('runjobs.py was previously run (with different jobs), rerun after you REMOVE commit '+commit)
   sys.exit(0)
+
+jobs = select_jobs(args, ci)
+ci_jobs = sorted(set(args.ci_jobs))
+alljobs = (jobs == [] and ci_jobs == [])
 
 arches = list(jobs)
 for arch in arches.copy():
@@ -75,6 +113,13 @@ for arch in arches.copy():
     arches.remove(arch)
 if arches:
   print('Could not locate job(s) '+str(arches))
+  sys.exit(0)
+
+available_ci_jobs = set(re.findall(r'^([A-Za-z0-9][\w.-]*):', ci, re.MULTILINE))
+available_ci_jobs.difference_update(('stages', 'variables', 'default', 'include', 'workflow', 'image', 'services', 'before_script', 'after_script', 'cache'))
+missing_ci_jobs = sorted(set(ci_jobs) - available_ci_jobs)
+if missing_ci_jobs:
+  print('Could not locate CI job(s) '+str(missing_ci_jobs))
   sys.exit(0)
 
 extraJob='''
@@ -91,13 +136,20 @@ using-runjobs:
 
 '''
 
-with open('.gitlab-ci.yml','w') as fd:
+with io.StringIO() as fd:
   fd.write(File_Header)
   fd.write(Run_CMD)
+  after_examples = False
   for a in ci.split('\n\n'):
     if a.startswith('pause-for-approval:'): continue
     if not alljobs:
-      if a.startswith('# job for analyzing the coverage results '): break
+      if a.startswith('# job for analyzing the coverage results '): after_examples = True
+      ci_job = re.search(r'^([A-Za-z0-9][\w.-]*):', a, re.MULTILINE)
+      if ci_job and ci_job.group(1) in ci_jobs:
+        fd.write(a+'\n\n')
+        continue
+      # Keep templates needed by explicitly retained jobs beyond the examples.
+      if after_examples and not re.search(r'^\.[\w.-]+:', a, re.MULTILINE): continue
       if a.find('CONFIG_OPTS: ') > -1: continue
       if a.startswith('petsc4py-'): continue
       if a.find('check-each-commit:') > -1: continue
@@ -115,11 +167,13 @@ with open('.gitlab-ci.yml','w') as fd:
     else:
       fd.write(a+'\n\n')
   if not alljobs: fd.write(extraJob)
+  with open('.gitlab-ci.yml','w') as ci_file:
+    ci_file.write(fd.getvalue().rstrip()+'\n')
 
 try:
   output = check_output('git add .gitlab-ci.yml', shell=True)
   if not alljobs:
-    output = check_output('git commit -m"DRAFT: CI: Temporary commit, remove before merge! Runs only jobs: '+' '.join(jobs)+'"', shell=True)
+    output = check_output('git commit -m"DRAFT: CI: Temporary commit, remove before merge! Runs only jobs: '+' '.join(sorted(set(jobs + ci_jobs)))+'"', shell=True)
   else:
     output = check_output('git commit -m"DRAFT: CI: Temporary commit, remove before merge! Runs all jobs immediately, no unpause needed at GitLab"', shell=True)
 except Exception:

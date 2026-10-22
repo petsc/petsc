@@ -131,8 +131,6 @@ class Configure(config.package.Package):
 
   def configureLibrary(self):
     self.setFullPathHIPC()
-    self.setHasROCTX()
-    config.package.Package.configureLibrary(self)
     self.getExecutable('hipconfig',getFullPath=1,resultName='hip_config')
     if hasattr(self,'hip_config'):
       try:
@@ -148,6 +146,11 @@ class Configure(config.package.Package):
         self.platform = 'nvidia'
       else:
         self.platform = 'amd'
+
+    self.setHasROCTX()
+    # NVIDIA HIP implements hipInit() inline as a call to cuInit().
+    self.functions = ['cuInit'] if self.platform in ['nvcc','nvidia'] else ['hipInit']
+    config.package.Package.configureLibrary(self)
 
     self.libraries.pushLanguage('HIP')
     self.addDefine('HAVE_CUPM','1') # Have either CUDA or HIP

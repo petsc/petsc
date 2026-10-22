@@ -24,6 +24,8 @@ Shared rules are below; optional skills provide task procedures through the codi
 - Use PETSc accessors for object metadata instead of reconstructing internal layouts in callers or bindings. If metadata is missing, extend the owning API and document returned data's size, ownership, and lifetime. If only the documentation is unclear, clarify it.
 - Fix only what the task requires. Report other improvements you notice, in scripts, makefiles, tools, or documentation, to the user separately with the file path and expected benefit; do not put them in the patch, review findings, or MR comments unless asked.
 - For source changes, check test blocks, expected outputs, and documentation; include headers and examples for public interfaces. Run relevant checks and tests.
+- Place tests with the component whose behavior they validate. Locate its implementation and existing tests before adding coverage, and extend an existing test when practical. Follow implementation ownership rather than the public object type or function prefix. For example, focused regression tests for LMVM implementation bugs normally belong in `src/ksp/ksp/utils/lmvm/tests/`, despite the `MatLMVM*()` API prefix. Broader KSP tests may belong in `src/ksp/ksp/tests/`. A tutorial may also provide regression coverage when the example serves its instructional purpose. Choose the location according to the test's or tutorial's scope and the existing organization.
+- Keep tests within their component's dependency layer. Supporting objects from lower-level packages are appropriate: KSP tests may use Mat and Vec. Do not introduce higher-level package dependencies into lower-level tests, such as testing KSP algorithms in Vec tests.
 - Final test changes must exercise successful behavior: do not add expected-error cases, assertions of expected error codes, or `PetscPushErrorHandler()`/`PetscPopErrorHandler()` calls.
 - The user selects `PETSC_ARCH`; reuse the value already supplied for the task. Ask if it is missing before configuring or building PETSc or petsc4py, running PETSc-dependent tests or executables, or importing petsc4py; pass it explicitly and never infer or change it unless asked. Architecture-independent checks need no architecture. Targets managing a dedicated default architecture, such as `make docs`, are exempt when using that default.
 - A documentation audit or review does not authorize a documentation build; run it only when explicitly requested or approved for the task.
@@ -73,7 +75,8 @@ unrelated conversations or prescribe the user's conversational style.
 
 - Use `PetscInt` for most indices and array lengths.
 - Use `PetscCount` for sizes or counts that may exceed `PetscInt`.
-- Use `size_t` for memory sizes in bytes, not logical array lengths.
+- Use `size_t` for memory sizes in bytes; use PETSc count types for logical array lengths except when traversing static arrays.
+- Use `size_t` for loop indices bounded by `PETSC_STATIC_ARRAY_LENGTH()`, and compare directly against the macro. Do not cast the array length to a signed type merely to control the loop. If a PETSc API needs the index or count as `PetscInt`, convert it at that call with `PetscIntCast()`.
 - Do not silence narrowing warnings with blind casts. Use PETSc cast helpers such as `PetscIntCast()` when converting to narrower integer types.
 - Prefer PETSc MPI wrappers that accept PETSc count types when large counts may be involved.
 

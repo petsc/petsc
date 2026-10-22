@@ -772,9 +772,11 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::ReplaceArray(Vec v, const PetscScalar 
       const auto vimpl      = VecIMPLCast(v);
       auto      &host_array = vimpl->array_allocated;
 
-      // make sure the users array has the latest values.
-      // REVIEW ME: why? we're about to free it
-      if (host_array != vimpl->array) PetscCall(CopyToHost_(dctx, v));
+      // Preserve caller-owned storage; PETSc-owned storage below is discarded.
+      if (host_array != vimpl->array) {
+        PetscCall(CopyToHost_(dctx, v));
+        PetscCall(PetscDeviceContextSynchronize(dctx));
+      }
       if (host_array) {
         const auto useit = UseCUPMHostAlloc(v->pinned_memory);
 
@@ -818,6 +820,8 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::ResetArray(Vec v) noexcept
     PetscCall(CopyToHost_(dctx, v));
     PetscCall(VecResetArray_IMPL(v));
     v->offloadmask = PETSC_OFFLOAD_CPU;
+    // A previous upload may still read the array even when no copy-back was needed.
+    PetscCall(PetscDeviceContextSynchronize(dctx));
   } else {
     PetscCall(VecIMPLAllocateCheck_(v));
     PetscCall(VecCUPMAllocateCheck_(v));
@@ -1058,6 +1062,8 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
   VecSetOp_CUPM(errorwnorm, nullptr, D::ErrorWnorm);
   VecSetOp_CUPM(duplicatevecs, VecDuplicateVecs_Default, VecDuplicateVecs_Default);
   VecSetOp_CUPM(setstdbasis, nullptr, VecSeq_T::SetStdBasis);
+  // Finish pending transfers before CPU operations can access the host array.
+  if (usehost) PetscCall(PetscDeviceContextSynchronize(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

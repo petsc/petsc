@@ -88,6 +88,13 @@ public:
   PETSC_NODISCARD static constexpr MatType       MATMPIDENSECUPM() noexcept;
   PETSC_NODISCARD static constexpr MatType       MATDENSECUPM() noexcept;
   PETSC_NODISCARD static constexpr MatSolverType MATSOLVERCUPM() noexcept;
+
+  static PetscErrorCode GetCurrentMemType(Mat A, PetscMemType *mtype) noexcept
+  {
+    PetscFunctionBegin;
+    *mtype = A->boundtocpu ? PETSC_MEMTYPE_HOST : PETSC_MEMTYPE_CUPM();
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 };
 
 // ==========================================================================================
@@ -126,6 +133,7 @@ inline constexpr MatSolverType MatDense_CUPM_Base<T>::MATSOLVERCUPM() noexcept
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MATMPIDENSECUPM; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MATDENSECUPM; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MATSOLVERCUPM; \
+    using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::GetCurrentMemType; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMGetArray_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMGetArrayRead_C; \
     using ::Petsc::mat::cupm::impl::MatDense_CUPM_Base<T>::MatDenseCUPMGetArrayWrite_C; \

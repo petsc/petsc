@@ -101,3 +101,8 @@ void silence_warnings(void)
   (void)StaticFunctionPreDeclShouldNotGetStatic;
   (void)StaticPointerShouldNotGetStatic;
 }
+
+static __device__ __forceinline__ PetscScalar StaticDeviceFunctionShouldNotGetStatic(PetscScalar value)
+{
+  return value;
+}

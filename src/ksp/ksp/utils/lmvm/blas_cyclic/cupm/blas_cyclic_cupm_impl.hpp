@@ -80,6 +80,7 @@ PetscErrorCode BLASCyclic<T>::axpby(PetscDeviceContext dctx, PetscInt M, PetscIn
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(3.0 * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -122,6 +123,7 @@ PetscErrorCode BLASCyclic<T>::dmv(PetscDeviceContext dctx, PetscBool hermitian_t
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(3.0 * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -170,6 +172,7 @@ PetscErrorCode BLASCyclic<T>::dsv(PetscDeviceContext dctx, PetscBool hermitian_t
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(3.0 * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -213,6 +216,7 @@ PetscErrorCode BLASCyclic<T>::trsv(PetscDeviceContext dctx, PetscBool hermitian_
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(1.0 * N * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -255,6 +259,7 @@ PetscErrorCode BLASCyclic<T>::hemv(PetscDeviceContext dctx, PetscInt m, PetscInt
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(2.0 * N * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -306,6 +311,7 @@ PetscErrorCode BLASCyclic<T>::gemv(PetscDeviceContext dctx, PetscBool hermitian_
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCall(PetscLogGpuFlops(2.0 * N * N));
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

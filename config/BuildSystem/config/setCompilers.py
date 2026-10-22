@@ -1969,7 +1969,7 @@ class Configure(config.base.Configure):
     return
 
   def generatePICGuesses(self):
-    if self.language[-1] == 'CUDA':
+    if self.language[-1] in ['CUDA', 'HIP']:
       yield '-Xcompiler -fPIC'
       yield '-fPIC'
       return

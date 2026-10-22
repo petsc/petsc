@@ -273,7 +273,7 @@ class Configure(config.package.Package):
 
   def checkThrustVersion(self,minVer):
     '''Check if thrust version is >= minVer '''
-    include = '#include <thrust/version.h> \n#if THRUST_VERSION < ' + str(minVer) + '\n#error "thrust version is too low"\n#endif\n'
+    include = '#include <thrust/version.h> \n#if THRUST_VERSION < ' + str(minVer) + '\n#error "unsupported thrust version"\n#endif\n'
     self.pushLanguage('CUDA')
     valid = self.checkCompile(include)
     self.popLanguage()
@@ -287,7 +287,7 @@ class Configure(config.package.Package):
     # if no user-supplied thrust, check the system's complex ability
     if not self.thrust.found and self.scalarTypes.scalartype == 'complex':
       if not self.checkThrustVersion(100908):
-        raise RuntimeError('CUDA Error: The thrust library is too low to support PetscComplex. Use --download-thrust or --with-thrust-dir to give a thrust >= 1.9.8')
+        raise RuntimeError('CUDA Error: The thrust library version does not support PetscComplex. Use --download-thrust or --with-thrust-dir to give a thrust >= 1.9.8')
     return
 
   def versionToStandardForm(self,ver):

@@ -16,8 +16,8 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 1, 1));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatGetType(A, &mattype));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE, ""));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATMPIAIJHIPSPARSE, MATSEQAIJHIPSPARSE, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATMPIAIJCUSPARSE, MATSEQAIJCUSPARSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATMPIAIJHIPSPARSE, MATSEQAIJHIPSPARSE, MATSEQDENSEHIP, MATMPIDENSEHIP, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iskokkos, MATMPIAIJKOKKOS, MATSEQAIJKOKKOS, ""));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATHYPRE, &ishypre));
 #if PetscDefined(HAVE_HYPRE)
@@ -25,6 +25,7 @@ int main(int argc, char **argv)
 #endif
   PetscCall(MatSeqAIJSetPreallocation(A, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(A, 1, NULL, 1, NULL));
+  PetscCall(MatSetUp(A));
 
   PetscCall(MatGetCurrentMemType(A, &memtype));
   if (iscuda) PetscCheck(memtype == PETSC_MEMTYPE_CUDA, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "wrong memory type");
@@ -45,6 +46,24 @@ int main(int argc, char **argv)
 }
 
 /*TEST
+
+   testset:
+     nsize: {{1 2}}
+     output_file: output/empty.out
+
+     test:
+       suffix: dense
+       args: -mat_type dense
+
+     test:
+       requires: cuda
+       suffix: densecuda
+       args: -mat_type densecuda
+
+     test:
+       requires: hip
+       suffix: densehip
+       args: -mat_type densehip
 
    test:
      suffix: seqaij

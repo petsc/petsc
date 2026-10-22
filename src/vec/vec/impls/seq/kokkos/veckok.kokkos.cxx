@@ -1061,6 +1061,21 @@ PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec win, Vec xin, Vec yin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+struct VecNormInfinityFunctor {
+  using value_type = PetscReal;
+  ConstPetscScalarKokkosView xv;
+
+  KOKKOS_INLINE_FUNCTION void init(value_type &value) const { value = 0.0; }
+
+  KOKKOS_INLINE_FUNCTION void join(value_type &dst, const value_type &src) const
+  {
+    // Preserve NaNs when combining partial maxima.
+    if (src != src || src > dst) dst = src;
+  }
+
+  KOKKOS_INLINE_FUNCTION void operator()(const PetscInt i, value_type &value) const { join(value, PetscAbsScalar(xv(i))); }
+};
+
 PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
 {
   const PetscInt             n = xin->map->n;
@@ -1078,10 +1093,13 @@ PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
       PetscCallCXX(*z = KokkosBlas::nrm2(exec, xv));
       PetscCall(PetscLogGpuFlops(PetscMax(2.0 * n - 1, 0.0)));
     } else if (type == NORM_1) {
-      PetscCallCXX(*z = KokkosBlas::nrm1(exec, xv));
+      // KokkosBlas::nrm1() sums |Re(x)| + |Im(x)|, but VecNorm() uses |x|.
+      if (PetscDefined(USE_COMPLEX)) PetscCallCXX(Kokkos::parallel_reduce("VecNorm1", Kokkos::RangePolicy<>(exec, 0, n), KOKKOS_LAMBDA(const PetscInt &i, PetscReal &sum) { sum += PetscAbsScalar(xv(i)); }, *z));
+      else PetscCallCXX(*z = KokkosBlas::nrm1(exec, xv));
       PetscCall(PetscLogGpuFlops(PetscMax(n - 1.0, 0.0)));
     } else if (type == NORM_INFINITY) {
-      PetscCallCXX(*z = KokkosBlas::nrminf(exec, xv));
+      if (PetscDefined(USE_COMPLEX)) PetscCallCXX(Kokkos::parallel_reduce("VecNormInfinity", Kokkos::RangePolicy<>(exec, 0, n), VecNormInfinityFunctor{xv}, *z));
+      else PetscCallCXX(*z = KokkosBlas::nrminf(exec, xv));
     }
     PetscCall(VecRestoreKokkosView(xin, &xv));
     PetscCall(PetscLogGpuTimeEnd());

@@ -286,6 +286,12 @@ def build_compiler_flags(petsc_dir: Path, petsc_arch: str, extra_compiler_flags:
   misc_flags = [
     '-DPETSC_CLANG_STATIC_ANALYZER',
     '-xc++',
+    # Parse CUDA/HIP function qualifiers without requiring GPU headers. Unknown qualifiers
+    # can make Clang recover a function declaration without its preceding static specifier.
+    '-D__host__=',
+    '-D__device__=',
+    '-D__global__=',
+    '-D__forceinline__=inline',
     '-Wno-empty-body',
     '-Wno-writable-strings',
     '-Wno-array-bounds',

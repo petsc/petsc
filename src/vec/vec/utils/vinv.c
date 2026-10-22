@@ -1593,11 +1593,7 @@ PetscErrorCode VecShiftAsync_Private(Vec v, PetscScalar shift, PetscDeviceContex
   PetscErrorCode (*shift_async)(Vec, PetscScalar, PetscDeviceContext) = NULL;
 
   PetscFunctionBegin;
-  if (dctx) {
-    PetscErrorCode (*shift_async)(Vec, PetscScalar, PetscDeviceContext);
-
-    PetscCall(PetscObjectQueryFunction((PetscObject)v, VecAsyncFnName(Shift), &shift_async));
-  }
+  if (dctx) PetscCall(PetscObjectQueryFunction((PetscObject)v, VecAsyncFnName(Shift), &shift_async));
   if (shift_async) PetscCall((*shift_async)(v, shift, dctx));
   else if (v->ops->shift) PetscUseTypeMethod(v, shift, shift);
   else {

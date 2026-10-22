@@ -2,12 +2,34 @@ static const char help[] = "Tests creation and destruction of PetscDeviceContext
 
 #include "petscdevicetestcommon.h"
 
+static PetscDeviceContext rootContext = NULL, userContext = NULL;
+
+static PetscErrorCode CheckRootContextOwnership(void)
+{
+  PetscDeviceContext extra = userContext;
+  PetscInt           refs;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectGetReference((PetscObject)userContext, &refs));
+  PetscCheck(refs == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root cleanup changed the application context reference count to %" PetscInt_FMT, refs);
+  PetscCall(PetscObjectGetReference((PetscObject)rootContext, &refs));
+  PetscCheck(refs == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root cleanup left %" PetscInt_FMT " references to the root context", refs);
+  PetscCall(PetscDeviceContextDestroy(&extra));
+  PetscCall(PetscDeviceContextDestroy(&userContext));
+  PetscCall(PetscDeviceContextDestroy(&rootContext));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx = NULL, ddup = NULL;
+  PetscBool          test_root_ownership = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_root_ownership", &test_root_ownership, NULL));
+  // With lazy initialization, registering before root creation makes this run after root cleanup.
+  if (test_root_ownership) PetscCall(PetscRegisterFinalize(CheckRootContextOwnership));
 
   /* basic creation and destruction */
   PetscCall(PetscDeviceContextCreate(&dctx));
@@ -38,12 +60,27 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceContextDoesNotExist(ddup));
   PetscCall(AssertDeviceContextExists(dctx));
 
+  if (test_root_ownership) {
+    rootContext = dctx;
+    PetscCall(PetscObjectReference((PetscObject)rootContext));
+    PetscCall(PetscDeviceContextDuplicate(rootContext, &userContext));
+    // Keep both contexts alive so an incorrect cleanup can be checked without accessing freed storage.
+    PetscCall(PetscObjectReference((PetscObject)userContext));
+    PetscCall(PetscDeviceContextSetCurrentContext(userContext));
+  }
+
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }
 
 /*TEST
+
+  test:
+    suffix: root_ownership
+    requires: defined(PETSC_DEVICELANGUAGE_CXX)
+    args: -test_root_ownership -device_enable lazy -default_device_type host
+    output_file: output/ExitSuccess.out
 
   testset:
     requires: defined(PETSC_DEVICELANGUAGE_CXX)

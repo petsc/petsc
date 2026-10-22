@@ -5,21 +5,25 @@
 #include <petsc/private/cupmatomics.hpp>
 #include <../src/mat/impls/sell/seq/sell.h> /*I   "petscmat.h"  I*/
 
-#define WARP_SIZE 64
+#if PetscDefined(HAVE_HIPCUDA)
+  #define WARP_SIZE 32
+#else
+  #define WARP_SIZE 64
+#endif
 
 typedef struct {
-  PetscInt   maxallocmat;
-  PetscInt   totalentries;
-  PetscInt  *colidx; /* column index array, device pointer */
-  MatScalar *val;    /* value array, device pointer */
-  PetscInt   totalslices;
-  PetscInt  *sliidx; /* slice index array, device pointer */
-  PetscInt   nonzerostate;
-  PetscInt   kernelchoice;
-  PetscInt   blocky;
-  PetscInt   chunksperblock;
-  PetscInt   totalchunks;
-  PetscInt  *chunk_slice_map; /* starting slice for each chunk, device pointer */
+  PetscInt         maxallocmat;
+  PetscInt         totalentries;
+  PetscInt        *colidx; /* column index array, device pointer */
+  MatScalar       *val;    /* value array, device pointer */
+  PetscInt         totalslices;
+  PetscInt        *sliidx; /* slice index array, device pointer */
+  PetscObjectState nonzerostate;
+  PetscInt         kernelchoice;
+  PetscInt         blocky;
+  PetscInt         chunksperblock;
+  PetscInt         totalchunks;
+  PetscInt        *chunk_slice_map; /* starting slice for each chunk, device pointer */
 } Mat_SeqSELLHIP;
 
 static PetscErrorCode MatSeqSELLHIP_Destroy(Mat_SeqSELLHIP **hipstruct)
@@ -43,7 +47,7 @@ static PetscErrorCode MatSeqSELLHIPCopyToGPU(Mat A)
   PetscFunctionBegin;
   if (A->offloadmask == PETSC_OFFLOAD_UNALLOCATED || A->offloadmask == PETSC_OFFLOAD_CPU) {
     PetscCall(PetscLogEventBegin(MAT_HIPCopyToGPU, A, 0, 0, 0));
-    if (A->assembled && A->nonzerostate == hipstruct->nonzerostate) {
+    if (hipstruct->sliidx && A->nonzerostate == hipstruct->nonzerostate) {
       /* copy values only */
       PetscCallHIP(hipMemcpy(hipstruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), hipMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
@@ -70,7 +74,8 @@ static PetscErrorCode MatSeqSELLHIPCopyToGPU(Mat A)
     }
     PetscCallHIP(WaitForHIP());
     PetscCall(PetscLogEventEnd(MAT_HIPCopyToGPU, A, 0, 0, 0));
-    A->offloadmask = PETSC_OFFLOAD_BOTH;
+    hipstruct->nonzerostate = A->nonzerostate;
+    A->offloadmask          = PETSC_OFFLOAD_BOTH;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -106,6 +111,15 @@ static __global__ void matmultadd_seqsell_basic_kernel(PetscInt nrows, PetscInt 
 }
 
 #if !PetscDefined(USE_COMPLEX)
+static __device__ __forceinline__ PetscScalar MatSeqSELLHIPShuffleDown(PetscScalar value, unsigned int delta, int width = WARP_SIZE)
+{
+  #if PetscDefined(HAVE_HIPCUDA)
+  return __shfl_down_sync(0xffffffff, value, delta, width);
+  #else
+  return __shfl_down(value, delta, width);
+  #endif
+}
+
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wpass-failed")
 /* use 1 block per slice, suitable for large slice width */
 template <int BLOCKY>
@@ -124,13 +138,13 @@ __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheig
     for (i = sliidx[slice_id] + threadIdx.x + WARP_SIZE * threadIdx.y; i < sliidx[slice_id + 1]; i += WARP_SIZE * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
   if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
   if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) y[row] = shared[0][threadIdx.x];
@@ -153,13 +167,13 @@ __global__ void matmultadd_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceh
     for (i = sliidx[slice_id] + threadIdx.x + WARP_SIZE * threadIdx.y; i < sliidx[slice_id + 1]; i += WARP_SIZE * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
   if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
   if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) z[row] = y[row] + shared[0][threadIdx.x];
@@ -222,13 +236,13 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
           int tid = threadIdx.x + threadIdx.y * WARP_SIZE, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
           if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(y[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
@@ -277,13 +291,13 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
           int tid = threadIdx.x + threadIdx.y * WARP_SIZE, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+          for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down(t, offset, BLOCKY);
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset, BLOCKY);
           if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(z[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
@@ -305,7 +319,7 @@ static __global__ void matmult_seqsell_tiled_kernel7(PetscInt nrows, PetscInt sl
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += WARP_SIZE) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   if (row < nrows && threadIdx.x < sliceheight) y[row] = t;
 }
 
@@ -320,7 +334,7 @@ static __global__ void matmultadd_seqsell_tiled_kernel7(PetscInt nrows, PetscInt
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += WARP_SIZE) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += __shfl_down(t, offset);
+  for (int offset = WARP_SIZE / 2; offset >= sliceheight; offset /= 2) t += MatSeqSELLHIPShuffleDown(t, offset);
   if (row < nrows && threadIdx.x < sliceheight) z[row] = y[row] + t;
 }
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
@@ -587,7 +601,7 @@ static PetscErrorCode MatMult_SeqSELLHIP(Mat A, Vec xx, Vec yy)
 
   PetscFunctionBegin;
   PetscCheck(WARP_SIZE % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of WARP_SIZE, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
-  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be less than 32, but the current slice height is %" PetscInt_FMT, sliceheight);
+  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices 2-6 require a slice height of at most 32, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLHIPCopyToGPU(A));
   /* hipstruct may not be available until MatSeqSELLHIPCopyToGPU() is called */
   aval    = hipstruct->val;
@@ -712,9 +726,9 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
   PetscScalar       *z;
   const PetscScalar *y, *x;
   PetscInt           nrows = A->rmap->n, sliceheight = a->sliceheight;
-  MatScalar         *aval    = hipstruct->val;
-  PetscInt          *acolidx = hipstruct->colidx;
-  PetscInt          *sliidx  = hipstruct->sliidx;
+  MatScalar         *aval;
+  PetscInt          *acolidx;
+  PetscInt          *sliidx;
 #if !PetscDefined(USE_COMPLEX)
   PetscReal maxoveravg;
   PetscInt  chunksperblock, nchunks, *chunk_slice_map;
@@ -723,8 +737,11 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCheck(WARP_SIZE % sliceheight == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "The kernel requires a slice height be a divisor of WARP_SIZE, but the input matrix has a slice height of %" PetscInt_FMT, sliceheight);
-  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight != sliceheight), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices {2-6} requires the slice height of the matrix be 16, but the current slice height is %" PetscInt_FMT, sliceheight);
+  PetscCheck(!(hipstruct->kernelchoice >= 2 && hipstruct->kernelchoice <= 6 && sliceheight > 32), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Kernel choices 2-6 require a slice height of at most 32, but the current slice height is %" PetscInt_FMT, sliceheight);
   PetscCall(MatSeqSELLHIPCopyToGPU(A));
+  aval    = hipstruct->val;
+  acolidx = hipstruct->colidx;
+  sliidx  = hipstruct->sliidx;
   if (a->nz) {
     PetscInt nblocks, blocksize = 512;
     dim3     block2(256, 2), block4(128, 4), block8(64, 8), block16(32, 16), block32(16, 32);
@@ -931,7 +948,7 @@ static PetscErrorCode MatZeroEntries_SeqSELLHIP(Mat A)
 static PetscErrorCode MatDestroy_SeqSELLHIP(Mat A)
 {
   PetscFunctionBegin;
-  if (A->factortype == MAT_FACTOR_NONE && A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) PetscCall(MatSeqSELLHIP_Destroy((Mat_SeqSELLHIP **)&A->spptr));
+  if (A->factortype == MAT_FACTOR_NONE) PetscCall(MatSeqSELLHIP_Destroy((Mat_SeqSELLHIP **)&A->spptr));
   PetscCall(MatDestroy_SeqSELL(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

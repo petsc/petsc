@@ -183,6 +183,7 @@ inline PetscErrorCode MatDense_MPI_CUPM<T>::Convert_Dispatch_(Mat M, MatType, Ma
     // ============================================================
     MatSetOp_CUPM(to_host, B, getdiagonal, MatGetDiagonal_MPIDense, GetDiagonal);
     MatSetOp_CUPM(to_host, B, bindtocpu, nullptr, BindToCPU);
+    MatSetOp_CUPM(to_host, B, getcurrentmemtype, nullptr, GetCurrentMemType);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

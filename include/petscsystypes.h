@@ -609,7 +609,7 @@ typedef __fp16 PetscReal;
     #if PetscDefined(DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
       #define petsccomplexlib Kokkos
       #include <Kokkos_Complex.hpp>
-    #elif (defined(__CUDACC__) && PetscDefined(HAVE_CUDA)) || (defined(__HIPCC__) && PetscDefined(HAVE_HIP))
+    #elif (defined(__CUDACC__) && (PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIPCUDA))) || (defined(__HIPCC__) && PetscDefined(HAVE_HIP))
       #define petsccomplexlib thrust
       #include <thrust/complex.h>
     #elif PetscDefined(USE_REAL___FLOAT128)
