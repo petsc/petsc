@@ -25,6 +25,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->compare_is = PETSC_FALSE;
   options->compare_dm = PETSC_FALSE;
+  options->tpw        = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-compare_is", "Compare ISs and PetscSections?", FILENAME, options->compare_is, &options->compare_is, NULL));

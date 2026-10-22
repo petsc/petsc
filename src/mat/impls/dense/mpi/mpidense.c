@@ -126,7 +126,7 @@ static PetscErrorCode MatGetDiagonalBlock_MPIDense(Mat A, Mat *a)
     PetscCall(MatSetSizes(B, m, m, m, m));
     PetscCall(MatSetType(B, ((PetscObject)mdn->A)->type_name));
     PetscCall(MatDenseGetArrayRead(mdn->A, (const PetscScalar **)&array));
-    PetscCall(MatSeqDenseSetPreallocation(B, array + m * rstart));
+    PetscCall(MatSeqDenseSetPreallocation(B, PetscSafePointerPlusOffset(array, m * rstart)));
     PetscCall(MatDenseRestoreArrayRead(mdn->A, (const PetscScalar **)&array));
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
     *a = B;

@@ -282,10 +282,10 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     for (p = 0; p < *numVertices; p++) {
       PetscInt start = vOffsets[p], end = vOffsets[p + 1];
       PetscInt numEdges = end - start, *PETSC_RESTRICT edges;
-      PetscCall(PetscSortRemoveDupsInt(&numEdges, &graph[start]));
+      PetscCall(PetscSortRemoveDupsInt(&numEdges, PetscSafePointerPlusOffset(graph, start)));
       PetscCall(PetscSectionSetDof(section, p, numEdges));
       PetscCall(PetscSegBufferGetInts(adjBuffer, numEdges, &edges));
-      PetscCall(PetscArraycpy(edges, &graph[start], numEdges));
+      PetscCall(PetscArraycpy(edges, PetscSafePointerPlusOffset(graph, start), numEdges));
     }
     PetscCall(PetscFree(vOffsets));
     PetscCall(PetscFree(graph));
@@ -300,7 +300,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
     /* Sort adjacencies (not strictly necessary) */
     for (p = 0; p < *numVertices; p++) {
       PetscInt start = vOffsets[p], end = vOffsets[p + 1];
-      PetscCall(PetscSortInt(end - start, &graph[start]));
+      PetscCall(PetscSortInt(end - start, PetscSafePointerPlusOffset(graph, start)));
     }
   }
 

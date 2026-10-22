@@ -4,6 +4,16 @@ PetscLogEvent DMNetwork_LayoutSetUp;
 PetscLogEvent DMNetwork_SetUpNetwork;
 PetscLogEvent DMNetwork_Distribute;
 
+// Return the needed padded storage size to ensure proper memory alignment, in units of DMNetworkComponentGenericDataType.
+static PetscErrorCode DMNetworkGetAlignedSize_Private(size_t bytes, PetscInt *psize)
+{
+  const size_t alignment = PetscMax(sizeof(double), sizeof(PetscScalar));
+
+  PetscFunctionBegin;
+  PetscCall(PetscIntCast(((bytes + alignment - 1) / alignment) * (alignment / sizeof(DMNetworkComponentGenericDataType)), psize));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Creates the component header and value objects for a network point
 */
@@ -14,14 +24,8 @@ static PetscErrorCode SetUpNetworkHeaderComponentValue(DM dm, DMNetworkComponent
   PetscCall(PetscCalloc5(header->maxcomps, &header->size, header->maxcomps, &header->key, header->maxcomps, &header->offset, header->maxcomps, &header->nvar, header->maxcomps, &header->offsetvarrel));
   PetscCall(PetscCalloc1(header->maxcomps, &cvalue->data));
 
-  /* The size of the header is the size of struct _n_DMNetworkComponentHeader. Since the struct contains PetscInt pointers we cannot use sizeof(struct). So, we need to explicitly calculate the size.
-   If the data header struct changes then this header size calculation needs to be updated. */
-  header->hsize = sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
-  header->hsize /= sizeof(DMNetworkComponentGenericDataType);
-#if defined(__NEC__)
-  /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
-  header->hsize = (header->hsize + (8 - 1)) & ~(8 - 1);
-#endif
+  // Include the component metadata arrays and align the following component data.
+  PetscCall(DMNetworkGetAlignedSize_Private(sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt), &header->hsize));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1361,7 +1365,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
   DMNetworkComponent      *component = &network->component[componentkey];
   DMNetworkComponentHeader header;
   DMNetworkComponentValue  cvalue;
-  PetscInt                 compnum;
+  PetscInt                 compnum, offset, size;
   PetscInt                *compsize, *compkey, *compoffset, *compnvar, *compoffsetvarrel;
   void                   **compdata;
 
@@ -1375,7 +1379,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
   header = &network->header[p];
   cvalue = &network->cvalue[p];
   if (header->ndata == header->maxcomps) {
-    PetscInt additional_size;
+    PetscInt oldhsize = header->hsize;
 
     /* Reached limit so resize header component arrays */
     header->maxcomps += 2;
@@ -1385,12 +1389,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
     PetscCall(PetscMalloc1(header->maxcomps, &compdata));
 
     /* Recalculate header size */
-    header->hsize = sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt);
-    header->hsize /= sizeof(DMNetworkComponentGenericDataType);
-#if defined(__NEC__)
-    /* NEC/LG: quick hack to keep data aligned on 8 bytes. */
-    header->hsize = (header->hsize + (8 - 1)) & ~(8 - 1);
-#endif
+    PetscCall(DMNetworkGetAlignedSize_Private(sizeof(struct _n_DMNetworkComponentHeader) + 5 * header->maxcomps * sizeof(PetscInt), &header->hsize));
 
     /* Copy over component info */
     PetscCall(PetscMemcpy(compsize, header->size, header->ndata * sizeof(PetscInt)));
@@ -1417,8 +1416,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
 
     /* Update DataSection Dofs */
     /* The dofs for datasection point p equals sizeof the header (i.e. header->hsize) + sizes of the components added at point p. With the resizing of the header, we need to update the dofs for point p. Hence, we add the extra size added for the header */
-    additional_size = (5 * (header->maxcomps - header->ndata) * sizeof(PetscInt)) / sizeof(DMNetworkComponentGenericDataType);
-    PetscCall(PetscSectionAddDof(network->DataSection, p, additional_size));
+    PetscCall(PetscSectionAddDof(network->DataSection, p, header->hsize - oldhsize));
   }
   header = &network->header[p];
   cvalue = &network->cvalue[p];
@@ -1426,10 +1424,12 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
   compnum = header->ndata;
 
   header->size[compnum] = component->size;
-  PetscCall(PetscSectionAddDof(network->DataSection, p, component->size));
-  header->key[compnum] = componentkey;
-  if (compnum != 0) header->offset[compnum] = header->offset[compnum - 1] + header->size[compnum - 1];
-  cvalue->data[compnum] = compvalue;
+  PetscCall(DMNetworkGetAlignedSize_Private(component->size * sizeof(DMNetworkComponentGenericDataType), &size));
+  PetscCall(PetscSectionGetDof(network->DataSection, p, &offset));
+  PetscCall(PetscSectionAddDof(network->DataSection, p, size));
+  header->key[compnum]    = componentkey;
+  header->offset[compnum] = offset - header->hsize;
+  cvalue->data[compnum]   = compvalue;
 
   /* variables */
   header->nvar[compnum] += nvar;

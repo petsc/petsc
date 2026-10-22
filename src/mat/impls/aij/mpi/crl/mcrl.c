@@ -76,7 +76,7 @@ static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
   PetscCall(VecDestroy(&aijcrl->xwork));
   PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)A), 1, nd, PETSC_DECIDE, array, &aijcrl->xwork));
   PetscCall(VecDestroy(&aijcrl->fwork));
-  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, a->B->cmap->n, array + nd, &aijcrl->fwork));
+  PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, a->B->cmap->n, PetscSafePointerPlusOffset(array, nd), &aijcrl->fwork));
 
   aijcrl->array = array;
   aijcrl->xscat = a->Mvctx;

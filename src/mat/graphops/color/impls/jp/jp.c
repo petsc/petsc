@@ -274,7 +274,8 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
   const PetscInt *cols;
 
   PetscFunctionBegin;
-  maskradix  = sizeof(PetscInt) * 8;
+  // Keep the sign bit clear so mask shifts are defined.
+  maskradix  = sizeof(PetscInt) * 8 - 1;
   maskrounds = 1 + maxcolor / maskradix;
   maskbase   = 0;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)G, MATSEQAIJ, &isSeq));
@@ -320,7 +321,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
   for (k = 0; k < maskrounds; k++) {
     for (i = 0; i < dn; i++) {
       cmask[i] = 0;
-      if (colors[i] < maskbase + maskradix && colors[i] >= maskbase) cmask[i] = 1 << (colors[i] - maskbase);
+      if (colors[i] < maskbase + maskradix && colors[i] >= maskbase) cmask[i] = ((PetscInt)1) << (colors[i] - maskbase);
       dmask[i] = cmask[i];
     }
     if (oG) {
