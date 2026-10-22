@@ -135,6 +135,10 @@ typedef struct {
   PetscInt       **cacheSize;   /* [Ncache] Number of targets of each type */
   PetscInt       **cacheCone;   /* [Ncache] Cone specifications */
   PetscInt       **cacheOrnt;   /* [Ncache] Cone orientations */
+  /* Copy of the values of tr->trType, since DMLabelGetValue() costs O(number of values) */
+  PetscInt  rtStart; /* Chart start of the DM */
+  PetscInt  rtEnd;   /* Chart end of the DM */
+  PetscInt *rt;      /* [rtEnd - rtStart] Refine type of each point */
 } DMPlexRefine_SBR;
 
 typedef struct {
