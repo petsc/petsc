@@ -8,6 +8,7 @@
 #pragma once
 
 #include <math.h>
+#include <float.h>
 #include <petscmacros.h>
 #include <petscsystypes.h>
 
@@ -1940,10 +1941,10 @@ M*/
 .seealso: `PetscReal`, `PETSC_PI`, `PETSC_PHI`
 M*/
 
-#define PETSC_PI    PetscRealConstant(3.1415926535897932384626433832795029)
-#define PETSC_PHI   PetscRealConstant(1.6180339887498948482045868343656381)
-#define PETSC_SQRT2 PetscRealConstant(1.4142135623730950488016887242096981)
-#define PETSC_E     PetscRealConstant(2.7182818284590452353602874713526625)
+static const PetscReal PETSC_PI    = PetscRealConstant(3.1415926535897932384626433832795029);
+static const PetscReal PETSC_PHI   = PetscRealConstant(1.6180339887498948482045868343656381);
+static const PetscReal PETSC_SQRT2 = PetscRealConstant(1.4142135623730950488016887242096981);
+static const PetscReal PETSC_E     = PetscRealConstant(2.7182818284590452353602874713526625);
 
 /*MC
   PETSC_MAX_REAL - the largest real value that can be stored in a `PetscReal`
@@ -2011,33 +2012,34 @@ M*/
 M*/
 
 #if PetscDefined(USE_REAL_SINGLE)
-  #define PETSC_MAX_REAL             3.40282346638528860e+38F
-  #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
-  #define PETSC_REAL_MIN             1.1754944e-38F
-  #define PETSC_MACHINE_EPSILON      1.19209290e-07F
-  #define PETSC_SQRT_MACHINE_EPSILON 3.45266983e-04F
-  #define PETSC_SMALL                1.e-5F
+static const PetscReal PETSC_MAX_REAL             = FLT_MAX;
+static const PetscReal PETSC_REAL_MIN             = FLT_MIN;
+static const PetscReal PETSC_MACHINE_EPSILON      = FLT_EPSILON;
+static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.45266977e-04F;
+static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-5);
 #elif PetscDefined(USE_REAL_DOUBLE)
-  #define PETSC_MAX_REAL             1.7976931348623157e+308
-  #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
-  #define PETSC_REAL_MIN             2.225073858507201e-308
-  #define PETSC_MACHINE_EPSILON      2.2204460492503131e-16
-  #define PETSC_SQRT_MACHINE_EPSILON 1.490116119384766e-08
-  #define PETSC_SMALL                1.e-10
+static const PetscReal PETSC_MAX_REAL             = DBL_MAX;
+static const PetscReal PETSC_REAL_MIN             = DBL_MIN;
+static const PetscReal PETSC_MACHINE_EPSILON      = DBL_EPSILON;
+static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.4901161193847656e-08;
+static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-10);
 #elif PetscDefined(USE_REAL___FLOAT128)
-  #define PETSC_MAX_REAL             FLT128_MAX
-  #define PETSC_MIN_REAL             (-FLT128_MAX)
-  #define PETSC_REAL_MIN             FLT128_MIN
-  #define PETSC_MACHINE_EPSILON      FLT128_EPSILON
-  #define PETSC_SQRT_MACHINE_EPSILON 1.38777878078144567552953958511352539e-17Q
-  #define PETSC_SMALL                1.e-20Q
+static const PetscReal PETSC_MAX_REAL             = FLT128_MAX;
+static const PetscReal PETSC_REAL_MIN             = FLT128_MIN;
+static const PetscReal PETSC_MACHINE_EPSILON      = FLT128_EPSILON;
+static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.38777878078144567552953958511352539e-17Q;
+static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-20);
 #elif PetscDefined(USE_REAL___FP16)
-  #define PETSC_MAX_REAL             65504.0F
-  #define PETSC_MIN_REAL             (-PETSC_MAX_REAL)
-  #define PETSC_REAL_MIN             .00006103515625F
-  #define PETSC_MACHINE_EPSILON      .0009765625F
-  #define PETSC_SQRT_MACHINE_EPSILON .03125F
-  #define PETSC_SMALL                5.e-3F
+static const PetscReal PETSC_MAX_REAL             = __FLT16_MAX__;
+static const PetscReal PETSC_REAL_MIN             = __FLT16_MIN__;
+static const PetscReal PETSC_MACHINE_EPSILON      = __FLT16_EPSILON__;
+static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.1250e-02F;
+static const PetscReal PETSC_SMALL                = PetscRealConstant(5.e-3);
+#endif
+#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
+  #define PETSC_MIN_REAL (-PETSC_MAX_REAL)
+#else
+static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
 #endif
 
 /*MC
@@ -2050,7 +2052,11 @@ M*/
 
 .seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#define PETSC_INFINITY (PETSC_MAX_REAL / 4)
+#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
+  #define PETSC_INFINITY (PETSC_MAX_REAL / 4.0)
+#else
+static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / 4.0;
+#endif
 
 /*MC
   PETSC_NINFINITY - a finite number that represents negative infinity for setting certain bounds in `Tao`
@@ -2062,7 +2068,11 @@ M*/
 
 .seealso: `PETSC_INFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#define PETSC_NINFINITY (-PETSC_INFINITY)
+#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
+  #define PETSC_NINFINITY (-PETSC_INFINITY)
+#else
+static const PetscReal PETSC_NINFINITY = (-PETSC_INFINITY);
+#endif
 
 PETSC_EXTERN PetscBool  PetscIsInfReal(PetscReal);
 PETSC_EXTERN PetscBool  PetscIsNanReal(PetscReal);

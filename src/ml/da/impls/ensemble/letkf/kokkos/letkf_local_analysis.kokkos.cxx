@@ -32,7 +32,7 @@ using LETKFView1D    = Kokkos::View<PetscScalar *, Kokkos::LayoutLeft, LETKFExec
    positives pass through). Scaled by PETSC_MACHINE_EPSILON so the floor follows precision; the
    absolute floor matches the original 1.0e-14 in double precision and adapts down/up for
    single/quad. */
-static constexpr PetscReal LETKF_EIGEN_EPS = (PetscReal)100.0 * PETSC_MACHINE_EPSILON;
+static const PetscReal LETKF_EIGEN_EPS = (PetscReal)100.0 * PETSC_MACHINE_EPSILON;
 
 /* ========================================================================== */
 /*                    Batched Eigendecomposition for LETKF                    */

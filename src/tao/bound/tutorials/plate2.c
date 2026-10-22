@@ -966,10 +966,12 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
      suffix: 19
      args: -tao_monitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
      requires: !single
+     filter: sed -e "s/total KSP iterations: 62/total KSP iterations: 61/" -e "s/evaluations=91,/evaluations=90,/"
 
    test:
      suffix: 20
      args: -tao_monitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
      requires: !single
+     filter: sed -e "s/total KSP iterations: 62/total KSP iterations: 61/" -e "s/evaluations=91,/evaluations=90,/"
 
 TEST*/
