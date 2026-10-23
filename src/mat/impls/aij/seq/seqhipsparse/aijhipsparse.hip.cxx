@@ -3402,9 +3402,13 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       auto p2    = Ccusp->coords->begin();
       thrust::advance(p2, Annz);
       PetscCallThrust(thrust::merge(thrust::device, Azb, Aze, Bzb, Bze, Czb, IJCompare4())); // put nonzeros in A and B to C in sorted order (by row and then by column)
-      auto cci  = thrust::make_counting_iterator(zero);
-      auto cce  = thrust::make_counting_iterator(c->nz);
-      auto pred = thrust::identity<PetscInt>();
+      auto cci = thrust::make_counting_iterator(zero);
+      auto cce = thrust::make_counting_iterator(c->nz);
+#if THRUST_VERSION < 200800
+      auto pred = thrust::identity<int>();
+#else
+      auto pred = ::internal::identity();
+#endif
       PetscCallThrust(thrust::copy_if(thrust::device, cci, cce, wPerm->begin(), p1, pred));
       PetscCallThrust(thrust::remove_copy_if(thrust::device, cci, cce, wPerm->begin(), p2, pred));
       // Implement a simplified hipsparseXcoo2csr() with Thrust (assuming the row indices are already sorted), as the former doesn't support 64-bit indices.
