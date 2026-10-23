@@ -1360,7 +1360,7 @@ are used to indicate that one is solving a variational inequality. Problems with
 the reduced space, `SNESVINEWTONRSLS`, and semi-smooth `SNESVINEWTONSSLS` solvers.
 
 Reduced space methods are also known as active set methods to capture the idea that at each Newton step a linear
-problem on a reduced space (the active set of variables) is solved to produce an update. See `SNESVINEWTONRSLS`
+problem on a reduced space (the inactive set of variables, those not held at a bound by an active constraint) is solved to produce an update. See `SNESVINEWTONRSLS`
 for a concise definition of the (in)active set used by the algorithms.
 
 The
