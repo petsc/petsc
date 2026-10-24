@@ -81,6 +81,89 @@ cdef class DMPlex(DM):
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 
+    def createFromCellSectionParallel(
+        self,
+        dim: int,
+        Section cellSection,
+        cells: Sequence[int],
+        coords: Sequence[Sequence[float]],
+        comm: Comm | None = None,
+        NVertices: int | None = None,
+        interpolate: bool | None = True) -> tuple[Self, SF, ArrayInt]:
+        """Create a `DMPlex` from arbitrary-sized cell-vertex relations across all ranks.
+
+        Collective.
+
+        Compared to `DMPlex.createFromCellList`, this allows for cells with
+        different number of vertices and for the creation operation to be done
+        in parallel.
+
+        Parameters
+        ----------
+        dim
+            The topological dimension of the mesh.
+        cellSection
+            The `Section` giving the number of vertices for each cell
+            (layout of cells).
+        cells
+            An array of vertex ids, indexed by ``cellSection``.
+        coords
+            The coordinates of the vertices owned by this process, with shape
+            (number of owned vertices, spatial dimension). Ranks own consecutive,
+            non-overlapping blocks of the global vertex numbering, in rank order.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+        NVertices
+            The global number of vertices, or `DECIDE` or ``None``, default ``None``
+        interpolate
+            Flag to interpolate the mesh, default ``True``.
+
+        Returns
+        -------
+        dm : DMPlex
+            DMPlex built from input.
+        vertexSF : `SF`
+            `SF` describing map from vertices in ``coords`` to DMPlex vertex owners
+        vertexAdj : `ArrayInt`
+            Array of unique vertex IDs in ``cells``
+
+        See Also
+        --------
+        DM, DMPlex, DMPlex.create, DMPlex.interpolate,
+        petsc.DMPlexCreateFromCellListPetsc,
+        petsc.DMPlexCreateFromCellSectionParallel
+
+        """
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef PetscInt  *cellVertices = NULL, *verticesAdj = NULL
+        cdef PetscInt  vstart = 0, vend = 0, cstart = 0, cend = 0
+        cdef SF sf = SF()
+
+        NVertices = PETSC_DECIDE if NVertices is None else NVertices
+        coords = PyArray_FROM_OTF(coords, NPY_PETSC_REAL, NPY_ARRAY_ALIGNED|NPY_ARRAY_NOTSWAPPED|NPY_ARRAY_CARRAY)
+        cells = iarray_i(cells, NULL, &cellVertices)
+
+        if PyArray_NDIM(coords) != 2: raise ValueError(
+                ("coords vertices must have two dimensions: "
+                 "coords.ndim=%d") % (PyArray_NDIM(coords)))
+        cdef PetscInt numVertices  = <PetscInt> PyArray_DIM(coords, 0)
+        cdef PetscInt spaceDim     = <PetscInt> PyArray_DIM(coords, 1)
+        CHKERR(PetscSectionGetChart(cellSection.sec, &cstart, &cend))
+        cdef PetscInt numCells = cend - cstart
+        cdef PetscReal *vertexCoords = <PetscReal*> PyArray_DATA(coords)
+        CHKERR(DMPlexCreateFromCellSectionParallel(ccomm, asInt(dim), asInt(numCells), numVertices,
+                                                   asInt(NVertices), cellSection.sec, interp, cellVertices,
+                                                   spaceDim, vertexCoords, &sf.sf, &verticesAdj, &newdm))
+        CHKERR(DMPlexGetDepthStratum(newdm, 0, &vstart, &vend))
+        CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
+        try:
+            adjacency = array_i(vend - vstart, verticesAdj)
+        finally:
+            CHKERR(PetscFree(verticesAdj))
+        return self, sf, adjacency
+
     def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] = (0, 0, 0), upper: Sequence[float] = (1, 1, 1),
                       simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, localizationHeight: int | None = 0, sparseLocalize: bool | None = True, comm: Comm | None = None) -> Self:
         """Create a mesh on the tensor product of intervals.
