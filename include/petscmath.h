@@ -1941,6 +1941,11 @@ M*/
 .seealso: `PetscReal`, `PETSC_PI`, `PETSC_PHI`
 M*/
 
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 static const PetscReal PETSC_PI    = PetscRealConstant(3.1415926535897932384626433832795029);
 static const PetscReal PETSC_PHI   = PetscRealConstant(1.6180339887498948482045868343656381);
 static const PetscReal PETSC_SQRT2 = PetscRealConstant(1.4142135623730950488016887242096981);
@@ -2056,6 +2061,10 @@ M*/
   #define PETSC_INFINITY (PETSC_MAX_REAL / 4.0)
 #else
 static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / 4.0;
+#endif
+
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic pop
 #endif
 
 /*MC
