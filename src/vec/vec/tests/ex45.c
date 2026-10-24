@@ -1,4 +1,4 @@
-static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetGather().\n\n";
+static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetGather(), and tests VecStrideMax() and VecStrideMin().\n\n";
 
 /*
    Allows one to easily pull out some components of a multi-component vector and put them in another vector.
@@ -13,6 +13,46 @@ static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetG
 */
 
 #include <petscvec.h>
+
+static PetscErrorCode TestStrideMinMax(void)
+{
+  Vec             v;
+  PetscMPIInt     rank, size;
+  PetscInt        n, N, idx, expected;
+  PetscReal       value, expectedMin, expectedMax;
+  const PetscReal values[] = {PETSC_MIN_REAL, 0.0, PETSC_MAX_REAL};
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  for (PetscInt layout = 0; layout < 4; ++layout) {
+    n = 4;
+    if ((layout == 1 && rank != size - 1) || (layout == 2 && rank != 0) || layout == 3) n = 0;
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &v));
+    PetscCall(VecSetSizes(v, n, PETSC_DECIDE));
+    PetscCall(VecSetBlockSize(v, 2));
+    PetscCall(VecSetFromOptions(v));
+    PetscCall(VecGetSize(v, &N));
+    for (size_t k = 0; k < PETSC_STATIC_ARRAY_LENGTH(values); ++k) {
+      PetscCall(VecSet(v, values[k]));
+      expectedMin = N ? values[k] : PETSC_MAX_REAL;
+      expectedMax = N ? values[k] : PETSC_MIN_REAL;
+      for (PetscInt start = 0; start < 2; ++start) {
+        expected = N ? start : -1;
+        PetscCall(VecStrideMax(v, start, &idx, &value));
+        PetscCheck(value == expectedMax && idx == expected, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Layout %" PetscInt_FMT ", stride %" PetscInt_FMT ": maximum index %" PetscInt_FMT ", expected %" PetscInt_FMT, layout, start, idx, expected);
+        PetscCall(VecStrideMax(v, start, NULL, &value));
+        PetscCheck(value == expectedMax, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect maximum without an index");
+        PetscCall(VecStrideMin(v, start, &idx, &value));
+        PetscCheck(value == expectedMin && idx == expected, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Layout %" PetscInt_FMT ", stride %" PetscInt_FMT ": minimum index %" PetscInt_FMT ", expected %" PetscInt_FMT, layout, start, idx, expected);
+        PetscCall(VecStrideMin(v, start, NULL, &value));
+        PetscCheck(value == expectedMin, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect minimum without an index");
+      }
+    }
+    PetscCall(VecDestroy(&v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 int main(int argc, char **argv)
 {
@@ -85,6 +125,7 @@ int main(int argc, char **argv)
   */
   PetscCall(VecDestroy(&v));
   PetscCall(VecDestroy(&s));
+  PetscCall(TestStrideMinMax());
   PetscCall(PetscFinalize());
   return 0;
 }

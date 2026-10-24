@@ -192,6 +192,10 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
   PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
+  if (start < n) {
+    *nrm = PetscRealPart(x[start]);
+    id   = start;
+  }
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) > *nrm) {
       *nrm = PetscRealPart(x[i]);
@@ -213,10 +217,11 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
     PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
     out.v = *nrm;
-    out.i = rstart + id;
+    /* Empty ranks must lose ties with valid global indices. */
+    out.i = id < 0 ? PETSC_INT_MAX : rstart + id;
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)v)));
     *nrm  = out.v;
-    *idex = out.i;
+    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -266,6 +271,10 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
   PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
   PetscCall(VecGetArrayRead(v, &x));
+  if (start < n) {
+    *nrm = PetscRealPart(x[start]);
+    id   = start;
+  }
   for (i = start; i < n; i += bs) {
     if (PetscRealPart(x[i]) < *nrm) {
       *nrm = PetscRealPart(x[i]);
@@ -287,10 +296,11 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
     PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
     out.v = *nrm;
-    out.i = rstart + id;
+    /* Empty ranks must lose ties with valid global indices. */
+    out.i = id < 0 ? PETSC_INT_MAX : rstart + id;
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
     *nrm  = out.v;
-    *idex = out.i;
+    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
   }
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
