@@ -436,7 +436,8 @@ int main(int argc, char **argv)
   test:
     suffix: 0_p4est
     requires: p4est !single
-    args: -bc_type {{dirichlet neumann}separate output} -rhs_type {{constant analytical}separate output} -coefficient_type {{constant checkerboard analytical}separate output} -initial_dm_plex_simplex 0 -pc_type svd -snes_type newtonls -snes_error_if_not_converged
+    args: -bc_type {{dirichlet neumann}shared output} -rhs_type {{constant analytical}shared output} -coefficient_type {{constant checkerboard analytical}shared output} -initial_dm_plex_simplex 0 -p4est -pc_type svd -snes_type newtonls -snes_error_if_not_converged
+    filter: sed -e "/^  boundary conditions:/d" -e "/^  right-hand side:/d" -e "/^  coefficient:/d"
 
   testset:
     nsize: 2
