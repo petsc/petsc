@@ -153,11 +153,64 @@ typedef struct {
   PetscInt  i;
 } VecStrideExtremum;
 
+MPI_Op VecStrideMax_Op = MPI_OP_NULL;
+MPI_Op VecStrideMin_Op = MPI_OP_NULL;
+
+static inline PetscBool VecStrideExtremumWins_Private(VecStrideExtremum in, VecStrideExtremum out, PetscBool maximum)
+{
+  PetscBool innan, outnan;
+
+  /* PETSC_INT_MAX cannot be a valid vector index and marks an empty contribution.
+     Ignore it before comparing values, including true infinities and NaNs. */
+  if (in.i == PETSC_INT_MAX) return PETSC_FALSE;
+  if (out.i == PETSC_INT_MAX) return PETSC_TRUE;
+  innan  = PetscIsNanReal(in.v);
+  outnan = PetscIsNanReal(out.v);
+  if (innan != outnan) return innan;
+  if (innan == PETSC_TRUE || in.v == out.v) return (PetscBool)(in.i < out.i);
+  return (PetscBool)(maximum == PETSC_TRUE ? in.v > out.v : in.v < out.v);
+}
+
+static void VecStrideMinMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype, PetscBool maximum)
+{
+  const VecStrideExtremum *xin  = (const VecStrideExtremum *)in;
+  VecStrideExtremum       *xout = (VecStrideExtremum *)out;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_REAL_INT) {
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types"));
+    PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
+  }
+  // Select the whole pair so the value comes from the winning global index.
+  for (PetscMPIInt c = 0; c < *cnt; ++c) {
+    if (VecStrideExtremumWins_Private(xin[c], xout[c], maximum) == PETSC_TRUE) xout[c] = xin[c];
+  }
+  PetscFunctionReturnVoid();
+}
+
+void MPIAPI VecStrideMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
+  PetscFunctionBegin;
+  VecStrideMinMax_Local(in, out, cnt, datatype, PETSC_TRUE);
+  PetscFunctionReturnVoid();
+}
+
+void MPIAPI VecStrideMin_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
+  PetscFunctionBegin;
+  VecStrideMinMax_Local(in, out, cnt, datatype, PETSC_FALSE);
+  PetscFunctionReturnVoid();
+}
+
+// Preserve unordered comparisons under the same compiler options as PetscIsNanReal().
+#if PetscDefined(HAVE_NO_FINITE_MATH_ONLY)
+__attribute__((optimize("no-finite-math-only")))
+#endif
 static PetscErrorCode VecStrideMinMax_Private(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm, PetscBool maximum)
 {
   PetscInt           n, bs, rstart;
   const PetscScalar *x;
-  VecStrideExtremum  out = {maximum == PETSC_TRUE ? PETSC_MIN_REAL : PETSC_MAX_REAL, PETSC_INT_MAX};
+  VecStrideExtremum  out = {0.0, PETSC_INT_MAX};
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(v, &n));
@@ -170,25 +223,29 @@ static PetscErrorCode VecStrideMinMax_Private(Vec v, PetscInt start, PetscInt *i
     PetscInt  offset = 0;
     PetscReal best   = PetscRealPart(x[start]);
 
-    for (PetscInt i = bs; i < n; i += bs) {
-      PetscReal value = PetscRealPart(x[i + start]);
+    if (PetscIsNanReal(best) == PETSC_FALSE) {
+      for (PetscInt i = bs; i < n; i += bs) {
+        PetscReal value = PetscRealPart(x[i + start]);
+        PetscBool ordered;
 
-      if (maximum == PETSC_TRUE ? value > best : value < best) {
-        best   = value;
-        offset = i;
+        /* The current extremum is not NaN. These comparisons distinguish a non-improving
+           value, an improvement, and a NaN without a separate self-comparison. */
+        if (maximum == PETSC_TRUE ? value <= best : best <= value) continue;
+        ordered = (PetscBool)(maximum == PETSC_TRUE ? value > best : best > value);
+        best    = value;
+        offset  = i;
+        // Ascending indices make the first NaN the only local candidate needed.
+        if (ordered == PETSC_FALSE) break;
       }
     }
     out.v = best;
     out.i = rstart + offset + start;
   }
   PetscCall(VecRestoreArrayRead(v, &x));
-  if (idex == NULL) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out.v, 1, MPIU_REAL, maximum == PETSC_TRUE ? MPIU_MAX : MPIU_MIN, PetscObjectComm((PetscObject)v)));
-  else {
-    // Empty ranks keep PETSC_INT_MAX, so they lose ties with valid global indices.
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, maximum == PETSC_TRUE ? MPIU_MAXLOC : MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
-    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
-  }
-  *nrm = out.v;
+  // Use the same reduction even when the caller does not request the index.
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, maximum == PETSC_TRUE ? VecStrideMax_Op : VecStrideMin_Op, PetscObjectComm((PetscObject)v)));
+  *nrm = out.i == PETSC_INT_MAX ? (maximum == PETSC_TRUE ? PETSC_MIN_REAL : PETSC_MAX_REAL) : out.v;
+  if (idex != NULL) *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -218,6 +275,20 @@ static PetscErrorCode VecStrideMinMax_Private(Vec v, PetscInt start, PetscInt *i
   This is useful for computing, say the maximum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
   This will only work if the desire subvector is a stride subvector.
+
+  The real parts of the selected entries are compared. Positive and negative IEEE infinities
+  participate in the comparison normally.
+
+  If any selected real part is NaN, including a negative NaN, `nrm` is NaN and `idex` is the
+  smallest global index in `v` whose selected real part is NaN. If all selected real parts are
+  NaN, this is the first selected global index.
+
+  Otherwise, `idex` is the smallest global index attaining the maximum, and `nrm` is that
+  entry's real part. Equal positive and negative zeros are ties, so the returned zero has
+  the sign of the entry at that index. Passing `NULL` for `idex` does not change `nrm`.
+
+  Empty MPI processes do not affect the result. For a globally empty subvector, the result
+  is an `nrm` of `PETSC_MIN_REAL` and an `idex` of -1.
 
 .seealso: `Vec`, `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
@@ -257,6 +328,20 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   This is useful for computing, say the minimum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
   This will only work if the desire subvector is a stride subvector.
+
+  The real parts of the selected entries are compared. Positive and negative IEEE infinities
+  participate in the comparison normally.
+
+  If any selected real part is NaN, including a negative NaN, `nrm` is NaN and `idex` is the
+  smallest global index in `v` whose selected real part is NaN. If all selected real parts are
+  NaN, this is the first selected global index.
+
+  Otherwise, `idex` is the smallest global index attaining the minimum, and `nrm` is that
+  entry's real part. Equal positive and negative zeros are ties, so the returned zero has
+  the sign of the entry at that index. Passing `NULL` for `idex` does not change `nrm`.
+
+  Empty MPI processes do not affect the result. For a globally empty subvector, the result
+  is an `nrm` of `PETSC_MAX_REAL` and an `idex` of -1.
 
 .seealso: `Vec`, `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/

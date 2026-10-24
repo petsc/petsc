@@ -13,6 +13,7 @@ static char help[] = "Demonstrates VecStrideSubSetScatter() and VecStrideSubSetG
 */
 
 #include <petscvec.h>
+#include <math.h>
 
 static PetscErrorCode TestStrideMinMax(void)
 {
@@ -50,6 +51,82 @@ static PetscErrorCode TestStrideMinMax(void)
       }
     }
     PetscCall(VecDestroy(&v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestStrideNonfinite(void)
+{
+  Vec          v;
+  PetscMPIInt  rank, size;
+  PetscInt     n, N, rstart, idx, expected;
+  PetscReal    value, expectedValue;
+  PetscScalar *x;
+  const struct {
+    PetscInt  n;
+    PetscReal values[4];
+    PetscInt  imin, imax;
+  } cases[] = {
+    {4, {-INFINITY, -INFINITY, -INFINITY, -INFINITY}, 0, 0},
+    {4, {INFINITY, INFINITY, INFINITY, INFINITY},     0, 0},
+    {4, {-INFINITY, 4, INFINITY, -2},                 0, 2},
+    {4, {NAN, 4, 7, 1},                               0, 0},
+    {4, {4, NAN, 7, 1},                               1, 1},
+    {4, {4, 7, NAN, 1},                               2, 2},
+    {4, {4, 7, 1, NAN},                               3, 3},
+    {4, {4, NAN, NAN, 1},                             1, 1},
+    {4, {NAN, NAN, NAN, NAN},                         0, 0},
+    {4, {-NAN, 4, 7, 1},                              0, 0},
+    {4, {-INFINITY, NAN, INFINITY, -NAN},             1, 1},
+    {4, {INFINITY, INFINITY, NAN, 4},                 2, 2},
+    {4, {-INFINITY, -INFINITY, 4, NAN},               3, 3},
+    {4, {4, -2, 7, 1},                                1, 2},
+    {4, {1, 2, 3, 4},                                 0, 3},
+    {4, {4, 3, 2, 1},                                 3, 0},
+    {4, {4, -2, 4, -2},                               1, 0},
+    {4, {-0.0, 0.0, -0.0, 0.0},                       0, 0},
+    {4, {0.0, -0.0, 0.0, -0.0},                       0, 0},
+    {1, {NAN},                                        0, 0},
+    {1, {-INFINITY},                                  0, 0},
+    {1, {INFINITY},                                   0, 0}
+  };
+
+  PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  for (size_t k = 0; k < PETSC_STATIC_ARRAY_LENGTH(cases); ++k) {
+    for (PetscInt layout = 0; layout < 5; ++layout) {
+      n = 2 * (cases[k].n / size + (rank < cases[k].n % size));
+      if (layout == 1) n = rank == size - 1 ? 2 * cases[k].n : 0;
+      if (layout == 2) n = rank == 0 ? 2 * cases[k].n : 0;
+      if (layout == 3) n = rank == size / 2 ? 2 * cases[k].n : 0;
+      if (layout == 4) n = 0;
+      PetscCall(VecCreate(PETSC_COMM_WORLD, &v));
+      PetscCall(VecSetSizes(v, n, PETSC_DECIDE));
+      PetscCall(VecSetBlockSize(v, 2));
+      PetscCall(VecSetFromOptions(v));
+      PetscCall(VecGetSize(v, &N));
+      PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
+      for (PetscInt start = 0; start < 2; ++start) {
+        PetscCall(VecGetArray(v, &x));
+        // NaNs outside the selected stride must not affect either extremum.
+        for (PetscInt i = 0; i < n; ++i) x[i] = i % 2 == start ? cases[k].values[(rstart + i) / 2] : (PetscReal)NAN;
+        PetscCall(VecRestoreArray(v, &x));
+        for (PetscInt maximum = 0; maximum < 2; ++maximum) {
+          expected      = maximum ? cases[k].imax : cases[k].imin;
+          expectedValue = N ? cases[k].values[expected] : (maximum ? PETSC_MIN_REAL : PETSC_MAX_REAL);
+          expected      = N ? 2 * expected + start : -1;
+          for (PetscInt indexed = 0; indexed < 2; ++indexed) {
+            if (maximum) PetscCall(VecStrideMax(v, start, indexed ? &idx : NULL, &value));
+            else PetscCall(VecStrideMin(v, start, indexed ? &idx : NULL, &value));
+            PetscCheck(PetscIsNanReal(expectedValue) == PETSC_TRUE ? PetscIsNanReal(value) == PETSC_TRUE : value == expectedValue, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Case %zu, layout %" PetscInt_FMT ", stride %" PetscInt_FMT ", maximum %" PetscInt_FMT ", indexed %" PetscInt_FMT ": value %g, expected %g", k, layout, start, maximum, indexed, (double)value, (double)expectedValue);
+            PetscCheck(expectedValue != 0.0 || signbit((double)value) == signbit((double)expectedValue), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Incorrect sign of zero at the first extremum");
+            PetscCheck(!indexed || idx == expected, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Case %zu, layout %" PetscInt_FMT ", stride %" PetscInt_FMT ", maximum %" PetscInt_FMT ": index %" PetscInt_FMT ", expected %" PetscInt_FMT, k, layout, start, maximum, idx, expected);
+          }
+        }
+      }
+      PetscCall(VecDestroy(&v));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -126,6 +203,7 @@ int main(int argc, char **argv)
   PetscCall(VecDestroy(&v));
   PetscCall(VecDestroy(&s));
   PetscCall(TestStrideMinMax());
+  PetscCall(TestStrideNonfinite());
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -136,6 +214,7 @@ int main(int argc, char **argv)
       filter: grep -v type | grep -v " MPI process" | grep -v Process
       diff_args: -j
       nsize: 2
+      args: -fp_trap 0
 
    test:
       filter: grep -v type | grep -v " MPI process" | grep -v Process
@@ -143,6 +222,14 @@ int main(int argc, char **argv)
       diff_args: -j
       suffix: 2
       nsize: 1
-      args: -vec_type {{seq mpi}}
+      args: -vec_type {{seq mpi}} -fp_trap 0
+
+   test:
+      filter: grep -v type | grep -v " MPI process" | grep -v Process
+      output_file: output/ex45_1.out
+      diff_args: -j
+      suffix: nonfinite
+      nsize: {{3 4}}
+      args: -fp_trap 0
 
 TEST*/
