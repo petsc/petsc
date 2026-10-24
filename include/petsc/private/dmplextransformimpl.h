@@ -2,6 +2,7 @@
 
 #include <petsc/private/dmpleximpl.h>
 #include <petscdmplextransform.h>
+#include <petsc/private/hashmapi.h>
 
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetUp;
 PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_Apply;
@@ -135,6 +136,11 @@ typedef struct {
   PetscInt       **cacheSize;   /* [Ncache] Number of targets of each type */
   PetscInt       **cacheCone;   /* [Ncache] Cone specifications */
   PetscInt       **cacheOrnt;   /* [Ncache] Cone orientations */
+  PetscHMapI       cacheMap;    /* Encoded bisection order to cache index */
+  /* Copy of the values of tr->trType, since DMLabelGetValue() costs O(number of values) */
+  PetscInt  rtStart; /* Chart start of the DM */
+  PetscInt  rtEnd;   /* Chart end of the DM */
+  PetscInt *rt;      /* [rtEnd - rtStart] Refine type of each point */
 } DMPlexRefine_SBR;
 
 typedef struct {

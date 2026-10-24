@@ -553,6 +553,36 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
     }
     PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
   }
+  /* Store the refine type of each point, read stratum by stratum in O(number of points) */
+  {
+    IS              valueIS;
+    const PetscInt *values;
+    PetscInt        Nv, defVal;
+
+    PetscCall(PetscMalloc1(pEnd - pStart, &sbr->rt));
+    PetscCall(DMLabelGetDefaultValue(tr->trType, &defVal));
+    for (p = pStart; p < pEnd; ++p) sbr->rt[p - pStart] = defVal;
+    PetscCall(DMLabelGetNumValues(tr->trType, &Nv));
+    PetscCall(DMLabelGetValueIS(tr->trType, &valueIS));
+    PetscCall(ISGetIndices(valueIS, &values));
+    for (PetscInt v = 0; v < Nv; ++v) {
+      IS              pointIS;
+      const PetscInt *points;
+      PetscInt        Np;
+
+      PetscCall(DMLabelGetStratumIS(tr->trType, values[v], &pointIS));
+      if (!pointIS) continue;
+      PetscCall(ISGetLocalSize(pointIS, &Np));
+      PetscCall(ISGetIndices(pointIS, &points));
+      for (PetscInt i = 0; i < Np; ++i) sbr->rt[points[i] - pStart] = values[v];
+      PetscCall(ISRestoreIndices(pointIS, &points));
+      PetscCall(ISDestroy(&pointIS));
+    }
+    PetscCall(ISRestoreIndices(valueIS, &values));
+    PetscCall(ISDestroy(&valueIS));
+    sbr->rtStart = pStart;
+    sbr->rtEnd   = pEnd;
+  }
   /* Cleanup */
   PetscCall(DMPlexPointQueueDestroy(&queue));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -939,8 +969,7 @@ static PetscErrorCode SBRGetTetSplit_Private(DMPlexTransform tr, PetscInt code, 
   PetscInt          i;
 
   PetscFunctionBeginHot;
-  for (i = 0; i < sbr->Ncache; ++i)
-    if (sbr->cacheCode[i] == code) break;
+  PetscCall(PetscHMapIGetWithDefault(sbr->cacheMap, code, sbr->Ncache, &i));
   if (i == sbr->Ncache) {
     SBRTetSubdiv   sub;
     DMPolytopeType targetTmp[3];
@@ -982,6 +1011,7 @@ static PetscErrorCode SBRGetTetSplit_Private(DMPlexTransform tr, PetscInt code, 
     sbr->cacheCode[i] = code;
     sbr->cacheNt[i]   = NtTmp;
     ++sbr->Ncache;
+    PetscCall(PetscHMapISet(sbr->cacheMap, code, i));
   }
   *Nt     = sbr->cacheNt[i];
   *target = sbr->cacheTarget[i];
@@ -1230,12 +1260,23 @@ static PetscErrorCode DMPlexTransformSBRValidate_Private(DMPlexTransform tr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* The refine type of point p, from the array filled in DMPlexTransformSetUp_SBR() */
+static inline PetscErrorCode SBRGetRefineType_Private(DMPlexTransform tr, PetscInt p, PetscInt *rt)
+{
+  DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
+
+  PetscFunctionBeginHot;
+  if (p >= sbr->rtStart && p < sbr->rtEnd) *rt = sbr->rt[p - sbr->rtStart];
+  else PetscCall(DMLabelGetValue(tr->trType, p, rt));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   PetscInt rt;
 
   PetscFunctionBeginHot;
-  PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
+  PetscCall(SBRGetRefineType_Private(tr, sp, &rt));
   *rnew = r;
   *onew = o;
   switch (rt) {
@@ -1511,12 +1552,11 @@ static PetscErrorCode SBRGetTriangleSplitFan_Private(PetscInt first, PetscInt *N
 
 static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
-  DMLabel  trType = tr->trType;
   PetscInt val;
 
   PetscFunctionBeginHot;
   PetscCheck(p >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point argument is invalid");
-  PetscCall(DMLabelGetValue(trType, p, &val));
+  PetscCall(SBRGetRefineType_Private(tr, p, &val));
   if (rt) *rt = val;
   switch (source) {
   case DM_POLYTOPE_POINT:
@@ -1644,7 +1684,9 @@ static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
     PetscCall(PetscFree(sbr->cacheOrnt[i]));
   }
   PetscCall(PetscFree6(sbr->cacheCode, sbr->cacheNt, sbr->cacheTarget, sbr->cacheSize, sbr->cacheCone, sbr->cacheOrnt));
+  PetscCall(PetscHMapIDestroy(&sbr->cacheMap));
   PetscCall(PetscFree(sbr->edgeLen));
+  PetscCall(PetscFree(sbr->rt));
   PetscCall(PetscSectionDestroy(&sbr->secEdgeLen));
   PetscCall(DMLabelDestroy(&sbr->splitPoints));
   PetscCall(PetscFree(tr->data));
@@ -1672,6 +1714,7 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscCall(PetscNew(&f));
+  PetscCall(PetscHMapICreate(&f->cacheMap));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_SBR(tr));

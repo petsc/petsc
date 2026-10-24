@@ -2,6 +2,7 @@
 
 #include <petsc/private/petscfeimpl.h> /* For PetscFEInterpolate_Static() */
 #include <petsc/private/hashmapi.h>
+#include <petsc/private/dmlabelimpl.h> /* For DMLabelLookupStratum() */
 
 PetscClassId DMPLEXTRANSFORM_CLASSID;
 
@@ -1124,7 +1125,7 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   PetscCheck(p >= ctS && p < ctE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, DMPolytopeTypes[ct], ctS, ctE);
   PetscCall(DMPlexTransformCellTransform(tr, ct, p, &rt, &Nct, &rct, &rsize, &cone, &ornt));
   if (trType) {
-    PetscCall(DMLabelGetValueIndex(trType, rt, &cind));
+    PetscCall(DMLabelLookupStratum(trType, rt, &cind));
     PetscCall(DMLabelGetStratumPointIndex(trType, rt, p, &rp));
     PetscCheck(rp >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s point %" PetscInt_FMT " does not have refine type %" PetscInt_FMT, DMPolytopeTypes[ct], p, rt);
   } else {
