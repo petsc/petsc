@@ -2058,9 +2058,9 @@ static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
 .seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
 #if !PetscDefined(HAVE_STATIC_CONST_INIT_FROM_CONST)
-  #define PETSC_INFINITY (PETSC_MAX_REAL / 4.0)
+  #define PETSC_INFINITY (PETSC_MAX_REAL / PetscRealConstant(4.0))
 #else
-static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / 4.0;
+static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / PetscRealConstant(4.0);
 #endif
 
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
