@@ -148,6 +148,50 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  PetscReal v;
+  PetscInt  i;
+} VecStrideExtremum;
+
+static PetscErrorCode VecStrideMinMax_Private(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm, PetscBool maximum)
+{
+  PetscInt           n, bs, rstart;
+  const PetscScalar *x;
+  VecStrideExtremum  out = {maximum == PETSC_TRUE ? PETSC_MIN_REAL : PETSC_MAX_REAL, PETSC_INT_MAX};
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetBlockSize(v, &bs));
+  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
+  PetscCall(VecGetArrayRead(v, &x));
+  if (n) {
+    PetscInt  offset = 0;
+    PetscReal best   = PetscRealPart(x[start]);
+
+    for (PetscInt i = bs; i < n; i += bs) {
+      PetscReal value = PetscRealPart(x[i + start]);
+
+      if (maximum == PETSC_TRUE ? value > best : value < best) {
+        best   = value;
+        offset = i;
+      }
+    }
+    out.v = best;
+    out.i = rstart + offset + start;
+  }
+  PetscCall(VecRestoreArrayRead(v, &x));
+  if (idex == NULL) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out.v, 1, MPIU_REAL, maximum == PETSC_TRUE ? MPIU_MAX : MPIU_MIN, PetscObjectComm((PetscObject)v)));
+  else {
+    // Empty ranks keep PETSC_INT_MAX, so they lose ties with valid global indices.
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, maximum == PETSC_TRUE ? MPIU_MAXLOC : MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
+    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
+  }
+  *nrm = out.v;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecStrideMax - Computes the maximum of subvector of a vector defined
   by a starting point and a stride and optionally its location.
@@ -179,51 +223,11 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 @*/
 PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
-  PetscInt           i, n, bs, id = -1;
-  const PetscScalar *x;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
-  *nrm = PETSC_MIN_REAL;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetBlockSize(v, &bs));
-  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
-  PetscCall(VecGetArrayRead(v, &x));
-  if (start < n) {
-    *nrm = PetscRealPart(x[start]);
-    id   = start;
-  }
-  for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) > *nrm) {
-      *nrm = PetscRealPart(x[i]);
-      id   = i;
-    }
-  }
-  PetscCall(VecRestoreArrayRead(v, &x));
-#if PetscDefined(HAVE_MPIUNI)
-  if (idex) *idex = id;
-#else
-  if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } out;
-    PetscInt rstart;
-
-    PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    out.v = *nrm;
-    /* Empty ranks must lose ties with valid global indices. */
-    out.i = id < 0 ? PETSC_INT_MAX : rstart + id;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)v)));
-    *nrm  = out.v;
-    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
-  }
-#endif
+  PetscCall(VecStrideMinMax_Private(v, start, idex, nrm, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -258,51 +262,11 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 @*/
 PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
-  PetscInt           i, n, bs, id = -1;
-  const PetscScalar *x;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
-  *nrm = PETSC_MAX_REAL;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetBlockSize(v, &bs));
-  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
-  PetscCall(VecGetArrayRead(v, &x));
-  if (start < n) {
-    *nrm = PetscRealPart(x[start]);
-    id   = start;
-  }
-  for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) < *nrm) {
-      *nrm = PetscRealPart(x[i]);
-      id   = i;
-    }
-  }
-  PetscCall(VecRestoreArrayRead(v, &x));
-#if PetscDefined(HAVE_MPIUNI)
-  if (idex) *idex = id;
-#else
-  if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)v)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } out;
-    PetscInt rstart;
-
-    PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    out.v = *nrm;
-    /* Empty ranks must lose ties with valid global indices. */
-    out.i = id < 0 ? PETSC_INT_MAX : rstart + id;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
-    *nrm  = out.v;
-    *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
-  }
-#endif
+  PetscCall(VecStrideMinMax_Private(v, start, idex, nrm, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
