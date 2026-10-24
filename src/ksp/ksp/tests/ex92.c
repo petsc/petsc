@@ -1,6 +1,6 @@
 #include <petscksp.h>
 
-static char help[] = "Checks per-RHS convergence of HPDDM pseudo-block Krylov methods.\n";
+static char help[] = "Checks per-RHS convergence of HPDDM pseudo-block and block Krylov methods.\n";
 
 int main(int argc, char **argv)
 {
@@ -9,8 +9,8 @@ int main(int argc, char **argv)
   PC                 pc;
   Vec                b, x, r;
   PetscReal          rtol, atol, bnorm, rnorm, reference, tolerance[4];
-  PetscInt           start, end, m, n, nrhs;
-  PetscBool          nonzero_guess = PETSC_FALSE, extended = PETSC_FALSE, initial_norm = PETSC_FALSE, min_initial_norm = PETSC_FALSE, check_converged_maxits = PETSC_FALSE;
+  PetscInt           start, end, m, n, nrhs, nsolve, its;
+  PetscBool          nonzero_guess = PETSC_FALSE, extended = PETSC_FALSE, initial_norm = PETSC_FALSE, min_initial_norm = PETSC_FALSE, check_converged_maxits = PETSC_FALSE, zero_rhs = PETSC_FALSE, exact_guess = PETSC_FALSE;
   KSPConvergedReason reason;
 
   PetscFunctionBeginUser;
@@ -18,10 +18,13 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-nonzero_guess", &nonzero_guess, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-extended", &extended, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_converged_maxits", &check_converged_maxits, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-zero_rhs", &zero_rhs, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-exact_guess", &exact_guess, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_converged_use_initial_residual_norm", &initial_norm, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_converged_use_min_initial_residual_norm", &min_initial_norm, NULL));
-  n    = extended == PETSC_TRUE ? 6 : 2;
-  nrhs = extended == PETSC_TRUE ? 4 : 2;
+  n      = extended == PETSC_TRUE ? 6 : 2;
+  nrhs   = extended == PETSC_TRUE ? 4 : 2;
+  nsolve = zero_rhs == PETSC_TRUE ? 5 : (extended == PETSC_TRUE ? 2 : 1);
   if (extended == PETSC_TRUE) nonzero_guess = PETSC_TRUE;
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, 1, NULL, 0, NULL, &A));
   PetscCall(MatGetOwnershipRange(A, &start, &end));
@@ -40,14 +43,24 @@ int main(int argc, char **argv)
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
   PetscCall(KSPSetTolerances(ksp, extended == PETSC_TRUE ? 1.e-8 : 1.e-4, 1.e-12, PETSC_CURRENT, extended == PETSC_TRUE ? 100 : 10));
-  PetscCall(KSPSetInitialGuessNonzero(ksp, nonzero_guess));
+  PetscCall(KSPSetInitialGuessNonzero(ksp, (PetscBool)(nonzero_guess == PETSC_TRUE || zero_rhs == PETSC_TRUE || exact_guess == PETSC_TRUE)));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetTolerances(ksp, &rtol, &atol, NULL, NULL));
 
-  for (PetscInt solve = 0; solve < (extended == PETSC_TRUE ? 2 : 1); ++solve) {
+  for (PetscInt solve = 0; solve < nsolve; ++solve) {
     PetscCall(MatZeroEntries(B));
     PetscCall(MatZeroEntries(X));
-    if (extended == PETSC_TRUE) {
+    if (zero_rhs == PETSC_TRUE) {
+      // move the zero column, then solve zero RHS from zero and nonzero initial guesses
+      for (PetscInt j = 0; j < nrhs; ++j) {
+        PetscBool zero = (PetscBool)(solve == 2 || solve == 4 || j == (solve == 1 ? 1 : 0));
+
+        for (PetscInt i = start; i < end; ++i) {
+          if (zero == PETSC_FALSE) PetscCall(MatSetValue(B, i, j, i + 1.0, INSERT_VALUES));
+          if (zero == PETSC_TRUE && solve >= 3) PetscCall(MatSetValue(X, i, j, 1.0, INSERT_VALUES));
+        }
+      }
+    } else if (extended == PETSC_TRUE) {
       // reverse the RHS scales on the second solve to exercise reused convergence and recycling state
       for (PetscInt j = 0; j < 2; ++j) {
         PetscReal scale = j == solve ? 10000.0 : 1.0, factor = j == 0 ? 10.0 : 0.01;
@@ -79,6 +92,16 @@ int main(int argc, char **argv)
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyBegin(X, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(X, MAT_FINAL_ASSEMBLY));
+    if (exact_guess == PETSC_TRUE) {
+      PetscCall(MatGetDiagonal(A, r));
+      for (PetscInt j = 0; j < nrhs; ++j) {
+        PetscCall(MatDenseGetColumnVecRead(B, j, &b));
+        PetscCall(MatDenseGetColumnVecWrite(X, j, &x));
+        PetscCall(VecPointwiseDivide(x, b, r));
+        PetscCall(MatDenseRestoreColumnVecWrite(X, j, &x));
+        PetscCall(MatDenseRestoreColumnVecRead(B, j, &b));
+      }
+    }
     for (PetscInt j = 0; j < nrhs; ++j) {
       PetscCall(MatDenseGetColumnVecRead(B, j, &b));
       PetscCall(MatDenseGetColumnVecRead(X, j, &x));
@@ -97,6 +120,10 @@ int main(int argc, char **argv)
     PetscCall(KSPGetConvergedReason(ksp, &reason));
     PetscCheck(reason > 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solve #%" PetscInt_FMT " did not converge: %s", solve, KSPConvergedReasons[reason]);
     PetscCheck(check_converged_maxits == PETSC_FALSE || reason == KSP_CONVERGED_ITS, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected convergence at the iteration limit, got %s", KSPConvergedReasons[reason]);
+    if (exact_guess == PETSC_TRUE || (zero_rhs == PETSC_TRUE && solve == 2)) {
+      PetscCall(KSPGetIterationNumber(ksp, &its));
+      PetscCheck(its == 0, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solve #%" PetscInt_FMT " took %" PetscInt_FMT " iterations with an exact initial solution", solve, its);
+    }
     for (PetscInt j = 0; j < nrhs; ++j) {
       PetscCall(MatDenseGetColumnVecRead(B, j, &b));
       PetscCall(MatDenseGetColumnVecRead(X, j, &x));
@@ -140,6 +167,19 @@ int main(int argc, char **argv)
     nsize: 2
     args: -nonzero_guess -ksp_hpddm_variant {{left right flexible}shared output}
     output_file: output/empty.out
+
+  testset:
+    suffix: nonzero_guess_block
+    requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+    nsize: 2
+    args: -nonzero_guess -ksp_gmres_restart 4
+    output_file: output/empty.out
+    test:
+      suffix: gmres
+      args: -ksp_hpddm_type bgmres
+    test:
+      suffix: gcrodr
+      args: -ksp_hpddm_type bgcrodr -ksp_hpddm_recycle 1
 
   test:
     suffix: cg
@@ -189,5 +229,33 @@ int main(int argc, char **argv)
     nsize: 2
     args: -extended -ksp_hpddm_type gcrodr -ksp_hpddm_variant flexible -ksp_gmres_restart 4 -ksp_hpddm_recycle 2 -ksp_hpddm_recycle_strategy B -ksp_converged_use_min_initial_residual_norm
     output_file: output/empty.out
+
+  testset:
+    suffix: zero_rhs
+    nsize: 2
+    args: -zero_rhs
+    output_file: output/empty.out
+    test:
+      suffix: pseudo
+      args: -ksp_hpddm_type {{gmres cg}shared output}
+    test:
+      suffix: recycle
+      args: -ksp_hpddm_type gcrodr -ksp_gmres_restart 4 -ksp_hpddm_recycle 1
+    test:
+      suffix: block
+      args: -ksp_hpddm_type {{bgmres bfbcg}shared output} -ksp_hpddm_deflation_tol 1e-12
+    test:
+      suffix: block_recycle
+      args: -ksp_hpddm_type bgcrodr -ksp_gmres_restart 4 -ksp_hpddm_recycle 1 -ksp_hpddm_deflation_tol 1e-12
+
+  testset:
+    suffix: exact_guess
+    requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+    nsize: 2
+    args: -exact_guess
+    output_file: output/empty.out
+    test:
+      suffix: zero_iterations
+      args: -ksp_hpddm_type {{gmres cg gcrodr}shared output} -ksp_max_it 0
 
 TEST*/

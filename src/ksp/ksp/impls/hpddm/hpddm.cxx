@@ -65,8 +65,9 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems PetscOpt
       j = (data->cntl[2] == static_cast<char>(PETSC_DECIDE) ? HPDDM_QR_CHOLQR : ((data->cntl[2] >> 2) & 7));
       PetscCall(PetscOptionsEList("-ksp_hpddm_qr", "Distributed QR factorizations computed with Cholesky QR, Classical or Modified Gram--Schmidt process", "KSPHPDDM", HPDDMQR, PETSC_STATIC_ARRAY_LENGTH(HPDDMQR), HPDDMQR[HPDDM_QR_CHOLQR], &j, nullptr));
       data->cntl[2] = static_cast<char>(i) + (static_cast<char>(j) << 2);
-      i             = (data->scntl[0] == static_cast<unsigned short>(PETSC_DECIDE) ? PetscMin(30, ksp->max_it) : data->scntl[0]);
-      PetscCall(PetscOptionsRangeInt("-ksp_gmres_restart", "Maximum number of Arnoldi vectors generated per cycle", "KSPHPDDM", i, &i, nullptr, PetscMin(1, ksp->max_it), PetscMin(ksp->max_it, std::numeric_limits<unsigned short>::max() - 1)));
+      j             = (data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) ? 2 : 1;
+      i             = (data->scntl[0] == static_cast<unsigned short>(PETSC_DECIDE) ? PetscMin(30, PetscMax(j, ksp->max_it)) : data->scntl[0]);
+      PetscCall(PetscOptionsRangeInt("-ksp_gmres_restart", "Maximum number of Arnoldi vectors generated per cycle", "KSPHPDDM", i, &i, nullptr, j, PetscMax(j, PetscMin(ksp->max_it, std::numeric_limits<unsigned short>::max() - 1))));
       data->scntl[0] = i;
     }
     if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
