@@ -196,7 +196,7 @@ int main(int argc, char **argv)
   test:
     suffix: extended
     nsize: 2
-    args: -extended -ksp_gmres_restart 3
+    args: -extended -ksp_gmres_restart 3 -ksp_matsolve_batch_size {{4 3}shared output}
     output_file: output/empty.out
 
   testset:
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
   testset:
     suffix: gcrodr_extended
     nsize: 2
-    args: -extended -ksp_hpddm_type gcrodr -ksp_hpddm_variant {{right flexible}shared output} -ksp_gmres_restart 4 -ksp_hpddm_recycle 2
+    args: -extended -ksp_hpddm_type gcrodr -ksp_hpddm_variant {{right flexible}shared output} -ksp_gmres_restart 4 -ksp_hpddm_recycle 2 -ksp_matsolve_batch_size 3
     output_file: output/empty.out
     test:
       suffix: uir
@@ -223,12 +223,25 @@ int main(int argc, char **argv)
       suffix: umir
       args: -ksp_converged_use_min_initial_residual_norm
 
-  test:
-    suffix: gcrodr_extended_strategy_b
-    requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+  testset:
+    suffix: gcrodr_extended
     nsize: 2
-    args: -extended -ksp_hpddm_type gcrodr -ksp_hpddm_variant flexible -ksp_gmres_restart 4 -ksp_hpddm_recycle 2 -ksp_hpddm_recycle_strategy B -ksp_converged_use_min_initial_residual_norm
+    args: -extended -ksp_hpddm_type gcrodr -ksp_hpddm_recycle 2
     output_file: output/empty.out
+    test:
+      suffix: umir_full_batch
+      args: -ksp_matsolve_batch_size 4 -ksp_gmres_restart 4 -ksp_hpddm_variant right -ksp_converged_use_min_initial_residual_norm
+    test:
+      suffix: large_restart
+      requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -ksp_matsolve_batch_size 3 -ksp_gmres_restart 30
+    test:
+      suffix: mixed_precision
+      args: -ksp_matsolve_batch_size 3 -ksp_gmres_restart 4 -ksp_hpddm_variant {{right flexible}shared output} -ksp_hpddm_precision single -ksp_rtol 1e-5
+    test:
+      suffix: gcrodr_extended_strategy_b
+      requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -ksp_hpddm_variant flexible -ksp_gmres_restart 4 -ksp_hpddm_recycle_strategy B -ksp_converged_use_min_initial_residual_norm
 
   testset:
     suffix: zero_rhs
