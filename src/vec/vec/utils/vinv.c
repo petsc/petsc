@@ -159,7 +159,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 - start - starting point of the subvector (defined by a stride)
 
   Output Parameters:
-+ idex - the location where the maximum occurred  (pass `NULL` if not required)
++ idex - the global index in `v` where the maximum occurred (pass `NULL` if not required)
 - nrm  - the maximum value in the subvector
 
   Level: advanced
@@ -168,8 +168,8 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   One must call `VecSetBlockSize()` before this routine to set the stride
   information, or use a vector created from a multicomponent `DMDA`.
 
-  If xa is the array representing the vector x, then this computes the max
-  of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
+  If `va` is the array representing the vector `v`, then this computes the maximum
+  of the array `(va[start], va[start+stride], va[start+2*stride], ....)`.
 
   This is useful for computing, say the maximum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
@@ -238,7 +238,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 - start - starting point of the subvector (defined by a stride)
 
   Output Parameters:
-+ idex - the location where the minimum occurred. (pass `NULL` if not required)
++ idex - the global index in `v` where the minimum occurred (pass `NULL` if not required)
 - nrm  - the minimum value in the subvector
 
   Level: advanced
@@ -247,8 +247,8 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   One must call `VecSetBlockSize()` before this routine to set the stride
   information, or use a vector created from a multicomponent `DMDA`.
 
-  If xa is the array representing the vector x, then this computes the min
-  of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
+  If `va` is the array representing the vector `v`, then this computes the minimum
+  of the array `(va[start], va[start+stride], va[start+2*stride], ....)`.
 
   This is useful for computing, say the minimum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
