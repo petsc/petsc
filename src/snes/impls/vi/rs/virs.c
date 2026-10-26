@@ -740,22 +740,23 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    Options Database Keys:
 +  -snes_type (vinewtonssls|vinewtonrsls) - A semi-smooth solver or a reduced space active set method
 .  -snes_vi_zero_tolerance                - Tolerance for considering $u_i$ value to be on a bound.
-.  -snes_vi_monitor                       - Prints the number of active constraints (inactive set points) at each iteration.
-.  -snes_vi_monitor_residual              - View the residual vector at each iteration, using zero for active constraints (i.e. the inactive variables).
+.  -snes_vi_monitor                       - Prints the number of active constraints (active set points) at each iteration.
+.  -snes_vi_monitor_residual              - View the residual vector at each iteration, using zero for active constraints (i.e. the active set variables).
 -  -snes_vi_monitor_active                - View the active set by outputting a one for vector components in the active set and zero for the inactive.
 
    Level: beginner
 
    Note:
    Reduced-space (active set methods) work as follows at each iteration\:
-   - The algorithm produces an inactive set of variables, that is a list of variables whose values will not be changed in the current iteration, i.e. they
-     are to be constrained to their current values. These are all the variables that are on the lower bound, that is $u_i = L_i$ with also $[F(u)]_i \ge 0$ or
-     the upper bound $u_i = U_i$ with also $[F(u)]_i \le 0.$
-   - A step direction is obtained by solving the linear system arising from the Jacobian used in Newton's method but with the inactive variables removed
-     from both the rows and columns.
-   - A line search is then used to update the active variables (the inactive set of variables are not changed).
+   - The algorithm produces an active set of variables, that is a list of variables whose values will not be changed in the current iteration, i.e. they
+     are to be constrained to their current values. These are all the variables that are on the lower bound, that is $u_i = L_i$ with also $[F(u)]_i > 0$ or
+     the upper bound $u_i = U_i$ with also $[F(u)]_i < 0$, where a variable within `-snes_vi_zero_tolerance` of a bound is considered on it. The remaining
+     variables form the inactive set.
+   - A step direction is obtained by solving the linear system arising from the Jacobian used in Newton's method but with the active set variables removed
+     from both the rows and columns, that is, on the inactive set (see `SNESVIGetInactiveSet()`).
+   - A line search is then used to update the inactive set variables (the active set variables are not changed).
 
-   The inactive set is chosen based on the sign of $[F(u)]_i$ because this gives exactly the set of points that would be moved outside of the domain given
+   The active set is chosen based on the sign of $[F(u)]_i$ because this gives exactly the set of points that would be moved outside of the domain given
    an infinitesimal Newton (or even Richardson) step and our goal is to remain within the bounds, that is, to continue to satisfy the inequality constraints.
 
    See {cite}`benson2006flexible`
