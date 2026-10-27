@@ -21,8 +21,7 @@ struct _n_LMBasis {
   PetscObjectId    operator_id;         // If these vecs include the output of an operator (like B0 * S), the id of the operator
   PetscObjectState operator_state;      // The state of the operator when vectors in S were computed, to determine when basis vectors are stale because B0 has changed
   Vec              cached_product;      // Some methods will cache v <- S^T g during MatLMVMUpdate(B, x, g) for use in MatSolve(B, g, p), this is that v
-  PetscObjectId    cached_vec_id;       // The id of g, to help determine when an input vector is g that was used to compute v
-  PetscObjectState cached_vec_state;    // The state of g when v was computed, to determine when v is stale because g has changed
+  VecState         cached_vec_state;    // The state of g when v was computed, to determine when an input vector is g and v is not stale
   VecLink          work_vecs_available; // work vectors the layout of column vectors of S
   VecLink          work_vecs_in_use;
   VecLink          work_rows_available; // work vectors the layout of row vectors of S
