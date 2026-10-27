@@ -100,16 +100,14 @@ struct _p_TSTrajectory {
     /* caching */
     PetscBool caching;
     struct {
-      PetscObjectId    id;
-      PetscObjectState state;
-      PetscReal        time;
-      PetscInt         step;
+      VecState  state;
+      PetscReal time;
+      PetscInt  step;
     } Ucached;
     struct {
-      PetscObjectId    id;
-      PetscObjectState state;
-      PetscReal        time;
-      PetscInt         step;
+      VecState  state;
+      PetscReal time;
+      PetscInt  step;
     } Udotcached;
   } lag;
   Vec         U, Udot;            /* used by TSTrajectory{Get|Restore}UpdatedHistoryVecs */
@@ -254,10 +252,9 @@ struct _p_TS {
    * The present use case is that TSComputeRHSFunctionLinear() evaluates the Jacobian once and we don't want it to be immeditely re-evaluated.
    */
   struct {
-    PetscReal        time;       /* The time at which the matrices were last evaluated */
-    PetscObjectId    Xid;        /* Unique ID of solution vector at which the Jacobian was last evaluated */
-    PetscObjectState Xstate;     /* State of the solution vector */
-    MatStructure     mstructure; /* The structure returned */
+    PetscReal    time;       /* The time at which the matrices were last evaluated */
+    VecState     Xstate;     /* State of the solution vector at which the Jacobian was last evaluated */
+    MatStructure mstructure; /* The structure returned */
     /* Flag to unshift Jacobian before calling the IJacobian or RHSJacobian functions.  This is useful
      * if the user would like to reuse (part of) the Jacobian from the last evaluation. */
     PetscBool reuse;

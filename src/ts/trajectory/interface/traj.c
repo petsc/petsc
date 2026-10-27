@@ -176,15 +176,15 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
     PetscCall(PetscViewerFlush(tj->monitor));
   }
   if (U && tj->lag.caching) {
-    PetscObjectId    id;
-    PetscObjectState state;
+    VecState  state;
+    PetscBool same;
 
-    PetscCall(PetscObjectStateGet((PetscObject)U, &state));
-    PetscCall(PetscObjectGetId((PetscObject)U, &id));
+    PetscCall(VecGetState(U, &state));
+    PetscCall(VecStateCompare(state, tj->lag.Ucached.state, &same));
     if (stepnum == PETSC_DECIDE) {
-      if (id == tj->lag.Ucached.id && *time == tj->lag.Ucached.time && state == tj->lag.Ucached.state) U = NULL;
+      if (same && *time == tj->lag.Ucached.time) U = NULL;
     } else {
-      if (id == tj->lag.Ucached.id && stepnum == tj->lag.Ucached.step && state == tj->lag.Ucached.state) U = NULL;
+      if (same && stepnum == tj->lag.Ucached.step) U = NULL;
     }
     if (tj->monitor && !U) {
       PetscCall(PetscViewerASCIIPushTab(tj->monitor));
@@ -194,15 +194,15 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
     }
   }
   if (Udot && tj->lag.caching) {
-    PetscObjectId    id;
-    PetscObjectState state;
+    VecState  state;
+    PetscBool same;
 
-    PetscCall(PetscObjectStateGet((PetscObject)Udot, &state));
-    PetscCall(PetscObjectGetId((PetscObject)Udot, &id));
+    PetscCall(VecGetState(Udot, &state));
+    PetscCall(VecStateCompare(state, tj->lag.Udotcached.state, &same));
     if (stepnum == PETSC_DECIDE) {
-      if (id == tj->lag.Udotcached.id && *time == tj->lag.Udotcached.time && state == tj->lag.Udotcached.state) Udot = NULL;
+      if (same && *time == tj->lag.Udotcached.time) Udot = NULL;
     } else {
-      if (id == tj->lag.Udotcached.id && stepnum == tj->lag.Udotcached.step && state == tj->lag.Udotcached.state) Udot = NULL;
+      if (same && stepnum == tj->lag.Udotcached.step) Udot = NULL;
     }
     if (tj->monitor && !Udot) {
       PetscCall(PetscViewerASCIIPushTab(tj->monitor));
@@ -243,8 +243,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
     PetscCall(TSTrajectoryGet(tj, fakets, stepnum, time));
     PetscCall(TSGetSolution(fakets, &U2));
     PetscCall(VecCopy(U2, U));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &tj->lag.Ucached.state));
-    PetscCall(PetscObjectGetId((PetscObject)U, &tj->lag.Ucached.id));
+    PetscCall(VecGetState(U, &tj->lag.Ucached.state));
     tj->lag.Ucached.time = *time;
     tj->lag.Ucached.step = stepnum;
   }
@@ -411,27 +410,25 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   PetscCall(PetscHeaderCreate(t, TSTRAJECTORY_CLASSID, "TSTrajectory", "Time stepping", "TS", comm, TSTrajectoryDestroy, TSTrajectoryView));
   t->setupcalled = PETSC_FALSE;
   PetscCall(TSHistoryCreate(comm, &t->tsh));
-  t->lag.order            = 1;
-  t->lag.L                = NULL;
-  t->lag.T                = NULL;
-  t->lag.W                = NULL;
-  t->lag.WW               = NULL;
-  t->lag.TW               = NULL;
-  t->lag.TT               = NULL;
-  t->lag.caching          = PETSC_TRUE;
-  t->lag.Ucached.id       = 0;
-  t->lag.Ucached.state    = -1;
-  t->lag.Ucached.time     = PETSC_MIN_REAL;
-  t->lag.Ucached.step     = PETSC_INT_MAX;
-  t->lag.Udotcached.id    = 0;
-  t->lag.Udotcached.state = -1;
-  t->lag.Udotcached.time  = PETSC_MIN_REAL;
-  t->lag.Udotcached.step  = PETSC_INT_MAX;
-  t->adjoint_solve_mode   = PETSC_TRUE;
-  t->solution_only        = PETSC_FALSE;
-  t->keepfiles            = PETSC_FALSE;
-  t->usehistory           = PETSC_TRUE;
-  *tj                     = t;
+  t->lag.order           = 1;
+  t->lag.L               = NULL;
+  t->lag.T               = NULL;
+  t->lag.W               = NULL;
+  t->lag.WW              = NULL;
+  t->lag.TW              = NULL;
+  t->lag.TT              = NULL;
+  t->lag.caching         = PETSC_TRUE;
+  t->lag.Ucached.time    = PETSC_MIN_REAL;
+  t->lag.Ucached.step    = PETSC_INT_MAX;
+  t->lag.Udotcached.time = PETSC_MIN_REAL;
+  t->lag.Udotcached.step = PETSC_INT_MAX;
+  t->adjoint_solve_mode  = PETSC_TRUE;
+  t->solution_only       = PETSC_FALSE;
+  t->keepfiles           = PETSC_FALSE;
+  t->usehistory          = PETSC_TRUE;
+  *tj                    = t;
+  PetscCall(VecStateInvalidate(t->lag.Ucached.state));
+  PetscCall(VecStateInvalidate(t->lag.Udotcached.state));
   PetscCall(TSTrajectorySetFiletemplate(t, "TS-%06" PetscInt_FMT ".bin"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
