@@ -3152,26 +3152,23 @@ static PetscErrorCode ISGetSeqIS_Private(Mat mat, IS iscol, IS *isseq)
  */
 static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, PetscInt *garray[])
 {
-  Vec             x, cmap;
   const PetscInt *is_idx;
-  PetscScalar    *xarray, *cmaparray;
   PetscInt        ncols, isstart, *idx, m, rstart, *cmap1, count;
-  Mat_MPIAIJ     *a    = (Mat_MPIAIJ *)mat->data;
-  Mat             B    = a->B;
-  Vec             lvec = a->lvec, lcmap;
-  PetscInt        i, cstart, cend, Bn = B->cmap->N;
+  PetscInt       *cmap, *lcmap;
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ *)mat->data;
+  Mat             B = a->B;
+  PetscInt        i, n, cstart, cend, Bn = B->cmap->N;
   MPI_Comm        comm;
-  VecScatter      Mvctx = a->Mvctx;
+  PetscSF         Mvctx = a->Mvctx;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCall(ISGetLocalSize(iscol, &ncols));
 
-  /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
-  PetscCall(MatCreateVecs(mat, &x, NULL));
-  PetscCall(VecSet(x, -1.0));
-  PetscCall(VecDuplicate(x, &cmap));
-  PetscCall(VecSet(cmap, -1.0));
+  /* (1) cmap gives the submatrix column of each local column of mat, or -1 if it is not in iscol */
+  PetscCall(MatGetLocalSize(mat, NULL, &n));
+  PetscCall(PetscMalloc2(n, &cmap, Bn, &lcmap));
+  for (i = 0; i < n; i++) cmap[i] = -1;
 
   /* Get start indices */
   PetscCallMPI(MPI_Scan(&ncols, &isstart, 1, MPIU_INT, MPI_SUM, comm));
@@ -3179,16 +3176,11 @@ static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol
   PetscCall(MatGetOwnershipRangeColumn(mat, &cstart, &cend));
 
   PetscCall(ISGetIndices(iscol, &is_idx));
-  PetscCall(VecGetArray(x, &xarray));
-  PetscCall(VecGetArray(cmap, &cmaparray));
   PetscCall(PetscMalloc1(ncols, &idx));
   for (i = 0; i < ncols; i++) {
-    xarray[is_idx[i] - cstart]    = (PetscScalar)is_idx[i];
-    cmaparray[is_idx[i] - cstart] = i + isstart;        /* global index of iscol[i] */
-    idx[i]                        = is_idx[i] - cstart; /* local index of iscol[i]  */
+    cmap[is_idx[i] - cstart] = i + isstart;        /* global index of iscol[i] */
+    idx[i]                   = is_idx[i] - cstart; /* local index of iscol[i]  */
   }
-  PetscCall(VecRestoreArray(x, &xarray));
-  PetscCall(VecRestoreArray(cmap, &cmaparray));
   PetscCall(ISRestoreIndices(iscol, &is_idx));
 
   /* Get iscol_d */
@@ -3208,14 +3200,9 @@ static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol
   PetscCall(ISGetBlockSize(isrow, &i));
   PetscCall(ISSetBlockSize(*isrow_d, i));
 
-  /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
-  PetscCall(VecScatterBegin(Mvctx, x, lvec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(Mvctx, x, lvec, INSERT_VALUES, SCATTER_FORWARD));
-
-  PetscCall(VecDuplicate(lvec, &lcmap));
-
-  PetscCall(VecScatterBegin(Mvctx, cmap, lcmap, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(Mvctx, cmap, lcmap, INSERT_VALUES, SCATTER_FORWARD));
+  /* (2) Broadcast cmap through aij->Mvctx to get lcmap, its values for the columns of B (see MatMult_MPIAIJ()) */
+  PetscCall(PetscSFBcastBegin(Mvctx, MPIU_INT, cmap, lcmap, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(Mvctx, MPIU_INT, cmap, lcmap, MPI_REPLACE));
 
   /* (3) create sequential iscol_o (a subset of iscol) and isgarray */
   /* off-process column indices */
@@ -3223,17 +3210,13 @@ static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol
   PetscCall(PetscMalloc1(Bn, &idx));
   PetscCall(PetscMalloc1(Bn, &cmap1));
 
-  PetscCall(VecGetArray(lvec, &xarray));
-  PetscCall(VecGetArray(lcmap, &cmaparray));
   for (i = 0; i < Bn; i++) {
-    if (PetscRealPart(xarray[i]) > -1.0) {
-      idx[count]   = i;                                     /* local column index in off-diagonal part B */
-      cmap1[count] = (PetscInt)PetscRealPart(cmaparray[i]); /* column index in submat */
+    if (lcmap[i] > -1) {
+      idx[count]   = i;        /* local column index in off-diagonal part B */
+      cmap1[count] = lcmap[i]; /* column index in submat */
       count++;
     }
   }
-  PetscCall(VecRestoreArray(lvec, &xarray));
-  PetscCall(VecRestoreArray(lcmap, &cmaparray));
 
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, count, idx, PETSC_COPY_VALUES, iscol_o));
   /* cannot ensure iscol_o has same blocksize as iscol! */
@@ -3241,9 +3224,7 @@ static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol
   PetscCall(PetscFree(idx));
   *garray = cmap1;
 
-  PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&cmap));
-  PetscCall(VecDestroy(&lcmap));
+  PetscCall(PetscFree2(cmap, lcmap));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3280,7 +3261,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
     PetscCall(MatAssemblyEnd(*submat, MAT_FINAL_ASSEMBLY));
 
   } else { /* call == MAT_INITIAL_MATRIX) */
-    PetscInt *garray, *garray_compact;
+    PetscInt *garray = NULL, *garray_compact;
     PetscInt  BsubN;
 
     /* Create isrow_d, iscol_d, iscol_o and isgarray (replace isgarray with array?) */
