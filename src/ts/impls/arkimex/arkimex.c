@@ -1377,7 +1377,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
      We compute Ydot0 if we restart the step or if we resized the problem after remeshing
   */
   if (dirk && tab->explicit_first_stage && (ts->steprestart || ts->stepresize)) {
-    ark->scoeff = PETSC_MAX_REAL;
+    ark->scoeff     = PETSC_MAX_REAL;
+    ark->stage_time = ts->ptime;
     PetscCall(VecCopy(ts->vec_sol, Z));
     if (!ark->alg_is) {
       PetscCall(TSARKIMEXComputeAlgebraicIS(ts, ts->ptime, Z, &ark->alg_is));
