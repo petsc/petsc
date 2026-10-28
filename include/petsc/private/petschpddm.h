@@ -43,14 +43,30 @@ struct PC_HPDDM {
   void *setup_ctx;                                                          /* context for setup */
 };
 
-struct KSP_HPDDM {
-  HPDDM::PETScOperator *op;
-  PetscReal             rcntl[1];
-  int                   icntl[2];
-  unsigned short        scntl[2];
-  char                  cntl[5];
-  PetscPrecision        precision;
+struct KSPHPDDMConvergenceCtx {
+  PetscInt   n;
+  PetscReal *norm;
+  PetscReal *init;
+  PetscReal *residual;
+  PetscBool *locked;
 };
+
+struct KSP_HPDDM {
+  HPDDM::PETScOperator  *op;
+  PetscReal              rcntl[1];
+  int                    icntl[2];
+  unsigned short         scntl[2];
+  char                   cntl[5];
+  PetscPrecision         precision;
+  KSPHPDDMConvergenceCtx convergence;
+};
+
+/* Context of the convergence test for multiple right-hand sides:
+     - KSPHPDDMConvergenceSetUp_Private() allocates the context buffers and initializes the right-hand side and initial residual norms (arrays norm and init in KSPHPDDMConvergenceCtx);
+     - KSPHPDDMConvergenceUpdate_Private() updates the context with the current residual norms and locks the right-hand sides that have converged (arrays residual and locked).
+   It outputs a read-only pointer to the locks stored in the context. */
+PETSC_INTERN PetscErrorCode KSPHPDDMConvergenceSetUp_Private(KSP, PetscInt, const PetscReal[], const PetscReal[]);
+PETSC_INTERN PetscErrorCode KSPHPDDMConvergenceUpdate_Private(KSP, PetscInt, const PetscReal[], const PetscBool **);
 
 typedef struct _n_Harmonic *Harmonic;
 struct _n_Harmonic {

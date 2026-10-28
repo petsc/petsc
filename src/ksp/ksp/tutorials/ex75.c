@@ -62,11 +62,17 @@ int main(int argc, char **args)
 
 /*TEST
 
-   test:
-      suffix: 1
+   testset:
       nsize: 1
       requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_type {{gmres hpddm}shared output} -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -ksp_hpddm_type {{gmres bgmres}shared output} -options_left no -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      output_file: output/ex75_1.out
+      args: -nmat 1 -pc_type none -ksp_converged_reason -ksp_max_it 1000 -ksp_gmres_restart 1000 -ksp_rtol 1e-10 -load_dir ${DATAFILESPATH}/matrices/hpddm/GCRODR
+      test:
+        suffix: 1
+        args: -ksp_type gmres
+      test:
+        suffix: 1_hpddm
+        args: -ksp_type hpddm -ksp_hpddm_type {{gmres bgmres}shared output}
 
    test:
       requires: hpddm datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)

@@ -1327,8 +1327,7 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
     size /= bs;
     if (out_C) {
       PetscCall(PetscMalloc1(size, &compressed));
-      for (const std::pair<const PetscInt, PetscInt> &i : order) *compressed++ = i.second;
-      compressed -= size;
+      std::transform(order.cbegin(), order.cend(), compressed, [](const std::pair<const PetscInt, PetscInt> &i) { return i.second; });
       PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_C), bs, size, compressed, PETSC_OWN_POINTER, &perm));
       PetscCall(ISSetPermutation(perm));
       /* permute user-provided Mat so that it matches with MatCreateSubMatrices() numbering */
@@ -1338,8 +1337,7 @@ static PetscErrorCode PCHPDDMPermute_Private(IS is, IS in_is, IS *out_is, Mat in
     }
     if (out_is) {
       PetscCall(PetscMalloc1(size, &compressed));
-      for (const std::pair<const PetscInt, PetscInt> &i : order) *compressed++ = i.first;
-      compressed -= size;
+      std::transform(order.cbegin(), order.cend(), compressed, [](const std::pair<const PetscInt, PetscInt> &i) { return i.first; });
       /* permute user-provided IS so that it matches with MatCreateSubMatrices() numbering */
       PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)in_is), bs, size, compressed, PETSC_OWN_POINTER, out_is));
     }
@@ -3380,7 +3378,7 @@ static PetscErrorCode PCHPDDMSetScaling_HPDDM(PC pc, IS is, Vec scaling)
       PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "IS has size %" PetscInt_FMT ", but the stored matrix has %" PetscInt_FMT " rows", m, n);
     }
     PetscCall(VecGetArrayRead(scaling, &array));
-    for (PetscInt i = 0; (i < m) && valid; ++i) valid = static_cast<PetscBool>(PetscImaginaryPart(array[i]) == 0 && PetscRealPart(array[i]) >= 0 && !PetscIsInfOrNanScalar(array[i]));
+    valid = static_cast<PetscBool>(m == 0 || std::all_of(array, array + m, [](const PetscScalar &v) { return PetscImaginaryPart(v) == 0 && PetscRealPart(v) >= 0 && !PetscIsInfOrNanScalar(v); }));
     PetscCall(VecRestoreArrayRead(scaling, &array));
     PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scaling must contain finite, real, nonnegative entries");
     PetscCall(PetscObjectReference((PetscObject)scaling));

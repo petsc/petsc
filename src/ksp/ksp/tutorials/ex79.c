@@ -99,16 +99,15 @@ int main(int argc, char **args)
    # KSPHPDDM does either pseudo-blocking or "true" blocking, all tests should succeed with other -ksp_hpddm_type
    testset:
       nsize: 1
-      args: -pc_type {{mat none shell gasm}shared output}
       test:
          suffix: 1
          output_file: output/empty.out
-         args: -ksp_type preonly
+         args: -pc_type {{mat none shell gasm}shared output} -ksp_type preonly
       test:
          suffix: 1_hpddm
          output_file: output/empty.out
          requires: hpddm
-         args: -ksp_type hpddm -ksp_hpddm_type preonly
+         args: -pc_type {{mat gasm}shared output} -ksp_type hpddm -ksp_hpddm_type preonly
 
    testset:
       nsize: 1

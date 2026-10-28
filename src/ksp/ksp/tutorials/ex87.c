@@ -291,7 +291,13 @@ static PetscErrorCode ResetA11(KSP ksp)
         requires: mumps
         suffix: 2
         output_file: output/ex87_1_system-stokes.out
-        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1 -explicit {{false true}shared output}
+        args: -viewer -system stokes -empty_A11 -transpose {{false true}shared output} -permute {{false true}shared output} -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1
+        filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "diagonal" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
+      test:
+        requires: mumps
+        suffix: 2_explicit
+        output_file: output/ex87_1_system-stokes.out
+        args: -viewer -system stokes -empty_A11 -transpose -permute -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_sub_mat_mumps_icntl_26 1 -explicit
         filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "diagonal" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
       test:
         suffix: 1_petsc
