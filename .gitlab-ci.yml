@@ -407,7 +407,7 @@ ai-review:
         AI_MODEL: [opus]
         AI_TIER: paid
       - AI_CLI: opencode
-        AI_MODEL: [alcf/nemotron, alcf/spark]
+        AI_MODEL: [alcf/beam, alcf/spark]
         AI_TIER: free
 
 #
