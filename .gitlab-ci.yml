@@ -154,7 +154,7 @@ mpich-cxx-py3:
 mpich-cxx-mlib:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-clanguage=cxx --with-single-library=0 --with-log=0 --with-info=0 --with-ctable=0 --with-is-color-value-type=short CXXFLAGS=-std=c++14
+    CONFIG_OPTS: --with-clanguage=cxx --with-fortran-bindings=0 --with-single-library=0 --with-log=0 --with-info=0 --with-ctable=0 --with-is-color-value-type=short CXXFLAGS=-std=c++14
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
@@ -407,7 +407,7 @@ ai-review:
         AI_MODEL: [opus]
         AI_TIER: paid
       - AI_CLI: opencode
-        AI_MODEL: [alcf/nemotron, alcf/spark]
+        AI_MODEL: [alcf/beam, alcf/spark]
         AI_TIER: free
 
 #
@@ -827,8 +827,8 @@ linux-cuda-single-cxx:
     - cuda-stage3
   variables:
     TEST_ARCH: arch-ci-linux-cuda-single-cxx
-    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2023-02-02/share/spack/modules/linux-ubuntu22.04-ivybridge
-    LOAD_MODULES: nvhpc-22.11-gcc-11.3.0-vmvmbrx
+    MODULEPATH: /nfs/gce/projects/petsc/soft/hpc_sdk-26.9/modulefiles
+    LOAD_MODULES: nvhpc-hpcx-cuda12-openmpi4
     TEST_OPTS: -j15 query=requires queryval=cuda
 
 linux-cuda-uni-pkgs:
