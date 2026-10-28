@@ -10301,6 +10301,18 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Return the depth of point p, given the range [ranges[2 d], ranges[2 d + 1]) of each depth stratum d = 0, ..., depth,
+  or -1 if p lies in none of them. No ordering of the strata is assumed: a DMPLEX converted from a DMFOREST, for example,
+  is ordered cells, faces, edges, vertices instead of cells, vertices, faces, edges.
+*/
+static inline PetscInt DMPlexGetDepthFromStrata_Private(PetscInt depth, const PetscInt ranges[], PetscInt p)
+{
+  for (PetscInt d = 0; d <= depth; ++d)
+    if (ranges[2 * d] <= p && p < ranges[2 * d + 1]) return d;
+  return -1;
+}
+
 /*@
   DMPlexCheckPointSF - Check that several necessary conditions are met for the point `PetscSF` of this plex.
 
@@ -10404,44 +10416,29 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
   // Depths of leaves should match depths of root
   //   Does not work for geometrically non-conforming meshes
   if (!((DM_Plex *)dm->data)->parentSection) {
-    PetscInt   *starts, *gstarts, *depths;
+    PetscInt   *ranges, *granges;
     PetscInt    depth;
-    PetscMPIInt size;
-    PetscBool   skip = PETSC_FALSE;
+    PetscMPIInt size, n;
 
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCall(DMPlexGetDepth(dm, &depth));
-    PetscCall(PetscMalloc3(depth + 2, &starts, size * (depth + 2), &gstarts, depth + 2, &depths));
-    depths[0] = depth;
-    depths[1] = 0;
-    for (PetscInt d = 2; d <= depth; ++d) depths[d] = depth + 1 - d;
-    depths[depth + 1] = depth + 1;
-    for (PetscInt d = 0; d <= depth; ++d) {
-      PetscCall(DMPlexGetDepthStratum(dm, d, &starts[d], NULL));
-    }
-    // This is necessary because some strata might be missing
-    PetscCall(DMPlexGetChart(dm, NULL, &starts[depth + 1]));
-    PetscCallMPI(MPI_Allgather(starts, (int)(depth + 2), MPIU_INT, gstarts, (int)(depth + 2), MPIU_INT, comm));
-    // Check is invalid with empty strata
-    for (PetscInt p = 0; p < size * (depth + 2); ++p)
-      if (gstarts[p] < 0) skip = PETSC_TRUE;
-    for (l = skip ? nleaves : 0; l < nleaves; ++l) {
+    PetscCall(PetscMPIIntCast(2 * (depth + 1), &n));
+    // Gather the range of each depth stratum on every rank, since the strata may be in any order
+    PetscCall(PetscMalloc2(2 * (depth + 1), &ranges, size * 2 * (depth + 1), &granges));
+    for (PetscInt d = 0; d <= depth; ++d) PetscCall(DMPlexGetDepthStratum(dm, d, &ranges[2 * d], &ranges[2 * d + 1]));
+    PetscCallMPI(MPI_Allgather(ranges, n, MPIU_INT, granges, n, MPIU_INT, comm));
+    for (l = 0; l < nleaves; ++l) {
       const PetscInt point  = locals ? locals[l] : l;
       const PetscInt rpoint = remotes[l].index;
       const PetscInt rrank  = remotes[l].rank;
-      PetscInt       pdepth, rdepth = -1;
+      const PetscInt rdepth = DMPlexGetDepthFromStrata_Private(depth, &granges[rrank * 2 * (depth + 1)], rpoint);
+      PetscInt       pdepth;
 
       PetscCall(DMPlexGetPointDepth(dm, point, &pdepth));
-      for (PetscInt d = 0; d <= depth; ++d) {
-        if (gstarts[rrank * (depth + 2) + depths[d]] <= rpoint && rpoint < gstarts[rrank * (depth + 2) + depths[d + 1]]) {
-          rdepth = depths[d];
-          break;
-        }
-      }
       PetscCheck(rdepth != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " (%" PetscInt_FMT ") was not found on remote rank %" PetscInt_FMT, point, rpoint, rrank);
       PetscCheck(pdepth == rdepth, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Leaf %" PetscInt_FMT " has depth %" PetscInt_FMT " but remote (%" PetscInt_FMT ", %" PetscInt_FMT ") depth is %" PetscInt_FMT, point, pdepth, rpoint, rrank, rdepth);
     }
-    PetscCall(PetscFree3(starts, gstarts, depths));
+    PetscCall(PetscFree2(ranges, granges));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

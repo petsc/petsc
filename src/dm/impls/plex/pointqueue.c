@@ -58,7 +58,7 @@ PetscErrorCode DMPlexPointQueueDestroy(DMPlexPointQueue *queue)
 }
 
 /*@
-  DMPlexPointQueueEnsureSize - Ensure that a `DMPlexPointQueue` has room for at least one more entry, doubling its capacity if it is full.
+  DMPlexPointQueueEnsureSize - Ensure that a `DMPlexPointQueue` has room for at least one more entry, growing its capacity if it is full.
 
   Not Collective
 
@@ -71,10 +71,16 @@ PetscErrorCode DMPlexPointQueueDestroy(DMPlexPointQueue *queue)
 @*/
 PetscErrorCode DMPlexPointQueueEnsureSize(DMPlexPointQueue queue)
 {
+  PetscInt oldSize;
+
   PetscFunctionBegin;
   if (queue->num < queue->size) PetscFunctionReturn(PETSC_SUCCESS);
-  queue->size *= 2;
+  oldSize     = queue->size;
+  queue->size = PetscMax(2 * oldSize, 1);
   PetscCall(PetscRealloc(queue->size * sizeof(PetscInt), &queue->points));
+  // Full ring: entries are front..oldSize-1 then 0..front-1, so move the wrapped part after the old end
+  if (queue->front > 0) PetscCall(PetscArraycpy(&queue->points[oldSize], queue->points, queue->front));
+  queue->back = queue->front + oldSize - 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
