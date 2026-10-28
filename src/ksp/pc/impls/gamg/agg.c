@@ -1507,18 +1507,17 @@ static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoars
 
   /* get 'flid_fgid' TODO - move up to get 'stride' and do get null space data above in one step (jj loop) */
   if (size > 1) {
-    PetscReal *fid_glid_loc, *fiddata;
-    PetscInt   stride;
+    Mat_MPIAIJ *mpimat = (Mat_MPIAIJ *)Gmat->data;
+    PetscInt    stride, num_ghosts;
 
-    PetscCall(PetscMalloc1(nloc, &fid_glid_loc));
-    for (kk = 0; kk < nloc; kk++) fid_glid_loc[kk] = (PetscReal)(my0 + kk);
-    PetscCall(PCGAMGGetDataWithGhosts(Gmat, 1, fid_glid_loc, &stride, &fiddata));
-    PetscCall(PetscMalloc1(stride, &flid_fgid)); /* copy real data to in */
-    for (kk = 0; kk < stride; kk++) flid_fgid[kk] = (PetscInt)fiddata[kk];
-    PetscCall(PetscFree(fiddata));
+    /* global IDs of the local vertices, then of the ghosts, which are given by garray */
+    PetscCall(VecGetLocalSize(mpimat->lvec, &num_ghosts));
+    stride = nloc + num_ghosts;
+    PetscCall(PetscMalloc1(stride, &flid_fgid));
+    for (kk = 0; kk < nloc; kk++) flid_fgid[kk] = my0 + kk;
+    if (num_ghosts > 0) PetscCall(PetscArraycpy(flid_fgid + nloc, mpimat->garray, num_ghosts));
 
     PetscCheck(stride == nbnodes / bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "stride %" PetscInt_FMT " != nbnodes %" PetscInt_FMT "/bs %" PetscInt_FMT, stride, nbnodes, bs);
-    PetscCall(PetscFree(fid_glid_loc));
   } else {
     PetscCall(PetscMalloc1(nloc, &flid_fgid));
     for (kk = 0; kk < nloc; kk++) flid_fgid[kk] = my0 + kk;
