@@ -749,6 +749,13 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('HAVE_BUILTIN_EXPECT', 1)
     self.popLanguage()
 
+  def configureStaticConstInit(self):
+    '''Sees if a file-scope static const can be initialized from another static const (MSVC and classic Intel C reject this)'''
+    self.pushLanguage(self.languages.clanguage)
+    if self.checkCompile('static const double a = 1.0;\nstatic const double b = -a;\n', 'return (int)b;'):
+      self.addDefine('HAVE_STATIC_CONST_INIT_FROM_CONST', 1)
+    self.popLanguage()
+
   def configureFunctionName(self):
     '''Sees if the compiler supports __func__ or a variant.'''
     def getFunctionName(lang):
@@ -1378,6 +1385,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect)
+    self.executeTest(self.configureStaticConstInit)
     self.executeTest(self.configureAlign)
     self.executeTest(self.configureFunctionName)
     self.executeTest(self.configureIntptrt)

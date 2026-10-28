@@ -44,7 +44,7 @@ from gmakegentest import nameSpace
 def isFile(maybeFile):
   ext=os.path.splitext(maybeFile)[1]
   if not ext: return False
-  if ext not in ['.c','.cxx','.cpp','F90','F','cu']: return False
+  if ext not in ['.c','.cxx','.cpp','.F90','.F','.cu']: return False
   return True
 
 def pathToLabel(path):

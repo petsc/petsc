@@ -1941,6 +1941,11 @@ M*/
 .seealso: `PetscReal`, `PETSC_PI`, `PETSC_PHI`
 M*/
 
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 static const PetscReal PETSC_PI    = PetscRealConstant(3.1415926535897932384626433832795029);
 static const PetscReal PETSC_PHI   = PetscRealConstant(1.6180339887498948482045868343656381);
 static const PetscReal PETSC_SQRT2 = PetscRealConstant(1.4142135623730950488016887242096981);
@@ -2036,7 +2041,7 @@ static const PetscReal PETSC_MACHINE_EPSILON      = __FLT16_EPSILON__;
 static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.1250e-02F;
 static const PetscReal PETSC_SMALL                = PetscRealConstant(5.e-3);
 #endif
-#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
+#if !PetscDefined(HAVE_STATIC_CONST_INIT_FROM_CONST)
   #define PETSC_MIN_REAL (-PETSC_MAX_REAL)
 #else
 static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
@@ -2052,10 +2057,14 @@ static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
 
 .seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
-  #define PETSC_INFINITY (PETSC_MAX_REAL / 4.0)
+#if !PetscDefined(HAVE_STATIC_CONST_INIT_FROM_CONST)
+  #define PETSC_INFINITY (PETSC_MAX_REAL / PetscRealConstant(4.0))
 #else
-static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / 4.0;
+static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / PetscRealConstant(4.0);
+#endif
+
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
+  #pragma GCC diagnostic pop
 #endif
 
 /*MC
@@ -2068,7 +2077,7 @@ static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / 4.0;
 
 .seealso: `PETSC_INFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#if PetscDefined(HAVE_WINDOWS_H) || defined(__INTEL_COMPILER)
+#if !PetscDefined(HAVE_STATIC_CONST_INIT_FROM_CONST)
   #define PETSC_NINFINITY (-PETSC_INFINITY)
 #else
 static const PetscReal PETSC_NINFINITY = (-PETSC_INFINITY);
