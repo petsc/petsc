@@ -6,6 +6,7 @@
 #include <petscblaslapack.h>
 #include <petscdm.h>
 #include <petsc/private/kspimpl.h>
+#include <petscsf.h>
 
 typedef struct {
   PetscInt   nsmooths;                     // number of smoothing steps to construct prolongation
@@ -1012,13 +1013,12 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   PetscBool      isMPI;
   Mat_SeqAIJ    *matA_1, *matB_1 = NULL;
   MPI_Comm       comm;
-  PetscInt       lid, *ii, *idx, ix, Iend, my0, kk, n, j;
+  PetscInt       lid, *ii, *idx, ix, Iend, my0, n, j;
   Mat_MPIAIJ    *mpimat_2 = NULL, *mpimat_1 = NULL;
-  const PetscInt nloc = Gmat_2->rmap->n;
-  PetscScalar   *cpcol_1_state, *cpcol_2_state, *cpcol_2_par_orig, *lid_parent_gid;
-  PetscInt      *lid_cprowID_1 = NULL;
-  NState        *lid_state;
-  Vec            ghost_par_orig2;
+  const PetscInt nloc          = Gmat_2->rmap->n;
+  PetscInt      *lid_cprowID_1 = NULL, *lid_parent_gid, *cpcol_2_par_orig = NULL;
+  NState        *lid_state, *cpcol_1_state = NULL, *cpcol_2_state = NULL;
+  PetscSF        sf_1 = NULL, sf_2 = NULL;
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
@@ -1056,7 +1056,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   if (nloc > 0) PetscCheck(!matB_1 || matB_1->compressedrow.use, PETSC_COMM_SELF, PETSC_ERR_PLIB, "matB_1 && !matB_1->compressedrow.use: PETSc bug???");
   /* get state of locals and selected gid for deleted */
   for (lid = 0; lid < nloc; lid++) {
-    lid_parent_gid[lid] = -1.0;
+    lid_parent_gid[lid] = -1;
     lid_state[lid]      = DELETED;
   }
 
@@ -1087,44 +1087,28 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
 
         PetscCall(PetscCDIntNdGetID(pos, &gid1));
         PetscCall(PetscCDGetNextPos(aggs_2, lid, &pos));
-        if (gid1 >= my0 && gid1 < Iend) lid_parent_gid[gid1 - my0] = (PetscScalar)(lid + my0);
+        if (gid1 >= my0 && gid1 < Iend) lid_parent_gid[gid1 - my0] = lid + my0;
       }
     }
   }
-  /* get 'cpcol_1/2_state' & cpcol_2_par_orig - uses mpimat_1/2->lvec for temp space */
+  /* get 'cpcol_1/2_state' & cpcol_2_par_orig */
   if (isMPI) {
-    Vec tempVec;
+    PetscInt nghost_1, nghost_2;
 
+    PetscCall(VecGetLocalSize(mpimat_1->lvec, &nghost_1));
+    PetscCall(VecGetLocalSize(mpimat_2->lvec, &nghost_2));
+    PetscCall(PetscMalloc3(nghost_1, &cpcol_1_state, nghost_2, &cpcol_2_state, nghost_2, &cpcol_2_par_orig));
+    PetscCall(MatGetMultPetscSF(Gmat_1, &sf_1));
+    PetscCall(MatGetMultPetscSF(Gmat_2, &sf_2));
     /* get 'cpcol_1_state' */
-    PetscCall(MatCreateVecs(Gmat_1, &tempVec, NULL));
-    for (kk = 0, j = my0; kk < nloc; kk++, j++) {
-      PetscScalar v = (PetscScalar)lid_state[kk];
-
-      PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
-    }
-    PetscCall(VecAssemblyBegin(tempVec));
-    PetscCall(VecAssemblyEnd(tempVec));
-    PetscCall(VecScatterBegin(mpimat_1->Mvctx, tempVec, mpimat_1->lvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat_1->Mvctx, tempVec, mpimat_1->lvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecGetArray(mpimat_1->lvec, &cpcol_1_state));
+    PetscCall(PetscSFBcastBegin(sf_1, MPIU_INT, lid_state, cpcol_1_state, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf_1, MPIU_INT, lid_state, cpcol_1_state, MPI_REPLACE));
     /* get 'cpcol_2_state' */
-    PetscCall(VecScatterBegin(mpimat_2->Mvctx, tempVec, mpimat_2->lvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat_2->Mvctx, tempVec, mpimat_2->lvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecGetArray(mpimat_2->lvec, &cpcol_2_state));
+    PetscCall(PetscSFBcastBegin(sf_2, MPIU_INT, lid_state, cpcol_2_state, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf_2, MPIU_INT, lid_state, cpcol_2_state, MPI_REPLACE));
     /* get 'cpcol_2_par_orig' */
-    for (kk = 0, j = my0; kk < nloc; kk++, j++) {
-      PetscScalar v = lid_parent_gid[kk];
-
-      PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
-    }
-    PetscCall(VecAssemblyBegin(tempVec));
-    PetscCall(VecAssemblyEnd(tempVec));
-    PetscCall(VecDuplicate(mpimat_2->lvec, &ghost_par_orig2));
-    PetscCall(VecScatterBegin(mpimat_2->Mvctx, tempVec, ghost_par_orig2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat_2->Mvctx, tempVec, ghost_par_orig2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecGetArray(ghost_par_orig2, &cpcol_2_par_orig));
-
-    PetscCall(VecDestroy(&tempVec));
+    PetscCall(PetscSFBcastBegin(sf_2, MPIU_INT, lid_parent_gid, cpcol_2_par_orig, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf_2, MPIU_INT, lid_parent_gid, cpcol_2_par_orig, MPI_REPLACE));
   } /* ismpi */
   for (lid = 0; lid < nloc; lid++) {
     NState state = lid_state[lid];
@@ -1138,9 +1122,9 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         PetscInt lidj   = idx[j], sgid;
         NState   statej = lid_state[lidj];
 
-        if (statej == DELETED && (sgid = (PetscInt)PetscRealPart(lid_parent_gid[lidj])) != lid + my0) { /* steal local */
-          lid_parent_gid[lidj] = (PetscScalar)(lid + my0);                                              /* send this if sgid is not local */
-          if (sgid >= my0 && sgid < Iend) {                                                             /* I'm stealing this local from a local sgid */
+        if (statej == DELETED && (sgid = lid_parent_gid[lidj]) != lid + my0) { /* steal local */
+          lid_parent_gid[lidj] = lid + my0;                                    /* send this if sgid is not local */
+          if (sgid >= my0 && sgid < Iend) {                                    /* I'm stealing this local from a local sgid */
             PetscInt      hav = 0, slid = sgid - my0, gidj = lidj + my0;
             PetscCDIntNd *pos, *last = NULL;
 
@@ -1171,7 +1155,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         }
       } /* local neighbors */
     } else if (state == DELETED /* && lid_cprowID_1 */) {
-      PetscInt sgidold = (PetscInt)PetscRealPart(lid_parent_gid[lid]);
+      PetscInt sgidold = lid_parent_gid[lid];
 
       /* see if I have a selected ghost neighbor that will steal me */
       if ((ix = lid_cprowID_1[lid]) != -1) {
@@ -1180,10 +1164,10 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         idx = matB_1->j + ii[ix];
         for (j = 0; j < n; j++) {
           PetscInt cpid   = idx[j];
-          NState   statej = (NState)PetscRealPart(cpcol_1_state[cpid]);
+          NState   statej = cpcol_1_state[cpid];
 
           if (IS_SELECTED(statej) && sgidold != statej) { /* ghost will steal this, remove from my list */
-            lid_parent_gid[lid] = (PetscScalar)statej;    /* send who selected */
+            lid_parent_gid[lid] = statej;                 /* send who selected */
             if (sgidold >= my0 && sgidold < Iend) {       /* this was mine */
               PetscInt      hav = 0, oldslidj = sgidold - my0;
               PetscCDIntNd *pos, *last        = NULL;
@@ -1198,7 +1182,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
                   PetscCheck(last, PETSC_COMM_SELF, PETSC_ERR_PLIB, "last cannot be null");
                   PetscCall(PetscCDRemoveNextNode(aggs_2, oldslidj, last));
-                  /* ghost (PetscScalar)statej will add this later */
+                  /* ghost statej will add this later */
                   hav = 1;
                   break;
                 } else last = pos;
@@ -1218,48 +1202,29 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   } /* node loop */
 
   if (isMPI) {
-    PetscScalar *cpcol_2_parent, *cpcol_2_gid;
-    Vec          tempVec, ghostgids2, ghostparents2;
-    PetscInt     cpid, nghost_2;
-    PetscHMapI   gid_cpid;
+    PetscInt       *cpcol_2_parent;
+    const PetscInt *cpcol_2_gid = mpimat_2->garray;
+    PetscInt        cpid, nghost_2;
+    PetscHMapI      gid_cpid;
 
-    PetscCall(VecGetSize(mpimat_2->lvec, &nghost_2));
-    PetscCall(MatCreateVecs(Gmat_2, &tempVec, NULL));
+    PetscCall(VecGetLocalSize(mpimat_2->lvec, &nghost_2));
+    PetscCall(PetscMalloc1(nghost_2, &cpcol_2_parent));
 
     /* get 'cpcol_2_parent' */
-    for (kk = 0, j = my0; kk < nloc; kk++, j++) PetscCall(VecSetValues(tempVec, 1, &j, &lid_parent_gid[kk], INSERT_VALUES));
-    PetscCall(VecAssemblyBegin(tempVec));
-    PetscCall(VecAssemblyEnd(tempVec));
-    PetscCall(VecDuplicate(mpimat_2->lvec, &ghostparents2));
-    PetscCall(VecScatterBegin(mpimat_2->Mvctx, tempVec, ghostparents2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat_2->Mvctx, tempVec, ghostparents2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecGetArray(ghostparents2, &cpcol_2_parent));
-
-    /* get 'cpcol_2_gid' */
-    for (kk = 0, j = my0; kk < nloc; kk++, j++) {
-      PetscScalar v = (PetscScalar)j;
-
-      PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
-    }
-    PetscCall(VecAssemblyBegin(tempVec));
-    PetscCall(VecAssemblyEnd(tempVec));
-    PetscCall(VecDuplicate(mpimat_2->lvec, &ghostgids2));
-    PetscCall(VecScatterBegin(mpimat_2->Mvctx, tempVec, ghostgids2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat_2->Mvctx, tempVec, ghostgids2, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecGetArray(ghostgids2, &cpcol_2_gid));
-    PetscCall(VecDestroy(&tempVec));
+    PetscCall(PetscSFBcastBegin(sf_2, MPIU_INT, lid_parent_gid, cpcol_2_parent, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf_2, MPIU_INT, lid_parent_gid, cpcol_2_parent, MPI_REPLACE));
 
     /* look for deleted ghosts and add to table */
     PetscCall(PetscHMapICreateWithSize(2 * nghost_2 + 1, &gid_cpid));
     for (cpid = 0; cpid < nghost_2; cpid++) {
-      NState state = (NState)PetscRealPart(cpcol_2_state[cpid]);
+      NState state = cpcol_2_state[cpid];
 
       if (state == DELETED) {
-        PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_parent[cpid]);
-        PetscInt sgid_old = (PetscInt)PetscRealPart(cpcol_2_par_orig[cpid]);
+        PetscInt sgid_new = cpcol_2_parent[cpid];
+        PetscInt sgid_old = cpcol_2_par_orig[cpid];
 
         if (sgid_old == -1 && sgid_new != -1) {
-          PetscInt gid = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
+          PetscInt gid = cpcol_2_gid[cpid];
 
           PetscCall(PetscHMapISet(gid_cpid, gid, cpid));
         }
@@ -1296,10 +1261,10 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
 
     /* look at ghosts, see if they changed - and it */
     for (cpid = 0; cpid < nghost_2; cpid++) {
-      PetscInt sgid_new = (PetscInt)PetscRealPart(cpcol_2_parent[cpid]);
+      PetscInt sgid_new = cpcol_2_parent[cpid];
 
       if (sgid_new >= my0 && sgid_new < Iend) { /* this is mine */
-        PetscInt      gid      = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
+        PetscInt      gid      = cpcol_2_gid[cpid];
         PetscInt      slid_new = sgid_new - my0, hav = 0;
         PetscCDIntNd *pos;
 
@@ -1322,13 +1287,8 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         }
       }
     }
-    PetscCall(VecRestoreArray(mpimat_1->lvec, &cpcol_1_state));
-    PetscCall(VecRestoreArray(mpimat_2->lvec, &cpcol_2_state));
-    PetscCall(VecRestoreArray(ghostparents2, &cpcol_2_parent));
-    PetscCall(VecRestoreArray(ghostgids2, &cpcol_2_gid));
-    PetscCall(VecDestroy(&ghostgids2));
-    PetscCall(VecDestroy(&ghostparents2));
-    PetscCall(VecDestroy(&ghost_par_orig2));
+    PetscCall(PetscFree(cpcol_2_parent));
+    PetscCall(PetscFree3(cpcol_1_state, cpcol_2_state, cpcol_2_par_orig));
   }
   PetscCall(PetscFree3(lid_state, lid_parent_gid, lid_cprowID_1));
   PetscFunctionReturn(PETSC_SUCCESS);

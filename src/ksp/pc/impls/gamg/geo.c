@@ -3,6 +3,7 @@
  */
 
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
+#include <petscsf.h>
 
 #if PetscDefined(HAVE_TRIANGLE)
   #if !defined(ANSI_DECLARATORS)
@@ -439,11 +440,11 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
     *a_Gmat_2 = NULL;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nselected_1, clid_lid_1, PETSC_COPY_VALUES, a_selected_2));
   } else {
-    PetscInt     idx, num_fine_ghosts, num_crs_ghost, myCrs0;
-    Mat_MPIAIJ  *mpimat2;
-    Mat          Gmat2;
-    Vec          locState;
-    PetscScalar *cpcol_state;
+    PetscInt    idx, num_fine_ghosts, num_crs_ghost, myCrs0;
+    PetscInt   *lid_state, *cpcol_state;
+    Mat_MPIAIJ *mpimat2;
+    Mat         Gmat2;
+    PetscSF     sf;
 
     /* scan my coarse zero gid, set 'lid_state' with coarse GID */
     kk = nselected_1;
@@ -457,21 +458,15 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
     } else Gmat2 = Gmat1; /* use local to get crsGIDs at least */
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ *)Gmat2->data;
-    PetscCall(MatCreateVecs(Gmat2, &locState, NULL));
-    PetscCall(VecSet(locState, -1)); /* set with UNKNOWN state */
-    for (kk = 0; kk < nselected_1; kk++) {
-      PetscInt    fgid = clid_lid_1[kk] + my0;
-      PetscScalar v    = (PetscScalar)(kk + myCrs0);
-      PetscCall(VecSetValues(locState, 1, &fgid, &v, INSERT_VALUES)); /* set with PID */
-    }
-    PetscCall(VecAssemblyBegin(locState));
-    PetscCall(VecAssemblyEnd(locState));
-    PetscCall(VecScatterBegin(mpimat2->Mvctx, locState, mpimat2->lvec, INSERT_VALUES, SCATTER_FORWARD));
-    PetscCall(VecScatterEnd(mpimat2->Mvctx, locState, mpimat2->lvec, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecGetLocalSize(mpimat2->lvec, &num_fine_ghosts));
-    PetscCall(VecGetArray(mpimat2->lvec, &cpcol_state));
+    PetscCall(PetscMalloc2(nloc, &lid_state, num_fine_ghosts, &cpcol_state));
+    for (kk = 0; kk < nloc; kk++) lid_state[kk] = -1;                             /* set with UNKNOWN state */
+    for (kk = 0; kk < nselected_1; kk++) lid_state[clid_lid_1[kk]] = kk + myCrs0; /* set with coarse GID */
+    PetscCall(MatGetMultPetscSF(Gmat2, &sf));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
     for (kk = 0, num_crs_ghost = 0; kk < num_fine_ghosts; kk++) {
-      if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) num_crs_ghost++;
+      if (cpcol_state[kk] != -1) num_crs_ghost++;
     }
     PetscCall(PetscMalloc1(nselected_1 + num_crs_ghost, &crsGID)); /* output */
     {
@@ -479,25 +474,22 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
       PetscCall(PetscMalloc1(nselected_1 + num_crs_ghost, &selected_set));
       /* do ghost of 'crsGID' */
       for (kk = 0, idx = nselected_1; kk < num_fine_ghosts; kk++) {
-        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {
-          PetscInt cgid     = (PetscInt)PetscRealPart(cpcol_state[kk]);
+        if (cpcol_state[kk] != -1) {
+          PetscInt cgid     = cpcol_state[kk];
           selected_set[idx] = nloc + kk;
           crsGID[idx++]     = cgid;
         }
       }
       PetscCheck(idx == (nselected_1 + num_crs_ghost), PETSC_COMM_SELF, PETSC_ERR_PLIB, "idx %" PetscInt_FMT " != (nselected_1 %" PetscInt_FMT " + num_crs_ghost %" PetscInt_FMT ")", idx, nselected_1, num_crs_ghost);
-      PetscCall(VecRestoreArray(mpimat2->lvec, &cpcol_state));
       /* do locals in 'crsGID' */
-      PetscCall(VecGetArray(locState, &cpcol_state));
       for (kk = 0, idx = 0; kk < nloc; kk++) {
-        if ((PetscInt)PetscRealPart(cpcol_state[kk]) != -1) {
-          PetscInt cgid     = (PetscInt)PetscRealPart(cpcol_state[kk]);
+        if (lid_state[kk] != -1) {
+          PetscInt cgid     = lid_state[kk];
           selected_set[idx] = kk;
           crsGID[idx++]     = cgid;
         }
       }
       PetscCheck(idx == nselected_1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "idx %" PetscInt_FMT " != nselected_1 %" PetscInt_FMT, idx, nselected_1);
-      PetscCall(VecRestoreArray(locState, &cpcol_state));
 
       if (a_selected_2 != NULL) { /* output */
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nselected_1 + num_crs_ghost, selected_set, PETSC_OWN_POINTER, a_selected_2));
@@ -505,7 +497,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
         PetscCall(PetscFree(selected_set));
       }
     }
-    PetscCall(VecDestroy(&locState));
+    PetscCall(PetscFree2(lid_state, cpcol_state));
   }
   *a_crsGID = crsGID; /* output */
   PetscFunctionReturn(PETSC_SUCCESS);
