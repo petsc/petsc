@@ -1903,7 +1903,7 @@ M*/
 #elif PetscDefined(USE_REAL___FLOAT128)
   #define PetscRealConstant(constant) constant##Q
 #elif PetscDefined(USE_REAL___FP16)
-  #define PetscRealConstant(constant) constant##F
+  #define PetscRealConstant(constant) ((PetscReal)(constant))
 #endif
 
 /*
@@ -1946,10 +1946,10 @@ M*/
   #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
-static const PetscReal PETSC_PI    = PetscRealConstant(3.1415926535897932384626433832795029);
-static const PetscReal PETSC_PHI   = PetscRealConstant(1.6180339887498948482045868343656381);
-static const PetscReal PETSC_SQRT2 = PetscRealConstant(1.4142135623730950488016887242096981);
-static const PetscReal PETSC_E     = PetscRealConstant(2.7182818284590452353602874713526625);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_PI    = PetscRealConstant(3.1415926535897932384626433832795029);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_PHI   = PetscRealConstant(1.6180339887498948482045868343656381);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SQRT2 = PetscRealConstant(1.4142135623730950488016887242096981);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_E     = PetscRealConstant(2.7182818284590452353602874713526625);
 
 /*MC
   PETSC_MAX_REAL - the largest real value that can be stored in a `PetscReal`
@@ -2017,34 +2017,34 @@ M*/
 M*/
 
 #if PetscDefined(USE_REAL_SINGLE)
-static const PetscReal PETSC_MAX_REAL             = FLT_MAX;
-static const PetscReal PETSC_REAL_MIN             = FLT_MIN;
-static const PetscReal PETSC_MACHINE_EPSILON      = FLT_EPSILON;
-static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.45266977e-04F;
-static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-5);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MAX_REAL             = FLT_MAX;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_REAL_MIN             = FLT_MIN;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MACHINE_EPSILON      = FLT_EPSILON;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.45266977e-04F;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SMALL                = PetscRealConstant(1.e-5);
 #elif PetscDefined(USE_REAL_DOUBLE)
-static const PetscReal PETSC_MAX_REAL             = DBL_MAX;
-static const PetscReal PETSC_REAL_MIN             = DBL_MIN;
-static const PetscReal PETSC_MACHINE_EPSILON      = DBL_EPSILON;
-static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.4901161193847656e-08;
-static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-10);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MAX_REAL             = DBL_MAX;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_REAL_MIN             = DBL_MIN;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MACHINE_EPSILON      = DBL_EPSILON;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.4901161193847656e-08;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SMALL                = PetscRealConstant(1.e-10);
 #elif PetscDefined(USE_REAL___FLOAT128)
-static const PetscReal PETSC_MAX_REAL             = FLT128_MAX;
-static const PetscReal PETSC_REAL_MIN             = FLT128_MIN;
-static const PetscReal PETSC_MACHINE_EPSILON      = FLT128_EPSILON;
-static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.38777878078144567552953958511352539e-17Q;
-static const PetscReal PETSC_SMALL                = PetscRealConstant(1.e-20);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MAX_REAL             = FLT128_MAX;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_REAL_MIN             = FLT128_MIN;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MACHINE_EPSILON      = FLT128_EPSILON;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SQRT_MACHINE_EPSILON = 1.38777878078144567552953958511352539e-17Q;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SMALL                = PetscRealConstant(1.e-20);
 #elif PetscDefined(USE_REAL___FP16)
-static const PetscReal PETSC_MAX_REAL             = __FLT16_MAX__;
-static const PetscReal PETSC_REAL_MIN             = __FLT16_MIN__;
-static const PetscReal PETSC_MACHINE_EPSILON      = __FLT16_EPSILON__;
-static const PetscReal PETSC_SQRT_MACHINE_EPSILON = 3.1250e-02F;
-static const PetscReal PETSC_SMALL                = PetscRealConstant(5.e-3);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MAX_REAL             = __FLT16_MAX__;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_REAL_MIN             = __FLT16_MIN__;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MACHINE_EPSILON      = __FLT16_EPSILON__;
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SQRT_MACHINE_EPSILON = PetscRealConstant(3.1250e-02);
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_SMALL                = PetscRealConstant(5.e-3);
 #endif
-#if !PetscDefined(HAVE_STATIC_CONST_INIT)
-  #define PETSC_MIN_REAL (-PETSC_MAX_REAL)
+#if PetscDefined(HAVE_STATIC_CONST_INIT)
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
 #else
-static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
+  #define PETSC_MIN_REAL (-PETSC_MAX_REAL)
 #endif
 
 /*MC
@@ -2057,10 +2057,10 @@ static const PetscReal PETSC_MIN_REAL = (-PETSC_MAX_REAL);
 
 .seealso: `PETSC_NINFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#if !PetscDefined(HAVE_STATIC_CONST_INIT)
-  #define PETSC_INFINITY (PETSC_MAX_REAL / PetscRealConstant(4.0))
+#if PetscDefined(HAVE_STATIC_CONST_INIT)
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_INFINITY = PETSC_MAX_REAL / PetscRealConstant(4.0);
 #else
-static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / PetscRealConstant(4.0);
+  #define PETSC_INFINITY (PETSC_MAX_REAL / PetscRealConstant(4.0))
 #endif
 
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined(__clang__)
@@ -2077,10 +2077,10 @@ static const PetscReal PETSC_INFINITY = PETSC_MAX_REAL / PetscRealConstant(4.0);
 
 .seealso: `PETSC_INFINITY`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESVISetVariableBounds()`
 M*/
-#if !PetscDefined(HAVE_STATIC_CONST_INIT)
-  #define PETSC_NINFINITY (-PETSC_INFINITY)
+#if PetscDefined(HAVE_STATIC_CONST_INIT)
+PETSC_STATIC_CONSTEXPR PetscReal PETSC_NINFINITY = (-PETSC_INFINITY);
 #else
-static const PetscReal PETSC_NINFINITY = (-PETSC_INFINITY);
+  #define PETSC_NINFINITY (-PETSC_INFINITY)
 #endif
 
 PETSC_EXTERN PetscBool  PetscIsInfReal(PetscReal);
