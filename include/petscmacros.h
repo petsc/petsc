@@ -1027,6 +1027,20 @@ M*/
 M*/
 #define PetscDefined(def) PetscDefined_(PETSC_##def)
 
+/* C23 or C++11 constexpr for static constant variables when the current compile supports it; C23 rejects
+   constexpr floating initializers that excess precision (__FLT_EVAL_METHOD__ != 0) makes inexact */
+#if defined(__cplusplus) || (PetscDefined(HAVE_C_STATIC_CONSTEXPR) && PETSC_C_VERSION >= 23 && (!defined(__FLT_EVAL_METHOD__) || __FLT_EVAL_METHOD__ == 0))
+  #define PETSC_CONSTEXPR_ENABLED 1
+  #define PETSC_STATIC_CONSTEXPR  static constexpr
+#else
+  #define PETSC_STATIC_CONSTEXPR static const
+#endif
+
+/* Whether a static constant variable may be initialized from another const value */
+#if defined(__cplusplus) || PetscDefined(CONSTEXPR_ENABLED) || PetscDefined(HAVE_C_STATIC_CONST_INIT_FROM_CONST)
+  #define PETSC_HAVE_STATIC_CONST_INIT 1
+#endif
+
 /*MC
   PetscUnlikelyDebug - Hints the compiler that the given condition is usually false, eliding
   the check in optimized mode
