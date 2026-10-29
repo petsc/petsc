@@ -752,7 +752,9 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
   def configureStaticConstInit(self):
     '''Sees if a file-scope static const can be initialized from another static const (MSVC and classic Intel C reject this)'''
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('static const double a = 1.0;\nstatic const double b = -a;\n', 'return (int)b;'):
+    # NVHPC accepts this with a const_var_in_C_const_expr warning, so warnings also fail the test
+    (output, error, status) = self.outputCompile('static const double a = 1.0;\nstatic const double b = -a;\n', codeEnd='return (int)b;\n}')
+    if not status and not self.filterCompileOutput(output + '\n' + error, filterAlways = 1):
       self.addDefine('HAVE_STATIC_CONST_INIT_FROM_CONST', 1)
     self.popLanguage()
 
