@@ -4608,8 +4608,9 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
   isspd       = mat->spd;
 
   if ((sametype || issame) && (reuse == MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
-    PetscCall(PetscInfo(mat, "Calling duplicate for initial matrix %s %d %d\n", ((PetscObject)mat)->type_name, sametype, issame));
+    PetscCall(PetscInfo(mat, "Calling MatDuplicate() for initial matrix %s %d %d\n", ((PetscObject)mat)->type_name, sametype, issame));
     PetscUseTypeMethod(mat, duplicate, MAT_COPY_VALUES, M);
+    (*M)->nonzerostate = mat->nonzerostate;
   } else {
     PetscErrorCode (*conv)(Mat, MatType, MatReuse, Mat *) = NULL;
     const char *prefix[3]                                 = {"seq", "mpi", ""};
@@ -4637,11 +4638,12 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
           PetscCall(PetscInfo(mat, "Early return\n"));
           PetscFunctionReturn(PETSC_SUCCESS);
         } else if (reuse == MAT_INITIAL_MATRIX && mat->ops->duplicate) {
-          PetscCall(PetscInfo(mat, "Calling MatDuplicate\n"));
+          PetscCall(PetscInfo(mat, "Calling MatDuplicate()\n"));
           PetscUseTypeMethod(mat, duplicate, MAT_COPY_VALUES, M);
+          (*M)->nonzerostate = mat->nonzerostate;
           PetscFunctionReturn(PETSC_SUCCESS);
         } else if (reuse == MAT_REUSE_MATRIX && mat->ops->copy) {
-          PetscCall(PetscInfo(mat, "Calling MatCopy\n"));
+          PetscCall(PetscInfo(mat, "Calling MatCopy()\n"));
           PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
           PetscFunctionReturn(PETSC_SUCCESS);
         }
@@ -4691,7 +4693,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
     if (conv) goto foundconv;
 
     /* 5) Use a really basic converter. */
-    PetscCall(PetscInfo(mat, "Using MatConvert_Basic\n"));
+    PetscCall(PetscInfo(mat, "Using MatConvert_Basic()\n"));
     conv = MatConvert_Basic;
 
   foundconv:
@@ -5237,6 +5239,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 
   B->nooffproczerorows = mat->nooffproczerorows;
   B->nooffprocentries  = mat->nooffprocentries;
+  B->nonzerostate      = mat->nonzerostate;
 
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_dm", &dm));
   if (dm) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_dm", dm));
