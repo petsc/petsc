@@ -33,3 +33,32 @@ PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp)
   PetscTryMethod(ksp, "KSPGMRESSetPreAllocateVectors_C", (KSP), (ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  KSPGMRESSetVectorAllocationSize - Set the number of Krylov search vectors allocated at a time by `KSPGMRES`, `KSPFGMRES`, etc.
+
+  Logically Collective
+
+  Input Parameters:
++ ksp - iterative context obtained from `KSPCreate()`
+- n   - number of vectors, default 10
+
+  Options Database Key:
+. -ksp_gmres_vector_allocation_size n - number of vectors to allocate each time
+
+  Level: intermediate
+
+  Notes:
+  Use `PETSC_CURRENT` to retain the current value and `PETSC_DETERMINE` to use the default value.
+
+  It is usually much more efficient to allocate GPU vectors in large batches.
+
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetPreAllocateVectors()`
+@*/
+PetscErrorCode KSPGMRESSetVectorAllocationSize(KSP ksp, PetscInt n)
+{
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(ksp, n, 2);
+  PetscTryMethod(ksp, "KSPGMRESSetVectorAllocationSize_C", (KSP, PetscInt), (ksp, n));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

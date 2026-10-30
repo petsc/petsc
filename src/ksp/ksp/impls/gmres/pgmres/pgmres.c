@@ -384,6 +384,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetVectorAllocationSize_C", KSPGMRESSetVectorAllocationSize_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
@@ -391,7 +392,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   pgmres->nextra_vecs    = 1;
   pgmres->haptol         = 1.0e-30;
   pgmres->q_preallocate  = PETSC_FALSE;
-  pgmres->delta_allocate = PGMRES_DELTA_DIRECTIONS;
+  pgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pgmres->nrs            = NULL;
   pgmres->sol_temp       = NULL;
   pgmres->max_k          = PGMRES_DEFAULT_MAXK;

@@ -27,8 +27,7 @@
  */
 
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h> /*I  "petscksp.h"  I*/
-#define GMRES_DELTA_DIRECTIONS 10
-#define GMRES_DEFAULT_MAXK     30
+#define GMRES_DEFAULT_MAXK 30
 static PetscErrorCode KSPGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
@@ -272,6 +271,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   PetscCall(KSPReset_GMRES(ksp));
   PetscCall(PetscFree(ksp->data));
   /* clear composed functions */
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetVectorAllocationSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", NULL));
@@ -513,13 +513,15 @@ PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, vo
 
 PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
-  PetscInt   restart;
+  PetscInt   delta_allocate, restart;
   PetscReal  haptol, breakdowntol;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscBool  flg, set;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP GMRES Options");
+  PetscCall(PetscOptionsInt("-ksp_gmres_vector_allocation_size", "Number of work vectors to allocate at a time", "KSPGMRESSetVectorAllocationSize", gmres->delta_allocate, &delta_allocate, &flg));
+  if (flg) PetscCall(KSPGMRESSetVectorAllocationSize(ksp, delta_allocate));
   PetscCall(PetscOptionsInt("-ksp_gmres_restart", "Number of Krylov search directions", "KSPGMRESSetRestart", gmres->max_k, &restart, &flg));
   if (flg) PetscCall(KSPGMRESSetRestart(ksp, restart));
   PetscCall(PetscOptionsReal("-ksp_gmres_haptol", "Tolerance for exact convergence (happy breakdown)", "KSPGMRESSetHapTol", gmres->haptol, &haptol, &flg));
@@ -588,6 +590,19 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k)
     ksp->setupstage = KSP_SETUP_NEW;
     /* free the data structures, then create them again */
     PetscCall(KSPReset_GMRES(ksp));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode KSPGMRESSetVectorAllocationSize_GMRES(KSP ksp, PetscInt delta_allocate)
+{
+  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+
+  PetscFunctionBegin;
+  if (delta_allocate == PETSC_DETERMINE) gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
+  else if (delta_allocate != PETSC_CURRENT) {
+    PetscCheck(delta_allocate > 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "size must be positive");
+    gmres->delta_allocate = delta_allocate;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -745,6 +760,8 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for happy breakdown (exact convergence) of `KSPGMRES`
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
                                                                                   vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
+.   -ksp_gmres_vector_allocation_size n                                         - number of Krylov search vectors allocated at a time after the preallocated
+                                                                                  vectors, see `KSPGMRESSetVectorAllocationSize()`
 -   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    Level: beginner
@@ -755,7 +772,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
    Using `KSPGMRESSetPreAllocateVectors()` or `-ksp_gmres_preallocate` can improve the efficiency of the orthogonalization step with certain vector implementations.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
-          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
+          `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetVectorAllocationSize()`, `KSPOrthogonalizationSet()`, `KSPOrthogonalizationGet()`,
           `KSPOrthogonalizationClassicalGramSchmidt()`, `KSPOrthogonalizationModifiedGramSchmidt()`,
           `KSPOrthogonalizationCGSRefinementType`, `KSPOrthogonalizationSetCGSRefinementType()`, `KSPOrthogonalizationGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
 M*/
@@ -784,6 +801,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
   ksp->ops->computeritz                  = KSPComputeRitz_GMRES;
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetVectorAllocationSize_C", KSPGMRESSetVectorAllocationSize_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));

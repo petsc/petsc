@@ -572,6 +572,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetVectorAllocationSize_C", KSPGMRESSetVectorAllocationSize_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetPreAllocateVectors_C", KSPGMRESSetPreAllocateVectors_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
@@ -580,7 +581,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->nextra_vecs    = 1;
   pipefgmres->haptol         = 1.0e-30;
   pipefgmres->q_preallocate  = PETSC_FALSE;
-  pipefgmres->delta_allocate = PIPEFGMRES_DELTA_DIRECTIONS;
+  pipefgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pipefgmres->nrs            = NULL;
   pipefgmres->sol_temp       = NULL;
   pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
