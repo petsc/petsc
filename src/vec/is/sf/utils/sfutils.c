@@ -977,7 +977,7 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   ldr /= PetscMax(1, sf->vscat.bs);
   PetscCheck(ldr >= nr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be smaller than number of roots %" PetscInt_FMT, ldr, nr);
   PetscCheck(ldl >= maxl, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be larger than leaf range %" PetscInt_FMT, ldl, maxl - 1);
-  vnr = nr * bs;
+  vnr = nr && bs ? (bs - 1) * ldr + nr : 0;
   vnl = nl * bs;
   PetscCall(PetscMalloc1(vnl, &viremote));
   PetscCall(PetscMalloc1(vnl, &vilocal));
