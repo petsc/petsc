@@ -470,6 +470,7 @@ PETSC_INTERN PetscErrorCode SymBroydenCompactDenseKernelUseB0S(Mat B, MatLMVMMod
   Mat              J0 = lmvm->J0;
   PetscObjectId    id;
   PetscObjectState state;
+  VecState         Xstate;
 
   /*
      The one time where we would want to compute S^T B_0 X as (B_0 S)^T X instead of S^T (B_0 X)
@@ -485,9 +486,8 @@ PETSC_INTERN PetscErrorCode SymBroydenCompactDenseKernelUseB0S(Mat B, MatLMVMMod
     PetscCall(PetscObjectStateGet((PetscObject)J0, &state));
     if (id != B0S->operator_id || state != B0S->operator_state) PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscCall(PetscObjectGetId((PetscObject)X, &id));
-  PetscCall(PetscObjectStateGet((PetscObject)X, &state));
-  if (id == B0S->cached_vec_id && state == B0S->cached_vec_state) *use_B0S = PETSC_TRUE;
+  PetscCall(VecGetState(X, &Xstate));
+  PetscCall(VecStateCompare(Xstate, B0S->cached_vec_state, use_B0S));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

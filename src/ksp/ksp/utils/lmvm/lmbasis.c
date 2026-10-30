@@ -88,8 +88,7 @@ PETSC_INTERN PetscErrorCode LMBasisRestoreNextVec(LMBasis basis, Vec *single)
   PetscAssertPointer(basis, 1);
   PetscCall(LMBasisRestoreVec(basis, basis->k++, PETSC_MEMORY_ACCESS_WRITE, single));
   // basis is updated, invalidate cached product
-  basis->cached_vec_id    = 0;
-  basis->cached_vec_state = 0;
+  PetscCall(VecStateInvalidate(basis->cached_vec_state));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -229,7 +228,6 @@ PETSC_INTERN PetscErrorCode LMBasisCopy(LMBasis basis_a, LMBasis basis_b)
   PetscCheck(basis_a->m == basis_b->m, PetscObjectComm((PetscObject)basis_a), PETSC_ERR_ARG_SIZ, "Copy target has different number of vecs, %" PetscInt_FMT " != %" PetscInt_FMT, basis_b->m, basis_a->m);
   basis_b->k = basis_a->k;
   PetscCall(MatCopy(basis_a->vecs, basis_b->vecs, SAME_NONZERO_PATTERN));
-  basis_b->cached_vec_id    = basis_a->cached_vec_id;
   basis_b->cached_vec_state = basis_a->cached_vec_state;
   if (basis_a->cached_product) {
     if (!basis_b->cached_product) PetscCall(VecDuplicate(basis_a->cached_product, &basis_b->cached_product));
@@ -302,14 +300,14 @@ PETSC_INTERN PetscErrorCode LMBasisGEMVH(LMBasis A, PetscInt oldest, PetscInt ne
   PetscFunctionBegin;
   if (lim <= 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(LMBasisMultCheck(A, oldest, next));
-  if (A->cached_product && A->cached_vec_id != 0 && A->cached_vec_state != 0) {
+  if (A->cached_product) {
     // see if x is the cached input vector
-    PetscObjectId    x_id;
-    PetscObjectState x_state;
+    VecState  x_state;
+    PetscBool same;
 
-    PetscCall(PetscObjectGetId((PetscObject)x, &x_id));
-    PetscCall(PetscObjectStateGet((PetscObject)x, &x_state));
-    if (x_id == A->cached_vec_id && x_state == A->cached_vec_state) {
+    PetscCall(VecGetState(x, &x_state));
+    PetscCall(VecStateCompare(x_state, A->cached_vec_state, &same));
+    if (same) {
       PetscCall(VecAXPBYCyclic(oldest, next, alpha, A->cached_product, beta, y));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
@@ -475,10 +473,9 @@ PETSC_INTERN PetscErrorCode LMBasisReset(LMBasis basis)
   if (basis) {
     basis->k = 0;
     PetscCall(VecDestroy(&basis->cached_product));
-    basis->cached_vec_id    = 0;
-    basis->cached_vec_state = 0;
-    basis->operator_id      = 0;
-    basis->operator_state   = 0;
+    PetscCall(VecStateInvalidate(basis->cached_vec_state));
+    basis->operator_id    = 0;
+    basis->operator_state = 0;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -486,13 +483,8 @@ PETSC_INTERN PetscErrorCode LMBasisReset(LMBasis basis)
 PETSC_INTERN PetscErrorCode LMBasisSetCachedProduct(LMBasis A, Vec x, Vec Ax)
 {
   PetscFunctionBegin;
-  if (x == NULL) {
-    A->cached_vec_id    = 0;
-    A->cached_vec_state = 0;
-  } else {
-    PetscCall(PetscObjectGetId((PetscObject)x, &A->cached_vec_id));
-    PetscCall(PetscObjectStateGet((PetscObject)x, &A->cached_vec_state));
-  }
+  if (x == NULL) PetscCall(VecStateInvalidate(A->cached_vec_state));
+  else PetscCall(VecGetState(x, &A->cached_vec_state));
   PetscCall(PetscObjectReference((PetscObject)Ax));
   PetscCall(VecDestroy(&A->cached_product));
   A->cached_product = Ax;

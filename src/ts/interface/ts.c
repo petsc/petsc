@@ -566,8 +566,8 @@ PetscErrorCode TSRemoveTrajectory(TS ts)
 @*/
 PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
 {
-  PetscObjectState Ustate;
-  PetscObjectId    Uid;
+  VecState         Ustate;
+  PetscBool        same;
   DM               dm;
   DMTS             tsdm;
   TSRHSJacobianFn *rhsjacobianfunc;
@@ -582,10 +582,10 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
   PetscCall(DMGetDMTS(dm, &tsdm));
   PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
   PetscCall(DMTSGetRHSJacobian(dm, &rhsjacobianfunc, &ctx));
-  PetscCall(PetscObjectStateGet((PetscObject)U, &Ustate));
-  PetscCall(PetscObjectGetId((PetscObject)U, &Uid));
+  PetscCall(VecGetState(U, &Ustate));
+  PetscCall(VecStateCompare(Ustate, ts->rhsjacobian.Xstate, &same));
 
-  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && (rhsfunction != TSComputeRHSFunctionLinear)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || same) && (rhsfunction != TSComputeRHSFunctionLinear)) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCheck(ts->rhsjacobian.shift == 0.0 || !ts->rhsjacobian.reuse, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Should not call TSComputeRHSJacobian() on a shifted matrix (shift=%lf) when RHSJacobian is reusable.", (double)ts->rhsjacobian.shift);
   if (rhsjacobianfunc) {
@@ -600,8 +600,7 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
   ts->rhsjacobian.time  = t;
   ts->rhsjacobian.shift = 0;
   ts->rhsjacobian.scale = 1.;
-  PetscCall(PetscObjectGetId((PetscObject)U, &ts->rhsjacobian.Xid));
-  PetscCall(PetscObjectStateGet((PetscObject)U, &ts->rhsjacobian.Xstate));
+  PetscCall(VecGetState(U, &ts->rhsjacobian.Xstate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -936,16 +935,15 @@ PetscErrorCode TSComputeIJacobian_Internal(TS ts, TSIJacobianFn *ijacobian, TSRH
     if (rhsjacobian) PetscCall(TSGetRHSMats_Private(ts, &Arhs, &Brhs));
     if (Arhs == A) { /* No IJacobian matrix, so we only have the RHS matrix */
       DM               dm;
-      PetscObjectState Ustate;
-      PetscObjectId    Uid;
+      VecState         Ustate;
+      PetscBool        same;
       TSRHSFunctionFn *rhsfunction;
 
       PetscCall(TSGetDM(ts, &dm));
       PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
-      PetscCall(PetscObjectStateGet((PetscObject)U, &Ustate));
-      PetscCall(PetscObjectGetId((PetscObject)U, &Uid));
-      if ((rhsjacobian == TSComputeRHSJacobianConstant || (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.Xid == Uid && ts->rhsjacobian.Xstate == Ustate)) && rhsfunction != TSComputeRHSFunctionLinear)) &&
-          ts->rhsjacobian.scale == -1.) {                      /* No need to recompute RHSJacobian */
+      PetscCall(VecGetState(U, &Ustate));
+      PetscCall(VecStateCompare(Ustate, ts->rhsjacobian.Xstate, &same));
+      if ((rhsjacobian == TSComputeRHSJacobianConstant || (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || same) && rhsfunction != TSComputeRHSFunctionLinear)) && ts->rhsjacobian.scale == -1.) { /* No need to recompute RHSJacobian */
         PetscCall(MatShift(A, shift - ts->rhsjacobian.shift)); /* revert the old shift and add the new shift with a single call to MatShift */
         if (A != B) PetscCall(MatShift(B, shift - ts->rhsjacobian.shift));
       } else {
@@ -3219,19 +3217,16 @@ PetscErrorCode TSPreStep(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->prestep) {
-    Vec              U;
-    PetscObjectId    idprev;
-    PetscBool        sameObject;
-    PetscObjectState sprev, spost;
+    Vec       U;
+    VecState  Ustate;
+    PetscBool same;
 
     PetscCall(TSGetSolution(ts, &U));
-    PetscCall(PetscObjectGetId((PetscObject)U, &idprev));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &sprev));
+    PetscCall(VecGetState(U, &Ustate));
     PetscCallBack("TS callback preset", (*ts->prestep)(ts));
     PetscCall(TSGetSolution(ts, &U));
-    PetscCall(PetscObjectCompareId((PetscObject)U, idprev, &sameObject));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &spost));
-    if (!sameObject || sprev != spost) PetscCall(TSRestartStep(ts));
+    PetscCall(VecStateCompareUpdate(U, &Ustate, &same));
+    if (!same) PetscCall(TSRestartStep(ts));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3419,14 +3414,15 @@ PetscErrorCode TSPostEvaluate(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->postevaluate) {
-    Vec              U;
-    PetscObjectState sprev, spost;
+    Vec       U;
+    VecState  Ustate;
+    PetscBool same;
 
     PetscCall(TSGetSolution(ts, &U));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &sprev));
+    PetscCall(VecGetState(U, &Ustate));
     PetscCallBack("TS callback postevaluate", (*ts->postevaluate)(ts));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &spost));
-    if (sprev != spost) PetscCall(TSRestartStep(ts));
+    PetscCall(VecStateCompareUpdate(U, &Ustate, &same));
+    if (!same) PetscCall(TSRestartStep(ts));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3497,19 +3493,16 @@ PetscErrorCode TSPostStep(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->poststep) {
-    Vec              U;
-    PetscObjectId    idprev;
-    PetscBool        sameObject;
-    PetscObjectState sprev, spost;
+    Vec       U;
+    VecState  Ustate;
+    PetscBool same;
 
     PetscCall(TSGetSolution(ts, &U));
-    PetscCall(PetscObjectGetId((PetscObject)U, &idprev));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &sprev));
+    PetscCall(VecGetState(U, &Ustate));
     PetscCallBack("TS callback poststep", (*ts->poststep)(ts));
     PetscCall(TSGetSolution(ts, &U));
-    PetscCall(PetscObjectCompareId((PetscObject)U, idprev, &sameObject));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &spost));
-    if (!sameObject || sprev != spost) PetscCall(TSRestartStep(ts));
+    PetscCall(VecStateCompareUpdate(U, &Ustate, &same));
+    if (!same) PetscCall(TSRestartStep(ts));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

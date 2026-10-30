@@ -29,7 +29,7 @@ typedef struct _p_Mat *Mat;
    Note:
    A `MatState` records the object id, state, and nonzero state of a `Mat`.
 
-.seealso: [](ch_matrices), `Mat`, `MatGetState()`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectGetId()`
+.seealso: [](ch_matrices), `Mat`, `MatGetState()`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectGetId()`, `PetscObjectStateGet()`
 S*/
 typedef struct {
   PetscObjectId    id;

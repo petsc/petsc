@@ -143,8 +143,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
       PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Reusing snapshot %" PetscInt_FMT " step %" PetscInt_FMT ", time %g\n", tid, tshhist_id[id], (double)t));
     }
     PetscCall(VecCopy(tj->lag.W[tid], U));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &tj->lag.Ucached.state));
-    PetscCall(PetscObjectGetId((PetscObject)U, &tj->lag.Ucached.id));
+    PetscCall(VecGetState(U, &tj->lag.Ucached.state));
     tj->lag.Ucached.time = t;
     tj->lag.Ucached.step = tshhist_id[id];
     if (tj->monitor) PetscCall(PetscViewerASCIIPopTab(tj->monitor));
@@ -154,8 +153,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     LagrangeBasisVals(cnt, t, tj->lag.TW, tj->lag.L);
     PetscCall(VecZeroEntries(U));
     PetscCall(VecMAXPY(U, cnt, tj->lag.L, tj->lag.WW));
-    PetscCall(PetscObjectStateGet((PetscObject)U, &tj->lag.Ucached.state));
-    PetscCall(PetscObjectGetId((PetscObject)U, &tj->lag.Ucached.id));
+    PetscCall(VecGetState(U, &tj->lag.Ucached.state));
     tj->lag.Ucached.time = t;
     tj->lag.Ucached.step = PETSC_INT_MIN;
   }
@@ -164,8 +162,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     LagrangeBasisDers(cnt, t, tj->lag.TW, tj->lag.L);
     PetscCall(VecZeroEntries(Udot));
     PetscCall(VecMAXPY(Udot, cnt, tj->lag.L, tj->lag.WW));
-    PetscCall(PetscObjectStateGet((PetscObject)Udot, &tj->lag.Udotcached.state));
-    PetscCall(PetscObjectGetId((PetscObject)Udot, &tj->lag.Udotcached.id));
+    PetscCall(VecGetState(Udot, &tj->lag.Udotcached.state));
     tj->lag.Udotcached.time = t;
     tj->lag.Udotcached.step = PETSC_INT_MIN;
   }

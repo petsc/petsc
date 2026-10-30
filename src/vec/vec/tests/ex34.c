@@ -1,15 +1,29 @@
-static char help[] = "Tests for norm caching\n";
+static char help[] = "Tests for norm caching and VecState\n";
 
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h> /* to gain access to the private PetscObjectStateIncrease() */
 
+static PetscErrorCode CheckSnapshot(Vec x, VecState *saved, PetscBool expected)
+{
+  PetscBool same;
+
+  PetscFunctionBeginUser;
+  PetscCall(VecStateCompareUpdate(x, saved, &same));
+  PetscCheck(same == expected, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Snapshot unexpectedly %s", same ? "matched" : "did not match");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
-  Vec         V, W;
-  MPI_Comm    comm;
-  PetscScalar one = 1, e = 2.7181;
-  PetscReal   nrm1, nrm2, nrm3, nrm4;
-  PetscInt    ione = 1;
+  Vec                V, W;
+  VecState           vstate, wstate;
+  MPI_Comm           comm;
+  PetscScalar        one = 1, e = 2.7181;
+  PetscScalar       *a;
+  const PetscScalar *ra;
+  PetscReal          nrm1, nrm2, nrm3, nrm4;
+  PetscInt           ione = 1;
+  PetscBool          same;
 
   PetscFunctionBegin;
   PetscFunctionBeginUser;
@@ -22,6 +36,7 @@ int main(int argc, char **argv)
   PetscCall(VecSetRandom(V, NULL));
   PetscCall(VecAssemblyBegin(V));
   PetscCall(VecAssemblyEnd(V));
+  PetscCall(VecGetState(V, &vstate));
 
   /*
    * Initial
@@ -36,10 +51,16 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(V, NORM_2, &nrm2));
   PetscCall(PetscPrintf(comm, "cached: norm1=%e,norm2=%e\n", (double)nrm1, (double)nrm2));
 
+  // Norms and read access do not change the state
+  PetscCall(VecGetArrayRead(V, &ra));
+  PetscCall(VecRestoreArrayRead(V, &ra));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_TRUE));
+
   /*
    * Alter an element
    */
   PetscCall(VecSetValues(V, 1, &ione, &one, INSERT_VALUES));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_FALSE));
 
   /* display norm 1 & 2 */
   PetscCall(VecNorm(V, NORM_1, &nrm1));
@@ -50,11 +71,13 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(V, NORM_1, &nrm1));
   PetscCall(VecNorm(V, NORM_2, &nrm2));
   PetscCall(PetscPrintf(comm, "recomputed: norm1=%e,norm2=%e\n", (double)nrm1, (double)nrm2));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_TRUE));
 
   /*
    * Scale the vector a little
    */
   PetscCall(VecScale(V, e));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_FALSE));
 
   /* display updated cached norm 1 & 2 */
   PetscCall(VecNorm(V, NORM_1, &nrm1));
@@ -99,6 +122,13 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(W, NORM_2, &nrm2));
   PetscCall(PetscPrintf(comm, "copied: norm1=%e,norm2=%e\n", (double)nrm1, (double)nrm2));
 
+  // Snapshots of different vectors do not match, even with the same object state
+  PetscCall(VecGetState(V, &vstate));
+  PetscCall(VecGetState(W, &wstate));
+  wstate.state = vstate.state;
+  PetscCall(VecStateCompare(vstate, wstate, &same));
+  PetscCheck(!same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Snapshots of different vectors matched");
+
   /*
    * Copy while data is invalid
    */
@@ -114,6 +144,14 @@ int main(int argc, char **argv)
   PetscCall(VecNorm(W, NORM_1, &nrm1));
   PetscCall(VecNorm(W, NORM_2, &nrm2));
   PetscCall(PetscPrintf(comm, "copied: norm1=%e,norm2=%e\n", (double)nrm1, (double)nrm2));
+
+  // Write access changes the state, and an invalidated snapshot does not match an unchanged vector
+  PetscCall(VecGetState(V, &vstate));
+  PetscCall(VecGetArray(V, &a));
+  PetscCall(VecRestoreArray(V, &a));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_FALSE));
+  PetscCall(VecStateInvalidate(vstate));
+  PetscCall(CheckSnapshot(V, &vstate, PETSC_FALSE));
 
   /*
    * Constant vector

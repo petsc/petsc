@@ -920,7 +920,7 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 /*@
   MatGetState - Gets a snapshot of the state of a `Mat`
 
-  Not Collective, No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - the matrix
@@ -930,10 +930,10 @@ PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
 
   Level: developer
 
-  Notes:
-  The snapshot includes the matrix identity, object state, and nonzero state. Use `MatStateCompare()` to determine whether two snapshots are the same, or `MatStateCompareUpdate()` to compare and update a saved snapshot.
+  Note:
+  The snapshot includes the matrix object id, state, and nonzero state. Use `MatStateCompare()` to determine whether two snapshots are the same, or `MatStateCompareUpdate()` to compare and update a saved snapshot.
 
-.seealso: [](ch_matrices), `Mat`, `MatState`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectStateGet()`, `MatGetNonzeroState()`
+.seealso: [](ch_matrices), `Mat`, `MatState`, `MatStateCompare()`, `MatStateCompareUpdate()`, `MatStateInvalidate()`, `PetscObjectStateGet()`, `PetscObjectGetId()`, `MatGetNonzeroState()`
 @*/
 PetscErrorCode MatGetState(Mat A, MatState *state)
 {
@@ -949,14 +949,14 @@ PetscErrorCode MatGetState(Mat A, MatState *state)
 /*@
   MatStateCompare - Compares two matrix state snapshots
 
-  Not Collective, No Fortran Support
+  Not Collective
 
   Input Parameters:
 + state1 - the first matrix state
 - state2 - the second matrix state
 
   Output Parameter:
-. same - `PETSC_TRUE` if the matrix identity, object state, and nonzero state are the same, `PETSC_FALSE` otherwise
+. same - `PETSC_TRUE` if the matrix object id, state, and nonzero state are the same, `PETSC_FALSE` otherwise
 
   Level: developer
 
@@ -973,7 +973,7 @@ PetscErrorCode MatStateCompare(MatState state1, MatState state2, PetscBool *same
 /*@
   MatStateCompareUpdate - Compares a matrix with a state snapshot, then updates the snapshot
 
-  Not Collective, No Fortran Support
+  Not Collective
 
   Input Parameter:
 . A - the matrix

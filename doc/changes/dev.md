@@ -56,6 +56,7 @@
 ```
 
 - Add a device implementation of `VecSqrtAbs()` for `VECKOKKOS`; previously it copied the vector to the host
+- Change `VecGetState()` to return a `VecState` and add `VecStateCompare()`, `VecStateCompareUpdate()`, and `VecStateInvalidate()`
 
 ```{rubric} PetscSection:
 ```
