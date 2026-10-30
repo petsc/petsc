@@ -2717,8 +2717,8 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
   PetscCall(MatGetSize(Y, NULL, &ny));
   PetscCheck(N == ny, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_SIZ, "Matrix column sizes must match: %" PetscInt_FMT " != %" PetscInt_FMT, N, ny);
   if (!N) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(MatDenseGetLDA(X, &rld));
-  PetscCall(MatDenseGetLDA(Y, &lld));
+  PetscCall(MatDenseGetLDA(smode == SCATTER_FORWARD ? X : Y, &rld));
+  PetscCall(MatDenseGetLDA(smode == SCATTER_FORWARD ? Y : X, &lld));
   /* get cached or create new strided PetscSF when the number of columns is greater than one */
   if (N > 1) {
     PetscCall(PetscObjectQuery((PetscObject)sf, "_MatDenseScatter_StridedSF", (PetscObject *)&vsf));
