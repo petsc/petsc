@@ -914,8 +914,8 @@ PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
   Input Parameters:
 + sf  - star forest
 . bs  - stride
-. ldr - leading dimension of root space
-- ldl - leading dimension of leaf space
+. ldr - leading dimension of root space, or `PETSC_DECIDE` for contiguous storage
+- ldl - leading dimension of leaf space, or `PETSC_DECIDE` for contiguous storage
 
   Output Parameter:
 . vsf - the new `PetscSF`
@@ -939,6 +939,9 @@ PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
   PetscSFBcastEnd(vsf, mpi_datatype, roots, leaves, op)
 .ve
 
+  When `sf` is a `VecScatter`, `ldr` and `ldl` count `PetscScalar` entries. The returned scatter may use different
+  internal blocking and should be applied with `VecScatterBegin()` and `VecScatterEnd()`.
+
   Developer Notes:
   Should this functionality be handled with a new API instead of creating a new object?
 
@@ -951,7 +954,7 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   PetscSFNode       *viremote;
   const PetscInt    *ilocal;
   PetscInt          *vilocal = NULL, *ldrs;
-  PetscInt           nranks, nr, nl, vnr, vnl, maxl;
+  PetscInt           nranks, nr, nl, vnr, vnl, maxl, vbs, expand = 1;
   PetscMPIInt        rank;
   MPI_Comm           comm;
   PetscSFType        sftype;
@@ -960,6 +963,7 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveInt(sf, bs, 2);
   PetscAssertPointer(vsf, 5);
+  vbs = PetscMax(1, sf->vscat.bs);
   if (bs == 1) {
     PetscCall(PetscObjectReference((PetscObject)sf));
     *vsf = sf;
@@ -971,14 +975,22 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   PetscCall(PetscSFGetGraph(sf, &nr, &nl, &ilocal, &iremote));
   PetscCall(PetscSFGetLeafRange(sf, NULL, &maxl));
   maxl += 1;
-  if (ldl == PETSC_DECIDE) ldl = maxl;
-  if (ldr == PETSC_DECIDE) ldr = nr;
-  ldl /= PetscMax(1, sf->vscat.bs); // SFs created from VecScatterCreate() may have a nonzero block size. If not 0, we need to scale ldl and ldr
-  ldr /= PetscMax(1, sf->vscat.bs);
-  PetscCheck(ldr >= nr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be smaller than number of roots %" PetscInt_FMT, ldr, nr);
-  PetscCheck(ldl >= maxl, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be larger than leaf range %" PetscInt_FMT, ldl, maxl - 1);
-  vnr = nr && bs ? (bs - 1) * ldr + nr : 0;
-  vnl = nl * bs;
+  if (ldl == PETSC_DECIDE) ldl = maxl * vbs;
+  if (ldr == PETSC_DECIDE) ldr = nr * vbs;
+  PetscCheck(ldr >= nr * vbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be at least the root extent %" PetscInt_FMT, ldr, nr * vbs);
+  PetscCheck(ldl >= maxl * vbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid leading dimension %" PetscInt_FMT " must be at least the leaf extent %" PetscInt_FMT, ldl, maxl * vbs);
+  if (vbs > 1) {
+    PetscBool unaligned = (PetscBool)(ldr % vbs || ldl % vbs);
+
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &unaligned, 1, MPI_C_BOOL, MPI_LOR, comm));
+    if (unaligned == PETSC_TRUE) expand = vbs;
+    else {
+      ldr /= vbs;
+      ldl /= vbs;
+    }
+  }
+  vnr = nr && bs ? (bs - 1) * ldr + nr * expand : 0;
+  vnl = nl * bs * expand;
   PetscCall(PetscMalloc1(vnl, &viremote));
   PetscCall(PetscMalloc1(vnl, &vilocal));
 
@@ -1004,19 +1016,21 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
     }
     rold = r;
     for (PetscInt v = 0; v < bs; v++) {
-      viremote[v * nl + i].rank  = r;
-      viremote[v * nl + i].index = v * lda + ii;
-      vilocal[v * nl + i]        = v * ldl + (ilocal ? ilocal[i] : i);
+      for (PetscInt j = 0; j < expand; j++) {
+        const PetscInt k = (v * nl + i) * expand + j;
+
+        viremote[k].rank  = r;
+        viremote[k].index = v * lda + ii * expand + j;
+        vilocal[k]        = v * ldl + (ilocal ? ilocal[i] : i) * expand + j;
+      }
     }
   }
   PetscCall(PetscFree(ldrs));
   PetscCall(PetscSFCreate(comm, vsf));
-  if (sf->vscat.bs > 1) {
+  if (vbs > 1 && expand == 1) {
     (*vsf)->vscat.bs = sf->vscat.bs;
     PetscCallMPI(MPI_Type_dup(sf->vscat.unit, &(*vsf)->vscat.unit));
-    (*vsf)->vscat.to_n   = bs * sf->vscat.to_n;
-    (*vsf)->vscat.from_n = bs * sf->vscat.from_n;
-  }
+  } else if (sf->vscat.bs) (*vsf)->vscat.bs = 1;
   PetscCall(PetscSFGetType(sf, &sftype));
   PetscCall(PetscSFSetType(*vsf, sftype));
   PetscCall(PetscSFSetGraph(*vsf, vnr, vnl, vilocal, PETSC_OWN_POINTER, viremote, PETSC_OWN_POINTER));
