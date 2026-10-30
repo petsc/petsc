@@ -830,6 +830,7 @@ linux-cuda-single-cxx:
     MODULEPATH: /nfs/gce/projects/petsc/soft/hpc_sdk-26.9/modulefiles
     LOAD_MODULES: nvhpc-hpcx-cuda12-openmpi4
     TEST_OPTS: -j15 query=requires queryval=cuda
+    UCX_CUDA_IPC_CACHE: n
 
 linux-cuda-uni-pkgs:
   extends:
