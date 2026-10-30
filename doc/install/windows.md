@@ -212,14 +212,14 @@ applications that are compatible with the Microsoft and Intel compilers.
    installation using `pacman` (you may be asked to quit and re-open your shell).
 
    ```console
-   $  pacman -Syu
+   $ pacman -Syu
    ```
 
    Install the following packages that are needed
    by some PETSc dependencies.
 
    ```console
-   $  pacman -S autoconf automake-wrapper bison bsdcpio make git \
+   $ pacman -S autoconf automake-wrapper bison bsdcpio make git \
    ${MINGW_PACKAGE_PREFIX}-toolchain patch python flex \
    pkg-config pkgfile tar unzip ${MINGW_PACKAGE_PREFIX}-cmake \
    ${MINGW_PACKAGE_PREFIX}-msmpi ${MINGW_PACKAGE_PREFIX}-openblas
@@ -230,7 +230,7 @@ applications that are compatible with the Microsoft and Intel compilers.
    The two difficulties here are: 1) make sure PETSc configure picks up the proper Python installation, as there are more than one available in a MSYS2 MinGW shell and 2) tell PETSc where MS-MPI `mpiexec` is. We recommend not using shared libraries as it is easier to create standalone binaries that way.
 
    ```console
-   $  /usr/bin/python ./configure --with-mpiexec='/C/Program\ Files/Microsoft\ MPI/Bin/mpiexec' \
+   $ /usr/bin/python ./configure --with-mpiexec='/C/Program\ Files/Microsoft\ MPI/Bin/mpiexec' \
    --with-shared-libraries=0
    ```
 
