@@ -7,6 +7,7 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 #include <petsc/private/isimpl.h>
 #include <petsc/private/vecimpl.h>
+#include <petscsf.h>
 
 /* Logging support */
 PetscClassId MAT_CLASSID;
@@ -8205,21 +8206,19 @@ static PetscErrorCode EnvelopeDataDestroy(PetscCtxRt ptr)
 @*/
 PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
 {
-  PetscInt           n, *sizes, *starts, i = 0, env = 0, tbs = 0, lblocks = 0, rstart, II, ln = 0, cnt = 0, cstart, cend;
-  PetscInt          *diag, *odiag, sc;
-  VecScatter         scatter;
-  PetscScalar       *seqv;
-  const PetscScalar *parv;
-  const PetscInt    *ia, *ja;
-  PetscBool          set, flag, done;
-  Mat                AA = mat, A;
-  MPI_Comm           comm;
-  PetscMPIInt        rank, size, tag;
-  MPI_Status         status;
-  PetscContainer     container;
-  EnvelopeData      *edata;
-  Vec                seq, par;
-  IS                 isglobal;
+  PetscInt        n, *sizes, *starts, i = 0, env = 0, tbs = 0, lblocks = 0, rstart, II, ln = 0, cnt = 0, cstart, cend;
+  PetscInt       *diag, *odiag, sc;
+  PetscInt       *seqv, *parv, *gidx;
+  const PetscInt *ia, *ja;
+  PetscBool       set, flag, done;
+  Mat             AA = mat, A;
+  MPI_Comm        comm;
+  PetscMPIInt     rank, size, tag;
+  MPI_Status      status;
+  PetscContainer  container;
+  EnvelopeData   *edata;
+  PetscSF         sf;
+  PetscLayout     layout;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -8278,10 +8277,8 @@ PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
   PetscCall(MatSetType(edata->C, MATAIJ));
 
   /* Communicate the start and end of each row, from each block to the correct rank */
-  /* TODO: Use PetscSF instead of VecScatter */
   for (PetscInt i = 0; i < lblocks; i++) ln += sizes[i];
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, 2 * ln, &seq));
-  PetscCall(VecGetArrayWrite(seq, &seqv));
+  PetscCall(PetscCalloc3(2 * ln, &seqv, 2 * mat->rmap->n, &parv, 2 * ln, &gidx));
   for (PetscInt i = 0; i < lblocks; i++) {
     for (PetscInt j = 0; j < sizes[i]; j++) {
       seqv[cnt]     = starts[i];
@@ -8289,27 +8286,25 @@ PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
       cnt += 2;
     }
   }
-  PetscCall(VecRestoreArrayWrite(seq, &seqv));
   PetscCallMPI(MPI_Scan(&cnt, &sc, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   sc -= cnt;
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)mat), 2 * mat->rmap->n, 2 * mat->rmap->N, &par));
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, cnt, sc, 1, &isglobal));
-  PetscCall(VecScatterCreate(seq, NULL, par, isglobal, &scatter));
-  PetscCall(ISDestroy(&isglobal));
-  PetscCall(VecScatterBegin(scatter, seq, par, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter, seq, par, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterDestroy(&scatter));
-  PetscCall(VecDestroy(&seq));
+  for (PetscInt i = 0; i < cnt; i++) gidx[i] = sc + i;
+  PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)mat), 2 * mat->rmap->n, 2 * mat->rmap->N, 1, &layout));
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mat), &sf));
+  PetscCall(PetscSFSetGraphLayout(sf, layout, cnt, NULL, PETSC_COPY_VALUES, gidx));
+  PetscCall(PetscLayoutDestroy(&layout));
+  PetscCall(PetscSFReduceBegin(sf, MPIU_INT, seqv, parv, MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(sf, MPIU_INT, seqv, parv, MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&sf));
   PetscCall(MatGetOwnershipRangeColumn(mat, &cstart, &cend));
   PetscCall(PetscMalloc2(mat->rmap->n, &diag, mat->rmap->n, &odiag));
-  PetscCall(VecGetArrayRead(par, &parv));
   cnt = 0;
   PetscCall(MatGetSize(mat, NULL, &n));
   for (PetscInt i = 0; i < mat->rmap->n; i++) {
     PetscInt start, end, d = 0, od = 0;
 
-    start = (PetscInt)PetscRealPart(parv[cnt]);
-    end   = (PetscInt)PetscRealPart(parv[cnt + 1]);
+    start = parv[cnt];
+    end   = parv[cnt + 1];
     cnt += 2;
 
     if (start < cstart) {
@@ -8330,8 +8325,7 @@ PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
     odiag[i] = od;
     diag[i]  = d;
   }
-  PetscCall(VecRestoreArrayRead(par, &parv));
-  PetscCall(VecDestroy(&par));
+  PetscCall(PetscFree3(seqv, parv, gidx));
   PetscCall(MatXAIJSetPreallocation(edata->C, mat->rmap->bs, diag, odiag, NULL, NULL));
   PetscCall(PetscFree2(diag, odiag));
   PetscCall(PetscFree2(sizes, starts));

@@ -522,20 +522,9 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscCall(VecGetArrayRead(mpimat->lvec, &buf));                                                   /* get proc ID in 'buf' */
       for (PetscInt kk = 0; kk < num_ghosts; kk++) lghost_pe[kk] = (PetscMPIInt)PetscRealPart(buf[kk]); // the proc of the ghost for now
       PetscCall(VecRestoreArrayRead(mpimat->lvec, &buf));
-      /* lghost_gid */
-      for (PetscInt kk = 0, gid = Istart; kk < nloc; kk++, gid++) {
-        vval = (PetscScalar)gid;
-
-        PetscCall(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
-      }
-      PetscCall(VecAssemblyBegin(vec));
-      PetscCall(VecAssemblyEnd(vec));
-      PetscCall(VecScatterBegin(mpimat->Mvctx, vec, mpimat->lvec, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(VecScatterEnd(mpimat->Mvctx, vec, mpimat->lvec, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecDestroy(&vec));
-      PetscCall(VecGetArrayRead(mpimat->lvec, &buf)); /* get proc ID in 'lghost_gid' */
-      for (PetscInt kk = 0; kk < num_ghosts; kk++) lghost_gid[kk] = (PetscInt)PetscRealPart(buf[kk]);
-      PetscCall(VecRestoreArrayRead(mpimat->lvec, &buf));
+      /* lghost_gid: the global ID of each ghost is given by garray */
+      PetscCall(PetscArraycpy(lghost_gid, mpimat->garray, num_ghosts));
     }
     // get 'comm_procs' (could hoist)
     for (PetscInt kk = 0; kk < REQ_BF_SIZE; kk++) comm_procs[kk] = -1;

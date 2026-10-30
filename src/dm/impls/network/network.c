@@ -2850,17 +2850,12 @@ PetscErrorCode DMNetworkGetVertexLocalToGlobalOrdering(DM dm, PetscInt vloc, Pet
 @*/
 PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
 {
-  DM_Network        *network = (DM_Network *)dm->data;
-  MPI_Comm           comm;
-  PetscMPIInt        rank, size, *displs = NULL, *recvcounts = NULL, remoterank;
-  PetscBool          ghost;
-  PetscInt          *vltog, nroots, nleaves, *vrange, k, N, lidx, ii;
-  const PetscSFNode *iremote;
-  PetscSF            vsf;
-  Vec                Vleaves, Vleaves_seq;
-  VecScatter         ctx;
-  PetscScalar       *varr, val;
-  const PetscScalar *varr_read;
+  DM_Network *network = (DM_Network *)dm->data;
+  MPI_Comm    comm;
+  PetscMPIInt rank, size, *displs = NULL, *recvcounts = NULL;
+  PetscBool   ghost;
+  PetscInt   *vltog, nroots, nleaves, *vrange, k, ii;
+  PetscSF     vsf;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
@@ -2883,7 +2878,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   vsf = network->vertex.sf;
 
   PetscCall(PetscMalloc3(size + 1, &vrange, size, &displs, size, &recvcounts));
-  PetscCall(PetscSFGetGraph(vsf, &nroots, &nleaves, NULL, &iremote));
+  PetscCall(PetscSFGetGraph(vsf, &nroots, &nleaves, NULL, NULL));
 
   for (PetscMPIInt i = 0; i < size; i++) {
     displs[i]     = i;
@@ -2907,53 +2902,9 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   }
   PetscCall(PetscFree3(vrange, displs, recvcounts));
 
-  /* Set vltog for ghost vertices */
-  /* (a) create parallel Vleaves and sequential Vleaves_seq to convert local iremote[*].index to global index */
-  PetscCall(VecCreate(comm, &Vleaves));
-  PetscCall(VecSetSizes(Vleaves, 2 * nleaves, PETSC_DETERMINE));
-  PetscCall(VecSetFromOptions(Vleaves));
-  PetscCall(VecGetArray(Vleaves, &varr));
-  for (PetscInt i = 0; i < nleaves; i++) {
-    varr[2 * i]     = (PetscScalar)iremote[i].rank;  /* rank of remote process */
-    varr[2 * i + 1] = (PetscScalar)iremote[i].index; /* local index in remote process */
-  }
-  PetscCall(VecRestoreArray(Vleaves, &varr));
-
-  /* (b) scatter local info to remote processes via VecScatter() */
-  PetscCall(VecScatterCreateToAll(Vleaves, &ctx, &Vleaves_seq));
-  PetscCall(VecScatterBegin(ctx, Vleaves, Vleaves_seq, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(ctx, Vleaves, Vleaves_seq, INSERT_VALUES, SCATTER_FORWARD));
-
-  /* (c) convert local indices to global indices in parallel vector Vleaves */
-  PetscCall(VecGetSize(Vleaves_seq, &N));
-  PetscCall(VecGetArrayRead(Vleaves_seq, &varr_read));
-  for (PetscInt i = 0; i < N; i += 2) {
-    remoterank = (PetscMPIInt)PetscRealPart(varr_read[i]);
-    if (remoterank == rank) {
-      k    = i + 1; /* row number */
-      lidx = (PetscInt)PetscRealPart(varr_read[i + 1]);
-      val  = (PetscScalar)vltog[lidx]; /* global index for non-ghost vertex computed above */
-      PetscCall(VecSetValues(Vleaves, 1, &k, &val, INSERT_VALUES));
-    }
-  }
-  PetscCall(VecRestoreArrayRead(Vleaves_seq, &varr_read));
-  PetscCall(VecAssemblyBegin(Vleaves));
-  PetscCall(VecAssemblyEnd(Vleaves));
-
-  /* (d) Set vltog for ghost vertices by copying local values of Vleaves */
-  PetscCall(VecGetArrayRead(Vleaves, &varr_read));
-  k = 0;
-  for (PetscInt i = 0; i < nroots; i++) {
-    PetscCall(DMNetworkIsGhostVertex(dm, i + network->cloneshared->vStart, &ghost));
-    if (!ghost) continue;
-    vltog[i] = (PetscInt)PetscRealPart(varr_read[2 * k + 1]);
-    k++;
-  }
-  PetscCall(VecRestoreArrayRead(Vleaves, &varr_read));
-
-  PetscCall(VecDestroy(&Vleaves));
-  PetscCall(VecDestroy(&Vleaves_seq));
-  PetscCall(VecScatterDestroy(&ctx));
+  /* Set vltog for ghost vertices (the leaves of vsf) from their owning processes */
+  PetscCall(PetscSFBcastBegin(vsf, MPIU_INT, vltog, vltog, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(vsf, MPIU_INT, vltog, vltog, MPI_REPLACE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
