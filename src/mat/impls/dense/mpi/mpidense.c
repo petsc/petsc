@@ -2716,6 +2716,7 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatGetSize(Y, NULL, &ny));
   PetscCheck(N == ny, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_SIZ, "Matrix column sizes must match: %" PetscInt_FMT " != %" PetscInt_FMT, N, ny);
+  if (!N) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetLDA(X, &rld));
   PetscCall(MatDenseGetLDA(Y, &lld));
   /* get cached or create new strided PetscSF when the number of columns is greater than one */
