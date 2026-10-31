@@ -15,6 +15,7 @@ if __name__ == '__main__':
     '--with-debugging=0',
     '--with-cuda',
     '--with-openmp',
+    '--with-openmp-target-offload',
     '--with-shared-libraries',
     '--with-single-library=0',
     '--download-kokkos', # Kokkos-5.0 requires c++20 and cuda-12.2 or above
