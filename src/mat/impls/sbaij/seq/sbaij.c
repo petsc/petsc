@@ -2221,12 +2221,13 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
     }
   }
 
-  c->roworiented = a->roworiented;
-  c->nonew       = a->nonew;
-  c->nz          = a->nz;
-  c->maxnz       = a->nz; /* Since we allocate exactly the right amount */
-  c->solve_work  = NULL;
-  c->mult_work   = NULL;
+  c->nonzerorowcnt = a->nonzerorowcnt;
+  c->roworiented   = a->roworiented;
+  c->nonew         = a->nonew;
+  c->nz            = a->nz;
+  c->maxnz         = a->nz; /* Since we allocate exactly the right amount */
+  c->solve_work    = NULL;
+  c->mult_work     = NULL;
 
   *B = C;
   PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist, &((PetscObject)C)->qlist));

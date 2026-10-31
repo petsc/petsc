@@ -110,12 +110,21 @@ int main(int argc, char **args)
 
 PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag)
 {
-  Mat       B;
-  PetscBool keepnonzeropattern;
+  Mat              B;
+  PetscBool        keepnonzeropattern;
+  PetscObjectState state, newstate;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   PetscFunctionBeginUser;
   PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
+  /* Reassembling a duplicate without changing its sparsity pattern must preserve its nonzero state */
+  PetscCall(MatSetOptionsPrefix(B, "reassembly_")); /* Keep this check out of -mat_view output */
+  PetscCall(MatGetNonzeroState(B, &state));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatGetNonzeroState(B, &newstate));
+  PetscCheck(state == newstate, PetscObjectComm((PetscObject)B), PETSC_ERR_PLIB, "Reassembling a duplicate changed its nonzero state without changing its sparsity pattern");
+  PetscCall(MatSetOptionsPrefix(B, NULL));
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-keep_nonzero_pattern", &keepnonzeropattern));
   if (keepnonzeropattern) PetscCall(MatSetOption(B, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));

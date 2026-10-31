@@ -2272,7 +2272,6 @@ static PetscErrorCode MatDuplicateNoCreate_SeqSELL(Mat C, Mat A, MatDuplicateOpt
   C->preallocated = PETSC_TRUE;
 
   c->nonzerorowcnt = a->nonzerorowcnt;
-  C->nonzerostate  = A->nonzerostate;
 
   PetscCall(PetscFunctionListDuplicate(((PetscObject)A)->qlist, &((PetscObject)C)->qlist));
   PetscFunctionReturn(PETSC_SUCCESS);
