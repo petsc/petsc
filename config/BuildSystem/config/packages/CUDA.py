@@ -389,11 +389,7 @@ class Configure(config.package.Package):
                 cudaDeviceProp dp;
                 cerr = cudaGetDeviceProperties(&dp, 0);
                 if (cerr) {
-              #if (CUDART_VERSION >= 8000)
                   printf("Error calling cudaGetDeviceProperties with CUDA error %d (%s) : %s\\n", (int)cerr, cudaGetErrorName(cerr), cudaGetErrorString(cerr));
-              #else
-                  printf("Error calling cudaGetDeviceProperties with CUDA error %d\\n", (int)cerr);
-              #endif
                 }
                 else printf("%d\\n",10*dp.major+dp.minor);
                 return(cerr);'''
@@ -447,8 +443,6 @@ class Configure(config.package.Package):
       # NVML_FI_DEV_POWER_INSTANT arrived in the CUDA 12.2 toolkit
       if self.version_tuple[:2] < (12,2): raise RuntimeError('--with-cuda-nvml=1 requires CUDA version >= 12.2, found '+self.foundversion)
       self.addDefine('HAVE_NVML','1')
-    if self.version_tuple[0] >= 11:
-      self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
     if self.cudaclang:
       self.addDefine('HAVE_CUDA_CLANG','1') # code compilation in aijdevice and landau is broken
 

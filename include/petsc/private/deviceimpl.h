@@ -192,7 +192,6 @@ extern void PetscCheckCompatibleDeviceContexts(T, int, U, int);
 #endif
 
 #define PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE_TYPE PETSC_DEVICE_HARDWARE_DEFAULT_TYPE
-// REMOVE ME (change)
 #define PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_TYPE PETSC_STREAM_DEFAULT
 
 typedef struct _DeviceOps *DeviceOps;

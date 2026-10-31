@@ -5,8 +5,8 @@ using the aijcusparse class. Input parameters are:\n\
 /*
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
-   ./ex43 -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_mult_storage_format ell  \n\
-   ./ex43 -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cg -pc_type icc -mat_cusparse_mult_storage_format ell  \n\
+   ./ex43 -f DATAFILESPATH/matrices/cfd.2.10 -mat_cusparse_storage_format csr  \n\
+   ./ex43 -f DATAFILESPATH/matrices/shallow_water1 -ksp_type cg -pc_type icc -mat_cusparse_storage_format csr  \n\
    \n\n";
 */
 
@@ -73,15 +73,6 @@ int main(int argc, char **argv)
 
 /*TEST
 
-   test:
-      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
-      args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format ell -vec_type cuda -pc_type ilu
-
-   test:
-      suffix: 2
-      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format hyb -vec_type cuda -ksp_type cg -pc_type icc
-
    testset:
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/cfd.2.10 -ksp_type bicg -pc_type ilu
@@ -99,17 +90,6 @@ int main(int argc, char **argv)
          requires: kokkos_kernels !defined(PETSCTEST_VALGRIND)
          args: -mat_type seqaijkokkos -pc_factor_mat_solver_type kokkos -vec_type kokkos
          output_file: output/ex43_3.out
-
-   testset:
-      nsize: 2
-      requires: cuda datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !CUDA_VERSION_11PLUS
-      args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type mpiaijcusparse -mat_cusparse_mult_diag_storage_format hyb -pc_type none -vec_type cuda
-      test:
-        suffix: 5
-        args: -use_gpu_aware_mpi 0
-      test:
-        suffix: 5_gpu_aware_mpi
-        output_file: output/ex43_5.out
 
    test:
       suffix: 6

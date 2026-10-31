@@ -2087,10 +2087,6 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::InvertFactors(Mat A) noexcept
   cupmStream_t       stream;
 
   PetscFunctionBegin;
-#if PetscDefined(HAVE_CUDA) && PetscDefined(USING_NVCC)
-  // HIP appears to have this by default??
-  PetscCheck(PETSC_PKG_CUDA_VERSION_GE(10, 1, 0), PETSC_COMM_SELF, PETSC_ERR_SUP, "Upgrade to CUDA version 10.1.0 or higher");
-#endif
   if (!n || !A->rmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(A->factortype == MAT_FACTOR_CHOLESKY, PETSC_COMM_SELF, PETSC_ERR_LIB, "Factor type %s not implemented", MatFactorTypes[A->factortype]);
   // spd

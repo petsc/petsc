@@ -8,11 +8,7 @@
 #include <../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 
-#if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  #include <hipsparse/hipsparse.h>
-#else /* PETSC_PKG_HIP_VERSION_GE(5,2,0) */
-  #include <hipsparse.h>
-#endif /* PETSC_PKG_HIP_VERSION_GE(5,2,0) */
+#include <hipsparse/hipsparse.h>
 #include "hip/hip_runtime.h"
 
 #include <algorithm>

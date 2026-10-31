@@ -21,6 +21,8 @@
 - Change OpenMP target offload for CUDA/HIP to require `--with-openmp-target-offload` instead of being enabled automatically
 - Build petsc4py, mpi4py, and slepc4py with `-O0` to shorten build time; the binding code is no longer optimized
 - Fix `--with-shared-libraries=1` on Microsoft Windows with Intel ifx, where Fortran code failed to link
+- Require HIP/ROCm 5.2.0 or later
+- Remove the `PETSC_HAVE_CUDA_VERSION_11PLUS` configure macro; all supported CUDA versions are 11.4 or later
 
 ```{rubric} Sys:
 ```

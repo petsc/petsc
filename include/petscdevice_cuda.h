@@ -48,34 +48,17 @@ M*/
   /* REMOVE ME */
   #define WaitForCUDA() cudaDeviceSynchronize()
 
-  /* CUDART_VERSION = 1000 x major + 10 x minor version */
+  #define PetscCallCUDAVoid(...) \
+    do { \
+      const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
+      PetscCheckAbort(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d (%s) : %s", (PetscErrorCode)_p_cuda_err__, cudaGetErrorName(_p_cuda_err__), cudaGetErrorString(_p_cuda_err__)); \
+    } while (0)
 
-  /* Could not find exactly which CUDART_VERSION introduced cudaGetErrorName. At least it was in CUDA 8.0 (Sep. 2016) */
-  #if PETSC_PKG_CUDA_VERSION_GE(8, 0, 0)
-    #define PetscCallCUDAVoid(...) \
-      do { \
-        const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
-        PetscCheckAbort(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d (%s) : %s", (PetscErrorCode)_p_cuda_err__, cudaGetErrorName(_p_cuda_err__), cudaGetErrorString(_p_cuda_err__)); \
-      } while (0)
-
-    #define PetscCallCUDA(...) \
-      do { \
-        const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
-        PetscCheck(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d (%s) : %s", (PetscErrorCode)_p_cuda_err__, cudaGetErrorName(_p_cuda_err__), cudaGetErrorString(_p_cuda_err__)); \
-      } while (0)
-  #else /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
-    #define PetscCallCUDA(...) \
-      do { \
-        const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
-        PetscCheck(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d", (PetscErrorCode)_p_cuda_err__); \
-      } while (0)
-
-    #define PetscCallCUDAVoid(...) \
-      do { \
-        const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
-        PetscCheckAbort(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d", (PetscErrorCode)_p_cuda_err__); \
-      } while (0)
-  #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
+  #define PetscCallCUDA(...) \
+    do { \
+      const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
+      PetscCheck(_p_cuda_err__ == cudaSuccess, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuda error %d (%s) : %s", (PetscErrorCode)_p_cuda_err__, cudaGetErrorName(_p_cuda_err__), cudaGetErrorString(_p_cuda_err__)); \
+    } while (0)
   #define CHKERRCUDA(...) PetscCallCUDA(__VA_ARGS__)
 
   #define PetscCUDACheckLaunch \
@@ -104,27 +87,19 @@ M*/
     } while (0)
   #define CHKERRCUBLAS(...) PetscCallCUBLAS(__VA_ARGS__)
 
-  #if (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) /* According to cuda/10.1.168 on OLCF Summit */
-    #define PetscCallCUSPARSE(...) \
-      do { \
-        const cusparseStatus_t _p_cusparse_stat__ = __VA_ARGS__; \
-        if (PetscUnlikely(_p_cusparse_stat__)) { \
-          const char *name  = cusparseGetErrorName(_p_cusparse_stat__); \
-          const char *descr = cusparseGetErrorString(_p_cusparse_stat__); \
-          PetscCheck((_p_cusparse_stat__ != CUSPARSE_STATUS_NOT_INITIALIZED) && (_p_cusparse_stat__ != CUSPARSE_STATUS_ALLOC_FAILED), PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
-                     "cuSPARSE errorcode %d (%s) : %s.; " \
-                     "this indicates the GPU has run out resources", \
-                     (int)_p_cusparse_stat__, name, descr); \
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "cuSPARSE errorcode %d (%s) : %s", (int)_p_cusparse_stat__, name, descr); \
-        } \
-      } while (0)
-  #else /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
-    #define PetscCallCUSPARSE(...) \
-      do { \
-        const cusparseStatus_t _p_cusparse_stat__ = __VA_ARGS__; \
-        PetscCheck(_p_cusparse_stat__ == CUSPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU, "cuSPARSE errorcode %d", (PetscErrorCode)_p_cusparse_stat__); \
-      } while (0)
-  #endif /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
+  #define PetscCallCUSPARSE(...) \
+    do { \
+      const cusparseStatus_t _p_cusparse_stat__ = __VA_ARGS__; \
+      if (PetscUnlikely(_p_cusparse_stat__)) { \
+        const char *name  = cusparseGetErrorName(_p_cusparse_stat__); \
+        const char *descr = cusparseGetErrorString(_p_cusparse_stat__); \
+        PetscCheck((_p_cusparse_stat__ != CUSPARSE_STATUS_NOT_INITIALIZED) && (_p_cusparse_stat__ != CUSPARSE_STATUS_ALLOC_FAILED), PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, \
+                   "cuSPARSE errorcode %d (%s) : %s.; " \
+                   "this indicates the GPU has run out resources", \
+                   (int)_p_cusparse_stat__, name, descr); \
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "cuSPARSE errorcode %d (%s) : %s", (int)_p_cusparse_stat__, name, descr); \
+      } \
+    } while (0)
   #define CHKERRCUSPARSE(...) PetscCallCUSPARSE(__VA_ARGS__)
 
   #define PetscCallCUSOLVER(...) \

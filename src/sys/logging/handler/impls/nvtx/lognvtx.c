@@ -1,12 +1,7 @@
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
-#include <petscpkg_version.h>
 #include <petscdevice.h>
-#if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
-  #include <nvtx3/nvToolsExt.h>
-#else
-  #include <nvToolsExt.h>
-#endif
+#include <nvtx3/nvToolsExt.h>
 
 static PetscErrorCode PetscLogHandlerEventBegin_NVTX(PetscLogHandler handler, PetscLogEvent event, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {

@@ -28,7 +28,7 @@ static PetscErrorCode PetscLogHandlerEventsResume_ROCTX(PetscLogHandler h)
 
   #elif PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
     #include <roctracer/roctx.h>
-  #elif PETSC_PKG_HIP_VERSION_GE(5, 0, 0)
+  #else
     #include <roctx.h>
   #endif
 

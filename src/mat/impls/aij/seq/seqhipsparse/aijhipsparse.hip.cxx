@@ -1661,20 +1661,18 @@ struct VecHIPEqualsReverse {
 };
 
 struct MatProductCtx_MatMatHipsparse {
-  PetscBool             cisdense;
-  PetscScalar          *Bt;
-  Mat                   X;
-  PetscBool             reusesym; /* Hipsparse does not have split symbolic and numeric phases for sparse matmat operations */
-  PetscLogDouble        flops;
-  CsrMatrix            *Bcsr;
-  hipsparseSpMatDescr_t matSpBDescr;
-  PetscBool             initialized; /* C = alpha op(A) op(B) + beta C */
-  hipsparseDnMatDescr_t matBDescr;
-  hipsparseDnMatDescr_t matCDescr;
-  PetscInt              Blda, Clda; /* Record leading dimensions of B and C here to detect changes*/
-#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
-  void *dBuffer4, *dBuffer5;
-#endif
+  PetscBool              cisdense;
+  PetscScalar           *Bt;
+  Mat                    X;
+  PetscBool              reusesym; /* Hipsparse does not have split symbolic and numeric phases for sparse matmat operations */
+  PetscLogDouble         flops;
+  CsrMatrix             *Bcsr;
+  hipsparseSpMatDescr_t  matSpBDescr;
+  PetscBool              initialized; /* C = alpha op(A) op(B) + beta C */
+  hipsparseDnMatDescr_t  matBDescr;
+  hipsparseDnMatDescr_t  matCDescr;
+  PetscInt               Blda, Clda; /* Record leading dimensions of B and C here to detect changes*/
+  void                  *dBuffer4, *dBuffer5;
   size_t                 mmBufferSize;
   void                  *mmBuffer, *mmBuffer2; /* SpGEMM WorkEstimation buffer */
   hipsparseSpGEMMDescr_t spgemmDesc;
@@ -1691,10 +1689,8 @@ static PetscErrorCode MatProductCtxDestroy_MatMatHipsparse(PetscCtxRt data)
   if (mmdata->matBDescr) PetscCallHIPSPARSE(hipsparseDestroyDnMat(mmdata->matBDescr));
   if (mmdata->matCDescr) PetscCallHIPSPARSE(hipsparseDestroyDnMat(mmdata->matCDescr));
   if (mmdata->spgemmDesc) PetscCallHIPSPARSE(hipsparseSpGEMM_destroyDescr(mmdata->spgemmDesc));
-#if PETSC_PKG_HIP_VERSION_GE(5, 1, 0)
   PetscCallHIP(hipFree(mmdata->dBuffer4));
   PetscCallHIP(hipFree(mmdata->dBuffer5));
-#endif
   PetscCallHIP(hipFree(mmdata->mmBuffer));
   PetscCallHIP(hipFree(mmdata->mmBuffer2));
   PetscCall(MatDestroy(&mmdata->X));

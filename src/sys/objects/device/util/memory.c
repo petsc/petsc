@@ -36,13 +36,9 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
     cudaError_t                  cerr;
     struct cudaPointerAttributes attr;
     enum cudaMemoryType          mtype;
-    cerr = cudaPointerGetAttributes(&attr, ptr); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
-    if (cerr) cerr = cudaGetLastError();         /* If there was an error, return it and then reset it */
-  #if (CUDART_VERSION < 10000)
-    mtype = attr.memoryType;
-  #else
+    cerr = cudaPointerGetAttributes(&attr, ptr);
+    if (cerr) cerr = cudaGetLastError(); /* If there was an error, return it and then reset it */
     mtype = attr.type;
-  #endif
     // CUDA managed memory is device accessible, so we treat it as device memory?
     if (cerr == cudaSuccess && (mtype == cudaMemoryTypeDevice || mtype == cudaMemoryTypeManaged)) *type = PETSC_MEMTYPE_DEVICE;
     PetscFunctionReturn(PETSC_SUCCESS);

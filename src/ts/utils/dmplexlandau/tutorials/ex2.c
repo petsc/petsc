@@ -5,14 +5,9 @@ static char help[] = "Runaway electron model with Landau collision operator\n\n"
 #include <petscts.h>
 #include <petscds.h>
 #include <petscdmcomposite.h>
-#include <petscpkg_version.h>
 
 #if PetscDefined(HAVE_CUDA_NVTX)
-  #if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
-    #include <nvtx3/nvToolsExt.h>
-  #else
-    #include <nvToolsExt.h>
-  #endif
+  #include <nvtx3/nvToolsExt.h>
 #endif
 
 /* data for runaway electron model */

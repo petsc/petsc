@@ -1067,13 +1067,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *, Mat A, 
   // TODO: add command line options to select spgemm algorithms
   auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_DEFAULT; // default is TPL if enabled, otherwise KK
 
-  // CUDA-10.2's spgemm has bugs. We prefer the SpGEMMreuse APIs introduced in cuda-11.4
-#if defined(KOKKOSKERNELS_ENABLE_TPL_CUSPARSE)
-  #if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
-  spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
-  #endif
-#endif
-
   PetscCallCXX(mm->kh1.create_spgemm_handle(spgemm_alg));
   PetscCallCXX(mm->kh2.create_spgemm_handle(spgemm_alg));
   PetscCallCXX(mm->kh3.create_spgemm_handle(spgemm_alg));
@@ -1180,13 +1173,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *, Mat A, M
 
   // TODO: add command line options to select spgemm algorithms
   auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_DEFAULT; // default is TPL if enabled, otherwise KK
-
-  // CUDA-10.2's spgemm has bugs. We prefer the SpGEMMreuse APIs introduced in cuda-11.4
-#if defined(KOKKOSKERNELS_ENABLE_TPL_CUSPARSE)
-  #if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
-  spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
-  #endif
-#endif
 
   mm->kh1.create_spgemm_handle(spgemm_alg);
   mm->kh2.create_spgemm_handle(spgemm_alg);

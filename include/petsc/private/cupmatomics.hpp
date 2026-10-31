@@ -492,18 +492,11 @@ struct AtomicLXOR {
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #elif PetscDefined(USING_HCC)
 
-  /*
+/*
   Atomic Insert (exchange) operations
 
   See Cuda version
 */
-  #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-__device__ static double atomicExch(double *address, double val)
-{
-  return __longlong_as_double(atomicExch((ullint *)address, __double_as_longlong(val)));
-}
-  #endif
-
 __device__ static inline llint atomicExch(llint *address, llint val)
 {
   return (llint)(atomicExch((ullint *)address, (ullint)val));
@@ -650,54 +643,6 @@ struct AtomicMult {
 
   See CUDA version for comments.
  */
-  #if PETSC_PKG_HIP_VERSION_LT(4, 4, 0)
-    #if PetscDefined(USE_REAL_DOUBLE)
-__device__ static double atomicMin(double *address, double val)
-{
-  ullint *address_as_ull = (ullint *)(address);
-  ullint  old            = *address_as_ull, assumed;
-  do {
-    assumed = old;
-    old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(PetscMin(val, __longlong_as_double(assumed))));
-  } while (assumed != old);
-  return __longlong_as_double(old);
-}
-
-__device__ static double atomicMax(double *address, double val)
-{
-  ullint *address_as_ull = (ullint *)(address);
-  ullint  old            = *address_as_ull, assumed;
-  do {
-    assumed = old;
-    old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(PetscMax(val, __longlong_as_double(assumed))));
-  } while (assumed != old);
-  return __longlong_as_double(old);
-}
-    #elif PetscDefined(USE_REAL_SINGLE)
-__device__ static float atomicMin(float *address, float val)
-{
-  int *address_as_int = (int *)(address);
-  int  old            = *address_as_int, assumed;
-  do {
-    assumed = old;
-    old     = atomicCAS(address_as_int, assumed, __float_as_int(PetscMin(val, __int_as_float(assumed))));
-  } while (assumed != old);
-  return __int_as_float(old);
-}
-
-__device__ static float atomicMax(float *address, float val)
-{
-  int *address_as_int = (int *)(address);
-  int  old            = *address_as_int, assumed;
-  do {
-    assumed = old;
-    old     = atomicCAS(address_as_int, assumed, __float_as_int(PetscMax(val, __int_as_float(assumed))));
-  } while (assumed != old);
-  return __int_as_float(old);
-}
-    #endif
-  #endif
-
   #if PETSC_PKG_HIP_VERSION_LT(5, 7, 0)
 __device__ static inline llint atomicMin(llint *address, llint val)
 {

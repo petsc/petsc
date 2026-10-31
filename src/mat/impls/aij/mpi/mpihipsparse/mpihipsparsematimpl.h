@@ -4,11 +4,7 @@
 #pragma once
 
 #include <petscpkg_version.h>
-#if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  #include <hipsparse/hipsparse.h>
-#else
-  #include <hipsparse.h>
-#endif
+#include <hipsparse/hipsparse.h>
 #include <petsc/private/veccupmimpl.h>
 
 struct Mat_MPIAIJHIPSPARSE {

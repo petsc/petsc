@@ -76,28 +76,6 @@ namespace impl
 // }
 #define PETSC_CUPM_ALIAS_FUNCTION(our_name, their_name) PETSC_ALIAS_FUNCTION(static our_name, their_name)
 
-// PETSC_CUPM_ALIAS_FUNCTION_GOBBLE() - declaration to alias a cuda/hip function but
-// discard the last N arguments
-//
-// input params:
-// our_name   - the name of the alias
-// their_name - the name of the function being aliased
-// N          - integer constant [0, INT_MAX) dictating how many arguments to chop off the end
-//
-// notes:
-// see PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS() for the exact nature of the expansion
-//
-// example use:
-// PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(cupmMallocAsync, cudaMalloc, 1) ->
-// template <typename... T, typename Tend>
-// static constexpr auto cupmMallocAsync(T&&... args, Tend argend) *noexcept and trailing
-// return type deduction*
-// {
-//   (void)argend;
-//   return cudaMalloc(std::forward<T>(args)...);
-// }
-#define PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(our_name, their_name, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(static our_name, their_name, N)
-
 // Base class that holds functions and variables that don't require CUDA or HIP to be present
 // on the system
 template <DeviceType T>
@@ -152,49 +130,34 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::CUDA> 
   using cupmMemoryType_t        = enum cudaMemoryType;
   using cupmDim3                = dim3;
   using cupmHostFn_t            = cudaHostFn_t;
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-  using cupmMemPool_t   = cudaMemPool_t;
-  using cupmMemPoolAttr = cudaMemPoolAttr;
-  #else
-  using cupmMemPool_t   = void *;
-  using cupmMemPoolAttr = unsigned int;
-  #endif
+  using cupmMemPool_t           = cudaMemPool_t;
+  using cupmMemPoolAttr         = cudaMemPoolAttr;
 
   // values
   static const auto cupmSuccess                 = cudaSuccess;
   static const auto cupmErrorNotReady           = cudaErrorNotReady;
   static const auto cupmErrorDeviceAlreadyInUse = cudaErrorDeviceAlreadyInUse;
   static const auto cupmErrorSetOnActiveProcess = cudaErrorSetOnActiveProcess;
-  static const auto cupmErrorStubLibrary =
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 1, 0)
-    cudaErrorStubLibrary;
-  #else
-    cudaErrorInsufficientDriver;
-  #endif
+  static const auto cupmErrorStubLibrary        = cudaErrorStubLibrary;
 
-  static const auto cupmErrorNoDevice          = cudaErrorNoDevice;
-  static const auto cupmStreamDefault          = cudaStreamDefault;
-  static const auto cupmStreamNonBlocking      = cudaStreamNonBlocking;
-  static const auto cupmDeviceMapHost          = cudaDeviceMapHost;
-  static const auto cupmMemcpyHostToDevice     = cudaMemcpyHostToDevice;
-  static const auto cupmMemcpyDeviceToHost     = cudaMemcpyDeviceToHost;
-  static const auto cupmMemcpyDeviceToDevice   = cudaMemcpyDeviceToDevice;
-  static const auto cupmMemcpyHostToHost       = cudaMemcpyHostToHost;
-  static const auto cupmMemcpyDefault          = cudaMemcpyDefault;
-  static const auto cupmMemoryTypeHost         = cudaMemoryTypeHost;
-  static const auto cupmMemoryTypeDevice       = cudaMemoryTypeDevice;
-  static const auto cupmMemoryTypeManaged      = cudaMemoryTypeManaged;
-  static const auto cupmEventDisableTiming     = cudaEventDisableTiming;
-  static const auto cupmHostAllocDefault       = cudaHostAllocDefault;
-  static const auto cupmHostAllocWriteCombined = cudaHostAllocWriteCombined;
-  static const auto cupmMemPoolAttrReleaseThreshold =
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-    cudaMemPoolAttrReleaseThreshold;
-  #else
-    cupmMemPoolAttr{0};
-  #endif
-  static const auto cupmDevAttrClockRate       = cudaDevAttrClockRate;
-  static const auto cupmDevAttrMemoryClockRate = cudaDevAttrMemoryClockRate;
+  static const auto cupmErrorNoDevice               = cudaErrorNoDevice;
+  static const auto cupmStreamDefault               = cudaStreamDefault;
+  static const auto cupmStreamNonBlocking           = cudaStreamNonBlocking;
+  static const auto cupmDeviceMapHost               = cudaDeviceMapHost;
+  static const auto cupmMemcpyHostToDevice          = cudaMemcpyHostToDevice;
+  static const auto cupmMemcpyDeviceToHost          = cudaMemcpyDeviceToHost;
+  static const auto cupmMemcpyDeviceToDevice        = cudaMemcpyDeviceToDevice;
+  static const auto cupmMemcpyHostToHost            = cudaMemcpyHostToHost;
+  static const auto cupmMemcpyDefault               = cudaMemcpyDefault;
+  static const auto cupmMemoryTypeHost              = cudaMemoryTypeHost;
+  static const auto cupmMemoryTypeDevice            = cudaMemoryTypeDevice;
+  static const auto cupmMemoryTypeManaged           = cudaMemoryTypeManaged;
+  static const auto cupmEventDisableTiming          = cudaEventDisableTiming;
+  static const auto cupmHostAllocDefault            = cudaHostAllocDefault;
+  static const auto cupmHostAllocWriteCombined      = cudaHostAllocWriteCombined;
+  static const auto cupmMemPoolAttrReleaseThreshold = cudaMemPoolAttrReleaseThreshold;
+  static const auto cupmDevAttrClockRate            = cudaDevAttrClockRate;
+  static const auto cupmDevAttrMemoryClockRate      = cudaDevAttrMemoryClockRate;
 
   // error functions
   PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorName, cudaGetErrorName)
@@ -214,27 +177,12 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::CUDA> 
 
   PETSC_NODISCARD static cupmMemoryType_t cupmPointerGetMemType(const cupmPointerAttributes_t &attr, PetscBool *managed) noexcept
   {
-  #if CUDART_VERSION < 10000
-    if (managed) *managed = static_cast<PetscBool>(attr.isManaged);
-    return attr.memoryType;
-  #else
     if (managed) *managed = static_cast<PetscBool>(attr.type == cupmMemoryTypeManaged);
     return attr.type;
-  #endif
   }
 
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, cudaDeviceGetMemPool)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, cudaMemPoolSetAttribute)
-  #else
-  PETSC_NODISCARD static cupmError_t cupmDeviceGetMemPool(cupmMemPool_t *pool, int) noexcept
-  {
-    *pool = nullptr;
-    return cupmSuccess;
-  }
-
-  PETSC_NODISCARD static cupmError_t cupmMemPoolSetAttribute(cupmMemPool_t, cupmMemPoolAttr, void *) noexcept { return cupmSuccess; }
-  #endif
   // CUDA has no cudaInit() to match hipInit()
   PETSC_NODISCARD static cupmError_t cupmInit(unsigned int) noexcept { return cudaFree(nullptr); }
 
@@ -259,23 +207,14 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::CUDA> 
   // memory management
   PETSC_CUPM_ALIAS_FUNCTION(cupmFree, cudaFree)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, cudaMalloc)
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmFreeAsync, cudaFreeAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMallocAsync, cudaMallocAsync)
-  #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmFreeAsync, cudaFree, 1)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMallocAsync, cudaMalloc, 1)
-  #endif
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy, cudaMemcpy)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpyAsync, cudaMemcpyAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMallocHost, cudaMallocHost)
   PETSC_CUPM_ALIAS_FUNCTION(cupmFreeHost, cudaFreeHost)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset, cudaMemset)
-  #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemsetAsync, cudaMemsetAsync)
-  #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemsetAsync, cudaMemset, 1)
-  #endif
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2D, cudaMemcpy2D)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy2DAsync, cudaMemcpy2DAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2D, cudaMemset2D)
@@ -310,15 +249,9 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   using cupmPointerAttributes_t = hipPointerAttribute_t;
   using cupmMemoryType_t        = enum hipMemoryType;
   using cupmDim3                = dim3;
-  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  using cupmHostFn_t    = hipHostFn_t;
-  using cupmMemPool_t   = hipMemPool_t;
-  using cupmMemPoolAttr = hipMemPoolAttr;
-  #else
-  using cupmHostFn_t    = void (*)(void *);
-  using cupmMemPool_t   = void *;
-  using cupmMemPoolAttr = unsigned int;
-  #endif
+  using cupmHostFn_t            = hipHostFn_t;
+  using cupmMemPool_t           = hipMemPool_t;
+  using cupmMemPoolAttr         = hipMemPoolAttr;
 
   // values
   static const auto cupmSuccess       = hipSuccess;
@@ -341,18 +274,13 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   static const auto cupmMemoryTypeDevice     = hipMemoryTypeDevice;
   // see
   // https://github.com/ROCm-Developer-Tools/HIP/blob/develop/include/hip/hip_runtime_api.h#L156
-  static const auto cupmMemoryTypeManaged      = hipMemoryTypeUnified;
-  static const auto cupmEventDisableTiming     = hipEventDisableTiming;
-  static const auto cupmHostAllocDefault       = hipHostMallocDefault;
-  static const auto cupmHostAllocWriteCombined = hipHostMallocWriteCombined;
-  static const auto cupmMemPoolAttrReleaseThreshold =
-  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-    hipMemPoolAttrReleaseThreshold;
-  #else
-    cupmMemPoolAttr{0};
-  #endif
-  static const auto cupmDevAttrClockRate       = hipDeviceAttributeClockRate;
-  static const auto cupmDevAttrMemoryClockRate = hipDeviceAttributeMemoryClockRate;
+  static const auto cupmMemoryTypeManaged           = hipMemoryTypeUnified;
+  static const auto cupmEventDisableTiming          = hipEventDisableTiming;
+  static const auto cupmHostAllocDefault            = hipHostMallocDefault;
+  static const auto cupmHostAllocWriteCombined      = hipHostMallocWriteCombined;
+  static const auto cupmMemPoolAttrReleaseThreshold = hipMemPoolAttrReleaseThreshold;
+  static const auto cupmDevAttrClockRate            = hipDeviceAttributeClockRate;
+  static const auto cupmDevAttrMemoryClockRate      = hipDeviceAttributeMemoryClockRate;
 
   // error functions
   PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorName, hipGetErrorName)
@@ -382,18 +310,8 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   #endif
   }
 
-  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, hipDeviceGetMemPool)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, hipMemPoolSetAttribute)
-  #else
-  PETSC_NODISCARD static cupmError_t cupmDeviceGetMemPool(cupmMemPool_t *pool, int) noexcept
-  {
-    *pool = nullptr;
-    return cupmSuccess;
-  }
-
-  PETSC_NODISCARD static cupmError_t cupmMemPoolSetAttribute(cupmMemPool_t, cupmMemPoolAttr, void *) noexcept { return cupmSuccess; }
-  #endif
   PETSC_CUPM_ALIAS_FUNCTION(cupmInit, hipInit)
 
   // stream management
@@ -417,13 +335,8 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   // memory management
   PETSC_CUPM_ALIAS_FUNCTION(cupmFree, hipFree)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, hipMalloc)
-  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMallocAsync, hipMallocAsync)
   PETSC_CUPM_ALIAS_FUNCTION(cupmFreeAsync, hipFreeAsync)
-  #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMallocAsync, hipMalloc, 1)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmFreeAsync, hipFree, 1)
-  #endif
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy, hipMemcpy)
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpyAsync, hipMemcpyAsync)
   // hipMallocHost is deprecated
@@ -438,21 +351,10 @@ struct PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL InterfaceImpl<DeviceType::HIP> :
   PETSC_CUPM_ALIAS_FUNCTION(cupmMemset2DAsync, hipMemset2DAsync)
 
   // launch control
-  // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
-  // https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/doc/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md#7-execution-control=
   #if PetscDefined(HAVE_HIPCUDA)
   PETSC_NODISCARD static hipError_t cupmLaunchHostFunc(cupmStream_t stream, void (*fn)(void *), void *ctx) noexcept { return hipCUDAErrorTohipError(cudaLaunchHostFunc(stream, fn, ctx)); }
-  #elif PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, hipLaunchHostFunc)
   #else
-  PETSC_NODISCARD static hipError_t cupmLaunchHostFunc(hipStream_t stream, cupmHostFn_t fn, void *ctx) noexcept
-  {
-    // the only correct way to spoof this function is to do it synchronously...
-    auto herr = hipStreamSynchronize(stream);
-    if (PetscUnlikely(herr != hipSuccess)) return herr;
-    fn(ctx);
-    return herr;
-  }
+  PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, hipLaunchHostFunc)
   #endif
 
   template <typename FunctionT, typename... KernelArgsT>
@@ -588,11 +490,6 @@ public:
 
   PETSC_NODISCARD PETSC_GCC_LINKER_UNDEFINED_REFERENCE_BUG_WORKAROUND static constexpr cupmReal_t *cupmRealPtrCast(PetscReal *s) noexcept { return reinterpret_cast<cupmReal_t *>(s); }
 
-#if !defined(PETSC_PKG_CUDA_VERSION_GE)
-  #define PETSC_PKG_CUDA_VERSION_GE(...) 0
-  #define CUPM_DEFINED_PETSC_PKG_CUDA_VERSION_GE
-#endif
-
   static PetscErrorCode PetscCUPMGetMemType(const void *data, PetscMemType *type, PetscBool *registered = nullptr, PetscBool *managed = nullptr) noexcept
   {
     cupmPointerAttributes_t attr;
@@ -608,11 +505,10 @@ public:
       PetscAssertPointer(managed, 4);
       *managed = PETSC_FALSE;
     }
-    // Do not check error, instead reset it via GetLastError() since before CUDA 11.0, passing
-    // a host pointer returns cudaErrorInvalidValue
+    // HIP versions before 7.0 may reject unregistered host pointers; clear that error.
     cerr = cupmPointerGetAttributes(&attr, data);
     cerr = cupmGetLastError();
-    if (PETSC_PKG_CUDA_VERSION_GE(11, 0, 0) && (T == DeviceType::CUDA)) PetscCallCUPM(cerr);
+    if (T == DeviceType::CUDA) PetscCallCUPM(cerr);
     if (type) *type = PETSC_MEMTYPE_HOST;
     if (cerr == cupmSuccess) {
       const auto mtype = interface_type::cupmPointerGetMemType(attr, managed);
@@ -623,10 +519,6 @@ public:
     }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-#if defined(CUPM_DEFINED_PETSC_PKG_CUDA_VERSION_GE)
-  #undef PETSC_PKG_CUDA_VERSION_GE
-#endif
-
   PETSC_NODISCARD static PETSC_CONSTEXPR_14 cupmMemcpyKind_t PetscDeviceCopyModeToCUPMMemcpyKind(PetscDeviceCopyMode mode) noexcept
   {
     switch (mode) {
