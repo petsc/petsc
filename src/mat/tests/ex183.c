@@ -98,7 +98,7 @@ int main(int argc, char **args)
 
   for (j = rstart; j < rend; ++j) {
     if (permute_indices) {
-      idx = (j * hash);
+      idx = (j / bs * hash) * bs + j % bs;
     } else {
       idx = j;
     }
@@ -107,6 +107,8 @@ int main(int argc, char **args)
   }
   PetscCall(ISCreateGeneral(subcomm, rend - rstart, rowindices, PETSC_COPY_VALUES, &rowis[0]));
   PetscCall(ISCreateGeneral(subcomm, rend - rstart, colindices, PETSC_COPY_VALUES, &colis[0]));
+  PetscCall(ISSetBlockSize(rowis[0], bs));
+  PetscCall(ISSetBlockSize(colis[0], bs));
   PetscCall(ISSort(rowis[0]));
   PetscCall(ISSort(colis[0]));
   PetscCall(PetscFree2(rowindices, colindices));
@@ -139,6 +141,8 @@ int main(int argc, char **args)
   PetscCall(ISSort(colis[0]));
   nsubdomains = 1;
   PetscCall(MatCreateSubMatricesMPI(A, nsubdomains, rowis, colis, MAT_INITIAL_MATRIX, &submats));
+  PetscCall(MatGetBlockSizes(submats[0], &i, &j));
+  PetscCheck(i == bs && j == bs, subcomm, PETSC_ERR_PLIB, "Submatrix block sizes %" PetscInt_FMT " and %" PetscInt_FMT " differ from the requested block size %" PetscInt_FMT, i, j, bs);
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
     we need to obtain the global numbers of our local objects and wait for the corresponding global
@@ -170,6 +174,8 @@ int main(int argc, char **args)
   if (rep == 1) goto cleanup;
   nsubdomains = 1;
   PetscCall(MatCreateSubMatricesMPI(A, nsubdomains, rowis, colis, MAT_REUSE_MATRIX, &submats));
+  PetscCall(MatGetBlockSizes(submats[0], &i, &j));
+  PetscCheck(i == bs && j == bs, subcomm, PETSC_ERR_PLIB, "Submatrix block sizes %" PetscInt_FMT " and %" PetscInt_FMT " differ from the requested block size %" PetscInt_FMT, i, j, bs);
   /*
     Now view the matrices.  To avoid deadlock when viewing a list of objects on different subcomms,
     we need to obtain the global numbers of our local objects and wait for the corresponding global
@@ -235,5 +241,12 @@ cleanup:
       nsize: 6
       args: -total_subdomains 2
       output_file: output/ex183_6_2.out
+
+   test:
+      suffix: block_size
+      nsize: 4
+      args: -total_subdomains 2 -m 6 -mat_block_size {{2 3}} -permute_indices {{false true}}
+      filter: grep Submatrices
+      output_file: output/ex183_block_size.out
 
 TEST*/

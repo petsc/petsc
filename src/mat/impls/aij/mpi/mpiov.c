@@ -3260,6 +3260,7 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
       if (scall == MAT_INITIAL_MATRIX) {
         PetscCall(MatCreate(((PetscObject)isrow[i])->comm, (*submat) + i));
         PetscCall(MatSetSizes((*submat)[i], A[i]->rmap->n, A[i]->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
+        PetscCall(MatSetBlockSizesFromMats((*submat)[i], A[i], A[i]));
         PetscCall(MatSetType((*submat)[i], MATMPIAIJ));
         PetscCall(PetscLayoutSetUp((*submat)[i]->rmap));
         PetscCall(PetscLayoutSetUp((*submat)[i]->cmap));
