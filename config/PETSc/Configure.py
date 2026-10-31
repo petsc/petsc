@@ -749,11 +749,17 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('HAVE_BUILTIN_EXPECT', 1)
     self.popLanguage()
 
-  def configureStaticConstInit(self):
-    '''Sees if a file-scope static const can be initialized from another static const (MSVC and classic Intel C reject this)'''
-    self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('static const double a = 1.0;\nstatic const double b = -a;\n', 'return (int)b;'):
-      self.addDefine('HAVE_STATIC_CONST_INIT_FROM_CONST', 1)
+  def configureCStaticConstexpr(self):
+    '''Sees if a static constant variable can be initialized from another in C (MSVC and classic Intel C reject this)'''
+    self.pushLanguage('C')
+    # Test C23 static constexpr
+    (output, error, status) = self.outputCompile('static constexpr double a = 1.0;\nstatic constexpr double b = -a;\n', codeEnd='return (int)b;\n}')
+    if not status and not self.filterCompileOutput(output + '\n' + error, filterAlways = 1):
+      self.addDefine('HAVE_C_STATIC_CONSTEXPR', 1)
+    # Also test static const for compiles in pre-C23 modes; NVHPC accepts it with a const_var_in_C_const_expr warning, so warnings fail the test
+    (output, error, status) = self.outputCompile('static const double a = 1.0;\nstatic const double b = -a;\n', codeEnd='return (int)b;\n}')
+    if not status and not self.filterCompileOutput(output + '\n' + error, filterAlways = 1):
+      self.addDefine('HAVE_C_STATIC_CONST_INIT_FROM_CONST', 1)
     self.popLanguage()
 
   def configureFunctionName(self):
@@ -1385,7 +1391,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureDeprecated)
     self.executeTest(self.configureIsatty)
     self.executeTest(self.configureExpect)
-    self.executeTest(self.configureStaticConstInit)
+    self.executeTest(self.configureCStaticConstexpr)
     self.executeTest(self.configureAlign)
     self.executeTest(self.configureFunctionName)
     self.executeTest(self.configureIntptrt)
