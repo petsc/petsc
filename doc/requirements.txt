@@ -12,7 +12,7 @@ wheel==0.43.0
 pydata-sphinx-theme==0.15.1
 sphinx==7.3.7
 sphobjinv==2.3.1.1
-typing_extensions==4.12.2
+typing_extensions==4.15.0
 pylit==0.8.0
 setuptools==70.2.0
 sphinx-design

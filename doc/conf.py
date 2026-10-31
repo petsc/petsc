@@ -67,6 +67,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build*', 'images', 'Thumbs.db', '.DS_Store','community/meetings/pre-2023']
 highlight_language = 'c'
 numfig = True
+copybutton_line_continuation_character = "\\"
 
 # -- Extensions ----------------------------------------------------------------
 
