@@ -11,6 +11,7 @@ class Configure(config.package.Package):
     config.package.Package.setupHelp(self,help)
     import nargs
     help.addArgument('OpenMP', '--with-openmp-kernels=<true,false>',  nargs.ArgBool(None, 0, 'PETSc\'s numerical kernels will use OpenMP threads'))
+    help.addArgument('OpenMP', '--with-openmp-target-offload=<true,false>', nargs.ArgBool(None, 0, 'Enable OpenMP GPU target offload for CUDA/HIP'))
     return
 
   def setupDependencies(self, framework):
@@ -92,10 +93,11 @@ class Configure(config.package.Package):
     if self.framework.argDB['with-openmp-kernels']:
       self.addDefine('USE_OPENMP_KERNELS', 1)
 
-    self.configureOpenMPTarget()
+    if self.framework.argDB['with-openmp-target-offload']:
+      self.configureOpenMPTarget()
 
   def configureOpenMPTarget(self):
-    '''Automatically enable OpenMP GPU target offload for each host compiler that supports it.
+    '''Enable OpenMP GPU target offload for each host compiler that supports it.
 
        Since users might use a Fortran compiler supporting OpenMP target offload along with
        regular C/C++ compilers, we do this check per host language and define
@@ -103,12 +105,13 @@ class Configure(config.package.Package):
     '''
     if self.cuda.found:  candidates = ['-foffload=nvptx-none', '-mp=gpu', '-fopenmp-targets=nvptx64-nvidia-cuda'] # flags for [GNU, NVIDIA, Clang] compilers
     elif self.hip.found: candidates = ['-foffload=amdgcn-amdhsa', '-fopenmp-targets=amdgcn-amd-amdhsa'] # flags for [GNU, Clang] compilers
-    else: return # TODO: support SYCL.
+    else: raise RuntimeError('--with-openmp-target-offload also requires --with-cuda or --with-hip (SYCL is not yet supported)')
 
     # A minimal OpenMP target region per language
     ctest = ('#include <omp.h>\n', 'int x = 0;\n#pragma omp target map(tofrom:x)\n  x = 1;\n  (void)x;\n')
     ftest = ('', 'integer :: x\n      x = 0\n!$omp target map(tofrom:x)\n      x = 1\n!$omp end target')
 
+    enabled = 0
     for language, compiler, (includes, body) in [('C', 'CC', ctest), ('Cxx', 'CXX', ctest), ('FC', 'FC', ftest)]:
       if not hasattr(self.compilers, compiler): continue
       self.setCompilers.pushLanguage(language)
@@ -130,9 +133,14 @@ class Configure(config.package.Package):
           self.setCompilers.insertCompilerFlag(flag, 0)
           self.addDefine('HAVE_OPENMP_TARGET_OFFLOAD_' + compiler, 1)
           self.logPrintBox('Enabled OpenMP target offload for ' + compiler + ': ' + flag)
+          enabled = 1
           break
       self.setCompilers.popLanguage()
+    if not enabled:
+      raise RuntimeError('--with-openmp-target-offload was requested but no host compiler supports OpenMP target offload')
 
   def alternateConfigureLibrary(self):
     if self.framework.argDB['with-openmp-kernels']:
       raise RuntimeError('--with-openmp-kernels also requires --with-openmp')
+    if self.framework.argDB['with-openmp-target-offload']:
+      raise RuntimeError('--with-openmp-target-offload also requires --with-openmp')

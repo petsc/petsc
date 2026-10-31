@@ -17,6 +17,7 @@
 - Add Meson package builds, `--download-meson`, and `--download-package-meson-arguments` for additional Meson setup arguments
 - Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
 - Add `--with-meson-exec` to select an existing Meson executable
+- Change OpenMP target offload for CUDA/HIP to require `--with-openmp-target-offload` instead of being enabled automatically
 
 ```{rubric} Sys:
 ```
