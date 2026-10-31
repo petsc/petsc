@@ -3,6 +3,7 @@ import sys
 import enum
 import inspect
 import textwrap
+import importlib.machinery
 from sphinx.util import logging
 
 logger = logging.getLogger(__name__)
@@ -557,6 +558,8 @@ def load_module(filename, name=None):
     module = type(sys)(name)
     module.__file__ = filename
     module.__package__ = name.rsplit('.', 1)[0]
+    # Python 3.15 traceback formatting fails on modules with __spec__ None
+    module.__spec__ = importlib.machinery.ModuleSpec(name, None, origin=filename)
     old = replace_module(module)
     with open(filename) as f:
         exec(f.read(), module.__dict__)  # noqa: S102
