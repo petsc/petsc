@@ -389,11 +389,15 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 
   #if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_MPIX_STREAM)
     if (sf->use_stream_aware_mpi) {
-      MPI_Info info;
+      MPI_Info           info;
+      PetscDeviceContext dctx;
+      cudaStream_t      *stream;
 
+      PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+      PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
       PetscCallMPI(MPI_Info_create(&info));
       PetscCallMPI(MPI_Info_set(info, "type", "cudaStream_t"));
-      PetscCallMPI(MPIX_Info_set_hex(info, "value", &PetscDefaultCudaStream, sizeof(PetscDefaultCudaStream)));
+      PetscCallMPI(MPIX_Info_set_hex(info, "value", stream, sizeof(*stream)));
       PetscCallMPI(MPIX_Stream_create(info, &sf->mpi_stream));
       PetscCallMPI(MPI_Info_free(&info));
       PetscCallMPI(MPIX_Stream_comm_create(PetscObjectComm((PetscObject)sf), sf->mpi_stream, &sf->stream_comm));

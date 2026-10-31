@@ -2311,8 +2311,8 @@ PetscErrorCode PetscLogGpuTime(void)
   When GPU is not available, the timer is run on the CPU, it is a separate logging of
   time devoted to GPU computations (including kernel launch times).
 
-  There is no need to call `WaitForCUDA()` or `WaitForHIP()` between `PetscLogGpuTimeBegin()` and
-  `PetscLogGpuTimeEnd()`
+  No explicit device synchronization is needed between `PetscLogGpuTimeBegin()` and
+  `PetscLogGpuTimeEnd()`; the latter waits for the timer's end event.
 
   This timer should NOT include times for data transfers between the GPU and CPU, nor setup
   actions such as allocating space.

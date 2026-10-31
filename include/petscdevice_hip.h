@@ -29,26 +29,6 @@
   #include <hipsolver/hipsolver.h>
   #include <hip/hip_complex.h> // for hipComplex, hipDoubleComplex
 
-  /*MC
-    WaitForHIP - Block the calling host thread until all previously queued work on the current HIP device has completed
-
-    Synopsis:
-    #include <petscdevice_hip.h>
-    hipError_t WaitForHIP(void)
-
-    Not Collective; No Fortran Support
-
-    Level: developer
-
-    Note:
-    Thin convenience wrapper around `hipDeviceSynchronize()`. Marked for removal in favour of
-    explicit `PetscDeviceContext` synchronization.
-
-.seealso: `PetscDeviceContext`, `PetscDeviceContextSynchronize()`, `WaitForCUDA()`
-M*/
-  // REMOVE ME
-  #define WaitForHIP() hipDeviceSynchronize()
-
 /* hipBLAS, hipSPARSE and hipSolver does not have hip*GetErrorName(). We create one on our own. */
 PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t);     /* PETSC_EXTERN since it is exposed by the CHKERRHIPBLAS macro */
 PETSC_EXTERN const char *PetscHIPSPARSEGetErrorName(hipsparseStatus_t); /* PETSC_EXTERN since it is exposed by the CHKERRHIPSPARSE macro */
@@ -111,8 +91,6 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t); /* PETSC
     } while (0)
   #define CHKERRHIPSOLVER(...) PetscCallHIPSOLVER(__VA_ARGS__)
 
-// REMOVE ME
-PETSC_EXTERN hipStream_t    PetscDefaultHipStream; // The default stream used by PETSc
 PETSC_EXTERN PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *);
 PETSC_EXTERN PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *);
 PETSC_EXTERN PetscErrorCode PetscGetCurrentHIPStream(hipStream_t *);

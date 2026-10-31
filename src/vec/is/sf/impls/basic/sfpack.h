@@ -165,7 +165,7 @@ struct _n_PetscSFLink {
   PetscErrorCode (*da_FetchAndAddLocal)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, PetscInt, PetscSFPackOpt, const PetscInt *, const void *, void *);
   #if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
   PetscInt     maxResidentThreadsPerGPU; /* It is a copy from SF for convenience */
-  cupmStream_t stream;                   /* stream on which input/output root/leafdata is computed on (default is PetscDefaultCudaStream) */
+  cupmStream_t stream;                   /* stream on which input/output root/leafdata is computed */
   #endif
 #endif
   PetscMPIInt  tag;                  /* Each link has a tag so we can perform multiple SF ops at the same time */

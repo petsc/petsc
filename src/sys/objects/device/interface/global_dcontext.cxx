@@ -1,5 +1,4 @@
 #include "petscdevice_interface_internal.hpp" /*I <petscdevice.h> I*/
-#include <petscdevice_cupm.h>
 
 /* rootContext holds the default context created by PETSc, for cleanup during PetscFinalize().
    globalContext selects the current context, which may instead be supplied by the application.
@@ -25,31 +24,6 @@ PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscStreamType type
   PetscFunctionBegin;
   PetscValidStreamType(type, 1);
   rootStreamType = type;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static inline PetscErrorCode PetscSetDefaultCUPMStreamFromDeviceContext(PetscDeviceContext dctx, PetscDeviceType dtype)
-{
-  PetscFunctionBegin;
-#if PetscDefined(HAVE_CUDA)
-  if (dtype == PETSC_DEVICE_CUDA) {
-    void *handle;
-
-    PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, &handle));
-    PetscDefaultCudaStream = *static_cast<cudaStream_t *>(handle);
-  }
-#endif
-#if PetscDefined(HAVE_HIP)
-  if (dtype == PETSC_DEVICE_HIP) {
-    void *handle;
-
-    PetscCall(PetscDeviceContextGetStreamHandle_Internal(dctx, &handle));
-    PetscDefaultHipStream = *static_cast<hipStream_t *>(handle);
-  }
-#endif
-#if !PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP)
-  (void)dctx, (void)dtype;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -84,7 +58,6 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
     PetscCall(PetscDeviceContextSetStreamType(globalContext, rootStreamType));
     PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(globalContext, dtype));
     PetscCall(PetscDeviceContextSetUp(globalContext));
-    PetscCall(PetscSetDefaultCUPMStreamFromDeviceContext(globalContext, dtype));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -161,6 +134,5 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
   PetscCall(PetscDeviceSetDefaultDeviceType(dtype));
   globalContext = dctx;
   PetscCall(PetscInfo(dctx, "Set global PetscDeviceContext id %" PetscInt64_FMT "\n", PetscObjectCast(dctx)->id));
-  PetscCall(PetscSetDefaultCUPMStreamFromDeviceContext(globalContext, dtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -94,17 +94,27 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     PetscDeviceContext dctx;
     PetscDeviceType    dtype;
 
-    PetscCall(PetscDeviceContextGetCurrentContext(&dctx)); // it internally sets PetscDefaultCuda/HipStream
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
     PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
 
-  #if PetscDefined(HAVE_CUDA)
-    if (dtype == PETSC_DEVICE_CUDA) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultCudaStream));
-  #elif PetscDefined(HAVE_HIP)
-    if (dtype == PETSC_DEVICE_HIP) PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(PetscDefaultHipStream));
-  #elif PetscDefined(HAVE_SYCL)
+  #if defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)
+    if (dtype == PETSC_DEVICE_CUDA) {
+      cudaStream_t *stream;
+
+      PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
+      PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(*stream));
+    }
+  #elif defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)
+    if (dtype == PETSC_DEVICE_HIP) {
+      hipStream_t *stream;
+
+      PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
+      PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(*stream));
+    }
+  #elif defined(KOKKOS_ENABLE_SYCL) && PetscDefined(HAVE_SYCL)
     if (dtype == PETSC_DEVICE_SYCL) {
       void *handle;
-      PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle)); // Kind of PetscDefaultSyclStream
+      PetscCall(PetscDeviceContextGetStreamHandle(dctx, &handle));
       PetscCallCXX(PetscKokkosExecutionSpacePtr = new Kokkos::DefaultExecutionSpace(*(sycl::queue *)handle));
     }
   #endif
