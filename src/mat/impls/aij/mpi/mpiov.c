@@ -3272,9 +3272,13 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
         Mat AA = A[i], BB = B[ii];
 
         if (AA || BB) {
+          PetscBool nooffprocentries = (*submat)[i]->nooffprocentries;
+
           PetscCall(setseqmats((*submat)[i], isrow_p[i], iscol_p[i], ciscol_p[ii], pattern, AA, BB));
+          PetscCall(MatSetOption((*submat)[i], MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE)); /* only the local diagonal and off-diagonal blocks were filled */
           PetscCall(MatAssemblyBegin((*submat)[i], MAT_FINAL_ASSEMBLY));
           PetscCall(MatAssemblyEnd((*submat)[i], MAT_FINAL_ASSEMBLY));
+          PetscCall(MatSetOption((*submat)[i], MAT_NO_OFF_PROC_ENTRIES, nooffprocentries));
         }
         PetscCall(MatDestroy(&AA));
       }
