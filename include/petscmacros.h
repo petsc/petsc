@@ -31,8 +31,10 @@
     #define PETSC_C_VERSION 11
   #elif __STDC_VERSION__ <= 201710L
     #define PETSC_C_VERSION 17
+  #elif __STDC_VERSION__ < 202311L
+    #define PETSC_C_VERSION 22 // C2x drafts before C23 ratification
   #else
-    #define PETSC_C_VERSION 22 // current year, or date of c2b ratification
+    #define PETSC_C_VERSION 23
   #endif
 #endif // __STDC_VERSION__
 
