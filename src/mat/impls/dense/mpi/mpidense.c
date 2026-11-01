@@ -292,7 +292,7 @@ static PetscErrorCode MatDenseReplaceArray_MPIDense(Mat A, const PetscScalar *ar
 
 static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
 {
-  Mat_MPIDense      *mat = (Mat_MPIDense *)A->data, *newmatd;
+  Mat_MPIDense      *mat = (Mat_MPIDense *)A->data;
   PetscInt           lda, i, j, rstart, rend, nrows, ncols, Ncols, nlrows, nlcols;
   const PetscInt    *irow, *icol;
   const PetscScalar *v;
@@ -334,8 +334,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A, IS isrow, IS iscol, Mat
   }
 
   /* Now extract the data pointers and do the copy, column at a time */
-  newmatd = (Mat_MPIDense *)newmat->data;
-  PetscCall(MatDenseGetArray(newmatd->A, &bv));
+  PetscCall(MatDenseGetArray(newmat, &bv));
   PetscCall(MatDenseGetArrayRead(mat->A, &v));
   PetscCall(MatDenseGetLDA(mat->A, &lda));
   for (i = 0; i < Ncols; i++) {
@@ -343,11 +342,7 @@ static PetscErrorCode MatCreateSubMatrix_MPIDense(Mat A, IS isrow, IS iscol, Mat
     for (j = 0; j < nrows; j++) *bv++ = av[irow[j] - rstart];
   }
   PetscCall(MatDenseRestoreArrayRead(mat->A, &v));
-  PetscCall(MatDenseRestoreArray(newmatd->A, &bv));
-
-  /* Assemble the matrices so that the correct flags are set */
-  PetscCall(MatAssemblyBegin(newmat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(newmat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatDenseRestoreArray(newmat, &bv));
 
   /* Free work space */
   PetscCall(ISRestoreIndices(isrow, &irow));

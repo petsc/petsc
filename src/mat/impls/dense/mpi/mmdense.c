@@ -390,10 +390,7 @@ static PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C, PetscInt ismax,
   PetscCall(PetscFree(rmap[0]));
   PetscCall(PetscFree(rmap));
 
-  for (PetscInt i = 0; i < ismax; i++) {
-    PetscCall(MatAssemblyBegin(submats[i], MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(submats[i], MAT_FINAL_ASSEMBLY));
-  }
+  for (PetscInt i = 0; i < ismax; i++) PetscCall(PetscObjectStateIncrease((PetscObject)submats[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

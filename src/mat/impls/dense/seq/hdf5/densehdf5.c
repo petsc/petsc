@@ -87,7 +87,6 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
     impl->user_alloc = PETSC_FALSE;
   }
 
-  PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
