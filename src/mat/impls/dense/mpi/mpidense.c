@@ -2461,12 +2461,10 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "PETSC_HAVE_ELEMENTAL not defined");
 #endif
   } else {
-    MPI_Comm           comm;
-    const PetscScalar *read;
-    PetscScalar       *write;
-    PetscInt           lda;
-    const PetscInt    *ranges;
-    PetscMPIInt        size;
+    MPI_Comm        comm;
+    Mat             clocal;
+    const PetscInt *ranges;
+    PetscMPIInt     size;
 
     if (!mdn->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A)); /* cannot be done during the symbolic phase because of possible calls to MatProductReplaceMats() */
     comm = PetscObjectComm((PetscObject)B);
@@ -2518,18 +2516,9 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
       if (B->cmap->N > 1) PetscCallMPI(MPI_Type_free(&vector_type));
       PetscCall(MatDestroy(&be_alloc));
       PetscCall(MatDestroy(&b_alloc));
-    } else {
-      PetscCall(MatDenseGetLDA(B, &lda));
-      PetscCall(MatDenseGetArrayRead(B, &read));
-      PetscCall(MatDenseGetArrayWrite(ab->Be, &write));
-      for (PetscInt i = 0; i < C->cmap->N; ++i) {
-        PetscCall(PetscSFBcastBegin(mdn->Mvctx, MPIU_SCALAR, read + i * lda, write + i * ab->Be->rmap->n, MPI_REPLACE));
-        PetscCall(PetscSFBcastEnd(mdn->Mvctx, MPIU_SCALAR, read + i * lda, write + i * ab->Be->rmap->n, MPI_REPLACE));
-      }
-      PetscCall(MatDenseRestoreArrayWrite(ab->Be, &write));
-      PetscCall(MatDenseRestoreArrayRead(B, &read));
-    }
-    PetscCall(MatMatMultNumeric_SeqDense_SeqDense(((Mat_MPIDense *)A->data)->A, ab->Be, ((Mat_MPIDense *)C->data)->A));
+    } else PetscCall(MatDenseScatter_Private(mdn->Mvctx, B, ab->Be, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall(MatDenseGetLocalMatrix(C, &clocal));
+    PetscCall((*clocal->ops->matmultnumeric)(mdn->A, ab->Be, clocal));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2540,6 +2529,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
   PetscInt                    alg;
   MatProductCtx_MatMultDense *ab;
   PetscBool                   flg;
+  VecType                     vtype;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -2553,9 +2543,13 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
 
   /* setup C */
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
-  PetscCall(MatSetType(C, MATMPIDENSE));
-  /* keep the VecType of A, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if A is a MATMPIDENSE like C, since the VecType of a MATMPIDENSECUDA or MATMPIDENSEHIP A, e.g. VECCUDA, is not valid for C */
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
+  if (!flg) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
+    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATMPIDENSE));
+  }
+  /* preserve a supplied dense result and its storage; copy the VecType only from a matching MatType */
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
   if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
   PetscCall(MatSetUp(C));
 
@@ -2587,7 +2581,8 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
     break;
   default: /* alg: "petsc" */
     ab->Ae = NULL;
-    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, A->cmap->N, B->cmap->N, NULL, &ab->Be));
+    PetscCall(MatGetVecType(C, &vtype));
+    PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, vtype, A->cmap->N, B->cmap->N, A->cmap->N, B->cmap->N, PETSC_DECIDE, NULL, &ab->Be));
     ab->Ce = NULL;
     break;
   }
