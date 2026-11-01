@@ -2694,6 +2694,21 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  PetscSF  sf;
+  PetscInt N, rld, lld, nr, nl;
+} MatDenseScatterCtx;
+
+static PetscErrorCode MatDenseScatterCtxDestroy_Private(PetscCtxRt ptr)
+{
+  MatDenseScatterCtx **ctx = (MatDenseScatterCtx **)ptr;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFDestroy(&(*ctx)->sf));
+  PetscCall(PetscFree(*ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode, ScatterMode smode)
 {
   const PetscScalar *in;
@@ -2716,23 +2731,33 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatGetSize(Y, NULL, &ny));
   PetscCheck(N == ny, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_SIZ, "Matrix column sizes must match: %" PetscInt_FMT " != %" PetscInt_FMT, N, ny);
-  PetscCall(MatDenseGetLDA(X, &rld));
-  PetscCall(MatDenseGetLDA(Y, &lld));
+  if (!N) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatDenseGetLDA(smode == SCATTER_FORWARD ? X : Y, &rld));
+  PetscCall(MatDenseGetLDA(smode == SCATTER_FORWARD ? Y : X, &lld));
   /* get cached or create new strided PetscSF when the number of columns is greater than one */
   if (N > 1) {
-    PetscCall(PetscObjectQuery((PetscObject)sf, "_MatDenseScatter_StridedSF", (PetscObject *)&vsf));
-    if (vsf) {
-      PetscInt nr[2], nl[2];
+    MatDenseScatterCtx *ctx;
+    PetscInt            nr, nl;
 
-      PetscCall(PetscSFGetGraph(sf, nr, nl, NULL, NULL));
-      PetscCall(PetscSFGetGraph(vsf, nr + 1, nl + 1, NULL, NULL));
-      if (N * nr[0] != nr[1] || N * nl[0] != nl[1]) vsf = NULL;
+    PetscCall(PetscSFGetGraph(sf, &nr, &nl, NULL, NULL));
+    PetscCall(PetscObjectContainerQuery((PetscObject)sf, "_MatDenseScatter_StridedSF", &ctx));
+    if (ctx && ctx->N != N) {
+      PetscCall(PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", NULL));
+      ctx = NULL;
     }
-    if (!vsf) {
-      PetscCall(PetscSFCreateStridedSF(sf, N, rld, lld, &vsf));
-      PetscCall(PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", (PetscObject)vsf));
-      PetscCall(PetscObjectDereference((PetscObject)vsf));
+    /* callers must clear the cache on all processes before changing the layout (which happens, e.g., with matrices with different leading dimensions) on any rank */
+    PetscCheck(ctx == NULL || (ctx->rld == rld && ctx->lld == lld && ctx->nr == nr && ctx->nl == nl), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "The cached strided SF has a different layout; the calling function must destroy it first on all processes with PetscObjectCompose((PetscObject)sf, \"_MatDenseScatter_StridedSF\", NULL)");
+    if (ctx == NULL) {
+      PetscCall(PetscNew(&ctx));
+      PetscCall(PetscSFCreateStridedSF(sf, N, rld, lld, &ctx->sf));
+      ctx->N   = N;
+      ctx->rld = rld;
+      ctx->lld = lld;
+      ctx->nr  = nr;
+      ctx->nl  = nl;
+      PetscCall(PetscObjectContainerCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", ctx, MatDenseScatterCtxDestroy_Private));
     }
+    vsf = ctx->sf;
   } else vsf = sf;
   /* the output array is accessed in read and write mode,
     but write-only in the INSERT_VALUES case could be worth exploring */

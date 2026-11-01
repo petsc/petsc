@@ -66,11 +66,18 @@
         u2 = u + opt->start[r] * MBS; \
         X  = opt->X[r]; \
         Y  = opt->Y[r]; \
-        for (k = 0; k < opt->dz[r]; k++) \
-          for (j = 0; j < opt->dy[r]; j++) { \
-            PetscCall(PetscArraycpy(p2, u2 + (X * Y * k + X * j) * MBS, opt->dx[r] * MBS)); \
-            p2 += opt->dx[r] * MBS; \
-          } \
+        if (opt->dx[r] == 1) { \
+          for (k = 0; k < opt->dz[r]; k++) \
+            for (j = 0; j < opt->dy[r]; j++) { \
+              for (i = 0; i < MBS; i++) p2[i] = u2[(X * Y * k + X * j) * MBS + i]; \
+              p2 += MBS; \
+            } \
+        } else \
+          for (k = 0; k < opt->dz[r]; k++) \
+            for (j = 0; j < opt->dy[r]; j++) { \
+              PetscCall(PetscArraycpy(p2, u2 + (X * Y * k + X * j) * MBS, opt->dx[r] * MBS)); \
+              p2 += opt->dx[r] * MBS; \
+            } \
       } \
     } else { \
       for (i = 0; i < count; i++) \
@@ -109,11 +116,18 @@
         u2 = u + opt->start[r] * MBS; \
         X  = opt->X[r]; \
         Y  = opt->Y[r]; \
-        for (k = 0; k < opt->dz[r]; k++) \
-          for (j = 0; j < opt->dy[r]; j++) { \
-            PetscCall(PetscArraycpy(u2 + (X * Y * k + X * j) * MBS, p, opt->dx[r] * MBS)); \
-            p += opt->dx[r] * MBS; \
-          } \
+        if (opt->dx[r] == 1) { \
+          for (k = 0; k < opt->dz[r]; k++) \
+            for (j = 0; j < opt->dy[r]; j++) { \
+              for (i = 0; i < MBS; i++) u2[(X * Y * k + X * j) * MBS + i] = p[i]; \
+              p += MBS; \
+            } \
+        } else \
+          for (k = 0; k < opt->dz[r]; k++) \
+            for (j = 0; j < opt->dy[r]; j++) { \
+              PetscCall(PetscArraycpy(u2 + (X * Y * k + X * j) * MBS, p, opt->dx[r] * MBS)); \
+              p += opt->dx[r] * MBS; \
+            } \
       } \
     } else { \
       for (i = 0; i < count; i++) \
@@ -204,11 +218,18 @@
       v += dstStart * MBS; \
       X = srcOpt->X[0]; \
       Y = srcOpt->Y[0]; \
-      for (k = 0; k < srcOpt->dz[0]; k++) \
-        for (j = 0; j < srcOpt->dy[0]; j++) { \
-          for (i = 0; i < srcOpt->dx[0] * MBS; i++) OpApply(Op, v[i], u[(X * Y * k + X * j) * MBS + i]); \
-          v += srcOpt->dx[0] * MBS; \
-        } \
+      if (srcOpt->dx[0] == 1) { \
+        for (k = 0; k < srcOpt->dz[0]; k++) \
+          for (j = 0; j < srcOpt->dy[0]; j++) { \
+            for (i = 0; i < MBS; i++) OpApply(Op, v[i], u[(X * Y * k + X * j) * MBS + i]); \
+            v += MBS; \
+          } \
+      } else \
+        for (k = 0; k < srcOpt->dz[0]; k++) \
+          for (j = 0; j < srcOpt->dy[0]; j++) { \
+            for (i = 0; i < srcOpt->dx[0] * MBS; i++) OpApply(Op, v[i], u[(X * Y * k + X * j) * MBS + i]); \
+            v += srcOpt->dx[0] * MBS; \
+          } \
     } else { /* all other cases */ \
       for (i = 0; i < count; i++) { \
         s = (!srcIdx ? srcStart + i : srcIdx[i]) * MBS; \
