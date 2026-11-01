@@ -2171,8 +2171,17 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscCall(MatDenseRestoreArrayRead(atb->atb, &atbarray));
 
   /* sum all atbarray to local values of C */
+  PetscCall(MatDenseGetLDA(c->A, &lda));
   PetscCall(MatDenseGetArrayWrite(c->A, &carray));
-  PetscCallMPI(MPI_Reduce_scatter(sendbuf, carray, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
+  if (lda > C->rmap->n && cN > 1 && C->rmap->n) {
+    PetscScalar *recvbuf;
+
+    /* the local product is no longer needed after packing sendbuf; reuse its storage for the contiguous reduction */
+    PetscCall(MatDenseGetArrayWrite(atb->atb, &recvbuf));
+    PetscCallMPI(MPI_Reduce_scatter(sendbuf, recvbuf, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
+    for (j = 0; j < cN; j++) PetscCall(PetscArraycpy(carray + (size_t)j * lda, recvbuf + (size_t)j * C->rmap->n, C->rmap->n));
+    PetscCall(MatDenseRestoreArrayWrite(atb->atb, &recvbuf));
+  } else PetscCallMPI(MPI_Reduce_scatter(sendbuf, carray, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &carray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
