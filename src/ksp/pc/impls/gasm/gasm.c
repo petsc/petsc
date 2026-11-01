@@ -687,6 +687,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   PC_GASM    *osm = (PC_GASM *)pc->data;
   Mat         X, Y, O = NULL, Z, W;
   Vec         x, y;
+  VecType     vtype;
   PetscInt    i, m, M, N;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
@@ -696,7 +697,8 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   if (osm->pctoouter) {
     PetscCall(VecGetLocalSize(osm->pcx, &m));
     PetscCall(VecGetSize(osm->pcx, &M));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->pcx), m, PETSC_DECIDE, M, N, NULL, &O));
+    PetscCall(MatGetVecType(Xin, &vtype));
+    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &O));
     for (i = 0; i < N; ++i) {
       PetscCall(MatDenseGetColumnVecRead(Xin, i, &x));
       PetscCall(MatDenseGetColumnVecWrite(O, i, &y));
@@ -716,7 +718,8 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   */
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(VecGetSize(osm->x[0], &M));
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &Z));
+  PetscCall(VecGetType(osm->x[0], &vtype));
+  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &Z));
   for (i = 0; i < N; ++i) {
     PetscCall(MatDenseGetColumnVecRead(X, i, &x));
     PetscCall(MatDenseGetColumnVecWrite(Z, i, &y));
@@ -732,10 +735,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
     PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &y));
     PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
   }
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &W));
-  PetscCall(MatSetOption(Z, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(Z, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(Z, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
   /* do the subdomain solve */
   PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));

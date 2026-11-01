@@ -511,6 +511,7 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
   PCASMType   type = osm->type == PC_ASM_WEIGHTED ? PC_ASM_BASIC : osm->type; /* PC_ASM_WEIGHTED scatters like PC_ASM_BASIC, then applies the PCASMWeightedSetScaling() weights */
   Mat         Z, W;
   Vec         x;
+  VecType     vtype;
   PetscInt    i, m, N;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
@@ -529,7 +530,8 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
   if ((!transpose && !(type & PC_ASM_INTERPOLATE)) || (transpose && !(type & PC_ASM_RESTRICT))) reverse = SCATTER_REVERSE_LOCAL;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
+  PetscCall(VecGetType(osm->x[0], &vtype));
+  PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, vtype, m, N, m, N, PETSC_DECIDE, NULL, &Z));
 
   PetscCheck(osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
   /* zero the global and the local solutions */
@@ -549,7 +551,7 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
     PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
     PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &x));
   }
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
+  PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, vtype, m, N, m, N, PETSC_DECIDE, NULL, &W));
   /* solve the overlapping 0-block */
   if (!transpose) {
     PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
