@@ -3260,6 +3260,7 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
       if (scall == MAT_INITIAL_MATRIX) {
         PetscCall(MatCreate(((PetscObject)isrow[i])->comm, (*submat) + i));
         PetscCall(MatSetSizes((*submat)[i], A[i]->rmap->n, A[i]->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
+        PetscCall(MatSetBlockSizesFromMats((*submat)[i], A[i], A[i]));
         PetscCall(MatSetType((*submat)[i], MATMPIAIJ));
         PetscCall(PetscLayoutSetUp((*submat)[i]->rmap));
         PetscCall(PetscLayoutSetUp((*submat)[i]->cmap));
@@ -3271,9 +3272,13 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
         Mat AA = A[i], BB = B[ii];
 
         if (AA || BB) {
+          PetscBool nooffprocentries = (*submat)[i]->nooffprocentries;
+
           PetscCall(setseqmats((*submat)[i], isrow_p[i], iscol_p[i], ciscol_p[ii], pattern, AA, BB));
+          PetscCall(MatSetOption((*submat)[i], MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE)); /* only the local diagonal and off-diagonal blocks were filled */
           PetscCall(MatAssemblyBegin((*submat)[i], MAT_FINAL_ASSEMBLY));
           PetscCall(MatAssemblyEnd((*submat)[i], MAT_FINAL_ASSEMBLY));
+          PetscCall(MatSetOption((*submat)[i], MAT_NO_OFF_PROC_ENTRIES, nooffprocentries));
         }
         PetscCall(MatDestroy(&AA));
       }

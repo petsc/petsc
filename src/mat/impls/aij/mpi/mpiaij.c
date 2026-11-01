@@ -1533,6 +1533,7 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
   PetscCall(PetscSFDestroy(&rowsf));
 
   PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)A), A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N, 0, tdnnz, 0, tonnz, &Aperm));
+  PetscCall(MatSetBlockSizesFromMats(Aperm, A, A));
   PetscCall(MatSeqAIJGetArray(aA, &aa));
   PetscCall(MatSeqAIJGetArray(aB, &ba));
   for (i = 0; i < m; i++) {
