@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'ab730dd4db25811e540bdc651de6dfdbd4f53d79' # jose/use-vecstate
+    self.gitcommit              = 'fe6ea4cdad220eedd4c3a2355e8350336086ef23' # jolivet/update-hpddm nov-01-2026
     #self.gitcommit             = 'v'+self.version
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
