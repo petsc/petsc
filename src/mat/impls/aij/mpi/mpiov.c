@@ -2961,6 +2961,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
   Mat_MPIAIJ     *aij;
   Mat_SeqAIJ     *Baij;
   PetscBool       seqaij, Bdisassembled;
+  MatType         type;
   PetscInt        m, n, *nz, ngcol, col, cstart, cend, shift, count;
   PetscScalar     v;
   const PetscInt *rowindices, *colindices;
@@ -2992,13 +2993,14 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     } else PetscCheck(C->cmap->N - C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
   }
 
+  PetscCall(MatGetRootType_Private(C, &type));
   aij = (Mat_MPIAIJ *)C->data;
   if (!aij->A) {
     /* Mimic parts of MatMPIAIJSetPreallocation() */
     PetscCall(MatCreate(PETSC_COMM_SELF, &aij->A));
     PetscCall(MatSetSizes(aij->A, C->rmap->n, C->cmap->n, C->rmap->n, C->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(aij->A, C, C));
-    PetscCall(MatSetType(aij->A, MATSEQAIJ));
+    PetscCall(MatSetType(aij->A, type));
   }
   if (A) PetscCall(MatSetSeqMat_SeqAIJ(aij->A, rowemb, dcolemb, pattern, A));
   else PetscCall(MatSetUp(aij->A));
@@ -3036,7 +3038,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(MatCreate(PETSC_COMM_SELF, &aij->B));
     PetscCall(MatSetSizes(aij->B, C->rmap->n, C->cmap->N, C->rmap->n, C->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(aij->B, B, B));
-    PetscCall(MatSetType(aij->B, MATSEQAIJ));
+    PetscCall(MatSetType(aij->B, type));
     Bdisassembled = PETSC_TRUE;
   }
   if (B) {
@@ -3268,10 +3270,13 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
     /* Construct submat[i] from the Seq pieces A (and B, if necessary). */
     if (size > 1) {
       if (scall == MAT_INITIAL_MATRIX) {
+        MatType type;
+
+        PetscCall(MatGetRootType_Private(C, &type));
         PetscCall(MatCreate(((PetscObject)isrow[i])->comm, (*submat) + i));
         PetscCall(MatSetSizes((*submat)[i], A[i]->rmap->n, A[i]->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
         PetscCall(MatSetBlockSizesFromMats((*submat)[i], A[i], A[i]));
-        PetscCall(MatSetType((*submat)[i], MATMPIAIJ));
+        PetscCall(MatSetType((*submat)[i], type));
         PetscCall(PetscLayoutSetUp((*submat)[i]->rmap));
         PetscCall(PetscLayoutSetUp((*submat)[i]->cmap));
       }

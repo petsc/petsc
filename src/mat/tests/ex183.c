@@ -33,6 +33,7 @@ int main(int argc, char **args)
   IS           rowis[1], colis[1];
   PetscViewer  viewer;
   PetscBool    permute_indices, flg;
+  VecType      vtype, subtype;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -141,6 +142,10 @@ int main(int argc, char **args)
   PetscCall(ISSort(colis[0]));
   nsubdomains = 1;
   PetscCall(MatCreateSubMatricesMPI(A, nsubdomains, rowis, colis, MAT_INITIAL_MATRIX, &submats));
+  PetscCall(MatGetVecType(A, &vtype));
+  PetscCall(MatGetVecType(submats[0], &subtype));
+  PetscCall(PetscStrcmp(vtype, subtype, &flg));
+  PetscCheck(flg, subcomm, PETSC_ERR_PLIB, "Submatrix vector type %s differs from the parent vector type %s", subtype, vtype);
   PetscCall(MatGetBlockSizes(submats[0], &i, &j));
   PetscCheck(i == bs && j == bs, subcomm, PETSC_ERR_PLIB, "Submatrix block sizes %" PetscInt_FMT " and %" PetscInt_FMT " differ from the requested block size %" PetscInt_FMT, i, j, bs);
   /*
@@ -174,6 +179,10 @@ int main(int argc, char **args)
   if (rep == 1) goto cleanup;
   nsubdomains = 1;
   PetscCall(MatCreateSubMatricesMPI(A, nsubdomains, rowis, colis, MAT_REUSE_MATRIX, &submats));
+  PetscCall(MatGetVecType(A, &vtype));
+  PetscCall(MatGetVecType(submats[0], &subtype));
+  PetscCall(PetscStrcmp(vtype, subtype, &flg));
+  PetscCheck(flg, subcomm, PETSC_ERR_PLIB, "Submatrix vector type %s differs from the parent vector type %s", subtype, vtype);
   PetscCall(MatGetBlockSizes(submats[0], &i, &j));
   PetscCheck(i == bs && j == bs, subcomm, PETSC_ERR_PLIB, "Submatrix block sizes %" PetscInt_FMT " and %" PetscInt_FMT " differ from the requested block size %" PetscInt_FMT, i, j, bs);
   /*
@@ -248,5 +257,13 @@ cleanup:
       args: -total_subdomains 2 -m 6 -mat_block_size {{2 3}} -permute_indices {{false true}}
       filter: grep Submatrices
       output_file: output/ex183_block_size.out
+
+   test:
+      suffix: cuda
+      nsize: 3
+      requires: cuda
+      filter: sed 's/aijcusparse/aij/g'
+      args: -total_subdomains 2 -mat_type aijcusparse
+      output_file: output/ex183_3_2.out
 
 TEST*/

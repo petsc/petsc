@@ -90,6 +90,7 @@
 - Change `MatAXPY()` with `DIFFERENT_NONZERO_PATTERN` for `MATSEQAIJ` and `MATMPIAIJ` to add in place when the nonzeros of `X` are a subset of those of `Y`, keeping the nonzero pattern and nonzero state of `Y`, as well as the options that survive assembly, such as `MAT_SYMMETRY_ETERNAL`
 - Add `MatGetRowSumAbs()` for `MATHYPRE`, on the host and the device, and device implementations of `MatGetRowSumAbs()` for `MATAIJCUSPARSE`, `MATAIJHIPSPARSE`, and `MATAIJKOKKOS`; previously the AIJ device types copied the matrix values to the host
 - Change `MatSetRandom()` to no longer assemble at the interface; `MATOP_SETRANDOM` implementations must leave the matrix assembled with increased state
+- Change `MatCreateSubMatricesMPI()` to return parallel submatrices of the same `MATAIJ` subtype as the input matrix, for example `MATAIJCUSPARSE`, instead of always `MATMPIAIJ`
 
 ```{rubric} MatCoarsen:
 ```
