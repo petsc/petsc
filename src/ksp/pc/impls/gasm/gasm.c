@@ -696,7 +696,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   if (osm->pctoouter) {
     PetscCall(VecGetLocalSize(osm->pcx, &m));
     PetscCall(VecGetSize(osm->pcx, &M));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &O));
+    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->pcx), m, PETSC_DECIDE, M, N, NULL, &O));
     for (i = 0; i < N; ++i) {
       PetscCall(MatDenseGetColumnVecRead(Xin, i, &x));
       PetscCall(MatDenseGetColumnVecWrite(O, i, &y));
@@ -757,7 +757,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
       PetscCall(MatDenseGetColumnVecWrite(Yout, i, &x));
       PetscCall(VecScatterBegin(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(MatDenseRestoreColumnVecRead(Yout, i, &x));
+      PetscCall(MatDenseRestoreColumnVecWrite(Yout, i, &x));
     }
     PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &y));
   }
