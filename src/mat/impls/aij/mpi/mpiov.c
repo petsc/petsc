@@ -2783,7 +2783,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
     imat_ilen  = subc->ilen;
     imat_j     = subc->j;
     imat_i     = subc->i;
-    imat_a     = subc->a;
+    PetscCall(MatSeqAIJGetArrayWrite(submats[i], &imat_a));
 
     if (!allcolumns[i]) cmap_i = cmap[i];
     rmap_i = rmap[i];
@@ -2829,6 +2829,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         imat_ilen[row] = ilen_row;
       }
     }
+    PetscCall(MatSeqAIJRestoreArrayWrite(submats[i], &imat_a));
   }
 
   /* Now assemble the off proc rows */
@@ -2849,8 +2850,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       imat_ilen = subc->ilen;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      imat_a    = subc->a;
-      max1      = sbuf1_i[2 * j];
+      PetscCall(MatSeqAIJGetArrayWrite(submats[is_no], &imat_a));
+      max1 = sbuf1_i[2 * j];
       for (PetscInt k = 0; k < max1; k++, ct1++) {
         row = sbuf1_i[ct1];
 #if PetscDefined(USE_CTABLE)
@@ -2885,6 +2886,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         }
         imat_ilen[row] = ilen;
       }
+      PetscCall(MatSeqAIJRestoreArrayWrite(submats[is_no], &imat_a));
     }
   }
 
@@ -2893,10 +2895,10 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       subc      = (Mat_SeqAIJ *)submats[i]->data;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      imat_a    = subc->a;
       imat_ilen = subc->ilen;
 
       if (allcolumns[i]) continue;
+      PetscCall(MatSeqAIJGetArrayWrite(submats[i], &imat_a));
       jmax = nrow[i];
       for (PetscInt j = 0; j < jmax; j++) {
         mat_i = imat_i[j];
@@ -2905,6 +2907,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         if (C->structure_only) PetscCall(PetscSortInt(imat_ilen[j], mat_j));
         else PetscCall(PetscSortIntWithScalarArray(imat_ilen[j], mat_j, mat_a));
       }
+      PetscCall(MatSeqAIJRestoreArrayWrite(submats[i], &imat_a));
     }
   }
 

@@ -3979,6 +3979,9 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
   if (realalloc) PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   B->was_assembled = PETSC_FALSE;
   B->assembled     = PETSC_FALSE;
+#if PetscDefined(HAVE_DEVICE)
+  B->offloadmask = PETSC_OFFLOAD_CPU;
+#endif
   /* We simply deem preallocation has changed nonzero state. Updating the state
      will give clients (like AIJKokkos) a chance to know something has happened.
   */
