@@ -78,7 +78,7 @@ int main(int argc, char **args)
   PetscCall(PCMatApply(pc, B, X));
   if (transpose) {
     PetscCall(KSPMatSolveTranspose(ksp, B, X));
-    PetscCall(PCMatApply(pc, B, X));
+    PetscCall(PCMatApplyTranspose(pc, B, X));
     PetscCall(KSPMatSolve(ksp, B, X));
   }
   PetscCall(MatDestroy(&X));
@@ -165,7 +165,7 @@ int main(int argc, char **args)
    # special code path in PCMatApply() for PCGASM when a block is shared by multiple processes
    testset:
       nsize: 2
-      args: -pc_type gasm -pc_gasm_total_subdomains 1 -sub_pc_type none
+      args: -pc_type gasm -pc_gasm_total_subdomains 1 -sub_pc_type none -transpose {{false true}shared output}
       test:
          suffix: 6
          output_file: output/empty.out
