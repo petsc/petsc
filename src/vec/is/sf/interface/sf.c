@@ -1219,6 +1219,8 @@ PetscErrorCode PetscSFGetRanksSF(PetscSF sf, PetscSF *rsf)
       rremotes[i].index = 0;
     }
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_CONFONLY, &sf->rankssf));
+    /* The ranks graph need not retain the collective pattern of the original graph */
+    if (sf->pattern != PETSCSF_PATTERN_GENERAL) PetscCall(PetscSFSetType(sf->rankssf, PETSCSFBASIC));
     PetscCall(PetscSFSetGraph(sf->rankssf, 1, nranks, NULL, PETSC_OWN_POINTER, rremotes, PETSC_OWN_POINTER));
   }
   *rsf = sf->rankssf;
