@@ -3163,7 +3163,15 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
          If ciscol[ii] is strictly increasing, the permutation IS is NULL.
       */
       PetscCall(ISSortPermutation(ciscol[ii], PETSC_FALSE, ciscol_p + ii));
-      PetscCall(ISSort(ciscol[ii]));
+      if (ciscol_p[ii] != NULL) {
+        IS sorted;
+
+        /* preserve the cached ordering for subsequent extractions */
+        PetscCall(ISDuplicate(ciscol[ii], &sorted));
+        PetscCall(ISRestoreNonlocalIS(iscol[i], &ciscol[ii]));
+        ciscol[ii] = sorted;
+        PetscCall(ISSort(ciscol[ii]));
+      }
       ++ii;
     }
   }
@@ -3281,7 +3289,8 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
         }
         PetscCall(MatDestroy(&AA));
       }
-      PetscCall(ISDestroy(ciscol + ii));
+      if (ciscol_p[ii] != NULL) PetscCall(ISDestroy(ciscol + ii));
+      else PetscCall(ISRestoreNonlocalIS(iscol[i], ciscol + ii));
       PetscCall(ISDestroy(ciscol_p + ii));
       ++ii;
     } else { /* if (size == 1) */
