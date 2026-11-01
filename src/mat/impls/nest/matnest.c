@@ -104,11 +104,7 @@ static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   A = C->product->A;
   B = C->product->B;
   PetscCall(MatGetSize(B, NULL, &N));
-  if (!N) {
-    PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  if (!N) PetscFunctionReturn(PETSC_SUCCESS);
   contents = (Nest_Dense *)C->product->data;
   PetscCheck(contents, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   bA = (Mat_Nest *)A->data;
@@ -144,10 +140,6 @@ static PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
   }
   PetscCall(MatDenseRestoreArray(C, &carray));
   PetscCall(MatDenseRestoreArrayRead(B, &barray));
-
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

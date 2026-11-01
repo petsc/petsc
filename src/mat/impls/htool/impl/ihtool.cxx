@@ -874,9 +874,6 @@ static PetscErrorCode MatProductSymbolic_Htool(Mat C)
   PetscCall(MatSetType(C, MATDENSE));
   PetscCall(MatSetVecType(C, B->defaultvectype));
   PetscCall(MatSetUp(C));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   C->ops->productsymbolic = nullptr;
   C->ops->productnumeric  = MatProductNumeric_Htool;
   PetscFunctionReturn(PETSC_SUCCESS);
