@@ -4,10 +4,13 @@ module petscmpi
 #include "petsc/finclude/petscsys.h"
 #if defined(PETSC_HAVE_MPIUNI)
   use mpiuni
+  implicit none
 #else
 #if defined(PETSC_HAVE_MPI_FTN_MODULE)
   use PETSC_MPI_FTN_MODULE
+  implicit none
 #else
+  implicit none
 #include "mpif.h"
 #endif
 #endif
@@ -43,16 +46,16 @@ end module petscmpi
 module petscsysdef
   use, intrinsic :: ISO_C_binding
   use petscmpi
-  PetscReal, parameter :: PetscReal_Private = 1.0
+  PetscReal, parameter, private :: PetscReal_Private = 1.0
   integer, parameter   :: PETSC_REAL_KIND = kind(PetscReal_Private)
 
-  PetscScalar, parameter :: PetscScalar_Private = (1.0, 0.0)
+  PetscScalar, parameter, private :: PetscScalar_Private = (1.0, 0.0)
   integer, parameter   :: PETSC_SCALAR_KIND = kind(PetscScalar_Private)
 
-  PetscInt, parameter :: PetscInt_Private = 1
+  PetscInt, parameter, private :: PetscInt_Private = 1
   integer, parameter   :: PETSC_INT_KIND = kind(PetscInt_Private)
 
-  PetscMPIInt, parameter :: PetscMPIInt_Private = 1
+  PetscMPIInt, parameter, private :: PetscMPIInt_Private = 1
   integer, parameter   :: PETSC_MPIINT_KIND = kind(PetscMPIInt_Private)
 
   PetscBool, parameter :: PETSC_TRUE = .true._C_BOOL
@@ -268,6 +271,8 @@ end module petscsysdef
 module petscsys
   use, intrinsic :: ISO_C_binding
   use petscsysdef
+
+  implicit none
   type(c_ptr) :: petscFtnCtx  ! used by automatically generated XXXGetContext() macros
 
 #include <../src/sys/ftn-mod/petscsys.h90>
@@ -573,7 +578,6 @@ module petscbm
 #include <../ftn/sys/petscbm.h>
 #include <../ftn/sys/petscbm.h90>
 contains
-
 #include <../ftn/sys/petscbm.hf90>
 end module petscbm
 
@@ -582,9 +586,7 @@ module petscmatlab
 #include <../include/petsc/finclude/petscmatlab.h>
 #include <../ftn/sys/petscmatlab.h>
 #include <../ftn/sys/petscmatlab.h90>
-
 contains
-
 #include <../ftn/sys/petscmatlab.hf90>
 end module petscmatlab
 
@@ -631,7 +633,6 @@ module petscdraw
   PetscEnum, parameter :: PETSC_DRAW_PLUM = 32
 
 contains
-
 #include <../ftn/sys/petscdraw.hf90>
 end module petscdraw
 
@@ -657,9 +658,7 @@ end subroutine PetscGetCOMM
 
 subroutine PetscSetModuleBlock()
   use, intrinsic :: ISO_C_binding
-  use petscsys!, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
-  !  PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
-  !  PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
+  use petscsys
   implicit none
 
   call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER, &
