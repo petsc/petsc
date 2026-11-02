@@ -574,9 +574,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   ctype = ((PetscObject)((Mat_MPIDense *)C->data)->A)->type_name;
   PetscCall(PetscNew(&data));
   PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, 1, Am, B, C, &data->scatter, &Bbn, &numBb));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatProductClear(aij->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)B->data)->A));
   PetscCall(MatProductClear(((Mat_MPIDense *)C->data)->A));

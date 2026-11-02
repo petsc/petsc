@@ -211,8 +211,6 @@ static PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R, Mat A, 
 
   PetscCall(MatDenseRestoreArrayRead(B, &b));
   PetscCall(MatDenseRestoreArray(RAB, &d));
-  PetscCall(MatAssemblyBegin(RAB, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(RAB, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

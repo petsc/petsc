@@ -993,8 +993,6 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
     PetscCall(MatDenseGetArray(Bmpi, &barray));
     PetscCallBLAS("SCALAPACKgemr2d", SCALAPACKgemr2d_(&a->M, &a->N, a->loc, &one, &one, a->desc, barray, &one, &one, bdesc, &a->grid->ictxcol));
     PetscCall(MatDenseRestoreArray(Bmpi, &barray));
-    PetscCall(MatAssemblyBegin(Bmpi, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Bmpi, MAT_FINAL_ASSEMBLY));
 
     /* transfer rows of auxiliary matrix to the final matrix B */
     PetscCall(MatGetOwnershipRange(Bmpi, &rstart, &rend));
@@ -1032,8 +1030,6 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
     PetscCallBLAS("SCALAPACKgemr2d", SCALAPACKgemr2d_(&a->M, &a->N, a->loc, &one, &one, a->desc, barray, &one, &one, bdesc, &a->grid->ictxcol));
     PetscCall(MatDenseRestoreArray(Bmpi, &barray));
 
-    PetscCall(MatAssemblyBegin(Bmpi, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(Bmpi, MAT_FINAL_ASSEMBLY));
     if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &Bmpi));
     else *B = Bmpi;
   }

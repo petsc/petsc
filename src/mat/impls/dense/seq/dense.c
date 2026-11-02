@@ -182,15 +182,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqDense(Mat A, MatType newtype, M
   }
   PetscCall(MatSeqAIJRestoreArrayRead(A, &av));
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatHeaderReplace(A, &B));
-  } else {
-    if (B) *newmat = B;
-    PetscCall(MatAssemblyBegin(*newmat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(*newmat, MAT_FINAL_ASSEMBLY));
-  }
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else if (B) *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1423,8 +1416,6 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat, PetscViewer viewer)
     PetscCall(PetscFree2(icols, vwork));
   }
   PetscCall(MatDenseRestoreArray(mat, &v));
-  PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1826,8 +1817,6 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A, MatReuse reuse, Mat *matout)
     }
     PetscCall(MatDenseRestoreArray(tmat, &v2));
     PetscCall(MatDenseRestoreArrayRead(A, (const PetscScalar **)&v));
-    PetscCall(MatAssemblyBegin(tmat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatAssemblyEnd(tmat, MAT_FINAL_ASSEMBLY));
     *matout = tmat;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2643,10 +2632,6 @@ static PetscErrorCode MatCreateSubMatrix_SeqDense(Mat A, IS isrow, IS iscol, Mat
   }
   PetscCall(MatDenseRestoreArray(newmat, &bv));
 
-  /* Assemble the matrices so that the correct flags are set */
-  PetscCall(MatAssemblyBegin(newmat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(newmat, MAT_FINAL_ASSEMBLY));
-
   /* Free work space */
   PetscCall(ISRestoreIndices(isrow, &irow));
   PetscCall(ISRestoreIndices(iscol, &icol));
@@ -2688,8 +2673,6 @@ PetscErrorCode MatCopy_SeqDense(Mat A, Mat B, MatStructure str)
   }
   PetscCall(MatDenseRestoreArray(B, &vb));
   PetscCall(MatDenseRestoreArrayRead(A, &va));
-  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

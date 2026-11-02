@@ -307,9 +307,6 @@ static PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   PetscCall(MatProductNumeric(contents->work[1]));
   PetscCall(MatDenseResetArray(contents->work[1]));
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatDiagonalScale(C, left, NULL));
   PetscCall(MatScale(C, scale));
   PetscFunctionReturn(PETSC_SUCCESS);
