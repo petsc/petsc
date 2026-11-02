@@ -191,6 +191,9 @@ With this background, these keywords are as follows.
   - Package and feature requirements check the corresponding `PETSC_HAVE_*` definition; for example,
     `requires: mpi_gpu_aware` checks `PETSC_HAVE_MPI_GPU_AWARE`, and
     `requires: superlu_dist` checks for the external package.
+    The exceptions are `requires: complex` and `requires: debug`, which check
+    `PETSC_USE_COMPLEX` and `PETSC_USE_DEBUG`, and `requires: fortran`, which checks
+    `PETSC_USE_FORTRAN_BINDINGS`, for example for a C test that calls Fortran code.
   - Package versions can be checked with the comparison macros generated in
     `petscpkg_version.h`, for example,
     `requires: superlu_dist superlu_dist_version_ge(9,0,0)`.
