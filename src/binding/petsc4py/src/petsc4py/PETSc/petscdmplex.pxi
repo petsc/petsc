@@ -17,6 +17,7 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexCreate(MPI_Comm, PetscDM*)
     PetscErrorCode DMPlexCreateCohesiveSubmesh(PetscDM, PetscBool, const char[], PetscInt, PetscDM*)
     PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, PetscInt[], PetscInt, PetscReal[], PetscDM*)
+    PetscErrorCode DMPlexCreateFromCellSectionParallel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscSection, PetscBool, const PetscInt[], PetscInt, const PetscReal[], PetscSF *, PetscInt **, PetscDM *)
 
     PetscErrorCode DMPlexGetChart(PetscDM, PetscInt*, PetscInt*)
     PetscErrorCode DMPlexSetChart(PetscDM, PetscInt, PetscInt)

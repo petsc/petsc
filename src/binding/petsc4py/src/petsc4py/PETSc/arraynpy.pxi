@@ -105,6 +105,10 @@ cdef inline ndarray empty_p(PetscInt size):
     cdef npy_intp s = <npy_intp> size
     return PyArray_EMPTY(1, &s, NPY_INTP, 0)
 
+# The `array_*` functions take a raw pointer and size and return a *copy* of
+# the data in a `ndarray`. The suffix is the data type it is designed to work
+# with. These are appropriate for returning `PetscMalloc`ed arrays to the user.
+# The original pointer should be appropriately freed if needed.
 # --------------------------------------------------------------------
 
 cdef inline ndarray array_i(PetscInt size, const PetscInt* data):
@@ -145,6 +149,11 @@ cdef inline ndarray array_sd(PetscInt dim, PetscInt sizes[], const PetscScalar* 
         memcpy(PyArray_DATA(ary), data, <size_t>PyArray_NBYTES(ary))
     return ary
 
+# The `iarray_*` functions take a Python object and return an `ndarray`. The optional `size` and `data`
+# parameters returns the size of the memory and the pointer to the underlying
+# memory of the returned `ndarray`. The suffix is the data type it is designed
+# to work with. The result is intended to be read-only, and should generally be
+# used for inputs (hence the leading "i").
 # --------------------------------------------------------------------
 
 cdef inline ndarray iarray(object ob, int typenum):
@@ -178,6 +187,12 @@ cdef inline ndarray iarray_s(object ob, PetscInt* size, PetscScalar** data):
     if data != NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
     return ary
 
+# The `oarray_*` functions take a Python object and return an `ndarray`. The optional `size` and `data`
+# parameters returns the size of the memory and the pointer to the underlying
+# memory of the returned `ndarray`. The suffix is the data type it is designed
+# to work with. The result is writable and is thus appropriate for allowing
+# PETSc C function to write into user-provided ndarrays. The leading "o" is for
+# outputs, as they are indended to be "outputs" from the PETSc C functions.
 # --------------------------------------------------------------------
 
 cdef inline ndarray oarray(object ob, int typenum):

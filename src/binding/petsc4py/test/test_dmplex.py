@@ -42,6 +42,65 @@ class TestPartitioner(unittest.TestCase):
             self.partitioner.setShellPartition(2, [1, 2], [0, 1])
 
 
+class BaseTestPlexBuildParallel(unittest.TestCase):
+    """Creates distributed mesh of quads (all in a line), with `NUM_CELLS_PER_RANK` on each rank"""
+
+    COMM = PETSc.COMM_WORLD
+    DIM = 2
+    NUM_CELLS_PER_RANK = 3
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        PETSc.garbage_cleanup()
+
+    def testCreateCellSectionParallel(self):
+        rank = self.COMM.rank
+        VERT_PER_CELL = 4
+        section = PETSc.Section().create(self.COMM)
+        section.setNumFields(1)
+        section.setChart(0, self.NUM_CELLS_PER_RANK)
+        for point in range(self.NUM_CELLS_PER_RANK):
+            section.setDof(point, VERT_PER_CELL)
+        section.setUp()
+
+        cells = np.empty((self.NUM_CELLS_PER_RANK, VERT_PER_CELL), dtype='int32')
+        for cell in range(self.NUM_CELLS_PER_RANK):
+            cells[cell, :] = np.array([0, 2, 3, 1]) + cell * 2
+        vertStart = rank * self.NUM_CELLS_PER_RANK * 2
+        cells = (
+            cells.flatten() + vertStart
+        )  # offset the connectivity for the given rank
+        cells = cells.astype(PETSc.IntType)
+
+        # 2D elements embedded in 3D space
+        # Each rank owns a contiguous block of global vertices
+        vOwnedStart = 2 * self.NUM_CELLS_PER_RANK * rank
+        vOwnedEnd = (
+            vOwnedStart
+            + 2 * self.NUM_CELLS_PER_RANK
+            + (2 if rank == self.COMM.size - 1 else 0)
+        )
+        coords = np.array(
+            [[v // 2, v % 2, 0] for v in range(vOwnedStart, vOwnedEnd)],
+            dtype=PETSc.RealType,
+        )
+
+        self.plex, _, adjacency = PETSc.DMPlex().createFromCellSectionParallel(
+            comm=self.COMM,
+            dim=self.DIM,
+            cellSection=section,
+            cells=cells,
+            coords=coords,
+        )
+        self.assertTrue(np.array_equal(adjacency, np.unique(cells)))
+        localCoords = self.plex.getCoordinatesLocal().getArray().reshape(-1, 3)
+        self.assertTrue(
+            np.allclose(localCoords, [[v // 2, v % 2, 0] for v in adjacency])
+        )
+
+
 class BaseTestPlex:
     COMM = PETSc.COMM_WORLD
     DIM = 1

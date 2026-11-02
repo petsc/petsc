@@ -32,7 +32,7 @@ cdef class DMPlex(DM):
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 
-    def createFromCellList(self, dim: int, cells: Sequence[int], coords: Sequence[float], interpolate: bool | None = True, comm: Comm | None = None) -> Self:
+    def createFromCellList(self, dim: int, cells: Sequence[Sequence[int]], coords: Sequence[Sequence[float]], interpolate: bool | None = True, comm: Comm | None = None) -> Self:
         """Create a `DMPlex` from a list of vertices for each cell on process 0.
 
         Collective.
@@ -60,12 +60,6 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef PetscInt  cdim = asInt(dim)
-        cdef PetscInt  numCells = 0
-        cdef PetscInt  numCorners = 0
-        cdef PetscInt  *cellVertices = NULL
-        cdef PetscInt  numVertices = 0
-        cdef PetscInt  spaceDim= 0
-        cdef PetscReal *vertexCoords = NULL
         cdef int npy_flags = NPY_ARRAY_ALIGNED|NPY_ARRAY_NOTSWAPPED|NPY_ARRAY_CARRAY
         cells  = PyArray_FROM_OTF(cells,  NPY_PETSC_INT,  npy_flags)
         coords = PyArray_FROM_OTF(coords, NPY_PETSC_REAL, npy_flags)
@@ -75,17 +69,100 @@ cdef class DMPlex(DM):
         if PyArray_NDIM(coords) != 2: raise ValueError(
                 ("coords vertices must have two dimensions: "
                  "coords.ndim=%d") % (PyArray_NDIM(coords)))
-        numCells     = <PetscInt> PyArray_DIM(cells, 0)
-        numCorners   = <PetscInt> PyArray_DIM(cells, 1)
-        numVertices  = <PetscInt> PyArray_DIM(coords, 0)
-        spaceDim     = <PetscInt> PyArray_DIM(coords, 1)
-        cellVertices = <PetscInt*> PyArray_DATA(cells)
-        vertexCoords = <PetscReal*> PyArray_DATA(coords)
+        cdef PetscInt numCells     = <PetscInt> PyArray_DIM(cells, 0)
+        cdef PetscInt numCorners   = <PetscInt> PyArray_DIM(cells, 1)
+        cdef PetscInt numVertices  = <PetscInt> PyArray_DIM(coords, 0)
+        cdef PetscInt spaceDim     = <PetscInt> PyArray_DIM(coords, 1)
+        cdef PetscInt *cellVertices = <PetscInt*> PyArray_DATA(cells)
+        cdef PetscReal *vertexCoords = <PetscReal*> PyArray_DATA(coords)
         CHKERR(DMPlexCreateFromCellListPetsc(ccomm, cdim, numCells, numVertices,
                                              numCorners, interp, cellVertices,
                                              spaceDim, vertexCoords, &newdm))
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
+
+    def createFromCellSectionParallel(
+        self,
+        dim: int,
+        Section cellSection,
+        cells: Sequence[int],
+        coords: Sequence[Sequence[float]],
+        comm: Comm | None = None,
+        NVertices: int | None = None,
+        interpolate: bool | None = True) -> tuple[Self, SF, ArrayInt]:
+        """Create a `DMPlex` from arbitrary-sized cell-vertex relations across all ranks.
+
+        Collective.
+
+        Compared to `DMPlex.createFromCellList`, this allows for cells with
+        different number of vertices and for the creation operation to be done
+        in parallel.
+
+        Parameters
+        ----------
+        dim
+            The topological dimension of the mesh.
+        cellSection
+            The `Section` giving the number of vertices for each cell
+            (layout of cells).
+        cells
+            An array of vertex ids, indexed by ``cellSection``.
+        coords
+            The coordinates of the vertices owned by this process, with shape
+            (number of owned vertices, spatial dimension). Ranks own consecutive,
+            non-overlapping blocks of the global vertex numbering, in rank order.
+        comm
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+        NVertices
+            The global number of vertices, or `DECIDE` or ``None``, default ``None``
+        interpolate
+            Flag to interpolate the mesh, default ``True``.
+
+        Returns
+        -------
+        dm : DMPlex
+            DMPlex built from input.
+        vertexSF : `SF`
+            `SF` describing map from vertices in ``coords`` to DMPlex vertex owners
+        vertexAdj : `ArrayInt`
+            Array of unique vertex IDs in ``cells``
+
+        See Also
+        --------
+        DM, DMPlex, DMPlex.create, DMPlex.interpolate,
+        petsc.DMPlexCreateFromCellListPetsc,
+        petsc.DMPlexCreateFromCellSectionParallel
+
+        """
+        cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscBool interp = interpolate
+        cdef PetscDM   newdm = NULL
+        cdef PetscInt  *cellVertices = NULL, *verticesAdj = NULL
+        cdef PetscInt  vstart = 0, vend = 0, cstart = 0, cend = 0
+        cdef SF sf = SF()
+
+        NVertices = PETSC_DECIDE if NVertices is None else NVertices
+        coords = PyArray_FROM_OTF(coords, NPY_PETSC_REAL, NPY_ARRAY_ALIGNED|NPY_ARRAY_NOTSWAPPED|NPY_ARRAY_CARRAY)
+        cells = iarray_i(cells, NULL, &cellVertices)
+
+        if PyArray_NDIM(coords) != 2: raise ValueError(
+                ("coords vertices must have two dimensions: "
+                 "coords.ndim=%d") % (PyArray_NDIM(coords)))
+        cdef PetscInt numVertices  = <PetscInt> PyArray_DIM(coords, 0)
+        cdef PetscInt spaceDim     = <PetscInt> PyArray_DIM(coords, 1)
+        CHKERR(PetscSectionGetChart(cellSection.sec, &cstart, &cend))
+        cdef PetscInt numCells = cend - cstart
+        cdef PetscReal *vertexCoords = <PetscReal*> PyArray_DATA(coords)
+        CHKERR(DMPlexCreateFromCellSectionParallel(ccomm, asInt(dim), asInt(numCells), numVertices,
+                                                   asInt(NVertices), cellSection.sec, interp, cellVertices,
+                                                   spaceDim, vertexCoords, &sf.sf, &verticesAdj, &newdm))
+        CHKERR(DMPlexGetDepthStratum(newdm, 0, &vstart, &vend))
+        CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
+        try:
+            adjacency = array_i(vend - vstart, verticesAdj)
+        finally:
+            CHKERR(PetscFree(verticesAdj))
+        return self, sf, adjacency
 
     def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] = (0, 0, 0), upper: Sequence[float] = (1, 1, 1),
                       simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, localizationHeight: int | None = 0, sparseLocalize: bool | None = True, comm: Comm | None = None) -> Self:
