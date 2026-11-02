@@ -70,10 +70,11 @@ PETSC_INTERN PetscErrorCode KSPHPDDMConvergenceUpdate_Private(KSP, PetscInt, con
 
 typedef struct _n_Harmonic *Harmonic;
 struct _n_Harmonic {
-  KSP  ksp;
-  Mat *A;
-  Vec  v;
-  IS  *is;
+  KSP        ksp;
+  Mat       *A;
+  Vec        v[2];
+  IS        *is;
+  VecScatter scatter[2];
 };
 
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtAP;
