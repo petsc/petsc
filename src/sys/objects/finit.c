@@ -11,7 +11,7 @@
 
 PETSC_EXTERN void petscsetmoduleblock_(void);
 PETSC_EXTERN void petscsetmoduleblockmpi(MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *, MPI_Fint *);
-PETSC_EXTERN void petscsetmoduleblocknumeric(PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN void petscsetmoduleblocknumeric(PetscReal *);
 PETSC_EXTERN void petscsetcomm(MPI_Fint *, MPI_Fint *);
 #endif
 
@@ -58,15 +58,8 @@ PetscErrorCode PetscInitializeFortran(void)
   }
 
   {
-    PetscReal pi      = PETSC_PI;
-    PetscReal maxreal = PETSC_MAX_REAL;
-    PetscReal minreal = PETSC_MIN_REAL;
-    PetscReal eps     = PETSC_MACHINE_EPSILON;
-    PetscReal seps    = PETSC_SQRT_MACHINE_EPSILON;
-    PetscReal small   = PETSC_SMALL;
-    PetscReal pinf    = PETSC_INFINITY;
-    PetscReal pninf   = PETSC_NINFINITY;
-    petscsetmoduleblocknumeric(&pi, &maxreal, &minreal, &eps, &seps, &small, &pinf, &pninf);
+    PetscReal small = PETSC_SMALL;
+    petscsetmoduleblocknumeric(&small);
   }
 #endif
   return PETSC_SUCCESS;

@@ -254,14 +254,18 @@ module petscsysdef
 !
 !     Basic math constants
 !
-  PetscReal PETSC_PI
-  PetscReal PETSC_MAX_REAL
-  PetscReal PETSC_MIN_REAL
-  PetscReal PETSC_MACHINE_EPSILON
-  PetscReal PETSC_SQRT_MACHINE_EPSILON
-  PetscReal PETSC_SMALL
-  PetscReal PETSC_INFINITY
-  PetscReal PETSC_NINFINITY
+  PetscReal, parameter :: PETSC_PI = acos(-1.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_PHI = (1.0_PETSC_REAL_KIND + sqrt(5.0_PETSC_REAL_KIND))/2.0_PETSC_REAL_KIND
+  PetscReal, parameter :: PETSC_SQRT2 = sqrt(2.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_E = exp(1.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_MAX_REAL = huge(1.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_MIN_REAL = -huge(1.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_MACHINE_EPSILON = epsilon(1.0_PETSC_REAL_KIND)
+  PetscReal, parameter :: PETSC_SQRT_MACHINE_EPSILON = sqrt(PETSC_MACHINE_EPSILON)
+  PetscReal, parameter :: PETSC_INFINITY = PETSC_MAX_REAL/4.0_PETSC_REAL_KIND
+  PetscReal, parameter :: PETSC_NINFINITY = (-1.0_PETSC_REAL_KIND)*PETSC_INFINITY
+
+  PetscReal, protected :: PETSC_SMALL
 
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_CHARACTER
@@ -278,14 +282,7 @@ module petscsysdef
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_BOOL
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_ENUM
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MPI_COMM
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_PI
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_MAX_REAL
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_MIN_REAL
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_MACHINE_EPSILON
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_SQRT_MACHINE_EPSILON
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_SMALL
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_INFINITY
-!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NINFINITY
 #endif
 
   type tPetscReal2d
@@ -294,17 +291,10 @@ module petscsysdef
   end type tPetscReal2D
 
 contains
-  subroutine petscsetmoduleblocknumeric(pi, maxreal, minreal, eps, seps, small, pinf, pninf) bind(c)
-    PetscReal, intent(in) :: pi, maxreal, minreal, eps, seps, small, pinf, pninf
+  subroutine petscsetmoduleblocknumeric(small) bind(c)
+    PetscReal, intent(in) :: small
 
-    PETSC_PI = pi
-    PETSC_MAX_REAL = maxreal
-    PETSC_MIN_REAL = minreal
-    PETSC_MACHINE_EPSILON = eps
-    PETSC_SQRT_MACHINE_EPSILON = seps
     PETSC_SMALL = small
-    PETSC_INFINITY = pinf
-    PETSC_NINFINITY = pninf
   end subroutine petscsetmoduleblocknumeric
 
 end module petscsysdef

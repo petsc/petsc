@@ -145,3 +145,7 @@
 
 ```{rubric} Fortran:
 ```
+
+- `PETSC_PI`, `PETSC_MAX_REAL`, `PETSC_MIN_REAL`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, `PETSC_INFINITY`, and `PETSC_NINFINITY` are now `parameter` constants and can be used in constant expressions
+- Add `PETSC_PHI`, `PETSC_SQRT2`, and `PETSC_E`
+- `PETSC_SMALL` is now `protected` and cannot be modified by user code
