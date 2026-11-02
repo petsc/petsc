@@ -41,6 +41,33 @@ module petscmpi
 !DEC$ ATTRIBUTES DLLEXPORT::MPI_C_BOOL
 #endif
 #endif
+
+contains
+  subroutine petscsetmoduleblockmpi(freal, fscalar, fsum, finteger, fcbool) bind(c)
+    MPIU_Datatype, intent(in) :: freal, fscalar, finteger, fcbool
+    MPIU_Op, intent(in) :: fsum
+
+    MPIU_REAL = freal
+    MPIU_SCALAR = fscalar
+    MPIU_SUM = fsum
+    MPIU_INTEGER = finteger
+#if !defined(PETSC_HAVE_MPI_C_BOOL_FORTRAN)
+    MPI_C_BOOL = fcbool
+#endif
+  end subroutine petscsetmoduleblockmpi
+
+  subroutine petscsetcomm(c1, c2) bind(c)
+    MPIU_Comm, intent(in) :: c1, c2
+
+    PETSC_COMM_WORLD = c1
+    PETSC_COMM_SELF = c2
+  end subroutine petscsetcomm
+
+  subroutine petscgetcomm(c1) bind(c)
+    MPIU_Comm, intent(out) :: c1
+
+    c1 = PETSC_COMM_WORLD
+  end subroutine petscgetcomm
 end module petscmpi
 
 module petscsysdef
@@ -265,6 +292,20 @@ module petscsysdef
     sequence
     PetscReal, dimension(:), pointer :: ptr
   end type tPetscReal2D
+
+contains
+  subroutine petscsetmoduleblocknumeric(pi, maxreal, minreal, eps, seps, small, pinf, pninf) bind(c)
+    PetscReal, intent(in) :: pi, maxreal, minreal, eps, seps, small, pinf, pninf
+
+    PETSC_PI = pi
+    PETSC_MAX_REAL = maxreal
+    PETSC_MIN_REAL = minreal
+    PETSC_MACHINE_EPSILON = eps
+    PETSC_SQRT_MACHINE_EPSILON = seps
+    PETSC_SMALL = small
+    PETSC_INFINITY = pinf
+    PETSC_NINFINITY = pninf
+  end subroutine petscsetmoduleblocknumeric
 
 end module petscsysdef
 
@@ -636,26 +677,6 @@ contains
 #include <../ftn/sys/petscdraw.hf90>
 end module petscdraw
 
-subroutine PetscSetCOMM(c1, c2)
-  use, intrinsic :: ISO_C_binding
-  use petscmpi
-
-  implicit none
-  MPIU_Comm c1, c2
-
-  PETSC_COMM_WORLD = c1
-  PETSC_COMM_SELF = c2
-end
-
-subroutine PetscGetCOMM(c1)
-  use, intrinsic :: ISO_C_binding
-  use petscmpi
-  implicit none
-  MPIU_Comm c1
-
-  c1 = PETSC_COMM_WORLD
-end subroutine PetscGetCOMM
-
 subroutine PetscSetModuleBlock()
   use, intrinsic :: ISO_C_binding
   use petscsys
@@ -670,40 +691,3 @@ subroutine PetscSetModuleBlock()
                                    PETSC_NULL_REAL_ARRAY, PETSC_NULL_INTEGER_POINTER, &
                                    PETSC_NULL_SCALAR_POINTER, PETSC_NULL_REAL_POINTER)
 end subroutine PetscSetModuleBlock
-
-subroutine PetscSetModuleBlockMPI(freal, fscalar, fsum, finteger, fcbool)
-  use, intrinsic :: ISO_C_binding
-  use petscmpi
-  implicit none
-
-  MPIU_Datatype freal, fscalar, finteger, fcbool
-  MPIU_Op fsum
-
-  MPIU_REAL = freal
-  MPIU_SCALAR = fscalar
-  MPIU_SUM = fsum
-  MPIU_INTEGER = finteger
-#if !defined(PETSC_HAVE_MPI_C_BOOL_FORTRAN)
-  MPI_C_BOOL = fcbool
-#endif
-end subroutine PetscSetModuleBlockMPI
-
-subroutine PetscSetModuleBlockNumeric(pi, maxreal, minreal, eps, seps, small, pinf, pninf)
-  use petscsys, only: PETSC_PI, PETSC_MAX_REAL, PETSC_MIN_REAL, &
-                      PETSC_MACHINE_EPSILON, PETSC_SQRT_MACHINE_EPSILON, &
-                      PETSC_SMALL, PETSC_INFINITY, PETSC_NINFINITY
-  use, intrinsic :: ISO_C_binding
-  implicit none
-
-  PetscReal pi, maxreal, minreal, eps, seps
-  PetscReal small, pinf, pninf
-
-  PETSC_PI = pi
-  PETSC_MAX_REAL = maxreal
-  PETSC_MIN_REAL = minreal
-  PETSC_MACHINE_EPSILON = eps
-  PETSC_SQRT_MACHINE_EPSILON = seps
-  PETSC_SMALL = small
-  PETSC_INFINITY = pinf
-  PETSC_NINFINITY = pninf
-end subroutine PetscSetModuleBlockNumeric
