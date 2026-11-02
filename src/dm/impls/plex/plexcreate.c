@@ -6102,7 +6102,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdjSaved - (Optional) vertex adjacency array, must be freed by user
+- verticesAdjSaved - (Optional) List of unique vertices in `cells`, must be freed by user
 
   Level: advanced
 
@@ -6139,17 +6139,18 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
         3
 .ve
 
-  Vertices are implicitly numbered consecutively $0, \ldots, \mathrm{NVertices}$.
-
-  Each process owns a chunk of `numVertices` consecutive vertices.
+  During the process of building the DMPlex, PETSc uses `PetscLayout` to have an "initial" partitioning of the global vertex numbers across ranks.
+  The vertices are implicitly numbered consecutively $0, \ldots, \mathrm{NVertices} - 1$.
+  Each rank owns a non-overlapping chunk of `numVertices` consecutive vertices in rank order.
 
   If `numVertices` is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using `PetscLayout`.
-
   If `NVertices` is `PETSC_DETERMINE` and `numVertices` is `PETSC_DECIDE`, `NVertices` is computed by PETSc as the maximum vertex index in $cells + 1$.
+  If only `NVertices` is `PETSC_DETERMINE`, it is computed as the sum of `numVertices` over all ranks.
 
-  If only `NVertices` is `PETSC_DETERMINE`, it is computed as the sum of `numVertices` over all processes.
+  `vertexSF` is the mapping between the `PetscLayout` of global vertex points to the overlapping vertex distribution of the assembled Plex.
 
-  The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
+  The cell distribution is arbitrary non-overlapping and based on each rank's cell-vertex connectivity in `cells`.
+  It is completely independent of the vertex `PetscLayout` used.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
@@ -6253,7 +6254,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdjSaved - (Optional) vertex adjacency array, must be freed by user
+- verticesAdjSaved - (Optional) List of unique vertices in `cells`, must be freed by user
 
   Level: advanced
 
@@ -6288,13 +6289,18 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
         3----------6
 .ve
 
-  Vertices are implicitly numbered consecutively 0,...,NVertices.
-  Each rank owns a chunk of numVertices consecutive vertices.
-  If numVertices is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using PetscLayout.
-  If NVertices is `PETSC_DETERMINE` and numVertices is PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
-  If only NVertices is `PETSC_DETERMINE`, it is computed as the sum of numVertices over all ranks.
+  During the process of building the DMPlex, PETSc uses `PetscLayout` to have an "initial" partitioning of the global vertex numbers across ranks.
+  The vertices are implicitly numbered consecutively $0, \ldots, \mathrm{NVertices} - 1$.
+  Each rank owns a non-overlapping chunk of `numVertices` consecutive vertices in rank order.
 
-  The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
+  If `numVertices` is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using `PetscLayout`.
+  If `NVertices` is `PETSC_DETERMINE` and `numVertices` is `PETSC_DECIDE`, `NVertices` is computed by PETSc as the maximum vertex index in $cells + 1$.
+  If only `NVertices` is `PETSC_DETERMINE`, it is computed as the sum of `numVertices` over all ranks.
+
+  `vertexSF` is the mapping between the `PetscLayout` of global vertex points to the overlapping vertex distribution of the assembled Plex.
+
+  The cell distribution is arbitrary non-overlapping and based on each rank's cell-vertex connectivity in `cells`.
+  It is completely independent of the vertex `PetscLayout` used.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexCreateFromCellSectionParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
@@ -6400,12 +6406,16 @@ PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, Pets
   Input Parameters:
 + dm           - The `DM`
 . spaceDim     - The spatial dimension used for coordinates
-. sfVert       - `PetscSF` describing complete vertex ownership
+. sfVert       - `PetscSF` describing map from `numVertices` given in `vertexCoords` to the vertices in the `DM`
 - vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`
+  Notes:
+  See `DMPlexCreateFromCellListParallelPetsc()` for the intended use case.
+  Can also be used with `DMPlexBuildFromCellSectionParallel()`.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildCoordinatesFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildFromCellSectionParallel()`
 @*/
 PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceDim, PetscSF sfVert, const PetscReal vertexCoords[])
 {
@@ -6487,7 +6497,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   Output Parameters:
 + dm          - The `DM`
 . vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdj - (Optional) vertex adjacency array, must be freed by user
+- verticesAdj - (Optional) List of unique vertices in `cells`, must be freed by user
 
   Level: intermediate
 
@@ -6498,6 +6508,9 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   See `DMPlexBuildFromCellListParallel()` for an example and details about the topology-related parameters.
 
   See `DMPlexBuildCoordinatesFromCellListParallel()` for details about the geometry-related parameters.
+
+  Note that the distribution of `vertexCoords` is completely independent of the vertices present in `cells`.
+  The usage of `vertexCoords` is based on the `PetscLayout`-based vertex distribution described in `DMPlexBuildFromCellListParallel()`.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
@@ -6545,7 +6558,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   Output Parameters:
 + dm          - The `DM`
 . vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
-- verticesAdj - (Optional) vertex adjacency array, must be freed by user
+- verticesAdj - (Optional) List of unique vertices in `cells`, must be freed by user
 
   Level: intermediate
 
@@ -6556,6 +6569,9 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   See `DMPlexBuildFromCellSectionParallel()` for an example and details about the topology-related parameters.
 
   See `DMPlexBuildCoordinatesFromCellListParallel()` for details about the geometry-related parameters.
+
+  Note that the distribution of `vertexCoords` is completely independent of the vertices present in `cells`.
+  The usage of `vertexCoords` is based on the `PetscLayout`-based vertex distribution described in `DMPlexBuildFromCellSectionParallel()`.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
