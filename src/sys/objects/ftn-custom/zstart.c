@@ -16,13 +16,11 @@
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscinitializef_          PETSCINITIALIZEF
   #define mpi_init_                  MPI_INIT
-  #define petscgetcomm_              PETSCGETCOMM
   #define petsccommandargumentcount_ PETSCCOMMANDARGUMENTCOUNT
   #define petscgetcommandargument_   PETSCGETCOMMANDARGUMENT
 #elif !PetscDefined(HAVE_FORTRAN_UNDERSCORE)
   #define petscinitializef_          petscinitializef
   #define mpi_init_                  mpi_init
-  #define petscgetcomm_              petscgetcomm
   #define petsccommandargumentcount_ petsccommandargumentcount
   #define petscgetcommandargument_   petscgetcommandargument
 #endif
@@ -52,7 +50,7 @@
 #endif   /* PETSC_HAVE_MPIUNI */
 
 PETSC_EXTERN void mpi_init_(int *);
-PETSC_EXTERN void petscgetcomm_(PetscMPIInt *);
+PETSC_EXTERN void petscgetcomm(PetscMPIInt *);
 
 /*
      Different Fortran compilers handle command lines in different ways
@@ -148,7 +146,7 @@ PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscErrorCode *
   }
 
   /* check if PETSC_COMM_WORLD is initialized by the user in Fortran */
-  petscgetcomm_(&f_petsc_comm_world);
+  petscgetcomm(&f_petsc_comm_world);
   MPI_Initialized(&flag);
   if (!flag) {
     PetscMPIInt mierr;

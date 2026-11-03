@@ -6,6 +6,9 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 V ?= 0
 QUIET = $(shell [ "$(V)" = "0" ] && echo @)
 
+ex83: ex83f.o
+ex84f: ex84.o
+
 testex55:
 	-${QUIET}export PYTHONPATH=$${PYTHONPATH:+$$PYTHONPATH:}${PETSCPYTHONPATH};\
 		echo "Using PYTHONPATH=$${PYTHONPATH} to locate mpi4py for test"; \

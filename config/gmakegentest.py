@@ -809,7 +809,10 @@ class generateExamples(Petsc):
             continue
 
         # Rest should be packages that we can just get from conf
-        if requirement in ["complex","debug"]:
+        if requirement == "fortran":
+          petscconfvar="PETSC_USE_FORTRAN_BINDINGS"
+          pkgconfvar=self.pkg_name.upper()+"_USE_FORTRAN_BINDINGS"
+        elif requirement in ["complex","debug"]:
           petscconfvar="PETSC_USE_"+requirement.upper()
           pkgconfvar=self.pkg_name.upper()+"_USE_"+requirement.upper()
         else:
