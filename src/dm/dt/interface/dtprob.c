@@ -232,7 +232,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal unu
 @*/
 PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
-  p[0] = (1. / PETSC_PI) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1])));
+  p[0] = (1. / (2. * PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1])));
   return PETSC_SUCCESS;
 }
 
@@ -279,7 +279,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal unu
 @*/
 PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal unused[], PetscReal p[])
 {
-  p[0] = (1. / PETSC_PI * PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
+  p[0] = PetscPowReal(2. * PETSC_PI, -1.5) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
   return PETSC_SUCCESS;
 }
 
