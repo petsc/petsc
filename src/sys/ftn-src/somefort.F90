@@ -19,7 +19,7 @@ subroutine MPIU_Abort(comm, ierr)
     call MPI_Abort(comm, ierr, nierr)
   end if
 end
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
 #endif
 
@@ -32,7 +32,7 @@ subroutine PetscFortranPrintToFileUnit(unit, str, ierr)
   write (unit=unit, fmt="(A)", advance='no') str
   ierr = 0
 end
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToFileUnit
 #endif
 

@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
     '''Checks whether shared libraries should be used, for which you must
       - Specify --with-shared-libraries
       - Have found a working shared linker
-    Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
+    Defines PETSC_USE_SHARED_LIBRARIES if they are used, and PETSC_DLL_EXPORTS for Windows DLLs'''
     import sys
 
     self.useShared = self.framework.argDB['with-shared-libraries'] and not self.setCompilers.staticLibraries
@@ -70,6 +70,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro('SONAME_SFX_FUNCTION', '$(1)$(LIB_NAME_SUFFIX).dll')
         self.addMakeMacro('SL_LINKER_FUNCTION', '-LD')
         self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
+        self.addDefine('DLL_EXPORTS', 1)
       else:
         # TODO: check that -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} can be passed (might fail on Intel)
         # TODO: check whether we need to specify dependent libraries on the link line (long test)
@@ -79,6 +80,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro('SL_LINKER_FUNCTION', self.framework.getSharedLinkerFlags() + ' -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
         if config.setCompilers.Configure.isMINGW(self.framework.getCompiler(),self.log):
           self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
+          self.addDefine('DLL_EXPORTS', 1)
       self.addMakeMacro('BUILDSHAREDLIB','yes')
     else:
       self.addMakeRule('shared_arch','')

@@ -54,7 +54,7 @@ contains
 #include <../ftn/mat/petscmatcoarsen.hf90>
 #include <../ftn/mat/petscpartitioner.hf90>
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayF901d
 #endif
   subroutine MatDenseGetArrayF901d(A, array, ierr)
@@ -64,7 +64,7 @@ contains
     call MatDenseGetArray(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayF901d
 #endif
   subroutine MatDenseRestoreArrayF901d(A, array, ierr)
@@ -74,7 +74,7 @@ contains
     call MatDenseRestoreArray(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayReadF901d
 #endif
   subroutine MatDenseGetArrayReadF901d(A, array, ierr)
@@ -84,7 +84,7 @@ contains
     call MatDenseGetArrayRead(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayReadF901d
 #endif
   subroutine MatDenseRestoreArrayReadF901d(A, array, ierr)
@@ -94,7 +94,7 @@ contains
     call MatDenseRestoreArrayRead(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayWriteF901d
 #endif
   subroutine MatDenseGetArrayWriteF901d(A, array, ierr)
@@ -104,7 +104,7 @@ contains
     call MatDenseGetArrayWrite(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayWriteF901d
 #endif
   subroutine MatDenseRestoreArrayWriteF901d(A, array, ierr)
@@ -114,7 +114,7 @@ contains
     call MatDenseRestoreArrayWrite(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayF902d
 #endif
   subroutine MatDenseGetArrayF902d(A, array, ierr)
@@ -124,7 +124,7 @@ contains
     call MatDenseGetArray(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayF902d
 #endif
   subroutine MatDenseRestoreArrayF902d(A, array, ierr)
@@ -134,7 +134,7 @@ contains
     call MatDenseRestoreArray(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayReadF902d
 #endif
   subroutine MatDenseGetArrayReadF902d(A, array, ierr)
@@ -144,7 +144,7 @@ contains
     call MatDenseGetArrayRead(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayReadF90
 #endif
   subroutine MatDenseRestoreArrayReadF902d(A, array, ierr)
@@ -154,7 +154,7 @@ contains
     call MatDenseRestoreArrayRead(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseGetArrayWriteF90
 #endif
   subroutine MatDenseGetArrayWriteF902d(A, array, ierr)
@@ -164,7 +164,7 @@ contains
     call MatDenseGetArrayWrite(A, array, ierr)
   end subroutine
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: MatDenseRestoreArrayWriteF90
 #endif
   subroutine MatDenseRestoreArrayWriteF902d(A, array, ierr)
@@ -183,7 +183,7 @@ function PETSC_NULL_MAT_POINTER_Fortran() bind(C, name="PETSC_NULL_MAT_POINTER_F
   implicit none
   type(c_ptr) ptr
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_MAT_POINTER_Fortran
 #endif
   interface

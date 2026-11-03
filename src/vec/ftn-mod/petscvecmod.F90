@@ -19,7 +19,7 @@ subroutine F90Array1dCreateSFNode(array, start, len, ptr)
   PetscSFNode, pointer :: ptr(:)
   ptr => array
 end subroutine
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: F90Array1dCreateSFNode
 #endif
 
@@ -29,7 +29,7 @@ subroutine F90Array1dDestroySFNode(ptr)
   PetscSFNode, pointer :: ptr(:)
   nullify (ptr)
 end subroutine
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: F90Array1dDestroySFNode
 #endif
 
@@ -115,7 +115,7 @@ function PETSC_NULL_IS_POINTER_Fortran() bind(C, name="PETSC_NULL_IS_POINTER_For
   implicit none
   type(c_ptr) ptr
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_IS_POINTER_Fortran
 #endif
   interface

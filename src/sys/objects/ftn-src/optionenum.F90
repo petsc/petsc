@@ -1,6 +1,6 @@
 #include "petsc/finclude/petscsys.h"
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsGetEnum
 !DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsEnum
 #endif

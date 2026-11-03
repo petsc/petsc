@@ -30,7 +30,7 @@ module petscmpi
   MPIU_Comm:: PETSC_COMM_WORLD
   MPIU_Comm:: PETSC_COMM_SELF
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_REAL
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_SUM
 !DEC$ ATTRIBUTES DLLEXPORT::MPIU_SCALAR
@@ -91,7 +91,7 @@ module petscsysdef
   PetscInt, parameter :: PETSC_DECIDE = -1
   PetscInt, parameter :: PETSC_DECIDE_INTEGER = -1_PETSC_INT_KIND
   PetscReal, parameter :: PETSC_DECIDE_REAL = -1.0_PETSC_REAL_KIND
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DECIDE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DECIDE_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DECIDE_REAL
@@ -100,7 +100,7 @@ module petscsysdef
   PetscInt, parameter :: PETSC_DETERMINE = -1
   PetscInt, parameter :: PETSC_DETERMINE_INTEGER = -1
   PetscReal, parameter :: PETSC_DETERMINE_REAL = -1.0_PETSC_REAL_KIND
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DETERMINE
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DETERMINE_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DETERMINE_REAL
@@ -109,7 +109,7 @@ module petscsysdef
   PetscInt, parameter :: PETSC_CURRENT = -2
   PetscInt, parameter :: PETSC_CURRENT_INTEGER = -2
   PetscReal, parameter :: PETSC_CURRENT_REAL = -2.0_PETSC_REAL_KIND
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_CURRENT
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_CURRENT_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_CURRENT_REAL
@@ -118,7 +118,7 @@ module petscsysdef
   PetscInt, parameter :: PETSC_DEFAULT = -2
   PetscInt, parameter :: PETSC_DEFAULT_INTEGER = -2
   PetscReal, parameter :: PETSC_DEFAULT_REAL = -2.0_PETSC_REAL_KIND
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DEFAULT
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DEFAULT_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_DEFAULT_REAL
@@ -174,7 +174,7 @@ module petscsysdef
   external PETSC_VIEWER_DRAW_
   external PetscViewerAndFormatDestroy
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_VIEWER_STDOUT_SELF
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_VIEWER_DRAW_WORLD
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_VIEWER_DRAW_SELF
@@ -267,7 +267,7 @@ module petscsysdef
 
   PetscReal, protected :: PETSC_SMALL
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_CHARACTER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_INTEGER
 !DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_INTEGER_ARRAY
@@ -532,7 +532,7 @@ module petscsys
   end interface petscbinarywrite
 
 contains
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeWithHelp
 #endif
   subroutine PetscInitializeWithHelp(filename, help, ierr)
@@ -549,7 +549,7 @@ contains
     end if
   end subroutine PetscInitializeWithHelp
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoHelp
 #endif
   subroutine PetscInitializeNoHelp(filename, ierr)
@@ -565,7 +565,7 @@ contains
     end if
   end subroutine PetscInitializeNoHelp
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoArguments
 #endif
   subroutine PetscInitializeNoArguments(ierr)
@@ -586,7 +586,7 @@ subroutine F90ArraySetRealPointer(array, sz, j, T)
 
   T(j + 1)%ptr => array
 end subroutine F90ArraySetRealPointer
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT:: F90ArraySetRealPointer
 #endif
 

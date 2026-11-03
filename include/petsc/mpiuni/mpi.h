@@ -105,7 +105,7 @@
     This is reproduced from petscsys.h so that mpi.h can be used standalone without first including petscsys.h
     Note that it does require <petscconf.h> to be included to obtain some properties of the system being built for
 */
-  #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+  #if defined(PETSC_DLL_EXPORTS)
     #define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
     #define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
   #elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)

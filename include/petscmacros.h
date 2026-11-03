@@ -69,7 +69,7 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
 #define PETSC_INLINE        PETSC_DEPRECATED_MACRO(3, 17, 0, "inline", ) inline
 #define PETSC_STATIC_INLINE PETSC_DEPRECATED_MACRO(3, 17, 0, "static inline", ) static inline
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES) /* For Win32 shared libraries */
+#if defined(PETSC_DLL_EXPORTS) /* For Win32 shared libraries */
   #define PETSC_DLLEXPORT __declspec(dllexport)
   #define PETSC_DLLIMPORT __declspec(dllimport)
   #define PETSC_VISIBILITY_INTERNAL
