@@ -798,11 +798,17 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       if classes[i].petscobject:
         ii = i.replace('Petsc', '')
         fd.write('  function PetscObjectCast' + ii + '(obj)\n')
+        fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+        fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: PetscObjectCast' + ii + '\n')
+        fd.write('#endif\n')
         fd.write('    ' + i + ' obj\n')
         fd.write('    PetscObject PetscObjectCast' + ii + '\n')
         fd.write('    PetscObjectCast' + ii + '%v = obj%v\n')
         fd.write('  end function \n')
         fd.write('  subroutine PetscBarrier' + ii + '(obj,ierr)\n')
+        fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+        fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: PetscBarrier' + ii + '\n')
+        fd.write('#endif\n')
         fd.write('    ' + i + ' obj\n')
         fd.write('    PetscErrorCode ierr\n')
         fd.write('    call PetscBarrier(PetscObjectCast(obj),ierr)\n')
@@ -831,6 +837,9 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
             fd.write(k.name)
             cnt = cnt + 1
           fd.write(', ierr)\n')
+          fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+          fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + funname + ii + '\n')
+          fd.write('#endif\n')
           fd.write('  ' + i + ' ' + fi.arguments[0].name + '\n')
           cnt = 1
           for k in fi.arguments[1:]:

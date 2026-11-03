@@ -305,6 +305,9 @@ module petscsys
 
   implicit none
   type(c_ptr) :: petscFtnCtx  ! used by automatically generated XXXGetContext() macros
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::petscFtnCtx
+#endif
 
 #include <../src/sys/ftn-mod/petscsys.h90>
 #include <../src/sys/ftn-mod/petscviewer.h90>

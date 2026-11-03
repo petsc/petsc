@@ -108,6 +108,9 @@ contains
 #include <../ftn/dm/petscdualspace.hf90>
 
   subroutine PetscDSGetTabulation(ds, tab, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscDSGetTabulation
+#endif
     PetscErrorCode ierr
     PetscTabulation, pointer :: tab(:)
     PetscDS ds
@@ -127,6 +130,9 @@ contains
   end subroutine PetscDSGetTabulation
 
   subroutine PetscDSRestoreTabulation(ds, tab, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscDSRestoreTabulation
+#endif
     PetscErrorCode ierr
     PetscTabulation, pointer :: tab(:)
     PetscDS ds
@@ -141,6 +147,9 @@ contains
   end subroutine PetscDSRestoreTabulation
 
   subroutine DMCreateFieldDecomposition(dm, n, names, iss, dms, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::DMCreateFieldDecomposition
+#endif
     PetscErrorCode ierr
     character(80), pointer :: names(:)
     IS, pointer            :: iss(:)
@@ -158,6 +167,9 @@ contains
   end subroutine DMCreateFieldDecomposition
 
   subroutine DMDestroyFieldDecomposition(dm, n, names, iss, dms, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::DMDestroyFieldDecomposition
+#endif
     PetscErrorCode ierr
     character(80), pointer :: names(:)
     IS, pointer            :: iss(:)
