@@ -171,6 +171,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FBCGS(KSP ksp)
   ksp->ops->solve          = KSPSolve_FBCGS;
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
+  ksp->ops->buildsolution  = KSPBuildSolutionFlexibleDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT;

@@ -257,6 +257,7 @@ PETSC_EXTERN PetscErrorCode KSPGetErrorHistory(KSP, const PetscReal *[], PetscIn
 PETSC_EXTERN PetscErrorCode KSPSetErrorHistory(KSP, PetscReal[], PetscCount, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolutionDefault(KSP, Vec, Vec *);
+PETSC_EXTERN PetscErrorCode KSPBuildSolutionFlexibleDefault(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidualDefault(KSP, Vec, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPDestroyDefault(KSP);
 PETSC_EXTERN PetscErrorCode KSPSetWorkVecs(KSP, PetscInt);

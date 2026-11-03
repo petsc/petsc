@@ -230,6 +230,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
   ksp->ops->solve          = KSPSolve_PIPEBCGS;
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
+  ksp->ops->buildsolution  = KSPBuildSolutionFlexibleDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
 
