@@ -2703,7 +2703,8 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
   PetscSF            vsf;
   PetscInt           N, ny, rld, lld;
   PetscMemType       mtype[2];
-  MPI_Op             op = MPI_OP_NULL;
+  MPI_Op             op        = MPI_OP_NULL;
+  PetscBool          writeonly = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -2746,10 +2747,18 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
     }
     vsf = ctx->sf;
   } else vsf = sf;
-  /* the output array is accessed in read and write mode,
-    but write-only in the INSERT_VALUES case could be worth exploring */
+  if (mode == INSERT_VALUES && smode == SCATTER_FORWARD) {
+    const PetscInt *ilocal;
+    PetscInt        nl;
+
+    PetscCall(PetscSFGetGraph(sf, NULL, &nl, &ilocal, NULL));
+    PetscCall(MatGetLocalSize(Y, &ny, NULL));
+    // preserve untouched rows and padding; contiguous leaves cover every row only in this case
+    writeonly = (PetscBool)(ilocal == NULL && (PetscCount)nl * PetscMax(sf->vscat.bs, 1) == ny && lld == ny);
+  }
   PetscCall(MatDenseGetArrayReadAndMemType(X, &in, &mtype[0]));
-  PetscCall(MatDenseGetArrayAndMemType(Y, &out, &mtype[1]));
+  if (writeonly == PETSC_TRUE) PetscCall(MatDenseGetArrayWriteAndMemType(Y, &out, &mtype[1]));
+  else PetscCall(MatDenseGetArrayAndMemType(Y, &out, &mtype[1]));
   if (smode == SCATTER_FORWARD) {
     PetscCall(PetscSFBcastWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
     PetscCall(PetscSFBcastEnd(vsf, vsf->vscat.unit, in, out, op));
@@ -2757,7 +2766,8 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
     PetscCall(PetscSFReduceWithMemTypeBegin(vsf, vsf->vscat.unit, mtype[0], in, mtype[1], out, op));
     PetscCall(PetscSFReduceEnd(vsf, vsf->vscat.unit, in, out, op));
   }
-  PetscCall(MatDenseRestoreArrayAndMemType(Y, &out));
+  if (writeonly == PETSC_TRUE) PetscCall(MatDenseRestoreArrayWriteAndMemType(Y, &out));
+  else PetscCall(MatDenseRestoreArrayAndMemType(Y, &out));
   PetscCall(MatDenseRestoreArrayReadAndMemType(X, &in));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
