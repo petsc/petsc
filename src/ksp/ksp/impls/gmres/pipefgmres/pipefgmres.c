@@ -584,7 +584,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pipefgmres->nrs            = NULL;
   pipefgmres->sol_temp       = NULL;
-  pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
+  pipefgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
   pipefgmres->Rsvd           = NULL;
   pipefgmres->shift          = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);

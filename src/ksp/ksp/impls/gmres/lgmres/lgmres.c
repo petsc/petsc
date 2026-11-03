@@ -688,7 +688,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   lgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   lgmres->nrs            = NULL;
   lgmres->sol_temp       = NULL;
-  lgmres->max_k          = LGMRES_DEFAULT_MAXK;
+  lgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
   lgmres->Rsvd           = NULL;
 
   /* LGMRES_MOD - new defaults */

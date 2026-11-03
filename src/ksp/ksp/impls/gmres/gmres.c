@@ -27,7 +27,6 @@
  */
 
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h> /*I  "petscksp.h"  I*/
-#define GMRES_DEFAULT_MAXK 30
 static PetscErrorCode KSPGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
@@ -814,7 +813,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   gmres->nrs            = NULL;
   gmres->sol_temp       = NULL;
-  gmres->max_k          = GMRES_DEFAULT_MAXK;
+  gmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
   gmres->Rsvd           = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

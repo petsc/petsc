@@ -80,11 +80,8 @@ PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 #define SR2      dgmres->Sr2
 #define AUAU     dgmres->auau
 #define AUU      dgmres->auu
-#define MAX_K    dgmres->max_k
 #define MAX_NEIG dgmres->max_neig
 #define WORK     dgmres->work
 #define IWORK    dgmres->iwork
 #define ORTH     dgmres->orth
 #define SMV      1
-
-#define GMRES_DEFAULT_MAXK 30

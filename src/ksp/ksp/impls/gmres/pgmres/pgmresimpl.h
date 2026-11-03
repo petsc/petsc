@@ -20,5 +20,3 @@ typedef struct {
 #define VEC_TEMP       pgmres->vecs[0]                /* work space */
 #define VEC_TEMP_MATOP pgmres->vecs[1]                /* work space */
 #define VEC_VV(i)      pgmres->vecs[VEC_OFFSET + (i)] /* use to access othog basis vectors */
-
-#define PGMRES_DEFAULT_MAXK 30

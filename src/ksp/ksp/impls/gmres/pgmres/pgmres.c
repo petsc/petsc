@@ -395,7 +395,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   pgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pgmres->nrs            = NULL;
   pgmres->sol_temp       = NULL;
-  pgmres->max_k          = PGMRES_DEFAULT_MAXK;
+  pgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
   pgmres->Rsvd           = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

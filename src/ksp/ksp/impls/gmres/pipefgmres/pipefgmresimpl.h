@@ -42,5 +42,3 @@ typedef struct {
 
 #define PREVEC(i) pipefgmres->prevecs[i] /* use to access preconditioned basis */
 #define ZVEC(i)   pipefgmres->zvecs[i]
-
-#define PIPEFGMRES_DEFAULT_MAXK 30

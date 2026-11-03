@@ -1035,7 +1035,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   dgmres->nrs            = NULL;
   dgmres->sol_temp       = NULL;
-  dgmres->max_k          = GMRES_DEFAULT_MAXK;
+  dgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
   dgmres->Rsvd           = NULL;
 
   /* Default values for the deflation */
