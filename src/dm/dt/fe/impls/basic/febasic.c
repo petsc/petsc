@@ -954,6 +954,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   Np       = fgeom->numPoints;
   dE       = fgeom->dimEmbed;
   isAffine = fgeom->isAffine;
+  PetscCheck(NcI * NcJ * dE >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid Jacobian block size %" PetscInt_FMT, NcI * NcJ * dE);
   /* Initialize here in case the function is not defined */
   PetscCall(PetscArrayzero(g0, NcI * NcJ));
   PetscCall(PetscArrayzero(g1, NcI * NcJ * dE));
