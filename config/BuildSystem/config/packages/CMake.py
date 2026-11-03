@@ -16,6 +16,7 @@ class Configure(config.package.GNUPackage):
     self.useddirectly       = 0
     self.skippackagelibincludedirs = 1
     self.maxminCmakeVersion = (3,5,0) # minimum CMake version needed by all active packages
+    self.debugFlag = [] # ['--debug-find'] when -with-cmake-debug-find is on and CMake >= 3.17; set by checkDebugFind()
     return
 
   def setupHelp(self, help):
@@ -25,6 +26,7 @@ class Configure(config.package.GNUPackage):
     help.addArgument('CMAKE', '-download-cmake-cxx=<prog>',                  nargs.Arg(None, None, 'C++ compiler for Cmake configure'))
     help.addArgument('CMAKE', '-with-cmake-exec=<executable>',                nargs.Arg(None, None, 'CMake executable to look for'))
     help.addArgument('CMAKE', '-with-ctest-exec=<executable>',                nargs.Arg(None, None, 'Ctest executable to look for'))
+    help.addArgument('CMAKE', '-with-cmake-debug-find=<bool>',               nargs.ArgBool(None, 1, 'Pass --debug-find to the CMake configure of each downloaded package; verbose but useful when CMake fails to find a program or library'))
     return
 
   # Due to -DCMAKE_USE_OPENSSL=OFF usage below, currently -download-cmake-configure-arguments will only work with bootstrap cmake-options and not regular options
@@ -90,6 +92,17 @@ class Configure(config.package.GNUPackage):
       raise RuntimeError('A package requires CMake version '+minCmakeVersion+' (detected version is '+self.foundversion+'): use --download-cmake')
     return
 
+  def checkDebugFind(self):
+    '''Set debugFlag when -with-cmake-debug-find is requested and CMake (3.17+) supports --debug-find; error if explicitly requested with an older CMake'''
+    supported = bool(self.foundversion) and parseVersion(self.foundversion) >= parseVersion('3.17')
+    self.debugFlag = ['--debug-find'] if self.argDB['with-cmake-debug-find'] and supported else []
+    if self.argDB['with-cmake-debug-find'] and not supported:
+      mesg = '-with-cmake-debug-find needs CMake >= 3.17 (found '+(self.foundversion or 'unknown')+')'
+      if 'with-cmake-debug-find' in self.framework.clArgDB:
+        raise RuntimeError(mesg)
+      self.logPrint('Not passing --debug-find: '+mesg)
+    return
+
   def configure(self):
     '''Locate CMake and download it if requested'''
     if self.argDB['download-cmake']:
@@ -104,6 +117,7 @@ class Configure(config.package.GNUPackage):
       self.log.write('Not checking for CMake\n')
     if hasattr(self, 'cmake'):
       self.checkCMakeVersion()
+      self.checkDebugFind()
     else:
       self.log.write('CMake not found\n')
     return

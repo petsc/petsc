@@ -17,6 +17,7 @@
 - Add Meson package builds, `--download-meson`, and `--download-package-meson-arguments` for additional Meson setup arguments
 - Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
 - Add `--with-meson-exec` to select an existing Meson executable
+- Add `--with-cmake-debug-find` to control whether `--debug-find` is passed to the CMake configure of downloaded packages; it is on by default and needs CMake 3.17 or newer
 - Change OpenMP target offload for CUDA/HIP to require `--with-openmp-target-offload` instead of being enabled automatically
 - Build petsc4py, mpi4py, and slepc4py with `-O0` to shorten build time; the binding code is no longer optimized
 - Fix `--with-shared-libraries=1` on Microsoft Windows with Intel ifx, where Fortran code failed to link
