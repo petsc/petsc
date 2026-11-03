@@ -58,12 +58,12 @@ PetscErrorCode KSPLGMRESSetConstant(KSP ksp)
 
 static PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
 {
-  PetscInt    max_k, k, aug_dim;
+  PetscInt    restart_size, k, aug_dim;
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  max_k   = lgmres->max_k;
-  aug_dim = lgmres->aug_dim;
+  restart_size = lgmres->restart_size;
+  aug_dim      = lgmres->aug_dim;
   PetscCall(KSPSetUp_GMRES(ksp));
 
   /* need array of pointers to augvecs*/
@@ -80,7 +80,7 @@ static PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
   lgmres->augwork_alloc    = 2 * aug_dim + AUG_OFFSET;
 
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
-  PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
+  PetscCall(PetscMalloc1(restart_size + 1, &lgmres->hwork));
   for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -91,10 +91,10 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscReal   res_norm, res;
   PetscReal   hapbnd, tt;
   PetscScalar tmp;
-  PetscBool   hapend = PETSC_FALSE;   /* indicates happy breakdown ending */
-  PetscInt    loc_it;                 /* local count of # of dir. in Krylov space */
-  PetscInt    max_k  = lgmres->max_k; /* max approx space size */
-  PetscInt    max_it = ksp->max_it;   /* max # of overall iterations for the method */
+  PetscBool   hapend = PETSC_FALSE;                /* indicates happy breakdown ending */
+  PetscInt    loc_it;                              /* local count of # of dir. in Krylov space */
+  PetscInt    restart_size = lgmres->restart_size; /* max approx space size */
+  PetscInt    max_it       = ksp->max_it;          /* max # of overall iterations for the method */
 
   /* LGMRES_MOD - new variables*/
   PetscInt     aug_dim = lgmres->aug_dim;
@@ -114,8 +114,8 @@ static PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
   /* LGMRES_MOD: determine number of arnoldi steps to take */
   /* if approx_constant then we keep the space the same size even if
      we don't have the full number of aug vectors yet*/
-  if (lgmres->approx_constant) it_arnoldi = max_k - lgmres->aug_ct;
-  else it_arnoldi = max_k - aug_dim;
+  if (lgmres->approx_constant) it_arnoldi = restart_size - lgmres->aug_ct;
+  else it_arnoldi = restart_size - aug_dim;
 
   it_total = it_arnoldi + lgmres->aug_ct;
 
@@ -374,9 +374,9 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   /* LGMRES_MOD - determine if we need to use augvecs for the soln  - do not assume that
      this is called after the total its allowed for an approx space */
   if (lgmres->approx_constant) {
-    it_arnoldi = lgmres->max_k - lgmres->aug_ct;
+    it_arnoldi = lgmres->restart_size - lgmres->aug_ct;
   } else {
-    it_arnoldi = lgmres->max_k - lgmres->aug_dim;
+    it_arnoldi = lgmres->restart_size - lgmres->aug_dim;
   }
   if (it_arnoldi >= it + 1) {
     it_aug     = 0;
@@ -545,7 +545,7 @@ static PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(lgmres->max_k, &lgmres->nrs));
+    PetscCall(PetscMalloc1(lgmres->restart_size, &lgmres->nrs));
   }
 
   PetscCall(KSPLGMRESBuildSoln(lgmres->nrs, ksp->vec_sol, ptr, ksp, lgmres->it));
@@ -601,7 +601,7 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 
   PetscFunctionBegin;
   PetscCheck(aug_dim >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Augmentation dimension must be nonegative");
-  PetscCheck(aug_dim <= (lgmres->max_k - 1), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Augmentation dimension must be <= (restart size-1)");
+  PetscCheck(aug_dim <= (lgmres->restart_size - 1), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Augmentation dimension must be <= (restart size-1)");
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -688,7 +688,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   lgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   lgmres->nrs            = NULL;
   lgmres->sol_temp       = NULL;
-  lgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
+  lgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   lgmres->Rsvd           = NULL;
 
   /* LGMRES_MOD - new defaults */

@@ -27,7 +27,7 @@ static PetscErrorCode KSPSetUp_LCD(KSP ksp)
 */
 static PetscErrorCode KSPSolve_LCD(KSP ksp)
 {
-  PetscInt    it, j, max_k;
+  PetscInt    it, j, restart_size;
   PetscScalar alfa, beta, num, den, mone;
   PetscReal   rnorm = 0.0;
   Vec         X, B, R, Z;
@@ -35,13 +35,13 @@ static PetscErrorCode KSPSolve_LCD(KSP ksp)
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
-  lcd   = (KSP_LCD *)ksp->data;
-  X     = ksp->vec_sol;
-  B     = ksp->vec_rhs;
-  R     = ksp->work[0];
-  Z     = ksp->work[1];
-  max_k = lcd->restart;
-  mone  = -1;
+  lcd          = (KSP_LCD *)ksp->data;
+  X            = ksp->vec_sol;
+  B            = ksp->vec_rhs;
+  R            = ksp->work[0];
+  Z            = ksp->work[1];
+  restart_size = lcd->restart;
+  mone         = -1;
 
   PetscCall(PCGetOperators(ksp->pc, &Amat, &Pmat));
 
@@ -73,7 +73,7 @@ static PetscErrorCode KSPSolve_LCD(KSP ksp)
     PetscCall(KSP_MatMult(ksp, Amat, lcd->P[it], Z));
     PetscCall(KSP_PCApply(ksp, Z, lcd->Q[it]));
 
-    while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
+    while (!ksp->reason && it < restart_size && ksp->its < ksp->max_it) {
       ksp->its++;
       PetscCall(VecDot(lcd->P[it], R, &num));
       PetscCall(VecDot(lcd->P[it], lcd->Q[it], &den));

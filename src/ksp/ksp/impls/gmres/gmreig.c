@@ -4,7 +4,7 @@
 PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, PetscReal *emin)
 {
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
-  PetscInt     n = gmres->it + 1, i, N = gmres->max_k + 2;
+  PetscInt     n = gmres->it + 1, i, N = gmres->restart_size + 2;
   PetscBLASInt bn, bN, lwork, idummy;
   PetscScalar *R = gmres->Rsvd, *work = R + N * N, sdummy = 0;
   PetscReal   *realpart = gmres->Dsvd;
@@ -19,7 +19,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* copy R matrix to work space */
-  PetscCall(PetscArraycpy(R, gmres->hh_origin, (gmres->max_k + 2) * (gmres->max_k + 1)));
+  PetscCall(PetscArraycpy(R, gmres->hh_origin, (gmres->restart_size + 2) * (gmres->restart_size + 1)));
 
   /* zero below diagonal garbage */
   for (i = 0; i < n; i++) R[i * N + i + 1] = 0.0;
@@ -42,7 +42,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r,
 {
 #if !PetscDefined(USE_COMPLEX)
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
-  PetscInt     n = gmres->it + 1, N = gmres->max_k + 1, i, *perm;
+  PetscInt     n = gmres->it + 1, N = gmres->restart_size + 1, i, *perm;
   PetscBLASInt bn, bN, lwork, idummy;
   PetscScalar *R = gmres->Rsvd, *work = R + N * N;
   PetscScalar *realpart = gmres->Dsvd, *imagpart = realpart + N, sdummy = 0;
@@ -74,7 +74,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r,
   PetscCall(PetscFree(perm));
 #else
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
-  PetscInt     n = gmres->it + 1, N = gmres->max_k + 1, i, *perm;
+  PetscInt     n = gmres->it + 1, N = gmres->restart_size + 1, i, *perm;
   PetscScalar *R = gmres->Rsvd, *work = R + N * N, *eigs = work + 5 * N, sdummy;
   PetscBLASInt bn, bN, lwork, idummy;
 
@@ -123,10 +123,10 @@ PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, Pe
 
   PetscFunctionBegin;
   /* Express sizes in PetscBLASInt for LAPACK routines*/
-  PetscCall(PetscBLASIntCast(gmres->fullcycle ? gmres->max_k : gmres->it + 1, &bn)); /* size of the Hessenberg matrix */
-  PetscCall(PetscBLASIntCast(gmres->max_k + 1, &bN));                                /* LDA of the Hessenberg matrix */
-  PetscCall(PetscBLASIntCast(gmres->max_k + 1, &idummy));
-  PetscCall(PetscBLASIntCast(5 * (gmres->max_k + 1) * (gmres->max_k + 1), &lwork));
+  PetscCall(PetscBLASIntCast(gmres->fullcycle ? gmres->restart_size : gmres->it + 1, &bn)); /* size of the Hessenberg matrix */
+  PetscCall(PetscBLASIntCast(gmres->restart_size + 1, &bN));                                /* LDA of the Hessenberg matrix */
+  PetscCall(PetscBLASIntCast(gmres->restart_size + 1, &idummy));
+  PetscCall(PetscBLASIntCast(5 * (gmres->restart_size + 1) * (gmres->restart_size + 1), &lwork));
 
   /* NbrRitz: number of (Harmonic) Ritz pairs to extract */
   NbrRitz = PetscMin(*nrit, bn);

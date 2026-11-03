@@ -20,9 +20,9 @@
   PetscReal   *Dsvd; \
   PetscScalar *Rsvd; \
 \
-  PetscReal haptol;      /* tolerance for happy breakdown */ \
-  PetscInt  max_k;       /* number of vectors in Krylov space, restart size */ \
-  PetscInt  nextra_vecs; /* number of extra vecs needed, e.g. for a pipeline */ \
+  PetscReal haptol;       /* tolerance for happy breakdown */ \
+  PetscInt  restart_size; /* number of vectors in Krylov space */ \
+  PetscInt  nextra_vecs;  /* number of extra vecs needed, e.g. for a pipeline */ \
 \
   Vec      *vecs;           /* the work vectors */ \
   Vec      *vecb;           /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
@@ -65,8 +65,8 @@ PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP, PetscInt *);
 
 /* These macros are guarded because they are redefined by derived implementations */
 #if !defined(KSPGMRES_NO_MACROS)
-  #define HH(a, b)  (gmres->hh_origin + (b) * (gmres->max_k + 2) + (a))
-  #define HES(a, b) (gmres->hes_origin + (b) * (gmres->max_k + 1) + (a))
+  #define HH(a, b)  (gmres->hh_origin + (b) * (gmres->restart_size + 2) + (a))
+  #define HES(a, b) (gmres->hes_origin + (b) * (gmres->restart_size + 1) + (a))
   #define CC(a)     (gmres->cc_origin + (a))
   #define SS(a)     (gmres->ss_origin + (a))
   #define GRS(a)    (gmres->rs_origin + (a))

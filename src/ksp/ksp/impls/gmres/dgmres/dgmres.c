@@ -52,14 +52,14 @@ static PetscErrorCode KSPSetUp_DGMRES(KSP ksp)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
   PetscInt    neig   = dgmres->neig + EIG_OFFSET;
-  PetscInt    max_k  = dgmres->max_k + 1;
+  PetscInt    N      = dgmres->restart_size + 1;
 
   PetscFunctionBegin;
   PetscCall(KSPSetUp_GMRES(ksp));
   if (!dgmres->neig) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Allocate workspace for the Schur vectors*/
-  PetscCall(PetscMalloc1(neig * max_k, &SR));
+  PetscCall(PetscMalloc1(neig * N, &SR));
   dgmres->wr    = NULL;
   dgmres->wi    = NULL;
   dgmres->perm  = NULL;
@@ -105,9 +105,9 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
   PetscReal   res_norm, res, hapbnd, tt;
-  PetscInt    it     = 0;
-  PetscInt    max_k  = dgmres->max_k;
-  PetscBool   hapend = PETSC_FALSE;
+  PetscInt    it           = 0;
+  PetscInt    restart_size = dgmres->restart_size;
+  PetscBool   hapend       = PETSC_FALSE;
   PetscReal   res_old;
   PetscInt    test = 0;
 
@@ -135,7 +135,7 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
   res_old = res;
 
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
+  while (!ksp->reason && it < restart_size && ksp->its < ksp->max_it) {
     if (it) {
       PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
       PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
@@ -213,7 +213,7 @@ static PetscErrorCode KSPDGMRESCycle(PetscInt *itcount, KSP ksp)
 
   /* Compute data for the deflation to be used during the next restart */
   if (!ksp->reason && ksp->its < ksp->max_it) {
-    test = max_k * PetscLogReal(ksp->rtol / res) / PetscLogReal(res / res_old);
+    test = restart_size * PetscLogReal(ksp->rtol / res) / PetscLogReal(res / res_old);
     /* Compute data for the deflation if the residual rtol will not be reached in the remaining number of steps allowed  */
     if ((test > dgmres->smv * (ksp->max_it - ksp->its)) || dgmres->force) PetscCall(KSPDGMRESComputeDeflationData(ksp, NULL));
   }
@@ -448,7 +448,7 @@ static PetscErrorCode KSPBuildSolution_DGMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!dgmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(dgmres->max_k, &dgmres->nrs));
+    PetscCall(PetscMalloc1(dgmres->restart_size, &dgmres->nrs));
   }
   PetscCall(KSPDGMRESBuildSoln(dgmres->nrs, ksp->vec_sol, ptr, ksp, dgmres->it));
   if (result) *result = ptr;
@@ -484,7 +484,7 @@ static PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP ksp, PetscInt neig)
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(neig >= 0 && neig <= dgmres->max_k, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The value of neig must be positive and less than the restart value ");
+  PetscCheck(neig >= 0 && neig <= dgmres->restart_size, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The value of neig must be positive and less than the restart value ");
   dgmres->neig = neig;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -494,7 +494,7 @@ static PetscErrorCode KSPDGMRESSetMaxEigen_DGMRES(KSP ksp, PetscInt max_neig)
   KSP_DGMRES *dgmres = (KSP_DGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(max_neig >= 0 && max_neig <= dgmres->max_k, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The value of max_neig must be positive and less than the restart value ");
+  PetscCheck(max_neig >= 0 && max_neig <= dgmres->restart_size, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "The value of max_neig must be positive and less than the restart value ");
   dgmres->max_neig = max_neig;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -548,7 +548,7 @@ static PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *Ex
   PetscInt     neig;                                 /* number of eigenvalues to extract at each restart */
   PetscInt     neig1    = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
   PetscInt     max_neig = dgmres->max_neig;          /* Max number of eigenvalues to extract during the iterative process */
-  PetscInt     N        = dgmres->max_k + 1;
+  PetscInt     N        = dgmres->restart_size + 1;
   PetscInt     n        = dgmres->it + 1;
   PetscReal    alpha;
 
@@ -643,7 +643,7 @@ static PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP ksp, PetscInt *Ex
 static PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP ksp, PetscInt *neig)
 {
   KSP_DGMRES   *dgmres = (KSP_DGMRES *)ksp->data;
-  PetscInt      N = dgmres->max_k + 1, n = dgmres->it + 1;
+  PetscInt      N = dgmres->restart_size + 1, n = dgmres->it + 1;
   PetscBLASInt  bn;
   PetscReal    *A;
   PetscBLASInt  ihi;
@@ -1035,7 +1035,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   dgmres->nrs            = NULL;
   dgmres->sol_temp       = NULL;
-  dgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
+  dgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   dgmres->Rsvd           = NULL;
 
   /* Default values for the deflation */

@@ -17,16 +17,16 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt)
 
 static PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
 {
-  PetscInt    max_k;
+  PetscInt    restart_size;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  max_k = fgmres->max_k;
+  restart_size = fgmres->restart_size;
 
   PetscCall(KSPSetUp_GMRES(ksp));
 
-  PetscCall(PetscMalloc1(max_k + 2, &fgmres->prevecs));
-  PetscCall(PetscMalloc1(max_k + 2, &fgmres->prevecs_user_work));
+  PetscCall(PetscMalloc1(restart_size + 2, &fgmres->prevecs));
+  PetscCall(PetscMalloc1(restart_size + 2, &fgmres->prevecs_user_work));
 
   /* fgmres->vv_allocated includes extra work vectors, which are not used in the additional
      block of vectors used to store the preconditioned directions, hence  the -VEC_OFFSET
@@ -56,9 +56,9 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   PetscReal   res_norm;
   PetscReal   hapbnd, tt;
-  PetscBool   hapend = PETSC_FALSE;  /* indicates happy breakdown ending */
-  PetscInt    loc_it;                /* local count of # of dir. in Krylov space */
-  PetscInt    max_k = fgmres->max_k; /* max # of directions Krylov space */
+  PetscBool   hapend = PETSC_FALSE;                /* indicates happy breakdown ending */
+  PetscInt    loc_it;                              /* local count of # of dir. in Krylov space */
+  PetscInt    restart_size = fgmres->restart_size; /* max # of directions Krylov space */
   Mat         Amat, Pmat;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ static PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
-  while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
+  while (!ksp->reason && loc_it < restart_size && ksp->its < ksp->max_it) {
     if (loc_it) {
       PetscCall(KSPLogResidualHistory(ksp, res_norm));
       PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
@@ -403,7 +403,7 @@ static PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!fgmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(fgmres->max_k, &fgmres->nrs));
+    PetscCall(PetscMalloc1(fgmres->restart_size, &fgmres->nrs));
   }
 
   PetscCall(KSPFGMRESBuildSoln(fgmres->nrs, ksp->vec_sol, ptr, ksp, fgmres->it));
@@ -455,29 +455,29 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
+static PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt restart_size)
 {
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(max_k >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
+  PetscCheck(restart_size >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
   if (!ksp->setupstage) {
-    gmres->max_k = max_k;
-  } else if (gmres->max_k != max_k) {
-    gmres->max_k    = max_k;
-    ksp->setupstage = KSP_SETUP_NEW;
+    gmres->restart_size = restart_size;
+  } else if (gmres->restart_size != restart_size) {
+    gmres->restart_size = restart_size;
+    ksp->setupstage     = KSP_SETUP_NEW;
     /* free the data structures, then create them again */
     PetscCall(KSPReset_FGMRES(ksp));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
+static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *restart_size)
 {
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
-  *max_k = gmres->max_k;
+  *restart_size = gmres->restart_size;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -552,7 +552,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   fgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   fgmres->nrs            = NULL;
   fgmres->sol_temp       = NULL;
-  fgmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
+  fgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   fgmres->Rsvd           = NULL;
   fgmres->modifypc       = KSPFlexibleModifyPCNoChange;
   fgmres->modifyctx      = NULL;

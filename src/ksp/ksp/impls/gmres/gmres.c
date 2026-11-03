@@ -33,32 +33,32 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 PetscErrorCode KSPSetUp_GMRES(KSP ksp)
 {
   PetscInt   hh, hes, rs, cc;
-  PetscInt   max_k, k;
+  PetscInt   restart_size, k;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  max_k = gmres->max_k; /* restart size */
-  hh    = (max_k + 2) * (max_k + 1);
-  hes   = (max_k + 1) * (max_k + 1);
-  rs    = (max_k + 2);
-  cc    = (max_k + 1);
+  restart_size = gmres->restart_size;
+  hh           = (restart_size + 2) * (restart_size + 1);
+  hes          = (restart_size + 1) * (restart_size + 1);
+  rs           = (restart_size + 2);
+  cc           = (restart_size + 1);
 
   PetscCall(PetscCalloc5(hh, &gmres->hh_origin, hes, &gmres->hes_origin, rs, &gmres->rs_origin, cc, &gmres->cc_origin, cc, &gmres->ss_origin));
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by LAPACK */
-    PetscCall(PetscMalloc1((max_k + 3) * (max_k + 9), &gmres->Rsvd));
-    PetscCall(PetscMalloc1(6 * (max_k + 2), &gmres->Dsvd));
+    PetscCall(PetscMalloc1((restart_size + 3) * (restart_size + 9), &gmres->Rsvd));
+    PetscCall(PetscMalloc1(6 * (restart_size + 2), &gmres->Dsvd));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
-   4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
+   4 + restart_size + 1 (since we need it+1 vectors, and it <= restart_size) */
+  gmres->vecs_allocated = VEC_OFFSET + 2 + restart_size + gmres->nextra_vecs;
   PetscCall(PetscMalloc1(gmres->vecs_allocated, &gmres->vecs));
-  PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->user_work));
-  PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->mwork_alloc));
-  if (gmres->q_preallocate || ksp->normtype == KSP_NORM_NONE) gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(max_k, ksp->max_it);
-  else gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(PetscMin(5, max_k), ksp->max_it);
+  PetscCall(PetscMalloc1(VEC_OFFSET + 2 + restart_size, &gmres->user_work));
+  PetscCall(PetscMalloc1(VEC_OFFSET + 2 + restart_size, &gmres->mwork_alloc));
+  if (gmres->q_preallocate || ksp->normtype == KSP_NORM_NONE) gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(restart_size, ksp->max_it);
+  else gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(PetscMin(5, restart_size), ksp->max_it);
   PetscCall(KSPCreateVecs(ksp, gmres->vv_allocated, &gmres->user_work[0], 0, NULL));
   gmres->mwork_alloc[0] = gmres->vv_allocated;
   gmres->nwork_alloc    = 1;
@@ -87,7 +87,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscReal  res, hapbnd, tt;
-  PetscInt   it = 0, max_k = gmres->max_k;
+  PetscInt   it = 0, restart_size = gmres->restart_size;
   PetscBool  hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -120,7 +120,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
 
   /* check for the convergence */
   PetscCall((*ksp->converged)(ksp, ksp->its, res, &ksp->reason, ksp->cnvP));
-  while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
+  while (!ksp->reason && it < restart_size && ksp->its < ksp->max_it) {
     if (it) {
       PetscCall(KSPLogResidualHistory(ksp, res));
       PetscCall(KSPLogErrorHistory(ksp));
@@ -197,7 +197,7 @@ static PetscErrorCode KSPSolve_GMRES(KSP ksp)
   PetscInt   its, itcount, i;
   KSP_GMRES *gmres      = (KSP_GMRES *)ksp->data;
   PetscBool  guess_zero = ksp->guess_zero;
-  PetscInt   N          = gmres->max_k + 1;
+  PetscInt   N          = gmres->restart_size + 1;
 
   PetscFunctionBegin;
   PetscCheck(!ksp->calc_sings || gmres->Rsvd, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ORDER, "Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
@@ -214,7 +214,7 @@ static PetscErrorCode KSPSolve_GMRES(KSP ksp)
     PetscCall(KSPGMRESCycle(&its, ksp));
     /* Store the Hessenberg matrix and the basis vectors of the Krylov subspace
     if the cycle is complete for the computation of the Ritz pairs */
-    if (its == gmres->max_k) {
+    if (its == gmres->restart_size) {
       gmres->fullcycle++;
       if (ksp->calc_ritz) {
         if (!gmres->hes_ritz) {
@@ -222,7 +222,7 @@ static PetscErrorCode KSPSolve_GMRES(KSP ksp)
           PetscCall(VecDuplicateVecs(VEC_VV(0), N, &gmres->vecb));
         }
         PetscCall(PetscArraycpy(gmres->hes_ritz, gmres->hes_origin, N * N));
-        for (i = 0; i < gmres->max_k + 1; i++) PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i]));
+        for (i = 0; i < gmres->restart_size + 1; i++) PetscCall(VecCopy(VEC_VV(i), gmres->vecb[i]));
       }
     }
     itcount += its;
@@ -249,7 +249,7 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   PetscCall(PetscFree(gmres->vecs));
   for (PetscInt i = 0; i < gmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(gmres->mwork_alloc[i], &gmres->user_work[i]));
   gmres->nwork_alloc = 0;
-  if (gmres->vecb) PetscCall(VecDestroyVecs(gmres->max_k + 1, &gmres->vecb));
+  if (gmres->vecb) PetscCall(VecDestroyVecs(gmres->restart_size + 1, &gmres->vecb));
 
   PetscCall(PetscFree(gmres->user_work));
   PetscCall(PetscFree(gmres->mwork_alloc));
@@ -424,7 +424,7 @@ static PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(gmres->max_k, &gmres->nrs));
+    PetscCall(PetscMalloc1(gmres->restart_size, &gmres->nrs));
   }
 
   PetscCall(KSPGMRESBuildSoln(gmres->nrs, ksp->vec_sol, ptr, ksp, gmres->it));
@@ -461,10 +461,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
     cstr = "unknown orthogonalization";
   }
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT ", using %s\n", gmres->max_k, cstr));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT ", using %s\n", gmres->restart_size, cstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance=%g\n", (double)gmres->haptol));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer, "%s restart %" PetscInt_FMT, cstr, gmres->max_k));
+    PetscCall(PetscViewerStringSPrintf(viewer, "%s restart %" PetscInt_FMT, cstr, gmres->restart_size));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -521,7 +521,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObj
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP GMRES Options");
   PetscCall(PetscOptionsInt("-ksp_gmres_vector_allocation_size", "Number of work vectors to allocate at a time", "KSPGMRESSetVectorAllocationSize", gmres->delta_allocate, &delta_allocate, &flg));
   if (flg) PetscCall(KSPGMRESSetVectorAllocationSize(ksp, delta_allocate));
-  PetscCall(PetscOptionsInt("-ksp_gmres_restart", "Number of Krylov search directions", "KSPGMRESSetRestart", gmres->max_k, &restart, &flg));
+  PetscCall(PetscOptionsInt("-ksp_gmres_restart", "Number of Krylov search directions", "KSPGMRESSetRestart", gmres->restart_size, &restart, &flg));
   if (flg) PetscCall(KSPGMRESSetRestart(ksp, restart));
   PetscCall(PetscOptionsReal("-ksp_gmres_haptol", "Tolerance for exact convergence (happy breakdown)", "KSPGMRESSetHapTol", gmres->haptol, &haptol, &flg));
   if (flg) PetscCall(KSPGMRESSetHapTol(ksp, haptol));
@@ -567,26 +567,26 @@ static PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESGetRestart_GMRES(KSP ksp, PetscInt *max_k)
+PetscErrorCode KSPGMRESGetRestart_GMRES(KSP ksp, PetscInt *restart_size)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  *max_k = gmres->max_k;
+  *restart_size = gmres->restart_size;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k)
+PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt restart_size)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCheck(max_k >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
+  PetscCheck(restart_size >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
   if (!ksp->setupstage) {
-    gmres->max_k = max_k;
-  } else if (gmres->max_k != max_k) {
-    gmres->max_k    = max_k;
-    ksp->setupstage = KSP_SETUP_NEW;
+    gmres->restart_size = restart_size;
+  } else if (gmres->restart_size != restart_size) {
+    gmres->restart_size = restart_size;
+    ksp->setupstage     = KSP_SETUP_NEW;
     /* free the data structures, then create them again */
     PetscCall(KSPReset_GMRES(ksp));
   }
@@ -813,7 +813,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   gmres->nrs            = NULL;
   gmres->sol_temp       = NULL;
-  gmres->max_k          = GMRES_DEFAULT_RESTART_SIZE;
+  gmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   gmres->Rsvd           = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
