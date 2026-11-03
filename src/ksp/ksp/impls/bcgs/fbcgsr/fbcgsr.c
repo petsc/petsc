@@ -102,8 +102,8 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
       PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
       tau = sigma = 0.0;
       for (j = 0; j < N; j++) {
-        tau += r[j] * rp[j];   /* tau <- (r,rp) */
-        sigma += v[j] * rp[j]; /* sigma <- (v,rp) */
+        tau += r[j] * PetscConj(rp[j]);   /* tau <- (r,rp) */
+        sigma += v[j] * PetscConj(rp[j]); /* sigma <- (v,rp) */
       }
       PetscCall(PetscLogFlops(4.0 * N));
       PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
@@ -130,10 +130,10 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
     PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
     xi1 = xi2 = xi3 = xi4 = 0.0;
     for (j = 0; j < N; j++) {
-      xi1 += s[j] * s[j];  /* xi1 <- (s,s) */
-      xi2 += t[j] * s[j];  /* xi2 <- (t,s) */
-      xi3 += t[j] * t[j];  /* xi3 <- (t,t) */
-      xi4 += t[j] * rp[j]; /* xi4 <- (t,rp) */
+      xi1 += s[j] * PetscConj(s[j]);  /* xi1 <- (s,s) */
+      xi2 += s[j] * PetscConj(t[j]);  /* xi2 <- (s,t) */
+      xi3 += t[j] * PetscConj(t[j]);  /* xi3 <- (t,t) */
+      xi4 += t[j] * PetscConj(rp[j]); /* xi4 <- (t,rp) */
     }
     PetscCall(PetscLogFlops(8.0 * N));
     PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
@@ -162,7 +162,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
     /* scalar updates */
     omega = xi2 / xi3;
     beta  = -xi4 / sigma;
-    rho   = PetscSqrtReal(PetscAbsScalar(xi1 - omega * xi2)); /* residual norm */
+    rho   = PetscSqrtReal(PetscAbsScalar(xi1 - PetscConj(omega) * xi2)); /* residual norm */
 
     /* vector updates */
     PetscCall(VecAXPBYPCZ(X, alpha, omega, 1.0, P2, S2)); /* x <- alpha * p2 + omega * s2 + x */
