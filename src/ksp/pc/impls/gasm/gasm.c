@@ -682,11 +682,12 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
+static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBool transpose)
 {
   PC_GASM    *osm = (PC_GASM *)pc->data;
   Mat         X, Y, O = NULL, Z, W;
   Vec         x, y;
+  VecType     vtype;
   PetscInt    i, m, M, N;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
@@ -696,7 +697,8 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   if (osm->pctoouter) {
     PetscCall(VecGetLocalSize(osm->pcx, &m));
     PetscCall(VecGetSize(osm->pcx, &M));
-    PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &O));
+    PetscCall(MatGetVecType(Xin, &vtype));
+    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &O));
     for (i = 0; i < N; ++i) {
       PetscCall(MatDenseGetColumnVecRead(Xin, i, &x));
       PetscCall(MatDenseGetColumnVecWrite(O, i, &y));
@@ -716,11 +718,12 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   */
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(VecGetSize(osm->x[0], &M));
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &Z));
+  PetscCall(VecGetType(osm->x[0], &vtype));
+  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &Z));
   for (i = 0; i < N; ++i) {
     PetscCall(MatDenseGetColumnVecRead(X, i, &x));
     PetscCall(MatDenseGetColumnVecWrite(Z, i, &y));
-    if (!(osm->type & PC_GASM_RESTRICT)) {
+    if ((!transpose && !(osm->type & PC_GASM_RESTRICT)) || (transpose && !(osm->type & PC_GASM_INTERPOLATE))) {
       /* have to zero the work RHS since scatter may leave some slots empty */
       PetscCall(VecZeroEntries(y));
       PetscCall(VecScatterBegin(osm->girestriction, x, y, INSERT_VALUES, forward));
@@ -732,12 +735,10 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
     PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &y));
     PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
   }
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)osm->ois[0]), m, PETSC_DECIDE, M, N, NULL, &W));
-  PetscCall(MatSetOption(Z, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(Z, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(Z, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
   /* do the subdomain solve */
-  PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+  if (!transpose) PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+  else PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
   /* do we need to zero y? */
@@ -745,7 +746,7 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
   for (i = 0; i < N; ++i) {
     PetscCall(MatDenseGetColumnVecWrite(Y, i, &y));
     PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if (!(osm->type & PC_GASM_INTERPOLATE)) {
+    if ((!transpose && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose && !(osm->type & PC_GASM_RESTRICT))) {
       PetscCall(VecScatterBegin(osm->girestriction, x, y, ADD_VALUES, reverse));
       PetscCall(VecScatterEnd(osm->girestriction, x, y, ADD_VALUES, reverse));
     } else {
@@ -757,12 +758,26 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
       PetscCall(MatDenseGetColumnVecWrite(Yout, i, &x));
       PetscCall(VecScatterBegin(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
       PetscCall(VecScatterEnd(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(MatDenseRestoreColumnVecRead(Yout, i, &x));
+      PetscCall(MatDenseRestoreColumnVecWrite(Yout, i, &x));
     }
     PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &y));
   }
   PetscCall(MatDestroy(&W));
   PetscCall(MatDestroy(&O));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApply_GASM(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_GASM_Private(pc, X, Y, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApplyTranspose_GASM(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_GASM_Private(pc, X, Y, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1338,17 +1353,18 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   osm->dm_subdomains            = PETSC_FALSE;
   osm->hierarchicalpartitioning = PETSC_FALSE;
 
-  pc->data                 = (void *)osm;
-  pc->ops->apply           = PCApply_GASM;
-  pc->ops->matapply        = PCMatApply_GASM;
-  pc->ops->applytranspose  = PCApplyTranspose_GASM;
-  pc->ops->setup           = PCSetUp_GASM;
-  pc->ops->reset           = PCReset_GASM;
-  pc->ops->destroy         = PCDestroy_GASM;
-  pc->ops->setfromoptions  = PCSetFromOptions_GASM;
-  pc->ops->setuponblocks   = PCSetUpOnBlocks_GASM;
-  pc->ops->view            = PCView_GASM;
-  pc->ops->applyrichardson = NULL;
+  pc->data                   = (void *)osm;
+  pc->ops->apply             = PCApply_GASM;
+  pc->ops->matapply          = PCMatApply_GASM;
+  pc->ops->matapplytranspose = PCMatApplyTranspose_GASM;
+  pc->ops->applytranspose    = PCApplyTranspose_GASM;
+  pc->ops->setup             = PCSetUp_GASM;
+  pc->ops->reset             = PCReset_GASM;
+  pc->ops->destroy           = PCDestroy_GASM;
+  pc->ops->setfromoptions    = PCSetFromOptions_GASM;
+  pc->ops->setuponblocks     = PCSetUpOnBlocks_GASM;
+  pc->ops->view              = PCView_GASM;
+  pc->ops->applyrichardson   = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetSubdomains_C", PCGASMSetSubdomains_GASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetOverlap_C", PCGASMSetOverlap_GASM));

@@ -1031,7 +1031,7 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
     (*vsf)->vscat.bs = sf->vscat.bs;
     PetscCallMPI(MPI_Type_dup(sf->vscat.unit, &(*vsf)->vscat.unit));
   } else if (sf->vscat.bs) (*vsf)->vscat.bs = 1;
-  PetscCall(PetscSFGetType(sf, &sftype));
+  PetscCall(PetscSFGetType(rankssf, &sftype));
   PetscCall(PetscSFSetType(*vsf, sftype));
   PetscCall(PetscSFSetGraph(*vsf, vnr, vnl, vilocal, PETSC_OWN_POINTER, viremote, PETSC_OWN_POINTER));
   PetscFunctionReturn(PETSC_SUCCESS);
