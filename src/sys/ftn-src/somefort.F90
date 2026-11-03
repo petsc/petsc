@@ -6,6 +6,9 @@
 
 #include <petsc/finclude/petscsys.h>
 subroutine MPIU_Abort(comm, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
+#endif
   use, intrinsic :: ISO_C_binding
   use petscmpi
   implicit none
@@ -19,11 +22,11 @@ subroutine MPIU_Abort(comm, ierr)
     call MPI_Abort(comm, ierr, nierr)
   end if
 end
-#if defined(PETSC_DLL_EXPORTS)
-!DEC$ ATTRIBUTES DLLEXPORT::MPIU_Abort
-#endif
 
 subroutine PetscFortranPrintToFileUnit(unit, str, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToFileUnit
+#endif
   use, intrinsic :: ISO_C_binding
   implicit none
   character(*) str
@@ -32,9 +35,6 @@ subroutine PetscFortranPrintToFileUnit(unit, str, ierr)
   write (unit=unit, fmt="(A)", advance='no') str
   ierr = 0
 end
-#if defined(PETSC_DLL_EXPORTS)
-!DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToFileUnit
-#endif
 
 integer pure function PetscCommandArgumentCount()
   use, intrinsic :: ISO_C_binding

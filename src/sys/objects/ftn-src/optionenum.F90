@@ -1,11 +1,9 @@
 #include "petsc/finclude/petscsys.h"
 
+subroutine PetscOptionsGetEnum(po, pre, name, FArray, opt, set, ierr)
 #if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsGetEnum
-!DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsEnum
 #endif
-
-subroutine PetscOptionsGetEnum(po, pre, name, FArray, opt, set, ierr)
   use, intrinsic :: iso_c_binding
   use petscsysdef
   implicit none
@@ -46,6 +44,9 @@ subroutine PetscOptionsGetEnum(po, pre, name, FArray, opt, set, ierr)
 end subroutine
 
 subroutine PetscOptionsEnum(opt, text, man, Flist, curr, ivalue, set, ierr)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::PetscOptionsEnum
+#endif
   use, intrinsic :: iso_c_binding
   use petscsysdef
   implicit none

@@ -777,16 +777,18 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     if i in ['PetscObject', 'PetscIntStack', 'PetscTabulation']: continue
     with open(os.path.join(petscarch,'ftn', getAPI.mansecpath(classes[i].mansec),classes[i].includefile + 'f90'),"a") as fd:
 
+      fd.write('  function ' + i + 'notequals(A,B)\n')
       fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
-      fd.write('#endif\n\n')
-      fd.write('  function ' + i + 'notequals(A,B)\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'notequals\n')
       fd.write('    type(t' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'notequals = (A%v .ne. B%v)\n')
       fd.write('  end function\n')
       fd.write('  function ' + i + 'equals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'equals\n')
       fd.write('    type(t' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'equals = (A%v .eq. B%v)\n')
@@ -871,16 +873,18 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     if i in ['PetscEnum', 'PetscBool3']: continue
     with open(os.path.join(petscarch,'ftn',getAPI.mansecpath(enums[i].mansec),enums[i].includefile + 'f90'),"a") as fd:
 
+      fd.write('  function ' + i + 'notequals(A,B)\n')
       fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
-      fd.write('#endif\n\n')
-      fd.write('  function ' + i + 'notequals(A,B)\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'notequals\n')
       fd.write('    type(e' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'notequals = (A%v .ne. B%v)\n')
       fd.write('  end function\n')
       fd.write('  function ' + i + 'equals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'equals\n')
       fd.write('    type(e' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'equals = (A%v .eq. B%v)\n')

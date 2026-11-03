@@ -532,10 +532,10 @@ module petscsys
   end interface petscbinarywrite
 
 contains
+  subroutine PetscInitializeWithHelp(filename, help, ierr)
 #if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeWithHelp
 #endif
-  subroutine PetscInitializeWithHelp(filename, help, ierr)
     character(len=*) :: filename
     character(len=*) :: help
     PetscErrorCode   :: ierr
@@ -549,10 +549,10 @@ contains
     end if
   end subroutine PetscInitializeWithHelp
 
+  subroutine PetscInitializeNoHelp(filename, ierr)
 #if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoHelp
 #endif
-  subroutine PetscInitializeNoHelp(filename, ierr)
     character(len=*) :: filename
     PetscErrorCode   :: ierr
 
@@ -565,10 +565,10 @@ contains
     end if
   end subroutine PetscInitializeNoHelp
 
+  subroutine PetscInitializeNoArguments(ierr)
 #if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscInitializeNoArguments
 #endif
-  subroutine PetscInitializeNoArguments(ierr)
     PetscErrorCode :: ierr
 
     call PetscInitializeF(PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, ierr)
@@ -579,6 +579,9 @@ contains
 end module petscsys
 
 subroutine F90ArraySetRealPointer(array, sz, j, T)
+#if defined(PETSC_DLL_EXPORTS)
+!DEC$ ATTRIBUTES DLLEXPORT::F90ArraySetRealPointer
+#endif
   use petscsysdef
   PetscInt :: j, sz
   PetscReal, target    :: array(1:sz)
@@ -586,9 +589,6 @@ subroutine F90ArraySetRealPointer(array, sz, j, T)
 
   T(j + 1)%ptr => array
 end subroutine F90ArraySetRealPointer
-#if defined(PETSC_DLL_EXPORTS)
-!DEC$ ATTRIBUTES DLLEXPORT:: F90ArraySetRealPointer
-#endif
 
 !TODO: generate the modules below by looping over
 !      ftn/sys/XXX.h90

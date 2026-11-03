@@ -1,9 +1,9 @@
 #include "petsc/finclude/petscbag.h"
 
+      subroutine PetscBagRegisterEnum(bag, addr, FArray, def, n, h, ierr)
 #if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscBagRegisterEnum
 #endif
-      subroutine PetscBagRegisterEnum(bag, addr, FArray, def, n, h, ierr)
         use, intrinsic :: iso_c_binding
         use petscbag
         implicit none
