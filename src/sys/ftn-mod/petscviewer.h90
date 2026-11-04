@@ -43,7 +43,7 @@ interface
 
 end interface
 
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if defined(PETSC_DLL_EXPORTS)
 !DEC$ ATTRIBUTES DLLEXPORT::PetscFortranPrintToFileUnit
 !DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIIOpenWithFileUnit
 !DEC$ ATTRIBUTES DLLEXPORT::PetscViewerASCIISetFileUnit

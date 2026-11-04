@@ -173,7 +173,7 @@ def generateFortranInterface(pkgname, petscarch, classes, enums, structs, senums
       # some Fortran compilers require the end to be on its own line
       fd.write('  end subroutine\n')
       fd.write('  end interface\n')
-    fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+    fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
     fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + funname + func + dim  + NL)
     fd.write('#endif\n')
 
@@ -644,7 +644,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       fd.write('  ' + i + ', parameter :: ' + v + ' = t' + i + '(0)\n')
       fd.write('  ' + i + ', target :: ' + v + '_ARRAY(1) = [t' + i + '(0)]\n')
       fd.write('  ' + i + ', pointer :: ' + v + '_POINTER(:) => ' + v + '_ARRAY\n')
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + v + '\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + v + '_ARRAY\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + v + '_POINTER\n')
@@ -659,7 +659,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       fd.write('  end type e' + i + '\n\n')
       v = (pkgname.upper() + '_NULL_' + i.upper().replace(pkgname.upper(),'').replace('NULL','')).strip('_').replace('_NULL_NULL','_NULL')
       fd.write('  ' + i + ', parameter :: ' + v + ' = e' + i + '(-50)\n')
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + v + '\n')
       fd.write('#endif\n')
       cnt = 0
@@ -672,7 +672,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
         cnt = cnt + 1
       fd.write('\n')
 
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       for j in enums[i].values:
          if j.count('='): v = j[0:j.find('=')]
          else: v = j
@@ -686,7 +686,7 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
         fd.write('  CHARACTER(LEN=*), PARAMETER :: ' + j + ' = \'' + senums[i].values[j].replace('"','') + '\'\n')
       fd.write('\n')
 
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
       for j in senums[i].values:
         fd.write('!DEC$ ATTRIBUTES DLLEXPORT::' + j + '\n')
       fd.write('#endif\n')
@@ -777,16 +777,18 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     if i in ['PetscObject', 'PetscIntStack', 'PetscTabulation']: continue
     with open(os.path.join(petscarch,'ftn', getAPI.mansecpath(classes[i].mansec),classes[i].includefile + 'f90'),"a") as fd:
 
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
-      fd.write('#endif\n\n')
       fd.write('  function ' + i + 'notequals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'notequals\n')
       fd.write('    type(t' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'notequals = (A%v .ne. B%v)\n')
       fd.write('  end function\n')
       fd.write('  function ' + i + 'equals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'equals\n')
       fd.write('    type(t' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'equals = (A%v .eq. B%v)\n')
@@ -796,11 +798,17 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
       if classes[i].petscobject:
         ii = i.replace('Petsc', '')
         fd.write('  function PetscObjectCast' + ii + '(obj)\n')
+        fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+        fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: PetscObjectCast' + ii + '\n')
+        fd.write('#endif\n')
         fd.write('    ' + i + ' obj\n')
         fd.write('    PetscObject PetscObjectCast' + ii + '\n')
         fd.write('    PetscObjectCast' + ii + '%v = obj%v\n')
         fd.write('  end function \n')
         fd.write('  subroutine PetscBarrier' + ii + '(obj,ierr)\n')
+        fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+        fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: PetscBarrier' + ii + '\n')
+        fd.write('#endif\n')
         fd.write('    ' + i + ' obj\n')
         fd.write('    PetscErrorCode ierr\n')
         fd.write('    call PetscBarrier(PetscObjectCast(obj),ierr)\n')
@@ -829,6 +837,9 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
             fd.write(k.name)
             cnt = cnt + 1
           fd.write(', ierr)\n')
+          fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+          fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + funname + ii + '\n')
+          fd.write('#endif\n')
           fd.write('  ' + i + ' ' + fi.arguments[0].name + '\n')
           cnt = 1
           for k in fi.arguments[1:]:
@@ -871,16 +882,18 @@ def main(petscdir,slepcdir,petscarch,mpi_f08 = 'Unknown'):
     if i in ['PetscEnum', 'PetscBool3']: continue
     with open(os.path.join(petscarch,'ftn',getAPI.mansecpath(enums[i].mansec),enums[i].includefile + 'f90'),"a") as fd:
 
-      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
-      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
-      fd.write('#endif\n\n')
       fd.write('  function ' + i + 'notequals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'notequals\n')
       fd.write('    type(e' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'notequals = (A%v .ne. B%v)\n')
       fd.write('  end function\n')
       fd.write('  function ' + i + 'equals(A,B)\n')
+      fd.write('#if defined(PETSC_DLL_EXPORTS)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
+      fd.write('#endif\n')
       fd.write('    logical ' + i + 'equals\n')
       fd.write('    type(e' + i + '), intent(in) :: A,B\n')
       fd.write('    ' + i + 'equals = (A%v .eq. B%v)\n')
