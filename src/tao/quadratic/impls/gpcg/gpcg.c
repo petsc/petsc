@@ -159,7 +159,7 @@ static PetscErrorCode TaoSolve_GPCG(Tao tao)
         PetscCall(PetscObjectReference((PetscObject)gpcg->Hsub));
         gpcg->Hsub_pre = gpcg->Hsub;
       } else {
-        PetscCall(TaoMatGetSubMat(tao->hessian, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre));
+        PetscCall(TaoMatGetSubMat(tao->hessian_pre, gpcg->Free_Local, gpcg->Work, tao->subset_type, &gpcg->Hsub_pre));
       }
 
       PetscCall(KSPReset(tao->ksp));
