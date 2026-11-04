@@ -37,8 +37,6 @@ static PetscErrorCode KSPSolve_FBCGS(KSP ksp)
   if (!ksp->guess_zero) {
     if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
-  } else {
-    PetscCall(VecSet(X, 0.0));
   }
 
   /* Compute initial residual */
