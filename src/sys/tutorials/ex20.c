@@ -1,7 +1,6 @@
 static char help[] = "Demonstrates PetscOptionsPush()/PetscOptionsPop().\n\n";
 
 #include <petscsys.h>
-#include <petscoptions.h>
 int main(int argc, char **argv)
 {
   PetscOptions opt1, opt2;

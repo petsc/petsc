@@ -1,5 +1,6 @@
 static char help[] = "Demonstrates drawing primitives in a window\n";
 
+#include <petscsys.h>
 #include <petscdraw.h>
 
 int main(int argc, char **argv)

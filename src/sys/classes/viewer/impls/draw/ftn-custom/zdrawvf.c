@@ -1,6 +1,4 @@
 #include <petsc/private/ftnimpl.h>
-#include <petscdraw.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsc_viewer_draw_         PETSC_VIEWER_DRAW

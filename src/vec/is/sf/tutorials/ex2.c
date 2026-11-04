@@ -2,7 +2,6 @@ static const char help[] = "Test overlapped communication on a single star fores
 
 #include <petscvec.h>
 #include <petscsf.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

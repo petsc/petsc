@@ -1,6 +1,5 @@
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include <petscis.h> /*I "petscis.h"  I*/
-#include <petscbt.h>
 #include <petsc/private/hashmapi.h>
 
 /*@

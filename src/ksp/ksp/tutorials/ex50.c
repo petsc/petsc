@@ -25,7 +25,6 @@ static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
-#include <petscsys.h>
 #include <petscvec.h>
 
 extern PetscErrorCode ComputeJacobian(KSP, Mat, Mat, void *);

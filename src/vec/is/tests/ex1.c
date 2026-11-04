@@ -1,7 +1,6 @@
 static char help[] = "Tests ISLocalToGlobalMappingCreateIS() for bs > 1.\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

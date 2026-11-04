@@ -1,4 +1,3 @@
-#include <petscsys.h>
 #include <petscmatelemental.h>
 #include <petsc/private/petscimpl.h>
 

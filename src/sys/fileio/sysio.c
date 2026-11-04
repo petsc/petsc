@@ -1,5 +1,4 @@
 #include <petscsys.h>
-#include <petscbt.h>
 #include <errno.h>
 #include <fcntl.h>
 #if PetscDefined(HAVE_UNISTD_H)
@@ -365,11 +364,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(ptmp, type, num));
 
   if (type == PETSC_FUNCTION) {
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-    PetscCall(PetscDLSym(NULL, fname, (void **)data));
-#else
     *(void **)data = NULL;
-#endif
     free(fname);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -433,19 +428,10 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-    const char *fnametmp;
-#endif
     m     = 64;
     fname = (char *)malloc(m * sizeof(char));
     PetscCheck(fname, PETSC_COMM_SELF, PETSC_ERR_MEM, "Cannot allocate space for function name");
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-    PetscCheck(n <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only binary view a single function at a time");
-    PetscCall(PetscFPTFind(*(void **)p, &fnametmp));
-    PetscCall(PetscStrncpy(fname, fnametmp, m));
-#else
     PetscCall(PetscStrncpy(fname, "", m));
-#endif
     wtype = PETSC_CHAR;
     pp    = fname;
     ptmp  = (void *)fname;
@@ -665,11 +651,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
   if (count) *count = ibuf[1];
 
   if (type == PETSC_FUNCTION) {
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-    PetscCall(PetscDLLibrarySym(PETSC_COMM_SELF, &PetscDLLibrariesLoaded, NULL, fname, (void **)fptr));
-#else
     *(void **)fptr = NULL;
-#endif
     free(fname);
   }
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -5,7 +5,6 @@
 */
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#include <petscviewer.h>
 
 static const char *ManSection(const char *str)
 {

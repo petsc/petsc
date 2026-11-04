@@ -22,8 +22,8 @@ static char help[] = "Benchmarking device kernel launch time\n";
   Average synchronous device kernel launch time  = 7.13 microseconds
 */
 
-#include <petscsys.h>
 #include <petsc_kokkos.hpp>
+#include <petscsys.h>
 
 int main(int argc, char **argv)
 {

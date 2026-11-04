@@ -10,13 +10,14 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
     v_t - \Delta u = 0    so that     F(u,v).v = Delta u
 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscts.h" so that we can use SNES solvers.  Note that this
+   Include "petscts.h" so that we can use the PETSc ODE integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscis.h  - index sets
+     petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscpc.h  - preconditioners
+     petscksp.h - linear solvers
 */
 #include <petscdm.h>
 #include <petscdmda.h>

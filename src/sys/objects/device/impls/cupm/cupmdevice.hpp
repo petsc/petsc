@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petsc/private/cupminterface.hpp>
+#include <petscpkg_version.h>
 #include <petsc/private/cpp/memory.hpp>
 #include <petsc/private/cpp/array.hpp>
 

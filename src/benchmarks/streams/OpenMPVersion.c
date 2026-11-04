@@ -8,7 +8,7 @@
 #include <float.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 //#define N 2*4*20000000
 #define N 80000000

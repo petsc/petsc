@@ -1,6 +1,5 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscds.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscdssetriemannsolver_ PETSCDSSETRIEMANNSOLVER

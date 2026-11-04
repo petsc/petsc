@@ -8,7 +8,6 @@ static char help[] = "Computes the integral of 2*x/(1+x^2) from x=0..1 \nThis is
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
-     petscviewer.h - viewers
 */
 #include <petscvec.h>
 

@@ -2,7 +2,6 @@
 #include <petsc/private/kspimpl.h> /*  This is needed to provide the appropriate PETSC_EXTERN for KSP_Solve_FS ....*/
 #include <petsc/private/matimpl.h> /* MatScatterDense_Private() for PCMatApply() */
 #include <petscdm.h>
-#include <petscdevice.h>
 #if PetscDefined(HAVE_CUDA)
   #include <petscdevice_cuda.h>
 #endif

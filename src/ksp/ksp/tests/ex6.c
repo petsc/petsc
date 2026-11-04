@@ -3,7 +3,6 @@ Input arguments are:\n\
   -f <input_file> : file to load. For example see $PETSC_DIR/share/petsc/datafiles/matrices\n\n";
 
 #include <petscksp.h>
-#include <petsclog.h>
 
 static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, PetscCtx ctx)
 {

@@ -2,7 +2,8 @@
       Objects which encapsulate finite element spaces
 */
 #pragma once
-#include <petscdm.h>
+#include <petscsystypes.h>
+#include <petscdmtypes.h>
 #include <petscdt.h>
 
 /* MANSEC = DM */

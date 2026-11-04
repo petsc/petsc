@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscdraw.h>
+#include <petscmath.h>
 
 typedef struct _n_PetscImage *PetscImage;
 typedef struct _n_PetscImage {

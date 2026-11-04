@@ -2,7 +2,6 @@
 
 #include <petscmat.h>      /*I      "petscmat.h"          I*/
 #include <petscdmforest.h> /*I      "petscdmforest.h"    I*/
-#include <petscbt.h>
 #include <petsc/private/dmimpl.h>
 
 typedef struct {

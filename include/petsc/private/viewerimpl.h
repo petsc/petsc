@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petsc/private/petscimpl.h>
-#include <petscviewer.h>
 
 PETSC_INTERN PetscBool      PetscViewerRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscViewerRegisterAll(void);

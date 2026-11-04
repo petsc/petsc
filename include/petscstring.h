@@ -1,6 +1,7 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscmem.h>
+#include <petscerror.h>
 
 /* SUBMANSEC = Sys */
 

@@ -1,7 +1,6 @@
 static char help[] = "Demonstrates restricting the -help output to specific manual sections with -help mansec.\n\n";
 
 #include <petscsys.h>
-#include <petscoptions.h>
 
 int main(int argc, char **argv)
 {

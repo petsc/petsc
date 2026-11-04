@@ -6,7 +6,6 @@ Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
 */
 
 #include <petscksp.h>
-#include <petscsys.h>
 
 int main(int argc, char **args)
 {

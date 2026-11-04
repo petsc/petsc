@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscsys.h>
 #if PetscDefined(USE_FORTRAN_KERNEL_MULTADDAIJ)
   #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranmultaddaij_ FORTRANMULTADDAIJ

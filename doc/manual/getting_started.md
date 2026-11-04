@@ -280,7 +280,7 @@ The C/C++ include files for PETSc should be used via statements such as
 where <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscksp.h.html">petscksp.h</a>
 is the include file for the linear solver library.
 Each PETSc program must specify an include file corresponding to the
-highest level PETSc objects needed within the program; all of the
+highest level PETSc objects needed within the program; many of the
 required lower level include files are automatically included within the
 higher level files. For example, <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscksp.h.html">petscksp.h</a> includes
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscmat.h.html">petscmat.h</a>
@@ -303,7 +303,8 @@ input control data at run time using the options database. In this
 example the command `PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);`
 checks whether the user has provided a command line option to set the
 value of `n`, the problem dimension. If so, the variable `n` is set
-accordingly; otherwise, `n` remains unchanged. A complete description
+accordingly; otherwise, `n` remains unchanged. To use the options database one must
+include `petscsys.h`. A complete description
 of the options database may be found in {any}`sec_options`.
 
 (sec_vecintro)=
@@ -1029,6 +1030,7 @@ ObjectViewFromOptions(obj,...);
 
 Where `PetscViewer` is an abstract object that can represent standard output, an ASCII or binary file, a graphical window, etc. The second
 variant allows the user to delay until runtime the decision of what viewer and format to use to view the object or if to view the object at all.
+To use the `PetscViewer` routines one must include `petscsys.h`.
 
 Objects are destroyed with
 

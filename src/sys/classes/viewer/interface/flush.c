@@ -1,4 +1,4 @@
-#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscsys.h" I*/
 
 /*@
   PetscViewerFlush - Flushes a `PetscViewer` (i.e. tries to dump all the

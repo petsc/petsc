@@ -5,7 +5,6 @@ static char help[] = "Builds a parallel vector with 1 component on the first pro
   Include "petscvec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petscsys.h       - base PETSc routines   petscis.h     - index sets
-     petscviewer.h - viewers
 */
 #include <petscvec.h>
 

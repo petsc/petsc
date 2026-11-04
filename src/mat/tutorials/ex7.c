@@ -1,6 +1,5 @@
 static char help[] = "Example use of PetscInfo() as a configurable informative logging or warning tool\n";
 
-#include <petscsys.h>
 #include <petscmat.h>
 #include <petscvec.h>
 

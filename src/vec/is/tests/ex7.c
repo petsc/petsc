@@ -2,7 +2,6 @@ static char help[] = "Tests ISLocalToGlobalMappingGetInfo() and ISLocalToGlobalM
 
 #include <petscis.h>
 #include <petscsf.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

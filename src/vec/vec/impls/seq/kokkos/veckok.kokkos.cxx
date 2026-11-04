@@ -6,8 +6,6 @@
 
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/petscimpl.h>
-#include <petscmath.h>
-#include <petscviewer.h>
 #include <KokkosBlas.hpp>
 #include <Kokkos_Functional.hpp>
 

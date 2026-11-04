@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(HAVE_MPIUNI)
   #undef MPI_SUCCESS
 #endif

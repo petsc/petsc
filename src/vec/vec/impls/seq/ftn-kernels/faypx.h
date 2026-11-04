@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(USE_FORTRAN_KERNEL_AYPX)
   #if PetscDefined(HAVE_FORTRAN_CAPS)
     #define fortranaypx_ FORTRANAYPX

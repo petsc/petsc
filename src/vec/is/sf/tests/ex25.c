@@ -1,6 +1,5 @@
 static const char help[] = "Test PetscSF with derived data types created with MPI large count\n\n";
 
-#include <petscsys.h>
 #include <petscsf.h>
 
 int main(int argc, char **argv)

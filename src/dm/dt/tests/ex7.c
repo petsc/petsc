@@ -1,6 +1,5 @@
 static char help[] = "Test the PetscDTAltV interface for k-forms (alternating k-linear maps).\n\n";
 
-#include <petscviewer.h>
 #include <petscdt.h>
 
 static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *x, PetscBool verbose, PetscViewer viewer)

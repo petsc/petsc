@@ -1,6 +1,5 @@
 /* qmdqt.f -- translated by f2c (version 19931217).*/
 
-#include <petscsys.h>
 #include <petsc/private/matorderimpl.h>
 
 /***************************************************************/

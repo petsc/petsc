@@ -4,6 +4,7 @@
       Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
+#include <petscpkg_version.h>
 
 typedef struct _EH *EH;
 struct _EH {

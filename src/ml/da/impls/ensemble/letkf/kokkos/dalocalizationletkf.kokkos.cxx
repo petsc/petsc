@@ -1,6 +1,6 @@
+#include <petsc_kokkos.hpp>
 #include <petsc.h>
 #include <petscmat.h>
-#include <petsc_kokkos.hpp>
 #include <cmath>
 #include <Kokkos_Core.hpp>
 #include <../src/ml/da/impls/ensemble/letkf/letkf.h>

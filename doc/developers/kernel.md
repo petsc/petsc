@@ -167,13 +167,13 @@ and `free()` routines. The public interface for these is provided in
 `petscsys.h`, while the implementation code is in `src/sys/memory`.
 The most basic interfaces are
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscMalloc'
 :language: c
 :start-at: '#define PetscMalloc'
 ```
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscFree'
 :language: c
 :start-at: '#define PetscFree'
@@ -217,13 +217,13 @@ in the PETSc source code. They automatically manage calling
 `PetscMallocA()` and `PetscFreeA()` with the appropriate location
 information.
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscMalloc1'
 :language: c
 :start-at: '#define PetscMalloc1'
 ```
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscMalloc2'
 :language: c
 :start-at: '#define PetscMalloc2'
@@ -231,19 +231,19 @@ information.
 
 ...
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscMalloc7'
 :language: c
 :start-at: '#define PetscMalloc7'
 ```
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscFree'
 :language: c
 :start-at: '#define PetscFree'
 ```
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscFree2'
 :language: c
 :start-at: '#define PetscFree2'
@@ -251,7 +251,7 @@ information.
 
 ...
 
-```{literalinclude} /../include/petscsys.h
+```{literalinclude} /../include/petscmem.h
 :end-at: '#define PetscFree7'
 :language: c
 :start-at: '#define PetscFree7'

@@ -667,6 +667,37 @@ preceded by and followed by a blank line. For source code, this information is f
 > SUBMANSEC= DMPlex
 > ```
 
+### Include file contents
+
+PETSc provides public include C/C++ files for its API. Material for a particular aspect of PETSc is often split into two public include files with names of the form `petsc*.h`
+and `petsc*types.h`. For example, `petscsys.h` and `petscsystypes.h`. The objective of using two files is to reduce the dependencies between include files which can
+reduce compile times of PETSc in two ways:
+
+- When only the `petsc*types.h` information is needed to compile a source file, the compiler does not need to spend time processing everything in `petsc*.h`. For example, since the
+  solver APIs including
+  `PC`, `KSP`, `SNES`, `TS` all use `DM` arguments, the source code for them must include `petscdmtypes.h` but, except for a very small number of source files, it does not need `petscdm.h`.
+
+- When developing new code and adding new function APIs into an existing `petsc*.h`, only the source files that specifically need `petsc*.h` will get recompiled, those that use
+  `petsc*types.h` do not, thus changing a five minute recompile to a minute. Again, this is exemplified with the solver APIs and `DM`.
+
+In general, the `petsc*types.h` file contains the non-function pointer typedefs (for example, `typedef struct _p_DM *DM`), enums and non-function-like C preprocessing macros (for example,
+`#define PETSC_DRAW_X "x"`). Function prototypes, function pointer typedefs (for example, `SNESFunctionFn`), and function-like C preprocessing macros
+(for example, `#define PetscMalloc1()`) are in `petsc*.h`. Exceptions to these general rules may exist for a specific reason.
+
+Each public header `petsc*.h` must include its corresponding `petsc*types.h`, if it exists, to ensure type definitions are available when the public header is included directly.
+
+There should be no cycles in the include files, that is, no header should, directly or indirectly, include itself. The number of include files that a particular include file must
+include should be minimized.
+
+The options database and PETSc viewer APIs are an intentional exception to minimizing includes: because they are used pervasively throughout PETSc and application code, `petscsys.h`
+includes `petscoptions.h` and `petscviewer.h` for the convenience of every file that includes `petscsys.h`. To keep this from creating a cycle, the two `#include` lines appear at the
+*end* of `petscsys.h`, after all of its own declarations; `petscviewer.h` and `petscoptions.h` depend only on the basic `petsc*types.h` headers, never on the rest of `petscsys.h`, so by the
+time they are processed `petscsys.h` is already complete.
+
+Best not to put static inline functions in public `petsc*.h` include files unless they are truly needed for performance, or are for deprecated functions.
+Putting an entire function into an include file requires possibly including multiple other
+include files that would otherwise not need to be exposed in the include file.
+
 (manual_page_format)=
 
 ### Manual Page Format

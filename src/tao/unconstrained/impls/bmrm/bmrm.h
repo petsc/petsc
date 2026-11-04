@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petsc/private/taoimpl.h>
-#include <petscmath.h>
 
 #define BMRM_INFTY 1e30 /* single precision: ~\pm 10^{38.53}; PetscReal precision: ~\pm 10^{308.25} */
 #define ALPHA_MIN  1e-10

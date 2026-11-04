@@ -1,7 +1,6 @@
 static char help[] = "Demonstrates using ISLocalToGlobalMappings with block size.\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

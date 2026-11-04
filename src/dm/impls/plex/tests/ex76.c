@@ -2,7 +2,6 @@ static char help[] = "Test for DMPlexMetricIntersection using two constant 3x3 m
 
 #include <petscdmplex.h>
 #include <petscblaslapack.h>
-#include <petscmath.h>
 
 /* Euler z-x-z (extrinsic) rotation same as used in DMPlexCreateBasisRotation
    R = Rz(alpha) * Rx(beta) * Rz(gamma) */

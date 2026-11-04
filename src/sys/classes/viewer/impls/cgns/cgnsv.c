@@ -1,5 +1,5 @@
-#include <petsc/private/viewercgnsimpl.h> /*I "petscviewer.h" I*/
-#include <petsc/private/dmpleximpl.h>     /*I   "petscdmplex.h"   I*/
+#include <petsc/private/viewercgnsimpl.h>
+#include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 #if PetscDefined(HDF5_HAVE_PARALLEL)
   #include <pcgnslib.h>
 #else

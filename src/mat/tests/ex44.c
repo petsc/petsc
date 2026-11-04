@@ -1,7 +1,6 @@
 static char help[] = "Tests MatView()/MatLoad() with binary viewers for AIJ matrices.\n\n";
 
 #include <petscmat.h>
-#include <petscviewer.h>
 
 #include <petsc/private/hashtable.h>
 static PetscReal MakeValue(PetscInt i, PetscInt j, PetscInt M)

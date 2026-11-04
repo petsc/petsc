@@ -16,8 +16,6 @@ The command line options include:\n\
      petscvec.h    - vectors
      petscmat.h    - matrices
      petscis.h     - index sets
-     petscksp.h    - Krylov subspace methods
-     petscviewer.h - viewers
      petscpc.h     - preconditioners
      petscksp.h    - linear solvers
 */

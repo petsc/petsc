@@ -21,6 +21,10 @@ It is copied and intended to move dirty codes from ksp/tutorials/ex10.c and simp
 */
 
 #include <petscksp.h>
+/*
+  Include "petscpreload.h" so that we can use the PetscPreload API for careful profiling
+*/
+#include <petscpreload.h>
 
 int main(int argc, char **args)
 {

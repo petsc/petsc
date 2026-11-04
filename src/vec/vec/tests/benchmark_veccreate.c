@@ -2,7 +2,6 @@ static char help[] = "Benchmark VecCreate() for GPU vectors.\n\
   -n <length> : vector length\n\n";
 
 #include <petscvec.h>
-#include <petsctime.h>
 #include <petscdevice_cuda.h>
 
 int main(int argc, char **argv)

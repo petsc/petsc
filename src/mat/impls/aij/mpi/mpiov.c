@@ -4,7 +4,6 @@
 */
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
-#include <petscbt.h>
 #include <petscsf.h>
 
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat, PetscInt, IS *);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscdevice.h>
+#include <petscsystypes.h>
 
 PETSC_INTERN PetscErrorCode AXPBYCyclic_CUPM_Private(PetscInt, PetscInt, PetscInt, PetscScalar, const PetscScalar[], PetscScalar, PetscScalar[], PetscInt);
 PETSC_INTERN PetscErrorCode DMVCyclic_CUPM_Private(PetscBool, PetscInt, PetscInt, PetscInt, PetscScalar, const PetscScalar[], const PetscScalar[], PetscScalar, PetscScalar[]);

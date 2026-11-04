@@ -1,5 +1,4 @@
 /*
-
    This file defines part of the initialization of PETSc
 
   This file uses regular malloc and free because it cannot be known
@@ -198,8 +197,6 @@ static char                 emacsmachinename[256];
 
 PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
-
-#include <petscviewer.h>
 
 /*@
   PetscSetHelpVersionFunctions - Sets functions that print help and version information

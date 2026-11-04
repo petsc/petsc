@@ -3,10 +3,10 @@ static char help[] = "Reads a PETSc matrix and vector from a file and solves the
 /*
   Include "petscksp.h" so that we can use KSP solvers.  Note that this file
   automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
+     petscis.h  - index sets
+     petscpc.h  - preconditioners
 */
 #include <petscksp.h>
 #include <petscviewerhdf5.h>
@@ -91,18 +91,8 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_custom_layout", &test_custom_layout, NULL));
 
   /* -----------------------------------------------------------
-                  Beginning of linear solver loop
+                  Beginning of linear solver
      ----------------------------------------------------------- */
-  /*
-     Loop through the linear solve 2 times.
-      - The intention here is to preload and solve a small system;
-        then load another (larger) system and solve it as well.
-        This process preloads the instructions with the smaller
-        system so that more accurate performance monitoring (via
-        -log_view) can be done with the larger one (that actually
-        is the system of interest).
-  */
-  PetscPreLoadBegin(PETSC_FALSE, "Load system");
 
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                          Load system
@@ -211,11 +201,6 @@ int main(int argc, char **args)
                     Setup solve for system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /*
-     Conclude profiling last stage; begin profiling next stage.
-  */
-  PetscPreLoadStage("KSPSetUp");
-
   PetscCall(MatCreateNormalHermitian(A, &N));
   PetscCall(MatMultHermitianTranspose(A, b, Ab));
 
@@ -296,11 +281,6 @@ int main(int argc, char **args)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
-     Begin profiling next stage
-  */
-  PetscPreLoadStage("KSPSolve");
-
-  /*
      Solve linear system
   */
   if (solve_normal) {
@@ -358,11 +338,6 @@ int main(int argc, char **args)
   }
   PetscCall(PetscObjectSetName((PetscObject)x, "x"));
 
-  /*
-      Conclude profiling this stage
-   */
-  PetscPreLoadStage("Cleanup");
-
   /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
           Check error, print output, free data structures.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -395,11 +370,6 @@ int main(int argc, char **args)
     PetscCall(VecDestroy(v + 1));
   }
   PetscCall(KSPDestroy(&ksp));
-  PetscPreLoadEnd();
-  /* -----------------------------------------------------------
-                      End of linear solver loop
-     ----------------------------------------------------------- */
-
   PetscCall(PetscFinalize());
   return 0;
 }

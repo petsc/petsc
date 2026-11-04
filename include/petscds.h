@@ -3,7 +3,6 @@
 */
 #pragma once
 
-#include "petscsystypes.h"
 #include <petscfe.h>
 #include <petscfv.h>
 #include <petscdstypes.h>

@@ -4,8 +4,8 @@
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petsc/private/logimpl.h>
-#include <petscviewer.h>
 #include <petsc/private/garbagecollector.h>
+#include <petscpkg_version.h>
 
 #if !PetscDefined(HAVE_WINDOWS_COMPILERS)
   #include <petsc/private/valgrind/valgrind.h>
@@ -24,13 +24,57 @@ void __gcov_flush(void);
 EXTERN_C_END
 #endif
 
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-PETSC_INTERN PetscFPT PetscFPTData;
-PetscFPT              PetscFPTData = 0;
-#endif
-
 #if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
+#endif
+
+/*
+   Perform various sanity checks that the correct mpi.h is being included at compile time.
+   This usually happens because
+      * either an unexpected mpi.h is in the default compiler path (i.e. in /usr/include) or
+      * an extra include path -I/something (which contains the unexpected mpi.h) is being passed to the compiler
+   Note: with MPICH and OpenMPI, accept versions [x.y.z, x+1.0.0) as compatible
+*/
+#if PetscDefined(HAVE_MPIUNI)
+  #if !defined(MPIUNI_H)
+    #error "PETSc was configured with --with-mpi=0 but now appears to be compiling using a different mpi.h"
+  #endif
+#elif PetscDefined(HAVE_I_MPI)
+  #if !defined(I_MPI_NUMVERSION)
+    #error "PETSc was configured with I_MPI but now appears to be compiling using a non-I_MPI mpi.h"
+  #elif I_MPI_NUMVERSION != PETSC_PKG_I_MPI_NUMVERSION
+    #error "PETSc was configured with one I_MPI mpi.h version but now appears to be compiling using a different I_MPI mpi.h version"
+  #endif
+#elif PetscDefined(HAVE_MVAPICH2)
+  #if !defined(MVAPICH2_NUMVERSION)
+    #error "PETSc was configured with MVAPICH2 but now appears to be compiling using a non-MVAPICH2 mpi.h"
+  #elif MVAPICH2_NUMVERSION != PETSC_PKG_MVAPICH2_NUMVERSION
+    #error "PETSc was configured with one MVAPICH2 mpi.h version but now appears to be compiling using a different MVAPICH2 mpi.h version"
+  #endif
+#elif PetscDefined(HAVE_MPICH)
+  #if !defined(MPICH_NUMVERSION) || defined(MVAPICH2_NUMVERSION) || defined(I_MPI_NUMVERSION)
+    #error "PETSc was configured with MPICH but now appears to be compiling using a non-MPICH mpi.h"
+  #elif PETSC_PKG_MPICH_VERSION_GT(MPICH_NUMVERSION / 10000000, MPICH_NUMVERSION / 100000 % 100, MPICH_NUMVERSION / 1000 % 100)
+    #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using an older MPICH mpi.h version"
+  #elif PETSC_PKG_MPICH_VERSION_LT(MPICH_NUMVERSION / 10000000, 0, 0)
+    #error "PETSc was configured with one MPICH mpi.h version but now appears to be compiling using a newer major MPICH mpi.h version"
+  #endif
+#elif PetscDefined(HAVE_OPENMPI)
+  #if !defined(OMPI_MAJOR_VERSION)
+    #error "PETSc was configured with Open MPI but now appears to be compiling using a non-Open MPI mpi.h"
+  #elif PETSC_PKG_OPENMPI_VERSION_GT(OMPI_MAJOR_VERSION, OMPI_MINOR_VERSION, OMPI_RELEASE_VERSION)
+    #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using an older Open MPI mpi.h version"
+  #elif PETSC_PKG_OPENMPI_VERSION_LT(OMPI_MAJOR_VERSION, 0, 0)
+    #error "PETSc was configured with one Open MPI mpi.h version but now appears to be compiling using a newer major Open MPI mpi.h version"
+  #endif
+#elif defined(PETSC_HAVE_MSMPI_VERSION)
+  #if !defined(MSMPI_VER)
+    #error "PETSc was configured with MSMPI but now appears to be compiling using a non-MSMPI mpi.h"
+  #elif (MSMPI_VER != PETSC_HAVE_MSMPI_VERSION)
+    #error "PETSc was configured with one MSMPI mpi.h version but now appears to be compiling using a different MSMPI mpi.h version"
+  #endif
+#elif defined(OMPI_MAJOR_VERSION) || defined(MPICH_NUMVERSION) || defined(MSMPI_VER)
+  #error "PETSc was configured with undetermined MPI - but now appears to be compiling using any of Open MPI, MS-MPI or a MPICH variant"
 #endif
 
 PETSC_INTERN FILE *petsc_history;
@@ -66,6 +110,7 @@ const char *const PetscBools[]     = {"FALSE", "TRUE", "PetscBool", "PETSC_", NU
 const char *const PetscBool3s[]    = {"FALSE", "TRUE", "UNKNOWN", "PetscBool3", "PETSC_", NULL};
 const char *const PetscCopyModes[] = {"COPY_VALUES", "OWN_POINTER", "USE_POINTER", "PetscCopyMode", "PETSC_", NULL};
 
+#include <petscpreload.h>
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;
 PetscBool PetscPreLoadingOn   = PETSC_FALSE;
 
@@ -454,7 +499,38 @@ PETSC_INTERN char **PetscGlobalArgs, **PetscGlobalArgsFortran;
 int                 PetscGlobalArgc        = 0;
 char              **PetscGlobalArgs        = NULL;
 char              **PetscGlobalArgsFortran = NULL;
-PetscSegBuffer      PetscCitationsList;
+
+static PetscSegBuffer PetscCitationsList;
+
+/*@
+  PetscCitationsRegister - Register a bibtex item to obtain credit for an implemented algorithm used in the code.
+
+  Not Collective; No Fortran Support
+
+  Input Parameters:
++ cite - the bibtex item, formatted to displayed on multiple lines nicely
+- set  - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
+
+  Options Database Key:
+. -citations [filename] - print out the bibtex entries for the given computation
+
+  Level: intermediate
+
+.seealso: `PetscFinalize()`
+@*/
+PetscErrorCode PetscCitationsRegister(const char cite[], PetscBool *set)
+{
+  size_t len;
+  char  *vstring;
+
+  PetscFunctionBegin;
+  if (set && *set) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscStrlen(cite, &len));
+  PetscCall(PetscSegBufferGet(PetscCitationsList, (PetscCount)len, &vstring));
+  PetscCall(PetscArraycpy(vstring, cite, len));
+  if (set) *set = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 PetscErrorCode PetscCitationsInitialize(void)
 {
@@ -1177,10 +1253,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   if (!PetscBinaryBigEndian()) PetscCallMPI(MPI_Register_datarep((char *)"petsc", PetscDataRep_read_conv_fn, PetscDataRep_write_conv_fn, PetscDataRep_extent_fn, NULL));
 #endif
 
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-  PetscCall(PetscFPTCreate(10000));
-#endif
-
 #if PetscDefined(HAVE_HWLOC)
   {
     PetscViewer viewer;
@@ -1543,10 +1615,6 @@ PetscErrorCode PetscFinalize(void)
     PetscCall(PetscFree(cits));
   }
   PetscCall(PetscSegBufferDestroy(&PetscCitationsList));
-
-#if PetscDefined(SERIALIZE_FUNCTIONS)
-  PetscCall(PetscFPTDestroy());
-#endif
 
 #if PetscDefined(HAVE_X)
   flg1 = PETSC_FALSE;

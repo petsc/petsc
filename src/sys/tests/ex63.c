@@ -1,6 +1,5 @@
 static char help[] = "Tests `GarbageKeyAllReduceIntersect_Private()` in parallel\n\n";
 
-#include <petscsys.h>
 #include <petsc/private/garbagecollector.h>
 
 /* This program tests `GarbageKeyAllReduceIntersect_Private()`.

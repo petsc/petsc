@@ -1,6 +1,5 @@
 static char help[] = "Test AO with on IS with 0 entries - contributed by Ethan Coon <ecoon@lanl.gov>, Apr 2011.\n\n";
 
-#include <petscsys.h>
 #include <petscao.h>
 
 int main(int argc, char **argv)

@@ -1,7 +1,6 @@
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/dense/seq/dense.h>
 #include <petsc/private/kernels/blockinvert.h>
-#include <petscbt.h>
 #include <petscblaslapack.h>
 
 #if PetscDefined(HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && PetscDefined(USE_REAL_DOUBLE) && !PetscDefined(USE_COMPLEX) && !PetscDefined(USE_64BIT_INDICES)

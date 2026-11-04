@@ -1,5 +1,4 @@
 #include <petsc/private/ftnimpl.h>
-#include <petscsys.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petsctimsort_          PETSCTIMSORT

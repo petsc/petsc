@@ -1,5 +1,4 @@
-#include <petscsys.h> /*I "petscsys.h" I*/
-#include "err.h"
+#include "err.h" /*I "petscsys.h" I*/
 
 /*@
   PetscMPIAbortErrorHandler - Calls `PETSCABORT()` and exits.

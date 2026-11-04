@@ -1,5 +1,6 @@
 #include <petsc/private/logimpl.h> /*I "petscsys.h" I*/
 #include <petsc/private/loghandlerimpl.h>
+#include <petscpkg_version.h>
 #include <petscdevice_hip.h>
 
 #if PetscDefined(HAVE_ROCTX)

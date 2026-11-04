@@ -1,7 +1,6 @@
 #include <petsc/private/petscimpl.h>
 #include <petscmat.h>
 #include <petscblaslapack.h>
-#include <petscdevice.h>
 #include "lmproducts.h"
 #include "blas_cyclic/blas_cyclic.h"
 

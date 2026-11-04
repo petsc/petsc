@@ -1,8 +1,7 @@
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
  */
-#include <petsc/private/petscimpl.h>
-#include <petscsys.h> /*I  "petscsys.h"  I*/
+#include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 
 #define SWAP(a, b, t) \
   do { \

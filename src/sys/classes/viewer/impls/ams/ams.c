@@ -1,6 +1,5 @@
 #include <petsc/private/viewerimpl.h>
 #include <petscviewersaws.h>
-#include <petscsys.h>
 
 /*
     The variable Petsc_Viewer_SAWs_keyval is used to indicate an MPI attribute that

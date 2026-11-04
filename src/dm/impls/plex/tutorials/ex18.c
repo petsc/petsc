@@ -1,4 +1,3 @@
-#include "petscsys.h"
 static const char help[] = "Test of PETSc/CAD Shape Modification Technology";
 
 #include <petscdmplexegads.h>

@@ -1,6 +1,4 @@
 #include <petsc/private/ftnimpl.h>
-#include <petscsys.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscmallocdump_ PETSCMALLOCDUMP

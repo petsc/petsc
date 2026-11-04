@@ -4,8 +4,8 @@
   Portions of this code are under:
   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#include <petscconf.h>
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
+#include <petscpkg_version.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/mat/impls/dense/seq/dense.h> // MatMatMultNumeric_SeqDenseHIP_SeqDenseHIP_Internal()
 #include <../src/vec/vec/impls/dvecimpl.h>

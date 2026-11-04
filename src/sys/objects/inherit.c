@@ -2,7 +2,6 @@
      Provides utility routines for manipulating any type of PETSc object.
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
-#include <petscviewer.h>
 
 PETSC_INTERN PetscObject *PetscObjects;
 PETSC_INTERN PetscInt     PetscObjectsCounts;

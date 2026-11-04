@@ -1,5 +1,5 @@
-#include <petsc/private/viewerimpl.h> /*I    "petscviewer.h"   I*/
-#include <mat.h>                      /*I    "petscmat.h"      I*/
+#include <petsc/private/viewerimpl.h>
+#include <mat.h>
 
 typedef struct {
   MATFile      *ep;

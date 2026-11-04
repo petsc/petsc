@@ -1,6 +1,5 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscdm.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define dmcreatesuperdm_                       DMCREATESUPERDM

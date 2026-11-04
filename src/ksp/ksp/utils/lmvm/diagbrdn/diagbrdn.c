@@ -1,4 +1,3 @@
-#include <petscdevice.h>
 #include <../src/ksp/ksp/utils/lmvm/rescale/symbrdnrescale.h> /*I "petscksp.h" I*/
 
 static PetscErrorCode MatSolve_DiagBrdn(Mat B, Vec F, Vec dX)

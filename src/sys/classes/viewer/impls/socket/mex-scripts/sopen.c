@@ -11,7 +11,7 @@
  Only compiles as C code.
 */
 
-#include <petscsys.h>
+#include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 #if PetscDefined(NEEDS_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
@@ -57,7 +57,6 @@ typedef unsigned long  u_long;
 #if PetscDefined(HAVE_WS2TCPIP_H)
   #include <Ws2tcpip.h>
 #endif
-#include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
 
 #define PETSC_MEX_ERROR(a) \

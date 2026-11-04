@@ -1,7 +1,6 @@
 #pragma once
 
 #include <petscksp.h>
-#include <petscbt.h>
 
 /* special marks for interface graph: they cannot be enums
    since PCBDDCGRAPH_SPECIAL_MARK ranges from -4 to -max_int */

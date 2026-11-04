@@ -5,7 +5,6 @@ static char help[] = "Creating a general index set.\n\n";
   includes petscsys.h.
 */
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

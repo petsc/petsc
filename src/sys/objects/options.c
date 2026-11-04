@@ -10,7 +10,6 @@
 */
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#include <petscviewer.h>
 #include <ctype.h>
 #if PetscDefined(HAVE_MALLOC_H)
   #include <malloc.h>

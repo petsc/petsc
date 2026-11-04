@@ -2,7 +2,6 @@
 
 /* types used by all PETSc Kokkos code */
 
-#include <petscsystypes.h>
 #include <petscerror.h>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>

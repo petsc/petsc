@@ -1,4 +1,3 @@
-#include <petscviewer.h>
 #include "lognested.h"
 
 PETSC_INTERN PetscErrorCode PetscLogHandlerNestedSetThreshold(PetscLogHandler h, PetscLogDouble newThresh, PetscLogDouble *oldThresh)

@@ -1,6 +1,5 @@
 #include <petsc/private/petscimpl.h>
 #include <petsctao.h> /*I "petsctao.h" I*/
-#include <petscsys.h>
 
 static inline PetscReal Fischer(PetscReal a, PetscReal b)
 {

@@ -6,7 +6,6 @@ https://en.wikipedia.org/wiki/Bhatnagar%E2%80%93Gross%E2%80%93Krook_operator\n";
 #include <petscdmswarm.h>
 #include <petscts.h>
 #include <petscdraw.h>
-#include <petscviewer.h>
 
 typedef struct {
   PetscInt    particlesPerCell; /* The number of partices per cell */

@@ -1,6 +1,5 @@
 static const char help[] = "Test PetscSF with MPI large count (more than 2 billion elements in messages)\n\n";
 
-#include <petscsys.h>
 #include <petscsf.h>
 
 int main(int argc, char **argv)

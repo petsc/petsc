@@ -1,6 +1,5 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscvec.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define vecgetownershipranges_     VECGETOWNERSHIPRANGES

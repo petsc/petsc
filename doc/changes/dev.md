@@ -30,6 +30,18 @@
 - Change `PETSC_PI`, `PETSC_PHI`, `PETSC_SQRT2`, `PETSC_E`, `PETSC_MAX_REAL`, `PETSC_REAL_MIN`, `PETSC_MACHINE_EPSILON`, `PETSC_SQRT_MACHINE_EPSILON`, and `PETSC_SMALL` from macros to `static const PetscReal` objects, `constexpr` in C++ so they can be used in constant expressions and device code, and likewise `PETSC_MIN_REAL`, `PETSC_INFINITY`, and `PETSC_NINFINITY` except in C with the Microsoft, Intel classic, and NVHPC compilers, where they remain macros
 - Change `PETSC_REAL_MIN` in double precision from the largest subnormal value to `DBL_MIN`, its documented smallest positive normalized value
 - Change `PETSC_SQRT_MACHINE_EPSILON` in double precision to the exactly representable `1.4901161193847656e-08`, one ulp below the previous value; finite-difference step sizes change accordingly
+- Reduce the include dependencies of many public headers
+- Several public headers now include only the corresponding `petsc*types.h` instead of the full API header: `petscdmproduct.h`,
+  `petscdmredundant.h` and `petscspace.h` no longer provide the `DM` API, `petsctaolinesearch.h` no longer provides the `Tao` API,
+  `petscdmda.h`, `petscfeceed.h` and `petscfvceed.h` no longer provide the `PetscFE`/`PetscFV` APIs, and `petsclayouthdf5.h` no
+  longer provides the `IS` API; code that obtained those APIs through one of these headers must now include the API header as well
+- `petscsys.h` no longer includes `petscpkg_version.h`; include it directly to use the `PETSC_PKG_*_VERSION_*()` macros
+- `petscviewer.h`, `petscoptions.h`, `petsclog.h`, `petscstring.h`, `petsctime.h`, and `petscdevicetypes.h` no longer
+  include `petscsys.h` (just include `petscsys.h` instead of these individual files), and `petscdstypes.h` no longer provides the `DMLabel` API
+- `PetscCitationsList` is no longer declared in a public header; register citations with `PetscCitationsRegister()`
+- Move the PETSc memory-management API (`PetscMalloc()`, `PetscFree()`, and related routines) into the new header `petscmem.h`; the API remains available through `petscsys.h`
+- Move the `PetscPreLoad*` functionality into `petscpreload.h`
+- Remove the `--with-serialize-functions` configure option and the associated function-pointer serialization feature (`PETSC_SERIALIZE_FUNCTIONS`)
 
 ```{rubric} Event Logging:
 ```

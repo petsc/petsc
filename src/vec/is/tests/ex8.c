@@ -1,7 +1,6 @@
 static char help[] = "Tests ISLocalToGlobalMappingView() and ISLocalToGlobalMappingLoad()\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 static PetscErrorCode TestEqual(MPI_Comm comm, ISLocalToGlobalMapping m1, ISLocalToGlobalMapping m2, const char *tname)
 {

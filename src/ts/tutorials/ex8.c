@@ -1,13 +1,14 @@
 static char help[] = "Nonlinear DAE benchmark problems.\n";
 
 /*
-   Include "petscts.h" so that we can use TS solvers.  Note that this
+   Include "petscts.h" so that we can use the PETSc TS ODE integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h - base PETSc routines
+     petscis.h  - index sets
+     petscvec.h - vectors
      petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
+     petscpc.h  - preconditioners
+     petscksp.h - linear solvers
 */
 #include <petscts.h>
 

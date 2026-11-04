@@ -5,7 +5,6 @@
  *************************************************************************************
  *    content: Viewer for writing XML output                                         *
  *************************************************************************************/
-#include <petscviewer.h>
 #include <petsc/private/logimpl.h>
 #include "lognested.h"
 

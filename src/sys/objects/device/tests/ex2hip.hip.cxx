@@ -5,7 +5,6 @@ static char help[] = "Benchmarking hipPointerGetAttributes() time\n";
   $ srun -n1 -c32 --cpu-bind=map_cpu:0 --gpus-per-node=8 --gpu-bind=map_gpu:0 ./ex2hip
     Average hipPointerGetAttributes() time = 0.24 microseconds
 */
-#include <petscsys.h>
 #include <petscdevice_hip.h>
 
 int main(int argc, char **argv)

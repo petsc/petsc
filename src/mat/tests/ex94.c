@@ -7,6 +7,7 @@ Input arguments are:\n\
 */
 
 #include <petscmat.h>
+#include <petscpreload.h>
 
 /*
      B = A - B

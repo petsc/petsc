@@ -23,8 +23,6 @@ static const char help[] = "1D periodic Finite Volume solver by a particular slo
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscdraw.h>
-#include <petscmath.h>
 
 static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax)
 {

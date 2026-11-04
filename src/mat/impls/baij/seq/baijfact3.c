@@ -144,7 +144,6 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
   except for very small changes since this is now a SeqBAIJ datastructure.
   NOT good code reuse.
 */
-#include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
 PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)

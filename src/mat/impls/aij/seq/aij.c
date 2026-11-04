@@ -5,7 +5,6 @@
 
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <petscblaslapack.h>
-#include <petscbt.h>
 #include <petsc/private/kernels/blocktranspose.h>
 
 /* defines MatSetValues_Seq_Hash(), MatAssemblyEnd_Seq_Hash(), MatSetUp_Seq_Hash() */

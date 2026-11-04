@@ -4,8 +4,8 @@
 */
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
-#include <petscconf.h>
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
+#include <petscpkg_version.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petsc/private/vecimpl.h>

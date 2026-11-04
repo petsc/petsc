@@ -2,7 +2,6 @@
       Objects to manage the interactions between the mesh data structures and the algebraic objects
 */
 #pragma once
-#include "petscsystypes.h"
 #include <petscmat.h>
 #include <petscdmtypes.h>
 #include <petscdmlabel.h>

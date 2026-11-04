@@ -79,13 +79,14 @@ The flow can be driven with the lid or with buoyancy or both:\n\
 
 /*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
-   Include "petscts.h" so that we can use TS solvers.  Note that this
+   Include "petscts.h" so that we can use the TS ODE integrators.  Note that this
    file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers         petscsnes.h - nonlinear solvers
+     petscsys.h  - base PETSc routines
+     petscis.h   - index sets
+     petscvec.h  - vectors
+     petscmat.h  - matrices
+     petscksp.h  - linear solvers
+     petscsnes.h - nonlinear solvers
 */
 #include <petscts.h>
 #include <petscdm.h>

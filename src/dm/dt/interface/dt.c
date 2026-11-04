@@ -5,7 +5,6 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/dtimpl.h>
 #include <petsc/private/petscfeimpl.h> /* For CoordinatesRefToReal() */
-#include <petscviewer.h>
 #include <petscdmplex.h>
 #include <petscdmshell.h>
 

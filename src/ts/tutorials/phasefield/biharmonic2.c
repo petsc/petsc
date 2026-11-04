@@ -25,7 +25,6 @@ Evolve the Cahn-Hillard equations: (this fails after a few timesteps 12/17/2017)
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscts.h>
-#include <petscdraw.h>
 
 /*
    User-defined routines

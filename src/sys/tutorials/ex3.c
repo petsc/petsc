@@ -9,7 +9,6 @@ codes.\n\n";
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
 #include <petscsys.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

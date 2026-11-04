@@ -1,7 +1,6 @@
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
 #include <petscis.h>
-#include <petscviewer.h>
 
 int main(int argc, char **argv)
 {

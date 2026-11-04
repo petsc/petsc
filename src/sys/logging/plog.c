@@ -12,9 +12,6 @@
 */
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 #include <petsc/private/loghandlerimpl.h>
-#include <petsctime.h>
-#include <petscviewer.h>
-#include <petscdevice.h>
 #include <petsc/private/deviceimpl.h>
 
 #if PetscDefined(HAVE_THREADSAFETY)
@@ -891,7 +888,7 @@ PetscErrorCode PetscLogStagePop(void)
   Note:
   If this is set to `PETSC_FALSE` the logging acts as if the stage did not exist
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 @*/
 PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 {
@@ -916,7 +913,7 @@ PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 @*/
 PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
 {
@@ -996,7 +993,7 @@ PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
@@ -1022,7 +1019,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogStageGetName(PetscLogStage stage, const char *name[])
 {
@@ -1756,7 +1753,7 @@ PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 @*/
 PetscErrorCode PetscLogEventGetName(PetscLogEvent event, const char *name[])
 {
@@ -1909,7 +1906,7 @@ PetscErrorCode PetscLogClassGetClassId(const char name[], PetscClassId *classid)
 
   Level: intermediate
 
-.seealso: [](ch_profiling), `PetscLogClassRegister()`, `PetscLogClassBegin()`, `PetscLogClassEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadClass()`
+.seealso: [](ch_profiling), `PetscLogClassRegister()`, `PetscLogClassBegin()`, `PetscLogClassEnd()`
 @*/
 PetscErrorCode PetscLogClassIdGetName(PetscClassId classid, const char *name[])
 {
@@ -2269,102 +2266,6 @@ PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
    this counter to include flops for the application code.
 
 .seealso: [](ch_profiling), `PetscLogGpuFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
-M*/
-
-/*MC
-  PetscPreLoadBegin - Begin a segment of code that may be preloaded (run twice) to get accurate
-  timings
-
-  Synopsis:
-  #include <petsclog.h>
-  void PetscPreLoadBegin(PetscBool flag, char *name);
-
-  Not Collective
-
-  Input Parameters:
-+ flag - `PETSC_TRUE` to run twice, `PETSC_FALSE` to run once, may be overridden with command
-         line option `-preload true|false`
-- name - name of first stage (lines of code timed separately with `-log_view`) to be preloaded
-
-  Example Usage:
-.vb
-  PetscPreLoadBegin(PETSC_TRUE, "first stage");
-  // lines of code
-  PetscPreLoadStage("second stage");
-  // lines of code
-  PetscPreLoadEnd();
-.ve
-
-  Level: intermediate
-
-  Note:
-  Only works in C/C++, not Fortran
-
-  Flags available within the macro\:
-+ PetscPreLoadingUsed - `PETSC_TRUE` if we are or have done preloading
-. PetscPreLoadingOn   - `PETSC_TRUE` if it is CURRENTLY doing preload
-. PetscPreLoadIt      - `0` for the first computation (with preloading turned off it is only
-                        `0`) `1`  for the second
-- PetscPreLoadMax     - number of times it will do the computation, only one when preloading is
-                        turned on
-
-  The first two variables are available throughout the program, the second two only between the
-  `PetscPreLoadBegin()` and `PetscPreLoadEnd()`
-
-.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
-M*/
-
-/*MC
-  PetscPreLoadEnd - End a segment of code that may be preloaded (run twice) to get accurate
-  timings
-
-  Synopsis:
-  #include <petsclog.h>
-  void PetscPreLoadEnd(void);
-
-  Not Collective
-
-  Example Usage:
-.vb
-  PetscPreLoadBegin(PETSC_TRUE, "first stage");
-  // lines of code
-  PetscPreLoadStage("second stage");
-  // lines of code
-  PetscPreLoadEnd();
-.ve
-
-  Level: intermediate
-
-  Note:
-  Only works in C/C++ not Fortran
-
-.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
-M*/
-
-/*MC
-  PetscPreLoadStage - Start a new segment of code to be timed separately to get accurate timings
-
-  Synopsis:
-  #include <petsclog.h>
-  void PetscPreLoadStage(char *name);
-
-  Not Collective
-
-  Example Usage:
-.vb
-  PetscPreLoadBegin(PETSC_TRUE,"first stage");
-  // lines of code
-  PetscPreLoadStage("second stage");
-  // lines of code
-  PetscPreLoadEnd();
-.ve
-
-  Level: intermediate
-
-  Note:
-  Only works in C/C++ not Fortran
-
-.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 M*/
 
   #if PetscDefined(HAVE_DEVICE)

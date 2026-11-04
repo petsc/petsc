@@ -1,7 +1,6 @@
 static const char help[] = "Tests UnorderedMap.\n";
 
 #include <petsc/private/cpp/unordered_map.hpp>
-#include <petscviewer.h>
 
 #include <sstream> // std::ostringstream
 #include <string>

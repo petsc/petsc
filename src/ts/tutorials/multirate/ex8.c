@@ -14,7 +14,6 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 #include <petscts.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscdraw.h>
 #include "finitevolume1d.h"
 
 static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax)

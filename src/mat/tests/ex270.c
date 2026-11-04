@@ -1,6 +1,4 @@
-#include <petscsys.h>
 #include <petscmat.h>
-#include <petscoptions.h>
 
 static const char help[] = "Test MatGetValue/Row for hypre matrix on device\n";
 

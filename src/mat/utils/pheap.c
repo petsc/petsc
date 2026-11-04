@@ -1,5 +1,4 @@
 #include <petsc/private/petscimpl.h>
-#include <petscviewer.h>
 
 typedef struct {
   PetscInt id;

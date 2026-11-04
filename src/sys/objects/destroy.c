@@ -2,7 +2,6 @@
      Provides utility routines for manulating any type of PETSc object.
 */
 #include <petsc/private/petscimpl.h> /*I   "petscsys.h"    I*/
-#include <petscviewer.h>
 
 static PetscErrorCode DestroyComposedData(void ***composed_star, PetscObjectState **state_star, PetscInt *count_star, void **composed, PetscObjectState **state)
 {

@@ -2,6 +2,7 @@
 
 #include <petscdevice.h>
 #include <petsc/private/petscimpl.h>
+#include <petscpkg_version.h>
 
 #if PetscDefined(HAVE_CUPM)
 PETSC_INTERN int PetscDeviceCUPMRuntimeArch; // The real CUDA/HIP arch the code is run with. For log view and error diagnosis

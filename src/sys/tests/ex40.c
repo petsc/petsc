@@ -2,7 +2,6 @@ static char help[] = "Test PETSc integer hash map.\n\n";
 
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashmapiv.h>
-#include <petscsys.h>
 
 /* Unused, keep it for testing purposes */
 PETSC_HASH_MAP(HMapIP, PetscInt, void *, PetscHashInt, PetscHashEqual, NULL)

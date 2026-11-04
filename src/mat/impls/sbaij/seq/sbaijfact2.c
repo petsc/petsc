@@ -2463,7 +2463,6 @@ static PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B, Mat A, IS perm, c
 /*
   See MatICCFactorSymbolic_SeqAIJ() for description of its data structure
 */
-#include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
 {

@@ -1,5 +1,4 @@
 #include <petsc/private/cupminterface.hpp>
-#include <petsc/private/petscadvancedmacros.h>
 
 // This file serves simply to store the definitions of all the static variables that we
 // DON'T have access to. Ones defined in PETSc-defined enum classes don't seem to have to

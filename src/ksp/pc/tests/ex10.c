@@ -1,6 +1,5 @@
 #include <petscksp.h>
 #include <petscpc.h>
-#include <petscviewer.h>
 
 typedef struct {
   PetscInt  num_levels;

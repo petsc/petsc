@@ -1,7 +1,6 @@
 static char help[] = "Tests binary viewers.\n\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
 
 static PetscErrorCode TestOpen(PetscFileMode mode, PetscViewer *viewer)
 {

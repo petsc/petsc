@@ -239,3 +239,25 @@ S*/
 typedef struct {
   char *name; /* The stage name */
 } PetscLogStageInfo;
+
+/*E
+  PetscInfoCommFlag - Describes the method by which to filter information displayed by `PetscInfo()` by communicator size
+
+  Values:
++ `PETSC_INFO_COMM_ALL`       - Default uninitialized value. `PetscInfo()` will not filter based on
+                                communicator size (i.e. will print for all communicators)
+. `PETSC_INFO_COMM_NO_SELF`   - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
+- `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
+
+  Level: intermediate
+
+  Note:
+  Used as an input for `PetscInfoSetFilterCommSelf()`
+
+.seealso: `PetscInfo()`, `PetscInfoSetFromOptions()`, `PetscInfoSetFilterCommSelf()`
+E*/
+typedef enum {
+  PETSC_INFO_COMM_ALL       = -1,
+  PETSC_INFO_COMM_NO_SELF   = 0,
+  PETSC_INFO_COMM_ONLY_SELF = 1
+} PetscInfoCommFlag;

@@ -1,4 +1,5 @@
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
+#include <petscpkg_version.h>
 
 typedef struct _n_PetscSFDataLink *PetscSFDataLink;
 typedef struct _n_PetscSFWinLink  *PetscSFWinLink;

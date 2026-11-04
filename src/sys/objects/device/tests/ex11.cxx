@@ -1,7 +1,6 @@
 static const char help[] = "Tests PetscDeviceContextMarkIntentFromID().\n\n";
 
 #include "petscdevicetestcommon.h"
-#include <petscviewer.h>
 
 #include <petsc/private/cpp/type_traits.hpp>
 #include <petsc/private/cpp/array.hpp>
@@ -11,8 +10,6 @@ static const char help[] = "Tests PetscDeviceContextMarkIntentFromID().\n\n";
 #include <unordered_map> // std::take_a_wild_guess
 #include <algorithm>     // std::find
 #include <iterator>      // std::distance, std::next
-
-#include <petscmacros.h> // PETSC_CPP_VERSION
 
 #if PETSC_CPP_VERSION > 14
 struct Marker {

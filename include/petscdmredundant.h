@@ -1,7 +1,8 @@
 /* DM for redundant globally coupled degrees of freedom */
 #pragma once
 
-#include <petscdm.h>
+#include <petscsystypes.h>
+#include <petscdmtypes.h>
 
 /* MANSEC = DM */
 

@@ -1,4 +1,4 @@
-#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscviewer.h" I*/
+#include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h> /*I "petscsys.h" I*/
 
 /*@
   PetscViewerVTKAddField - Add a field to the viewer

@@ -1,4 +1,5 @@
 #include <petsc/private/cpp/memory.hpp> // make_unique
+#include <petscpkg_version.h>
 
 #include "cupmdevice.hpp"
 

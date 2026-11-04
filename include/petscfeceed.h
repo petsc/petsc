@@ -1,6 +1,7 @@
 #pragma once
 
-#include <petscfe.h>
+#include <petscsystypes.h>
+#include <petscfetypes.h>
 
 /* MANSEC = DM */
 

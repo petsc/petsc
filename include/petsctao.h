@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petscsnes.h>
+#include <petsctaotypes.h>
 #include <petsctaoterm.h>
 
 /* SUBMANSEC = Tao */

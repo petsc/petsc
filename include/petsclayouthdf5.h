@@ -1,7 +1,7 @@
 #pragma once
 
 #include <petscviewerhdf5.h>
-#include <petscis.h>
+#include <petscistypes.h>
 
 /* MANSEC = Vec */
 

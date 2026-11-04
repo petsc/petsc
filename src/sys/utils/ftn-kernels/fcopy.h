@@ -1,6 +1,6 @@
 #pragma once
 
-#include <petscsys.h>
+#include <petscsystypes.h>
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define fortrancopy_ FORTRANCOPY
   #define fortranzero_ FORTRANZERO

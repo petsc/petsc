@@ -1,6 +1,5 @@
 #pragma once
 
-#include <petscmacros.h>
 #include <petscdevice_cuda.h>
 #include <petscdevice_hip.h>
 

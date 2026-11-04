@@ -1,3 +1,4 @@
+#include <petscsys.h>
 #include <petsc/private/viewerhdf5impl.h> /*I "petscviewerhdf5.h" I*/
 
 static PetscErrorCode PetscViewerHDF5Traverse_Inner_Internal(hid_t h5, const char name[], PetscBool createGroup, PetscBool *exists_)

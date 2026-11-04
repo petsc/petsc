@@ -5,7 +5,6 @@ static char help[] = "Benchmarking cudaPointerGetAttributes() time\n";
   $ jsrun -n1 -a1 -c7 -g1 -r1  ./ex2cu
     Average cudaPointerGetAttributes() time = 0.31 microseconds
 */
-#include <petscsys.h>
 #include <petscdevice_cuda.h>
 
 int main(int argc, char **argv)

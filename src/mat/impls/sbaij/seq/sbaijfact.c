@@ -213,7 +213,6 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
     Symbolic U^T*D*U factorization for SBAIJ format.
     See MatICCFactorSymbolic_SeqAIJ() for description of its data structure.
 */
-#include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
 {

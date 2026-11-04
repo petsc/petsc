@@ -5,7 +5,6 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/kokkosimpl.hpp>
-#include <petscsys.h>
 
 #include <KokkosBlas.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>

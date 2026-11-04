@@ -1,6 +1,5 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscts.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define tsmonitorlgsettransform_      TSMONITORLGSETTRANSFORM

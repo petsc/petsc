@@ -1,6 +1,5 @@
 static char help[] = "Demonstrates using PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)\n\n";
 
-#include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscbag.h>

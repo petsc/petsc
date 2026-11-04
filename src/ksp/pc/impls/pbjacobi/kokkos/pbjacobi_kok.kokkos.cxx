@@ -1,7 +1,6 @@
-#include <petscvec_kokkos.hpp>
 #include <petsc_kokkos.hpp>
+#include <petscvec_kokkos.hpp>
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
-#include <petscdevice.h>
 #include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>
 
 struct PC_PBJacobi_Kokkos {

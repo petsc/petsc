@@ -1,7 +1,7 @@
 #pragma once
 
+#include <petscsys.h>
 #include <petscdevicetypes.h>
-#include <petscviewertypes.h>
 
 #if PETSC_CPP_VERSION >= 11 // C++11
   #define PETSC_DEVICE_ALIGNOF(...) alignof(decltype(__VA_ARGS__))

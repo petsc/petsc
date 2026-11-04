@@ -1,6 +1,7 @@
 #pragma once
 
 #include <petscvec_kokkos.hpp>
+#include <petscpkg_version.h>
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/kspimpl.h>

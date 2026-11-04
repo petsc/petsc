@@ -2,7 +2,6 @@
        Provides the registration process for PETSc PetscDraw routines
 */
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
-#include <petscviewer.h>            /*I "petscviewer.h" I*/
 #if PetscDefined(HAVE_SAWS)
   #include <petscviewersaws.h>
 #endif

@@ -1,7 +1,6 @@
 #include <petsc/private/ftnimpl.h>
 #include <petscbag.h>
 #include <petsc/private/bagimpl.h>
-#include <petscviewer.h>
 
 #if PetscDefined(HAVE_FORTRAN_CAPS)
   #define petscbagregisterstring_ PETSCBAGREGISTERSTRING

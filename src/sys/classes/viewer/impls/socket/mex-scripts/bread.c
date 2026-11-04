@@ -1,4 +1,3 @@
-#include <petscsys.h>
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 
 /*

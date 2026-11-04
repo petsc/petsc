@@ -6,6 +6,7 @@
   #endif
 #endif
 #include <petsc/private/dmnetworkimpl.h> /*I  "petscdmnetwork.h"  I*/
+#include <petscsys.h>
 #include <petscdraw.h>
 
 static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)

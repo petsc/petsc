@@ -6,6 +6,7 @@
 
 #include <petscsnes.h>
 #include <petscconvest.h>
+#include <petscdrawtypes.h>
 
 /*I <petscts.h> I*/
 

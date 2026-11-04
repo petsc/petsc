@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 /*E
   WellFormedEnum - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor

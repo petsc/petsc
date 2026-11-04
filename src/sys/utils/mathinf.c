@@ -4,7 +4,7 @@
   #define PETSC_SKIP_COMPLEX
 #endif
 
-#include <petscsys.h>
+#include <petscmath.h>
 /*@
   PetscIsNormalReal - Returns `PETSC_TRUE` if the input value satisfies `isnormal()`
 

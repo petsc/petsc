@@ -1,6 +1,5 @@
 static char help[] = "Demonstrates HDF5 vector input/output\n\n";
 
-#include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscviewerhdf5.h>

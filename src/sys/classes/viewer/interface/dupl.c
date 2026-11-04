@@ -1,4 +1,4 @@
-#include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
+#include <petsc/private/viewerimpl.h> /*I "petscsys.h" I*/
 
 /*@
   PetscViewerGetSubViewer - Creates a new `PetscViewer` (same type as the old)

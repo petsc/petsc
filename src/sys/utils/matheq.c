@@ -1,4 +1,4 @@
-#include <petscsys.h>
+#include <petscmath.h>
 
 /*@
   PetscEqualReal - Returns whether the two `PetscReal` variables are equal

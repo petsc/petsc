@@ -3,7 +3,7 @@
     Allocation takes place before each solve.
 */
 #pragma once
-#include <petscsys.h>
+#include <petscsystypes.h>
 
 typedef struct {
   PetscInt  ell;     /* Number of search directions. */

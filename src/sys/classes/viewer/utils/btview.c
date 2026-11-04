@@ -1,6 +1,4 @@
 #include <petscsys.h>
-#include <petscbt.h>
-#include <petscviewer.h>
 
 /*@
   PetscBTView - View the contents of a `PetscBT` (bit array) on a `PetscViewer`, one line per bit

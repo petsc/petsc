@@ -1,5 +1,5 @@
 #include <petscvec.h>
-#include <petsctime.h>
+#include <petscpreload.h>
 
 int main(int argc, char **argv)
 {

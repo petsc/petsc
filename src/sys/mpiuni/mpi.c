@@ -2,13 +2,12 @@
       This provides a few of the MPI-uni functions that cannot be implemented
     with C macros
 */
-#include <petscsys.h>
+#include <petsc/private/petscimpl.h>
 #if !defined(MPIUNI_H)
   #error "Wrong mpi.h included! require mpi.h from MPIUNI"
 #endif
 
 #include <petscdevice_cupm.h>
-#include <petsc/private/petscimpl.h>
 
 #define MPI_SUCCESS 0
 #define MPI_FAILURE 1

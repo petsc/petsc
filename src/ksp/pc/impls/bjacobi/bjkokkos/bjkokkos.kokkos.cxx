@@ -1,17 +1,14 @@
 #define PETSC_SKIP_CXX_COMPLEX_FIX // Kokkos::complex does not need the PetscComplex fix
 
 #include <petsc/private/pcbjkokkosimpl.h>
-
 #include <petsc/private/kspimpl.h>
 #include <petscksp.h> /*I "petscksp.h" I*/
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
 #include <petscsection.h>
 #include <petscdmcomposite.h>
-
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/kokkos/aijkok.hpp>
-
 #include <petscdevice_cupm.h>
 
 static PetscErrorCode PCBJKOKKOSCreateKSP_BJKOKKOS(PC pc)

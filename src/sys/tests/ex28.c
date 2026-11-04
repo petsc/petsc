@@ -1,8 +1,6 @@
 static char help[] = "Tests PetscAtan2Real\n";
 
 #include <petscsys.h>
-#include <petscviewer.h>
-#include <petscmath.h>
 
 int main(int argc, char **argv)
 {
