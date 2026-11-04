@@ -23,13 +23,13 @@ typedef struct {
 
 } KSP_PIPEFGMRES;
 
-#define HH(a, b) (pipefgmres->hh_origin + (b) * (pipefgmres->max_k + 2) + (a))
-/* HH will be size (max_k+2)*(max_k+1)  -  think of HH as being stored columnwise for access purposes. */
-#define HES(a, b) (pipefgmres->hes_origin + (b) * (pipefgmres->max_k + 1) + (a))
-/* HES will be size (max_k + 1) * (max_k + 1) -  again, think of HES as being stored columnwise */
-#define CC(a) (pipefgmres->cc_origin + (a)) /* CC will be length (max_k+1) - cosines */
-#define SS(a) (pipefgmres->ss_origin + (a)) /* SS will be length (max_k+1) - sines */
-#define RS(a) (pipefgmres->rs_origin + (a)) /* RS will be length (max_k+2) - rt side */
+#define HH(a, b) (pipefgmres->hh_origin + (b) * (pipefgmres->restart_size + 2) + (a))
+/* HH will be size (restart_size+2)*(restart_size+1)  -  think of HH as being stored columnwise for access purposes. */
+#define HES(a, b) (pipefgmres->hes_origin + (b) * (pipefgmres->restart_size + 1) + (a))
+/* HES will be size (restart_size + 1) * (restart_size + 1) -  again, think of HES as being stored columnwise */
+#define CC(a) (pipefgmres->cc_origin + (a)) /* CC will be length (restart_size+1) - cosines */
+#define SS(a) (pipefgmres->ss_origin + (a)) /* SS will be length (restart_size+1) - sines */
+#define RS(a) (pipefgmres->rs_origin + (a)) /* RS will be length (restart_size+2) - rt side */
 
 /* vector names */
 #define VEC_OFFSET     4
@@ -42,5 +42,3 @@ typedef struct {
 
 #define PREVEC(i) pipefgmres->prevecs[i] /* use to access preconditioned basis */
 #define ZVEC(i)   pipefgmres->zvecs[i]
-
-#define PIPEFGMRES_DEFAULT_MAXK 30

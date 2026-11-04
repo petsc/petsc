@@ -24,7 +24,7 @@ typedef struct {
   PetscInt  aug_ct;          /* number of aug. vectors available */
   PetscInt *aug_order;       /*keeps track of order to use aug. vectors*/
   PetscBool approx_constant; /* = 1 then the approx space at each restart will
-                                  be  size max_k .  Therefore, more than (max_k - aug_dim)
+                                  be size restart_size. Therefore, more than (restart_size - aug_dim)
                                   krylov vectors may be used if less than aug_dim error
                                   approximations are available (in the first few restarts,
                                   for example) to keep the space a constant size. */
@@ -32,15 +32,15 @@ typedef struct {
   PetscInt matvecs; /*keep track of matvecs */
 } KSP_LGMRES;
 
-#define HH(a, b) (lgmres->hh_origin + (b) * (lgmres->max_k + 2) + (a))
-/* HH will be size (max_k+2)*(max_k+1)  -  think of HH as
+#define HH(a, b) (lgmres->hh_origin + (b) * (lgmres->restart_size + 2) + (a))
+/* HH will be size (restart_size+2)*(restart_size+1)  -  think of HH as
    being stored columnwise (inc. zeros) for access purposes. */
-#define HES(a, b) (lgmres->hes_origin + (b) * (lgmres->max_k + 1) + (a))
-/* HES will be size (max_k + 1) * (max_k + 1) -
+#define HES(a, b) (lgmres->hes_origin + (b) * (lgmres->restart_size + 1) + (a))
+/* HES will be size (restart_size + 1) * (restart_size + 1) -
    again, think of HES as being stored columnwise */
-#define CC(a)  (lgmres->cc_origin + (a)) /* CC will be length (max_k+1) - cosines */
-#define SS(a)  (lgmres->ss_origin + (a)) /* SS will be length (max_k+1) - sines */
-#define GRS(a) (lgmres->rs_origin + (a)) /* GRS will be length (max_k+2) - rt side */
+#define CC(a)  (lgmres->cc_origin + (a)) /* CC will be length (restart_size+1) - cosines */
+#define SS(a)  (lgmres->ss_origin + (a)) /* SS will be length (restart_size+1) - sines */
+#define GRS(a) (lgmres->rs_origin + (a)) /* GRS will be length (restart_size+2) - rt side */
 
 /* vector names */
 #define VEC_OFFSET     2
@@ -54,5 +54,4 @@ typedef struct {
 #define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + (i) + lgmres->aug_dim] /*A times error vector */
 #define AUG_TEMP     lgmres->augvecs[0]                                  /* work vector */
 
-#define LGMRES_DEFAULT_MAXK   30
 #define LGMRES_DEFAULT_AUGDIM 2 /*default number of augmentation vectors */

@@ -22,22 +22,22 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
 static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
 {
   PetscInt        k;
-  KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
-  const PetscInt  max_k      = pipefgmres->max_k;
+  KSP_PIPEFGMRES *pipefgmres   = (KSP_PIPEFGMRES *)ksp->data;
+  const PetscInt  restart_size = pipefgmres->restart_size;
 
   PetscFunctionBegin;
   PetscCall(KSPSetUp_GMRES(ksp));
 
-  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->prevecs));
-  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->prevecs_user_work));
+  PetscCall(PetscMalloc1(VEC_OFFSET + restart_size, &pipefgmres->prevecs));
+  PetscCall(PetscMalloc1(VEC_OFFSET + restart_size, &pipefgmres->prevecs_user_work));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->prevecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->prevecs[k] = pipefgmres->prevecs_user_work[0][k];
 
-  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->zvecs));
-  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->zvecs_user_work));
+  PetscCall(PetscMalloc1(VEC_OFFSET + restart_size, &pipefgmres->zvecs));
+  PetscCall(PetscMalloc1(VEC_OFFSET + restart_size, &pipefgmres->zvecs_user_work));
 
-  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->redux));
+  PetscCall(PetscMalloc1(VEC_OFFSET + restart_size, &pipefgmres->redux));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];
@@ -50,9 +50,9 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscReal       res_norm;
   PetscReal       hapbnd, tt;
   PetscScalar    *hh, *hes, *lhh, shift = pipefgmres->shift;
-  PetscBool       hapend = PETSC_FALSE;      /* indicates happy breakdown ending */
-  PetscInt        loc_it;                    /* local count of # of dir. in Krylov space */
-  PetscInt        max_k = pipefgmres->max_k; /* max # of directions Krylov space */
+  PetscBool       hapend = PETSC_FALSE;                    /* indicates happy breakdown ending */
+  PetscInt        loc_it;                                  /* local count of # of dir. in Krylov space */
+  PetscInt        restart_size = pipefgmres->restart_size; /* max # of directions Krylov space */
   PetscInt        i, j, k;
   Mat             Amat, Pmat;
   Vec             Q, W;                      /* Pipelining vectors */
@@ -67,9 +67,9 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
 
   /* Allocate memory for orthogonalization work */
   /* Note that we add an extra value here to allow for a single reduction */
-  if (ksp->lorthogwork < pipefgmres->max_k + 2) {
+  if (ksp->lorthogwork < pipefgmres->restart_size + 2) {
     PetscCall(PetscFree(ksp->orthogwork));
-    ksp->lorthogwork = pipefgmres->max_k + 2;
+    ksp->lorthogwork = pipefgmres->restart_size + 2;
     PetscCall(PetscMalloc1(ksp->lorthogwork, &ksp->orthogwork));
   }
   lhh = ksp->orthogwork;
@@ -116,7 +116,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
   /* MAIN ITERATION LOOP BEGINNING*/
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */
-  while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
+  while (!ksp->reason && loc_it < restart_size && ksp->its < ksp->max_it) {
     if (loc_it) {
       PetscCall(KSPLogResidualHistory(ksp, res_norm));
       PetscCall(KSPMonitor(ksp, ksp->its, res_norm));
@@ -454,7 +454,7 @@ static PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!pipefgmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(pipefgmres->max_k, &pipefgmres->nrs));
+    PetscCall(PetscMalloc1(pipefgmres->restart_size, &pipefgmres->nrs));
   }
 
   PetscCall(KSPPIPEFGMRESBuildSoln(pipefgmres->nrs, ksp->vec_sol, ptr, ksp, pipefgmres->it));
@@ -487,12 +487,12 @@ static PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 
   if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", pipefgmres->max_k));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", pipefgmres->restart_size));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance=%g\n", (double)pipefgmres->haptol));
     if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
     else PetscCall(PetscViewerASCIIPrintf(viewer, "  shift=%g\n", (double)PetscRealPart(pipefgmres->shift)));
   } else if (isstring) {
-    PetscCall(PetscViewerStringSPrintf(viewer, "restart %" PetscInt_FMT, pipefgmres->max_k));
+    PetscCall(PetscViewerStringSPrintf(viewer, "restart %" PetscInt_FMT, pipefgmres->restart_size));
     if (PetscDefined(USE_COMPLEX)) PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g+%gi\n", (double)PetscRealPart(pipefgmres->shift), (double)PetscImaginaryPart(pipefgmres->shift)));
     else PetscCall(PetscViewerStringSPrintf(viewer, "   shift=%g\n", (double)PetscRealPart(pipefgmres->shift)));
   }
@@ -584,7 +584,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   pipefgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pipefgmres->nrs            = NULL;
   pipefgmres->sol_temp       = NULL;
-  pipefgmres->max_k          = PIPEFGMRES_DEFAULT_MAXK;
+  pipefgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   pipefgmres->Rsvd           = NULL;
   pipefgmres->shift          = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);

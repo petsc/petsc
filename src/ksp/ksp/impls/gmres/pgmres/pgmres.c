@@ -51,7 +51,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
     Znext = VEC_VV(it + 1); /* This iteration will compute Znext, update with a deferred correction once we know how
                                Zcur relates to the previous vectors, and start the reduction to orthogonalize it. */
 
-    if (it < pgmres->max_k + 1 && ksp->its + 1 < PetscMax(2, ksp->max_it)) { /* We don't know whether what we have computed is enough, so apply the matrix. */
+    if (it < pgmres->restart_size + 1 && ksp->its + 1 < PetscMax(2, ksp->max_it)) { /* We don't know whether what we have computed is enough, so apply the matrix. */
       PetscCall(KSP_PCApplyBAorAB(ksp, Zcur, Znext, VEC_TEMP_MATOP));
     }
 
@@ -75,7 +75,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
 
       PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
       if (ksp->reason) break;
-      if (it < pgmres->max_k + 1) { /* Monitor if we are not done or still iterating, but not before a restart. */
+      if (it < pgmres->restart_size + 1) { /* Monitor if we are not done or still iterating, but not before a restart. */
         PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
         PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
       }
@@ -86,7 +86,7 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
         break;
       }
 
-      if (!(it < pgmres->max_k + 1 && ksp->its < ksp->max_it)) break;
+      if (!(it < pgmres->restart_size + 1 && ksp->its < ksp->max_it)) break;
 
       /* The it-2 column of H was not scaled when we computed Zcur, apply correction */
       PetscCall(VecScale(Zcur, 1. / *HH(it - 1, it - 2)));
@@ -102,9 +102,9 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
 
     if (it > 0) {
       PetscScalar *work;
-      if (ksp->lorthogwork < pgmres->max_k + 2) {
+      if (ksp->lorthogwork < pgmres->restart_size + 2) {
         PetscCall(PetscFree(ksp->orthogwork));
-        ksp->lorthogwork = pgmres->max_k + 2;
+        ksp->lorthogwork = pgmres->restart_size + 2;
         PetscCall(PetscMalloc1(ksp->lorthogwork, &ksp->orthogwork));
       }
       work = ksp->orthogwork;
@@ -313,7 +313,7 @@ static PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
-    PetscCall(PetscMalloc1(pgmres->max_k, &pgmres->nrs));
+    PetscCall(PetscMalloc1(pgmres->restart_size, &pgmres->nrs));
   }
 
   PetscCall(KSPPGMRESBuildSoln(pgmres->nrs, ksp->vec_sol, ptr, ksp, pgmres->it));
@@ -395,7 +395,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   pgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
   pgmres->nrs            = NULL;
   pgmres->sol_temp       = NULL;
-  pgmres->max_k          = PGMRES_DEFAULT_MAXK;
+  pgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
   pgmres->Rsvd           = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
