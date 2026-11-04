@@ -6,6 +6,12 @@ CHANGES: PETSc for Python
 :Contact: dalcinl@gmail.com
 
 
+Development
+===========
+
+- Add ``--sync-output`` option to ``test/runtests.py`` to print test output once, from rank 0.
+
+
 Release 3.26.0
 ==============
 

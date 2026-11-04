@@ -1,5 +1,7 @@
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
+import contextlib
+import io
 import os
 import sys
 import optparse
@@ -119,6 +121,13 @@ def getoptionparser():
         default=0,
         help='report the TIMINGS slowest tests',
     )
+    parser.add_option(
+        '--sync-output',
+        action='store_true',
+        dest='sync_output',
+        default=False,
+        help='print test output from rank 0 only, then failures from all ranks',
+    )
 
     return parser
 
@@ -235,7 +244,10 @@ def print_banner(options):
         from petsc4py.PETSc import Sys
 
         message = f'{prefix} {message}'
-        Sys.syncPrint(message, endl=endl, flush=True)
+        if options.sync_output:
+            Sys.Print(message, end=endl)
+        else:
+            Sys.syncPrint(message, endl=endl, flush=True)
 
     if options.verbose:
         writeln(getpythoninfo())
@@ -304,14 +316,46 @@ class PETScTestResult(unittest.TextTestResult):
         return self.names, self.timings
 
 
+class SyncOutputTextTestRunner(unittest.TextTestRunner):
+    """Print test output only from rank 0, along with failures from all ranks."""
+
+    def __init__(self, *args, **kwargs):
+        from petsc4py.PETSc import COMM_WORLD
+
+        self.rank = COMM_WORLD.getRank()
+        if self.rank != 0:
+            kwargs['stream'] = io.StringIO()
+        super().__init__(*args, **kwargs)
+
+    def run(self, test):
+        from petsc4py.PETSc import COMM_WORLD, Sys
+
+        out = sys.stdout if self.rank == 0 else io.StringIO()
+        with contextlib.redirect_stdout(out):
+            result = super().run(test)
+        failures = result.failures + result.errors
+        message = ''.join(f'[rank {self.rank}] {t.id()}\n{tb}\n' for t, tb in failures)
+        if self.failfast and not result.wasSuccessful():
+            # other ranks may still be running tests; skip the collective flush
+            if self.rank != 0:
+                sys.stderr.write(message)
+                sys.stderr.flush()
+            return result
+        if self.rank != 0 and failures:
+            Sys.syncPrint(message)
+        Sys.syncFlush(COMM_WORLD)
+        return result
+
+
 def run_tests(options, testsuite, runner=None):
     if runner is None:
         resultclass = (
             PETScTestResult if options.timings > 0 else unittest.TextTestResult
         )
-        runner = unittest.TextTestRunner(
-            verbosity=options.verbose, resultclass=resultclass
+        runnerclass = (
+            SyncOutputTextTestRunner if options.sync_output else unittest.TextTestRunner
         )
+        runner = runnerclass(verbosity=options.verbose, resultclass=resultclass)
         runner.failfast = options.failfast
     result = runner.run(testsuite)
     if hasattr(result, 'getTimings') and options.timings > 0:

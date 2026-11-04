@@ -85,7 +85,7 @@ class Configure(config.package.Package):
     if 'with-petsc4py-test-np' in self.argDB and self.argDB['with-petsc4py-test-np']:
       np = self.argDB['with-petsc4py-test-np']
     self.addMakeMacro('PETSC4PY_NP',np)
-    self.addTest('.', 'PYTHONPATH=%s:${PETSCPYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % (installLibPath, '${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')))
+    self.addTest('.', 'PYTHONPATH=%s:${PETSCPYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose --sync-output' % (installLibPath, '${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')))
     self.found = True
     self.python.path.add(installLibPath)
     return self.installDir
