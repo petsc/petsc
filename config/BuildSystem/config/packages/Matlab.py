@@ -61,6 +61,9 @@ class Configure(config.package.Package):
         continue
 
       match  = versionPattern.search(output)
+      if not match:
+        self.log.write('WARNING: Found MATLAB at '+matlab+' but unable to determine its version\n')
+        continue
       r = match.group(1)
       if parseVersion(r) < parseVersion('6'):
         self.log.write('WARNING: MATLAB version must be at least 6; yours is '+r)
