@@ -168,10 +168,9 @@ static PetscErrorCode KSPSolve_QCG(KSP ksp)
   B        = ksp->vec_rhs;
 
   PetscCheck(pcgP->delta > dzero, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Input error: delta <= 0");
+  PetscCheck(ksp->guess_zero == PETSC_TRUE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSPQCG does not support nonzero initial guess");
 
-  /* Initialize variables */
   PetscCall(VecSet(W, 0.0)); /* W = 0 */
-  PetscCall(VecSet(X, 0.0)); /* X = 0 */
   PetscCall(PCGetOperators(pc, &Amat, &Pmat));
 
   /* Compute:  BS = D^{-1} B */
