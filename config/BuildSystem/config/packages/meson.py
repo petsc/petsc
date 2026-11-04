@@ -1,6 +1,6 @@
 import config.package
 import os
-from config.utilities.parseVersion import parseVersion
+from config.utilities.parseVersion import parseVersion, findVersion
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -63,7 +63,6 @@ class Configure(config.package.Package):
       self.log.write('Not checking for Meson\n')
     self.found = 0
     if hasattr(self, 'meson'):
-      import re
       try:
         (output, error, status) = config.base.Configure.executeShellCommand([self.meson, '--version'], log=self.log)
         if status:
@@ -72,20 +71,19 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         self.log.write('meson --version failed: '+str(e)+'\n')
         return
-      output = output.replace('stdout: ', '').strip()
-      minMesonVersion = '.'.join(map(str, self.maxminMesonVersion))
-      gver = re.match(r'(\d+\.\d+\.\d+)', output)
-      if gver:
-        self.foundversion = gver.group(1)
-        self.log.write('Meson version found '+self.foundversion+'\n')
-        if parseVersion(self.foundversion) < parseVersion(minMesonVersion):
-          if self.argDB['download-meson'] or 'with-meson-exec' in self.argDB or 'with-meson-dir' in self.argDB or self.framework.clArgDB.get('with-meson'):
-            raise RuntimeError('Meson version '+minMesonVersion+' or newer is required (detected version is '+self.foundversion+'): use --download-meson')
-          self.log.write('Ignoring Meson '+self.foundversion+'; it is older than '+minMesonVersion+'\n')
-          return
-        self.found = 1
-      else:
+      try:
+        self.foundversion = findVersion(output)
+      except ValueError:
         self.log.write('Meson version check failed\n')
+        return
+      self.log.write('Meson version found '+self.foundversion+'\n')
+      minMesonVersion = '.'.join(map(str, self.maxminMesonVersion))
+      if parseVersion(self.foundversion) < parseVersion(minMesonVersion):
+        if self.argDB['download-meson'] or 'with-meson-exec' in self.argDB or 'with-meson-dir' in self.argDB or self.framework.clArgDB.get('with-meson'):
+          raise RuntimeError('Meson version '+minMesonVersion+' or newer is required (detected version is '+self.foundversion+'): use --download-meson')
+        self.log.write('Ignoring Meson '+self.foundversion+'; it is older than '+minMesonVersion+'\n')
+        return
+      self.found = 1
     else:
       self.log.write('Meson not found\n')
     return
