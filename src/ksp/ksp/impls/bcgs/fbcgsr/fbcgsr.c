@@ -24,7 +24,6 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
   PetscScalar *PETSC_RESTRICT rp, *PETSC_RESTRICT r, *PETSC_RESTRICT p;
   PetscScalar *PETSC_RESTRICT v, *PETSC_RESTRICT s, *PETSC_RESTRICT t, *PETSC_RESTRICT s2;
   PetscScalar outsums[4];
-  KSP_BCGS   *bcgs = (KSP_BCGS *)ksp->data;
   PC          pc;
   Mat         mat;
 
@@ -61,10 +60,6 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
 
   /* Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP fbcgsr does not support %s", PCSides[ksp->pc_side]);
-  if (!ksp->guess_zero) {
-    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
-    PetscCall(VecCopy(X, bcgs->guess));
-  }
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
@@ -216,12 +211,7 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
 {
-  KSP_BCGS *bcgs;
-
   PetscFunctionBegin;
-  PetscCall(PetscNew(&bcgs));
-
-  ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_FBCGSR;
   ksp->ops->solve          = KSPSolve_FBCGSR;
   ksp->ops->destroy        = KSPDestroy_BCGS;

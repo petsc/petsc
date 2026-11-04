@@ -17,8 +17,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
   PetscInt    i;
   PetscScalar rho, rhoold, alpha, beta, omega = 0.0, d1, d2, d3;
   Vec         X, B, S, R, RP, Y, Q, P2, Q2, R2, S2, W, Z, W2, Z2, T, V;
-  PetscReal   dp   = 0.0;
-  KSP_BCGS   *bcgs = (KSP_BCGS *)ksp->data;
+  PetscReal   dp = 0.0;
   PC          pc;
 
   PetscFunctionBegin;
@@ -39,11 +38,6 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
   Z2 = ksp->work[12];
   T  = ksp->work[13];
   V  = ksp->work[14];
-
-  if (!ksp->guess_zero) {
-    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
-    PetscCall(VecCopy(X, bcgs->guess));
-  }
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
@@ -220,12 +214,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
 {
-  KSP_BCGS *bcgs;
-
   PetscFunctionBegin;
-  PetscCall(PetscNew(&bcgs));
-
-  ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_PIPEBCGS;
   ksp->ops->solve          = KSPSolve_PIPEBCGS;
   ksp->ops->destroy        = KSPDestroy_BCGS;

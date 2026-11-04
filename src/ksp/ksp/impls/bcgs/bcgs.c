@@ -166,7 +166,7 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
   KSP_BCGS *cg = (KSP_BCGS *)ksp->data;
 
   PetscFunctionBegin;
-  PetscCall(VecDestroy(&cg->guess));
+  if (cg != NULL) PetscCall(VecDestroy(&cg->guess));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
