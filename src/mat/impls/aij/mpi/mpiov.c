@@ -2783,7 +2783,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
     imat_ilen  = subc->ilen;
     imat_j     = subc->j;
     imat_i     = subc->i;
-    imat_a     = subc->a;
+    PetscCall(MatSeqAIJGetArrayWrite(submats[i], &imat_a));
 
     if (!allcolumns[i]) cmap_i = cmap[i];
     rmap_i = rmap[i];
@@ -2829,6 +2829,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         imat_ilen[row] = ilen_row;
       }
     }
+    PetscCall(MatSeqAIJRestoreArrayWrite(submats[i], &imat_a));
   }
 
   /* Now assemble the off proc rows */
@@ -2849,8 +2850,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       imat_ilen = subc->ilen;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      imat_a    = subc->a;
-      max1      = sbuf1_i[2 * j];
+      PetscCall(MatSeqAIJGetArrayWrite(submats[is_no], &imat_a));
+      max1 = sbuf1_i[2 * j];
       for (PetscInt k = 0; k < max1; k++, ct1++) {
         row = sbuf1_i[ct1];
 #if PetscDefined(USE_CTABLE)
@@ -2885,6 +2886,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         }
         imat_ilen[row] = ilen;
       }
+      PetscCall(MatSeqAIJRestoreArrayWrite(submats[is_no], &imat_a));
     }
   }
 
@@ -2893,10 +2895,10 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       subc      = (Mat_SeqAIJ *)submats[i]->data;
       imat_j    = subc->j;
       imat_i    = subc->i;
-      imat_a    = subc->a;
       imat_ilen = subc->ilen;
 
       if (allcolumns[i]) continue;
+      PetscCall(MatSeqAIJGetArrayWrite(submats[i], &imat_a));
       jmax = nrow[i];
       for (PetscInt j = 0; j < jmax; j++) {
         mat_i = imat_i[j];
@@ -2905,6 +2907,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
         if (C->structure_only) PetscCall(PetscSortInt(imat_ilen[j], mat_j));
         else PetscCall(PetscSortIntWithScalarArray(imat_ilen[j], mat_j, mat_a));
       }
+      PetscCall(MatSeqAIJRestoreArrayWrite(submats[i], &imat_a));
     }
   }
 
@@ -2958,6 +2961,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
   Mat_MPIAIJ     *aij;
   Mat_SeqAIJ     *Baij;
   PetscBool       seqaij, Bdisassembled;
+  MatType         type;
   PetscInt        m, n, *nz, ngcol, col, cstart, cend, shift, count;
   PetscScalar     v;
   const PetscInt *rowindices, *colindices;
@@ -2989,13 +2993,14 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     } else PetscCheck(C->cmap->N - C->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diag seq matrix is col-incompatible with the MPIAIJ matrix");
   }
 
+  PetscCall(MatGetRootType_Private(C, &type));
   aij = (Mat_MPIAIJ *)C->data;
   if (!aij->A) {
     /* Mimic parts of MatMPIAIJSetPreallocation() */
     PetscCall(MatCreate(PETSC_COMM_SELF, &aij->A));
     PetscCall(MatSetSizes(aij->A, C->rmap->n, C->cmap->n, C->rmap->n, C->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(aij->A, C, C));
-    PetscCall(MatSetType(aij->A, MATSEQAIJ));
+    PetscCall(MatSetType(aij->A, type));
   }
   if (A) PetscCall(MatSetSeqMat_SeqAIJ(aij->A, rowemb, dcolemb, pattern, A));
   else PetscCall(MatSetUp(aij->A));
@@ -3033,7 +3038,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C, IS rowemb, IS dcolemb, IS ocolemb, Ma
     PetscCall(MatCreate(PETSC_COMM_SELF, &aij->B));
     PetscCall(MatSetSizes(aij->B, C->rmap->n, C->cmap->N, C->rmap->n, C->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(aij->B, B, B));
-    PetscCall(MatSetType(aij->B, MATSEQAIJ));
+    PetscCall(MatSetType(aij->B, type));
     Bdisassembled = PETSC_TRUE;
   }
   if (B) {
@@ -3163,7 +3168,15 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
          If ciscol[ii] is strictly increasing, the permutation IS is NULL.
       */
       PetscCall(ISSortPermutation(ciscol[ii], PETSC_FALSE, ciscol_p + ii));
-      PetscCall(ISSort(ciscol[ii]));
+      if (ciscol_p[ii] != NULL) {
+        IS sorted;
+
+        /* preserve the cached ordering for subsequent extractions */
+        PetscCall(ISDuplicate(ciscol[ii], &sorted));
+        PetscCall(ISRestoreNonlocalIS(iscol[i], &ciscol[ii]));
+        ciscol[ii] = sorted;
+        PetscCall(ISSort(ciscol[ii]));
+      }
       ++ii;
     }
   }
@@ -3257,10 +3270,13 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
     /* Construct submat[i] from the Seq pieces A (and B, if necessary). */
     if (size > 1) {
       if (scall == MAT_INITIAL_MATRIX) {
+        MatType type;
+
+        PetscCall(MatGetRootType_Private(C, &type));
         PetscCall(MatCreate(((PetscObject)isrow[i])->comm, (*submat) + i));
         PetscCall(MatSetSizes((*submat)[i], A[i]->rmap->n, A[i]->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
         PetscCall(MatSetBlockSizesFromMats((*submat)[i], A[i], A[i]));
-        PetscCall(MatSetType((*submat)[i], MATMPIAIJ));
+        PetscCall(MatSetType((*submat)[i], type));
         PetscCall(PetscLayoutSetUp((*submat)[i]->rmap));
         PetscCall(PetscLayoutSetUp((*submat)[i]->cmap));
       }
@@ -3281,7 +3297,8 @@ static PetscErrorCode MatCreateSubMatricesMPI_MPIXAIJ(Mat C, PetscInt ismax, con
         }
         PetscCall(MatDestroy(&AA));
       }
-      PetscCall(ISDestroy(ciscol + ii));
+      if (ciscol_p[ii] != NULL) PetscCall(ISDestroy(ciscol + ii));
+      else PetscCall(ISRestoreNonlocalIS(iscol[i], ciscol + ii));
       PetscCall(ISDestroy(ciscol_p + ii));
       ++ii;
     } else { /* if (size == 1) */
