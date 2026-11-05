@@ -578,15 +578,15 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
 
-  pipefgmres->nextra_vecs    = 1;
-  pipefgmres->haptol         = 1.0e-30;
-  pipefgmres->q_preallocate  = PETSC_FALSE;
-  pipefgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  pipefgmres->nrs            = NULL;
-  pipefgmres->sol_temp       = NULL;
-  pipefgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
-  pipefgmres->Rsvd           = NULL;
-  pipefgmres->shift          = 1.0;
+  pipefgmres->nextra_vecs            = 1;
+  pipefgmres->haptol                 = 1.0e-30;
+  pipefgmres->q_preallocate          = PETSC_FALSE;
+  pipefgmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  pipefgmres->nrs                    = NULL;
+  pipefgmres->sol_temp               = NULL;
+  pipefgmres->restart_size           = GMRES_DEFAULT_RESTART_SIZE;
+  pipefgmres->Rsvd                   = NULL;
+  pipefgmres->shift                  = 1.0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -597,8 +597,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscInt        nalloc;                               /* number to allocate */
 
   PetscFunctionBegin;
-  nalloc = pipefgmres->delta_allocate; /* number of vectors to allocate
-                                      in a single chunk */
+  nalloc = pipefgmres->vector_allocation_size;
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (pipefgmres->vecs_allocated)*/

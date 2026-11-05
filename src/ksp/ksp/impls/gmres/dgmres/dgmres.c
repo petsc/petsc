@@ -421,7 +421,7 @@ static PetscErrorCode KSPDGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscInt    nwork  = dgmres->nwork_alloc, k, nalloc;
 
   PetscFunctionBegin;
-  nalloc = PetscMin(ksp->max_it, dgmres->delta_allocate);
+  nalloc = PetscMin(ksp->max_it, dgmres->vector_allocation_size);
   /* Adjust the number to allocate to make sure that we don't exceed the
    number of available slots */
   if (it + VEC_OFFSET + nalloc >= dgmres->vecs_allocated) nalloc = dgmres->vecs_allocated - it - VEC_OFFSET;
@@ -1030,13 +1030,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_DGMRES(KSP ksp)
   PetscCall(PetscLogEventRegister("DGMRESCompDefl", KSP_CLASSID, &KSP_DGMRESComputeDeflationData));
   PetscCall(PetscLogEventRegister("DGMRESApplyDefl", KSP_CLASSID, &KSP_DGMRESApplyDeflation));
 
-  dgmres->haptol         = 1.0e-30;
-  dgmres->q_preallocate  = PETSC_FALSE;
-  dgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  dgmres->nrs            = NULL;
-  dgmres->sol_temp       = NULL;
-  dgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
-  dgmres->Rsvd           = NULL;
+  dgmres->haptol                 = 1.0e-30;
+  dgmres->q_preallocate          = PETSC_FALSE;
+  dgmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  dgmres->nrs                    = NULL;
+  dgmres->sol_temp               = NULL;
+  dgmres->restart_size           = GMRES_DEFAULT_RESTART_SIZE;
+  dgmres->Rsvd                   = NULL;
 
   /* Default values for the deflation */
   dgmres->r           = 0;

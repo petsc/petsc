@@ -389,13 +389,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_GMRES));
 
-  pgmres->nextra_vecs    = 1;
-  pgmres->haptol         = 1.0e-30;
-  pgmres->q_preallocate  = PETSC_FALSE;
-  pgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  pgmres->nrs            = NULL;
-  pgmres->sol_temp       = NULL;
-  pgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
-  pgmres->Rsvd           = NULL;
+  pgmres->nextra_vecs            = 1;
+  pgmres->haptol                 = 1.0e-30;
+  pgmres->q_preallocate          = PETSC_FALSE;
+  pgmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  pgmres->nrs                    = NULL;
+  pgmres->sol_temp               = NULL;
+  pgmres->restart_size           = GMRES_DEFAULT_RESTART_SIZE;
+  pgmres->Rsvd                   = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

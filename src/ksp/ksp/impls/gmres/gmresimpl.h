@@ -24,12 +24,13 @@
   PetscInt  restart_size; /* number of vectors in Krylov space */ \
   PetscInt  nextra_vecs;  /* number of extra vecs needed, e.g. for a pipeline */ \
 \
-  Vec      *vecs;           /* the work vectors */ \
-  Vec      *vecb;           /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
-  PetscBool q_preallocate;  /* Preallocate all the work vectors for the Krylov subspace */ \
-  PetscInt  delta_allocate; /* number of vectors to preallocate in each block if not preallocated */ \
-  PetscInt  vv_allocated;   /* number of allocated gmres direction vectors */ \
-  PetscInt  vecs_allocated; /*   total number of vecs available */ \
+  Vec      *vecs;                   /* the work vectors */ \
+  Vec      *vecb;                   /* holds the last full basis vectors of the Krylov subspace to compute (harmonic) Ritz pairs */ \
+  PetscBool q_preallocate;          /* Preallocate all the work vectors for the Krylov subspace */ \
+  PetscInt  vector_allocation_size; /* number of vectors to preallocate in each block if not preallocated */ \
+  PetscInt  vv_allocated;           /* number of allocated gmres direction vectors */ \
+  PetscInt  vecs_allocated;         /* total number of vecs available */ \
+\
   /* Since we may call the user "obtain_work_vectors" several times, we have to keep track of the pointers that it has returned */ \
   Vec     **user_work; \
   PetscInt *mwork_alloc; /* Number of work vectors allocated as part of  a work-vector chunk */ \
@@ -78,5 +79,5 @@ PETSC_INTERN PetscErrorCode KSPGMRESGetRestart_GMRES(KSP, PetscInt *);
   #define VEC_VV(i)      gmres->vecs[VEC_OFFSET + (i)]
 #endif
 
-#define GMRES_DEFAULT_RESTART_SIZE 30
-#define GMRES_DELTA_DIRECTIONS     10
+#define GMRES_DEFAULT_RESTART_SIZE           30
+#define GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE 10
