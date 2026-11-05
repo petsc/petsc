@@ -1739,7 +1739,7 @@ static PetscErrorCode MatSetOps_MPIAIJKokkos(Mat B)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType, MatReuse reuse, Mat *newmat)
 {
   Mat         B;
-  Mat_MPIAIJ *a;
+  Mat_MPIAIJ *b;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -1753,10 +1753,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType, MatRe
   PetscCall(PetscStrallocpy(VECKOKKOS, &B->defaultvectype));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIAIJKOKKOS));
 
-  a = static_cast<Mat_MPIAIJ *>(A->data);
-  if (a->A) PetscCall(MatSetType(a->A, MATSEQAIJKOKKOS));
-  if (a->B) PetscCall(MatSetType(a->B, MATSEQAIJKOKKOS));
-  if (a->lvec) PetscCall(VecSetType(a->lvec, VECSEQKOKKOS));
+  b = static_cast<Mat_MPIAIJ *>(B->data);
+  if (b->A) PetscCall(MatSetType(b->A, MATSEQAIJKOKKOS));
+  if (b->B) PetscCall(MatSetType(b->B, MATSEQAIJKOKKOS));
+  if (b->lvec) PetscCall(VecSetType(b->lvec, VECSEQKOKKOS));
   PetscCall(MatSetOps_MPIAIJKokkos(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
