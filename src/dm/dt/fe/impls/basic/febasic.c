@@ -954,6 +954,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   Np       = fgeom->numPoints;
   dE       = fgeom->dimEmbed;
   isAffine = fgeom->isAffine;
+  PetscCheck(NcI * NcJ * dE >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid Jacobian block size %" PetscInt_FMT, NcI * NcJ * dE);
   /* Initialize here in case the function is not defined */
   PetscCall(PetscArrayzero(g0, NcI * NcJ));
   PetscCall(PetscArrayzero(g1, NcI * NcJ * dE));
@@ -1016,17 +1017,17 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
       if (n1) {
         PetscCall(PetscArrayzero(g1, NcI * NcJ * dE));
         for (i = 0; i < n1; ++i) g1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, fegeom.n, numConstants, constants, g1);
-        for (PetscInt c = 0; c < NcI * NcJ * dim; ++c) g1[c] *= w;
+        for (PetscInt c = 0; c < NcI * NcJ * dE; ++c) g1[c] *= w;
       }
       if (n2) {
         PetscCall(PetscArrayzero(g2, NcI * NcJ * dE));
         for (i = 0; i < n2; ++i) g2_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, fegeom.n, numConstants, constants, g2);
-        for (PetscInt c = 0; c < NcI * NcJ * dim; ++c) g2[c] *= w;
+        for (PetscInt c = 0; c < NcI * NcJ * dE; ++c) g2[c] *= w;
       }
       if (n3) {
         PetscCall(PetscArrayzero(g3, NcI * NcJ * dE * dE));
         for (i = 0; i < n3; ++i) g3_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, fegeom.n, numConstants, constants, g3);
-        for (PetscInt c = 0; c < NcI * NcJ * dim * dim; ++c) g3[c] *= w;
+        for (PetscInt c = 0; c < NcI * NcJ * dE * dE; ++c) g3[c] *= w;
       }
 
       PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, face, qp, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &cgeom, g0, g1, g2, g3, totDim, offsetI, offsetJ, elemMat + eOffset));
