@@ -1626,27 +1626,32 @@ PetscErrorCode KSPConvergedDefaultDestroy(PetscCtxRt ctx)
 }
 
 /*@
-  KSPBuildSolutionDefault - Default code to build/move the solution.
+  KSPBuildSolutionDefault - Default code to build (if needed) and give access to the current approximate solution for some of the standard (non-flexible) Krylov methods.
 
   Collective
 
   Input Parameters:
 + ksp - iterative context
-- v   - pointer to the user's vector
+- v   - pointer to a vector in which to place the approximate solution, or `NULL`. Must be provided with `PC_RIGHT` or `PC_SYMMETRIC` preconditioning, even with `PCNONE`.
 
   Output Parameter:
 . V - pointer to a vector containing the solution
 
-  Level: advanced
+  Level: developer
 
   Note:
-  Some `KSP` methods such as `KSPGMRES` do not compute the explicit solution at each iteration, this routine takes the information
-  they have computed during the previous iterations and uses it to compute the explicit solution
+  Many of the `KSP` implementations carry either the current approximate solution (with `PC_LEFT` preconditioning) or a vector which, if you apply the preconditioner to it,
+  is the current approximate solution (with `PC_RIGHT` preconditioning, or with `PC_SYMMETRIC` preconditioning using `PCApplySymmetricRight()`). In all cases, this routine provides access to that approximate solution.
+
+  This routine is not usually called directly; it is supplied to the `KSP` object when its `KSPType` is set; for example, inside `KSPCreate_CG()`.
+
+  Flexible Krylov methods ([](sec_flexibleksp)) directly retain the actual approximate solution with `PC_RIGHT`, hence this routine is not appropriate; instead `KSPBuildSolutionFlexibleDefault()`
+  is used.
 
   Developer Note:
-  This is `PETSC_EXTERN` because it may be used by user written plugin `KSPType` implementations
+  This is `PETSC_EXTERN` because it may be used by user provided plugin `KSPType` implementations
 
-.seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`
+.seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`, `PC_LEFT`, `PC_RIGHT`, `KSPBuildSolutionFlexibleDefault()`
 @*/
 PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
 {
@@ -1680,6 +1685,39 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
       *V = v;
     } else *V = ksp->vec_sol;
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  KSPBuildSolutionFlexibleDefault - Default code to give access to the current approximate solution for some of the flexible Krylov methods
+
+  Collective
+
+  Input Parameters:
++ ksp - iterative context
+- v   - pointer to a vector in which to place the approximate solution, or `NULL`
+
+  Output Parameter:
+. V - pointer to a vector containing the solution
+
+  Level: developer
+
+  Note:
+  This routine is not usually called directly; it is supplied to the `KSP` object when its `KSPType` is set; for example, inside `KSPCreate_FBCGS()`.
+
+  Developer Note:
+  This is `PETSC_EXTERN` because it may be used by user provided plugin `KSPType` implementations.
+
+.seealso: [](ch_ksp), `KSP`, `KSPGetSolution()`, `KSPBuildResidualDefault()`, `PC_LEFT`, `PC_RIGHT`, `KSPBuildSolutionDefault()`
+@*/
+PetscErrorCode KSPBuildSolutionFlexibleDefault(KSP ksp, Vec v, Vec *V)
+{
+  PetscFunctionBegin;
+  PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Flexible Krylov methods only support right preconditioning");
+  if (v != NULL) {
+    PetscCall(VecCopy(ksp->vec_sol, v));
+    if (V != NULL) *V = v;
+  } else if (V != NULL) *V = ksp->vec_sol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

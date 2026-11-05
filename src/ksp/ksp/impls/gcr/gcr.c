@@ -267,21 +267,6 @@ PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
-{
-  Vec x;
-
-  PetscFunctionBegin;
-  x = ksp->vec_sol;
-  if (v) {
-    PetscCall(VecCopy(x, v));
-    if (V) *V = v;
-  } else if (V) {
-    *V = ksp->vec_sol;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
 {
   KSP_GCR *ctx;
@@ -351,7 +336,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_GCR;
   ksp->ops->view           = KSPView_GCR;
   ksp->ops->setfromoptions = KSPSetFromOptions_GCR;
-  ksp->ops->buildsolution  = KSPBuildSolution_GCR;
+  ksp->ops->buildsolution  = KSPBuildSolutionFlexibleDefault;
   ksp->ops->buildresidual  = KSPBuildResidual_GCR;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGCRSetRestart_C", KSPGCRSetRestart_GCR));

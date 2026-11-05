@@ -21,22 +21,33 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode KSPTestSolutionMonitor(KSP ksp, PetscInt i, PetscReal r, PetscCtx ctx)
+{
+  Vec x, xlast = (Vec)ctx;
+
+  PetscFunctionBeginUser;
+  PetscCall(KSPBuildSolution(ksp, NULL, &x));
+  PetscCall(VecCopy(x, xlast));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
   PetscInt      its;
   PetscLogStage stage1, stage2;
   PetscReal     norm;
-  Vec           x, b, u;
+  Vec           x, b, u, xlast = NULL;
   Mat           A;
   char          file[PETSC_MAX_PATH_LEN];
   PetscViewer   fd;
-  PetscBool     table = PETSC_FALSE, flg, test_residual = PETSC_FALSE, b_in_f = PETSC_TRUE;
+  PetscBool     table = PETSC_FALSE, flg, test_residual = PETSC_FALSE, test_solution = PETSC_FALSE, b_in_f = PETSC_TRUE;
   KSP           ksp;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-table", &table, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_residual", &test_residual, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_solution", &test_solution, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-b_in_f", &b_in_f, NULL));
 
   /* Read matrix and RHS */
@@ -91,6 +102,10 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   if (test_residual) PetscCall(KSPMonitorSet(ksp, KSPTestResidualMonitor, NULL, NULL));
+  if (test_solution == PETSC_TRUE) {
+    PetscCall(VecDuplicate(b, &xlast));
+    PetscCall(KSPMonitorSet(ksp, KSPTestSolutionMonitor, xlast, NULL));
+  }
   PetscCall(KSPSetUp(ksp));
   PetscCall(KSPSetUpOnBlocks(ksp));
   PetscCall(PetscLogStagePop());
@@ -100,6 +115,14 @@ int main(int argc, char **args)
   PetscCall(PetscLogStagePush(stage2));
   PetscCall(KSPSolve(ksp, b, x));
   PetscCall(PetscLogStagePop());
+  if (test_solution == PETSC_TRUE) { /* the solution built at the last iteration must be the final solution */
+    PetscReal err, xnorm;
+
+    PetscCall(VecAXPY(xlast, -1.0, x));
+    PetscCall(VecNorm(xlast, NORM_INFINITY, &err));
+    PetscCall(VecNorm(x, NORM_INFINITY, &xnorm));
+    PetscCheck(err <= PETSC_SMALL * xnorm, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Solution built at the last iteration differs from the final solution: %g", (double)err);
+  }
 
   /* Show result */
   PetscCall(MatMult(A, x, u));
@@ -125,6 +148,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));
   PetscCall(VecDestroy(&u));
+  PetscCall(VecDestroy(&xlast));
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFinalize());
   return 0;
@@ -151,6 +175,14 @@ int main(int argc, char **args)
       suffix: 3
       filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
       args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type none -ksp_type {{cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres pipefgmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr lsqr qcg bicg minres symmlq lcd gcr pipegcr cgls}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason -test_residual
+
+    # KSPBuildSolution() during the solve for the flexible BiCGStab variants with a preconditioner
+    test:
+      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)
+      suffix: 3_solution
+      output_file: output/ex6_3.out
+      filter: sed -e "s/CONVERGED_RTOL/CONVERGED_ATOL/g"
+      args: -f ${wPETSC_DIR}/share/petsc/datafiles/matrices/spd-real-int32-float64 -pc_type jacobi -ksp_type {{fbcgs fbcgsr qmrcgs pipebcgs}} -ksp_max_it 20 -ksp_error_if_not_converged -ksp_converged_reason -test_solution
 
     test:
       requires: double !complex !defined(PETSC_USE_64BIT_INDICES)

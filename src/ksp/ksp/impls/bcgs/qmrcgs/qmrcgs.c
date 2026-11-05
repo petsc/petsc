@@ -17,8 +17,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
   PetscInt    i;
   PetscScalar eta, rho1, rho2, alpha, eta2, omega, beta, cf, cf1, uu;
   Vec         X, B, R, P, PH, V, D2, X2, S, SH, T, D, S2, RP, AX, Z;
-  PetscReal   dp   = 0.0, final, tau, tau2, theta, theta2, c, F, NV, vv;
-  KSP_BCGS   *bcgs = (KSP_BCGS *)ksp->data;
+  PetscReal   dp = 0.0, final, tau, tau2, theta, theta2, c, F, NV, vv;
   PC          pc;
   Mat         mat;
 
@@ -42,12 +41,6 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
   /*  Only supports right preconditioning */
   PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP qmrcgs does not support %s", PCSides[ksp->pc_side]);
-  if (!ksp->guess_zero) {
-    if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
-    PetscCall(VecCopy(X, bcgs->guess));
-  } else {
-    PetscCall(VecSet(X, 0.0));
-  }
 
   /* Compute initial residual */
   PetscCall(KSPGetPC(ksp, &pc));
@@ -219,7 +212,6 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {
-  KSP_BCGS         *bcgs;
   static const char citations[] = "@article{chan1994qmrcgs,\n"
                                   "  title={A quasi-minimal residual variant of the {Bi-CGSTAB} algorithm for nonsymmetric systems},\n"
                                   "  author={Chan, Tony F and Gallopoulos, Efstratios and Simoncini, Valeria and Szeto, Tedd and Tong, Charles H},\n"
@@ -244,13 +236,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citations, &cite));
-  PetscCall(PetscNew(&bcgs));
-
-  ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_QMRCGS;
   ksp->ops->solve          = KSPSolve_QMRCGS;
   ksp->ops->destroy        = KSPDestroy_BCGS;
   ksp->ops->reset          = KSPReset_BCGS;
+  ksp->ops->buildsolution  = KSPBuildSolutionFlexibleDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_BCGS;
   ksp->pc_side             = PC_RIGHT; /* set default PC side */
