@@ -264,6 +264,8 @@ PetscErrorCode VecInitializePackage(void)
   PetscCallMPI(MPI_Op_create(PetscSplitReduction_Local, 1, &PetscSplitReduction_Op));
   PetscCallMPI(MPI_Op_create(MPIU_MaxIndex_Local, 1, &MPIU_MAXLOC));
   PetscCallMPI(MPI_Op_create(MPIU_MinIndex_Local, 1, &MPIU_MINLOC));
+  PetscCallMPI(MPI_Op_create(VecStrideMax_Local, 1, &VecStrideMax_Op));
+  PetscCallMPI(MPI_Op_create(VecStrideMin_Local, 1, &VecStrideMin_Op));
 
   /* Register the different norm types for cached norms */
   for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataRegister(NormIds + i));
@@ -288,6 +290,8 @@ PetscErrorCode VecFinalizePackage(void)
   PetscCallMPI(MPI_Op_free(&PetscSplitReduction_Op));
   PetscCallMPI(MPI_Op_free(&MPIU_MAXLOC));
   PetscCallMPI(MPI_Op_free(&MPIU_MINLOC));
+  PetscCallMPI(MPI_Op_free(&VecStrideMax_Op));
+  PetscCallMPI(MPI_Op_free(&VecStrideMin_Op));
   if (Petsc_Reduction_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Reduction_keyval));
   VecPackageInitialized = PETSC_FALSE;
   VecRegisterAllCalled  = PETSC_FALSE;

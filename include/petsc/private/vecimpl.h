@@ -8,9 +8,13 @@
 #include <petscvec.h>
 #include <petsc/private/petscimpl.h>
 
-PETSC_INTERN PetscBool VecRegisterAllCalled;
-PETSC_EXTERN MPI_Op    MPIU_MAXLOC;
-PETSC_EXTERN MPI_Op    MPIU_MINLOC;
+PETSC_INTERN PetscBool   VecRegisterAllCalled;
+PETSC_EXTERN MPI_Op      MPIU_MAXLOC;
+PETSC_EXTERN MPI_Op      MPIU_MINLOC;
+PETSC_INTERN MPI_Op      VecStrideMax_Op;
+PETSC_INTERN MPI_Op      VecStrideMin_Op;
+PETSC_INTERN void MPIAPI VecStrideMax_Local(void *, void *, PetscMPIInt *, MPI_Datatype *);
+PETSC_INTERN void MPIAPI VecStrideMin_Local(void *, void *, PetscMPIInt *, MPI_Datatype *);
 
 /* ----------------------------------------------------------------------------*/
 

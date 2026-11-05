@@ -148,6 +148,107 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+typedef struct {
+  PetscReal v;
+  PetscInt  i;
+} VecStrideExtremum;
+
+MPI_Op VecStrideMax_Op = MPI_OP_NULL;
+MPI_Op VecStrideMin_Op = MPI_OP_NULL;
+
+static inline PetscBool VecStrideExtremumWins_Private(VecStrideExtremum in, VecStrideExtremum out, PetscBool maximum)
+{
+  PetscBool innan, outnan;
+
+  /* PETSC_INT_MAX cannot be a valid vector index and marks an empty contribution.
+     Ignore it before comparing values, including true infinities and NaNs. */
+  if (in.i == PETSC_INT_MAX) return PETSC_FALSE;
+  if (out.i == PETSC_INT_MAX) return PETSC_TRUE;
+  innan  = PetscIsNanReal(in.v);
+  outnan = PetscIsNanReal(out.v);
+  if (innan != outnan) return innan;
+  if (innan == PETSC_TRUE || in.v == out.v) return (PetscBool)(in.i < out.i);
+  return (PetscBool)(maximum == PETSC_TRUE ? in.v > out.v : in.v < out.v);
+}
+
+static void VecStrideMinMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype, PetscBool maximum)
+{
+  const VecStrideExtremum *xin  = (const VecStrideExtremum *)in;
+  VecStrideExtremum       *xout = (VecStrideExtremum *)out;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_REAL_INT) {
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL_INT data types"));
+    PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
+  }
+  // Select the whole pair so the value comes from the winning global index.
+  for (PetscMPIInt c = 0; c < *cnt; ++c) {
+    if (VecStrideExtremumWins_Private(xin[c], xout[c], maximum) == PETSC_TRUE) xout[c] = xin[c];
+  }
+  PetscFunctionReturnVoid();
+}
+
+void MPIAPI VecStrideMax_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
+  PetscFunctionBegin;
+  VecStrideMinMax_Local(in, out, cnt, datatype, PETSC_TRUE);
+  PetscFunctionReturnVoid();
+}
+
+void MPIAPI VecStrideMin_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
+  PetscFunctionBegin;
+  VecStrideMinMax_Local(in, out, cnt, datatype, PETSC_FALSE);
+  PetscFunctionReturnVoid();
+}
+
+// Preserve unordered comparisons under the same compiler options as PetscIsNanReal().
+#if PetscDefined(HAVE_NO_FINITE_MATH_ONLY)
+__attribute__((optimize("no-finite-math-only")))
+#endif
+static PetscErrorCode VecStrideMinMax_Private(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm, PetscBool maximum)
+{
+  PetscInt           n, bs, rstart;
+  const PetscScalar *x;
+  VecStrideExtremum  out = {0.0, PETSC_INT_MAX};
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetBlockSize(v, &bs));
+  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
+  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
+  PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
+  PetscCall(VecGetArrayRead(v, &x));
+  if (n) {
+    PetscInt  offset = 0;
+    PetscReal best   = PetscRealPart(x[start]);
+
+    if (PetscIsNanReal(best) == PETSC_FALSE) {
+      for (PetscInt i = bs; i < n; i += bs) {
+        PetscReal value = PetscRealPart(x[i + start]);
+        PetscBool ordered;
+
+        /* The current extremum is not NaN. These comparisons distinguish a non-improving
+           value, an improvement, and a NaN without a separate self-comparison. */
+        if (maximum == PETSC_TRUE ? value <= best : best <= value) continue;
+        ordered = (PetscBool)(maximum == PETSC_TRUE ? value > best : best > value);
+        best    = value;
+        offset  = i;
+        // Ascending indices make the first NaN the only local candidate needed.
+        if (ordered == PETSC_FALSE) break;
+      }
+    }
+    out.v = best;
+    out.i = rstart + offset + start;
+  }
+  PetscCall(VecRestoreArrayRead(v, &x));
+  // Use the same reduction even when the caller does not request the index.
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, maximum == PETSC_TRUE ? VecStrideMax_Op : VecStrideMin_Op, PetscObjectComm((PetscObject)v)));
+  *nrm = out.i == PETSC_INT_MAX ? (maximum == PETSC_TRUE ? PETSC_MIN_REAL : PETSC_MAX_REAL) : out.v;
+  if (idex != NULL) *idex = out.i == PETSC_INT_MAX ? -1 : out.i;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   VecStrideMax - Computes the maximum of subvector of a vector defined
   by a starting point and a stride and optionally its location.
@@ -159,7 +260,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 - start - starting point of the subvector (defined by a stride)
 
   Output Parameters:
-+ idex - the location where the maximum occurred  (pass `NULL` if not required)
++ idex - the global index in `v` where the maximum occurred (pass `NULL` if not required)
 - nrm  - the maximum value in the subvector
 
   Level: advanced
@@ -168,57 +269,36 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
   One must call `VecSetBlockSize()` before this routine to set the stride
   information, or use a vector created from a multicomponent `DMDA`.
 
-  If xa is the array representing the vector x, then this computes the max
-  of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
+  If `va` is the array representing the vector `v`, then this computes the maximum
+  of the array `(va[start], va[start+stride], va[start+2*stride], ....)`.
 
   This is useful for computing, say the maximum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
   This will only work if the desire subvector is a stride subvector.
 
+  The real parts of the selected entries are compared. Positive and negative IEEE infinities
+  participate in the comparison normally.
+
+  If any selected real part is NaN, including a negative NaN, `nrm` is NaN and `idex` is the
+  smallest global index in `v` whose selected real part is NaN. If all selected real parts are
+  NaN, this is the first selected global index.
+
+  Otherwise, `idex` is the smallest global index attaining the maximum, and `nrm` is that
+  entry's real part. Equal positive and negative zeros are ties, so the returned zero has
+  the sign of the entry at that index. Passing `NULL` for `idex` does not change `nrm`.
+
+  Empty MPI processes do not affect the result. For a globally empty subvector, the result
+  is an `nrm` of `PETSC_MIN_REAL` and an `idex` of -1.
+
 .seealso: `Vec`, `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
 PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
-  PetscInt           i, n, bs, id = -1;
-  const PetscScalar *x;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
-  *nrm = PETSC_MIN_REAL;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetBlockSize(v, &bs));
-  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
-  PetscCall(VecGetArrayRead(v, &x));
-  for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) > *nrm) {
-      *nrm = PetscRealPart(x[i]);
-      id   = i;
-    }
-  }
-  PetscCall(VecRestoreArrayRead(v, &x));
-#if PetscDefined(HAVE_MPIUNI)
-  if (idex) *idex = id;
-#else
-  if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)v)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } out;
-    PetscInt rstart;
-
-    PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    out.v = *nrm;
-    out.i = rstart + id;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)v)));
-    *nrm  = out.v;
-    *idex = out.i;
-  }
-#endif
+  PetscCall(VecStrideMinMax_Private(v, start, idex, nrm, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -233,7 +313,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 - start - starting point of the subvector (defined by a stride)
 
   Output Parameters:
-+ idex - the location where the minimum occurred. (pass `NULL` if not required)
++ idex - the global index in `v` where the minimum occurred (pass `NULL` if not required)
 - nrm  - the minimum value in the subvector
 
   Level: advanced
@@ -242,57 +322,36 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
   One must call `VecSetBlockSize()` before this routine to set the stride
   information, or use a vector created from a multicomponent `DMDA`.
 
-  If xa is the array representing the vector x, then this computes the min
-  of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
+  If `va` is the array representing the vector `v`, then this computes the minimum
+  of the array `(va[start], va[start+stride], va[start+2*stride], ....)`.
 
   This is useful for computing, say the minimum of the pressure variable when
   the pressure is stored (interlaced) with other variables, e.g., density, etc.
   This will only work if the desire subvector is a stride subvector.
 
+  The real parts of the selected entries are compared. Positive and negative IEEE infinities
+  participate in the comparison normally.
+
+  If any selected real part is NaN, including a negative NaN, `nrm` is NaN and `idex` is the
+  smallest global index in `v` whose selected real part is NaN. If all selected real parts are
+  NaN, this is the first selected global index.
+
+  Otherwise, `idex` is the smallest global index attaining the minimum, and `nrm` is that
+  entry's real part. Equal positive and negative zeros are ties, so the returned zero has
+  the sign of the entry at that index. Passing `NULL` for `idex` does not change `nrm`.
+
+  Empty MPI processes do not affect the result. For a globally empty subvector, the result
+  is an `nrm` of `PETSC_MAX_REAL` and an `idex` of -1.
+
 .seealso: `Vec`, `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
 PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
 {
-  PetscInt           i, n, bs, id = -1;
-  const PetscScalar *x;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(v, start, 2);
   PetscAssertPointer(nrm, 4);
-  *nrm = PETSC_MAX_REAL;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetBlockSize(v, &bs));
-  PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative start %" PetscInt_FMT, start);
-  PetscCheck(start < bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Start of stride subvector (%" PetscInt_FMT ") is too large for stride. Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?", start, bs);
-  PetscCall(VecGetArrayRead(v, &x));
-  for (i = start; i < n; i += bs) {
-    if (PetscRealPart(x[i]) < *nrm) {
-      *nrm = PetscRealPart(x[i]);
-      id   = i;
-    }
-  }
-  PetscCall(VecRestoreArrayRead(v, &x));
-#if PetscDefined(HAVE_MPIUNI)
-  if (idex) *idex = id;
-#else
-  if (!idex) {
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)v)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } out;
-    PetscInt rstart;
-
-    PetscCall(VecGetOwnershipRange(v, &rstart, NULL));
-    out.v = *nrm;
-    out.i = rstart + id;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)v)));
-    *nrm  = out.v;
-    *idex = out.i;
-  }
-#endif
+  PetscCall(VecStrideMinMax_Private(v, start, idex, nrm, PETSC_FALSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
