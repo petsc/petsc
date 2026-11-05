@@ -452,15 +452,11 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       cg_restart = PETSC_TRUE;
       ++cg->skipped_updates;
     }
-    if (cg->spaced_restart) {
-      PetscCall(VecGetSize(tao->gradient, &dim));
-      if (tao->niter % (dim * cg->min_restart_num)) cg_restart = PETSC_TRUE;
-    }
   }
-  /* If the user wants regular restarts, do it every 6n iterations, where n=dimension */
+  /* If the user wants regular restarts, do it every min_restart_num * n iterations, where n = dimension */
   if (cg->spaced_restart) {
     PetscCall(VecGetSize(tao->gradient, &dim));
-    if (0 == tao->niter % (6 * dim)) cg_restart = PETSC_TRUE;
+    if (0 == tao->niter % (cg->min_restart_num * dim)) cg_restart = PETSC_TRUE;
   }
   /* Compute the diagonal scaling vector if applicable */
   if (cg->diag_scaling) PetscCall(MatLMVMUpdate(cg->B, tao->solution, tao->gradient));
