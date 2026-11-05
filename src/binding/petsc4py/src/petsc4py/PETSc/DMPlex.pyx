@@ -138,12 +138,16 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef PetscInt  *cellVertices = NULL, *verticesAdj = NULL
-        cdef PetscInt  vstart = 0, vend = 0, cstart = 0, cend = 0
+        cdef PetscInt  vstart = 0, vend = 0, cstart = 0, cend = 0, cells_size = 0
         cdef SF sf = SF()
 
         NVertices = PETSC_DECIDE if NVertices is None else NVertices
         coords = PyArray_FROM_OTF(coords, NPY_PETSC_REAL, NPY_ARRAY_ALIGNED|NPY_ARRAY_NOTSWAPPED|NPY_ARRAY_CARRAY)
-        cells = iarray_i(cells, NULL, &cellVertices)
+        cells = iarray_i(cells, &cells_size, &cellVertices)
+        _, offset_end = cellSection.getOffsetRange()
+        if offset_end > cells_size: raise ValueError(
+                ("cells must be long enough for cellSection to index into. "
+                 "cells.size=%d, but cellSection requires at least %d entries" % (cells_size, offset_end)))
 
         if PyArray_NDIM(coords) != 2: raise ValueError(
                 ("coords vertices must have two dimensions: "
