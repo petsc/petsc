@@ -9,7 +9,7 @@ static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbag
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Garbage_HMap_keyval, garbage, &iflg));
   if (!iflg) {
-    /* No garbage,create one */
+    /* No garbage, create one */
     PetscCall(PetscHMapObjCreate(&garbage_map));
     garbage->map = garbage_map;
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Garbage_HMap_keyval, garbage->ptr));
@@ -192,8 +192,13 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   ranks in the communicator.
   3.  The intersection is broadcast back to all ranks in the
   communicator.
-  4.  The objects on the dictionary are collectively destroyed in
-  creation index order using a call to PetscObjectDestroy().
+  4.  The objects in the intersection are collectively destroyed in
+  creation index order using a call to `PetscObjectDestroy()`.
+  5.  Objects queued during destruction are added to the dictionary, and
+  the process repeats until the collective intersection is empty.
+
+  Objects queued on only some ranks remain in the dictionary for a subsequent
+  call to `PetscGarbageCleanup()`.
 
   This function is intended for use with managed languages such as
   Python or Julia, which may not destroy objects in a deterministic
@@ -204,9 +209,10 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
 PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
 {
   PetscInt     ii, entries, offset;
+  PetscMPIInt  flg;
   PetscInt64  *keys;
   PetscObject  obj;
-  PetscGarbage garbage;
+  PetscGarbage garbage, pending;
 
   PetscFunctionBegin;
   /* Duplicate comm to prevent it being cleaned up by PetscObjectDestroy() */
@@ -217,24 +223,43 @@ PetscErrorCode PetscGarbageCleanup(MPI_Comm comm)
   PetscCall(GarbageGetHMap_Private(comm, &garbage));
   PetscCallMPI(MPI_Comm_delete_attr(comm, Petsc_Garbage_HMap_keyval));
 
-  /* Get keys from garbage hash map */
-  PetscCall(PetscHMapObjGetSize(garbage.map, &entries));
-  PetscCall(PetscMalloc1(entries, &keys));
-  offset = 0;
-  PetscCall(PetscHMapObjGetKeys(garbage.map, &offset, keys));
+  do {
+    /* Get keys from garbage hash map */
+    PetscCall(PetscHMapObjGetSize(garbage.map, &entries));
+    PetscCall(PetscMalloc1(entries, &keys));
+    offset = 0;
+    PetscCall(PetscHMapObjGetKeys(garbage.map, &offset, keys));
 
-  /* Gather and intersect */
-  PetscCall(GarbageKeyAllReduceIntersect_Private(comm, keys, &entries));
+    /* Gather and intersect */
+    PetscCall(GarbageKeyAllReduceIntersect_Private(comm, keys, &entries));
 
-  /* Collectively destroy objects that appear in garbage in
-     creation index order */
-  for (ii = 0; ii < entries; ii++) {
-    PetscCall(PetscHMapObjGet(garbage.map, keys[ii], &obj));
-    PetscCall(PetscObjectDestroy(&obj));
-    PetscCall(PetscFree(obj));
-    PetscCall(PetscHMapObjDel(garbage.map, keys[ii]));
-  }
-  PetscCall(PetscFree(keys));
+    /* Collectively destroy objects that appear in garbage in
+       creation index order */
+    for (ii = 0; ii < entries; ii++) {
+      PetscCall(PetscHMapObjGet(garbage.map, keys[ii], &obj));
+      PetscCall(PetscObjectDestroy(&obj));
+      PetscCall(PetscFree(obj));
+      PetscCall(PetscHMapObjDel(garbage.map, keys[ii]));
+    }
+    PetscCall(PetscFree(keys));
+
+    // Destructors may have queued more objects on the communicator.
+    PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Garbage_HMap_keyval, &pending, &flg));
+    if (flg) {
+      PetscHashIter it;
+      PetscInt64    key;
+
+      PetscCallMPI(MPI_Comm_delete_attr(comm, Petsc_Garbage_HMap_keyval));
+      PetscHashIterBegin(pending.map, it);
+      while (!PetscHashIterAtEnd(pending.map, it)) {
+        PetscHashIterGetKey(pending.map, it, key);
+        PetscHashIterGetVal(pending.map, it, obj);
+        PetscCall(PetscHMapObjSet(garbage.map, key, obj));
+        PetscHashIterNext(pending.map, it);
+      }
+      PetscCall(PetscHMapObjDestroy(&pending.map));
+    }
+  } while (entries);
 
   /* Put garbage back */
   PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Garbage_HMap_keyval, garbage.ptr));
