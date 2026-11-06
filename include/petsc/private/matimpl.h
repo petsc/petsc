@@ -282,6 +282,7 @@ static inline void MatBlockIndicesExpand_Private(PetscInt n, const PetscInt idx[
 
 /* Scattering of dense matrices with strided PetscSF */
 PETSC_EXTERN PetscErrorCode MatDenseScatter_Private(PetscSF, Mat, Mat, InsertMode, ScatterMode);
+PETSC_INTERN PetscErrorCode MatDenseScatterWithSF_Private(PetscSF, Mat, Mat, MPI_Op, ScatterMode, PetscBool);
 
 /* This can be moved to the public header after implementing some missing MatProducts */
 PETSC_INTERN PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping, Mat, PetscBool, PetscBool, MatType, Mat *);

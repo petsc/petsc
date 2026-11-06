@@ -445,25 +445,39 @@ static PetscErrorCode MatMPIDenseScatterSetUpLDA_Private(VecScatter ctx, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, PetscInt Am, Mat B, Mat C, MPIAIJ_MPIDense *contents, PetscInt *batchSize, PetscInt *numBatches)
+/* MatMPIDenseGetBatchSize_Private - Gets the number of columns of B to process at a time, to reduce the memory of a work matrix with nrows rows
+
+   Collective
+
+   Input Parameters:
++  nrows - number of rows of the work matrix on this process
+.  Am    - number of local rows of the sparse matrix A of the product
+.  B     - the MATMPIDENSE input matrix
+-  C     - the product matrix, whose prefix is used for -matproduct_batch_size
+
+   Output Parameters:
++  batchSize  - number of columns of B per batch; 0 or the number of columns of B means all the columns are processed at once
+-  numBatches - number of full batches, or 0 if B is not split into batches; a smaller last batch holds the remaining columns
+
+   Level: developer
+
+   Note:
+   Each process chooses a batch size that keeps its work matrix to about twice the memory of Am rows with all the columns of B,
+   rounded down to a multiple of the column block size of B. A process with no work rows chooses all the columns. The largest
+   choice over all processes is used, so B is split only if every process wants it split, unless -matproduct_batch_size gives another size.
+
+.seealso: `MatMPIDenseScatterSetUp_Private()`, `MatTransposeMatMultSymbolic_MPIAIJ_MPIDense()`
+*/
+PETSC_INTERN PetscErrorCode MatMPIDenseGetBatchSize_Private(PetscInt nrows, PetscInt Am, Mat B, Mat C, PetscInt *batchSize, PetscInt *numBatches)
 {
-  PetscInt        BN = B->cmap->N, Bbn, Bbs, numBb, ncols;
-  MPI_Comm        comm;
-  MPI_Datatype    type1;
-  const PetscInt *rstarts;
-  PetscMPIInt     nsends, nrecvs, nrows_from, disp = 0;
-  PetscBool       flg;
+  PetscInt BN = B->cmap->N, Bbn, Bbs, numBb;
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
-  PetscCall(MatDenseGetLDA(B, &contents->blda));
-  PetscCall(PetscObjectGetId((PetscObject)B, &contents->bid));
-
-  /* Create column block of B and C for memory scalability when BN is too large */
-  /* Estimate Bbn, column size of Bb */
-  if (nrows) {
+  if (nrows > 0) {
     Bbn = 2 * Am * BN / nrows;
-    if (!Bbn) Bbn = 1;
+    if (Bbn == 0) Bbn = 1;
   } else Bbn = BN;
   Bbs = B->cmap->bs;
   Bbn = Bbn / Bbs * Bbs;
@@ -479,8 +493,26 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
 
   if (Bbn > 0 && Bbn < BN) numBb = BN / Bbn;
   else numBb = 0;
-  if (numBb) PetscCall(PetscInfo(C, "Using column batches of size %" PetscInt_FMT " for %" PetscInt_FMT " dense columns\n", Bbn, BN));
-  ncols = Bbn ? Bbn : BN;
+  if (numBb > 0) PetscCall(PetscInfo(C, "Using column batches of size %" PetscInt_FMT " for %" PetscInt_FMT " dense columns\n", Bbn, BN));
+  *batchSize  = Bbn;
+  *numBatches = numBb;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, PetscInt Am, Mat B, Mat C, MPIAIJ_MPIDense *contents, PetscInt *batchSize, PetscInt *numBatches)
+{
+  PetscInt        BN = B->cmap->N, Bbn, numBb, ncols;
+  MPI_Datatype    type1;
+  const PetscInt *rstarts;
+  PetscMPIInt     nsends, nrecvs, nrows_from, disp = 0;
+  PetscBool       flg;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseGetLDA(B, &contents->blda));
+  PetscCall(PetscObjectGetId((PetscObject)B, &contents->bid));
+  /* Create column block of B and C for memory scalability when BN is too large */
+  PetscCall(MatMPIDenseGetBatchSize_Private(nrows, Am, B, C, &Bbn, &numBb));
+  ncols = Bbn > 0 ? Bbn : BN;
 
   /* Create work matrix used to store off processor rows of B needed for local product, with the same type as the local block of B */
   PetscCall(MatCreate(PETSC_COMM_SELF, &contents->workB));
@@ -741,16 +773,31 @@ static PetscErrorCode MatMPIDenseScatterEnd(Mat B, Mat workB, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-   Computes C = A * B, creating the nested product and its symbolic the first time. When clear is true the
-   product is cleared by the numeric, so that the symbolic is redone on the next call
+/* MatMPIAIJ_MPIDenseProductNumeric_Private - Computes C = A B or C = A^T B for the sequential matrices inside a MATMPIAIJ times MATMPIDENSE product
+
+   Not Collective
+
+   Input Parameters:
++  A     - a diagonal or off-diagonal block of the MATMPIAIJ matrix
+.  B     - the sequential dense input: the local block of B, one batch of its columns, or the off-process rows of B
+.  C     - the sequential dense result, whose product is set up here if it has none
+.  ptype - MATPRODUCT_AB or MATPRODUCT_AtB
+-  clear - whether to clear the product of C after the numeric phase, so that the next call sets it up again
+
+   Level: developer
+
+   Note:
+   The product is also set up again when A is not the matrix it was set up with, since its symbolic phase may keep data built from A.
+
+.seealso: `MatMatMultNumeric_MPIAIJ_MPIDense()`, `MatTransposeMatMultNumeric_MPIAIJ_MPIDense()`, `MatProductClear()`
 */
-static PetscErrorCode MatMPIAIJ_MPIDenseProductNumeric_Private(Mat A, Mat B, Mat C, PetscBool clear)
+PETSC_INTERN PetscErrorCode MatMPIAIJ_MPIDenseProductNumeric_Private(Mat A, Mat B, Mat C, MatProductType ptype, PetscBool clear)
 {
   PetscFunctionBegin;
-  if (!C->product) {
+  if (C->product != NULL && C->product->A != A) PetscCall(MatProductClear(C));
+  if (C->product == NULL) {
     PetscCall(MatProductCreateWithMat(A, B, NULL, C));
-    PetscCall(MatProductSetType(C, MATPRODUCT_AB));
+    PetscCall(MatProductSetType(C, ptype));
     PetscCall(MatProductSetFromOptions(C));
     PetscCall(MatProductSymbolic(C));
   } else PetscCall(MatProductReplaceMats(A, B, NULL, C));
@@ -786,7 +833,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
   overlap = (PetscBool)(contents->ondevice && contents->workB->cmap->n == B->cmap->N);
   if (overlap) PetscCall(MatMPIDenseScatterBegin(A, B, contents->workB, C));
   /* diagonal block of A times all local rows of B, first make sure that everything is up-to-date */
-  PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->A, bdense->A, cdense->A, clear));
+  PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->A, bdense->A, cdense->A, MATPRODUCT_AB, clear));
   if (contents->workB->cmap->n == B->cmap->N) {
     /* get off processor parts of B needed to complete C=A*B */
     workB = contents->workB;
@@ -795,7 +842,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 
     /* off-diagonal block of A times nonlocal rows of B */
     if (data->workC) {
-      PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, data->workC, clear));
+      PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, data->workC, MATPRODUCT_AB, clear));
       PetscCall(MatAXPY(cdense->A, 1.0, data->workC, SAME_NONZERO_PATTERN));
     } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE)); /* the device route has no work matrix only when the off-diagonal block has no columns */
   } else {
@@ -827,7 +874,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 
       /* off-diagonal block of A times nonlocal rows of B */
       if (workC) {
-        PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, workC, clear));
+        PetscCall(MatMPIAIJ_MPIDenseProductNumeric_Private(aij->B, workB, workC, MATPRODUCT_AB, clear));
         PetscCall(MatAXPY(((Mat_MPIDense *)Cb->data)->A, 1.0, workC, SAME_NONZERO_PATTERN));
       } else if (!contents->ondevice) PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, ((Mat_MPIDense *)Cb->data)->A, PETSC_TRUE));
       if (cols != n) {

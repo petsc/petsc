@@ -950,7 +950,7 @@ static PetscErrorCode MatProductSymbolic_PtAP_Diagonal_Anytype(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* AB for MATDIAGONAL A and any non-diagonal B: C = D * B (row scaling of B) */
+/* AB for MATDIAGONAL A and any non-diagonal B: C = D * B (row scaling of B). Also AtB for a dense B, since D^T = D */
 static PetscErrorCode MatProductNumeric_AB_Diagonal_Anytype(Mat C)
 {
   Mat           A = C->product->A, B = C->product->B;
@@ -1084,14 +1084,15 @@ static PetscErrorCode MatProductSetFromOptions_Diagonal_Dense(Mat C)
 static PetscErrorCode MatProductSetFromOptions_Diagonal_Anytype(Mat C)
 {
   Mat_Product *product = C->product;
-  PetscBool    Adiag, Bdiag;
+  PetscBool    Adiag, Bdiag, Bdense;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)product->A, MATDIAGONAL, &Adiag));
   PetscCall(PetscObjectTypeCompare((PetscObject)product->B, MATDIAGONAL, &Bdiag));
+  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)product->B, &Bdense, MATSEQDENSE, MATMPIDENSE, ""));
   if (Adiag && !Bdiag && (product->type == MATPRODUCT_PtAP)) C->ops->productsymbolic = MatProductSymbolic_PtAP_Diagonal_Anytype;
   else if (Bdiag && !Adiag && (product->type == MATPRODUCT_PtAP)) C->ops->productsymbolic = MatProductSymbolic_PtAP_Anytype_Diagonal;
-  else if (Adiag && !Bdiag && (product->type == MATPRODUCT_AB)) C->ops->productsymbolic = MatProductSymbolic_AB_Diagonal_Anytype;
+  else if (Adiag && !Bdiag && (product->type == MATPRODUCT_AB || (product->type == MATPRODUCT_AtB && Bdense))) C->ops->productsymbolic = MatProductSymbolic_AB_Diagonal_Anytype;
   else if (Bdiag && !Adiag && (product->type == MATPRODUCT_AB)) C->ops->productsymbolic = MatProductSymbolic_AB_Anytype_Diagonal;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1,4 +1,4 @@
-static const char help[] = "Test MATPRODUCT_AB (MatMatMult) with MATDIAGONAL and MATCONSTANTDIAGONAL against any matrix type\n\n";
+static const char help[] = "Test MATPRODUCT_AB (MatMatMult) with MATDIAGONAL and MATCONSTANTDIAGONAL against any matrix type, and MATPRODUCT_AtB (MatTransposeMatMult) of MATDIAGONAL and MATCONSTANTDIAGONAL with a dense matrix\n\n";
 
 // Contributed by: Steven Dargaville
 
@@ -18,17 +18,81 @@ static PetscErrorCode CheckAB(Mat X, Mat Y, const char *what)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Compare C with the host reference Ref and destroy Ref
+static PetscErrorCode CheckHostReference(Mat C, Mat *Ref, const char *what)
+{
+  Mat       Ch;
+  PetscReal nrm, err;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatConvert(C, MATDENSE, MAT_INITIAL_MATRIX, &Ch));
+  PetscCall(MatNorm(*Ref, NORM_INFINITY, &nrm));
+  PetscCall(MatAXPY(Ch, -1.0, *Ref, SAME_NONZERO_PATTERN));
+  PetscCall(MatNorm(Ch, NORM_INFINITY, &err));
+  PetscCheck(err <= 100.0 * PETSC_SMALL * PetscMax(nrm, 1.0), PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "MatTransposeMatMult %s gives the wrong result, error %g relative to %g", what, (double)err, (double)nrm);
+  PetscCall(MatDestroy(&Ch));
+  PetscCall(MatDestroy(Ref));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Check C = D^T * B = D * B for a MATDIAGONAL D and a dense B against host copies of D and B. Using host copies also
+   works for a VECKOKKOS diagonal with a CUPM dense matrix, where MatMatMultEqual() fails */
+static PetscErrorCode CheckDiagonalAtB(Mat D, Mat B, Mat C, const char *what)
+{
+  Mat                Bh;
+  Vec                dg, dh;
+  const PetscScalar *d;
+  PetscScalar       *h;
+  PetscInt           nloc;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bh));
+  PetscCall(MatCreateVecs(Bh, NULL, &dh));
+  PetscCall(MatDiagonalGetDiagonal(D, &dg));
+  PetscCall(VecGetLocalSize(dg, &nloc));
+  PetscCall(VecGetArrayRead(dg, &d));
+  PetscCall(VecGetArrayWrite(dh, &h));
+  PetscCall(PetscArraycpy(h, d, nloc));
+  PetscCall(VecRestoreArrayWrite(dh, &h));
+  PetscCall(VecRestoreArrayRead(dg, &d));
+  PetscCall(MatDiagonalRestoreDiagonal(D, &dg));
+  PetscCall(MatDiagonalScale(Bh, dh, NULL));
+  PetscCall(VecDestroy(&dh));
+  PetscCall(CheckHostReference(C, &Bh, what));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Check C = CD^T * B = alpha * B for a MATCONSTANTDIAGONAL CD and a dense B against a host copy of B
+static PetscErrorCode CheckConstantDiagonalAtB(Mat CD, Mat B, Mat C, const char *what)
+{
+  Mat         Bh;
+  PetscScalar alpha;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatConvert(B, MATDENSE, MAT_INITIAL_MATRIX, &Bh));
+  PetscCall(MatConstantDiagonalGetConstant(CD, &alpha));
+  PetscCall(MatScale(Bh, alpha));
+  PetscCall(CheckHostReference(C, &Bh, what));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **args)
 {
-  Mat         A, B, D, D2, CD, CD2, result, ref, Cr;
-  Vec         dvec, rdiag, dg;
-  MatType     atype;
-  PetscInt    n = 6, m, ncols = 3, rstart, rend;
-  PetscScalar cval = 1.5, cval2 = 2.5;
-  PetscBool   equal = PETSC_FALSE, issame = PETSC_FALSE;
+  Mat           A, B, D, D2, CD, CD2, result, ref, Cr;
+  Vec           dvec, rdiag, dg;
+  MatType       atype;
+  PetscInt      n = 6, m, ncols = 3, rstart, rend;
+  PetscScalar   cval = 1.5, cval2 = 2.5;
+  PetscBool     equal = PETSC_FALSE, issame = PETSC_FALSE, check_copies = PETSC_FALSE, dense_ab = PETSC_TRUE;
+  PetscLogEvent event;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_copies", &check_copies, NULL));
+  // -dense_ab 0 skips the D * B and CD * B checks, since MatMatMultEqual() fails for a VECKOKKOS diagonal with a CUPM dense matrix
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-dense_ab", &dense_ab, NULL));
+  if (check_copies) PetscCall(PetscLogDefaultBegin());
+  PetscCall(PetscLogEventRegister("ProductCheck", MAT_CLASSID, &event));
 
   // A genuinely non-diagonal sparse matrix with a parallel-safe layout; its type
   // is taken from -mat_type (e.g. aij, aijkokkos, aijcusparse, aijhipsparse).
@@ -81,10 +145,16 @@ int main(int argc, char **args)
   PetscCall(CheckAB(CD, A, "CD * A (MATCONSTANTDIAGONAL * aij)"));
 
   // MATDIAGONAL against a dense matrix
-  PetscCall(CheckAB(D, B, "D * B (MATDIAGONAL * dense)"));
+  if (dense_ab) PetscCall(CheckAB(D, B, "D * B (MATDIAGONAL * dense)"));
+  PetscCall(MatTransposeMatMult(D, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Cr));
+  PetscCall(CheckDiagonalAtB(D, B, Cr, "D^T * B (MATDIAGONAL^T * dense)"));
+  PetscCall(MatDestroy(&Cr));
 
   // MATCONSTANTDIAGONAL against a dense matrix
-  PetscCall(CheckAB(CD, B, "CD * B (MATCONSTANTDIAGONAL * dense)"));
+  if (dense_ab) PetscCall(CheckAB(CD, B, "CD * B (MATCONSTANTDIAGONAL * dense)"));
+  PetscCall(MatTransposeMatMult(CD, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Cr));
+  PetscCall(CheckConstantDiagonalAtB(CD, B, Cr, "CD^T * B (MATCONSTANTDIAGONAL^T * dense)"));
+  PetscCall(MatDestroy(&Cr));
 
   // MATDIAGONAL/MATCONSTANTDIAGONAL against each other.
   PetscCall(CheckAB(D, D2, "D * D (MATDIAGONAL * MATDIAGONAL)"));
@@ -175,6 +245,36 @@ int main(int argc, char **args)
   PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "D * CD (reuse, constant scaled) gives the wrong result");
   PetscCall(MatDestroy(&Cr));
 
+  // Reuse D^T * B and CD^T * B after the diagonals change and check them, then reuse them again with the copies logged
+  PetscCall(MatTransposeMatMult(D, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Cr));
+  PetscCall(MatTransposeMatMult(CD, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &result));
+  PetscCall(MatDiagonalGetDiagonal(D, &dg));
+  PetscCall(VecScale(dg, 1.7));
+  PetscCall(MatDiagonalRestoreDiagonal(D, &dg));
+  PetscCall(MatScale(CD, -3.0));
+  PetscCall(MatTransposeMatMult(D, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Cr));
+  PetscCall(CheckDiagonalAtB(D, B, Cr, "D^T * B (reuse, diagonal changed)"));
+  PetscCall(MatTransposeMatMult(CD, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &result));
+  PetscCall(CheckConstantDiagonalAtB(CD, B, result, "CD^T * B (reuse, constant scaled)"));
+  PetscCall(PetscLogEventBegin(event, 0, 0, 0, 0));
+  PetscCall(MatTransposeMatMult(D, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Cr));
+  PetscCall(MatTransposeMatMult(CD, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &result));
+  PetscCall(PetscLogEventEnd(event, 0, 0, 0, 0));
+  PetscCall(CheckDiagonalAtB(D, B, Cr, "D^T * B (reuse again)"));
+  PetscCall(CheckConstantDiagonalAtB(CD, B, result, "CD^T * B (reuse again)"));
+  PetscCall(MatDestroy(&Cr));
+  PetscCall(MatDestroy(&result));
+#if PetscDefined(HAVE_DEVICE)
+  // With device matrices, the logged reuse must not copy between host and device
+  if (check_copies) {
+    PetscEventPerfInfo info;
+
+    PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
+    PetscCheck(info.GpuToCpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected GPU to CPU copies (%g bytes) in MatTransposeMatMult()", info.GpuToCpuCount, info.GpuToCpuSize);
+    PetscCheck(info.CpuToGpuCount == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%g unexpected CPU to GPU copies (%g bytes) in MatTransposeMatMult()", info.CpuToGpuCount, info.CpuToGpuSize);
+  }
+#endif
+
   PetscCall(MatDestroy(&A));
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&D));
@@ -211,5 +311,34 @@ int main(int argc, char **args)
     suffix: hip
     nsize: {{1 2}}
     args: -mat_type aijhipsparse -dense_mat_type densehip
+    output_file: output/empty.out
+
+  # the copy checks on 2 processes do not need GPU-aware MPI, since these products do not communicate
+  test:
+    requires: cuda defined(PETSC_USE_LOG)
+    suffix: cuda_copies
+    nsize: {{1 2}}
+    args: -mat_type aijcusparse -dense_mat_type densecuda -check_copies
+    output_file: output/empty.out
+
+  test:
+    requires: hip defined(PETSC_USE_LOG)
+    suffix: hip_copies
+    nsize: {{1 2}}
+    args: -mat_type aijhipsparse -dense_mat_type densehip -check_copies
+    output_file: output/empty.out
+
+  test:
+    requires: cuda kokkos_kernels defined(PETSC_USE_LOG)
+    suffix: kokkos_cuda
+    nsize: {{1 2}}
+    args: -mat_type aijkokkos -dense_mat_type densecuda -dense_mat_vec_type kokkos -check_copies -dense_ab 0
+    output_file: output/empty.out
+
+  test:
+    requires: hip kokkos_kernels defined(PETSC_USE_LOG)
+    suffix: kokkos_hip
+    nsize: {{1 2}}
+    args: -mat_type aijkokkos -dense_mat_type densehip -dense_mat_vec_type kokkos -check_copies -dense_ab 0
     output_file: output/empty.out
 TEST*/

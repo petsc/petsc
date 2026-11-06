@@ -412,8 +412,7 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       nsize: 2
       args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -new_interpolation
 
-    # a second block solve must not copy between host and device; PCJACOBI on the coarse level since PCLU factors on the host, and GPU-aware
-    # MPI in parallel, where MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE still computes the restrictions on the host
+    # a second block solve must not copy between host and device; the coarse level uses PCJACOBI since PCLU factors on the host, and the parallel tests require GPU-aware MPI
     testset:
       requires: cuda kokkos_kernels defined(PETSC_USE_LOG)
       args: -ksp_type preonly -pc_type mg -mx 5 -my 5 -pc_mg_levels 3 -pc_mg_galerkin -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -mg_coarse_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}shared output} -nrhs 7 -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densecuda -rhs_mat_vec_type kokkos -check_copies
@@ -426,7 +425,6 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
         suffix: matcycles_kokkos_cuda_copies_par
         nsize: 2
         requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
-        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
 
     testset:
       requires: cuda defined(PETSC_USE_LOG)
@@ -440,7 +438,6 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
         suffix: matcycles_cuda_copies_par
         nsize: 2
         requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
-        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
 
     testset:
       requires: hip kokkos_kernels defined(PETSC_USE_LOG)
@@ -454,7 +451,6 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
         suffix: matcycles_kokkos_hip_copies_par
         nsize: 2
         requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
-        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
 
     testset:
       requires: hip defined(PETSC_USE_LOG)
@@ -468,7 +464,6 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
         suffix: matcycles_hip_copies_par
         nsize: 2
         requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
-        TODO: MatTransposeMatMult() of MATMPIAIJ and MATMPIDENSE computes the restrictions on the host
 
     test:
       # a second solve with blocks of a larger leading dimension
@@ -506,6 +501,59 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       suffix: matcycles_richardson_transpose
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+
+    # a second transposed block solve must not copy between host and device; KSPRICHARDSON computes its block residuals B - A^T X with a MATPRODUCT_AtB product
+    testset:
+      requires: cuda kokkos_kernels defined(PETSC_USE_LOG)
+      args: -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densecuda -rhs_mat_vec_type kokkos -check_copies
+      output_file: output/ex26_matcycles_richardson_transpose_copies.out
+
+      test:
+        suffix: matcycles_richardson_transpose_kokkos_cuda_copies
+
+      test:
+        suffix: matcycles_richardson_transpose_kokkos_cuda_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+
+    testset:
+      requires: cuda defined(PETSC_USE_LOG)
+      args: -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -dm_mat_type aijcusparse -dm_vec_type cuda -rhs_mat_type densecuda -check_copies
+      output_file: output/ex26_matcycles_richardson_transpose_copies.out
+
+      test:
+        suffix: matcycles_richardson_transpose_cuda_copies
+
+      test:
+        suffix: matcycles_richardson_transpose_cuda_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+
+    testset:
+      requires: hip kokkos_kernels defined(PETSC_USE_LOG)
+      args: -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -dm_mat_type aijkokkos -dm_vec_type kokkos -rhs_mat_type densehip -rhs_mat_vec_type kokkos -check_copies
+      output_file: output/ex26_matcycles_richardson_transpose_copies.out
+
+      test:
+        suffix: matcycles_richardson_transpose_kokkos_hip_copies
+
+      test:
+        suffix: matcycles_richardson_transpose_kokkos_hip_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
+
+    testset:
+      requires: hip defined(PETSC_USE_LOG)
+      args: -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -dm_mat_type aijhipsparse -dm_vec_type hip -rhs_mat_type densehip -check_copies
+      output_file: output/ex26_matcycles_richardson_transpose_copies.out
+
+      test:
+        suffix: matcycles_richardson_transpose_hip_copies
+
+      test:
+        suffix: matcycles_richardson_transpose_hip_copies_par
+        nsize: 2
+        requires: defined(PETSC_HAVE_MPI_GPU_AWARE)
 
     test:
       requires: ml

@@ -429,9 +429,9 @@ int main(int argc, char **args)
     }
   }
 
-  /* Test that MAT_REUSE_MATRIX computes with the current values of A after they have been changed */
+  /* Test that MAT_REUSE_MATRIX uses the current values of A after they change, and uses another matrix A2 when given one */
   if (testreusemodified) {
-    Mat E;
+    Mat E, A2;
 
     PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
     PetscCall(MatScale(A, 2.0));
@@ -439,7 +439,20 @@ int main(int argc, char **args)
     PetscCall(MatTransposeMatMultEqual(A, X, E, 10, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage after MatScale() (MatTransposeMat)\n"));
     PetscCall(MatScale(A, 0.5));
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &A2));
+    PetscCall(MatScale(A2, 3.0));
+    PetscCall(MatTransposeMatMult(A2, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &E));
+    PetscCall(MatTransposeMatMultEqual(A2, X, E, 10, &flg));
+    if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage with another A (MatTransposeMat)\n"));
     PetscCall(MatDestroy(&E));
+    if (testmatmatt) {
+      PetscCall(MatMatTransposeMult(A, Bt, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &E));
+      PetscCall(MatMatTransposeMult(A2, Bt, MAT_REUSE_MATRIX, PETSC_DETERMINE, &E));
+      PetscCall(MatMatTransposeMultEqual(A2, Bt, E, 10, &flg));
+      if (!flg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with reusage with another A (MatMatTranspose)\n"));
+      PetscCall(MatDestroy(&E));
+    }
+    PetscCall(MatDestroy(&A2));
   }
 
   /* Test projection operations (PtAP and RARt) */
@@ -815,16 +828,23 @@ int main(int argc, char **args)
     suffix: 1_par_kokkos
     args: -local {{0 1}} -testmatmatt 0 -A_mat_type aijkokkos -testrart 0
 
-  # MatCreateMAIJ() converts its result to MATAIJKOKKOS or MATAIJCUSPARSE, so the MAIJ matrix
-  # cached by MatTransposeMatMultSymbolic_MPIAIJ_MPIDense() holds a copy of A that goes stale
-  # when A's values change before a MAT_REUSE_MATRIX product
+  test:
+    output_file: output/empty.out
+    suffix: 1_reuse
+    args: -testreusemodified
+
+  test:
+    output_file: output/empty.out
+    nsize: 2
+    suffix: 1_par_reuse
+    args: -testmatmatt 0 -testreusemodified
+
   test:
     output_file: output/empty.out
     nsize: 2
     requires: kokkos_kernels
     suffix: 1_par_kokkos_reuse
     args: -testmatmatt 0 -A_mat_type aijkokkos -testrart 0 -testreusemodified
-    TODO: MATPRODUCT_AtB with MATMPIAIJKOKKOS computes with stale values of A on MAT_REUSE_MATRIX
 
   test:
     output_file: output/empty.out
@@ -832,7 +852,6 @@ int main(int argc, char **args)
     requires: cuda
     suffix: 1_par_cuda_reuse
     args: -testnest 0 -testmatmatt 0 -matproduct_batch_size 3 -A_mat_type mpiaijcusparse -testreusemodified
-    TODO: MATPRODUCT_AtB with MATMPIAIJCUSPARSE computes with stale values of A on MAT_REUSE_MATRIX
 
   test:
     output_file: output/empty.out
