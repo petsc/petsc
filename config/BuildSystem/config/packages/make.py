@@ -1,6 +1,6 @@
 import config.package
 import os
-from config.utilities.parseVersion import parseVersion
+from config.utilities.parseVersion import parseVersion, findVersion
 
 def getMakeUserPath(arch):
   import re
@@ -138,17 +138,15 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
     haveGNUMake4  = False
     haveGNUMake44 = False
     try:
-      import re
       # accept gnumake version >= self.minversion only [as older version break with gmakefile]
       (output, error, status) = config.base.Configure.executeShellCommand(make+' --version', log = self.log)
-      gver = re.compile('GNU Make ([0-9]+).([0-9]+)').match(output)
-      if not status and gver:
-        foundVersion = ".".join([gver.group(1),gver.group(2)])
+      if not status and output.startswith('GNU Make'):
+        foundVersion = findVersion(output)
         version      = parseVersion(foundVersion)
         if version >= parseVersion(self.minversion): haveGNUMake = True
         if version >= parseVersion('4'): haveGNUMake4 = True
         if version >= parseVersion('4.4'): haveGNUMake44 = True
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
       self.log.write('GNUMake check failed: '+str(e)+'\n')
     return foundVersion, haveGNUMake, haveGNUMake4, haveGNUMake44
 

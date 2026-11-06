@@ -73,9 +73,21 @@ def loadParseVersion():
 
 parseVersion = loadParseVersion()
 
+def findVersion(text):
+  '''Returns the first word of text that starts with a digit, trimmed to its leading release number if
+     parseVersion() rejects it (3.29.5-msvc4 -> 3.29.5, 2.8-patch -> 2.8); raises ValueError if there is none'''
+  for word in text.split():
+    if word[0].isdigit(): break
+  else: raise ValueError('No version found in '+repr(text))
+  try:
+    parseVersion(word)
+  except ValueError:
+    return re.match(r'\d+(?:\.\d+)*', word).group(0)
+  return word
+
 class Configure(config.base.Configure):
   '''Has no configure tests; PETSc/Configure.py registers every file in this directory as a child,
-     so this module must provide a Configure class even though it only exports parseVersion()'''
+     so this module must provide a Configure class even though it only exports parseVersion() and findVersion()'''
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
