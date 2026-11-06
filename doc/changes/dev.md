@@ -82,6 +82,7 @@
 ```
 
 - Add a device implementation of `VecSqrtAbs()` for `VECKOKKOS`; previously it copied the vector to the host
+- Add device implementations of `VecPointwiseMax()`, `VecPointwiseMin()`, and `VecPointwiseMaxAbs()` for `VECKOKKOS` when both input vectors are `VECKOKKOS`; previously they copied the vectors to the host
 - Change `VecGetState()` to return a `VecState` and add `VecStateCompare()`, `VecStateCompareUpdate()`, and `VecStateInvalidate()`
 - Make `VecStrideMin()` and `VecStrideMax()` propagate NaNs with the smallest global NaN index, handle IEEE infinities with empty ranks, and return the same value with or without an index
 - Add `VecGetArrayAndMemTypeAsync()`, `VecGetArrayReadAndMemTypeAsync()`, and `VecGetArrayWriteAndMemTypeAsync()` to acquire vector storage for read/write, read-only, and write-only access, respectively, without waiting for CUDA and HIP transfers on the current device context

@@ -1059,6 +1059,101 @@ PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec win, Vec xin, Vec yin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+struct MaxRealPartFunctor {
+  KOKKOS_INLINE_FUNCTION PetscScalar operator()(const PetscScalar &x, const PetscScalar &y) const
+  {
+    const PetscReal rx = PetscRealPart(x), ry = PetscRealPart(y);
+
+    return PetscMax(rx, ry);
+  }
+};
+
+struct MinRealPartFunctor {
+  KOKKOS_INLINE_FUNCTION PetscScalar operator()(const PetscScalar &x, const PetscScalar &y) const
+  {
+    const PetscReal rx = PetscRealPart(x), ry = PetscRealPart(y);
+
+    return PetscMin(rx, ry);
+  }
+};
+
+struct MaxAbsFunctor {
+  KOKKOS_INLINE_FUNCTION PetscScalar operator()(const PetscScalar &x, const PetscScalar &y) const
+  {
+    const PetscReal ax = PetscAbsScalar(x), ay = PetscAbsScalar(y);
+
+    return PetscMax(ax, ay);
+  }
+};
+
+/* w = op(x, y). Any subset of x, y and w may be the same vector.
+
+  w is of type VecKokkos, but x, y may be not.
+*/
+template <class BinaryOp>
+static PetscErrorCode VecPointwiseApply_SeqKokkos(Vec win, Vec xin, Vec yin, BinaryOp op)
+{
+  PetscInt n;
+
+  PetscFunctionBegin;
+  PetscCall(PetscLogGpuTimeBegin());
+  PetscCall(VecGetLocalSize(win, &n));
+  if (xin->offloadmask != PETSC_OFFLOAD_KOKKOS || yin->offloadmask != PETSC_OFFLOAD_KOKKOS) {
+    PetscScalarKokkosViewHost      wv;
+    ConstPetscScalarKokkosViewHost xv, yv;
+    const PetscScalar             *xp, *yp;
+
+    PetscCall(VecGetArrayRead(xin, &xp));
+    PetscCall(VecGetArrayRead(yin, &yp));
+    PetscCall(VecGetKokkosViewWrite(win, &wv));
+    xv = ConstPetscScalarKokkosViewHost(xp, n);
+    yv = ConstPetscScalarKokkosViewHost(yp, n);
+    PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<Kokkos::DefaultHostExecutionSpace>(0, n), KOKKOS_LAMBDA(const PetscInt &i) { wv(i) = op(xv(i), yv(i)); }));
+
+    PetscCall(VecRestoreArrayRead(xin, &xp));
+    PetscCall(VecRestoreArrayRead(yin, &yp));
+    PetscCall(VecRestoreKokkosViewWrite(win, &wv));
+  } else {
+    ConstPetscScalarKokkosView xv, yv;
+    PetscScalarKokkosView      wv;
+
+    PetscCall(VecGetKokkosViewWrite(win, &wv));
+    PetscCall(VecGetKokkosView(xin, &xv));
+    PetscCall(VecGetKokkosView(yin, &yv));
+    PetscCallCXX(Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, n), KOKKOS_LAMBDA(const PetscInt &i) { wv(i) = op(xv(i), yv(i)); }));
+    PetscCall(VecRestoreKokkosView(yin, &yv));
+    PetscCall(VecRestoreKokkosView(xin, &xv));
+    PetscCall(VecRestoreKokkosViewWrite(win, &wv));
+  }
+  PetscCall(PetscLogGpuTimeEnd());
+  PetscCall(PetscLogGpuFlops(n));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* w = max(real(x), real(y)) */
+PetscErrorCode VecPointwiseMax_SeqKokkos(Vec win, Vec xin, Vec yin)
+{
+  PetscFunctionBegin;
+  PetscCall(VecPointwiseApply_SeqKokkos(win, xin, yin, MaxRealPartFunctor{}));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* w = min(real(x), real(y)) */
+PetscErrorCode VecPointwiseMin_SeqKokkos(Vec win, Vec xin, Vec yin)
+{
+  PetscFunctionBegin;
+  PetscCall(VecPointwiseApply_SeqKokkos(win, xin, yin, MinRealPartFunctor{}));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* w = max(abs(x), abs(y)) */
+PetscErrorCode VecPointwiseMaxAbs_SeqKokkos(Vec win, Vec xin, Vec yin)
+{
+  PetscFunctionBegin;
+  PetscCall(VecPointwiseApply_SeqKokkos(win, xin, yin, MaxAbsFunctor{}));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 struct VecNormInfinityFunctor {
   using value_type = PetscReal;
   ConstPetscScalarKokkosView xv;
@@ -1749,6 +1844,9 @@ static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
   v->ops->sqrt            = VecSqrtAbs_SeqKokkos;
   v->ops->pointwisemult   = VecPointwiseMult_SeqKokkos;
+  v->ops->pointwisemax    = VecPointwiseMax_SeqKokkos;
+  v->ops->pointwisemaxabs = VecPointwiseMaxAbs_SeqKokkos;
+  v->ops->pointwisemin    = VecPointwiseMin_SeqKokkos;
   v->ops->min             = VecMin_SeqKokkos;
   v->ops->max             = VecMax_SeqKokkos;
   v->ops->sum             = VecSum_SeqKokkos;
