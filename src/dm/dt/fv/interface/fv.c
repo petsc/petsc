@@ -307,22 +307,25 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 
  The second order TVD region is bounded by
 
- psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
+ psi_minmod(r) = min(1,r)      and        psi_superbee(r) = min(2, 2r, max(1,r))
 
- where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
- phi(r)(r+1)/2 in which the reconstructed interface values are
+ where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is
+
+ phi(r) = psi(r) 2/(1+r)
+
+ in which the reconstructed interface values are
 
  u(v) = u[0] + phi(r) (grad u)[0] v
 
- where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
+ where v is the vector from centroid to quadrature point. In these variables, the extremal limiters become
 
- phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
+ phi_minmod(r) = 2/(1+r) min(1, r)   phi_superbee(r) = 2/(1+r) min(2, 2r, max(1,r))
 
  For a nicer symmetric formulation, rewrite in terms of
 
- f = (u[0] - u[-1]) / (u[1] - u[-1])
+ f = (u[1] - u[0]) / (u[1] - u[-1])
 
- where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
+ where r(f) = (1-f)/f. Note that r(1-f) = f/(1-f) = 1/r(f) so the symmetry condition
 
  phi(r) = phi(1/r)
 
@@ -330,9 +333,9 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 
  w(f) = w(1-f).
 
- The limiters below implement this final form w(f). The reference methods are
+ The limiters below implement this final form w(f) = phi(r(f)) = 2f psi(r(f)). The extremal methods are
 
- w_minmod(f) = 2 min(f,(1-f))             w_superbee(f) = min(4 min((1-f), f), 2 max((1-f), f))
+ w_minmod(f) = 2 min(f, 1-f)             w_superbee(f) = min(4 min(1-f, f), 2 max(1-f, f))
 .ve
 
 .seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterSetType()`, `PetscLimiterCreate()`
