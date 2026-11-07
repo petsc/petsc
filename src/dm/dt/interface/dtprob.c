@@ -209,8 +209,8 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal unu
     }
     r += (ck[k] / temp) * PetscPowReal((PetscSqrtReal(PETSC_PI) / 2.) * q, 2. * k + 1.);
   }
-  /* Scale erfinv() by \sqrt{\pi/2} */
-  x[0] = PetscSqrtReal(PETSC_PI * 0.5) * r;
+  /* Scale erfinv() by \sqrt{2} */
+  x[0] = PETSC_SQRT2 * r;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
