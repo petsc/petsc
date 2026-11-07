@@ -332,7 +332,7 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
 
  The limiters below implement this final form w(f). The reference methods are
 
- w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
+ w_minmod(f) = 2 min(f,(1-f))             w_superbee(f) = min(4 min((1-f), f), 2 max((1-f), f))
 .ve
 
 .seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterSetType()`, `PetscLimiterCreate()`
@@ -788,7 +788,7 @@ static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer vi
 static PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi)
 {
   PetscFunctionBegin;
-  *phi = 4 * PetscMax(0, PetscMin(f, 1 - f));
+  *phi = PetscMax(0, PetscMin(4 * PetscMin(f, 1 - f), 2 * PetscMax(f, 1 - f)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
