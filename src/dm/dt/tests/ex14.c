@@ -26,6 +26,25 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* The 2D and 3D Gaussians depend only on |x|, so their integral over R^d is the integral over r of p(x) with |x| = r
+   times the measure of the sphere |x| = r, which is 2 pi r in 2D and 4 pi r^2 in 3D. We take x on the diagonal so every
+   coordinate is used. */
+static void Gaussian2DRadial(const PetscReal r[], PetscCtx ctx, PetscReal *f)
+{
+  const PetscReal x[2] = {r[0] / PetscSqrtReal(2.), r[0] / PetscSqrtReal(2.)};
+
+  PetscCallAbort(PETSC_COMM_SELF, PetscPDFGaussian2D(x, NULL, f));
+  *f *= 2. * PETSC_PI * r[0];
+}
+
+static void Gaussian3DRadial(const PetscReal r[], PetscCtx ctx, PetscReal *f)
+{
+  const PetscReal x[3] = {r[0] / PetscSqrtReal(3.), r[0] / PetscSqrtReal(3.), r[0] / PetscSqrtReal(3.)};
+
+  PetscCallAbort(PETSC_COMM_SELF, PetscPDFGaussian3D(x, NULL, f));
+  *f *= 4. * PETSC_PI * PetscSqr(r[0]);
+}
+
 static PetscErrorCode TestDistributions()
 {
   PetscProbFn *pdf[]  = {PetscPDFMaxwellBoltzmann1D, PetscPDFMaxwellBoltzmann2D, PetscPDFMaxwellBoltzmann3D, PetscPDFGaussian1D};
@@ -35,6 +54,12 @@ static PetscErrorCode TestDistributions()
 
   PetscFunctionBeginUser;
   for (PetscInt i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(pdf); ++i) PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
+  for (PetscInt d = 2; d <= 3; ++d) {
+    PetscReal integral;
+
+    PetscCall(PetscDTTanhSinhIntegrate(d == 2 ? Gaussian2DRadial : Gaussian3DRadial, 0., 10., 14, NULL, &integral));
+    PetscCheck(PetscAbsReal(integral - 1) < 100 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF Gaussian %" PetscInt_FMT "D must integrate to 1, not %g", d, (double)integral);
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
