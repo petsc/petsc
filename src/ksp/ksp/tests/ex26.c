@@ -498,6 +498,14 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
         args: -dm_mat_type aijhipsparse -dm_vec_type hip -rhs_mat_type densehip
 
     test:
+      # the same with the solution scatter that MATSOLVERMUMPS keeps from the first solve
+      suffix: matsolve_lda_mumps
+      nsize: 2
+      requires: mumps
+      args: -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type mumps -mx 5 -my 5 -nrhs 7 -lda_shift 3
+      output_file: output/ex26_matcycles_lda.out
+
+    test:
       suffix: matcycles_richardson_transpose
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
