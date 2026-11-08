@@ -149,23 +149,26 @@ int main(int argc, char **argv)
   build:
     requires: hpddm double
 
-  test:
+  testset:
     nsize: 2
-    args: -ksp_hpddm_variant {{left right flexible}shared output}
     output_file: output/empty.out
+    test:
+      suffix: 1
+      args: -ksp_hpddm_variant {{left right flexible}shared output}
+    test:
+      suffix: nonzero_guess
+      requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -nonzero_guess -ksp_hpddm_variant {{left right flexible}shared output}
+    test:
+      suffix: nonzero_guess_bcg
+      requires: !complex !defined(PETSC_USE_64BIT_INDICES)
+      args: -nonzero_guess -ksp_hpddm_type bcg
 
   test:
     suffix: converged_maxits
     requires: !complex !defined(PETSC_USE_64BIT_INDICES)
     nsize: 2
     args: -ksp_converged_maxits -ksp_max_it 2 -check_converged_maxits
-    output_file: output/empty.out
-
-  test:
-    suffix: nonzero_guess
-    requires: !complex !defined(PETSC_USE_64BIT_INDICES)
-    nsize: 2
-    args: -nonzero_guess -ksp_hpddm_variant {{left right flexible}shared output}
     output_file: output/empty.out
 
   testset:

@@ -160,8 +160,8 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
         data->scntl[data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG] = 1;    /* Krylov subspace not enlarged by default */
       } else data->scntl[data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG] = 0;
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
-        data->cntl[2]  = static_cast<char>(HPDDM_ORTHOGONALIZATION_CGS) + (static_cast<char>(HPDDM_QR_CHOLQR) << 2); /* CGS and CholQR by default */
-        data->scntl[0] = PetscMin(30, ksp->max_it);                                                                  /* restart parameter of 30 by default */
+        data->cntl[2]  = static_cast<char>(HPDDM_ORTHOGONALIZATION_CGS) + (static_cast<char>(HPDDM_QR_CHOLQR) << 2);                                                 /* CGS and CholQR by default */
+        data->scntl[0] = PetscMin(30, PetscMax((data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) ? 2 : 1, ksp->max_it)); /* restart parameter of 30 by default */
       }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) data->cntl[1] = HPDDM_QR_CHOLQR; /* CholQR by default */
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
@@ -451,7 +451,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
   PetscCall(KSPGetOperators(ksp, &A, nullptr));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQKAIJ, MATMPIKAIJ, ""));
-  PetscCall(VecGetArrayWriteAndMemType(ksp->vec_sol, &x, type));
+  PetscCall(VecGetArrayAndMemType(ksp->vec_sol, &x, type));
   PetscCall(VecGetArrayReadAndMemType(ksp->vec_rhs, &b, type + 1));
   PetscCheck(type[0] == type[1], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Right-hand side and solution vectors must have the same PetscMemType, %s != %s", PetscMemTypeToString(type[0]), PetscMemTypeToString(type[1]));
   if (!flg) {
@@ -489,7 +489,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
     }
   }
   PetscCall(VecRestoreArrayReadAndMemType(ksp->vec_rhs, &b));
-  PetscCall(VecRestoreArrayWriteAndMemType(ksp->vec_sol, &x));
+  PetscCall(VecRestoreArrayAndMemType(ksp->vec_sol, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -627,7 +627,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscCall(MatDenseGetLDA(X, &lda));
   PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unsupported leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
   PetscCall(MatGetSize(X, nullptr, &n));
-  PetscCall(MatDenseGetArrayWriteAndMemType(X, &x, type));
+  PetscCall(MatDenseGetArrayAndMemType(X, &x, type));
   PetscCall(MatDenseGetArrayReadAndMemType(B, &b, type + 1));
   PetscCheck(type[0] == type[1], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Right-hand side and solution matrices must have the same PetscMemType, %s != %s", PetscMemTypeToString(type[0]), PetscMemTypeToString(type[1]));
   if (PetscMemTypeCUDA(type[0])) PetscCall(KSPSolve_HPDDM_Private<PETSC_MEMTYPE_CUDA>(ksp, b, x, n));
@@ -636,7 +636,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
     PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, n));
   }
   PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
-  PetscCall(MatDenseRestoreArrayWriteAndMemType(X, &x));
+  PetscCall(MatDenseRestoreArrayAndMemType(X, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
