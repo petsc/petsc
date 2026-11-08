@@ -22,7 +22,7 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
   Output Parameter:
 . handle - the `cublasHandle_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_CUDA`. The returned handle is owned by
@@ -49,7 +49,7 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
   Output Parameter:
 . handle - the `cusolverDnHandle_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_CUDA`. The returned handle is owned by
@@ -76,7 +76,7 @@ PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
   Output Parameter:
 . stream - the `cudaStream_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_CUDA`. The returned stream is owned by

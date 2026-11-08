@@ -1,4 +1,5 @@
 #include <petscdevice_cuda.h>
+#include <petsc/private/deviceimpl.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 
 /* A class that manages helper arrays assisting parallel PCApply() with CUDA */
@@ -18,7 +19,7 @@ struct PC_VPBJacobi_CUDA {
 
   MatScalar *diag_d; /* [nsize], store inverse of the point blocks on device */
 
-  PC_VPBJacobi_CUDA(PetscInt n, PetscInt nblocks, PetscInt nsize, const PetscInt *bsizes, MatScalar *diag_h) : n(n), nblocks(nblocks), nsize(nsize)
+  PC_VPBJacobi_CUDA(PetscDeviceContext dctx, PetscInt n, PetscInt nblocks, PetscInt nsize, const PetscInt *bsizes, MatScalar *diag_h) : n(n), nblocks(nblocks), nsize(nsize)
   {
     /* malloc memory on host and device, and then update */
     PetscCallVoid(PetscMalloc3(nblocks + 1, &bs_h, nblocks + 1, &bs2_h, n, &matIdx_h));
@@ -26,17 +27,22 @@ struct PC_VPBJacobi_CUDA {
     PetscCallCUDAVoid(cudaMalloc(&bs2_d, sizeof(PetscInt) * (nblocks + 1)));
     PetscCallCUDAVoid(cudaMalloc(&matIdx_d, sizeof(PetscInt) * n));
     PetscCallCUDAVoid(cudaMalloc(&diag_d, sizeof(MatScalar) * nsize));
-    PetscCallVoid(UpdateOffsetsOnDevice(bsizes, diag_h));
+    PetscCallVoid(UpdateOffsetsOnDevice(dctx, bsizes, diag_h));
   }
 
-  PetscErrorCode UpdateOffsetsOnDevice(const PetscInt *bsizes, MatScalar *diag_h)
+  PetscErrorCode UpdateOffsetsOnDevice(PetscDeviceContext dctx, const PetscInt *bsizes, MatScalar *diag_h)
   {
+    cudaStream_t *stream;
+
     PetscFunctionBegin;
+    PetscCall(PetscDeviceContextGetStreamHandle(dctx, reinterpret_cast<void **>(&stream)));
     PetscCall(ComputeOffsetsOnHost(bsizes));
-    PetscCallCUDA(cudaMemcpy(bs_d, bs_h, sizeof(PetscInt) * (nblocks + 1), cudaMemcpyHostToDevice));
-    PetscCallCUDA(cudaMemcpy(bs2_d, bs2_h, sizeof(PetscInt) * (nblocks + 1), cudaMemcpyHostToDevice));
-    PetscCallCUDA(cudaMemcpy(matIdx_d, matIdx_h, sizeof(PetscInt) * n, cudaMemcpyHostToDevice));
-    PetscCallCUDA(cudaMemcpy(diag_d, diag_h, sizeof(MatScalar) * nsize, cudaMemcpyHostToDevice));
+    PetscCallCUDA(cudaMemcpyAsync(bs_d, bs_h, sizeof(PetscInt) * (nblocks + 1), cudaMemcpyHostToDevice, *stream));
+    PetscCallCUDA(cudaMemcpyAsync(bs2_d, bs2_h, sizeof(PetscInt) * (nblocks + 1), cudaMemcpyHostToDevice, *stream));
+    PetscCallCUDA(cudaMemcpyAsync(matIdx_d, matIdx_h, sizeof(PetscInt) * n, cudaMemcpyHostToDevice, *stream));
+    PetscCallCUDA(cudaMemcpyAsync(diag_d, diag_h, sizeof(MatScalar) * nsize, cudaMemcpyHostToDevice, *stream));
+    // Complete uploads before setup can reuse the host arrays.
+    PetscCall(PetscDeviceContextSynchronize(dctx));
     PetscCall(PetscLogCpuToGpu(sizeof(PetscInt) * (2 * nblocks + 2 + n) + sizeof(MatScalar) * nsize));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -108,8 +114,12 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_CUDA(PC pc, Vec x, Vec y, Pet
   const PetscScalar *xx;
   PetscScalar       *yy;
   PetscInt           n;
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, reinterpret_cast<void **>(&stream)));
   PetscCall(PetscLogGpuTimeBegin());
   if (PetscDefined(USE_DEBUG)) {
     PetscBool isCuda;
@@ -123,13 +133,14 @@ static PetscErrorCode PCApplyOrTranspose_VPBJacobi_CUDA(PC pc, Vec x, Vec y, Pet
     PetscInt gridSize = PetscMin((n + 255) / 256, 2147483647); /* <= 2^31-1 */
     PetscCall(VecCUDAGetArrayRead(x, &xx));
     PetscCall(VecCUDAGetArrayWrite(y, &yy));
-    MatMultBatched<<<gridSize, 256>>>(n, pcuda->bs_d, pcuda->bs2_d, pcuda->matIdx_d, pcuda->diag_d, xx, yy, transpose);
+    MatMultBatched<<<gridSize, 256, 0, *stream>>>(n, pcuda->bs_d, pcuda->bs2_d, pcuda->matIdx_d, pcuda->diag_d, xx, yy, transpose);
     PetscCallCUDA(cudaGetLastError());
     PetscCall(VecCUDARestoreArrayRead(x, &xx));
     PetscCall(VecCUDARestoreArrayWrite(y, &yy));
   }
   PetscCall(PetscLogGpuFlops(pcuda->nsize * 2)); /* FMA on entries in all blocks */
   PetscCall(PetscLogGpuTimeEnd());
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -163,8 +174,10 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc, Mat diagVPB)
   PC_VPBJacobi_CUDA *pcuda = static_cast<PC_VPBJacobi_CUDA *>(jac->spptr);
   PetscInt           i, n, nblocks, nsize = 0;
   const PetscInt    *bsizes;
+  PetscDeviceContext dctx;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(PCSetUp_VPBJacobi_Host(pc, diagVPB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   PetscCall(MatGetVariableBlockSizes(pc->pmat, &nblocks, &bsizes));
   for (i = 0; i < nblocks; i++) nsize += bsizes[i] * bsizes[i];
@@ -177,9 +190,9 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc, Mat diagVPB)
   }
 
   if (!pcuda) { /* allocate the struct along with the helper arrays from the scratch */
-    PetscCallCXX(jac->spptr = new PC_VPBJacobi_CUDA(n, nblocks, nsize, bsizes, jac->diag));
+    PetscCallCXX(jac->spptr = new PC_VPBJacobi_CUDA(dctx, n, nblocks, nsize, bsizes, jac->diag));
   } else { /* update the value only */
-    PetscCall(pcuda->UpdateOffsetsOnDevice(bsizes, jac->diag));
+    PetscCall(pcuda->UpdateOffsetsOnDevice(dctx, bsizes, jac->diag));
   }
 
   pc->ops->apply          = PCApply_VPBJacobi_CUDA;

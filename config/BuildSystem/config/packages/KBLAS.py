@@ -31,9 +31,6 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    if not self.cub.found and not self.cuda.version_tuple[0] >= 11:
-      raise RuntimeError('Package kblas requested but dependency cub not requested. Perhaps you want --download-cub')
-
     if self.openmp.found:
       self.usesopenmp = 'yes'
 

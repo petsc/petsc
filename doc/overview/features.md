@@ -10,8 +10,8 @@
 # Accelerator/GPU Features
 
 - {ref}`Matrix/Vector CUDA support <doc_config_accel_cuda>`
-- {ref}`Kokkos support <doc_config_accel_kokkos>`
-- {ref}`Matrix/Vector OpenCL/ViennaCL support <doc_config_accel_opencl>`
+- {ref}`Kokkos support with CUDA, HIP, or SYCL <doc_config_accel_kokkos>`
+- {ref}`Legacy Matrix/Vector OpenCL/ViennaCL support <doc_config_accel_opencl>`
 - {ref}`Matrix/Vector HIP support <doc_gpu_roadmap>`
 
 :::{note}

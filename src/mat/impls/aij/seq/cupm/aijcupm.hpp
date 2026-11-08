@@ -241,23 +241,26 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
   /* MatZeroEntries: fill device CSR values with zero */
   static PetscErrorCode ZeroEntries(Mat A) noexcept
   {
-    PetscBool      gpu = PETSC_FALSE;
-    Mat_SeqAIJ    *a   = (Mat_SeqAIJ *)A->data;
-    MatStructType *spptr;
+    PetscBool          gpu = PETSC_FALSE;
+    Mat_SeqAIJ        *a   = (Mat_SeqAIJ *)A->data;
+    MatStructType     *spptr;
+    cupmStream_t       stream;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
+    PetscCall(GetHandles_(&dctx, &stream));
     if (A->factortype == MAT_FACTOR_NONE) {
       spptr = (MatStructType *)A->spptr;
       if (spptr->mat) {
         CsrMatrix *matrix = (CsrMatrix *)spptr->mat->mat;
         if (matrix->values) {
           gpu = PETSC_TRUE;
-          PetscCallThrust(thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), (PetscScalar)0.));
+          PetscCallThrust(THRUST_CALL(thrust::fill, stream, matrix->values->begin(), matrix->values->end(), (PetscScalar)0.));
         }
       }
       if (spptr->matTranspose) {
         CsrMatrix *matrix = (CsrMatrix *)spptr->matTranspose->mat;
-        if (matrix->values) PetscCallThrust(thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), (PetscScalar)0.));
+        if (matrix->values) PetscCallThrust(THRUST_CALL(thrust::fill, stream, matrix->values->begin(), matrix->values->end(), (PetscScalar)0.));
       }
     }
     if (gpu) A->offloadmask = PETSC_OFFLOAD_GPU;
@@ -265,41 +268,45 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
       PetscCall(PetscArrayzero(a->a, a->i[A->rmap->n]));
       A->offloadmask = PETSC_OFFLOAD_CPU;
     }
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* MatScale: cupmBlasXscal on the device CSR values */
   static PetscErrorCode Scale(Mat Y, PetscScalar a) noexcept
   {
-    Mat_SeqAIJ      *y  = (Mat_SeqAIJ *)Y->data;
-    PetscScalar     *ay = nullptr;
-    cupmBlasHandle_t blashandle;
-    PetscBLASInt     one = 1, bnz = 1;
+    Mat_SeqAIJ        *y  = (Mat_SeqAIJ *)Y->data;
+    PetscScalar       *ay = nullptr;
+    cupmBlasHandle_t   blashandle;
+    PetscBLASInt       one = 1, bnz = 1;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
     PetscCall(GetArray(Y, &ay));
-    PetscCall(GetHandles_(&blashandle));
+    PetscCall(GetHandles_(&dctx, &blashandle));
     PetscCall(PetscBLASIntCast(y->nz, &bnz));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMBLAS(cupmBlasXscal(blashandle, bnz, cupmScalarPtrCast(&a), cupmScalarPtrCast(ay), one));
     PetscCall(PetscLogGpuFlops(bnz));
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(RestoreArray(Y, &ay));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* MatDiagonalScale: Thrust-based left and right scaling of CSR values */
   static PetscErrorCode DiagonalScale(Mat A, Vec ll, Vec rr) noexcept
   {
-    Mat_SeqAIJ    *aij = (Mat_SeqAIJ *)A->data;
-    MatStructType *devstruct;
-    CsrMatrix     *csr;
-    PetscScalar   *av = nullptr;
-    PetscInt       m, n, nz = aij->nz;
-    cupmStream_t   stream;
+    Mat_SeqAIJ        *aij = (Mat_SeqAIJ *)A->data;
+    MatStructType     *devstruct;
+    CsrMatrix         *csr;
+    PetscScalar       *av = nullptr;
+    PetscInt           m, n, nz = aij->nz;
+    cupmStream_t       stream;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
-    PetscCall(GetHandles_(&stream));
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(GetArray(A, &av));
     devstruct = (MatStructType *)A->spptr;
@@ -332,17 +339,21 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     }
     PetscCall(RestoreArray(A, &av));
     PetscCall(PetscLogGpuTimeEnd());
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* MatSeqAIJGetIJ: return device CSR row-pointer and column-index arrays */
   static PetscErrorCode GetIJ(Mat A, PetscBool compressed, const PetscInt **i, const PetscInt **j) noexcept
   {
-    MatStructType *cusp = (MatStructType *)A->spptr;
-    Mat_SeqAIJ    *a    = (Mat_SeqAIJ *)A->data;
-    CsrMatrix     *csr;
+    MatStructType     *cusp = (MatStructType *)A->spptr;
+    Mat_SeqAIJ        *a    = (Mat_SeqAIJ *)A->data;
+    CsrMatrix         *csr;
+    cupmStream_t       stream;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
     if (!i || !j) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCheckTypeName(A, Policy::mat_type_name);
@@ -354,7 +365,8 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
       if (!compressed && a->compressedrow.use) { /* need full row offset */
         if (!cusp->rowoffsets_gpu) {
           cusp->rowoffsets_gpu = new THRUSTINTARRAY(A->rmap->n + 1);
-          cusp->rowoffsets_gpu->assign(a->i, a->i + A->rmap->n + 1);
+          PetscCallCUPM(cupmMemcpyAsync(cusp->rowoffsets_gpu->data().get(), a->i, (A->rmap->n + 1) * sizeof(*a->i), cupmMemcpyHostToDevice, stream));
+          PetscCall(PetscDeviceContextSynchronize(dctx));
           PetscCall(PetscLogCpuToGpu((A->rmap->n + 1) * sizeof(PetscInt)));
         }
         *i = cusp->rowoffsets_gpu->data().get();
@@ -384,14 +396,18 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscInt            *i, *j;
     PetscContainer       container_h;
     MatCOOStruct_SeqAIJ *coo_h, *coo_d;
+    cupmStream_t         stream;
+    PetscDeviceContext   dctx;
 
     PetscFunctionBegin;
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscCall(PetscGetMemType(coo_i, &mtype));
     if (PetscMemTypeDevice(mtype)) {
       dev_ij = PETSC_TRUE;
       PetscCall(PetscMalloc2(coo_n, &i, coo_n, &j));
-      PetscCallCUPM(cupmMemcpy(i, coo_i, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost));
-      PetscCallCUPM(cupmMemcpy(j, coo_j, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost));
+      PetscCallCUPM(cupmMemcpyAsync(i, coo_i, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost, stream));
+      PetscCallCUPM(cupmMemcpyAsync(j, coo_j, coo_n * sizeof(PetscInt), cupmMemcpyDeviceToHost, stream));
+      PetscCall(PetscDeviceContextSynchronize(dctx));
     } else {
       i = coo_i;
       j = coo_j;
@@ -408,9 +424,10 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscCall(PetscMalloc1(1, &coo_d));
     *coo_d = *coo_h; /* shallow copy; device fields amended below */
     PetscCallCUPM(cupmMalloc((void **)&coo_d->jmap, (coo_h->nz + 1) * sizeof(PetscCount)));
-    PetscCallCUPM(cupmMemcpy(coo_d->jmap, coo_h->jmap, (coo_h->nz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->jmap, coo_h->jmap, (coo_h->nz + 1) * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
     PetscCallCUPM(cupmMalloc((void **)&coo_d->perm, coo_h->Atot * sizeof(PetscCount)));
-    PetscCallCUPM(cupmMemcpy(coo_d->perm, coo_h->perm, coo_h->Atot * sizeof(PetscCount), cupmMemcpyHostToDevice));
+    PetscCallCUPM(cupmMemcpyAsync(coo_d->perm, coo_h->perm, coo_h->Atot * sizeof(PetscCount), cupmMemcpyHostToDevice, stream));
+    PetscCall(PetscDeviceContextSynchronize(dctx));
 
     PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", coo_d, MatSeqAIJCUSPARSE_CUPM::COOStructDestroy));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -428,9 +445,11 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscContainer       container;
     MatCOOStruct_SeqAIJ *coo;
     cupmStream_t         stream;
+    PetscDeviceContext   dctx;
 
     PetscFunctionBegin;
     PetscCall(MatSeqAIJCheckCOONonzeroState(A));
+    PetscCall(GetHandles_(&dctx, &stream));
     if (!dev->mat) PetscCall(Policy::CopyToGPU(A));
 
     PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
@@ -439,14 +458,15 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscCall(PetscGetMemType(v, &memtype));
     if (PetscMemTypeHost(memtype)) { /* copy host values to device */
       PetscCallCUPM(cupmMalloc((void **)&v1, coo->n * sizeof(PetscScalar)));
-      PetscCallCUPM(cupmMemcpy((void *)v1, v, coo->n * sizeof(PetscScalar), cupmMemcpyHostToDevice));
+      PetscCallCUPM(cupmMemcpyAsync((void *)v1, v, coo->n * sizeof(PetscScalar), cupmMemcpyHostToDevice, stream));
+      // The caller may reuse the host values after this call returns.
+      PetscCall(PetscDeviceContextSynchronize(dctx));
       PetscCall(PetscLogCpuToGpu(coo->n * sizeof(PetscScalar)));
     }
 
     if (imode == INSERT_VALUES) PetscCall(GetArrayWrite(A, &Aa));
     else PetscCall(GetArray(A, &Aa));
 
-    PetscCall(GetHandles_(&stream));
     PetscCall(PetscLogGpuTimeBegin());
     if (Annz) {
       PetscCallCUPM(cupmLaunchKernel(MatAddCOOValues, (unsigned int)((Annz + 255) / 256), 256u, (size_t)0, stream, v1, Annz, coo->jmap, coo->perm, imode, Aa));
@@ -459,8 +479,10 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
 
     if (PetscMemTypeHost(memtype)) {
       void *v1_device = (void *)v1;
-      PetscCallCUPM(cupmFree(v1_device));
+
+      PetscCallCUPM(cupmFreeAsync(v1_device, stream));
     }
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -470,14 +492,17 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     const PetscScalar *av = nullptr;
     PetscMemType       mtype;
     PetscBool          dmem;
+    cupmStream_t       stream;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
+    PetscCall(GetHandles_(&dctx, &stream));
     PetscCall(PetscCUPMGetMemType(v, &mtype));
     dmem = PetscMemTypeDevice(mtype);
     PetscCall(GetArrayRead(A, &av));
     if (n && idx) {
       THRUSTINTARRAY widx(n);
-      widx.assign(idx, idx + n);
+      PetscCallCUPM(cupmMemcpyAsync(widx.data().get(), idx, n * sizeof(*idx), cupmMemcpyHostToDevice, stream));
       PetscCall(PetscLogCpuToGpu(n * sizeof(PetscInt)));
 
       THRUSTARRAY                    *w = NULL;
@@ -492,12 +517,16 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
         thrust::device_ptr<const PetscScalar> dav   = thrust::device_pointer_cast(av);
         auto                                  zibit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav, widx.begin()), dv));
         auto                                  zieit = thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(dav, widx.end()), dv + n));
-        PetscCallThrust(thrust::for_each(zibit, zieit, VecCUPMEquals{}));
+        PetscCallThrust(THRUST_CALL(thrust::for_each, stream, zibit, zieit, VecCUPMEquals{}));
       }
-      if (w) PetscCallCUPM(cupmMemcpy(v, w->data().get(), n * sizeof(PetscScalar), cupmMemcpyDeviceToHost));
+      if (w) PetscCallCUPM(cupmMemcpyAsync(v, w->data().get(), n * sizeof(PetscScalar), cupmMemcpyDeviceToHost, stream));
+      // Complete the gather before its temporary device indices are destroyed.
+      PetscCall(PetscDeviceContextSynchronize(dctx));
       delete w;
     } else {
-      PetscCallCUPM(cupmMemcpy(v, av, n * sizeof(PetscScalar), dmem ? cupmMemcpyDeviceToDevice : cupmMemcpyDeviceToHost));
+      PetscCallCUPM(cupmMemcpyAsync(v, av, n * sizeof(PetscScalar), dmem ? cupmMemcpyDeviceToDevice : cupmMemcpyDeviceToHost, stream));
+      if (dmem) PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
+      else PetscCall(PetscDeviceContextSynchronize(dctx));
     }
     if (!dmem) PetscCall(PetscLogCpuToGpu(n * sizeof(PetscScalar)));
     PetscCall(RestoreArrayRead(A, &av));
@@ -517,11 +546,12 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscScalar       *ay = nullptr;
     cupmBlasHandle_t   blashandle;
     PetscBLASInt       one = 1, bnz = 1;
+    PetscDeviceContext dctx;
 
     PetscFunctionBegin;
     PetscCall(GetArrayRead(X, &ax));
     PetscCall(GetArray(Y, &ay));
-    PetscCall(GetHandles_(&blashandle));
+    PetscCall(GetHandles_(&dctx, &blashandle));
     PetscCall(PetscBLASIntCast(x->nz, &bnz));
     PetscCall(PetscLogGpuTimeBegin());
     PetscCallCUPMBLAS(cupmBlasXaxpy(blashandle, bnz, cupmScalarPtrCast(&a), cupmScalarPtrCast(ax), one, cupmScalarPtrCast(ay), one));
@@ -529,6 +559,7 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(RestoreArrayRead(X, &ax));
     PetscCall(RestoreArray(Y, &ay));
+    PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -547,11 +578,14 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
 
       PetscCheck(devstruct->format == (decltype(devstruct->format))Policy::storage_format_csr(), PETSC_COMM_SELF, PETSC_ERR_SUP, "Only CSR format supported");
       if (n > 0) {
+        PetscDeviceContext dctx;
+
         PetscCall(Policy::VecGetArrayWrite(diag, &darray));
-        PetscCall(GetHandles_(&stream));
+        PetscCall(GetHandles_(&dctx, &stream));
         PetscCallCUPM(cupmLaunchKernel(GetDiagonal_CSR, (unsigned int)((n + 255) / 256), 256u, (size_t)0, stream, mat->row_offsets->data().get(), mat->column_indices->data().get(), mat->values->data().get(), n, darray));
         PetscCallCUPM(cupmGetLastError());
         PetscCall(Policy::VecRestoreArrayWrite(diag, &darray));
+        PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
       }
     } else {
       PetscCall(MatGetDiagonal_SeqAIJ(A, diag));
@@ -579,8 +613,10 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
 
       PetscCheck(devstruct->format == (decltype(devstruct->format))Policy::storage_format_csr(), PETSC_COMM_SELF, PETSC_ERR_SUP, "Only CSR format supported");
       if (n > 0) {
+        PetscDeviceContext dctx;
+
         PetscCall(Policy::VecGetArrayWrite(v, &varray));
-        PetscCall(GetHandles_(&stream));
+        PetscCall(GetHandles_(&dctx, &stream));
         // compressed rows leave the empty rows unwritten by the kernel
         if (matstruct->cprowIndices) PetscCallCUPM(cupmMemsetAsync(varray, 0, n * sizeof(*varray), stream));
         if (m > 0) {
@@ -589,6 +625,7 @@ struct MatSeqAIJCUSPARSE_CUPM : device::cupm::impl::CUPMObject<T> {
         }
         PetscCall(Policy::VecRestoreArrayWrite(v, &varray));
         PetscCall(PetscLogGpuFlops(mat->num_entries));
+        PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
       }
     } else PetscCall(MatGetRowSumAbs_SeqAIJ(A, v));
     PetscFunctionReturn(PETSC_SUCCESS);

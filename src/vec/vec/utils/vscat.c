@@ -38,6 +38,27 @@ functionend:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* This is a temporary workaround to guarantee the correctness of the execution.
+   It must be removed once the Kokkos execution space supports dynamic creation out of every current context */
+PetscErrorCode VecScatterSynchronizeKokkos_Private(VecScatter sf, Vec x, Vec y, PetscBool before)
+{
+#if PetscDefined(HAVE_KOKKOS)
+  PetscBool xkokkos, ykokkos;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)x, &xkokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)y, &ykokkos, VECSEQKOKKOS, VECMPIKOKKOS, ""));
+  if (xkokkos || ykokkos) PetscCall(PetscSFSynchronizeKokkos_Private(sf, before));
+#else
+  PetscFunctionBegin;
+  (void)sf;
+  (void)x;
+  (void)y;
+  (void)before;
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
 {
   PetscSF      wsf = NULL; /* either sf or its local part */
@@ -67,6 +88,7 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, Inse
   else if (addv == MIN_VALUES) mop = MPIU_MIN;
   else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "Unsupported InsertMode %d in VecScatterBegin/End", addv);
 
+  PetscCall(VecScatterSynchronizeKokkos_Private(wsf, x, y, PETSC_TRUE));
   if (mode & SCATTER_REVERSE) { /* REVERSE indicates leaves to root scatter. Note that x and y are swapped in input */
     PetscCall(PetscSFReduceWithMemTypeBegin(wsf, sf->vscat.unit, xmtype, sf->vscat.xdata, ymtype, sf->vscat.ydata, mop));
   } else { /* FORWARD indicates x to y scatter, where x is root and y is leaf */
@@ -98,6 +120,7 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, Insert
     PetscCall(PetscSFBcastEnd(wsf, sf->vscat.unit, sf->vscat.xdata, sf->vscat.ydata, mop));
   }
 
+  PetscCall(VecScatterSynchronizeKokkos_Private(wsf, x, y, PETSC_FALSE));
   PetscCall(VecRestoreArrayReadAndMemType(x, &sf->vscat.xdata));
   if (x != y) PetscCall(VecLockReadPop(x));
   PetscCall(VecRestoreArrayAndMemType(y, &sf->vscat.ydata));

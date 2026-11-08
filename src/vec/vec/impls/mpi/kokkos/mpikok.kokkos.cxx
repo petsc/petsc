@@ -7,7 +7,7 @@
 #include <petsc/private/vecimpl.h>             /* for struct Vec */
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /* for VecCreate/Destroy_MPI */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
-#include <petscsf.h>
+#include <petsc/private/sfimpl.h>
 
 static PetscErrorCode VecDestroy_MPIKokkos(Vec v)
 {
@@ -179,6 +179,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
 
   /* Pack entries to be sent to remote */
   Kokkos::parallel_for(Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, vecmpi->sendlen), KOKKOS_LAMBDA(const PetscCount i) { sendbuf(i) = vv(Cperm(i)); });
+  PetscCall(PetscSFSynchronizeKokkos_Private(vecmpi->coo_sf, PETSC_TRUE));
   PetscCall(PetscSFReduceWithMemTypeBegin(vecmpi->coo_sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, sendbuf.data(), PETSC_MEMTYPE_KOKKOS, recvbuf.data(), MPI_REPLACE));
 
   if (imode == INSERT_VALUES) PetscCall(VecGetKokkosViewWrite(x, &xv)); /* write vector */
@@ -192,6 +193,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
     });
 
   PetscCall(PetscSFReduceEnd(vecmpi->coo_sf, MPIU_SCALAR, sendbuf.data(), recvbuf.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(vecmpi->coo_sf, PETSC_FALSE));
 
   /* Add received remote entries */
   Kokkos::parallel_for(

@@ -2,10 +2,10 @@
 
 # GPU Support Roadmap
 
-PETSc algebraic solvers run on GPU systems from NVIDIA using CUDA, and AMD and Intel using
-OpenCL/ViennaCL and HIP. Effective GPU implementations of low-level linear algebra
-operations provide a highly performant alternative solution strategy for users, and is
-therefore a high priority for PETSc developers.
+PETSc provides GPU vector and matrix implementations using CUDA for NVIDIA GPUs,
+HIP for AMD GPUs, and Kokkos with CUDA, HIP, or SYCL for NVIDIA, AMD, or Intel GPUs,
+respectively. OpenCL support through ViennaCL is also available as a
+{ref}`legacy backend <doc_config_accel_opencl>`.
 
 See FAQ {ref}`topic <doc_faq_gpuhowto>` which shows how to enable GPU backends.
 
@@ -17,8 +17,8 @@ Users should (ideally) never have to change their source code to take advantage 
 backend implementations.
 :::
 
-PETSc code will include full implementations of vector and matrix operations (as well as
-other select operations) using each of:
+The following backends provide vector and matrix operations. Coverage varies
+by operation and matrix type.
 
 ```{eval-rst}
 .. list-table::
@@ -31,7 +31,7 @@ other select operations) using each of:
      - ``Mat`` Status
      - Supported GPU types
    * - CUDA
-     - cuBLAS/cuSparse
+     - cuBLAS/cuSPARSE
      - SUPPORTED
      - SUPPORTED
      - NVIDIA GPUs
@@ -41,17 +41,17 @@ other select operations) using each of:
      - SUPPORTED
      - AMD GPUs
    * - SYCL
-     - MKL
-     - NOT YET SUPPORTED
-     - NOT YET SUPPORTED
-     - NOT YET SUPPORTED
+     - Kokkos and Kokkos Kernels
+     - SUPPORTED via Kokkos
+     - SUPPORTED via Kokkos
+     - Intel GPUs
    * - OpenCL
      - ViennaCL
-     - SUPPORTED
-     - SUPPORTED
+     - LEGACY SUPPORT
+     - LEGACY SUPPORT
      - NVIDIA, AMD, Intel GPUs
    * - Kokkos
-     - Kokkos and Kokkos-Kernels
+     - Kokkos and Kokkos Kernels
      - SUPPORTED
      - SUPPORTED
      - NVIDIA, AMD, Intel GPUs
@@ -59,10 +59,16 @@ other select operations) using each of:
 
 ______________________________________________________________________
 
-Basic linear algebra GPU implementations enable many solvers, including `GAMG` and
-`BDDC`, to run entirely on the GPU. PETSc is currently adding GPU support for residual
-and Jacobian creation and for matrix assembly extensions to `MATAIJCUSPARSE` and
-`MATAIJKOKKOS`. **This is work in progress**.
+Most Krylov methods use the selected vector and matrix implementations for their
+linear algebra. GPU execution of a preconditioner depends on its components,
+including smoothers and coarse solvers. Selecting GPU vectors and matrices does
+not make application residual or Jacobian callbacks execute on the GPU.
+
+`MatSetPreallocationCOO()` and `MatSetValuesCOO()` support GPU matrix assembly with
+`MATAIJCUSPARSE`, `MATAIJHIPSPARSE`, and `MATAIJKOKKOS`. Applications can compute
+the values on the device and pass them to `MatSetValuesCOO()`.
+Use `-log_view` to inspect GPU work and host-device transfers, and see
+{any}`ch_device` for stream ordering and current limitations.
 
 :::{important}
 :class: yellow

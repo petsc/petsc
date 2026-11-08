@@ -39,6 +39,11 @@
      - NVIDIA cuSPARSE library
      - NVIDIA GPU acceleration
    * -
+     - ``MATAIJHIPSPARSE``
+     - ``MatCreateAIJHIPSPARSE()``
+     - AMD hipSPARSE library
+     - AMD GPU acceleration
+   * -
      - ``MATAIJKOKKOS``
      - ``MatCreateAIJKokkos()``
      - Kokkos
@@ -77,7 +82,7 @@
      - ``MATDENSE``
      - ``MatCreateDense()``
      -
-     - Row oriented storage
+     - Column-major storage
    * -
      - ``MATELEMENTAL``
      - ``MatCreate()`` followed by ``MatSetType()``
@@ -93,6 +98,11 @@
      - ``MatCreateDenseCUDA()``
      -
      - NVIDIA GPU Acceleration
+   * -
+     - ``MATDENSEHIP``
+     - ``MatCreateDenseHIP()``
+     -
+     - AMD GPU acceleration
    * - ``MatMult()`` via finite differencing of a function
      - ``MATMFFD``, see :any:`sec_nlmatrixfree`
      - ``MatCreateMFFD()``, see also ``MatCreateSNESMF()``

@@ -50,7 +50,8 @@ private:
   }
 
 public:
-  const struct _DeviceContextOps ops = {destroy, changeStreamType, setUp, query, waitForContext, synchronize, getBlasHandle, getSolverHandle, getStreamHandle, beginTimer, endTimer, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+  const struct _DeviceContextOps ops = {destroy,    changeStreamType, setUp,   query,   waitForContext, synchronize, getBlasHandle, getSolverHandle, nullptr, getStreamHandle,
+                                        beginTimer, endTimer,         nullptr, nullptr, nullptr,        nullptr,     nullptr,       nullptr,         nullptr};
 
   // default constructor
   DeviceContext() noexcept = default;

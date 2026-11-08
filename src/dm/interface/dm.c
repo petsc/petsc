@@ -1,4 +1,4 @@
-#include <petscvec.h>
+#include <petsc/private/vecimpl.h>
 #include <petsc/private/dmimpl.h>      /*I      "petscdm.h"          I*/
 #include <petsc/private/dmlabelimpl.h> /*I      "petscdmlabel.h"     I*/
 #include <petsc/private/petscdsimpl.h> /*I      "petscds.h"     I*/
@@ -2955,6 +2955,7 @@ PetscErrorCode DMGlobalToLocalBegin(DM dm, Vec g, InsertMode mode, Vec l)
     PetscCheck(mode != ADD_VALUES, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Invalid insertion mode %d", (int)mode);
     PetscCall(VecGetArrayAndMemType(l, &lArray, &lmtype));
     PetscCall(VecGetArrayReadAndMemType(g, &gArray, &gmtype));
+    PetscCall(VecScatterSynchronizeKokkos_Private(sf, g, l, PETSC_TRUE));
     PetscCall(PetscSFBcastWithMemTypeBegin(sf, MPIU_SCALAR, gmtype, gArray, lmtype, lArray, MPI_REPLACE));
     PetscCall(VecRestoreArrayAndMemType(l, &lArray));
     PetscCall(VecRestoreArrayReadAndMemType(g, &gArray));
@@ -3001,6 +3002,7 @@ PetscErrorCode DMGlobalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
     PetscCall(VecGetArrayAndMemType(l, &lArray, &lmtype));
     PetscCall(VecGetArrayReadAndMemType(g, &gArray, &gmtype));
     PetscCall(PetscSFBcastEnd(sf, MPIU_SCALAR, gArray, lArray, MPI_REPLACE));
+    PetscCall(VecScatterSynchronizeKokkos_Private(sf, g, l, PETSC_FALSE));
     PetscCall(VecRestoreArrayAndMemType(l, &lArray));
     PetscCall(VecRestoreArrayReadAndMemType(g, &gArray));
     if (transform) PetscCall(DMPlexGlobalToLocalBasis(dm, l));
@@ -3209,6 +3211,7 @@ PetscErrorCode DMLocalToGlobalBegin(DM dm, Vec l, InsertMode mode, Vec g)
       g_inplace = PETSC_TRUE;
     }
     if (sf && !isInsert) {
+      PetscCall(VecScatterSynchronizeKokkos_Private(sf, l, g, PETSC_TRUE));
       PetscCall(PetscSFReduceWithMemTypeBegin(sf, MPIU_SCALAR, lmtype, lArray, gmtype, gArray, MPIU_SUM));
     } else if (s && isInsert) {
       PetscInt gStart, pStart, pEnd, p;
@@ -3321,6 +3324,7 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
     }
     PetscCall(VecGetArrayAndMemType(g, &gArray, NULL));
     PetscCall(PetscSFReduceEnd(sf, MPIU_SCALAR, lArray, gArray, MPIU_SUM));
+    PetscCall(VecScatterSynchronizeKokkos_Private(sf, l, g, PETSC_FALSE));
     if (transform) {
       PetscCall(VecRestoreArrayRead(tmpl, &lArray));
       PetscCall(DMRestoreNamedLocalVector(dm, "__petsc_dm_transform_local_copy", &tmpl));

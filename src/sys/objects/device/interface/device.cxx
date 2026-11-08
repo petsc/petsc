@@ -352,7 +352,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   Output Parameter:
 . type - The `PetscDeviceType`
 
-  Level: beginner
+  Level: intermediate
 
 .seealso: `PetscDevice`, `PetscDeviceType`, `PetscDeviceSetDefaultDeviceType()`,
 `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`,
@@ -378,7 +378,7 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
   Output Parameter:
 . id - The id
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   The returned ID may have been assigned by the underlying device backend. For example if the
@@ -419,7 +419,7 @@ auto default_device_type = DefaultDeviceType();
 
   Not Collective
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   Unless selected by the user, the default device is selected in the following order\:
@@ -440,7 +440,7 @@ PetscDeviceType PETSC_DEVICE_DEFAULT(void)
   Input Parameter:
 . type - the new default device type
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   This sets the `PetscDeviceType` returned by `PETSC_DEVICE_DEFAULT()`.
@@ -494,7 +494,7 @@ PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type,
   Input Parameter:
 . type - The `PetscDeviceType` to initialize
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   Eagerly initializes the corresponding `PetscDeviceType` if needed. If this is the case it may
@@ -520,7 +520,7 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
   Input Parameter:
 . type - The `PetscDeviceType` to check
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   Returns `PETSC_TRUE` if `type` is initialized, `PETSC_FALSE` otherwise.
@@ -558,7 +558,7 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
   Output Parameter:
 . value - The value of the attribute
 
-  Level: intermediate
+  Level: developer
 
   Notes:
   Since different attributes are often different types `value` is a `void *` to accommodate

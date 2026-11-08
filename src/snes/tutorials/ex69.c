@@ -3478,7 +3478,7 @@ int main(int argc, char **argv)
       suffix: aij
       args: -mat_is_localmat_type aij
     test:
-      requires: viennacl !CUDA_VERSION_11PLUS
+      requires: viennacl !cuda
       TODO: broken
       suffix: aijviennacl
       args: -mat_is_localmat_type aijviennacl
@@ -3506,7 +3506,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -mat_is_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl !CUDA_VERSION_11PLUS
+      requires: viennacl !cuda
       suffix: aijviennacl
       args: -mat_is_localmat_type aijviennacl
     test:
@@ -3533,7 +3533,7 @@ int main(int argc, char **argv)
       suffix: aij_seqdense
       args: -mat_is_localmat_type aij -fetidp_bddc_sub_schurs_schur_mat_type seqdense
     test:
-      requires: viennacl !CUDA_VERSION_11PLUS
+      requires: viennacl !cuda
       suffix: aijviennacl
       args: -mat_is_localmat_type aijviennacl
     test:

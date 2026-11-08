@@ -2,15 +2,16 @@ static char help[] = "Benchmark VecCreate() for GPU vectors.\n\
   -n <length> : vector length\n\n";
 
 #include <petscvec.h>
-#include <petscdevice_cuda.h>
+#include <petscdevice.h>
 
 int main(int argc, char **argv)
 {
-  PetscInt       i, n = 5, iter = 10;
-  Vec            x;
-  PetscLogDouble v0, v1;
-  PetscMemType   memtype;
-  PetscScalar   *array;
+  PetscInt           i, n = 5, iter = 10;
+  Vec                x;
+  PetscLogDouble     v0, v1;
+  PetscMemType       memtype;
+  PetscScalar       *array;
+  PetscDeviceContext dctx;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -25,7 +26,8 @@ int main(int argc, char **argv)
     /* make sure the vector's array exists */
     PetscCall(VecGetArrayAndMemType(x, &array, &memtype));
     PetscCall(VecRestoreArrayAndMemType(x, &array));
-    PetscCallCUDA(WaitForCUDA());
+    PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
+    PetscCall(PetscDeviceContextSynchronize(dctx));
     PetscCall(PetscTime(&v1));
     PetscCall(VecDestroy(&x));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Iteration %" PetscInt_FMT ": Time= %g\n", i, (double)(v1 - v0)));

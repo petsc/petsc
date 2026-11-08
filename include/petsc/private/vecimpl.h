@@ -111,6 +111,7 @@ struct _VecOps {
   PetscErrorCode (*errorwnorm)(Vec, Vec, Vec, NormType, PetscReal, Vec, PetscReal, Vec, PetscReal, PetscReal *, PetscInt *, PetscReal *, PetscInt *, PetscReal *, PetscInt *);
   PetscErrorCode (*maxpby)(Vec, PetscInt, const PetscScalar *, PetscScalar, Vec *); /* y = beta y + alpha[j] x[j] */
   PetscErrorCode (*setstdbasis)(Vec, PetscInt);
+  PetscErrorCode (*getarrayandmemtypeasync)(Vec, PetscMemoryAccessMode, PetscScalar **, PetscMemType *);
 };
 
 #if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))
@@ -362,9 +363,10 @@ PETSC_INTERN PetscBool      VecTaggerRegisterAllCalled;
 PETSC_INTERN PetscErrorCode VecTaggerComputeIS_FromBoxes(VecTagger, Vec, IS *, PetscBool *);
 PETSC_INTERN PetscMPIInt    Petsc_Reduction_keyval;
 
-PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
-PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
-PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
+PETSC_INTERN PetscInt                      VecGetSubVectorSavedStateId;
+PETSC_INTERN PetscErrorCode                VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
+PETSC_INTERN PetscErrorCode                VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScatterSynchronizeKokkos_Private(VecScatter, Vec, Vec, PetscBool);
 
 #if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);

@@ -11,6 +11,40 @@ typedef Kokkos::View<char *, HostMirrorMemorySpace> HostBuffer_t;
 typedef Kokkos::View<const char *, DefaultMemorySpace>    deviceConstBuffer_t;
 typedef Kokkos::View<const char *, HostMirrorMemorySpace> HostConstBuffer_t;
 
+/* Kokkos Vec/Mat operations and native SF may use different streams.
+   Kokkos SF already shares PetscGetKokkosExecutionSpace() with those operations. */
+PetscErrorCode PetscSFSynchronizeKokkos_Private(PetscSF sf, PetscBool before)
+{
+#if defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
+#elif defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)
+  PetscDeviceContext dctx;
+  hipStream_t       *stream;
+#endif
+
+  PetscFunctionBegin;
+#if defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)
+  if (sf->backend != PETSCSF_BACKEND_CUDA) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, reinterpret_cast<void **>(&stream)));
+  if (*stream == PetscGetKokkosExecutionSpace().cuda_stream()) PetscFunctionReturn(PETSC_SUCCESS);
+#elif defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP)
+  if (sf->backend != PETSCSF_BACKEND_HIP) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, reinterpret_cast<void **>(&stream)));
+  if (*stream == PetscGetKokkosExecutionSpace().hip_stream()) PetscFunctionReturn(PETSC_SUCCESS);
+#endif
+#if (defined(KOKKOS_ENABLE_CUDA) && PetscDefined(HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && PetscDefined(HAVE_HIP))
+  if (before) PetscCallCXX(PetscGetKokkosExecutionSpace().fence());
+  else PetscCall(PetscDeviceContextSynchronize(dctx));
+#else
+  (void)sf;
+  (void)before;
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*====================================================================================*/
 /*                             Regular operations                           */
 /*====================================================================================*/

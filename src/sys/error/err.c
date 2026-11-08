@@ -425,7 +425,6 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
 PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status)
 {
   switch (status) {
-  #if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
   case CUBLAS_STATUS_SUCCESS:
     return "CUBLAS_STATUS_SUCCESS";
   case CUBLAS_STATUS_NOT_INITIALIZED:
@@ -446,7 +445,6 @@ PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status)
     return "CUBLAS_STATUS_NOT_SUPPORTED";
   case CUBLAS_STATUS_LICENSE_ERROR:
     return "CUBLAS_STATUS_LICENSE_ERROR";
-  #endif
   default:
     return "unknown error";
   }
@@ -454,7 +452,6 @@ PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status)
 PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t status)
 {
   switch (status) {
-  #if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
   case CUSOLVER_STATUS_SUCCESS:
     return "CUSOLVER_STATUS_SUCCESS";
   case CUSOLVER_STATUS_NOT_INITIALIZED:
@@ -465,7 +462,6 @@ PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t status)
     return "CUSOLVER_STATUS_ARCH_MISMATCH";
   case CUSOLVER_STATUS_INTERNAL_ERROR:
     return "CUSOLVER_STATUS_INTERNAL_ERROR";
-    #if (CUDART_VERSION >= 9000) /* CUDA 9.0 had these defined on June 2021 */
   case CUSOLVER_STATUS_ALLOC_FAILED:
     return "CUSOLVER_STATUS_ALLOC_FAILED";
   case CUSOLVER_STATUS_MAPPING_ERROR:
@@ -480,8 +476,6 @@ PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t status)
     return "CUSOLVER_STATUS_ZERO_PIVOT";
   case CUSOLVER_STATUS_INVALID_LICENSE:
     return "CUSOLVER_STATUS_INVALID_LICENSE";
-    #endif
-  #endif
   default:
     return "unknown error";
   }

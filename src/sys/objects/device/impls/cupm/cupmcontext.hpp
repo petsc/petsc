@@ -5,6 +5,9 @@
 #include <petsc/private/logimpl.h>
 
 #include <petsc/private/cpp/array.hpp>
+#include <chrono>
+#include <memory>
+#include <thread>
 
 #include "../segmentedmempool.hpp"
 #include "cupmallocator.hpp"
@@ -37,6 +40,7 @@ private:
   using stream_tag = HandleTag<cupmStream_t, 0>;
   using blas_tag   = HandleTag<cupmBlasHandle_t, 1>;
   using solver_tag = HandleTag<cupmSolverHandle_t, 2>;
+  using sparse_tag = HandleTag<cupmSparseHandle_t, 3>;
 
   using stream_type = CUPMStream<T>;
   using event_type  = CUPMEvent<T>;
@@ -57,6 +61,7 @@ public:
 #endif
     cupmBlasHandle_t   blas{};
     cupmSolverHandle_t solver{};
+    cupmSparseHandle_t sparse{};
 #if PetscDefined(HAVE_NVML)
     nvmlDevice_t       nvmlHandle{};
     unsigned long long energymeterbegin{};
@@ -70,13 +75,23 @@ public:
     PETSC_NODISCARD const cupmBlasHandle_t &get(blas_tag) const noexcept { return this->blas; }
 
     PETSC_NODISCARD const cupmSolverHandle_t &get(solver_tag) const noexcept { return this->solver; }
+    PETSC_NODISCARD const cupmSparseHandle_t &get(sparse_tag) const noexcept { return this->sparse; }
   };
 
 private:
   static bool initialized_;
 
+  static void delayCallback_(void *ctx)
+  {
+    std::unique_ptr<PetscReal> seconds(static_cast<PetscReal *>(ctx));
+
+    // A device runtime callback must not touch PETSc's shared debug stack.
+    std::this_thread::sleep_for(std::chrono::duration<PetscReal>(*seconds));
+  }
+
   static std::array<cupmBlasHandle_t, PETSC_DEVICE_MAX_DEVICES>   blashandles_;
   static std::array<cupmSolverHandle_t, PETSC_DEVICE_MAX_DEVICES> solverhandles_;
+  static std::array<cupmSparseHandle_t, PETSC_DEVICE_MAX_DEVICES> sparsehandles_;
 
   PETSC_NODISCARD static constexpr PetscDeviceContext_IMPLS *impls_cast_(PetscDeviceContext ptr) noexcept { return static_cast<PetscDeviceContext_IMPLS *>(ptr->data); }
 
@@ -85,6 +100,7 @@ private:
   PETSC_NODISCARD static PetscLogEvent CUPMBLAS_HANDLE_CREATE() noexcept { return T == DeviceType::CUDA ? CUBLAS_HANDLE_CREATE : HIPBLAS_HANDLE_CREATE; }
 
   PETSC_NODISCARD static PetscLogEvent CUPMSOLVER_HANDLE_CREATE() noexcept { return T == DeviceType::CUDA ? CUSOLVER_HANDLE_CREATE : HIPSOLVER_HANDLE_CREATE; }
+  PETSC_NODISCARD static PetscLogEvent CUPMSPARSE_HANDLE_CREATE() noexcept { return T == DeviceType::CUDA ? CUSPARSE_HANDLE_CREATE : HIPSPARSE_HANDLE_CREATE; }
 
   // this exists purely to satisfy the compiler so the tag-based dispatch works for the other
   // handles
@@ -144,6 +160,33 @@ private:
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
+  static PetscErrorCode initialize_handle_(sparse_tag, PetscDeviceContext dctx) noexcept
+  {
+    const auto dci    = impls_cast_(dctx);
+    auto      &handle = sparsehandles_[dctx->device->deviceId];
+
+    PetscFunctionBegin;
+    if (!handle) {
+      PetscCall(PetscLogEventsPause());
+      PetscCall(PetscLogEventBegin(CUPMSPARSE_HANDLE_CREATE(), 0, 0, 0, 0));
+      for (auto i = 0; i < 3; ++i) {
+        const auto cerr = cupmSparseCreate(&handle);
+        if (PetscLikely(cerr == CUPMSPARSE_STATUS_SUCCESS)) break;
+        if (cerr != CUPMSPARSE_STATUS_NOT_INITIALIZED && cerr != CUPMSPARSE_STATUS_ALLOC_FAILED) PetscCallCUPMSPARSE(cerr);
+        if (i < 2) {
+          PetscCall(PetscSleep(3));
+          continue;
+        }
+        PetscCheck(cerr == CUPMSPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_GPU_RESOURCE, "Unable to initialize %s", cupmSparseName());
+      }
+      PetscCall(PetscLogEventEnd(CUPMSPARSE_HANDLE_CREATE(), 0, 0, 0, 0));
+      PetscCall(PetscLogEventsResume());
+    }
+    PetscCallCUPMSPARSE(cupmSparseSetStream(handle, dci->stream.get_stream()));
+    dci->sparse = handle;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
   static PetscErrorCode check_current_device_(PetscDeviceContext dctxl, PetscDeviceContext dctxr) noexcept
   {
     const auto devidl = dctxl->device->deviceId, devidr = dctxr->device->deviceId;
@@ -174,6 +217,12 @@ private:
         handle = nullptr;
       }
     }
+    for (auto &&handle : sparsehandles_) {
+      if (handle) {
+        PetscCallCUPMSPARSE(cupmSparseDestroy(handle));
+        handle = nullptr;
+      }
+    }
     initialized_ = false;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -201,6 +250,7 @@ public:
   static PetscErrorCode query(PetscDeviceContext, PetscBool *) noexcept;
   static PetscErrorCode waitForContext(PetscDeviceContext, PetscDeviceContext) noexcept;
   static PetscErrorCode synchronize(PetscDeviceContext) noexcept;
+  static PetscErrorCode delay(PetscDeviceContext, PetscReal) noexcept;
   template <typename Handle_t>
   static PetscErrorCode getHandle(PetscDeviceContext, void *) noexcept;
   template <typename Handle_t>
@@ -231,6 +281,7 @@ public:
     PetscDesignatedInitializer(synchronize, synchronize),
     PetscDesignatedInitializer(getblashandle, getHandle<blas_tag>),
     PetscDesignatedInitializer(getsolverhandle, getHandle<solver_tag>),
+    PetscDesignatedInitializer(getsparsehandle, getHandle<sparse_tag>),
     PetscDesignatedInitializer(getstreamhandle, getHandlePtr<stream_tag>),
     PetscDesignatedInitializer(begintimer, beginTimer),
     PetscDesignatedInitializer(endtimer, endTimer),
@@ -249,7 +300,8 @@ public:
     PetscDesignatedInitializer(memset, memSet),
     PetscDesignatedInitializer(createevent, createEvent),
     PetscDesignatedInitializer(recordevent, recordEvent),
-    PetscDesignatedInitializer(waitforevent, waitForEvent)
+    PetscDesignatedInitializer(waitforevent, waitForEvent),
+    PetscDesignatedInitializer(delay, delay)
   };
   // clang-format on
 };
@@ -268,6 +320,7 @@ inline PetscErrorCode DeviceContext<T>::initialize(PetscDevice device) noexcept
     PetscCallCUPM(cupmMemPoolSetAttribute(mempool, cupmMemPoolAttrReleaseThreshold, &threshold));
     blashandles_.fill(nullptr);
     solverhandles_.fill(nullptr);
+    sparsehandles_.fill(nullptr);
     PetscCall(PetscRegisterFinalize(finalize_));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -298,6 +351,7 @@ inline PetscErrorCode DeviceContext<T>::changeStreamType(PetscDeviceContext dctx
   // set these to null so they aren't usable until setup is called again
   dci->blas   = nullptr;
   dci->solver = nullptr;
+  dci->sparse = nullptr;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -360,6 +414,19 @@ inline PetscErrorCode DeviceContext<T>::synchronize(PetscDeviceContext dctx) noe
   PetscFunctionBegin;
   PetscCall(query(dctx, &idle));
   if (!idle) PetscCallCUPM(cupmStreamSynchronize(impls_cast_(dctx)->stream.get_stream()));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <DeviceType T>
+inline PetscErrorCode DeviceContext<T>::delay(PetscDeviceContext dctx, PetscReal seconds) noexcept
+{
+  std::unique_ptr<PetscReal> duration;
+
+  PetscFunctionBegin;
+  PetscCall(check_current_device_(dctx));
+  PetscCallCXX(duration.reset(new PetscReal(seconds)));
+  PetscCallCUPM(cupmLaunchHostFunc(impls_cast_(dctx)->stream.get_stream(), delayCallback_, duration.get()));
+  (void)duration.release();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -598,6 +665,9 @@ std::array<typename DeviceContext<T>::cupmBlasHandle_t, PETSC_DEVICE_MAX_DEVICES
 
 template <DeviceType T>
 std::array<typename DeviceContext<T>::cupmSolverHandle_t, PETSC_DEVICE_MAX_DEVICES> DeviceContext<T>::solverhandles_ = {};
+
+template <DeviceType T>
+std::array<typename DeviceContext<T>::cupmSparseHandle_t, PETSC_DEVICE_MAX_DEVICES> DeviceContext<T>::sparsehandles_ = {};
 
 template <DeviceType T>
 constexpr _DeviceContextOps DeviceContext<T>::ops;

@@ -2038,7 +2038,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 
 /*@
   VecGetArray - Returns a pointer to a contiguous array that contains this
-  MPI processes's portion of the vector data
+  MPI process's portion of the vector data
 
   Logically Collective
 
@@ -2194,7 +2194,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar *a[])
 
 /*@
   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
-  MPI processes's portion of the vector data.
+  MPI process's portion of the vector data.
 
   Logically Collective
 
@@ -2335,7 +2335,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 /*@
   VecGetArrayAndMemType - Like `VecGetArray()`, but if this is a standard device vector (e.g.,
   `VECCUDA`), the returned pointer will be a device pointer to the device memory that contains
-  this MPI processes's portion of the vector data.
+  this MPI process's portion of the vector data.
 
   Logically Collective; No Fortran Support
 
@@ -2381,18 +2381,154 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar *a[], PetscMemType *mtyp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecGetArrayAndMemTypeAsync_Private(Vec x, PetscScalar *a[], PetscMemType *mtype, PetscMemoryAccessMode access)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscAssertPointer(a, 2);
+  if (mtype) PetscAssertPointer(mtype, 3);
+  if (PetscMemoryAccessWrite(access)) PetscCall(VecSetErrorIfLocked(x, 1));
+  if (x->ops->getarrayandmemtypeasync) PetscUseTypeMethod(x, getarrayandmemtypeasync, access, a, mtype);
+  else if (access == PETSC_MEMORY_ACCESS_READ) PetscCall(VecGetArrayReadAndMemType(x, (const PetscScalar **)a, mtype));
+  else if (access == PETSC_MEMORY_ACCESS_WRITE) PetscCall(VecGetArrayWriteAndMemType(x, a, mtype));
+  else PetscCall(VecGetArrayAndMemType(x, a, mtype));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
-  VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
+  VecGetArrayAndMemTypeAsync - Returns a pointer to this MPI process's portion of the vector data for reading and writing.
+
+  Logically Collective; No Fortran Support
+
+  Input Parameter:
+. x - the vector
+
+  Output Parameters:
++ a     - pointer to this MPI process's portion of the vector data, borrowed from the vector
+- mtype - memory type of the array, or `NULL` if not needed
+
+  Level: advanced
+
+  Notes:
+  For CUDA and HIP vectors that are not bound to the CPU, this routine always returns a device
+  pointer, even when the latest values are on the host. It queues any required host-to-device
+  copy on the current `PetscDeviceContext` without waiting for it. The caller must order
+  subsequent accesses after that context's work, for example with
+  `PetscDeviceContextSynchronize()`. Do not modify host storage while its copy is pending.
+  Device allocation and runtime staging of pageable host memory may still block.
+
+  Other vector types, including vectors bound to the CPU, use `VecGetArrayAndMemType()`
+  and retain its synchronization behavior.
+
+  The existing entries are preserved and may be modified.
+  The pointer is borrowed until `VecRestoreArrayAndMemType()` is called. Complete external
+  asynchronous work before restoring the array. Do not replace the vector's storage or
+  change its type or CPU binding while the array is acquired.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayAndMemType()`, `VecRestoreArrayAndMemType()`,
+          `VecGetArrayReadAndMemTypeAsync()`, `VecGetArrayWriteAndMemTypeAsync()`,
+          `PetscDeviceContextGetCurrentContext()`, `PetscDeviceContextSynchronize()`
+@*/
+PetscErrorCode VecGetArrayAndMemTypeAsync(Vec x, PetscScalar *a[], PetscMemType *mtype)
+{
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayAndMemTypeAsync_Private(x, a, mtype, PETSC_MEMORY_ACCESS_READ_WRITE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecGetArrayReadAndMemTypeAsync - Returns a read-only pointer to this MPI process's portion of the vector data.
+
+  Not Collective; No Fortran Support
+
+  Input Parameter:
+. x - the vector
+
+  Output Parameters:
++ a     - pointer to this MPI process's portion of the vector data, borrowed from the vector
+- mtype - memory type of the array, or `NULL` if not needed
+
+  Level: advanced
+
+  Notes:
+  For CUDA and HIP vectors that are not bound to the CPU, this routine always returns a device
+  pointer, even when the latest values are on the host. It queues any required host-to-device
+  copy on the current `PetscDeviceContext` without waiting for it. The caller must order
+  subsequent accesses after that context's work, for example with
+  `PetscDeviceContextSynchronize()`. Do not modify host storage while its copy is pending.
+  Device allocation and runtime staging of pageable host memory may still block.
+
+  Other vector types, including vectors bound to the CPU, use `VecGetArrayReadAndMemType()`
+  and retain its synchronization behavior.
+
+  The array must not be modified.
+  The pointer is borrowed until `VecRestoreArrayReadAndMemType()` is called. Complete external
+  asynchronous work before restoring the array. Do not replace the vector's storage or
+  change its type or CPU binding while the array is acquired.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayReadAndMemType()`, `VecRestoreArrayReadAndMemType()`,
+          `VecGetArrayAndMemTypeAsync()`, `VecGetArrayWriteAndMemTypeAsync()`,
+          `PetscDeviceContextGetCurrentContext()`, `PetscDeviceContextSynchronize()`
+@*/
+PetscErrorCode VecGetArrayReadAndMemTypeAsync(Vec x, const PetscScalar *a[], PetscMemType *mtype)
+{
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayAndMemTypeAsync_Private(x, (PetscScalar **)a, mtype, PETSC_MEMORY_ACCESS_READ));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecGetArrayWriteAndMemTypeAsync - Returns a pointer to this MPI process's portion of the vector data for writing without preserving its contents.
+
+  Logically Collective; No Fortran Support
+
+  Input Parameter:
+. x - the vector
+
+  Output Parameters:
++ a     - pointer to this MPI process's portion of the vector data, borrowed from the vector
+- mtype - memory type of the array, or `NULL` if not needed
+
+  Level: advanced
+
+  Notes:
+  For CUDA and HIP vectors that are not bound to the CPU, this routine always returns a device
+  pointer without copying the old contents or waiting for the current `PetscDeviceContext`.
+  The caller must order subsequent accesses after that context's work, for example with
+  `PetscDeviceContextSynchronize()`. Device allocation may still block.
+
+  Other vector types, including vectors bound to the CPU, use `VecGetArrayWriteAndMemType()`
+  and retain its synchronization behavior.
+
+  The old contents are not preserved. Initialize every entry that will subsequently be read.
+  The pointer is borrowed until `VecRestoreArrayWriteAndMemType()` is called. Complete external
+  asynchronous work before restoring the array. Do not replace the vector's storage or
+  change its type or CPU binding while the array is acquired.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayWriteAndMemType()`, `VecRestoreArrayWriteAndMemType()`,
+          `VecGetArrayAndMemTypeAsync()`, `VecGetArrayReadAndMemTypeAsync()`,
+          `PetscDeviceContextGetCurrentContext()`, `PetscDeviceContextSynchronize()`
+@*/
+PetscErrorCode VecGetArrayWriteAndMemTypeAsync(Vec x, PetscScalar *a[], PetscMemType *mtype)
+{
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayAndMemTypeAsync_Private(x, a, mtype, PETSC_MEMORY_ACCESS_WRITE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` or `VecGetArrayAndMemTypeAsync()` has been called.
 
   Logically Collective; No Fortran Support
 
   Input Parameters:
 + x - the vector
-- a - location of pointer to array obtained from `VecGetArrayAndMemType()`
+- a - location of pointer to array obtained from `VecGetArrayAndMemType()` or `VecGetArrayAndMemTypeAsync()`
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecGetArrayAndMemType()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`,
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayAndMemType()`, `VecGetArrayAndMemTypeAsync()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`,
           `VecPlaceArray()`, `VecRestoreArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar *a[])
@@ -2459,7 +2595,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar *a[], PetscMem
 }
 
 /*@
-  VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()`
+  VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()` or `VecGetArrayReadAndMemTypeAsync()`
 
   Not Collective; No Fortran Support
 
@@ -2469,7 +2605,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar *a[], PetscMem
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecGetArrayReadAndMemType()`, `VecRestoreArrayAndMemType()`, `VecRestoreArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayReadAndMemType()`, `VecGetArrayReadAndMemTypeAsync()`, `VecRestoreArrayAndMemType()`, `VecRestoreArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar *a[])
 {
@@ -2530,7 +2666,7 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar *a[], PetscMemType 
 }
 
 /*@
-  VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
+  VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()` or `VecGetArrayWriteAndMemTypeAsync()`
 
   Logically Collective; No Fortran Support
 
@@ -2540,7 +2676,7 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar *a[], PetscMemType 
 
   Level: beginner
 
-.seealso: [](ch_vectors), `Vec`, `VecGetArrayWriteAndMemType()`, `VecRestoreArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
+.seealso: [](ch_vectors), `Vec`, `VecGetArrayWriteAndMemType()`, `VecGetArrayWriteAndMemTypeAsync()`, `VecRestoreArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar *a[])
 {

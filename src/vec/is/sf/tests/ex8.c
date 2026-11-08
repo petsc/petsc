@@ -124,6 +124,16 @@ int main(int argc, char **argv)
         requires: hip
 
       test:
+        suffix: 1_kokkos
+        args: -vec_type kokkos
+        requires: kokkos_kernels
+
+      test:
+        suffix: 1_kokkos_sf
+        args: -vec_type kokkos -sf_backend kokkos
+        requires: kokkos_kernels
+
+      test:
         suffix: 1_cuda_aware_mpi
         # sf_backend cuda is not needed if compiling only with cuda
         args: -vec_type cuda -sf_backend cuda

@@ -8,11 +8,7 @@
 #include <../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp>
 #include <petsc/private/petsclegacycupmblas.h>
 
-#if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  #include <hipsparse/hipsparse.h>
-#else /* PETSC_PKG_HIP_VERSION_GE(5,2,0) */
-  #include <hipsparse.h>
-#endif /* PETSC_PKG_HIP_VERSION_GE(5,2,0) */
+#include <hipsparse/hipsparse.h>
 #include "hip/hip_runtime.h"
 
 #include <algorithm>
@@ -194,13 +190,12 @@ struct Mat_SeqAIJHIPSPARSETriFactorStruct {
 
 /* This is a larger struct holding all the triangular factors for a solve, transpose solve, and any indices used in a reordering */
 struct Mat_SeqAIJHIPSPARSETriFactors {
-  THRUSTINTARRAY   *rpermIndices; /* indices used for any reordering */
-  THRUSTINTARRAY   *cpermIndices; /* indices used for any reordering */
-  THRUSTARRAY      *workVector;
-  hipsparseHandle_t handle; /* a handle to the hipsparse library */
-  PetscInt          nnz;    /* number of nonzeros ... need this for accurate logging between ICC and ILU */
-  hipDeviceProp_t   dev_prop;
-  PetscBool         init_dev_prop;
+  THRUSTINTARRAY *rpermIndices; /* indices used for any reordering */
+  THRUSTINTARRAY *cpermIndices; /* indices used for any reordering */
+  THRUSTARRAY    *workVector;
+  PetscInt        nnz; /* number of nonzeros ... need this for accurate logging between ICC and ILU */
+  hipDeviceProp_t dev_prop;
+  PetscBool       init_dev_prop;
 
   PetscScalar *csrVal, *diag;             // the diagonal D in UtDU of Cholesky
   int         *csrRowPtr32, *csrColIdx32; // i,j of M. hipsparseShcsrilu02/ic02() etc require 32-bit indices
@@ -273,8 +268,6 @@ struct Mat_SeqAIJHIPSPARSE {
   PetscInt                       nrows;             /* number of rows of the matrix seen by GPU */
   MatHIPSPARSEStorageFormat      format;            /* the storage format for the matrix on the device */
   PetscBool                      use_cpu_solve;     /* Use AIJ_Seq (I)LU solve */
-  hipStream_t                    stream;            /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
-  hipsparseHandle_t              handle;            /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState               nonzerostate;      /* track nonzero state to possibly recreate the GPU matrix */
   size_t                         csr2cscBufferSize; /* stuff used to compute the matTranspose above */
   void                          *csr2cscBuffer;     /* This is used as a C struct and is calloc'ed by PetscNewLog() */

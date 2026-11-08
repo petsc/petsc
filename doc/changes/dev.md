@@ -21,6 +21,8 @@
 - Change OpenMP target offload for CUDA/HIP to require `--with-openmp-target-offload` instead of being enabled automatically
 - Build petsc4py, mpi4py, and slepc4py with `-O0` to shorten build time; the binding code is no longer optimized
 - Fix `--with-shared-libraries=1` on Microsoft Windows with Intel ifx, where Fortran code failed to link
+- Require HIP/ROCm 5.2.0 or later
+- Remove the `PETSC_HAVE_CUDA_VERSION_11PLUS` configure macro; all supported CUDA versions are 11.4 or later
 
 ```{rubric} Sys:
 ```
@@ -44,6 +46,12 @@
 - Move the PETSc memory-management API (`PetscMalloc()`, `PetscFree()`, and related routines) into the new header `petscmem.h`; the API remains available through `petscsys.h`
 - Move the `PetscPreLoad*` functionality into `petscpreload.h`
 - Remove the `--with-serialize-functions` configure option and the associated function-pointer serialization feature (`PETSC_SERIALIZE_FUNCTIONS`)
+- Remove `PetscDefaultCudaStream` and `PetscDefaultHipStream`; obtain the native stream from a concrete `PetscDeviceContext` with `PetscDeviceContextGetStreamHandle()` instead
+- Remove `WaitForCUDA()` and `WaitForHIP()`; use `PetscDeviceContextSynchronize()` with an explicit context for stream synchronization, or `cudaDeviceSynchronize()`/`hipDeviceSynchronize()` when synchronization of the entire device is required
+- Replace implicit `NULL` contexts with `PetscDeviceContextDefault` in device-context and device-memory APIs to retain default-stream selection, or pass an explicit context. Add `PetscDeviceContextGetDefaultContext()` and petsc4py `DeviceContext.getDefault()` to capture the default context for the current device. The cached default contexts are now named `default context N` with options prefix `default_context_N_`, instead of `null context N` and `null_context_N_`
+- Reject `None` in petsc4py `DeviceContext.setCurrent()`, assignments to `DeviceContext.current`, and `DeviceContext.waitFor()`, and reject `None` entries in `DeviceContext.join()` lists. Use `DeviceContext.getDefault()` for the default-stream context; to restore a previous current context, save it with `DeviceContext.getCurrent()` and pass it to `DeviceContext.setCurrent()`
+- Add an alignment argument before the output pointer to `PetscDeviceMalloc()` and `PetscDeviceCalloc()`; pass `PETSC_DECIDE` to retain inferred alignment, or a positive power of two to request stronger alignment
+- Add `PetscDeviceContextDelay()` to queue a timed host callback for testing CUDA and HIP stream ordering
 
 ```{rubric} Event Logging:
 ```
@@ -65,6 +73,8 @@
 ```{rubric} VecScatter / PetscSF:
 ```
 
+- Prefer the native CUDA/HIP `PetscSF` backend when available so communication follows the current device context; retain Kokkos as a fallback and as an explicit choice with `-sf_backend kokkos`
+
 ```{rubric} PF:
 ```
 
@@ -74,6 +84,7 @@
 - Add a device implementation of `VecSqrtAbs()` for `VECKOKKOS`; previously it copied the vector to the host
 - Change `VecGetState()` to return a `VecState` and add `VecStateCompare()`, `VecStateCompareUpdate()`, and `VecStateInvalidate()`
 - Make `VecStrideMin()` and `VecStrideMax()` propagate NaNs with the smallest global NaN index, handle IEEE infinities with empty ranks, and return the same value with or without an index
+- Add `VecGetArrayAndMemTypeAsync()`, `VecGetArrayReadAndMemTypeAsync()`, and `VecGetArrayWriteAndMemTypeAsync()` to acquire vector storage for read/write, read-only, and write-only access, respectively, without waiting for CUDA and HIP transfers on the current device context
 
 ```{rubric} PetscSection:
 ```

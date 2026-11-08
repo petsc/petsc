@@ -587,8 +587,11 @@ static PetscErrorCode MatMultHermitianTransposeColumnRange_MPIDense(Mat A, Vec x
     if (PetscMemTypeHost(aymtype)) {
       PetscCall(PetscArrayzero(&ay[c_start_local], (size_t)(c_end_local - c_start_local)));
     } else {
+      PetscDeviceContext dctx;
+
+      PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
       PetscCall(PetscDeviceRegisterMemory(ay, aymtype, sizeof(*ay) * ((size_t)(r_end - r_start))));
-      PetscCall(PetscDeviceArrayZero(NULL, &ay[c_start_local], (size_t)(c_end_local - c_start_local)));
+      PetscCall(PetscDeviceArrayZero(dctx, &ay[c_start_local], (size_t)(c_end_local - c_start_local)));
     }
   }
   PetscUseMethod(a->A, "MatMultHermitianTransposeColumnRange_C", (Mat, Vec, Vec, PetscInt, PetscInt), (a->A, xx, a->lvec, c_start, c_end));

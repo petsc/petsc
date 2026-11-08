@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestPetscDeviceContextForkJoin(dctx));
 
-  PetscCall(TestPetscDeviceContextForkJoin(NULL));
+  PetscCall(TestPetscDeviceContextForkJoin(PetscDeviceContextDefault));
 
   PetscCall(PetscPrintf(comm, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());

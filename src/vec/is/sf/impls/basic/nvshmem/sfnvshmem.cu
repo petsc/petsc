@@ -1,4 +1,6 @@
-#include <petsc/private/cudavecimpl.h>
+#include <petsc/private/deviceimpl.h>
+#include <petsc/private/veccupmimpl.h>
+#include <petscdevice_cuda.h>
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <mpi.h>
 #include <nvshmem.h>
@@ -86,15 +88,18 @@ PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF sf)
 /* Set up NVSHMEM related fields for an SF of type SFBASIC (only after PetscSFSetup_Basic() already set up dependent fields) */
 static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
 {
-  cudaError_t    cerr;
-  PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
-  PetscInt       i, nRemoteRootRanks, nRemoteLeafRanks;
-  PetscMPIInt    tag;
-  MPI_Comm       comm;
-  MPI_Request   *rootreqs, *leafreqs;
-  PetscInt       tmp, rtmp[4]; /* tmps for send/recv buffers */
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
+  PetscSF_Basic     *bas = (PetscSF_Basic *)sf->data;
+  PetscInt           i, nRemoteRootRanks, nRemoteLeafRanks;
+  PetscInt           tmp, rtmp[4]; /* tmps for send/recv buffers */
+  PetscMPIInt        tag;
+  MPI_Comm           comm;
+  MPI_Request       *rootreqs, *leafreqs;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
   PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
   PetscCall(PetscObjectGetNewTag((PetscObject)sf, &tag));
 
@@ -137,10 +142,10 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
   PetscCallCUDA(cudaMalloc((void **)&sf->ranks_d, nRemoteRootRanks * sizeof(PetscMPIInt)));
   PetscCallCUDA(cudaMalloc((void **)&sf->roffset_d, (nRemoteRootRanks + 1) * sizeof(PetscInt)));
 
-  PetscCallCUDA(cudaMemcpyAsync(sf->rootbufdisp_d, sf->rootbufdisp, nRemoteRootRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(sf->rootsigdisp_d, sf->rootsigdisp, nRemoteRootRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(sf->ranks_d, sf->ranks + sf->ndranks, nRemoteRootRanks * sizeof(PetscMPIInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(sf->roffset_d, sf->roffset + sf->ndranks, (nRemoteRootRanks + 1) * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
+  PetscCallCUDA(cudaMemcpyAsync(sf->rootbufdisp_d, sf->rootbufdisp, nRemoteRootRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(sf->rootsigdisp_d, sf->rootsigdisp, nRemoteRootRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(sf->ranks_d, sf->ranks + sf->ndranks, nRemoteRootRanks * sizeof(PetscMPIInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(sf->roffset_d, sf->roffset + sf->ndranks, (nRemoteRootRanks + 1) * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
 
   /* Leaf ranks to root ranks: send info about leafsigdisp[] and leafbufdisp[] */
   PetscCall(PetscMalloc2(nRemoteLeafRanks, &bas->leafsigdisp, nRemoteLeafRanks, &bas->leafbufdisp));
@@ -160,11 +165,13 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
   PetscCallCUDA(cudaMalloc((void **)&bas->iranks_d, nRemoteLeafRanks * sizeof(PetscMPIInt)));
   PetscCallCUDA(cudaMalloc((void **)&bas->ioffset_d, (nRemoteLeafRanks + 1) * sizeof(PetscInt)));
 
-  PetscCallCUDA(cudaMemcpyAsync(bas->leafbufdisp_d, bas->leafbufdisp, nRemoteLeafRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(bas->leafsigdisp_d, bas->leafsigdisp, nRemoteLeafRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(bas->iranks_d, bas->iranks + bas->ndiranks, nRemoteLeafRanks * sizeof(PetscMPIInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
-  PetscCallCUDA(cudaMemcpyAsync(bas->ioffset_d, bas->ioffset + bas->ndiranks, (nRemoteLeafRanks + 1) * sizeof(PetscInt), cudaMemcpyHostToDevice, PetscDefaultCudaStream));
+  PetscCallCUDA(cudaMemcpyAsync(bas->leafbufdisp_d, bas->leafbufdisp, nRemoteLeafRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(bas->leafsigdisp_d, bas->leafsigdisp, nRemoteLeafRanks * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(bas->iranks_d, bas->iranks + bas->ndiranks, nRemoteLeafRanks * sizeof(PetscMPIInt), cudaMemcpyHostToDevice, *stream));
+  PetscCallCUDA(cudaMemcpyAsync(bas->ioffset_d, bas->ioffset + bas->ndiranks, (nRemoteLeafRanks + 1) * sizeof(PetscInt), cudaMemcpyHostToDevice, *stream));
 
+  // Complete metadata uploads before another context or the communication stream reads them.
+  PetscCall(PetscDeviceContextSynchronize(dctx));
   PetscCall(PetscFree2(rootreqs, leafreqs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -735,6 +742,7 @@ PetscErrorCode PetscSFLinkCreate_NVSHMEM(PetscSF sf, MPI_Datatype unit, PetscMem
     if (link->use_nvshmem) {
       PetscCall(MPIPetsc_Type_compare(unit, link->unit, &match));
       if (match) {
+        if (sf->backend == PETSCSF_BACKEND_CUDA) PetscCall(PetscSFLinkSetUp_CUDA(sf, link, unit));
         *p = link->next; /* Remove from available list */
         goto found;
       }
@@ -805,41 +813,61 @@ found:
 #if PetscDefined(USE_REAL_SINGLE)
 PetscErrorCode PetscNvshmemSum(PetscInt count, float *dst, const float *src)
 {
-  PetscMPIInt num; /* Assume nvshmem's int is MPI's int */
+  PetscMPIInt        num; // Assume nvshmem's int is MPI's int
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
   PetscCall(PetscMPIIntCast(count, &num));
-  nvshmemx_float_sum_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, PetscDefaultCudaStream);
+  nvshmemx_float_sum_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, *stream);
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscNvshmemMax(PetscInt count, float *dst, const float *src)
 {
-  PetscMPIInt num;
+  PetscMPIInt        num;
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
   PetscCall(PetscMPIIntCast(count, &num));
-  nvshmemx_float_max_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, PetscDefaultCudaStream);
+  nvshmemx_float_max_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, *stream);
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #elif PetscDefined(USE_REAL_DOUBLE)
 PetscErrorCode PetscNvshmemSum(PetscInt count, double *dst, const double *src)
 {
-  PetscMPIInt num;
+  PetscMPIInt        num;
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
   PetscCall(PetscMPIIntCast(count, &num));
-  nvshmemx_double_sum_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, PetscDefaultCudaStream);
+  nvshmemx_double_sum_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, *stream);
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscNvshmemMax(PetscInt count, double *dst, const double *src)
 {
-  PetscMPIInt num;
+  PetscMPIInt        num;
+  PetscDeviceContext dctx;
+  cudaStream_t      *stream;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
   PetscCall(PetscMPIIntCast(count, &num));
-  nvshmemx_double_max_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, PetscDefaultCudaStream);
+  nvshmemx_double_max_reduce_on_stream(NVSHMEM_TEAM_WORLD, dst, src, num, *stream);
+  PetscCall(PetscDeviceContextSynchronizeIfWithBarrier_Internal(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

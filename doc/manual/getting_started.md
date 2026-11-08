@@ -129,12 +129,10 @@ processors:
 $ mpiexec -n 8 ./petsc_program_name petsc_options
 ```
 
-PETSc also provides a script that automatically uses the correct
-`mpiexec` for your configuration.
-
-```console
-$ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
-```
+Use the `mpiexec` from the MPI installation used to build PETSc. For an
+in-place build with `--download-mpich` or `--download-openmpi`, it is normally
+`$PETSC_DIR/$PETSC_ARCH/bin/mpiexec`. On managed systems, use the launcher
+recommended by the system administrators.
 
 Certain options are supported by all PETSc programs. We list a few
 particularly useful ones below; a complete list can be obtained by
@@ -448,6 +446,8 @@ allocate too large an array in memory. The routine was called in the
 program `ex3.c` on line 66. See
 {any}`sec_fortran_errors` for details regarding error checking
 when using the PETSc Fortran interface.
+In this sample traceback, paths, host name, and user name are placeholders;
+line numbers depend on the source version.
 
 ```none
 $ cd $PETSC_DIR/src/ksp/ksp/tutorials
@@ -461,13 +461,13 @@ $ mpiexec -n 1 ./ex3 -m 100000
 [0]PETSC ERROR: Try running with -malloc_dump or -malloc_view for info.
 [0]PETSC ERROR: Memory requested 18446744072169447424
 [0]PETSC ERROR: PETSc Development Git Revision: v3.7.1-224-g9c9a9c5 Git Date: 2016-05-18 22:43:00 -0500
-[0]PETSC ERROR: ./ex3 on a arch-darwin-double-debug named Patricks-MacBook-Pro-2.local by patrick Mon Jun 27 18:04:03 2016
-[0]PETSC ERROR: Configure options PETSC_DIR=/Users/patrick/petsc PETSC_ARCH=arch-darwin-double-debug --download-mpich --download-f2cblaslapack --with-cc=clang --with-cxx=clang++ --with-fc=gfortran --with-debugging=1 --with-precision=double --with-scalar-type=real --with-viennacl=0 --download-c2html -download-sowing
-[0]PETSC ERROR: #1 MatSeqAIJSetPreallocation_SeqAIJ() line 3618 in /Users/patrick/petsc/src/mat/impls/aij/seq/aij.c
-[0]PETSC ERROR: #2 PetscTrMallocDefault() line 188 in /Users/patrick/petsc/src/sys/memory/mtr.c
-[0]PETSC ERROR: #3 MatSeqAIJSetPreallocation_SeqAIJ() line 3618 in /Users/patrick/petsc/src/mat/impls/aij/seq/aij.c
-[0]PETSC ERROR: #4 MatSeqAIJSetPreallocation() line 3562 in /Users/patrick/petsc/src/mat/impls/aij/seq/aij.c
-[0]PETSC ERROR: #5 main() line 66 in /Users/patrick/petsc/src/ksp/ksp/tutorials/ex3.c
+[0]PETSC ERROR: ./ex3 on a arch-darwin-double-debug named host by user Mon Jun 27 18:04:03 2016
+[0]PETSC ERROR: Configure options PETSC_DIR=/path/to/petsc PETSC_ARCH=arch-darwin-double-debug --download-mpich --download-f2cblaslapack --with-cc=clang --with-cxx=clang++ --with-fc=gfortran --with-debugging=1 --with-precision=double --with-scalar-type=real --with-viennacl=0 --download-c2html -download-sowing
+[0]PETSC ERROR: #1 MatSeqAIJSetPreallocation_SeqAIJ() line 3618 in /path/to/petsc/src/mat/impls/aij/seq/aij.c
+[0]PETSC ERROR: #2 PetscTrMallocDefault() line 188 in /path/to/petsc/src/sys/memory/mtr.c
+[0]PETSC ERROR: #3 MatSeqAIJSetPreallocation_SeqAIJ() line 3618 in /path/to/petsc/src/mat/impls/aij/seq/aij.c
+[0]PETSC ERROR: #4 MatSeqAIJSetPreallocation() line 3562 in /path/to/petsc/src/mat/impls/aij/seq/aij.c
+[0]PETSC ERROR: #5 main() line 66 in /path/to/petsc/src/ksp/ksp/tutorials/ex3.c
 [0]PETSC ERROR: PETSc Option Table entries:
 [0]PETSC ERROR: -m 100000
 [0]PETSC ERROR: ----------------End of Error Message ------- send entire error message to petsc-maint@mcs.anl.gov----------
@@ -639,33 +639,30 @@ Edward A. Lee, [The Problem with Threads](https://digitalassets.lib.berkeley.edu
 
 ## GPU kernel parallelism
 
-GPUs offer at least two levels of clearly defined parallelism. Kernel-level parallelism is much like SIMD parallelism applied to loops;
-many "iterations" of the loop index run on different hardware in "lock-step".
-PETSc utilizes this parallelism with three similar but slightly different models:
+GPU kernels execute many operations in parallel, such as applying the same
+calculation to different vector entries. PETSc provides several implementations:
 
-- CUDA, which is provided by NVIDIA and runs on NVIDIA GPUs
-- HIP, provided by AMD, which can, in theory, run on both AMD and NVIDIA GPUs
-- and Kokkos, an open-source package that provides a slightly higher-level programming model to utilize GPU kernels.
+- CUDA for NVIDIA GPUs: `VECCUDA` and `MATAIJCUSPARSE`.
+- HIP for AMD GPUs: `VECHIP` and `MATAIJHIPSPARSE`.
+- Kokkos for NVIDIA, AMD, and Intel GPUs through CUDA, HIP, and SYCL,
+  respectively: `VECKOKKOS` and `MATAIJKOKKOS`.
 
-To utilize this one configures PETSc with either `--with-cuda` or `--with-hip` and, if they plan to use Kokkos, also `--download-kokkos --download-kokkos-kernels`.
+Configure PETSc with `--with-cuda`, `--with-hip`, or `--with-sycl` for the
+chosen backend. For Kokkos, also use `--download-kokkos --download-kokkos-kernels`;
+see {any}`doc_config_accel_kokkos` for details.
 
-In the GPU programming model that PETSc uses, the GPU memory is distinct from the CPU memory. This means that data that resides on the CPU
-memory must be copied to the GPU (often, this copy is done automatically by the libraries, and the user does not need to manage it)
-if one wishes to use the GPU computational power on it. This memory copy is slow compared to the GPU speed; hence, it is crucial to minimize these copies. This often
-translates to trying to do almost all the computation on the GPU and not constantly switching between computations on the CPU and the GPU on the same data.
-
-PETSc utilizes GPUs by providing vector and matrix classes (`Vec` and `Mat`) specifically written to run on the GPU. However, since it is difficult to
-write an entire PETSc code that runs only on the GPU, one can also access and work with (for example, put entries into) the vectors and matrices
-on the CPU. The implementations include
-`VECCUDA`, `MATAIJCUSPARSE`, `VECKOKKOS`, `MATAIJKOKKOS`, `VECHIP`, and `MATAIJHIPSPARSE`.
-
-More details on using GPUs from PETSc will follow in this document.
+GPU vectors and matrices also allow CPU access. PETSc transfers values between
+host and device storage as needed, but frequent transfers can dominate execution
+time. Keep successive computations on the GPU when possible.
 
 (sec_gpu_streams)=
 
 ## GPU stream parallelism
 
-Please contribute to this document.
+A stream executes submitted work in order. Independent work on different streams
+may overlap, but shared data requires explicit ordering. PETSc represents a stream
+and its associated library handles with a `PetscDeviceContext`. See
+{any}`ch_device` for its use, synchronization, and the current limits of host access.
 
 ```{raw} latex
 \newpage
@@ -673,22 +670,19 @@ Please contribute to this document.
 
 # Compiling and Running Programs
 
-The output below illustrates compiling and running a
-PETSc program using MPICH on a macOS laptop. Note that different
-machines will have compilation commands as determined by the
-configuration process. See {any}`sec_writing_application_codes` for
+The commands below compile and run a PETSc tutorial. The compiler and linker
+commands printed by `make` depend on the PETSc configuration and are omitted here.
+Use the `mpiexec` from the MPI installation used to build PETSc.
+See {any}`sec_writing_application_codes` for
 a discussion about how to compile your PETSc programs. Users who are
 experiencing difficulties linking PETSc programs should refer to the [FAQ](https://petsc.org/release/faq/).
 
 ```none
 $ cd $PETSC_DIR/src/ksp/ksp/tutorials
 $ make ex2
-/Users/patrick/petsc/arch-debug/bin/mpicc -o ex2.o -c -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-debug/include `pwd`/ex2.c
-/Users/patrick/petsc/arch-debug/bin/mpicc -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-debug/lib -L/Users/patrick/petsc/arch-debug/lib  -lpetsc -lf2clapack -lf2cblas -lmpifort -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -ldl -lmpi -lpmpi -lSystem
-/bin/rm -f ex2.o
-$ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex2
+$ mpiexec -n 1 ./ex2
 Norm of error 0.000156044 iterations 6
-$ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 2 ./ex2
+$ mpiexec -n 2 ./ex2
 Norm of error 0.000411674 iterations 7
 ```
 
@@ -709,7 +703,7 @@ merely to demonstrate the ease of extracting performance information.
 (listing_exprof)=
 
 ```none
-$ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
+$ mpiexec -n 1 ./ex1 -n 1000 -pc_type ilu -ksp_type gmres -ksp_rtol 1.e-7 -log_view
 ...
 ------------------------------------------------------------------------------------------------------------------------
 Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ----  Total

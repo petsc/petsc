@@ -125,7 +125,7 @@ To learn more about the test system details, one can look at the
 
 ## Using the test harness for your own code
 
-Select a package name, for example, `mypkg` and create a sub-directory with that name, say `/home/mine/mypackage/src/mypkg`.
+Select a package name, for example, `mypkg` and create a sub-directory with that name, say `/path/to/mypackage/src/mypkg`.
 In any sub-directory of that directory named `tests` or `tutorials` put a PETSc makefile, for example,
 `src/ts/tutorials/makefile` and standalone test applications that the makefile can compile with, for example
 
@@ -134,12 +134,12 @@ $ make mytest
 ```
 
 Include at the bottom of the test code a formatted comment indicating what tests should be run, see
-{any}`test_harness`. Also select a directory where you wish the tests to be compiled and run, say `/home/mine/mytests`.
+{any}`test_harness`. Also select a directory where you wish the tests to be compiled and run, say `/path/to/mytests`.
 
 You can build and run the tests with
 
 ```console
-$ make -f ${PETSC_DIR}/gmakefile.test TESTSRCDIR=/home/mine/mypackage/src TESTDIR=/home/mine/mytests pkgs=mypkg
+$ make -f ${PETSC_DIR}/gmakefile.test TESTSRCDIR=/path/to/mypackage/src TESTDIR=/path/to/mytests pkgs=mypkg
 ```
 
 There is not yet a mechanism to have your test code also link against your library, contact us for ideas.

@@ -119,7 +119,7 @@ $ ./configure --download-mpich --download-fblaslapack --with-debugging=1
 Will result in the following `reconfigure`:
 
 ```python
-#!/usr/local/opt/python@3.9/bin/python3.9
+#!/path/to/python3
 if __name__ == '__main__':
   import sys
   import os
@@ -151,7 +151,7 @@ One need only call `reconfigure`, supplying any additional command-line argument
 if it were the regular `configure`. Suppose one had an installation of PETSc with the following arguments (represented in the `reconfigure` script):
 
 ```python
-#!/usr/local/opt/python@3.9/bin/python3.9
+#!/path/to/python3
 if __name__ == '__main__':
   import sys
   import os

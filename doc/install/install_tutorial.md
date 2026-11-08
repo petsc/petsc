@@ -37,7 +37,7 @@ example, [MUMPS](https://mumps-solver.org/) requires Fortran) you can use
    ```
    xxx=========================================================================xxx
    Configure stage complete. Now build PETSc libraries with:
-   make PETSC_DIR=/Users/jacobfaibussowitsch/NoSync/petsc PETSC_ARCH=arch-darwin-c-debug all
+   make PETSC_DIR=/path/to/petsc PETSC_ARCH=arch-darwin-c-debug all
    xxx=========================================================================xxx
    ```
 5. Check the {ref}`bug-reporting <doc_creepycrawly>` section.

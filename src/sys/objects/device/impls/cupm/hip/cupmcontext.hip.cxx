@@ -30,7 +30,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
   Output Parameter:
 . handle - the `hipblasHandle_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_HIP`. The returned handle is owned by
@@ -57,7 +57,7 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
   Output Parameter:
 . handle - the `hipsolverHandle_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_HIP`. The returned handle is owned by
@@ -84,7 +84,7 @@ PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
   Output Parameter:
 . stream - the `hipStream_t` for the current context
 
-  Level: developer
+  Level: advanced
 
   Note:
   The current device context must be of type `PETSC_DEVICE_HIP`. The returned stream is owned by

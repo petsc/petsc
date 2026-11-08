@@ -8,7 +8,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
 
-    self.minversion       = '5.0.0'
+    self.minversion       = '5.2.0'
     # Check version from rocm-core here, as HIP_VERSION_PATCH (e.g., 31061 from hip_version.h) is not necessarily the AMD advertised patch version, e.g., in 5.6.0
     self.versionname      = 'ROCM_VERSION_MAJOR.ROCM_VERSION_MINOR.ROCM_VERSION_PATCH'
     self.versioninclude   = ['rocm-core/rocm_version.h', 'rocm_version.h']

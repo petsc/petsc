@@ -352,6 +352,24 @@ void swap(MarkedObjectMap::snapshot_type &lhs, MarkedObjectMap::snapshot_type &r
 // the last time the PetscObject was accessed
 static MarkedObjectMap marked_object_map;
 
+// Publish completion after the operation has been queued, following its access-intent waits.
+PetscErrorCode PetscDeviceContextRecordMemoryAccess_Private(PetscDeviceContext dctx, PetscObjectId id)
+{
+  const auto it      = marked_object_map.map.find(id);
+  const auto dctx_id = PetscObjectCast(dctx)->id;
+
+  PetscFunctionBegin;
+  PetscCheck(it != marked_object_map.map.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing memory access intent for object %" PetscInt64_FMT, id);
+  PetscCall(PetscObjectStateIncrease(PetscObjectCast(dctx)));
+  for (auto &dep : it->second.dependencies) {
+    if (dep.dctx_id() == dctx_id) {
+      PetscCall(PetscDeviceContextRecordEvent_Private(dctx, dep.event()));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing memory access intent for object %" PetscInt64_FMT, id);
+}
+
 // ==========================================================================================
 // Utility Functions
 // ==========================================================================================
@@ -626,6 +644,8 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 . mode - The desired access intent
 - name - The object name (for debug purposes, ignored in optimized builds)
 
+  Level: developer
+
   Notes:
   This routine formally informs the dependency system that `dctx` will access the object
   represented by `id` with `mode` and adds `dctx` to `id`'s list of dependencies (termed
@@ -633,8 +653,6 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
 
   If the existing set of leaves have an incompatible `PetscMemoryAccessMode` to `mode`, `dctx`
   will be serialized against them.
-
-  Level: intermediate
 
 .seealso: `PetscDeviceContextWaitForContext()`, `PetscDeviceContextSynchronize()`,
 `PetscObjectGetId()`, `PetscMemoryAccessMode`
@@ -653,7 +671,8 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
 #endif
 
   PetscFunctionBegin;
-  PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
+  PetscCall(PetscDeviceContextResolveDefault_Private(&dctx));
+  PetscValidDeviceContext(dctx, 1);
   if (name) PetscAssertPointer(name, 4);
   PetscCall(marked_object_map.register_finalize());
   PetscCall(PetscLogEventBegin(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));

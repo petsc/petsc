@@ -5,7 +5,7 @@ static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
 
 static PetscErrorCode TestRepeatedMDot(void)
 {
-  const PetscStreamType streams[] = {PETSC_STREAM_DEFAULT};
+  const PetscStreamType streams[] = {PETSC_STREAM_DEFAULT, PETSC_STREAM_NONBLOCKING, PETSC_STREAM_NONBLOCKING_WITH_BARRIER};
   const PetscInt        counts[]  = {2, 8, 9};
   PetscDeviceContext    saved, dctx;
   PetscInt              n = 8 * 1024 * 1024, N;

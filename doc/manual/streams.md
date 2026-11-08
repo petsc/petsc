@@ -13,7 +13,7 @@ The STREAMS benchmark, a key tool in our field, is invaluable for gaining insigh
 PETSc contains
 multiple implementations of the `triad` STREAMS benchmark: including an 
 <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/benchmarks/streams/OpenMPVersion.c.html">OpenMP version</a> and an
-<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/benchmarks/streams/OpenMPVersion.c.html">MPI version</a>.
+<a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/benchmarks/streams/MPIVersion.c.html">MPI version</a>.
 
 ```
 for (int j = 0; j < n; ++j) a[j] = b[j]+scalar*c[j]

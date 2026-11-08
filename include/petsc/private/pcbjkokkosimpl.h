@@ -9,11 +9,7 @@
 #include "Kokkos_Core.hpp"
 
 #if PetscDefined(HAVE_CUDA)
-  #if PETSC_PKG_CUDA_VERSION_GE(10, 0, 0)
-    #include <nvtx3/nvToolsExt.h>
-  #else
-    #include <nvToolsExt.h>
-  #endif
+  #include <nvtx3/nvToolsExt.h>
 #endif
 
 #define PCBJKOKKOS_SHARED_LEVEL 1 // 0 is shared, 1 is global

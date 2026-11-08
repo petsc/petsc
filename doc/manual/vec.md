@@ -69,8 +69,10 @@ communicator.
 Instead of, or before calling `VecSetFromOptions()`, one can call
 
 ```
-VecSetType(Vec v, VecType <VECCUDA, VECHIP, VECKOKKOS, etc.>)
+VecSetType(Vec v, VecType type);
 ```
+
+with a type such as `VECCUDA`, `VECHIP`, or `VECKOKKOS`.
 
 One can create vectors whose entries are stored on GPUs using the convenience routine,
 
@@ -412,11 +414,10 @@ should be used instead.
 
 Minor differences exist in the Fortran interface for `VecGetArray()`
 and `VecRestoreArray()`, as discussed in
-{any}`sec_fortranarrays`. It is important to note that
-`VecGetArray()` and `VecRestoreArray()` do *not* copy the vector
-elements; they merely give users direct access to the vector elements.
-Thus, these routines require essentially no time to call and can be used
-efficiently.
+{any}`sec_fortranarrays`. For standard CPU vectors with contiguous storage,
+these routines provide direct access without copying. For GPU vectors, host
+access may require a transfer and synchronization. See {any}`ch_device` for
+stream ordering and the current limitations of host access.
 
 For GPU vectors, one can access either the values on the CPU as described above or one
 can call, for example,
@@ -441,8 +442,11 @@ VecGetArrayAndMemType(Vec v, PetscScalar **array, PetscMemType *mtype);
 
 which, in the first case, returns a GPU memory address and, in the second case, returns either a CPU or GPU memory
 address depending on the type of the vector. One can then launch a GPU kernel function that accesses the
-vector's memory for usage with GPUs. When computing on GPUs, `VecSetValues()` is not used! One always accesses the vector's arrays and passes them
-to the GPU code.
+vector's memory. Pair the getter with its corresponding restore routine and
+observe the ordering requirements in {any}`ch_device`.
+`VecSetValues()` remains available for GPU vectors, but inserts values on the CPU.
+To fill vectors on the GPU, use a kernel that writes the device array, or
+`VecSetPreallocationCOO()` and `VecSetValuesCOO()` with a supporting vector type.
 
 It can also be convenient to treat the vector entries as a Kokkos view. One first creates Kokkos vectors and then calls
 

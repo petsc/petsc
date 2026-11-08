@@ -16,7 +16,7 @@
 /*E
   PetscMemType - Memory type of a pointer
 
-  Level: intermediate
+  Level: beginner
 
   Note:
   `PETSC_MEMTYPE_KOKKOS` depends on the Kokkos backend configuration
@@ -73,7 +73,7 @@ typedef enum {
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
 M*/
@@ -91,7 +91,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeHost()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
 M*/
@@ -109,7 +109,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
 M*/
@@ -127,7 +127,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeSYCL()`, `PetscMemTypeNVSHMEM()`
 M*/
@@ -145,7 +145,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeNVSHMEM()`
 M*/
@@ -163,7 +163,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemType` value
 
-  Level: intermediate
+  Level: beginner
 
 .seealso: `PetscMemType`, `PetscMemTypeDevice()`, `PetscMemTypeCUDA()`, `PetscMemTypeHIP()`, `PetscMemTypeSYCL()`
 M*/
@@ -387,7 +387,7 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscMemType PetscOffloadMaskTo
 . `PETSC_DEVICE_INIT_LAZY`  - PetscDevice is initialized on demand
 - `PETSC_DEVICE_INIT_EAGER` - PetscDevice is initialized as soon as possible
 
-  Level: beginner
+  Level: intermediate
 
   Note:
   `PETSC_DEVICE_INIT_NONE` implies that any initialization of `PetscDevice` is disallowed and
@@ -503,7 +503,7 @@ PETSC_EXTERN const char *const PetscStreamTypes[];
 . `PETSC_DEVICE_CONTEXT_JOIN_SYNC`    - Synchronize incoming sub-contexts after join.
 - `PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC` - Do not synchronize incoming sub-contexts after join.
 
-  Level: beginner
+  Level: advanced
 
 .seealso: `PetscDeviceContext`, `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
 E*/
@@ -519,6 +519,17 @@ PETSC_EXTERN const char *const PetscDeviceContextJoinModes[];
   for asynchronous device compute.
 
   Level: beginner
+
+  Notes:
+  Public APIs taking a `PetscDeviceContext` require a valid context or, where supported, `PetscDeviceContextDefault`.
+  Obtain the current context with
+  `PetscDeviceContextGetCurrentContext()` and pass it explicitly; `NULL` does not select an implicit context.
+  This requirement also applies to operations with no work, such as zero-length memory operations.
+  `PetscDeviceContextDestroy()` accepts the address of a null handle.
+
+  In builds using the C-only device-interface fallback, `PetscDeviceContextCreate()` and
+  `PetscDeviceContextGetCurrentContext()` return null handles. These handles remain valid arguments to
+  the fallback APIs. This exception does not apply to host contexts in builds using the C++ device interface.
 
 .seealso: `PetscDevice`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`,
 `PetscDeviceContextDestroy()`, `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
@@ -624,7 +635,7 @@ typedef enum {
   Input Parameter:
 . m - the `PetscMemoryAccessMode` value
 
-  Level: developer
+  Level: beginner
 
 .seealso: `PetscMemoryAccessMode`, `PetscMemoryAccessWrite()`
 M*/
@@ -642,7 +653,7 @@ M*/
   Input Parameter:
 . m - the `PetscMemoryAccessMode` value
 
-  Level: developer
+  Level: beginner
 
 .seealso: `PetscMemoryAccessMode`, `PetscMemoryAccessRead()`
 M*/

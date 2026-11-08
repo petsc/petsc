@@ -11,6 +11,8 @@ PETSC_INTERN int PetscDeviceCUPMRuntimeArch; // The real CUDA/HIP arch the code 
 /* logging support */
 PETSC_INTERN PetscLogEvent CUBLAS_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent CUSOLVER_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent CUSPARSE_HANDLE_CREATE;
+PETSC_INTERN PetscLogEvent HIPSPARSE_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent HIPSOLVER_HANDLE_CREATE;
 PETSC_INTERN PetscLogEvent HIPBLAS_HANDLE_CREATE;
 
@@ -122,6 +124,7 @@ extern void PetscCheckCompatibleDeviceContexts(T, int, U, int);
     do { \
       PetscDeviceContext pvdc_dctx_  = dctx; \
       int                pvdc_argno_ = (int)(argno); \
+      PetscCheck(pvdc_dctx_ != PetscDeviceContextDefault, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Argument #%d does not accept PetscDeviceContextDefault; pass a concrete PetscDeviceContext", pvdc_argno_); \
       PetscValidHeaderSpecific(pvdc_dctx_, PETSC_DEVICE_CONTEXT_CLASSID, pvdc_argno_); \
       PetscValidStreamType(pvdc_dctx_->streamType, pvdc_argno_); \
       if (pvdc_dctx_->device) { \
@@ -192,7 +195,6 @@ extern void PetscCheckCompatibleDeviceContexts(T, int, U, int);
 #endif
 
 #define PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE_TYPE PETSC_DEVICE_HARDWARE_DEFAULT_TYPE
-// REMOVE ME (change)
 #define PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_TYPE PETSC_STREAM_DEFAULT
 
 typedef struct _DeviceOps *DeviceOps;
@@ -234,6 +236,7 @@ struct _DeviceContextOps {
   PetscErrorCode (*synchronize)(PetscDeviceContext);
   PetscErrorCode (*getblashandle)(PetscDeviceContext, void *);
   PetscErrorCode (*getsolverhandle)(PetscDeviceContext, void *);
+  PetscErrorCode (*getsparsehandle)(PetscDeviceContext, void *);
   PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void **);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext, PetscLogDouble *);
@@ -247,6 +250,7 @@ struct _DeviceContextOps {
   PetscErrorCode (*createevent)(PetscDeviceContext, PetscEvent);                                                                // optional
   PetscErrorCode (*recordevent)(PetscDeviceContext, PetscEvent);                                                                // optional
   PetscErrorCode (*waitforevent)(PetscDeviceContext, PetscEvent);                                                               // optional
+  PetscErrorCode (*delay)(PetscDeviceContext, PetscReal);                                                                       // optional
 };
 
 struct _p_PetscDeviceContext {
@@ -318,7 +322,24 @@ static inline PETSC_CONSTEXPR_14 PetscBool PetscDeviceConfiguredFor_Internal(Pet
 // ===================================================================================
 //                     PetscDeviceContext Internal Functions
 // ===================================================================================
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *);
+// Validate a public argument without initializing the default context.
+#if PetscDefined(USE_DEBUG) || PetscDefined(DEVICE_KEEP_ERROR_CHECKING_MACROS) || PetscDefined(CLANG_STATIC_ANALYZER)
+  #define PetscValidDeviceContextOrDefault(dctx, argno) \
+    do { \
+      PetscDeviceContext pvdcod_dctx_ = (dctx); \
+      if (pvdcod_dctx_ != PetscDeviceContextDefault) PetscValidDeviceContext(pvdcod_dctx_, argno); \
+    } while (0)
+#else
+  #define PetscValidDeviceContextOrDefault(dctx, argno)
+#endif
+
+static inline PetscErrorCode PetscDeviceContextResolveDefault_Private(PetscDeviceContext *dctx)
+{
+  PetscFunctionBegin;
+  if (*dctx == PetscDeviceContextDefault) PetscCall(PetscDeviceContextGetDefaultContext(dctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #if PetscDefined(DEVICELANGUAGE_CXX)
 static inline PetscErrorCode PetscDeviceContextGetBLASHandle_Internal(PetscDeviceContext dctx, void *handle)
 {
@@ -335,6 +356,15 @@ static inline PetscErrorCode PetscDeviceContextGetSOLVERHandle_Internal(PetscDev
   /* we do error checking here as this routine is an entry-point */
   PetscValidDeviceContext(dctx, 1);
   PetscUseTypeMethod(dctx, getsolverhandle, handle);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode PetscDeviceContextGetSPARSEHandle_Internal(PetscDeviceContext dctx, void *handle)
+{
+  PetscFunctionBegin;
+  /* we do error checking here as this routine is an entry-point */
+  PetscValidDeviceContext(dctx, 1);
+  PetscUseTypeMethod(dctx, getsparsehandle, handle);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -413,14 +443,10 @@ static inline PetscErrorCode PetscDeviceContextGetCurrentContextAssertType_Inter
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscDeviceContextGetOptionalNullContext_Internal(PetscDeviceContext *dctx)
-{
-  PetscFunctionBegin;
-  PetscAssertPointer(dctx, 1);
-  if (!*dctx) PetscCall(PetscDeviceContextGetNullContext_Internal(dctx));
-  PetscValidDeviceContext(*dctx, 1);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+PETSC_INTERN PetscErrorCode PetscDeviceGetAllocationAlignment_Private(size_t, size_t, PetscBool, size_t *);
+#if PetscDefined(DEVICELANGUAGE_CXX)
+PETSC_INTERN PetscErrorCode PetscDeviceContextRecordMemoryAccess_Private(PetscDeviceContext, PetscObjectId);
+#endif
 
 /* Experimental API -- it will eventually become public */
 PETSC_EXTERN PetscErrorCode PetscDeviceRegisterMemory(const void *PETSC_RESTRICT, PetscMemType, size_t);

@@ -616,8 +616,11 @@ inline PetscErrorCode SfInterface<T>::Free(PetscMemType mtype, void *ptr) noexce
 {
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
-  else if (PetscMemTypeDevice(mtype)) PetscCallCUPM(cupmFree(ptr));
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
+  else if (PetscMemTypeDevice(mtype)) {
+    if (!ptr) PetscFunctionReturn(PETSC_SUCCESS);
+    // Metadata is shared by links on different streams, so bypass the asynchronous cupmFree() wrapper.
+    PetscCallCUPM(device::cupm::impl::InterfaceImpl<T>::cupmFree(ptr));
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -627,8 +630,8 @@ inline PetscErrorCode SfInterface<T>::LinkDestroy_MPI(PetscSF, PetscSFLink link)
 {
   PetscFunctionBegin;
   for (int i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {
-    PetscCallCUPM(cupmFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
-    PetscCallCUPM(cupmFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCall(Free(PETSC_MEMTYPE_DEVICE, link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
+    PetscCall(Free(PETSC_MEMTYPE_DEVICE, link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -641,13 +644,18 @@ inline PetscErrorCode SfInterface<T>::LinkDestroy_MPI(PetscSF, PetscSFLink link)
 template <device::cupm::DeviceType T>
 inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MPI_Datatype unit) noexcept
 {
-  PetscInt  nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
-  PetscBool is2Int, is2PetscInt;
+  PetscInt nSignedChar = 0, nUnsignedChar = 0, nInt = 0, nPetscInt = 0, nPetscReal = 0;
 #if PetscDefined(HAVE_COMPLEX)
   PetscInt nPetscComplex = 0;
 #endif
+  PetscBool          is2Int, is2PetscInt;
+  cupmStream_t      *stream;
+  PetscDeviceContext dctx;
 
   PetscFunctionBegin;
+  PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUPM()));
+  PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
+  link->stream = *stream;
   if (link->deviceinited) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_SIGNED_CHAR, &nSignedChar));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_UNSIGNED_CHAR, &nUnsignedChar));
@@ -780,14 +788,6 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
   }
   link->maxResidentThreadsPerGPU = sf->maxResidentThreadsPerGPU;
 
-  {
-    cupmStream_t      *stream;
-    PetscDeviceContext dctx;
-
-    PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUPM()));
-    PetscCall(PetscDeviceContextGetStreamHandle(dctx, (void **)&stream));
-    link->stream = *stream;
-  }
   link->Destroy      = LinkDestroy_MPI;
   link->SyncDevice   = LinkSyncDevice;
   link->SyncStream   = LinkSyncStream;

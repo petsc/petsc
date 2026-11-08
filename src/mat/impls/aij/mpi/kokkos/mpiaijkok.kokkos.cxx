@@ -666,6 +666,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
         }
       });
     }));
+  PetscCall(PetscSFSynchronizeKokkos_Private(reduceSF, PETSC_TRUE));
   PetscCall(PetscSFReduceWithMemTypeBegin(reduceSF, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, leafBuf.data(), PETSC_MEMTYPE_KOKKOS, rootBuf.data(), MPI_REPLACE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -687,6 +688,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceEnd(MPI_Comm, KokkosCsrMatrix, Kokkos
 
   PetscFunctionBegin;
   PetscCall(PetscSFReduceEnd(reduceSF, MPIU_SCALAR, leafBuf.data(), rootBuf.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(reduceSF, PETSC_FALSE));
 
   // Reduce data in rootBuf to Fd and Fo
   PetscCallCXX(Kokkos::parallel_for(
@@ -993,6 +995,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
         }
       });
     }));
+  PetscCall(PetscSFSynchronizeKokkos_Private(bcastSF, PETSC_TRUE));
   PetscCall(PetscSFBcastWithMemTypeBegin(bcastSF, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, rootBuf.data(), PETSC_MEMTYPE_KOKKOS, leafBuf.data(), MPI_REPLACE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1019,6 +1022,7 @@ static PetscErrorCode MatMPIAIJKokkosBcastEnd(Mat, PetscSF, MatReuse, PetscInt *
   PetscInt             workSets     = (Fm + rowsPerTeam - 1) / rowsPerTeam;
 
   PetscCall(PetscSFBcastEnd(bcastSF, MPIU_SCALAR, rootBuf.data(), leafBuf.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(bcastSF, PETSC_FALSE));
 
   // Update Fda and Foa with new data in leafBuf (as if it is Fa)
   PetscCallCXX(Kokkos::parallel_for(
@@ -1066,13 +1070,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *, Mat A, 
 
   // TODO: add command line options to select spgemm algorithms
   auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_DEFAULT; // default is TPL if enabled, otherwise KK
-
-  // CUDA-10.2's spgemm has bugs. We prefer the SpGEMMreuse APIs introduced in cuda-11.4
-#if defined(KOKKOSKERNELS_ENABLE_TPL_CUSPARSE)
-  #if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
-  spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
-  #endif
-#endif
 
   PetscCallCXX(mm->kh1.create_spgemm_handle(spgemm_alg));
   PetscCallCXX(mm->kh2.create_spgemm_handle(spgemm_alg));
@@ -1180,13 +1177,6 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *, Mat A, M
 
   // TODO: add command line options to select spgemm algorithms
   auto spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_DEFAULT; // default is TPL if enabled, otherwise KK
-
-  // CUDA-10.2's spgemm has bugs. We prefer the SpGEMMreuse APIs introduced in cuda-11.4
-#if defined(KOKKOSKERNELS_ENABLE_TPL_CUSPARSE)
-  #if PETSC_PKG_CUDA_VERSION_LT(11, 4, 0)
-  spgemm_alg = KokkosSparse::SPGEMMAlgorithm::SPGEMM_KK;
-  #endif
-#endif
 
   mm->kh1.create_spgemm_handle(spgemm_alg);
   mm->kh2.create_spgemm_handle(spgemm_alg);
@@ -1630,6 +1620,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
   Kokkos::parallel_for(Kokkos::RangePolicy<>(exec, 0, vsend.extent(0)), KOKKOS_LAMBDA(const PetscCount i) { vsend(i) = v1(Cperm1(i)); });
 
   /* Send remote entries to their owner and overlap the communication with local computation */
+  PetscCall(PetscSFSynchronizeKokkos_Private(coo->sf, PETSC_TRUE));
   PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_KOKKOS, vsend.data(), PETSC_MEMTYPE_KOKKOS, v2.data(), MPI_REPLACE));
   /* Add local entries to A and B in one kernel */
   Kokkos::parallel_for(
@@ -1645,6 +1636,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
       }
     });
   PetscCall(PetscSFReduceEnd(coo->sf, MPIU_SCALAR, vsend.data(), v2.data(), MPI_REPLACE));
+  PetscCall(PetscSFSynchronizeKokkos_Private(coo->sf, PETSC_FALSE));
 
   /* Add received remote entries to A and B in one kernel */
   Kokkos::parallel_for(

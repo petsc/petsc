@@ -2311,8 +2311,8 @@ PetscErrorCode PetscLogGpuTime(void)
   When GPU is not available, the timer is run on the CPU, it is a separate logging of
   time devoted to GPU computations (including kernel launch times).
 
-  There is no need to call `WaitForCUDA()` or `WaitForHIP()` between `PetscLogGpuTimeBegin()` and
-  `PetscLogGpuTimeEnd()`
+  No explicit device synchronization is needed between `PetscLogGpuTimeBegin()` and
+  `PetscLogGpuTimeEnd()`; the latter waits for the timer's end event.
 
   This timer should NOT include times for data transfers between the GPU and CPU, nor setup
   actions such as allocating space.
@@ -2322,11 +2322,11 @@ PetscErrorCode PetscLogGpuTime(void)
   kernel.
 
   Developer Notes:
-  The GPU event timer captures the execution time of all the kernels launched in the default
-  stream by the CPU between `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()`.
+  The GPU event timer captures the execution time of all the kernels launched on the current
+  `PetscDeviceContext`'s stream by the CPU between `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()`.
 
   `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()` insert the begin and end events into the
-  default stream (stream 0). The device will record a time stamp for the event when it reaches
+  current `PetscDeviceContext`'s stream. The device will record a time stamp for the event when it reaches
   that event in the stream. The function xxxEventSynchronize() is called in
   `PetscLogGpuTimeEnd()` to block CPU execution, but not continued GPU execution, until the
   timer event is recorded.

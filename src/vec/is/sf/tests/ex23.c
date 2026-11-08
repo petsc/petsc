@@ -33,10 +33,11 @@ int main(int argc, char *argv[])
 
   // double the allocation since we will use MPIU_2INT later
   n2 = 2 * n;
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n2, &xh));
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n2, &yh));
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, &xd));
-  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, &yd));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n2, PETSC_DECIDE, &xh));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_HOST, n2, PETSC_DECIDE, &yh));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, PETSC_DECIDE, &xd));
+  PetscCall(PetscDeviceMalloc(dctx, PETSC_MEMTYPE_DEVICE, n2, PETSC_DECIDE, &yd));
+  PetscCall(PetscDeviceContextSynchronize(dctx));
 
   for (PetscInt i = 0; i < n; i++) {
     xh[i] = xh[i + n] = i + rstart;

@@ -2,8 +2,7 @@
 [DEBUG OUTPUT] n: 139
 [0] <device> MarkFromID_IncompatibleModes(): dctx 53 (global root) - obj -1 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
 [0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 53 (global root) - obj -1 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
-[0] <device> MarkFromID_IncompatibleModes(): dctx 53 (global root) - obj -1 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with old mode (PETSC_MEMORY_ACCESS_WRITE), serializing then clearing (1) dependency
-[0] <device> MarkFromID_IncompatibleModes_UpdateLastWrite(): dctx 53 (global root) - obj -1 (memory deallocation): we matched the previous write dependency's (intent PETSC_MEMORY_ACCESS_WRITE) device type (cuda), swapping last dependency with last write
+[0] <device> MarkFromID_IncompatibleModes(): dctx 53 (global root) - obj -1 (memory deallocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
 [0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 53 (global root) - obj -1 (memory deallocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
 [0] <device> MarkFromID_IncompatibleModes(): dctx 53 (global root) - obj -2 (memory allocation): new mode (PETSC_MEMORY_ACCESS_WRITE) NOT COMPATIBLE with default mode (PETSC_MEMORY_ACCESS_READ), serializing then clearing (0) dependencies
 [0] <device> PetscDeviceContextMarkIntentFromID_Private(): dctx 53 (global root) - obj -2 (memory allocation): dependency list is empty, creating new leaf with intent PETSC_MEMORY_ACCESS_WRITE
