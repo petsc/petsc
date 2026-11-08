@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   /* Init gg using view */
   PetscCall(DMDAVecGetKokkosOffsetViewDOFWrite(da, gg, &gview));
   Kokkos::parallel_for(
-    "init 1", MDRangePolicy<Rank<3, Iterate::Right, Iterate::Right>>({ys, xs, 0}, {ys + ym, xs + xm, dof}),
+    "init 1", MDRangePolicy<Rank<3, Iterate::Right, Iterate::Right>>({ys, xs, static_cast<PetscInt>(0)}, {ys + ym, xs + xm, dof}),
     KOKKOS_LAMBDA(PetscInt j, PetscInt i, PetscInt c) /* might run on device */
     { gview(j, i, c) = 100 * j + 10 * (i + 1) + c; });
   PetscCall(DMDAVecRestoreKokkosOffsetViewDOFWrite(da, gg, &gview));
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
   PetscCall(DMDAVecGetKokkosOffsetViewDOFWrite(da, gg, &gview));
   PetscCall(DMDAVecGetKokkosOffsetViewDOF(da, ll, &lview));
   Kokkos::parallel_for(
-    "stencil 1", MDRangePolicy<Rank<3, Iterate::Right, Iterate::Right>>({ys, xs, 0}, {ys + ym, xs + xm, dof}),
+    "stencil 1", MDRangePolicy<Rank<3, Iterate::Right, Iterate::Right>>({ys, xs, static_cast<PetscInt>(0)}, {ys + ym, xs + xm, dof}),
     KOKKOS_LAMBDA(PetscInt j, PetscInt i, PetscInt c) { gview(j, i, c) = (lview(j, i - 1, c) + lview(j, i + 1, c) + lview(j - 1, i, c) + lview(j + 1, i, c)) / 4.0; });
   PetscCall(DMDAVecRestoreKokkosOffsetViewDOFWrite(da, gg, &gview));
   PetscCall(DMDAVecRestoreKokkosOffsetViewDOF(da, ll, &lview));
