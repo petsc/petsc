@@ -39,6 +39,18 @@ typedef struct {
 
   PetscReal andersonBeta; /* Relaxation parameter for Anderson Mixing */
 
+  // Window of stored iterates that the least-squares problem uses
+  PetscInt  window_size;         /* maximum number of stored iterates in the window, at most msize */
+  PetscInt  window_size_initial; /* initial window size of the adaptive strategy */
+  PetscBool adaptive;            /* grow the window when theta predicts the residual reduction */
+  PetscReal adaptive_tol;        /* tolerance on |theta - ||F_{k+1}|| / ||F_k||| that grows the window */
+  PetscReal lsnorm;              /* least-squares objective, the norm of the minimized combination of residuals */
+  PetscReal theta;               /* least-squares objective divided by the residual norm ||F_k|| of the current iterate */
+  PetscReal gamma;               /* least-squares objective divided by the residual norm of the candidate solution */
+  PetscInt *window;              /* history indices of the iterates in the window, in increasing order */
+  Vec      *Fwindow;             /* array of references to the residuals in the window, not new Vec objects */
+  Vec      *Xwindow;             /* array of references to the solutions in the window, not new Vec objects */
+
   /* Least squares minimization solve context */
   PetscScalar *q;     /* the matrix formed as q_ij = (rdot_i, rdot_j) */
   PetscBLASInt m;     /* matrix dimension */

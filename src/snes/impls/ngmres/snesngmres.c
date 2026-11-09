@@ -24,6 +24,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscCall(SNESReset_NGMRES(snes));
   PetscCall(PetscFree4(ngmres->h, ngmres->beta, ngmres->xi, ngmres->q));
   PetscCall(PetscFree3(ngmres->xnorms, ngmres->fnorms, ngmres->s));
+  PetscCall(PetscFree3(ngmres->window, ngmres->Fwindow, ngmres->Xwindow));
 #if PetscDefined(USE_COMPLEX)
   PetscCall(PetscFree(ngmres->rwork));
 #endif
@@ -32,6 +33,10 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetRestartType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetRestartFmRise_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetRestartFmRise_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetAdaptive_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetAdaptive_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetAdaptiveParameters_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetAdaptiveParameters_C", NULL));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -61,6 +66,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     /* explicit least squares minimization solve */
     PetscCall(PetscCalloc4(hsize, &ngmres->h, msize, &ngmres->beta, msize, &ngmres->xi, hsize, &ngmres->q));
     PetscCall(PetscMalloc3(msize, &ngmres->xnorms, msize, &ngmres->fnorms, msize, &ngmres->s));
+    PetscCall(PetscMalloc3(msize, &ngmres->window, msize, &ngmres->Fwindow, msize, &ngmres->Xwindow));
     ngmres->nrhs = 1;
     PetscCall(PetscBLASIntCast(msize, &ngmres->lda));
     PetscCall(PetscBLASIntCast(msize, &ngmres->ldb));
@@ -96,6 +102,9 @@ static PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems Pets
   PetscCall(PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, NULL));
   PetscCall(PetscOptionsReal("-snes_ngmres_deltaB", "Difference residual selection constant", "SNES", ngmres->deltaB, &ngmres->deltaB, NULL));
   PetscCall(PetscOptionsBool("-snes_ngmres_restart_fm_rise", "Restart on F_M residual rise", "SNESNGMRESSetRestartFmRise", ngmres->restart_fm_rise, &ngmres->restart_fm_rise, NULL));
+  PetscCall(PetscOptionsBool("-snes_ngmres_adaptive", "Grow the window when theta predicts the residual reduction", "SNESNGMRESSetAdaptive", ngmres->adaptive, &ngmres->adaptive, NULL));
+  PetscCall(PetscOptionsInt("-snes_ngmres_adaptive_m", "Initial number of stored solutions in the adaptive window", "SNESNGMRESSetAdaptiveParameters", ngmres->window_size_initial, &ngmres->window_size_initial, NULL));
+  PetscCall(PetscOptionsReal("-snes_ngmres_adaptive_tol", "Tolerance on the prediction of the residual reduction that grows the window", "SNESNGMRESSetAdaptiveParameters", ngmres->adaptive_tol, &ngmres->adaptive_tol, NULL));
   PetscOptionsHeadEnd();
   if (ngmres->gammaA > ngmres->gammaC && ngmres->gammaC > 2.) ngmres->gammaC = ngmres->gammaA;
   if (ngmres->select_type == SNES_NGMRES_SELECT_LINESEARCH) {
@@ -114,6 +123,7 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of stored past updates: %" PetscInt_FMT "\n", ngmres->msize));
+    if (ngmres->adaptive) PetscCall(PetscViewerASCIIPrintf(viewer, "  Adaptive window: initial size %" PetscInt_FMT ", tolerance %g\n", ngmres->window_size_initial, (double)ngmres->adaptive_tol));
     if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n", (double)ngmres->gammaA, (double)ngmres->gammaC));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Difference restart: epsilonB=%1.0e, deltaB=%1.0e\n", (double)ngmres->epsilonB, (double)ngmres->deltaB));
@@ -133,6 +143,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   Vec                 X, F, B, D, Y;         /* present solution, residual, and preconditioned residual */
   Vec                 XA, FA, XM, FM;        /* candidate linear combination answers */
   PetscReal           fnorm, fMnorm, fAnorm; /* coefficients and RHS to the minimization problem */
+  PetscReal           fnormold, ratio;       /* residual reduction for the adaptive window */
   PetscReal           xnorm, xMnorm, xAnorm;
   PetscReal           ynorm, yMnorm, yAnorm;
   PetscInt            k, k_restart, l, ivec, restart_count = 0;
@@ -202,12 +213,14 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, F, fnorm, X));
 
-  k_restart = 1;
-  l         = 1;
-  ivec      = 0;
+  k_restart           = 1;
+  l                   = 1;
+  ivec                = 0;
+  ngmres->window_size = ngmres->adaptive ? PetscMin(ngmres->window_size_initial, ngmres->msize) : ngmres->msize;
   for (k = 1; k < snes->max_its + 1; k++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
+    fnormold = fnorm;
 
     /* Computation of x^M */
     if (snes->npc && snes->npcside == PC_RIGHT) {
@@ -262,6 +275,14 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
       PetscCall(SNESComputeObjective(snes, X, &obj));
       SNESCheckObjectiveDomainError(snes, obj);
     } else obj = fnorm;
+
+    // grow the window when theta predicts the residual reduction, which indicates that the higher-order terms are negligible
+    if (ngmres->adaptive) {
+      ratio         = fnormold > 0.0 ? fnorm / fnormold : 0.0;
+      ngmres->theta = fnormold > 0.0 ? ngmres->lsnorm / fnormold : 0.0;
+      if (PetscAbsReal(ngmres->theta - ratio) < ngmres->adaptive_tol && ngmres->window_size < ngmres->msize) ngmres->window_size++;
+      if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "theta = %g, gamma = %g, ||F_k+1||/||F_k|| = %g, window size = %" PetscInt_FMT "\n", (double)ngmres->theta, (double)ngmres->gamma, (double)ratio, ngmres->window_size));
+    }
     selectRestart = PETSC_FALSE;
 
     if (ngmres->restart_type == SNES_NGMRES_RESTART_DIFFERENCE) {
@@ -290,7 +311,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
       PetscCall(SNESNGMRESUpdateSubspace_Private(snes, 0, 0, FM, fMnorm, XM));
     } else {
       /* select the current size of the subspace */
-      if (l < ngmres->msize) l++;
+      if (l < ngmres->window_size) l++;
       k_restart++;
       /* place the current entry in the list of previous entries */
       if (ngmres->candidate) {
@@ -463,6 +484,174 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  SNESNGMRESSetAdaptive - Sets whether `SNESNGMRES` grows the window of stored solutions during the solve
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+- flg  - `PETSC_TRUE` to grow the window adaptively
+
+  Options Database Key:
+. -snes_ngmres_adaptive (true|false) - grow the window adaptively
+
+  Level: intermediate
+
+  Notes:
+  At each iteration $k$, `SNESNGMRES` combines the candidate solution $x_M$ with the stored solutions $x_j$ in a window, by minimizing
+  the norm of the linear combination of their residuals. The ratio $\theta_{k+1}$ of the minimum to the residual norm $\| F(x_k) \|$
+  predicts the residual reduction $\| F(x_{k+1}) \| / \| F(x_k) \|$ up to terms of higher order in the residual {cite}`he2026ngmres`.
+  With the adaptive strategy, the window starts with a small number of stored solutions and grows by one whenever
+  $| \theta_{k+1} - \| F(x_{k+1}) \| / \| F(x_k) \| |$ is below a tolerance, until it reaches the number set with `-snes_ngmres_m`.
+  A small window limits the effect of the higher-order terms far from the solution, and a large window improves the rate of convergence
+  close to the solution, where the higher-order terms are negligible.
+
+  Use this strategy when a large fixed window is unreliable far from the solution but a larger history is useful near convergence.
+  Enable it with `SNESNGMRESSetAdaptive()` or `-snes_ngmres_adaptive`, and choose the initial window size and growth tolerance
+  with `SNESNGMRESSetAdaptiveParameters()` or `-snes_ngmres_adaptive_m` and `-snes_ngmres_adaptive_tol`.
+
+  The strategy follows the algorithm of {cite}`he2026ngmres` with `SNES_NGMRES_SELECT_NONE` and `SNES_NGMRES_RESTART_NONE` or
+  `SNES_NGMRES_RESTART_PERIODIC`.
+
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSetAdaptiveParameters()`, `SNESNGMRESSetSelectType()`,
+          `SNESNGMRESSetRestartType()`
+@*/
+PetscErrorCode SNESNGMRESSetAdaptive(SNES snes, PetscBool flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(snes, flg, 2);
+  PetscTryMethod(snes, "SNESNGMRESSetAdaptive_C", (SNES, PetscBool), (snes, flg));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESNGMRESSetAdaptive_NGMRES(SNES snes, PetscBool flg)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+
+  PetscFunctionBegin;
+  ngmres->adaptive = flg;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNGMRESGetAdaptive - Gets whether `SNESNGMRES` grows the window of stored solutions during the solve
+
+  Not Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameter:
+. flg - `PETSC_TRUE` if the window grows adaptively
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSetAdaptive()`, `SNESNGMRESSetAdaptiveParameters()`
+@*/
+PetscErrorCode SNESNGMRESGetAdaptive(SNES snes, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  PetscUseMethod(snes, "SNESNGMRESGetAdaptive_C", (SNES, PetscBool *), (snes, flg));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESNGMRESGetAdaptive_NGMRES(SNES snes, PetscBool *flg)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+
+  PetscFunctionBegin;
+  *flg = ngmres->adaptive;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNGMRESSetAdaptiveParameters - Sets the parameters of the adaptive window of `SNESNGMRES`
+
+  Logically Collective
+
+  Input Parameters:
++ snes - the `SNES` context
+. m    - the initial number of stored solutions in the window, or `PETSC_CURRENT` to keep the current value
+- tol  - the tolerance on $| \theta_{k+1} - \| F(x_{k+1}) \| / \| F(x_k) \| |$ below which the window grows by one,
+         or `PETSC_CURRENT` to keep the current value
+
+  Options Database Keys:
++ -snes_ngmres_adaptive_m m     - the initial number of stored solutions, default 4
+- -snes_ngmres_adaptive_tol tol - the tolerance, default 1e-3
+
+  Level: intermediate
+
+  Note:
+  The number of stored solutions is one more than the depth $m$ of {cite}`he2026ngmres`, so the default corresponds to the depth 3.
+
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSetAdaptive()`, `SNESNGMRESGetAdaptive()`
+@*/
+PetscErrorCode SNESNGMRESSetAdaptiveParameters(SNES snes, PetscInt m, PetscReal tol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(snes, m, 2);
+  PetscValidLogicalCollectiveReal(snes, tol, 3);
+  PetscTryMethod(snes, "SNESNGMRESSetAdaptiveParameters_C", (SNES, PetscInt, PetscReal), (snes, m, tol));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESNGMRESSetAdaptiveParameters_NGMRES(SNES snes, PetscInt m, PetscReal tol)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+
+  PetscFunctionBegin;
+  if (m != PETSC_CURRENT) {
+    PetscCheck(m > 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Initial window size %" PetscInt_FMT " must be positive", m);
+    ngmres->window_size_initial = m;
+  }
+  if (tol != (PetscReal)PETSC_CURRENT) {
+    PetscCheck(tol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance %g must be nonnegative", (double)tol);
+    ngmres->adaptive_tol = tol;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESNGMRESGetAdaptiveParameters - Gets the parameters of the adaptive window of `SNESNGMRES`
+
+  Not Collective
+
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameters:
++ m   - the initial number of stored solutions in the window
+- tol - the tolerance below which the window grows by one
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSetAdaptiveParameters()`, `SNESNGMRESSetAdaptive()`
+@*/
+PetscErrorCode SNESNGMRESGetAdaptiveParameters(SNES snes, PetscInt *m, PetscReal *tol)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (m) PetscAssertPointer(m, 2);
+  if (tol) PetscAssertPointer(tol, 3);
+  PetscUseMethod(snes, "SNESNGMRESGetAdaptiveParameters_C", (SNES, PetscInt *, PetscReal *), (snes, m, tol));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESNGMRESGetAdaptiveParameters_NGMRES(SNES snes, PetscInt *m, PetscReal *tol)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+
+  PetscFunctionBegin;
+  if (m) *m = ngmres->window_size_initial;
+  if (tol) *tol = ngmres->adaptive_tol;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
   SNESNGMRES - An implementation of the Nonlinear Generalized Minimum Residual method, Nonlinear GMRES, or N-GMRES {cite}`ow1`, {cite}`bruneknepleysmithtu15` for solving
                nonlinear systems with `SNES`.
@@ -480,6 +669,9 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 .  -snes_ngmres_epsilonB epsilonB                                    - Difference tolerance between subsequent solutions triggering restart
 .  -snes_ngmres_deltaB deltaB                                        - Difference tolerance between residuals triggering restart
 .  -snes_ngmres_restart_fm_rise (true|false)                         - Restart on residual rise from $x_M$ step
+.  -snes_ngmres_adaptive (true|false)                                - Grow the window of stored solutions when $\theta$ predicts the residual reduction, see `SNESNGMRESSetAdaptive()`
+.  -snes_ngmres_adaptive_m m                                         - Initial number of stored solutions in the adaptive window
+.  -snes_ngmres_adaptive_tol tol                                     - Tolerance on the prediction of the residual reduction that grows the window
 .  -snes_ngmres_monitor                                              - Prints relevant information about the nonlinear GNMRES iterations
 .  -snes_linesearch_type (none|bt|secant|cp|nleqerr|bisection|shell) - Line search type used for the default smoother, see `SNESLineSearchType`
 -  -snes_ngmres_additive_snes_linesearch_type type                   - Line search type used to select between the candidate and combined solution with additive select type, see `SNESLineSearchType`
@@ -539,9 +731,16 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->restart_type     = SNES_NGMRES_RESTART_DIFFERENCE;
   ngmres->select_type      = SNES_NGMRES_SELECT_DIFFERENCE;
 
+  ngmres->window_size_initial = 4;
+  ngmres->adaptive_tol        = 1.e-3;
+
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetSelectType_C", SNESNGMRESSetSelectType_NGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetRestartType_C", SNESNGMRESSetRestartType_NGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetRestartFmRise_C", SNESNGMRESSetRestartFmRise_NGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetRestartFmRise_C", SNESNGMRESGetRestartFmRise_NGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetAdaptive_C", SNESNGMRESSetAdaptive_NGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetAdaptive_C", SNESNGMRESGetAdaptive_NGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESSetAdaptiveParameters_C", SNESNGMRESSetAdaptiveParameters_NGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNGMRESGetAdaptiveParameters_C", SNESNGMRESGetAdaptiveParameters_NGMRES));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1244,6 +1244,10 @@ PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartType(SNES, SNESNGMRESRestartType
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetSelectType(SNES, SNESNGMRESSelectType);
 PETSC_EXTERN PetscErrorCode SNESNGMRESSetRestartFmRise(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESNGMRESGetRestartFmRise(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESNGMRESSetAdaptive(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESNGMRESGetAdaptive(SNES, PetscBool *);
+PETSC_EXTERN PetscErrorCode SNESNGMRESSetAdaptiveParameters(SNES, PetscInt, PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNGMRESGetAdaptiveParameters(SNES, PetscInt *, PetscReal *);
 
 /*MC
    SNESNCGType - the conjugate update approach for `SNESNCG`

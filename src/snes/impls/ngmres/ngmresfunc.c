@@ -27,7 +27,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscI
   Vec         *Xdot   = ngmres->Xdot;
 
   PetscFunctionBegin;
-  PetscCheck(ivec <= l, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot update vector %" PetscInt_FMT " with space size %" PetscInt_FMT "!", ivec, l);
+  PetscCheck(ivec < ngmres->msize, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Cannot update vector %" PetscInt_FMT " with history size %" PetscInt_FMT "!", ivec, ngmres->msize);
   PetscCall(VecCopy(F, Fdot[ivec]));
   PetscCall(VecCopy(X, Xdot[ivec]));
 
@@ -35,30 +35,53 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Set the window to the l most recently stored iterates of the circular history, whose newest entry is ivec.
+  The window lists the history indices in increasing order, so it is 0, ..., l - 1 until the history wraps around.
+*/
+static PetscErrorCode SNESNGMRESSetWindow_Private(SNES snes, PetscInt ivec, PetscInt l)
+{
+  SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
+  PetscInt     msize = ngmres->msize, n = 0;
+
+  PetscFunctionBegin;
+  for (PetscInt s = 0; s < msize; s++) {
+    if ((ivec - s + msize) % msize < l) {
+      ngmres->window[n]  = s;
+      ngmres->Fwindow[n] = ngmres->Fdot[s];
+      ngmres->Xwindow[n] = ngmres->Xdot[s];
+      n++;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, PetscInt l, Vec XM, Vec FM, PetscReal fMnorm, Vec X, Vec XA, Vec FA)
 {
   SNES_NGMRES *ngmres     = (SNES_NGMRES *)snes->data;
-  Vec         *Fdot       = ngmres->Fdot;
-  Vec         *Xdot       = ngmres->Xdot;
+  Vec         *Fwindow    = ngmres->Fwindow;
+  Vec         *Xwindow    = ngmres->Xwindow;
+  PetscInt    *window     = ngmres->window;
   PetscScalar *beta       = ngmres->beta;
   PetscScalar *xi         = ngmres->xi;
   PetscScalar  alph_total = 0.;
-  PetscReal    nu;
+  PetscReal    nu, obj;
   Vec          Y = snes->vec_sol_update;
   PetscBool    changed_y, changed_w;
 
   PetscFunctionBegin;
   nu = fMnorm * fMnorm;
+  PetscCall(SNESNGMRESSetWindow_Private(snes, ivec, l));
 
   /* construct the right-hand side and xi factors */
   if (l > 0) {
-    PetscCall(VecMDotBegin(FM, l, Fdot, xi));
-    PetscCall(VecMDotBegin(Fdot[ivec], l, Fdot, beta));
-    PetscCall(VecMDotEnd(FM, l, Fdot, xi));
-    PetscCall(VecMDotEnd(Fdot[ivec], l, Fdot, beta));
+    PetscCall(VecMDotBegin(FM, l, Fwindow, xi));
+    PetscCall(VecMDotBegin(ngmres->Fdot[ivec], l, Fwindow, beta));
+    PetscCall(VecMDotEnd(FM, l, Fwindow, xi));
+    PetscCall(VecMDotEnd(ngmres->Fdot[ivec], l, Fwindow, beta));
     for (PetscInt i = 0; i < l; i++) {
-      Q(i, ivec) = beta[i];
-      Q(ivec, i) = beta[i];
+      Q(window[i], ivec) = beta[i];
+      Q(ivec, window[i]) = beta[i];
     }
   } else {
     Q(0, 0) = ngmres->fnorms[ivec] * ngmres->fnorms[ivec];
@@ -68,7 +91,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
 
   /* construct h */
   for (PetscInt j = 0; j < l; j++) {
-    for (PetscInt i = 0; i < l; i++) H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
+    for (PetscInt i = 0; i < l; i++) H(i, j) = Q(window[i], window[j]) - xi[i] - xi[j] + nu;
   }
   if (l == 1) {
     /* simply set alpha[0] = beta[0] / H[0, 0] */
@@ -90,8 +113,19 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   alph_total = 0.;
   for (PetscInt i = 0; i < l; i++) alph_total += beta[i];
 
+  /*
+    The right-hand side nu - xi lies in the range of h, so the least-squares solution beta satisfies the normal equations,
+    and the squared objective at the minimizer is nu - sum_i beta_i (nu - xi_i).
+  */
+  obj = nu;
+  for (PetscInt i = 0; i < l; i++) obj -= PetscRealPart(beta[i] * (nu - xi[i]));
+  // Floating-point roundoff can make the computed squared norm slightly negative, so clamp it before taking the square root.
+  obj            = PetscSqrtReal(PetscMax(obj, 0.0));
+  ngmres->lsnorm = obj;
+  ngmres->gamma  = fMnorm > 0.0 ? obj / fMnorm : 0.0;
+
   PetscCall(VecAXPBY(XA, 1.0 - alph_total, 0.0, XM));
-  PetscCall(VecMAXPY(XA, l, beta, Xdot));
+  PetscCall(VecMAXPY(XA, l, beta, Xwindow));
   /* check the validity of the step */
   PetscCall(VecWAXPY(Y, -1.0, X, XA));
   PetscCall(SNESLineSearchPostCheck(snes->linesearch, X, Y, XA, &changed_y, &changed_w));
@@ -100,7 +134,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     else PetscCall(SNESComputeFunction(snes, XA, FA));
   } else {
     PetscCall(VecAXPBY(FA, 1.0 - alph_total, 0.0, FM));
-    PetscCall(VecMAXPY(FA, l, beta, Fdot));
+    PetscCall(VecMAXPY(FA, l, beta, Fwindow));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -109,7 +143,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscReal    dcurnorm, dmin = -1.0;
-  Vec         *Xdot = ngmres->Xdot;
+  Vec         *Xwindow = ngmres->Xwindow;
 
   PetscFunctionBegin;
   if (xMnorm) PetscCall(VecNormBegin(XM, NORM_2, xMnorm));
@@ -130,7 +164,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   }
   if (dminnorm) {
     for (PetscInt i = 0; i < l; i++) {
-      PetscCall(VecWAXPY(D, -1.0, XA, Xdot[i]));
+      PetscCall(VecWAXPY(D, -1.0, XA, Xwindow[i]));
       PetscCall(VecNormBegin(D, NORM_2, &ngmres->xnorms[i]));
     }
   }

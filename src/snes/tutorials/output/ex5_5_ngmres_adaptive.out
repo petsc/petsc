@@ -1,0 +1,19 @@
+  0 SNES Function norm 1.227116687592e+00
+theta = 0.0973266, gamma = 0.999987, ||F_k+1||/||F_k|| = 0.0973268, window size = 3
+  1 SNES Function norm 1.194313814802e-01
+theta = 0.105586, gamma = 0.722661, ||F_k+1||/||F_k|| = 0.102339, window size = 3
+  2 SNES Function norm 1.222250912571e-02
+theta = 0.0638581, gamma = 0.653507, ||F_k+1||/||F_k|| = 0.0634465, window size = 4
+  3 SNES Function norm 7.754755361896e-04
+theta = 0.0880715, gamma = 0.959553, ||F_k+1||/||F_k|| = 0.088757, window size = 5
+  4 SNES Function norm 6.882886537978e-05
+theta = 0.0706385, gamma = 0.853602, ||F_k+1||/||F_k|| = 0.0706937, window size = 6
+  5 SNES Function norm 4.865766443921e-06
+theta = 0.0735059, gamma = 0.755586, ||F_k+1||/||F_k|| = 0.0735853, window size = 7
+  6 SNES Function norm 3.580487906070e-07
+theta = 0.0589216, gamma = 0.630413, ||F_k+1||/||F_k|| = 0.0599662, window size = 7
+  7 SNES Function norm 2.147083362764e-08
+theta = 0.0508829, gamma = 0.518523, ||F_k+1||/||F_k|| = 0.0506451, window size = 8
+  8 SNES Function norm 1.087392419543e-09
+theta = 0.0513071, gamma = 0.538176, ||F_k+1||/||F_k|| = 0.0518098, window size = 9
+  9 SNES Function norm 5.633757387459e-11
