@@ -5,7 +5,7 @@ static char help[] = "Tests various routines in MatMPIBAIJ format.\n";
 int main(int argc, char **args)
 {
   Mat         A;
-  PetscInt    m = 2, bs = 1, M, row, col, start, end, i, j, k;
+  PetscInt    m = 2, bs = 1, M, row, col, start, end;
   PetscMPIInt rank, size;
   PetscScalar data = 100;
   PetscBool   flg;
@@ -24,7 +24,7 @@ int main(int argc, char **args)
 
   PetscCall(MatGetOwnershipRange(A, &start, &end));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-column_oriented", &flg));
-  if (flg) PetscCall(MatSetOption(A, MAT_ROW_ORIENTED, PETSC_FALSE));
+  if (flg == PETSC_TRUE) PetscCall(MatSetOption(A, MAT_ROW_ORIENTED, PETSC_FALSE));
 
   /* inproc assembly */
   for (row = start; row < end; row++) {
@@ -42,20 +42,19 @@ int main(int argc, char **args)
 
   /* Test MatSetValuesBlocked() */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-test_setvaluesblocked", &flg));
-  if (flg) {
+  if (flg == PETSC_TRUE) {
     PetscScalar *bval;
+    PetscInt     cols[2];
+
     row /= bs;
-    col = start / bs;
-    PetscCall(PetscMalloc1(bs * bs, &bval));
-    k = 1;
-    /* row-oriented - default */
-    for (i = 0; i < bs; i++) {
-      for (j = 0; j < bs; j++) {
-        bval[i * bs + j] = (PetscScalar)k;
-        k++;
-      }
+    col     = start / bs;
+    cols[0] = col;
+    cols[1] = col + 1;
+    PetscCall(PetscMalloc1(2 * bs * bs, &bval));
+    for (PetscInt i = 0; i < 2 * bs * bs; i++) {
+      bval[i] = (PetscScalar)(i + 1);
     }
-    PetscCall(MatSetValuesBlocked(A, 1, &row, 1, &col, bval, INSERT_VALUES));
+    PetscCall(MatSetValuesBlocked(A, 1, &row, 2, cols, bval, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
     PetscCall(PetscFree(bval));
@@ -73,20 +72,24 @@ int main(int argc, char **args)
       suffix: 1
       nsize: 3
       args: -mat_block_size 2 -test_setvaluesblocked
+      diff_args: -j
 
    test:
       suffix: 2
       nsize: 3
       args: -mat_block_size 2 -test_setvaluesblocked -column_oriented
+      diff_args: -j
 
    test:
       suffix: 3
       nsize: 3
       args: -mat_block_size 1 -test_setvaluesblocked
+      diff_args: -j
 
    test:
       suffix: 4
       nsize: 3
       args: -mat_block_size 1 -test_setvaluesblocked -column_oriented
+      diff_args: -j
 
 TEST*/

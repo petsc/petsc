@@ -1,4 +1,4 @@
-static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and various read/write Kokkos view APIs on the device.\n\n";
+static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews(), various read/write Kokkos view APIs on the device, and MatConvert() from MATMPIAIJ to MATAIJKOKKOS.\n\n";
 
 #include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
@@ -8,6 +8,48 @@ static char help[] = "Testing MatCreateSeqAIJKokkosWithKokkosViews() and various
 #include <Kokkos_DualView.hpp>
 
 using HostMirrorMemorySpace = Kokkos::DualView<PetscScalar *>::host_mirror_space::memory_space;
+
+static PetscErrorCode CheckBlockTypes(Mat A, MatType type)
+{
+  Mat       Ad, Ao;
+  PetscBool same;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatMPIAIJGetSeqAIJ(A, &Ad, &Ao, NULL));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Ad, type, &same));
+  PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Diagonal block is not %s", type);
+  PetscCall(PetscObjectTypeCompare((PetscObject)Ao, type, &same));
+  PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Off-diagonal block is not %s", type);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// MatConvert() from MATMPIAIJ to MATAIJKOKKOS must retype the blocks of the new matrix and leave those of the source alone
+static PetscErrorCode TestConvertFromHost(Mat A)
+{
+  Mat       host, kok;
+  PetscBool equal;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatConvert(A, MATMPIAIJ, MAT_INITIAL_MATRIX, &host));
+  PetscCall(CheckBlockTypes(host, MATSEQAIJ));
+
+  PetscCall(MatConvert(host, MATAIJKOKKOS, MAT_INITIAL_MATRIX, &kok));
+  PetscCall(CheckBlockTypes(kok, MATSEQAIJKOKKOS));
+  PetscCall(CheckBlockTypes(host, MATSEQAIJ));
+  PetscCall(MatMultEqual(host, kok, 3, &equal));
+  PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatConvert() with MAT_INITIAL_MATRIX gave wrong values");
+
+  PetscCall(MatScale(host, 2.0));
+  PetscCall(MatConvert(host, MATAIJKOKKOS, MAT_REUSE_MATRIX, &kok));
+  PetscCall(CheckBlockTypes(kok, MATSEQAIJKOKKOS));
+  PetscCall(CheckBlockTypes(host, MATSEQAIJ));
+  PetscCall(MatMultEqual(host, kok, 3, &equal));
+  PetscCheck(equal, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatConvert() with MAT_REUSE_MATRIX gave wrong values");
+
+  PetscCall(MatDestroy(&kok));
+  PetscCall(MatDestroy(&host));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 int main(int argc, char **argv)
 {
@@ -224,6 +266,8 @@ int main(int argc, char **argv)
   }
 
   PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &BT));
+
+  PetscCall(TestConvertFromHost(A));
 
   /* Free spaces */
   PetscCall(PetscRandomDestroy(&rctx));

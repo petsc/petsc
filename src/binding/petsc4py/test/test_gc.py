@@ -119,6 +119,27 @@ class TestGCTSSubType(TestGCTS):
         self.obj.setAppCtx(self.obj)
 
 
+class Context:
+    def __init__(self, obj):
+        self.obj = obj
+
+
+class TestGarbageCleanupCycle(unittest.TestCase):
+    def testNestedContexts(self):
+        contexts = []
+        obj = PETSc.Vec().create(comm=PETSc.COMM_WORLD)
+        for _ in range(3):
+            context = Context(obj)
+            contexts.append(weakref.ref(context))
+            obj = PETSc.Mat().createPython(
+                (1, 1), context=context, comm=PETSc.COMM_WORLD
+            )
+        del context
+        del obj
+        PETSc.garbage_cleanup(PETSc.COMM_WORLD)
+        self.assertTrue(all(context() is None for context in contexts))
+
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
