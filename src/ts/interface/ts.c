@@ -5175,8 +5175,8 @@ PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
 }
 
 /*@
-  TSGetSNESIterations - Gets the total number of nonlinear iterations
-  used by the time integrator.
+  TSGetSNESIterations - Gets the total number of nonlinear `SNESSolve()` iterations
+  used by the time integrator over all previous timesteps
 
   Not Collective
 
@@ -5189,7 +5189,8 @@ PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
   Level: intermediate
 
   Note:
-  This counter is reset to zero for each successive call to `TSSolve()`.
+  This counter is reset to zero when `TSSolve()` starts at step number zero and when `TSAdjointSolve()` starts.
+  It accumulates over successive `TSSolve()` calls that continue a run, for example with `TSSetRunSteps()`.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetKSPIterations()`
 @*/
@@ -5203,8 +5204,8 @@ PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits)
 }
 
 /*@
-  TSGetKSPIterations - Gets the total number of linear iterations
-  used by the time integrator.
+  TSGetKSPIterations - Gets the total number of linear `KSPSolve()` iterations
+  used by the time integrator over all previous timesteps
 
   Not Collective
 
@@ -5217,7 +5218,8 @@ PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits)
   Level: intermediate
 
   Note:
-  This counter is reset to zero for each successive call to `TSSolve()`.
+  This counter is reset to zero when `TSSolve()` starts at step number zero and when `TSAdjointSolve()` starts.
+  It accumulates over successive `TSSolve()` calls that continue a run, for example with `TSSetRunSteps()`.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetSNESIterations()`
 @*/
@@ -5231,7 +5233,7 @@ PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits)
 }
 
 /*@
-  TSGetStepRejections - Gets the total number of rejected steps.
+  TSGetStepRejections - Gets the total number of rejected steps over all previous timesteps
 
   Not Collective
 
@@ -5244,7 +5246,8 @@ PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits)
   Level: intermediate
 
   Note:
-  This counter is reset to zero for each successive call to `TSSolve()`.
+  This counter is reset to zero when `TSSolve()` starts at step number zero and when `TSAdjointSolve()` starts.
+  It accumulates over successive `TSSolve()` calls that continue a run, for example with `TSSetRunSteps()`.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetSNESFailures()`, `TSSetMaxSNESFailures()`, `TSSetErrorIfStepFails()`
 @*/
@@ -5258,7 +5261,7 @@ PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects)
 }
 
 /*@
-  TSGetSNESFailures - Gets the total number of failed `SNES` solves in a `TS`
+  TSGetSNESFailures - Gets the total number of failed `SNESSolve()` calls over all previous timesteps
 
   Not Collective
 
@@ -5270,8 +5273,11 @@ PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects)
 
   Level: intermediate
 
-  Note:
-  This counter is reset to zero for each successive call to `TSSolve()`.
+  Notes:
+  This counter is reset to zero when `TSSolve()` starts at step number zero and when `TSAdjointSolve()` starts.
+  It accumulates over successive `TSSolve()` calls that continue a run, for example with `TSSetRunSteps()`.
+
+  Except with `TSGLLE`, it does not count `SNESSolve()` failures with reason `SNES_DIVERGED_FUNCTION_DOMAIN`.
 
 .seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSSetMaxSNESFailures()`
 @*/
@@ -5290,29 +5296,29 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
   Not Collective
 
   Input Parameters:
-+ ts      - `TS` context
-- rejects - maximum number of rejected steps, pass `PETSC_UNLIMITED` for unlimited
++ ts         - `TS` context
+- maxrejects - maximum number of rejected steps, pass `PETSC_UNLIMITED` for unlimited
 
   Options Database Key:
-. -ts_max_step_rejections - Maximum number of step rejections before a step fails
+. -ts_max_step_rejections maxrejects - Maximum number of step rejections before a step fails
 
   Level: intermediate
 
-  Developer Note:
-  The options database name is incorrect.
+  Note:
+  The limit applies to each time step separately.
 
 .seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxSNESFailures()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`,
           `TSGetConvergedReason()`, `TSSolve()`, `TS_DIVERGED_STEP_REJECTED`
 @*/
-PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
+PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt maxrejects)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (rejects == PETSC_UNLIMITED || rejects == -1) {
+  if (maxrejects == PETSC_UNLIMITED || maxrejects == -1) {
     ts->max_reject = PETSC_UNLIMITED;
   } else {
-    PetscCheck(rejects >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of rejections");
-    ts->max_reject = rejects;
+    PetscCheck(maxrejects >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of rejections");
+    ts->max_reject = maxrejects;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5327,9 +5333,12 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
 - fails - maximum number of failed nonlinear solves, pass `PETSC_UNLIMITED` to allow any number of failures.
 
   Options Database Key:
-. -ts_max_snes_failures - Maximum number of nonlinear solve failures
+. -ts_max_snes_failures fails - Maximum number of nonlinear solve failures
 
   Level: intermediate
+
+  Note:
+  The failures are counted as in `TSGetSNESFailures()`, so successive `TSSolve()` calls that continue a run share one limit.
 
 .seealso: [](ch_ts), `TS`, `SNES`, `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `SNESGetConvergedReason()`,
           `TSGetConvergedReason()`, `TS_DIVERGED_NONLINEAR_SOLVE`, `TSConvergedReason`
@@ -5357,7 +5366,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 - err - `PETSC_TRUE` to error if no step succeeds, `PETSC_FALSE` to return without failure
 
   Options Database Key:
-. -ts_error_if_step_fails (true|false) - Error if no step succeeds
+. -ts_error_if_step_fails (true|false) - Error if no step succeeds, otherwise `TSSolve()` returns an appropriate value obtainable with `TSGetConvergedReason()`
 
   Level: intermediate
 
