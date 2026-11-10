@@ -22,6 +22,7 @@ Only post findings that have a **concrete, actionable fix** (a code change the a
 - Findings that acknowledge correctness but flag theoretical fragility
 - Style nits with no specific suggested change
 - Comments on code that was not changed in the MR (surrounding context is for understanding, not reviewing)
+- Commit findings: they describe commits, not lines of the diff. They stay in the report.
 
 Explain the problem and concrete fix before any suggestion block.
 
