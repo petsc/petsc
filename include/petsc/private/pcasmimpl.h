@@ -7,8 +7,8 @@ typedef struct {
   PetscInt        overlap;       /* overlap requested by user */
   KSP            *ksp;           /* linear solvers for each block */
   VecScatter      restriction;   /* mapping from global to overlapping (process) subdomain */
-  VecScatter     *lrestriction;  /* mapping from subregion to overlapping (process) subdomain */
-  VecScatter     *lprolongation; /* mapping from non-overlapping subregion to overlapping (process) subdomain; used for restrict additive version of algorithms */
+  VecScatter     *lrestriction;  /* process-to-subdomain mapping, or locally owned global entries to the subdomain if each rank has one subdomain */
+  VecScatter     *lprolongation; /* non-overlapping subdomain-to-process mapping, or locally owned global entries to the inner subdomain if each rank has one subdomain */
   Vec             lx, ly;        /* work vectors */
   Vec            *x, *y;         /* work vectors */
   Vec            *scaling;       /* user-provided diagonal weights for each overlapping subdomain */

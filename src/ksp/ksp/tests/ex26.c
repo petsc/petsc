@@ -506,6 +506,20 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       output_file: output/ex26_matcycles_lda.out
 
     test:
+      # the same with the subdomain scatters that PCASM keeps from the first solve
+      suffix: matsolve_lda_asm
+      nsize: {{1 2}}
+      args: -ksp_type preonly -pc_type asm -pc_asm_type {{basic restrict}shared output} -mx 5 -my 5 -nrhs 7 -lda_shift 3
+      output_file: output/ex26_matcycles_lda.out
+
+    test:
+      # the same with the subdomain scatters that PCGASM keeps from the first solve
+      suffix: matsolve_lda_gasm
+      nsize: 2
+      args: -ksp_type preonly -pc_type gasm -mx 5 -my 5 -nrhs 7 -lda_shift 3
+      output_file: output/ex26_matcycles_lda.out
+
+    test:
       suffix: matcycles_richardson_transpose
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type richardson -transpose -pc_type jacobi -mx 5 -my 5 -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}

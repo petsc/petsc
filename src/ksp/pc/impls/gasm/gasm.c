@@ -9,6 +9,7 @@
        nmax - maximum number of local subdomains per process (calculated in PCSetUp_GASM())
 */
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
+#include <petsc/private/matimpl.h>
 #include <petscdm.h>
 
 typedef struct {
@@ -710,86 +711,44 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
 
 static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBool transpose)
 {
-  PC_GASM    *osm = (PC_GASM *)pc->data;
-  Mat         X, Y, O = NULL, Z, W;
-  Vec         x, y;
-  VecType     vtype;
-  PetscInt    i, m, M, N;
-  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+  PC_GASM   *osm = (PC_GASM *)pc->data;
+  Mat        X, Y, O = NULL, Z, W;
+  VecType    vtype;
+  VecScatter restriction, prolongation;
+  PetscInt   m, M, N;
 
   PetscFunctionBegin;
   PetscCheck(osm->n == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
   PetscCall(MatGetSize(Xin, NULL, &N));
-  if (osm->pctoouter) {
+  if (osm->pctoouter != NULL) {
     PetscCall(VecGetLocalSize(osm->pcx, &m));
     PetscCall(VecGetSize(osm->pcx, &M));
     PetscCall(MatGetVecType(Xin, &vtype));
     PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &O));
-    for (i = 0; i < N; ++i) {
-      PetscCall(MatDenseGetColumnVecRead(Xin, i, &x));
-      PetscCall(MatDenseGetColumnVecWrite(O, i, &y));
-      PetscCall(VecScatterBegin(osm->pctoouter, x, y, INSERT_VALUES, SCATTER_REVERSE));
-      PetscCall(VecScatterEnd(osm->pctoouter, x, y, INSERT_VALUES, SCATTER_REVERSE));
-      PetscCall(MatDenseRestoreColumnVecWrite(O, i, &y));
-      PetscCall(MatDenseRestoreColumnVecRead(Xin, i, &x));
-    }
+    PetscCall(MatDenseScatter_Private(osm->pctoouter, Xin, O, INSERT_VALUES, SCATTER_REVERSE));
     X = Y = O;
   } else {
     X = Xin;
     Y = Yout;
   }
-  /*
-     support for limiting the restriction or interpolation only to the inner
-     subdomain values (leaving the other values 0).
-  */
+  restriction  = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_RESTRICT)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_INTERPOLATE))) ? osm->girestriction : osm->gorestriction;
+  prolongation = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_RESTRICT))) ? osm->girestriction : osm->gorestriction;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(VecGetSize(osm->x[0], &M));
   PetscCall(VecGetType(osm->x[0], &vtype));
   PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &Z));
-  for (i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecRead(X, i, &x));
-    PetscCall(MatDenseGetColumnVecWrite(Z, i, &y));
-    if ((!transpose && !(osm->type & PC_GASM_RESTRICT)) || (transpose && !(osm->type & PC_GASM_INTERPOLATE))) {
-      /* have to zero the work RHS since scatter may leave some slots empty */
-      PetscCall(VecZeroEntries(y));
-      PetscCall(VecScatterBegin(osm->girestriction, x, y, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->girestriction, x, y, INSERT_VALUES, forward));
-    } else {
-      PetscCall(VecScatterBegin(osm->gorestriction, x, y, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->gorestriction, x, y, INSERT_VALUES, forward));
-    }
-    PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &y));
-    PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
-  }
+  if (restriction == osm->girestriction) PetscCall(MatZeroEntries(Z));
+  PetscCall(MatDenseScatter_Private(restriction, X, Z, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
-  /* do the subdomain solve */
   PetscCall(PetscLogEventBegin(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   if (!transpose) PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
   else PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
   PetscCall(PetscLogEventEnd(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
-  /* do we need to zero y? */
   PetscCall(MatZeroEntries(Y));
-  for (i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecWrite(Y, i, &y));
-    PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if ((!transpose && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose && !(osm->type & PC_GASM_RESTRICT))) {
-      PetscCall(VecScatterBegin(osm->girestriction, x, y, ADD_VALUES, reverse));
-      PetscCall(VecScatterEnd(osm->girestriction, x, y, ADD_VALUES, reverse));
-    } else {
-      PetscCall(VecScatterBegin(osm->gorestriction, x, y, ADD_VALUES, reverse));
-      PetscCall(VecScatterEnd(osm->gorestriction, x, y, ADD_VALUES, reverse));
-    }
-    PetscCall(MatDenseRestoreColumnVecRead(W, i, &x));
-    if (osm->pctoouter) {
-      PetscCall(MatDenseGetColumnVecWrite(Yout, i, &x));
-      PetscCall(VecScatterBegin(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(VecScatterEnd(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(MatDenseRestoreColumnVecWrite(Yout, i, &x));
-    }
-    PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &y));
-  }
+  PetscCall(MatDenseScatter_Private(prolongation, W, Y, ADD_VALUES, SCATTER_REVERSE));
+  if (osm->pctoouter != NULL) PetscCall(MatDenseScatter_Private(osm->pctoouter, Y, Yout, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(MatDestroy(&W));
   PetscCall(MatDestroy(&O));
   PetscFunctionReturn(PETSC_SUCCESS);
