@@ -5,7 +5,6 @@
 
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
-#include <../src/sys/utils/ftn-kernels/fcopy.h>
 
 /*@
   PetscMemcmp - Compares two byte streams in memory.
