@@ -13,6 +13,7 @@
 
 typedef struct {
   PetscInt   N, n, nmax;
+  PetscInt   n_ksp;                  /* number of allocated subdomain solvers, retained across PCReset() */
   PetscInt   overlap;                /* overlap requested by user */
   PCGASMType type;                   /* use reduced interpolation, restriction or both */
   PetscBool  type_set;               /* if user set this value (so won't change it for symmetric problems) */
@@ -493,29 +494,52 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     PetscCall(ISDestroy(&goid));
     PetscCall(PetscFree(numbering));
 
-    /* Create the subdomain solvers */
-    PetscCall(PetscMalloc1(osm->n, &osm->ksp));
+    /* reuse reset solvers only when their subdomain communicators still match */
+    {
+      PetscBool reuse = (PetscBool)(osm->n_ksp == osm->n);
+
+      if (reuse == PETSC_TRUE) {
+        for (PetscInt i = 0; i < osm->n; ++i) {
+          PetscMPIInt match;
+
+          PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)osm->ksp[i]), PetscObjectComm((PetscObject)osm->ois[i]), &match));
+          if (match != MPI_IDENT && match != MPI_CONGRUENT) reuse = PETSC_FALSE;
+        }
+      }
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reuse, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
+      if (reuse == PETSC_FALSE) {
+        for (PetscInt i = 0; i < osm->n_ksp; ++i) PetscCall(KSPDestroy(&osm->ksp[i]));
+        PetscCall(PetscFree(osm->ksp));
+      }
+    }
+    if (osm->ksp == NULL) {
+      PetscCall(PetscCalloc1(osm->n, &osm->ksp));
+      osm->n_ksp = osm->n;
+      for (PetscInt i = 0; i < osm->n; i++) {
+        char subprefix[PETSC_MAX_PATH_LEN + 1];
+
+        PetscCall(KSPCreate(PetscObjectComm((PetscObject)osm->ois[i]), &ksp));
+        PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
+        PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
+        PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
+        PetscCall(KSPSetType(ksp, KSPPREONLY));
+        PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
+        PetscCall(PCGetOptionsPrefix(pc, &prefix));
+        PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+        if (subdomain_names && subdomain_names[i]) {
+          PetscCall(PetscSNPrintf(subprefix, PETSC_MAX_PATH_LEN, "sub_%s_", subdomain_names[i]));
+          PetscCall(KSPAppendOptionsPrefix(ksp, subprefix));
+        }
+        PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
+        osm->ksp[i] = ksp;
+      }
+    }
     for (PetscInt i = 0; i < osm->n; i++) {
-      char subprefix[PETSC_MAX_PATH_LEN + 1];
-      PetscCall(KSPCreate(((PetscObject)osm->ois[i])->comm, &ksp));
-      PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
-      PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
-      PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
-      PetscCall(KSPSetType(ksp, KSPPREONLY));
-      PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
       if (subdomain_dm) {
-        PetscCall(KSPSetDM(ksp, subdomain_dm[i]));
+        PetscCall(KSPSetDM(osm->ksp[i], subdomain_dm[i]));
         PetscCall(DMDestroy(subdomain_dm + i));
       }
-      PetscCall(PCGetOptionsPrefix(pc, &prefix));
-      PetscCall(KSPSetOptionsPrefix(ksp, prefix));
-      if (subdomain_names && subdomain_names[i]) {
-        PetscCall(PetscSNPrintf(subprefix, PETSC_MAX_PATH_LEN, "sub_%s_", subdomain_names[i]));
-        PetscCall(KSPAppendOptionsPrefix(ksp, subprefix));
-        PetscCall(PetscFree(subdomain_names[i]));
-      }
-      PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
-      osm->ksp[i] = ksp;
+      if (subdomain_names != NULL) PetscCall(PetscFree(subdomain_names[i]));
     }
     PetscCall(PetscFree(subdomain_dm));
     PetscCall(PetscFree(subdomain_names));
@@ -855,7 +879,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
 
   PetscFunctionBegin;
   if (osm->ksp) {
-    for (PetscInt i = 0; i < osm->n; i++) PetscCall(KSPReset(osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_ksp; i++) PetscCall(KSPReset(osm->ksp[i]));
   }
   if (osm->pmat) {
     if (osm->n > 0) {
@@ -906,7 +930,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   /* PCReset will not destroy subdomains, if user_subdomains is true. */
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->ois, &osm->iis));
   if (osm->ksp) {
-    for (PetscInt i = 0; i < osm->n; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_ksp; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
     PetscCall(PetscFree(osm->ksp));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetSubdomains_C", NULL));
@@ -1330,6 +1354,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   osm->N                        = PETSC_DETERMINE;
   osm->n                        = PETSC_DECIDE;
   osm->nmax                     = PETSC_DETERMINE;
+  osm->n_ksp                    = 0;
   osm->overlap                  = 0;
   osm->ksp                      = NULL;
   osm->gorestriction            = NULL;
