@@ -1218,10 +1218,12 @@ static PetscErrorCode MatScale_SeqAIJKokkos(Mat A, PetscScalar a)
 // add a to A's diagonal (if A is square) or main diagonal (if A is rectangular)
 static PetscErrorCode MatShift_SeqAIJKokkos(Mat A, PetscScalar a)
 {
-  Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(A->data);
+  PetscBool diagDense = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (A->assembled && aijseq->diagDense) { // no missing diagonals
+  // ask for diagDense rather than reading the field, which is only set on demand
+  if (A->assembled) PetscCall(MatGetDiagonalMarkers_SeqAIJ(A, NULL, &diagDense));
+  if (diagDense) { // no missing diagonals
     PetscInt n = PetscMin(A->rmap->n, A->cmap->n);
 
     PetscCall(PetscLogGpuTimeBegin());
@@ -1241,10 +1243,12 @@ static PetscErrorCode MatShift_SeqAIJKokkos(Mat A, PetscScalar a)
 
 static PetscErrorCode MatDiagonalSet_SeqAIJKokkos(Mat Y, Vec D, InsertMode is)
 {
-  Mat_SeqAIJ *aijseq = static_cast<Mat_SeqAIJ *>(Y->data);
+  PetscBool diagDense = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (Y->assembled && aijseq->diagDense) { // no missing diagonals
+  // ask for diagDense rather than reading the field, which is only set on demand
+  if (Y->assembled) PetscCall(MatGetDiagonalMarkers_SeqAIJ(Y, NULL, &diagDense));
+  if (diagDense) { // no missing diagonals
     ConstPetscScalarKokkosView dv;
     PetscInt                   n, nv;
 
