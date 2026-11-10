@@ -6,7 +6,7 @@ typedef struct {
   PetscInt        n, n_local, n_local_true;
   PetscInt        overlap;       /* overlap requested by user */
   KSP            *ksp;           /* linear solvers for each block */
-  VecScatter      restriction;   /* mapping from global to overlapping (process) subdomain*/
+  VecScatter      restriction;   /* mapping from global to overlapping (process) subdomain */
   VecScatter     *lrestriction;  /* mapping from subregion to overlapping (process) subdomain */
   VecScatter     *lprolongation; /* mapping from non-overlapping subregion to overlapping (process) subdomain; used for restrict additive version of algorithms */
   Vec             lx, ly;        /* work vectors */

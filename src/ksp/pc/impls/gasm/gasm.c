@@ -474,7 +474,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         PetscCall(ISGetLocalSize(osm->ois[i], &oni));
         PetscCall(ISGetIndices(osm->ois[i], &indices));
         for (PetscInt k = 0; k < oni; k++) {
-          /*  skip overlapping indices to get inner domain */
+          /* skip overlapping indices to get inner domain */
           if (PetscRealPart(array[on + k]) != numbering[i]) continue;
           iidx[in]    = indices[k];
           ioidx[in++] = gostart + on + k;

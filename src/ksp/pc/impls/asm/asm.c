@@ -403,9 +403,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
      different boundary conditions for the submatrices than for the global problem) */
   PetscCall(PCModifySubMatrices(pc, osm->n_local_true, osm->is, osm->is, osm->pmat, pc->modifysubmatricesP));
 
-  /*
-     Loop over subdomains putting them into local ksp
-  */
+  /* Loop over subdomains putting them into local KSP */
   PetscCall(KSPGetOptionsPrefix(osm->ksp[0], &prefix));
   for (i = 0; i < osm->n_local_true; i++) {
     PetscCall(KSPSetOperators(osm->ksp[i], osm->pmat[i], osm->pmat[i]));
