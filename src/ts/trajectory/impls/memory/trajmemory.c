@@ -115,6 +115,7 @@ typedef struct _TJScheduler {
   CAMSCTX *actx;
 #endif
   PetscBool   recompute;
+  PetscBool   used; /* the scheduler holds checkpoints and schedule state from a forward solve */
   PetscBool   skip_trajectory;
   PetscBool   save_stack;
   PetscInt    max_units_ram;  /* maximum checkpointing units in RAM */
@@ -1692,6 +1693,12 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj, TS ts, PetscInt st
   }
   /* for consistency */
   if (!tjsch->recompute && stepnum == 0) ts->ptime_prev = ts->ptime - ts->time_step;
+  /* A new forward solve discards the checkpoints and schedule of a previous one, as an adjoint solve does when it reaches step 0 */
+  if (!tjsch->recompute && stepnum == 0 && tjsch->used) {
+    PetscCall(TSTrajectoryReset(tj));
+    PetscCall(TSTrajectorySetUp(tj, ts));
+  }
+  if (!tjsch->recompute) tjsch->used = PETSC_TRUE;
   switch (tjsch->stype) {
   case NONE:
     if (tj->adjoint_solve_mode) {
@@ -2059,6 +2066,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 
   /* Determine the scheduler type */
   if (tjsch->stride > 1) { /* two level mode */
+    PetscCheck(fixedtimestep, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Two-level checkpointing (-ts_trajectory_stride) requires a fixed time step, use -ts_adapt_type none");
     PetscCheck(!tjsch->save_stack || tjsch->max_cps_disk <= 1 || tjsch->max_cps_disk > tjsch->max_cps_ram, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride - 1) tjsch->stype = TWO_LEVEL_REVOLVE;    /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride - 1) tjsch->stype = TWO_LEVEL_TWO_REVOLVE; /* use revolve_offline for each stride */
@@ -2192,6 +2200,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 
   stack->stacksize = PetscMax(stack->stacksize, 1);
   tjsch->recompute = PETSC_FALSE;
+  tjsch->used      = PETSC_FALSE;
   PetscCall(StackInit(stack, stack->stacksize, numY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

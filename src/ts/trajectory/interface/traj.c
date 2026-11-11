@@ -68,6 +68,25 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  TSTrajectoryResetHistory_Private - Discards the step history and the cached interpolation data recorded by a previous TSSolve(),
+  so that a new TSSolve() starting from step 0 can reuse the trajectory
+*/
+PetscErrorCode TSTrajectoryResetHistory_Private(TSTrajectory tj)
+{
+  PetscFunctionBegin;
+  if (!tj) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(TSHistoryDestroy(&tj->tsh));
+  PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)tj), &tj->tsh));
+  if (tj->lag.T)
+    for (PetscInt i = 0; i <= tj->lag.order; i++) tj->lag.T[i] = PETSC_MAX_REAL;
+  tj->lag.Ucached.time    = PETSC_MIN_REAL;
+  tj->lag.Ucached.step    = PETSC_INT_MAX;
+  tj->lag.Udotcached.time = PETSC_MIN_REAL;
+  tj->lag.Udotcached.step = PETSC_INT_MAX;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   TSTrajectoryGetNumSteps - Return the number of steps registered in the `TSTrajectory` via `TSTrajectorySet()`.
 
@@ -745,6 +764,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscCall(PetscStrcmp(tj->dirname, dirname, &flg));
   PetscCheck(flg || !tj->dirfiletemplate, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_WRONGSTATE, "Cannot set directoryname after TSTrajectory has been setup");
+  if (!flg) tj->dircreated = PETSC_FALSE;
   PetscCall(PetscFree(tj->dirname));
   PetscCall(PetscStrallocpy(dirname, &tj->dirname));
   PetscFunctionReturn(PETSC_SUCCESS);

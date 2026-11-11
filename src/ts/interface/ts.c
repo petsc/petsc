@@ -4255,6 +4255,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
 
     if (!ts->steps) {
+      PetscCall(TSTrajectoryResetHistory_Private(ts->trajectory));
       PetscCall(TSTrajectorySet(ts->trajectory, ts, ts->steps, ts->ptime, ts->vec_sol));
       PetscCall(TSEventInitialize(ts->event, ts, ts->ptime, ts->vec_sol));
     }
