@@ -8,11 +8,14 @@ int main(int argc, char **args)
   PetscInt    i, j, rstart, rend, m = 3;
   PetscScalar one = 1.0, zero = 0.0, negativeone = -1.0;
   PetscReal   norm;
+  PetscBool   check_assemblies = PETSC_FALSE;
   Vec         x, y;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_assemblies", &check_assemblies, NULL));
+  if (check_assemblies) PetscCall(PetscLogDefaultBegin());
 
   for (i = 0; i < 2; i++) {
     /* Create the matrix and set it to contain explicit zero entries on the diagonal. */
@@ -51,6 +54,27 @@ int main(int argc, char **args)
     PetscCall(VecNorm(y, NORM_2, &norm));
     if (norm > PETSC_SQRT_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n", i, (double)norm));
 
+    /* C = A*A is the identity, built on the device by some GPU types. It has a full diagonal, so MatDiagonalSet()
+       and MatShift() must update it in place on every rank, including one with no rows when m is 1 */
+    if (check_assemblies) {
+      Mat                C;
+      PetscLogEvent      assembly;
+      PetscEventPerfInfo before, after;
+
+      PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+      PetscCall(PetscLogEventGetId("MatAssemblyEnd", &assembly));
+      PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, assembly, &before));
+      PetscCall(MatDiagonalSet(C, x, ADD_VALUES));
+      PetscCall(MatShift(C, negativeone));
+      PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, assembly, &after));
+      PetscCheck(after.count == before.count, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%d unexpected matrix assemblies in MatDiagonalSet() and MatShift()", after.count - before.count);
+      PetscCall(MatMult(C, x, y));
+      PetscCall(VecAXPY(y, negativeone, x));
+      PetscCall(VecNorm(y, NORM_2, &norm));
+      PetscCheck(norm <= PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "MatDiagonalSet() and MatShift() give the wrong diagonal");
+      PetscCall(MatDestroy(&C));
+    }
+
     PetscCall(MatDestroy(&A));
     PetscCall(VecDestroy(&x));
     PetscCall(VecDestroy(&y));
@@ -81,5 +105,11 @@ int main(int argc, char **args)
       nsize: {{1 2}}
       args: -mat_type aijkokkos
       requires: kokkos_kernels
+
+    test:
+      suffix: kokkos_empty_rank
+      nsize: 2
+      args: -mat_type aijkokkos -m 1 -check_assemblies
+      requires: kokkos_kernels defined(PETSC_USE_LOG)
 
 TEST*/
