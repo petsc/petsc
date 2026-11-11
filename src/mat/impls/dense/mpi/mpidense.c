@@ -2095,6 +2095,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  if (!C->rmap->N || !C->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
   atb        = (MatProductCtx_TransMatMultDense *)C->product->data;
   recvcounts = atb->recvcounts;
   sendbuf    = atb->sendbuf;
@@ -2453,6 +2454,7 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Missing product data");
+  if (!C->rmap->N || !C->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
   ab = (MatProductCtx_MatMultDense *)C->product->data;
   if (ab->Ae && ab->Ce) {
 #if PetscDefined(HAVE_ELEMENTAL)
