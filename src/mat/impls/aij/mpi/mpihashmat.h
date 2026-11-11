@@ -170,7 +170,7 @@ static PetscErrorCode MatZeroEntries_MPI_Hash(PETSC_UNUSED Mat A)
 static PetscErrorCode MatSetRandom_MPI_Hash(Mat A, PETSC_UNUSED PetscRandom r)
 {
   PetscFunctionBegin;
-  SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must set preallocation first");
+  PetscCheck(A->hash_active == PETSC_FALSE, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must set preallocation first");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
