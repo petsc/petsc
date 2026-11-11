@@ -120,23 +120,17 @@ struct Mat_SeqAIJKokkos {
   {
     auto exec = PetscGetKokkosExecutionSpace();
 
-    // a->diag must exist before new Mat_SeqAIJKokkos()
-    const PetscInt *adiag;
-    PetscCallVoid(MatGetDiagonalMarkers_SeqAIJ(A, &adiag, NULL));
-
     MatScalarKokkosViewHost a_h(aseq->a, aseq->nz);
     MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(aseq->i), nrows + 1);
     MatColIdxKokkosViewHost j_h(aseq->j, aseq->nz);
-    MatRowMapKokkosViewHost diag_h(aseq->diag, nrows);
 
-    auto a_d    = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, exec, a_h);
-    auto i_d    = Kokkos::create_mirror_view_and_copy(exec, i_h);
-    auto j_d    = Kokkos::create_mirror_view_and_copy(exec, j_h);
-    auto diag_d = Kokkos::create_mirror_view_and_copy(exec, diag_h);
-    a_dual      = MatScalarKokkosDualView(a_d, a_h);
-    i_dual      = MatRowMapKokkosDualView(i_d, i_h);
-    j_dual      = MatColIdxKokkosDualView(j_d, j_h);
-    diag_dual   = MatColIdxKokkosDualView(diag_d, diag_h);
+    auto a_d = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, exec, a_h);
+    auto i_d = Kokkos::create_mirror_view_and_copy(exec, i_h);
+    auto j_d = Kokkos::create_mirror_view_and_copy(exec, j_h);
+    a_dual   = MatScalarKokkosDualView(a_d, a_h);
+    i_dual   = MatRowMapKokkosDualView(i_d, i_h);
+    j_dual   = MatColIdxKokkosDualView(j_d, j_h);
+    PetscCallVoid(SetDiagonalMarkers(A));
 
     a_dual.modify_host(); /* Since caller provided values on host */
     if (copyValues) (void)KokkosDualViewSyncDevice(a_dual, exec);
@@ -156,7 +150,7 @@ struct Mat_SeqAIJKokkos {
     auto                i_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), i_d);
     auto                j_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), j_d);
 
-    // diag_dual is set until MatAssemblyEnd() where we copy diag from host to device
+    // MatAssemblyEnd_SeqAIJKokkos() sets diag_dual
     a_dual = MatScalarKokkosDualView(a_d, a_h);
     a_dual.modify_device(); /* since we did not copy a_d to a_h, we mark device has the latest data */
     i_dual                       = MatRowMapKokkosDualView(i_d, i_h);
@@ -188,6 +182,47 @@ struct Mat_SeqAIJKokkos {
     MatRowMapKokkosViewHost diag_h(const_cast<MatRowMapType *>(diag), nrows());
     auto                    diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
     diag_dual                      = MatRowMapKokkosDualView(diag_d, diag_h);
+  }
+
+  /*
+    Find the diagonal markers of A on the device. The caller must set i_dual and j_dual first.
+    A row i without a diagonal entry gets the marker Ai[i + 1].
+    This routine fills only the device side of diag_dual and sets diagDense.
+    MatGetDiagonalMarkers_SeqAIJ() builds the host markers when host code needs them.
+  */
+  PetscErrorCode SetDiagonalMarkers(Mat A)
+  {
+    Mat_SeqAIJ         *aseq = static_cast<Mat_SeqAIJ *>(A->data);
+    const PetscInt      m    = A->rmap->n;
+    PetscInt            nmissing;
+    const auto         &Ai = i_dual.view_device();
+    const auto         &Aj = j_dual.view_device();
+    MatRowMapKokkosView diag_d(NoInit("diag"), m);
+
+    PetscFunctionBegin;
+    PetscCallCXX(Kokkos::parallel_reduce(
+      Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, m),
+      KOKKOS_LAMBDA(const PetscInt i, PetscInt &lmissing) {
+        MatRowMapType d = Ai(i + 1);
+
+        for (MatRowMapType k = Ai(i); k < Ai(i + 1); k++) {
+          if (Aj(k) == i) {
+            d = k;
+            break;
+          }
+        }
+        diag_d(i) = d;
+        if (d == Ai(i + 1)) lmissing++;
+      },
+      nmissing));
+    auto diag_h = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, HostMirrorMemorySpace(), diag_d);
+    diag_dual   = MatRowMapKokkosDualView(diag_d, diag_h);
+    diag_dual.modify_device();
+
+    aseq->diagDense = nmissing == 0 ? PETSC_TRUE : PETSC_FALSE;
+    // MatGetDiagonalMarkers_SeqAIJ() must still rebuild an aseq->diag from an earlier nonzero pattern
+    if (aseq->diag == NULL) aseq->diagNonzeroState = A->nonzerostate;
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Shared init stuff */
