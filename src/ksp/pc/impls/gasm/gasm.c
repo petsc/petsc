@@ -683,8 +683,10 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(ISGetLocalSize(osm->ois[i], &oni));
     PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
     PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(VecResetArray(osm->x[i]));
     PetscCall(VecResetArray(osm->y[i]));
   }
@@ -761,8 +763,10 @@ static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBoo
   }
   PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
   /* do the subdomain solve */
+  PetscCall(PetscLogEventBegin(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   if (!transpose) PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
   else PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
+  PetscCall(PetscLogEventEnd(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
   /* do we need to zero y? */
@@ -851,8 +855,10 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(ISGetLocalSize(osm->ois[i], &oni));
     PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
     PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
+    PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(VecResetArray(osm->x[i]));
     PetscCall(VecResetArray(osm->y[i]));
   }
