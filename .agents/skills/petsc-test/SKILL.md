@@ -97,6 +97,19 @@ and `VALGRIND=1` instrument runs; and `test-fail=1` reruns previous failures. Se
 `doc/developers/testing.md` for generated scripts and complex queries; inspect
 `config/query_tests.py` only when selector implementation details are needed.
 
+## Read the result
+
+Several failure modes look like a pass:
+
+- `make test` exits 0 even when tests fail. Count `^not ok` lines and read the `# FAILED` summary.
+  A selected run prints no totals: `# FAILED` appears only when a test fails.
+- `# No test results` means that no test ran: the selection matched nothing, or the generated test
+  list is stale. Check the selection with `print-test`. If it is correct but empty, run
+  `make PETSC_ARCH=arch-name cleantest` and rerun.
+- `s=` (or `search=`) takes one glob, and a glob that matches nothing reports success. Run one
+  `make test` per glob and confirm the expected test names appear.
+- Tests with unmet `requires:` are excluded silently at generation time.
+
 ## Diagnose failures
 
 Use `make PETSC_ARCH=arch-name print-test test-fail=1` to list failures from the
@@ -133,9 +146,11 @@ $ PETSC_ARCH=arch-name python test/runtests.py -k test_name.class_name.method_na
 
 For behavior that depends on MPI communication, run the selected tests with the MPI launcher
 for the supplied architecture and the relevant rank count. Check that the selection actually
-runs the intended tests and inspect failures on every rank. CI jobs run tests serially or with
-a configured MPI rank count, often four. Check the job's actual command and `PETSC4PY_NP` in
-the generated configuration rather than assuming that every job uses four ranks.
+runs the intended tests and inspect failures on every rank. A `-k` pattern that matches nothing
+prints `Ran 0 tests` and exits 0, so confirm that each rank prints `Ran N tests` with N > 0, then
+`OK`. CI jobs run tests serially or with a configured MPI rank count, often four. Check the job's
+actual command and `PETSC4PY_NP` in the generated configuration rather than assuming that every
+job uses four ranks.
 
 Write tests to work with the relevant serial and MPI rank counts where the operation supports
 them. If a test requires a particular rank count, skip it explicitly at unsupported counts and
