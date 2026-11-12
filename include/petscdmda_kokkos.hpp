@@ -269,7 +269,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental
     DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);
 
     parallel_for ("Label",MDRangePolicy <Rank<4, Iterate::Right, Iterate::Right>>(
-      {zs,ys,xs,0},{zs+zm,ys+ym,xs+xm,dof}), KOKKOS_LAMBDA (PetscInt k,PetscInt j,PetscInt i,PetscInt c) {
+      {zs,ys,xs,static_cast<PetscInt>(0)},{zs+zm,ys+ym,xs+xm,dof}), KOKKOS_LAMBDA (PetscInt k,PetscInt j,PetscInt i,PetscInt c) {
       kv(k,j,i,c) = ...;
     });
     DMDAVecRestoreKokkosOffsetViewDOFWrite(da,v,&kv);
