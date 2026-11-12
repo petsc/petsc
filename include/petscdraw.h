@@ -329,13 +329,17 @@ M*/
    Developer Note:
    This only applies to X windows and so should have a more specific name such as `PetscDrawXCollectiveEnd()`
 
+   This macro cannot use `MPIU_Allreduce()`, which in debug builds requires that all MPI processes call it from the
+   same source line. A process that catches an X I/O error runs the copy of this macro inside
+   `PetscDrawCollectiveBegin()`, which is on a different line.
+
 .seealso: `PetscDraw`, `PetscDrawCollectiveBegin()`
 M*/
   #define PetscDrawCollectiveEnd(draw) \
     if (_Petsc_isdrawx) { \
       (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
       PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &_Petsc_jmpbuf, sizeof(PetscXIOErrorHandlerJumpBuf))); \
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &_Petsc_xioerr, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
+      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &_Petsc_xioerr, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
         PetscFunctionReturn(PETSC_SUCCESS); \

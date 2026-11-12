@@ -182,7 +182,7 @@ checkbadSource:
 	-@echo "----- Unnecessary braces around one-liners -------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}( \\)?$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- MPI_(Allreduce|Irecv|Isend) instead of MPIU_(Allreduce|Irecv|Isend)" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E '\(MPI_(Allreduce|Irecv|Isend)\([^\)]' -- ${GITSRC} ':!*/tests/*' ':!*/tutorials/*' ':!src/sys/objects/pinit.c' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -E '\(MPI_(Allreduce|Irecv|Isend)\([^\)]' -- ${GITSRC} ':!*/tests/*' ':!*/tutorials/*' ':!src/sys/objects/pinit.c' ':!include/petscdraw.h' >> checkbadSource.out;true
 	-@echo "----- Fortran: #include <petsc/finclude/...> not 1st line (examples/tutorials)" >> checkbadSource.out
 	-@git --no-pager grep -H -B9999 '#include <petsc/finclude/.*>' -- '*/tutorials/*.F90' '*/tests/*.F90' | grep -v -e '!' -e 'F90-$$' -e '#include <petsc/finclude/.*>' -e '--' | ${SED} 's?\.F90-?.F90 ?g' >> checkbadSource.out;true
 	-@echo "----- Fortran: labeled do loop -------------------------------------" >> checkbadSource.out
