@@ -6,7 +6,7 @@
 #include <../src/ksp/ksp/impls/eksm/eksmimpl.h> /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
-#define EKSM_DELTA_DIRECTIONS 10
+#define EKSM_DEFAULT_VECTOR_ALLOCATION_SIZE 10
 
 static PetscErrorCode KSPReset_EKSM(KSP);
 
@@ -100,7 +100,7 @@ static PetscErrorCode KSPSetUp_EKSM(KSP ksp)
   PetscCall(PetscMalloc1(eksm->vecs_allocated, &eksm->vecs));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &eksm->user_work));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &eksm->mwork_alloc));
-  eksm->vv_allocated = VEC_OFFSET + 2 + PetscMin(2 * eksm->delta_allocate, max_k);
+  eksm->vv_allocated = VEC_OFFSET + 2 + PetscMin(2 * eksm->vector_allocation_size, max_k);
   PetscCall(VecDuplicateVecs(b, eksm->vv_allocated, &eksm->user_work[0]));
   eksm->mwork_alloc[0] = eksm->vv_allocated;
   eksm->nwork_alloc    = 1;
@@ -118,7 +118,7 @@ static PetscErrorCode KSPEKSMGetNewVectors(KSP ksp, PetscInt it)
   PetscInt  nwork = eksm->nwork_alloc, nalloc;
 
   PetscFunctionBegin;
-  nalloc = 2 * eksm->delta_allocate;
+  nalloc = 2 * eksm->vector_allocation_size;
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
   if (2 * it + VEC_OFFSET + nalloc >= eksm->vecs_allocated) nalloc = eksm->vecs_allocated - 2 * it - VEC_OFFSET;
@@ -850,7 +850,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_EKSM(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPEKSMSetShift_C", KSPEKSMSetShift_EKSM));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPEKSMGetShift_C", KSPEKSMGetShift_EKSM));
 
-  eksm->haptol         = 1.0e-30;
-  eksm->delta_allocate = EKSM_DELTA_DIRECTIONS;
+  eksm->haptol                 = 1.0e-30;
+  eksm->vector_allocation_size = EKSM_DEFAULT_VECTOR_ALLOCATION_SIZE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

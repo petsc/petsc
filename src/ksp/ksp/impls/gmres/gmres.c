@@ -397,7 +397,7 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscInt   nwork = gmres->nwork_alloc, k, nalloc;
 
   PetscFunctionBegin;
-  nalloc = PetscMin(ksp->max_it, gmres->delta_allocate);
+  nalloc = PetscMin(ksp->max_it, gmres->vector_allocation_size);
   /* Adjust the number to allocate to make sure that we don't exceed the
     number of available slots */
   if (it + VEC_OFFSET + nalloc >= gmres->vecs_allocated) nalloc = gmres->vecs_allocated - it - VEC_OFFSET;
@@ -512,15 +512,15 @@ PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, vo
 
 PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
-  PetscInt   delta_allocate, restart;
+  PetscInt   vector_allocation_size, restart;
   PetscReal  haptol, breakdowntol;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscBool  flg, set;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP GMRES Options");
-  PetscCall(PetscOptionsInt("-ksp_gmres_vector_allocation_size", "Number of work vectors to allocate at a time", "KSPGMRESSetVectorAllocationSize", gmres->delta_allocate, &delta_allocate, &flg));
-  if (flg) PetscCall(KSPGMRESSetVectorAllocationSize(ksp, delta_allocate));
+  PetscCall(PetscOptionsInt("-ksp_gmres_vector_allocation_size", "Number of work vectors to allocate at a time", "KSPGMRESSetVectorAllocationSize", gmres->vector_allocation_size, &vector_allocation_size, &flg));
+  if (flg) PetscCall(KSPGMRESSetVectorAllocationSize(ksp, vector_allocation_size));
   PetscCall(PetscOptionsInt("-ksp_gmres_restart", "Number of Krylov search directions", "KSPGMRESSetRestart", gmres->restart_size, &restart, &flg));
   if (flg) PetscCall(KSPGMRESSetRestart(ksp, restart));
   PetscCall(PetscOptionsReal("-ksp_gmres_haptol", "Tolerance for exact convergence (happy breakdown)", "KSPGMRESSetHapTol", gmres->haptol, &haptol, &flg));
@@ -593,15 +593,15 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt restart_size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPGMRESSetVectorAllocationSize_GMRES(KSP ksp, PetscInt delta_allocate)
+PetscErrorCode KSPGMRESSetVectorAllocationSize_GMRES(KSP ksp, PetscInt vector_allocation_size)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (delta_allocate == PETSC_DETERMINE) gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  else if (delta_allocate != PETSC_CURRENT) {
-    PetscCheck(delta_allocate > 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "size must be positive");
-    gmres->delta_allocate = delta_allocate;
+  if (vector_allocation_size == PETSC_DETERMINE) gmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  else if (vector_allocation_size != PETSC_CURRENT) {
+    PetscCheck(vector_allocation_size > 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "size must be positive");
+    gmres->vector_allocation_size = vector_allocation_size;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -807,13 +807,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetHapTol_C", KSPGMRESSetHapTol_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetBreakdownTolerance_C", KSPGMRESSetBreakdownTolerance_GMRES));
 
-  gmres->haptol         = 1.0e-30;
-  gmres->breakdowntol   = 0.1;
-  gmres->q_preallocate  = PETSC_FALSE;
-  gmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  gmres->nrs            = NULL;
-  gmres->sol_temp       = NULL;
-  gmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
-  gmres->Rsvd           = NULL;
+  gmres->haptol                 = 1.0e-30;
+  gmres->breakdowntol           = 0.1;
+  gmres->q_preallocate          = PETSC_FALSE;
+  gmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  gmres->nrs                    = NULL;
+  gmres->sol_temp               = NULL;
+  gmres->restart_size           = GMRES_DEFAULT_RESTART_SIZE;
+  gmres->Rsvd                   = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

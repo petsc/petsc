@@ -511,7 +511,7 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
   PetscInt    nalloc;                       /* number to allocate */
 
   PetscFunctionBegin;
-  nalloc = lgmres->delta_allocate; /* number of vectors to allocate in a single chunk */
+  nalloc = lgmres->vector_allocation_size;
 
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (lgmres->vecs_allocated)*/
@@ -683,13 +683,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLGMRESSetAugDim_C", KSPLGMRESSetAugDim_LGMRES));
 
   /* defaults */
-  lgmres->haptol         = 1.0e-30;
-  lgmres->q_preallocate  = PETSC_FALSE;
-  lgmres->delta_allocate = GMRES_DELTA_DIRECTIONS;
-  lgmres->nrs            = NULL;
-  lgmres->sol_temp       = NULL;
-  lgmres->restart_size   = GMRES_DEFAULT_RESTART_SIZE;
-  lgmres->Rsvd           = NULL;
+  lgmres->haptol                 = 1.0e-30;
+  lgmres->q_preallocate          = PETSC_FALSE;
+  lgmres->vector_allocation_size = GMRES_DEFAULT_VECTOR_ALLOCATION_SIZE;
+  lgmres->nrs                    = NULL;
+  lgmres->sol_temp               = NULL;
+  lgmres->restart_size           = GMRES_DEFAULT_RESTART_SIZE;
+  lgmres->Rsvd                   = NULL;
 
   /* LGMRES_MOD - new defaults */
   lgmres->aug_dim         = LGMRES_DEFAULT_AUGDIM;

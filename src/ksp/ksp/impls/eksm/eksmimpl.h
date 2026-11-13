@@ -27,10 +27,10 @@ typedef struct {
   PetscReal haptol; /* tolerance for happy breakdown */
   PetscReal v0norm; /* norm of first basis vector (M^{-1}b) */
 
-  Vec      *vecs;           /* the work vectors */
-  PetscInt  delta_allocate; /* number of vectors to preallocate in each block if not preallocated */
-  PetscInt  vv_allocated;   /* number of allocated Krylov vectors */
-  PetscInt  vecs_allocated; /* total number of vecs available */
+  Vec      *vecs;                   /* the work vectors */
+  PetscInt  vector_allocation_size; /* number of vectors to preallocate in each block if not preallocated */
+  PetscInt  vv_allocated;           /* number of allocated Krylov vectors */
+  PetscInt  vecs_allocated;         /* total number of vecs available */
   Vec     **user_work;
   PetscInt *mwork_alloc; /* number of work vectors allocated as part of a work-vector chunk */
   PetscInt  nwork_alloc; /* number of work vector chunks allocated */
