@@ -1804,7 +1804,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::DiagonalScale(Mat A, Vec l, Vec r) n
 }
 
 template <device::cupm::DeviceType T>
-inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X, MatStructure) noexcept
+inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X, MatStructure str) noexcept
 {
   const auto         m_x = X->rmap->n, m_y = Y->rmap->n;
   const auto         n_x = X->cmap->n, n_y = Y->cmap->n;
@@ -1813,6 +1813,10 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::AXPY(Mat Y, PetscScalar alpha, Mat X
 
   PetscFunctionBegin;
   if (!m_x || !n_x || alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (X->boundtocpu) {
+    PetscCall(MatAXPY_SeqDense(Y, alpha, X, str));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscInfo(Y, "Performing AXPY %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", m_y, n_y));
   PetscCall(GetHandles_(&dctx));
   {
