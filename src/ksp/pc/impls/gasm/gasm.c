@@ -9,10 +9,12 @@
        nmax - maximum number of local subdomains per process (calculated in PCSetUp_GASM())
 */
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
+#include <petsc/private/matimpl.h>
 #include <petscdm.h>
 
 typedef struct {
   PetscInt   N, n, nmax;
+  PetscInt   n_ksp;                  /* number of allocated subdomain solvers, retained across PCReset() */
   PetscInt   overlap;                /* overlap requested by user */
   PCGASMType type;                   /* use reduced interpolation, restriction or both */
   PetscBool  type_set;               /* if user set this value (so won't change it for symmetric problems) */
@@ -474,7 +476,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
         PetscCall(ISGetLocalSize(osm->ois[i], &oni));
         PetscCall(ISGetIndices(osm->ois[i], &indices));
         for (PetscInt k = 0; k < oni; k++) {
-          /*  skip overlapping indices to get inner domain */
+          /* skip overlapping indices to get inner domain */
           if (PetscRealPart(array[on + k]) != numbering[i]) continue;
           iidx[in]    = indices[k];
           ioidx[in++] = gostart + on + k;
@@ -493,29 +495,52 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     PetscCall(ISDestroy(&goid));
     PetscCall(PetscFree(numbering));
 
-    /* Create the subdomain solvers */
-    PetscCall(PetscMalloc1(osm->n, &osm->ksp));
+    /* reuse reset solvers only when their subdomain communicators still match */
+    {
+      PetscBool reuse = (PetscBool)(osm->n_ksp == osm->n);
+
+      if (reuse == PETSC_TRUE) {
+        for (PetscInt i = 0; i < osm->n; ++i) {
+          PetscMPIInt match;
+
+          PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)osm->ksp[i]), PetscObjectComm((PetscObject)osm->ois[i]), &match));
+          if (match != MPI_IDENT && match != MPI_CONGRUENT) reuse = PETSC_FALSE;
+        }
+      }
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reuse, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
+      if (reuse == PETSC_FALSE) {
+        for (PetscInt i = 0; i < osm->n_ksp; ++i) PetscCall(KSPDestroy(&osm->ksp[i]));
+        PetscCall(PetscFree(osm->ksp));
+      }
+    }
+    if (osm->ksp == NULL) {
+      PetscCall(PetscCalloc1(osm->n, &osm->ksp));
+      osm->n_ksp = osm->n;
+      for (PetscInt i = 0; i < osm->n; i++) {
+        char subprefix[PETSC_MAX_PATH_LEN + 1];
+
+        PetscCall(KSPCreate(PetscObjectComm((PetscObject)osm->ois[i]), &ksp));
+        PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
+        PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
+        PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
+        PetscCall(KSPSetType(ksp, KSPPREONLY));
+        PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
+        PetscCall(PCGetOptionsPrefix(pc, &prefix));
+        PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+        if (subdomain_names && subdomain_names[i]) {
+          PetscCall(PetscSNPrintf(subprefix, PETSC_MAX_PATH_LEN, "sub_%s_", subdomain_names[i]));
+          PetscCall(KSPAppendOptionsPrefix(ksp, subprefix));
+        }
+        PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
+        osm->ksp[i] = ksp;
+      }
+    }
     for (PetscInt i = 0; i < osm->n; i++) {
-      char subprefix[PETSC_MAX_PATH_LEN + 1];
-      PetscCall(KSPCreate(((PetscObject)osm->ois[i])->comm, &ksp));
-      PetscCall(KSPSetNestLevel(ksp, pc->kspnestlevel));
-      PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
-      PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
-      PetscCall(KSPSetType(ksp, KSPPREONLY));
-      PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
       if (subdomain_dm) {
-        PetscCall(KSPSetDM(ksp, subdomain_dm[i]));
+        PetscCall(KSPSetDM(osm->ksp[i], subdomain_dm[i]));
         PetscCall(DMDestroy(subdomain_dm + i));
       }
-      PetscCall(PCGetOptionsPrefix(pc, &prefix));
-      PetscCall(KSPSetOptionsPrefix(ksp, prefix));
-      if (subdomain_names && subdomain_names[i]) {
-        PetscCall(PetscSNPrintf(subprefix, PETSC_MAX_PATH_LEN, "sub_%s_", subdomain_names[i]));
-        PetscCall(KSPAppendOptionsPrefix(ksp, subprefix));
-        PetscCall(PetscFree(subdomain_names[i]));
-      }
-      PetscCall(KSPAppendOptionsPrefix(ksp, "sub_"));
-      osm->ksp[i] = ksp;
+      if (subdomain_names != NULL) PetscCall(PetscFree(subdomain_names[i]));
     }
     PetscCall(PetscFree(subdomain_dm));
     PetscCall(PetscFree(subdomain_names));
@@ -659,8 +684,10 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(ISGetLocalSize(osm->ois[i], &oni));
     PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
     PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(VecResetArray(osm->x[i]));
     PetscCall(VecResetArray(osm->y[i]));
   }
@@ -684,84 +711,44 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
 
 static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBool transpose)
 {
-  PC_GASM    *osm = (PC_GASM *)pc->data;
-  Mat         X, Y, O = NULL, Z, W;
-  Vec         x, y;
-  VecType     vtype;
-  PetscInt    i, m, M, N;
-  ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
+  PC_GASM   *osm = (PC_GASM *)pc->data;
+  Mat        X, Y, O = NULL, Z, W;
+  VecType    vtype;
+  VecScatter restriction, prolongation;
+  PetscInt   m, M, N;
 
   PetscFunctionBegin;
   PetscCheck(osm->n == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
   PetscCall(MatGetSize(Xin, NULL, &N));
-  if (osm->pctoouter) {
+  if (osm->pctoouter != NULL) {
     PetscCall(VecGetLocalSize(osm->pcx, &m));
     PetscCall(VecGetSize(osm->pcx, &M));
     PetscCall(MatGetVecType(Xin, &vtype));
     PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &O));
-    for (i = 0; i < N; ++i) {
-      PetscCall(MatDenseGetColumnVecRead(Xin, i, &x));
-      PetscCall(MatDenseGetColumnVecWrite(O, i, &y));
-      PetscCall(VecScatterBegin(osm->pctoouter, x, y, INSERT_VALUES, SCATTER_REVERSE));
-      PetscCall(VecScatterEnd(osm->pctoouter, x, y, INSERT_VALUES, SCATTER_REVERSE));
-      PetscCall(MatDenseRestoreColumnVecWrite(O, i, &y));
-      PetscCall(MatDenseRestoreColumnVecRead(Xin, i, &x));
-    }
+    PetscCall(MatDenseScatter_Private(osm->pctoouter, Xin, O, INSERT_VALUES, SCATTER_REVERSE));
     X = Y = O;
   } else {
     X = Xin;
     Y = Yout;
   }
-  /*
-     support for limiting the restriction or interpolation only to the inner
-     subdomain values (leaving the other values 0).
-  */
+  restriction  = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_RESTRICT)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_INTERPOLATE))) ? osm->girestriction : osm->gorestriction;
+  prolongation = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_RESTRICT))) ? osm->girestriction : osm->gorestriction;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(VecGetSize(osm->x[0], &M));
   PetscCall(VecGetType(osm->x[0], &vtype));
   PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &Z));
-  for (i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecRead(X, i, &x));
-    PetscCall(MatDenseGetColumnVecWrite(Z, i, &y));
-    if ((!transpose && !(osm->type & PC_GASM_RESTRICT)) || (transpose && !(osm->type & PC_GASM_INTERPOLATE))) {
-      /* have to zero the work RHS since scatter may leave some slots empty */
-      PetscCall(VecZeroEntries(y));
-      PetscCall(VecScatterBegin(osm->girestriction, x, y, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->girestriction, x, y, INSERT_VALUES, forward));
-    } else {
-      PetscCall(VecScatterBegin(osm->gorestriction, x, y, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->gorestriction, x, y, INSERT_VALUES, forward));
-    }
-    PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &y));
-    PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
-  }
+  if (restriction == osm->girestriction) PetscCall(MatZeroEntries(Z));
+  PetscCall(MatDenseScatter_Private(restriction, X, Z, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
-  /* do the subdomain solve */
+  PetscCall(PetscLogEventBegin(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   if (!transpose) PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
   else PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
+  PetscCall(PetscLogEventEnd(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   PetscCall(MatDestroy(&Z));
-  /* do we need to zero y? */
   PetscCall(MatZeroEntries(Y));
-  for (i = 0; i < N; ++i) {
-    PetscCall(MatDenseGetColumnVecWrite(Y, i, &y));
-    PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if ((!transpose && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose && !(osm->type & PC_GASM_RESTRICT))) {
-      PetscCall(VecScatterBegin(osm->girestriction, x, y, ADD_VALUES, reverse));
-      PetscCall(VecScatterEnd(osm->girestriction, x, y, ADD_VALUES, reverse));
-    } else {
-      PetscCall(VecScatterBegin(osm->gorestriction, x, y, ADD_VALUES, reverse));
-      PetscCall(VecScatterEnd(osm->gorestriction, x, y, ADD_VALUES, reverse));
-    }
-    PetscCall(MatDenseRestoreColumnVecRead(W, i, &x));
-    if (osm->pctoouter) {
-      PetscCall(MatDenseGetColumnVecWrite(Yout, i, &x));
-      PetscCall(VecScatterBegin(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(VecScatterEnd(osm->pctoouter, y, x, INSERT_VALUES, SCATTER_FORWARD));
-      PetscCall(MatDenseRestoreColumnVecWrite(Yout, i, &x));
-    }
-    PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &y));
-  }
+  PetscCall(MatDenseScatter_Private(prolongation, W, Y, ADD_VALUES, SCATTER_REVERSE));
+  if (osm->pctoouter != NULL) PetscCall(MatDenseScatter_Private(osm->pctoouter, Y, Yout, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(MatDestroy(&W));
   PetscCall(MatDestroy(&O));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -827,8 +814,10 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout)
     PetscCall(ISGetLocalSize(osm->ois[i], &oni));
     PetscCall(VecPlaceArray(osm->x[i], PetscSafePointerPlusOffset(gxarray, on)));
     PetscCall(VecPlaceArray(osm->y[i], PetscSafePointerPlusOffset(gyarray, on)));
+    PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(VecResetArray(osm->x[i]));
     PetscCall(VecResetArray(osm->y[i]));
   }
@@ -855,7 +844,7 @@ static PetscErrorCode PCReset_GASM(PC pc)
 
   PetscFunctionBegin;
   if (osm->ksp) {
-    for (PetscInt i = 0; i < osm->n; i++) PetscCall(KSPReset(osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_ksp; i++) PetscCall(KSPReset(osm->ksp[i]));
   }
   if (osm->pmat) {
     if (osm->n > 0) {
@@ -906,7 +895,7 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   /* PCReset will not destroy subdomains, if user_subdomains is true. */
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->ois, &osm->iis));
   if (osm->ksp) {
-    for (PetscInt i = 0; i < osm->n; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
+    for (PetscInt i = 0; i < osm->n_ksp; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
     PetscCall(PetscFree(osm->ksp));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetSubdomains_C", NULL));
@@ -1330,6 +1319,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   osm->N                        = PETSC_DETERMINE;
   osm->n                        = PETSC_DECIDE;
   osm->nmax                     = PETSC_DETERMINE;
+  osm->n_ksp                    = 0;
   osm->overlap                  = 0;
   osm->ksp                      = NULL;
   osm->gorestriction            = NULL;
