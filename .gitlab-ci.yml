@@ -271,6 +271,8 @@ petsc-dist:
 checksource:
   extends: .test-basic
   stage: .pre
+  variables:
+    GIT_DEPTH: 0  # non-shallow clone for the checkbadCommitMessage branch range
   tags:
     - gce-u24-stage1
   script:
@@ -281,6 +283,7 @@ checksource:
     - make checkbadSource SHELL=bash
     - if [ -n "$CI_MERGE_REQUEST_DIFF_BASE_SHA" ] && ! git cat-file -e "$CI_MERGE_REQUEST_DIFF_BASE_SHA^{commit}"; then git fetch -q --no-tags --depth=1 origin "$CI_MERGE_REQUEST_DIFF_BASE_SHA"; fi
     - make checkbadFileChange CHECKBADFILECHANGE_BASE="$CI_MERGE_REQUEST_DIFF_BASE_SHA" SHELL=bash
+    - make checkbadCommitMessage SHELL=bash
     - make checkbadManualPages SHELL=bash
     - make -f gmakefile check_output SHELL=bash
     - make check_petsc4py_rst

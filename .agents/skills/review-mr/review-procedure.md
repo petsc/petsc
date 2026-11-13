@@ -11,6 +11,13 @@
 - Identify temporary `runjobs.py` changes from the MR commit list and patches: subjects start with `DRAFT: CI: Temporary commit, remove before merge!`, and `.gitlab-ci.yml` contains the generated-command header. A mention of `runjobs` is insufficient.
 - Exclude only changes attributable to those commits from findings, LOW counts, and comments. Record each excluded SHA and title. Review independent CI changes and `runjobs.py` itself; report unclear attribution as a coverage limitation. Preserve `DIFF_FILE`, the reviewed head SHA, and posting anchors.
 
+#### Commit series
+
+- List the commits with `git log --reverse --stat --format=fuller <range>`, and read a commit's patch with `git show <sha>`. For a branch, `<range>` is `DEST..SRC_SHA`. **MR only:** first run `git fetch -q --no-tags origin refs/merge-requests/<MR_IID>/head`, then use `<base_sha>..<MR_HEAD_SHA>`, with `diff_refs.base_sha` from `mr-<MR_IID>-meta.json`. If the fetch fails, read the messages with `glab api projects/:id/merge_requests/<MR_IID>/commits` and report the per-commit structure as not covered. Skip the temporary CI commits identified above.
+- Check the structure against Sections 2 and 3 of [clean-commits](../clean-commits/SKILL.md): commit order (fixes and re-formats, then preparation, then features), a later commit that fixes or reformats an earlier one, orthogonal changes in one commit, commits split too finely, and whether one squashed commit fits better.
+- Check each message against Sections 4 and 5 of clean-commits and the writing rules in `AGENTS.md`: the subject, a body that lists the commit's significant changes accurately, line limits, and trailers.
+- A commit finding names the commit (short SHA and subject), the rule it breaks, and the fix: the restructuring, or the replacement message in full. It is Style when it breaks a stated rule, and LOW when it only improves wording.
+
 #### Classify findings
 
 | Severity | Required evidence |
@@ -41,7 +48,8 @@ and is proportionate to the impact.
 
 - For each finding, explain the problem, required evidence, and suggested fix in complete prose. Include severity and every occurrence's `file:line` within the reviewed diff. Order CRITICAL → HIGH → MEDIUM → Style.
 - When a finding has a small, unambiguous fix, follow the explanation with a fenced `diff` block showing the minimal patch against the reviewed revision. Include necessary companion changes, or explicitly identify any omitted ones. Distinguish verification of the finding from testing the proposed patch; label untested patches. If the fix requires an unresolved design decision, explain the required change without inventing a patch.
+- Put commit findings in a separate **Commits** section at the end of the report, after the code review and its LOW count. Start with one line on squash or series. Then give a table with one row per commit in order and the columns Commit (short SHA and subject), Action, and Reason. Action is one of `ok`, `fix message`, `squash into <sha>`, `split`, or `reorder`. Reason names the rule broken. Put each replacement message in its own code block below the table. If any commit needs a change, end the section by suggesting the clean-commits skill to apply the fixes. If the series needs no change, say exactly that.
 - State files and lines reviewed, uncovered paths, and verification limitations, even with no findings.
 - **MR only:** include excluded temporary CI commits and any attribution limitations from Section 3, plus fetch warnings required by `identify.md`.
-- Include only findings, coverage, LOW counts, and information explicitly required by this procedure or the calling skill. Exclude praise, MR summaries, and design commentary. If there are no findings at or above Style, say exactly that.
-- End with `(N LOW findings suppressed; ask to show them.)` when `N > 0`.
+- Include only findings, coverage, LOW counts, and information explicitly required by this procedure or the calling skill. Exclude praise, MR summaries, and design commentary. If there are no code findings at or above Style, say exactly that.
+- End the code review with `(N LOW findings suppressed; ask to show them.)` when `N > 0`.
