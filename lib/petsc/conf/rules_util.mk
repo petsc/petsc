@@ -82,6 +82,12 @@ checkbadFileChange:
 	 if [ -z "$$base" ]; then base=$$(lib/petsc/bin/maint/check-merge-branch.sh); fi; \
 	 git diff --stat --exit-code "$$base..HEAD" -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/khash
 
+# Check that commit messages credit LLM assistance with Assisted-by: rather than Co-authored-by:
+checkbadCommitMessage:
+	@base="${CHECKBADCOMMITMESSAGE_BASE}"; \
+	 if [ -z "$$base" ]; then base=$$(lib/petsc/bin/maint/check-merge-branch.sh) || exit 1; fi; \
+	 python3 lib/petsc/bin/maint/check_commit_trailers.py "$$base..HEAD"
+
 vermin:
 	@vermin --violations -t=3.6- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
 	@vermin --violations -t=3.6- --exclude-regex '\.pyi$$' --exclude-regex '-env' --exclude-regex 'docs/source/reference/' ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
