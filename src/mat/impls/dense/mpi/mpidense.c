@@ -2725,6 +2725,26 @@ PetscErrorCode MatDenseScatterWithSF_Private(PetscSF vsf, Mat X, Mat Y, MPI_Op o
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Copies the local rows of the dense matrix A to a new sequential dense matrix B with leading dimension lda
+static PetscErrorCode MatDenseDuplicateLocalWithLDA_Private(Mat A, PetscInt lda, Mat *B)
+{
+  Mat      Al;
+  MatType  type;
+  PetscInt m, n;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseGetLocalMatrix(A, &Al));
+  PetscCall(MatGetSize(Al, &m, &n));
+  PetscCall(MatGetType(Al, &type));
+  PetscCall(MatCreate(PETSC_COMM_SELF, B));
+  PetscCall(MatSetSizes(*B, m, n, m, n));
+  PetscCall(MatSetType(*B, type));
+  PetscCall(MatDenseSetLDA(*B, lda));
+  PetscCall(MatSetUp(*B));
+  PetscCall(MatCopy(Al, *B, SAME_NONZERO_PATTERN));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* MatDenseScatter_Private - Scatters the columns of the dense matrix X into the dense matrix Y
 
    Collective
@@ -2740,14 +2760,15 @@ PetscErrorCode MatDenseScatterWithSF_Private(PetscSF vsf, Mat X, Mat Y, MPI_Op o
 
    Note:
    With more than one column, a strided PetscSF is cached on sf. It is rebuilt if the number of columns changes.
-   Any other change of layout, such as another leading dimension, is an error unless the cache is first cleared
-   on all processes with PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", NULL).
+   A matrix with another leading dimension is copied to a local work matrix with the cached one, because only all
+   processes together can rebuild the cached PetscSF.
 
 .seealso: `MatDenseScatterWithSF_Private()`, `PetscSFCreateStridedSF()`
 */
 PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode, ScatterMode smode)
 {
   PetscSF   vsf;
+  Mat       Xw = NULL, Yw = NULL;
   PetscInt  N, ny, rld, lld;
   MPI_Op    op        = MPI_OP_NULL;
   PetscBool writeonly = PETSC_FALSE;
@@ -2779,9 +2800,12 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
       PetscCall(PetscObjectCompose((PetscObject)sf, "_MatDenseScatter_StridedSF", NULL));
       ctx = NULL;
     }
-    /* callers must clear the cache on all processes before changing the layout (which happens, e.g., with matrices with different leading dimensions) on any rank */
-    PetscCheck(ctx == NULL || (ctx->rld == rld && ctx->lld == lld && ctx->nr == nr && ctx->nl == nl), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "The cached strided SF has a different layout; the calling function must destroy it first on all processes with PetscObjectCompose((PetscObject)sf, \"_MatDenseScatter_StridedSF\", NULL)");
-    if (ctx == NULL) {
+    PetscCheck(ctx == NULL || (ctx->nr == nr && ctx->nl == nl), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "The cached strided SF has a different graph; the calling function must destroy it first on all processes with PetscObjectCompose((PetscObject)sf, \"_MatDenseScatter_StridedSF\", NULL)");
+    if (ctx != NULL) {
+      if (rld != ctx->rld) PetscCall(MatDenseDuplicateLocalWithLDA_Private(smode == SCATTER_FORWARD ? X : Y, ctx->rld, smode == SCATTER_FORWARD ? &Xw : &Yw));
+      if (lld != ctx->lld) PetscCall(MatDenseDuplicateLocalWithLDA_Private(smode == SCATTER_FORWARD ? Y : X, ctx->lld, smode == SCATTER_FORWARD ? &Yw : &Xw));
+      lld = ctx->lld;
+    } else {
       PetscCall(PetscNew(&ctx));
       PetscCall(PetscSFCreateStridedSF(sf, N, rld, lld, &ctx->sf));
       ctx->N   = N;
@@ -2802,6 +2826,15 @@ PetscErrorCode MatDenseScatter_Private(PetscSF sf, Mat X, Mat Y, InsertMode mode
     // preserve untouched rows and padding; contiguous leaves cover every row only in this case
     writeonly = (PetscBool)(ilocal == NULL && (PetscCount)nl * PetscMax(sf->vscat.bs, 1) == ny && lld == ny);
   }
-  PetscCall(MatDenseScatterWithSF_Private(vsf, X, Y, op, smode, writeonly));
+  PetscCall(MatDenseScatterWithSF_Private(vsf, Xw ? Xw : X, Yw ? Yw : Y, op, smode, writeonly));
+  if (Yw) {
+    Mat Yl;
+
+    PetscCall(MatDenseGetLocalMatrix(Y, &Yl));
+    PetscCall(MatCopy(Yw, Yl, SAME_NONZERO_PATTERN));
+    PetscCall(PetscObjectStateIncrease((PetscObject)Y));
+  }
+  PetscCall(MatDestroy(&Xw));
+  PetscCall(MatDestroy(&Yw));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
