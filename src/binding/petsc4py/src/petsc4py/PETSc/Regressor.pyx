@@ -1,3 +1,5 @@
+# --------------------------------------------------------------------
+
 class RegressorType(object):
     """REGRESSOR solver type.
 
