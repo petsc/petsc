@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class RegressorType(object):
+class RegressorType(StrEnum):
     """REGRESSOR solver type.
 
     See Also
@@ -11,7 +11,7 @@ class RegressorType(object):
     LINEAR = S_(PETSCREGRESSORLINEAR)
 
 
-class RegressorLinearType(object):
+class RegressorLinearType(IntEnum):
     """Linear regressor type.
 
     See Also

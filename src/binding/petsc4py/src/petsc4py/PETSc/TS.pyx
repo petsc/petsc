@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 
-class TSType(object):
+class TSType(StrEnum):
     """The time stepping method."""
     # native
     EULER           = S_(TSEULER)
@@ -35,7 +35,7 @@ class TSType(object):
     RUNGE_KUTTA    = RK
 
 
-class TSRKType(object):
+class TSRKType(StrEnum):
     """The *RK* subtype."""
     RK1FE = S_(TSRK1FE)
     RK2A  = S_(TSRK2A)
@@ -51,7 +51,7 @@ class TSRKType(object):
     RK8VR = S_(TSRK8VR)
 
 
-class TSARKIMEXType(object):
+class TSARKIMEXType(StrEnum):
     """The *ARKIMEX* subtype."""
     ARKIMEX1BEE   = S_(TSARKIMEX1BEE)
     ARKIMEXA2     = S_(TSARKIMEXA2)
@@ -68,7 +68,7 @@ class TSARKIMEXType(object):
     ARKIMEX5      = S_(TSARKIMEX5)
 
 
-class TSDIRKType(object):
+class TSDIRKType(StrEnum):
     """The *DIRK* subtype."""
     DIRKS212      = S_(TSDIRKS212)
     DIRKES122SAL  = S_(TSDIRKES122SAL)
@@ -88,13 +88,13 @@ class TSDIRKType(object):
     DIRKES8516SAL = S_(TSDIRKES8516SAL)
 
 
-class TSProblemType(object):
+class TSProblemType(IntEnum):
     """Distinguishes linear and nonlinear problems."""
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
 
 
-class TSEquationType(object):
+class TSEquationType(IntEnum):
     """Distinguishes among types of explicit and implicit equations."""
     UNSPECIFIED               = TS_EQ_UNSPECIFIED
     EXPLICIT                  = TS_EQ_EXPLICIT
@@ -111,7 +111,7 @@ class TSEquationType(object):
     DAE_IMPLICIT_INDEXHI      = TS_EQ_DAE_IMPLICIT_INDEXHI
 
 
-class TSExactFinalTime(object):
+class TSExactFinalTime(IntEnum):
     """The method for ending time stepping."""
     UNSPECIFIED = TS_EXACTFINALTIME_UNSPECIFIED
     STEPOVER    = TS_EXACTFINALTIME_STEPOVER
@@ -119,7 +119,7 @@ class TSExactFinalTime(object):
     MATCHSTEP   = TS_EXACTFINALTIME_MATCHSTEP
 
 
-class TSConvergedReason:
+class TSConvergedReason(IntEnum):
     """The reason the time step is converging."""
     # iterating
     CONVERGED_ITERATING      = TS_CONVERGED_ITERATING

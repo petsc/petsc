@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class ViewerType(object):
+class ViewerType(StrEnum):
     """Viewer type."""
     SOCKET      = S_(PETSCVIEWERSOCKET)
     ASCII       = S_(PETSCVIEWERASCII)
@@ -20,7 +20,7 @@ class ViewerType(object):
     PYVISTA     = S_(PETSCVIEWERPYVISTA)
 
 
-class ViewerFormat(object):
+class ViewerFormat(IntEnum):
     """Viewer format."""
     DEFAULT           = PETSC_VIEWER_DEFAULT
     ASCII_MATLAB      = PETSC_VIEWER_ASCII_MATLAB
@@ -59,7 +59,7 @@ class ViewerFormat(object):
     FAILED            = PETSC_VIEWER_FAILED
 
 
-class ViewerFileMode(object):
+class ViewerFileMode(IntEnum):
     """Viewer file mode."""
     # native
     READ          = PETSC_FILE_MODE_READ
@@ -72,7 +72,7 @@ class ViewerFileMode(object):
     AU = UA    = APPEND_UPDATE
 
 
-class ViewerDrawSize(object):
+class ViewerDrawSize(IntEnum):
     """Window size."""
     # native
     FULL_SIZE    = PETSC_DRAW_FULL_SIZE

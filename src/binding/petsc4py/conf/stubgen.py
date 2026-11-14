@@ -86,6 +86,8 @@ def visit_constant(constant):
 
 def visit_enum(member):
     name, value = member
+    if isinstance(value, str):
+        return f'{name} = "{value.value}"'
     return f'{name} = {value.value}'
 
 
@@ -429,8 +431,14 @@ else:
     )
 if sys.version_info >= (3, 11):
     from typing import Self
+    from enum import StrEnum
 else:
     from typing_extensions import Self
+    from enum import Enum
+
+    # StrEnum only Python >= 3.11
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
 from os import PathLike
 
 import numpy

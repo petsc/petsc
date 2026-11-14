@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class PartitionerType(object):
+class PartitionerType(StrEnum):
     """The partitioner types."""
     PARMETIS        = S_(PETSCPARTITIONERPARMETIS)
     PTSCOTCH        = S_(PETSCPARTITIONERPTSCOTCH)

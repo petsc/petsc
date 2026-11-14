@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class FEType(object):
+class FEType(StrEnum):
     """The finite element types."""
     BASIC     = S_(PETSCFEBASIC)
     OPENCL    = S_(PETSCFEOPENCL)

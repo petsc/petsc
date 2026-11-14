@@ -3909,7 +3909,7 @@ cdef class DMPlex(DM):
 # --------------------------------------------------------------------
 
 
-class DMPlexTransformType(object):
+class DMPlexTransformType(StrEnum):
     """Transformation types."""
     REFINEREGULAR = S_(DMPLEXREFINEREGULAR)
     REFINEALFELD = S_(DMPLEXREFINEALFELD)

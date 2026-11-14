@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class KSPType(object):
+class KSPType(StrEnum):
     """KSP Type.
 
     The available types are:
@@ -228,7 +228,7 @@ class KSPType(object):
     EKSM       = S_(KSPEKSM)
 
 
-class KSPCGTRNormType(object):
+class KSPCGTRNormType(IntEnum):
     """`petsc.KSPCG` norm types for the trust-region constraint.
 
     `PRECONDITIONED`
@@ -246,7 +246,7 @@ class KSPCGTRNormType(object):
     UNPRECONDITIONED = KSP_CG_TR_NORM_UNPRECONDITIONED
 
 
-class KSPNormType(object):
+class KSPNormType(IntEnum):
     """KSP norm type.
 
     The available norm types are:
@@ -282,7 +282,7 @@ class KSPNormType(object):
     NATURAL          = NORM_NATURAL
 
 
-class KSPConvergedReason(object):
+class KSPConvergedReason(IntEnum):
     """KSP Converged Reason.
 
     `CONVERGED_ITERATING`
@@ -384,7 +384,7 @@ class KSPConvergedReason(object):
     DIVERGED_INNER_SOLVE_FAILED = KSP_DIVERGED_INNER_SOLVE_FAILED
 
 
-class KSPHPDDMType(object):
+class KSPHPDDMType(IntEnum):
     """The *HPDDM* Krylov solver type."""
     GMRES                     = KSP_HPDDM_TYPE_GMRES
     BGMRES                    = KSP_HPDDM_TYPE_BGMRES
@@ -396,7 +396,7 @@ class KSPHPDDMType(object):
     PREONLY                   = KSP_HPDDM_TYPE_PREONLY
 
 
-class KSPDMActive(object):
+class KSPDMActive(IntEnum):
     """Argument to KSPSetDMActive()."""
     OPERATOR      = KSP_DMACTIVE_OPERATOR
     RHS           = KSP_DMACTIVE_RHS

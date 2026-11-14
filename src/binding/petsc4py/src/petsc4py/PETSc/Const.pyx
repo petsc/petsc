@@ -43,13 +43,21 @@ More constants:
 
 # ------------------------------------------------------------------------------
 
-cdef object enum = None
-import enum
+cdef object Enum = None, IntEnum = None, StrEnum = None
+try:
+    from enum import IntEnum, StrEnum
+except ImportError:
+    from enum import Enum, IntEnum
+
+    # StrEnum only Python >= 3.11
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
+
 
 # ------------------------------------------------------------------------------
 
 
-class InsertMode(enum.IntEnum):
+class InsertMode(IntEnum):
     """Insertion mode.
 
     Most commonly used insertion modes are:
@@ -87,7 +95,7 @@ class InsertMode(enum.IntEnum):
 # ------------------------------------------------------------------------------
 
 
-class ScatterMode(enum.IntEnum):
+class ScatterMode(IntEnum):
     """Scatter mode.
 
     Most commonly used scatter modes are:
@@ -117,7 +125,7 @@ class ScatterMode(enum.IntEnum):
 # ------------------------------------------------------------------------------
 
 
-class NormType(enum.IntEnum):
+class NormType(IntEnum):
     """Norm type.
 
     Commonly used norm types:

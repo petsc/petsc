@@ -1,18 +1,18 @@
 # --------------------------------------------------------------------
 
-class DMDAStencilType(object):
+class DMDAStencilType(IntEnum):
     """Stencil types."""
     STAR = DMDA_STENCIL_STAR
     BOX  = DMDA_STENCIL_BOX
 
 
-class DMDAInterpolationType(object):
+class DMDAInterpolationType(IntEnum):
     """Interpolation types."""
     Q0 = DMDA_INTERPOLATION_Q0
     Q1 = DMDA_INTERPOLATION_Q1
 
 
-class DMDAElementType(object):
+class DMDAElementType(IntEnum):
     """Element types."""
     P1 = DMDA_ELEMENT_P1
     Q1 = DMDA_ELEMENT_Q1
@@ -1034,7 +1034,7 @@ cdef class DMDA(DM):
 
     #
 
-    def setElementType(self, elem_type: ElementType | str) -> None:
+    def setElementType(self, elem_type: ElementType) -> None:
         """Set the element type to be returned by `getElements`.
 
         Not collective.

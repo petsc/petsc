@@ -165,6 +165,8 @@ def visit_enum(member):
     name, value = member
     typename = type(value).__name__
     doc = f'#: Enum member ``{name}`` of ``{typename}``'
+    if isinstance(value, str):
+        return f'{name} = "{value.value}"  {doc}\n'
     return f'{name} = {value.value}  {doc}\n'
 
 
@@ -470,8 +472,14 @@ from typing import (
 )
 if sys.version_info >= (3, 11):
     from typing import Self
+    from enum import StrEnum
 else:
     from typing_extensions import Self
+    from enum import Enum
+
+    # StrEnum only Python >= 3.11
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
 
 import numpy
 from numpy import dtype, ndarray

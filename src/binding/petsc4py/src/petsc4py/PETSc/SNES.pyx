@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class SNESType(object):
+class SNESType(StrEnum):
     """SNES solver type.
 
     See Also
@@ -32,7 +32,7 @@ class SNESType(object):
     PATCH            = S_(SNESPATCH)
 
 
-class SNESNormSchedule(object):
+class SNESNormSchedule(IntEnum):
     """SNES norm schedule.
 
     See Also
@@ -57,7 +57,7 @@ class SNESNormSchedule(object):
 
 
 # FIXME Missing reference petsc.SNESConvergedReason
-class SNESConvergedReason(object):
+class SNESConvergedReason(IntEnum):
     """SNES solver termination reason.
 
     See Also
@@ -92,7 +92,7 @@ class SNESConvergedReason(object):
     DIVERGED_USER               = SNES_DIVERGED_USER
 
 
-class SNESNewtonALCorrectionType(object):
+class SNESNewtonALCorrectionType(IntEnum):
     """SNESNEWTONAL correction type.
 
     See Also
@@ -2769,7 +2769,7 @@ cdef class SNES(Object):
 # --------------------------------------------------------------------
 
 
-class SNESLineSearchType(object):
+class SNESLineSearchType(StrEnum):
     """SNES linesearch type.
 
     See Also

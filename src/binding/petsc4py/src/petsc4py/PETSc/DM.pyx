@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class DMType(object):
+class DMType(StrEnum):
     """`DM` types."""
     DA        = S_(DMDA_type)
     COMPOSITE = S_(DMCOMPOSITE)
@@ -19,7 +19,7 @@ class DMType(object):
     STAG      = S_(DMSTAG)
 
 
-class DMBoundaryType(object):
+class DMBoundaryType(IntEnum):
     """`DM` Boundary types."""
     NONE     = DM_BOUNDARY_NONE
     GHOSTED  = DM_BOUNDARY_GHOSTED
@@ -28,7 +28,7 @@ class DMBoundaryType(object):
     TWIST    = DM_BOUNDARY_TWIST
 
 
-class DMPolytopeType(object):
+class DMPolytopeType(IntEnum):
     """The `DM` cell types."""
     POINT              = DM_POLYTOPE_POINT
     SEGMENT            = DM_POLYTOPE_SEGMENT
@@ -49,7 +49,7 @@ class DMPolytopeType(object):
     UNKNOWN_FACE       = DM_POLYTOPE_UNKNOWN_FACE
 
 
-class DMReorderDefaultFlag(object):
+class DMReorderDefaultFlag(IntEnum):
     """The `DM` reordering default flags."""
     NOTSET = DM_REORDER_DEFAULT_NOTSET
     FALSE  = DM_REORDER_DEFAULT_FALSE

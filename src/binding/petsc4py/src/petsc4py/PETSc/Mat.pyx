@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class MatType(object):
+class MatType(StrEnum):
     """Matrix type.
 
     See Also
@@ -101,7 +101,7 @@ class MatType(object):
     HTOOL            = S_(MATHTOOL)
 
 
-class MatOption(object):
+class MatOption(IntEnum):
     """Matrix option.
 
     See Also
@@ -138,7 +138,7 @@ class MatOption(object):
     OPTION_MAX                  = MAT_OPTION_MAX
 
 
-class MatAssemblyType(object):
+class MatAssemblyType(IntEnum):
     """Matrix assembly type.
 
     See Also
@@ -154,14 +154,14 @@ class MatAssemblyType(object):
     FLUSH = FLUSH_ASSEMBLY
 
 
-class MatInfoType(object):
+class MatInfoType(IntEnum):
     """Matrix info type."""
     LOCAL = MAT_LOCAL
     GLOBAL_MAX = MAT_GLOBAL_MAX
     GLOBAL_SUM = MAT_GLOBAL_SUM
 
 
-class MatStructure(object):
+class MatStructure(IntEnum):
     """Matrix modification structure.
 
     See Also
@@ -181,7 +181,7 @@ class MatStructure(object):
     UNKNOWN   = UNKNOWN_NZ   = UNKNOWN_NONZERO_PATTERN
 
 
-class MatDuplicateOption(object):
+class MatDuplicateOption(IntEnum):
     """Matrix duplicate option.
 
     See Also
@@ -194,7 +194,7 @@ class MatDuplicateOption(object):
     SHARE_NONZERO_PATTERN = MAT_SHARE_NONZERO_PATTERN
 
 
-class MatOrderingType(object):
+class MatOrderingType(StrEnum):
     """Factored matrix ordering type.
 
     See Also
@@ -214,7 +214,7 @@ class MatOrderingType(object):
     METISND     = S_(MATORDERINGMETISND)
 
 
-class MatSolverType(object):
+class MatSolverType(StrEnum):
     """Factored matrix solver type.
 
     See Also
@@ -244,7 +244,7 @@ class MatSolverType(object):
     SPQR            = S_(MATSOLVERSPQR)
 
 
-class MatFactorShiftType(object):
+class MatFactorShiftType(IntEnum):
     """Factored matrix shift type.
 
     See Also
@@ -262,7 +262,7 @@ class MatFactorShiftType(object):
     PD = MAT_SHIFT_POSITIVE_DEFINITE
 
 
-class MatSORType(object):
+class MatSORType(IntEnum):
     """Matrix SOR type.
 
     See Also
@@ -282,7 +282,7 @@ class MatSORType(object):
     APPLY_LOWER           = SOR_APPLY_LOWER
 
 
-class MatCompositeType(object):
+class MatCompositeType(IntEnum):
     """Matrix composite type.
 
     See Also
@@ -294,7 +294,7 @@ class MatCompositeType(object):
     MULTIPLICATIVE = MAT_COMPOSITE_MULTIPLICATIVE
 
 
-class MatHtoolCompressorType(object):
+class MatHtoolCompressorType(IntEnum):
     """Htool compressor type.
 
     See Also
@@ -307,7 +307,7 @@ class MatHtoolCompressorType(object):
     SVD            = MAT_HTOOL_COMPRESSOR_SVD
 
 
-class MatHtoolClusteringType(object):
+class MatHtoolClusteringType(IntEnum):
     """Htool clustering type.
 
     See Also

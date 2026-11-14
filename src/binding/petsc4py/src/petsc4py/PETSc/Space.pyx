@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class SpaceType(object):
+class SpaceType(StrEnum):
     """The function space types."""
     POLYNOMIAL = S_(PETSCSPACEPOLYNOMIAL)
     PTRIMMED   = S_(PETSCSPACEPTRIMMED)
@@ -562,7 +562,7 @@ cdef class Space(Object):
 # --------------------------------------------------------------------
 
 
-class DualSpaceType(object):
+class DualSpaceType(StrEnum):
     """The dual space types."""
     LAGRANGE = S_(PETSCDUALSPACELAGRANGE)
     SIMPLE   = S_(PETSCDUALSPACESIMPLE)
