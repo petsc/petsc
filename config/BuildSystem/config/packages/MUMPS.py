@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.9.1'
+    self.version          = '5.9.2'
     self.minversion       = '5.3.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1

@@ -516,6 +516,7 @@ int main(int argc, char **args)
       nsize: 3
       requires: mumps !complex !single
       args: -use_mumps_lu -m 50 -n 50 -print_mumps_memory
+      filter: sed -e "s/Max memory in MB = 1/Max memory in MB = 2/g" -e "s/Sum memory in MB = 3/Sum memory in MB = 6/g"
       output_file: output/ex52_4.out
 
    test:
