@@ -146,8 +146,8 @@ program main
     write (6, 98) cntl
     write (6, 99) rinfo12, rinfo13, infog34
   end if
-98 format('Mumps row pivot threshold = ', 1pe11.2)
-99 format('Mumps determinant=(', 1pe11.2, 1pe11.2, ')*2^', i3)
+98 format('MUMPS row pivot threshold = ', 1pe11.2)
+99 format('MUMPS determinant=(', 1pe11.2, 1pe11.2, ')*2^', i3)
 #endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

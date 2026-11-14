@@ -404,12 +404,12 @@ int main(int argc, char **args)
       PetscCall(MatMumpsGetRinfog(F, 12, &rinfo12));
       PetscCall(MatMumpsGetRinfog(F, 13, &rinfo13));
       PetscCall(MatMumpsGetNullPivots(F, &num_null_pivots, &null_pivots));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row pivot threshold = %g\n", (double)cntl));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n", (double)rinfo12, (double)rinfo13, infog34));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  MUMPS row pivot threshold = %g\n", (double)cntl));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  MUMPS determinant = (%g, %g) * 2^%" PetscInt_FMT "\n", (double)rinfo12, (double)rinfo13, infog34));
       if (num_null_pivots > 0) {
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps num of null pivots detected = %" PetscInt_FMT "\n", num_null_pivots));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  MUMPS number of null pivots detected = %" PetscInt_FMT "\n", num_null_pivots));
         PetscCall(PetscSortInt(num_null_pivots, null_pivots)); /* just make the printf deterministic */
-        for (j = 0; j < num_null_pivots; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row with null pivots is = %" PetscInt_FMT "\n", null_pivots[j]));
+        for (j = 0; j < num_null_pivots; j++) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  MUMPS row with null pivots is = %" PetscInt_FMT "\n", null_pivots[j]));
       }
       PetscCall(PetscFree(null_pivots));
     }
