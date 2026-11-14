@@ -87,7 +87,8 @@ typedef struct _CAMSCTX {
 #endif
 
 typedef struct _Stack {
-  PetscInt      stacksize;
+  PetscInt      stacksize; /* number of usable entries for the current solve */
+  PetscInt      capacity;  /* allocated length of container, never shrinks so elements are reused across solves */
   PetscInt      top;
   StackElement *container;
   PetscInt      nallocated;
@@ -231,16 +232,19 @@ static PetscErrorCode ElementDestroy(Stack *stack, StackElement e)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Sets the usable size and grows the container if needed, keeping existing elements for reuse */
 static PetscErrorCode StackResize(Stack *stack, PetscInt newsize)
 {
   StackElement *newcontainer;
-  PetscInt      i;
 
   PetscFunctionBegin;
-  PetscCall(PetscCalloc1(newsize * sizeof(StackElement), &newcontainer));
-  for (i = 0; i < stack->stacksize; i++) newcontainer[i] = stack->container[i];
-  PetscCall(PetscFree(stack->container));
-  stack->container = newcontainer;
+  if (newsize > stack->capacity) {
+    PetscCall(PetscCalloc1(newsize, &newcontainer));
+    PetscCall(PetscArraycpy(newcontainer, stack->container, stack->capacity));
+    PetscCall(PetscFree(stack->container));
+    stack->container = newcontainer;
+    stack->capacity  = newsize;
+  }
   stack->stacksize = newsize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -274,8 +278,7 @@ static PetscErrorCode StackInit(Stack *stack, PetscInt size, PetscInt ny)
   PetscFunctionBegin;
   stack->top  = -1;
   stack->numY = ny;
-
-  if (!stack->container) PetscCall(PetscCalloc1(size, &stack->container));
+  PetscCall(StackResize(stack, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -288,6 +291,7 @@ static PetscErrorCode StackDestroy(Stack *stack)
   PetscCheck(stack->top + 1 <= n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stack size does not match element counter %" PetscInt_FMT, n);
   for (PetscInt i = 0; i < n; i++) PetscCall(ElementDestroy(stack, stack->container[i]));
   PetscCall(PetscFree(stack->container));
+  stack->capacity = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
