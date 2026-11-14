@@ -175,6 +175,8 @@
 ```{rubric} DT:
 ```
 
+- Add `PetscQuadratureGetPermutations()` to allow caching of permutations
+
 ```{rubric} Fortran:
 ```
 
