@@ -1,0 +1,13 @@
+Tao Object: 1 MPI process
+  type: nm
+    expansions: 11
+    reflections: 4
+    inside contractions: 85
+    outside contractionss: 6
+    Shrink steps: 1
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=2.56698e-09
+  Objective value=1.70524e-08
+  total number of iterations=107,                          (max: 2000)
+  total number of function/gradient evaluations=213,      (max: 4000)
+  Solution converged:    ||g(X)|| <= gatol
