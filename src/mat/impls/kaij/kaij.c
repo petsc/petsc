@@ -49,6 +49,8 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
   PetscBool ismpikaij, isseqkaij;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(B, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIKAIJ, &ismpikaij));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQKAIJ, &isseqkaij));
   if (ismpikaij) {
@@ -66,7 +68,7 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
 /*@
   MatKAIJGetS - Get the `S` matrix describing the shift action of the `MATKAIJ` matrix
 
-  Not Collective; the entire `S` is stored and returned independently on all processes.
+  Logically Collective; the entire `S` is stored and returned independently on all processes.
 
   Input Parameter:
 . A - the `MATKAIJ` matrix
@@ -81,13 +83,16 @@ PetscErrorCode MatKAIJGetAIJ(Mat A, Mat *B)
   Note:
   All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJRestoreS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar *S[])
 {
-  Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *b;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  b = (Mat_SeqKAIJ *)A->data;
   if (m) *m = b->p;
   if (n) *n = b->q;
   if (S) *S = b->S;
@@ -112,13 +117,16 @@ PetscErrorCode MatKAIJGetS(Mat A, PetscInt *m, PetscInt *n, PetscScalar *S[])
   Note:
   All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJRestoreS()`, `MatKAIJRestoreSRead()`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar *S[])
 {
-  Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *b;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  b = (Mat_SeqKAIJ *)A->data;
   if (m) *m = b->p;
   if (n) *n = b->q;
   if (S) *S = b->S;
@@ -128,7 +136,7 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 /*@
   MatKAIJRestoreS - Restore array obtained with `MatKAIJGetS()`
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + A - the `MATKAIJ` matrix
@@ -136,15 +144,21 @@ PetscErrorCode MatKAIJGetSRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 
   Level: advanced
 
-  Note:
+  Notes:
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
+
+  Every process must restore `S`, because doing so raises the state of the `MATKAIJ` matrix. Before its next use, a
+  `MATMPIKAIJ` then rebuilds its cached submatrices locally, and its next `MatMult()` checks, and possibly rebuilds, its
+  ghost scatter collectively. Use `MatKAIJGetSRead()`/`MatKAIJRestoreSRead()` to read `S` without raising the state.
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`, `MatKAIJRestoreSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar *S[])
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
   if (S) *S = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -157,7 +171,7 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar *S[])
 
   Input Parameters:
 + A - the `MATKAIJ` matrix
-- S - location of pointer to array obtained with `MatKAIJGetS()`
+- S - location of pointer to array obtained with `MatKAIJGetSRead()`
 
   Level: advanced
 
@@ -165,11 +179,13 @@ PetscErrorCode MatKAIJRestoreS(Mat A, PetscScalar *S[])
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJGetSRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetS()`, `MatKAIJRestoreS()`, `MatKAIJGetSRead()`
 @*/
 PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar *S[])
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
   if (S) *S = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -177,7 +193,7 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar *S[])
 /*@
   MatKAIJGetT - Get the transformation matrix `T` associated with the `MATKAIJ` matrix
 
-  Not Collective; the entire `T` is stored and returned independently on all processes
+  Logically Collective; the entire `T` is stored and returned independently on all processes
 
   Input Parameter:
 . A - the `MATKAIJ` matrix
@@ -192,13 +208,16 @@ PetscErrorCode MatKAIJRestoreSRead(Mat A, const PetscScalar *S[])
   Note:
   All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJRestoreT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar *T[])
 {
-  Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *b;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  b = (Mat_SeqKAIJ *)A->data;
   if (m) *m = b->p;
   if (n) *n = b->q;
   if (T) *T = b->T;
@@ -223,13 +242,16 @@ PetscErrorCode MatKAIJGetT(Mat A, PetscInt *m, PetscInt *n, PetscScalar *T[])
   Note:
   All output parameters are optional (pass `NULL` if not desired)
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJRestoreT()`, `MatKAIJRestoreTRead()`, `MatCreateKAIJ()`, `MatGetBlockSizes()`
 @*/
 PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScalar *T[])
 {
-  Mat_SeqKAIJ *b = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *b;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  b = (Mat_SeqKAIJ *)A->data;
   if (m) *m = b->p;
   if (n) *n = b->q;
   if (T) *T = b->T;
@@ -239,23 +261,29 @@ PetscErrorCode MatKAIJGetTRead(Mat A, PetscInt *m, PetscInt *n, const PetscScala
 /*@
   MatKAIJRestoreT - Restore array obtained with `MatKAIJGetT()`
 
-  Not Collective
+  Logically Collective
 
   Input Parameters:
 + A - the `MATKAIJ` matrix
-- T - location of pointer to array obtained with `MatKAIJGetS()`
+- T - location of pointer to array obtained with `MatKAIJGetT()`
 
   Level: advanced
 
-  Note:
+  Notes:
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
+
+  Every process must restore `T`, because doing so raises the state of the `MATKAIJ` matrix. Before its next use, a
+  `MATMPIKAIJ` then rebuilds its cached submatrices locally, and its next `MatMult()` checks, and possibly rebuilds, its
+  ghost scatter collectively. Use `MatKAIJGetTRead()`/`MatKAIJRestoreTRead()` to read `T` without raising the state.
 
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`, `MatKAIJRestoreTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar *T[])
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
   if (T) *T = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -268,7 +296,7 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar *T[])
 
   Input Parameters:
 + A - the `MATKAIJ` matrix
-- T - location of pointer to array obtained with `MatKAIJGetS()`
+- T - location of pointer to array obtained with `MatKAIJGetTRead()`
 
   Level: advanced
 
@@ -276,12 +304,41 @@ PetscErrorCode MatKAIJRestoreT(Mat A, PetscScalar *T[])
   This routine zeros the array pointer to prevent accidental reuse after it has been restored.
   If `NULL` is passed, it will not attempt to zero the array pointer.
 
-.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJGetTRead()`
+.seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetT()`, `MatKAIJRestoreT()`, `MatKAIJGetTRead()`
 @*/
 PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar *T[])
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
   if (T) *T = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Check that a replacement operand keeps the layout that MatSetUp() fixed
+static PetscErrorCode MatKAIJCheckOperandLayout_Private(Mat A)
+{
+  Mat_SeqKAIJ *kaij = (Mat_SeqKAIJ *)A->data;
+  Mat          a;
+
+  PetscFunctionBegin;
+  PetscCall(MatKAIJGetAIJ(A, &a));
+  PetscCheck(!a || !A->preallocated || (A->rmap->n == kaij->p * a->rmap->n && A->cmap->n == kaij->q * a->cmap->n && A->rmap->N == kaij->p * a->rmap->N && A->cmap->N == kaij->q * a->cmap->N), PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "The operand must keep the layout the %" PetscInt_FMT " x %" PetscInt_FMT " MATKAIJ matrix was set up with; it gives %" PetscInt_FMT " x %" PetscInt_FMT " instead",
+             A->rmap->N, A->cmap->N, kaij->p * a->rmap->N, kaij->q * a->cmap->N);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Check that an operand is MATSEQAIJ for a MATSEQKAIJ and MATMPIAIJ for a MATMPIKAIJ
+static PetscErrorCode MatKAIJCheckOperandType_Private(Mat A, Mat a)
+{
+  PetscMPIInt size;
+  PetscBool   match;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+  // The operand data is cast to Mat_SeqAIJ or Mat_MPIAIJ, so check the type also in optimized builds
+  PetscCall(PetscObjectTypeCompare((PetscObject)a, size == 1 ? MATSEQAIJ : MATMPIAIJ, &match));
+  PetscCheck(match, PetscObjectComm((PetscObject)a), PETSC_ERR_SUP, "MATKAIJ does not support %s as an operand, it requires %s", ((PetscObject)a)->type_name, size == 1 ? MATSEQAIJ : MATMPIAIJ);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -292,7 +349,7 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar *T[])
 
   Input Parameters:
 + A - the `MATKAIJ` matrix
-- B - the `MATAIJ` matrix
+- B - the `MATAIJ` matrix, of type `MATSEQAIJ` for a `MATSEQKAIJ` and `MATMPIAIJ` for a `MATMPIKAIJ`
 
   Level: advanced
 
@@ -301,25 +358,38 @@ PetscErrorCode MatKAIJRestoreTRead(Mat A, const PetscScalar *T[])
 
   Changes to the entries of the `MATAIJ` matrix will immediately affect the `MATKAIJ` matrix.
 
+  A previously set `MATAIJ` matrix is released, so the operand may be replaced after the `MATKAIJ` matrix has been set
+  up. The replacement need not have the same nonzero structure as the matrix it replaces; a `MATMPIKAIJ` rebuilds its
+  ghost scatter whenever the off-diagonal ghost columns change. It must have the same row and column layout, however,
+  since the size of the `MATKAIJ` matrix was fixed when it was set up.
+
 .seealso: [](ch_matrices), `Mat`, `MATKAIJ`, `MatKAIJGetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`
 @*/
 PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 {
   PetscMPIInt size;
-  PetscBool   flg;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidHeaderSpecific(B, MAT_CLASSID, 2);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  PetscCall(MatKAIJCheckOperandType_Private(A, B));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
-  if (size == 1) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQAIJ, &flg));
-    PetscCheck(flg, PetscObjectComm((PetscObject)B), PETSC_ERR_SUP, "MatKAIJSetAIJ() with MATSEQKAIJ does not support %s as the AIJ mat", ((PetscObject)B)->type_name);
-    Mat_SeqKAIJ *a = (Mat_SeqKAIJ *)A->data;
-    a->AIJ         = B;
-  } else {
-    Mat_MPIKAIJ *a = (Mat_MPIKAIJ *)A->data;
-    a->A           = B;
-  }
+  // Reference before releasing the previous operand, so that resetting the same matrix is safe
   PetscCall(PetscObjectReference((PetscObject)B));
+  if (size == 1) {
+    Mat_SeqKAIJ *seq = (Mat_SeqKAIJ *)A->data;
+
+    PetscCall(MatDestroy(&seq->AIJ));
+    seq->AIJ = B;
+  } else {
+    Mat_MPIKAIJ *m = (Mat_MPIKAIJ *)A->data;
+
+    PetscCall(MatDestroy(&m->A));
+    m->A = B;
+  }
+  PetscCall(MatKAIJCheckOperandLayout_Private(A));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -345,9 +415,12 @@ PetscErrorCode MatKAIJSetAIJ(Mat A, Mat B)
 @*/
 PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 {
-  Mat_SeqKAIJ *a = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *a;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  a = (Mat_SeqKAIJ *)A->data;
   PetscCall(PetscFree(a->S));
   if (S) {
     PetscCall(PetscMalloc1(p * q, &a->S));
@@ -356,6 +429,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 
   a->p = p;
   a->q = q;
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -376,10 +450,14 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
 @*/
 PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 {
-  Mat_SeqKAIJ *a = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *a;
   PetscInt     i, j;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscAssertPointer(identity, 2);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  a = (Mat_SeqKAIJ *)A->data;
   if (a->p != a->q) {
     *identity = PETSC_FALSE;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -423,10 +501,13 @@ PetscErrorCode MatKAIJGetScaledIdentity(Mat A, PetscBool *identity)
 PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
 {
   PetscInt     i, j;
-  Mat_SeqKAIJ *a    = (Mat_SeqKAIJ *)A->data;
+  Mat_SeqKAIJ *a;
   PetscBool    isTI = PETSC_FALSE;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCheckTypeNames(A, MATSEQKAIJ, MATMPIKAIJ);
+  a = (Mat_SeqKAIJ *)A->data;
   /* check if T is an identity matrix */
   if (T && (p == q)) {
     isTI = PETSC_TRUE;
@@ -452,6 +533,7 @@ PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
 
   a->p = p;
   a->q = q;
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -470,20 +552,67 @@ static PetscErrorCode MatDestroy_SeqKAIJ(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Rebuild the ghost scatter of a MATMPIKAIJ only when the ghost columns of its A operand change
+static PetscErrorCode MatKAIJ_build_scatter(Mat A)
+{
+  Mat_MPIKAIJ *a      = (Mat_MPIKAIJ *)A->data;
+  Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ *)a->A->data;
+  IS           from, to;
+  Vec          gvec;
+  PetscInt     n;
+  PetscBool    reusable = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  a->scatterstale = PETSC_FALSE;
+  PetscCall(VecGetSize(mpiaij->lvec, &n));
+  if (a->ctx && n == a->nghosts) PetscCall(PetscArraycmp(a->ghosts, mpiaij->garray, n, &reusable));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reusable, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  if (reusable) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(VecScatterDestroy(&a->ctx));
+  PetscCall(VecDestroy(&a->w));
+  PetscCall(PetscFree(a->ghosts));
+  PetscCall(PetscMalloc1(n, &a->ghosts));
+  PetscCall(PetscArraycpy(a->ghosts, mpiaij->garray, n));
+  a->nghosts = n;
+
+  PetscCall(VecCreate(PETSC_COMM_SELF, &a->w));
+  PetscCall(VecSetSizes(a->w, n * a->q, n * a->q));
+  PetscCall(VecSetBlockSize(a->w, a->q));
+  PetscCall(VecSetType(a->w, VECSEQ));
+
+  /* create two temporary Index sets for build scatter gather */
+  PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)a->A), a->q, n, mpiaij->garray, PETSC_COPY_VALUES, &from));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, n * a->q, 0, 1, &to));
+
+  /* create temporary global vector to generate scatter context */
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A), a->q, a->q * a->A->cmap->n, a->q * a->A->cmap->N, NULL, &gvec));
+
+  /* generate the scatter context */
+  PetscCall(VecScatterCreate(gvec, from, a->w, to, &a->ctx));
+
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+  PetscCall(VecDestroy(&gvec));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
 {
   Mat_MPIKAIJ     *a;
   Mat_MPIAIJ      *mpiaij;
   PetscScalar     *T;
   PetscInt         i, j;
-  PetscObjectState state;
+  PetscObjectState state, kstate;
 
   PetscFunctionBegin;
   a      = (Mat_MPIKAIJ *)A->data;
   mpiaij = (Mat_MPIAIJ *)a->A->data;
 
+  // The submatrices hold copies of S and T, and a change to S or T raises the state of the KAIJ matrix
+  PetscCall(PetscObjectStateGet((PetscObject)A, &kstate));
   PetscCall(PetscObjectStateGet((PetscObject)a->A, &state));
-  if (state == a->state) {
+  if (a->AIJ && state == a->state && kstate == a->kstate) {
     /* The existing AIJ and KAIJ members are up-to-date, so simply exit. */
     PetscFunctionReturn(PETSC_SUCCESS);
   } else {
@@ -505,14 +634,16 @@ static PetscErrorCode MatKAIJ_build_AIJ_OAIJ(Mat A)
     PetscCall(MatCreateKAIJ(mpiaij->A, a->p, a->q, a->S, T, &a->AIJ));
     PetscCall(MatCreateKAIJ(mpiaij->B, a->p, a->q, NULL, T, &a->OAIJ));
     if (a->isTI) PetscCall(PetscFree(T));
-    a->state = state;
+    // The ghost columns of A may have changed. MatMultAdd_MPIKAIJ() rebuilds the scatter collectively
+    a->scatterstale = PETSC_TRUE;
+    a->state        = state;
+    a->kstate       = kstate;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetUp_KAIJ(Mat A)
 {
-  PetscInt     n;
   PetscMPIInt  size;
   Mat_SeqKAIJ *seqkaij = (Mat_SeqKAIJ *)A->data;
 
@@ -525,13 +656,8 @@ static PetscErrorCode MatSetUp_KAIJ(Mat A)
     PetscCall(PetscLayoutSetUp(A->rmap));
     PetscCall(PetscLayoutSetUp(A->cmap));
   } else {
-    Mat_MPIKAIJ *a;
-    Mat_MPIAIJ  *mpiaij;
-    IS           from, to;
-    Vec          gvec;
+    Mat_MPIKAIJ *a = (Mat_MPIKAIJ *)A->data;
 
-    a      = (Mat_MPIKAIJ *)A->data;
-    mpiaij = (Mat_MPIAIJ *)a->A->data;
     PetscCall(MatSetSizes(A, a->p * a->A->rmap->n, a->q * a->A->cmap->n, a->p * a->A->rmap->N, a->q * a->A->cmap->N));
     PetscCall(PetscLayoutSetBlockSize(A->rmap, seqkaij->p));
     PetscCall(PetscLayoutSetBlockSize(A->cmap, seqkaij->q));
@@ -539,26 +665,6 @@ static PetscErrorCode MatSetUp_KAIJ(Mat A)
     PetscCall(PetscLayoutSetUp(A->cmap));
 
     PetscCall(MatKAIJ_build_AIJ_OAIJ(A));
-
-    PetscCall(VecGetSize(mpiaij->lvec, &n));
-    PetscCall(VecCreate(PETSC_COMM_SELF, &a->w));
-    PetscCall(VecSetSizes(a->w, n * a->q, n * a->q));
-    PetscCall(VecSetBlockSize(a->w, a->q));
-    PetscCall(VecSetType(a->w, VECSEQ));
-
-    /* create two temporary Index sets for build scatter gather */
-    PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)a->A), a->q, n, mpiaij->garray, PETSC_COPY_VALUES, &from));
-    PetscCall(ISCreateStride(PETSC_COMM_SELF, n * a->q, 0, 1, &to));
-
-    /* create temporary global vector to generate scatter context */
-    PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)a->A), a->q, a->q * a->A->cmap->n, a->q * a->A->cmap->N, NULL, &gvec));
-
-    /* generate the scatter context */
-    PetscCall(VecScatterCreate(gvec, from, a->w, to, &a->ctx));
-
-    PetscCall(ISDestroy(&from));
-    PetscCall(ISDestroy(&to));
-    PetscCall(VecDestroy(&gvec));
   }
 
   A->assembled = PETSC_TRUE;
@@ -633,6 +739,7 @@ static PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   PetscCall(MatDestroy(&b->A));
   PetscCall(VecScatterDestroy(&b->ctx));
   PetscCall(VecDestroy(&b->w));
+  PetscCall(PetscFree(b->ghosts));
   PetscCall(PetscFree(b->S));
   PetscCall(PetscFree(b->T));
   PetscCall(PetscFree(b->ibdiag));
@@ -726,6 +833,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **
   const PetscScalar *v = a->a;
   const PetscInt     p = b->p, q = b->q, m = b->AIJ->rmap->n, *idx = a->j, *ii = a->i;
   PetscInt           i, j, *v_pivots, dof, dof2;
+  PetscObjectState   astate, kstate;
   PetscScalar       *diag, aval, *v_work;
 
   PetscFunctionBegin;
@@ -735,11 +843,22 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **
   dof  = p;
   dof2 = dof * dof;
 
+  /* Invalidate the cached block-diagonal if the entries of A, or the dense blocks S or T, have changed.
+     Changes to S and T are signaled by the state of the KAIJ matrix, which MatKAIJRestoreS() and MatKAIJRestoreT() increase. */
+  PetscCall(PetscObjectStateGet((PetscObject)A, &kstate));
+  PetscCall(PetscObjectStateGet((PetscObject)b->AIJ, &astate));
+  if (astate != b->ibdiagstate || kstate != b->ibdiagkstate) b->ibdiagvalid = PETSC_FALSE;
+
   if (b->ibdiagvalid) {
     if (values) *values = b->ibdiag;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (!b->ibdiag) PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag));
+  // the block size or the operand row count may have changed the size the buffer needs
+  if (b->ibdiag && b->ibdiagcount != dof2 * m) PetscCall(PetscFree(b->ibdiag));
+  if (!b->ibdiag) {
+    PetscCall(PetscMalloc1(dof2 * m, &b->ibdiag));
+    b->ibdiagcount = dof2 * m;
+  }
   if (values) *values = b->ibdiag;
   diag = b->ibdiag;
 
@@ -766,7 +885,9 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqKAIJ(Mat A, const PetscScalar **
   }
   PetscCall(PetscFree2(v_work, v_pivots));
 
-  b->ibdiagvalid = PETSC_TRUE;
+  b->ibdiagvalid  = PETSC_TRUE;
+  b->ibdiagstate  = astate;
+  b->ibdiagkstate = kstate;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -865,7 +986,8 @@ static PetscErrorCode MatSOR_SeqKAIJ(Mat A, Vec bb, PetscReal omega, MatSORType 
 
   if (!m) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (!kaij->ibdiagvalid) PetscCall(MatInvertBlockDiagonal_SeqKAIJ(A, NULL));
+  // Call unconditionally: the routine returns the cached block diagonal when it is still valid and recomputes it when the operands have changed
+  PetscCall(MatInvertBlockDiagonal_SeqKAIJ(A, NULL));
   idiag = kaij->ibdiag;
   PetscCall(MatGetDiagonalMarkers_SeqAIJ(kaij->AIJ, &diag, NULL));
 
@@ -1139,6 +1261,7 @@ static PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
   if (!yy) PetscCall(VecSet(zz, 0.0));
   else PetscCall(VecCopy(yy, zz));
   PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ and b->OAIJ are up to date. */
+  if (b->scatterstale) PetscCall(MatKAIJ_build_scatter(A));
   /* start the scatter */
   PetscCall(VecScatterBegin(b->ctx, xx, b->w, INSERT_VALUES, SCATTER_FORWARD));
   PetscUseTypeMethod(b->AIJ, multadd, xx, zz, zz);
@@ -1154,13 +1277,25 @@ static PetscErrorCode MatMult_MPIKAIJ(Mat A, Vec xx, Vec yy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Return a copy owned by this matrix, because a rebuild of b->AIJ frees the buffer of the submatrix
 static PetscErrorCode MatInvertBlockDiagonal_MPIKAIJ(Mat A, const PetscScalar **values)
 {
-  Mat_MPIKAIJ *b = (Mat_MPIKAIJ *)A->data;
+  Mat_MPIKAIJ       *b = (Mat_MPIKAIJ *)A->data;
+  const PetscScalar *diag;
+  PetscInt           nb;
 
   PetscFunctionBegin;
   PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); /* Ensure b->AIJ is up to date. */
-  PetscUseTypeMethod(b->AIJ, invertblockdiagonal, values);
+  PetscUseTypeMethod(b->AIJ, invertblockdiagonal, &diag);
+  nb = b->p * b->p * b->A->rmap->n; // MatInvertBlockDiagonal_SeqKAIJ() requires p == q
+  // the block size or the operand row count may have changed the size the buffer needs
+  if (b->ibdiag && b->ibdiagcount != nb) PetscCall(PetscFree(b->ibdiag));
+  if (!b->ibdiag) {
+    PetscCall(PetscMalloc1(nb, &b->ibdiag));
+    b->ibdiagcount = nb;
+  }
+  PetscCall(PetscArraycpy(b->ibdiag, diag, nb));
+  if (values) *values = b->ibdiag;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1394,13 +1529,19 @@ static PetscErrorCode MatCreateSubMatrix_KAIJ(Mat mat, IS isrow, IS iscol, MatRe
 
   This function increases the reference count on the `MATAIJ` matrix, so the user is free to destroy the matrix if it is not needed.
 
-  Changes to the entries of the `MATAIJ` matrix will immediately affect the `MATKAIJ` matrix.
+  Changes to the entries of the `MATAIJ` matrix will immediately affect the `MATKAIJ` matrix, so `MatMult()` and the other operations
+  always use the current entries. Reassembling an operand does not, however, raise the object state of the `MATKAIJ` matrix itself, and
+  a `PC` decides whether to rebuild from that state, so follow the reassembly with `MatAssemblyBegin()`/`MatAssemblyEnd()` on the
+  `MATKAIJ` matrix, exactly as for any other matrix handed to a `KSP`; otherwise the preconditioner is reused unchanged. Changing `S` or
+  `T` with `MatKAIJSetS()`, `MatKAIJSetT()`, or `MatKAIJRestoreS()`/`MatKAIJRestoreT()` raises the state on its own.
 
   Developer Notes:
   In the `MATMPIKAIJ` case, the internal 'AIJ' and 'OAIJ' sequential KAIJ matrices are kept up to date by tracking the object state
   of the AIJ matrix 'A' that describes the blockwise action of the `MATMPIKAIJ` matrix and, if the object state has changed, lazily
   rebuilding 'AIJ' and 'OAIJ' just before executing operations with the `MATMPIKAIJ` matrix. If new types of operations are added,
   routines implementing those must also ensure these are rebuilt when needed (by calling the internal MatKAIJ_build_AIJ_OAIJ() routine).
+  That rebuild is local. It only marks the ghost scatter stale, and the next `MatMult()` checks, and possibly rebuilds, the
+  scatter collectively.
 
 .seealso: [](ch_matrices), `Mat`, `MatKAIJSetAIJ()`, `MatKAIJSetS()`, `MatKAIJSetT()`, `MatKAIJGetAIJ()`, `MatKAIJGetS()`, `MatKAIJGetT()`, `MATKAIJ`
 @*/

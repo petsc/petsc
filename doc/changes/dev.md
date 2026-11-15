@@ -110,6 +110,7 @@
 - Change `MatCreateSubMatricesMPI()` to return parallel submatrices of the same `MATAIJ` subtype as the input matrix, for example `MATAIJCUSPARSE`, instead of always `MATMPIAIJ`
 - Add device support for `MATPRODUCT_AtB` with a `MATMPIAIJCUSPARSE`, `MATMPIAIJHIPSPARSE`, or `MATMPIAIJKOKKOS` matrix and a `MATMPIDENSECUDA` or `MATMPIDENSEHIP` matrix, also with `-matproduct_batch_size`; previously a `MATMAIJ` product copied the dense matrices to the host
 - Change `MATPRODUCT_AtB` of a `MATDIAGONAL` matrix and a `MATDENSECUDA` or `MATDENSEHIP` matrix to scale the rows on the device; previously it looped `MatMultTranspose()` over the columns
+- Make `MatKAIJGetS()`, `MatKAIJGetT()`, `MatKAIJRestoreS()`, and `MatKAIJRestoreT()` logically collective, so every process must call them
 
 ```{rubric} MatCoarsen:
 ```
