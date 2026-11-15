@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
     self.version                = '2.4.1'
-    self.gitcommit              = '65555fd81b5fc3ddd56c84dc38d896b0831dce6f' # vecscatter nov-01-2026
+    self.gitcommit              = 'd5bc754fca9c1ba6ea5d749996faa1e325fe18da' # MatKAIJGetA() nov-17-2026
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.4.0'
     self.versionname            = 'HPDDM_VERSION'
