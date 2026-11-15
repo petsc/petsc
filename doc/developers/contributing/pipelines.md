@@ -46,7 +46,7 @@ Locating the exact failed job in a pipeline stage.
 :::
 
 A job is a run of the {any}`PETSc test harness<test_harness>` and consists of many "examples".
-Each test is a run of an example with a particular set of command line options
+Each test is a run of an example with a particular set of command line options.
 
 A failure in running the job's tests will have `FAILED` and a list of the failed tests
 
@@ -57,7 +57,7 @@ A failure in running the job's tests will have `FAILED` and a list of the failed
 Failed examples in a pipeline job.
 :::
 
-Search for `not ok` in the jobs output to find the exact failure
+Search for `not ok` in the job's output to find the exact failure.
 
 :::{figure} /images/developers/unfreed-memory.png
 :align: center

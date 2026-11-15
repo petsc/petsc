@@ -7,15 +7,15 @@
 - Checkout `COMMIT-SHA` of the branch HEAD. It is available on the "Commits" tab of the merge request web page.
 
   ```console
-  % git fetch origin <COMMIT-SHA>
-  % git checkout FETCH_HEAD
+  $ git fetch origin <COMMIT-SHA>
+  $ git checkout FETCH_HEAD
   ```
 
 - Checkout branch using the repository `URL`. The `URL with branchname` is available as "Source branch" hyperlink on merge request web page.
 
   ```console
-  % git fetch <URL> <branchname>
-  % git checkout FETCH_HEAD
+  $ git fetch <URL> <branchname>
+  $ git checkout FETCH_HEAD
   ```
 
 - Setup a local Git clone to access the merge request branch via the `MR-NUMBER`. Here use the following in `.git/config`:
@@ -31,8 +31,8 @@
   Now, the branch is available to checkout:
 
   ```console
-  % git fetch
-  % git checkout origin/merge-requests/<MR-NUMBER>/head
+  $ git fetch
+  $ git checkout origin/merge-requests/<MR-NUMBER>/head
   ```
 
 # Commit and push changes to a merge request fork branch

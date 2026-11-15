@@ -23,7 +23,7 @@ If you are not contributing from a fork:
   petsc4py build/test configurations, installation and pip checks, and documentation
   preview, together with the source and CI checks. The `docs-only` label takes
   precedence if both labels are present. Remove `petsc4py-only` to restore the full pipeline.
-- If appropriate, once the MR has been submitted, refresh the browser and select Pipelines to examine and run testing; see doc:`/developers/contributing/pipelines`.
+- Once the MR has been submitted, refresh the browser and select Pipelines to examine and run testing; see {ref}`pipelines`.
 
 For MRs from forks:
 

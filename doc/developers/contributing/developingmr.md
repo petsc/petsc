@@ -44,7 +44,7 @@ $ git checkout -b yourname/fix-component-name origin/main
 
 ## Start a new feature branch
 
-- Determine the appropriate integration_branch to start from, `main` or `release` (for bug fixes only).
+- Determine the appropriate {any}`integration branch <sec_integration_branches>` to start from, `main` or `release` (for critical bug fixes and CI or website changes).
 
 - Create and switch to a new feature branch:
 
@@ -128,7 +128,7 @@ $ git checkout -b yourname/fix-component-name origin/main
   ```none
   ComponentName: one-line explanation of commit
 
-  After a blank line, write a more detailed explanation of the commit. Many tools do not auto-wrap this part, so wrap paragraph text at a reasonable length. Commit messages are meant for other people to read, possibly months or years later, so describe the rationale for the change in a manner that will make sense later, and which will be provide helpful search terms.
+  After a blank line, write a more detailed explanation of the commit. Many tools do not auto-wrap this part, so wrap paragraph text at a reasonable length. Commit messages are meant for other people to read, possibly months or years later, so describe the rationale for the change in a manner that will make sense later, and which will provide helpful search terms.
 
   Use the imperative, e.g. "Fix bug", not "Fixed bug".
 
@@ -153,7 +153,7 @@ $ git checkout -b yourname/fix-component-name origin/main
 - Push the feature branch to the remote repository as desired:
 
   ```console
-  % git push -u origin barry/snes-removecpp
+  $ git push -u origin barry/snes-removecpp
   ```
 
 ## Test your branch
@@ -246,7 +246,7 @@ You may also find it helpful to use an additional tool such as
 
 ## Rebase your branch against the integration branch
 
-You may also need to occasionally [rebase](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) your branch onto to the latest version of your {any}`integration branch <sec_integration_branches>` [^rebase-not-merge-upstream], if the integration branch has had relevant changes since you started working on your feature branch.
+You may also need to occasionally [rebase](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) your branch onto the latest version of your {any}`integration branch <sec_integration_branches>` [^rebase-not-merge-upstream], if the integration branch has had relevant changes since you started working on your feature branch.
 
 ```console
 $ git fetch origin                              # assume origin --> PETSc upstream
