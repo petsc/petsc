@@ -19,6 +19,16 @@ static PetscErrorCode NelderMeadSort(TAO_NelderMead *nm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Xbar = average of the best N vertices, so nm->indices must be sorted
+static PetscErrorCode NelderMeadComputeCentroid(TAO_NelderMead *nm)
+{
+  PetscFunctionBegin;
+  PetscCall(VecSet(nm->Xbar, 0.0));
+  for (PetscInt i = 0; i < nm->N; i++) PetscCall(VecAXPY(nm->Xbar, 1.0, nm->simplex[nm->indices[i]]));
+  PetscCall(VecScale(nm->Xbar, nm->oneOverN));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode NelderMeadReplace(TAO_NelderMead *nm, PetscInt index, Vec Xmu, PetscReal f)
 {
   PetscFunctionBegin;
@@ -145,9 +155,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
 
   /*  Xbar  = (Sum of all simplex vectors - worst vector)/N */
   PetscCall(NelderMeadSort(nm));
-  PetscCall(VecSet(Xbar, 0.0));
-  for (PetscInt i = 0; i < nm->N; i++) PetscCall(VecAXPY(Xbar, 1.0, nm->simplex[nm->indices[i]]));
-  PetscCall(VecScale(Xbar, nm->oneOverN));
+  PetscCall(NelderMeadComputeCentroid(nm));
   tao->reason = TAO_CONTINUE_ITERATING;
   while (1) {
     /* Call general purpose update function */
@@ -207,13 +215,8 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
         PetscCall(VecAXPBY(nm->simplex[nm->indices[i]], 1.5, -0.5, nm->simplex[nm->indices[0]]));
         PetscCall(TaoComputeObjective(tao, nm->simplex[nm->indices[i]], &nm->f_values[nm->indices[i]]));
       }
-      PetscCall(VecAXPBY(Xbar, 1.5 * nm->oneOverN, -0.5, nm->simplex[nm->indices[0]]));
-
-      /*  Add last vector's fraction of average */
-      PetscCall(VecAXPY(Xbar, nm->oneOverN, nm->simplex[nm->indices[nm->N]]));
       PetscCall(NelderMeadSort(nm));
-      /*  Subtract new last vector from average */
-      PetscCall(VecAXPY(Xbar, -nm->oneOverN, nm->simplex[nm->indices[nm->N]]));
+      PetscCall(NelderMeadComputeCentroid(nm));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
