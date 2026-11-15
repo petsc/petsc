@@ -1,0 +1,30 @@
+<style>
+pre.patch { background: #f6f8fa; padding: .5em; overflow-x: auto; }
+pre.patch span { display: inline-block; min-width: 100%; }
+pre.patch .add { background: #dafbe1; }
+pre.patch .del { background: #ffebe9; }
+pre.patch .hunk { color: #0550ae; }
+.patch-box { position: relative; }
+.patch-box button { position: absolute; top: .4em; right: .4em; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  for (const pre of document.querySelectorAll('pre.patch')) {
+    const text = pre.textContent.replace(/\n*$/, '\n');
+    pre.textContent = '';
+    for (const line of text.slice(0, -1).split('\n')) {
+      const span = document.createElement('span');
+      span.textContent = line;
+      span.className = /^(\+\+\+|---) /.test(line) ? '' : { '@': 'hunk', '+': 'add', '-': 'del' }[line[0]] || '';
+      pre.append(span, '\n');
+    }
+    const button = document.createElement('button');
+    button.textContent = 'Copy';
+    button.onclick = () => navigator.clipboard.writeText(text);
+    const box = document.createElement('div');
+    box.className = 'patch-box';
+    pre.before(box);
+    box.append(button, pre);
+  }
+});
+</script>
