@@ -636,7 +636,6 @@ static PetscErrorCode MatDestroy_MPIKAIJ(Mat A)
   PetscCall(PetscFree(b->S));
   PetscCall(PetscFree(b->T));
   PetscCall(PetscFree(b->ibdiag));
-  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatGetDiagonalBlock_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpikaij_mpiaij_C", NULL));
   PetscCall(PetscFree(A->data));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -776,6 +775,7 @@ static PetscErrorCode MatGetDiagonalBlock_MPIKAIJ(Mat A, Mat *B)
   Mat_MPIKAIJ *kaij = (Mat_MPIKAIJ *)A->data;
 
   PetscFunctionBegin;
+  PetscCall(MatKAIJ_build_AIJ_OAIJ(A)); // A rebuild replaces b->AIJ, so do it before b->AIJ is returned
   *B = kaij->AIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1470,7 +1470,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_KAIJ(Mat A)
     A->ops->invertblockdiagonal = MatInvertBlockDiagonal_MPIKAIJ;
     A->ops->getrow              = MatGetRow_MPIKAIJ;
     A->ops->restorerow          = MatRestoreRow_MPIKAIJ;
-    PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatGetDiagonalBlock_C", MatGetDiagonalBlock_MPIKAIJ));
+    A->ops->getdiagonalblock    = MatGetDiagonalBlock_MPIKAIJ;
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_mpikaij_mpiaij_C", MatConvert_KAIJ_AIJ));
   }
   A->ops->setup           = MatSetUp_KAIJ;
