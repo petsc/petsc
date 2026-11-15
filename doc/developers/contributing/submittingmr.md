@@ -30,6 +30,7 @@ For MRs from forks:
 - Make sure the fork is public -- as GitLab merge request process does not work well with a private fork.
 - Select the correct target repository `petsc/petsc` along with the target branch.
 - Select the "Allow commits from members who can merge to the target branch" option.
+- Pipelines for MRs from forks run only after a developer starts them, because they use PETSc's test machines.
 - GitLab does not allow you to set labels, so `@`-mention one of the developers in a comment so they can assign someone to the MR to add labels, run pipelines, and generally assist with the MR. The assignee and submitter should be listed in the upper right corner as assignees to the MR.
 
 (sec_workflow_labels)=
@@ -78,11 +79,10 @@ GitLab MRs use "threads" to track discussions.
 When responding to a thread, make sure to use the "Reply" box for that
 thread; do not introduce a new thread or a comment.
 
-The **submitter/assignee** must mark threads as resolved when they fix the related
-problem.
+In addition to human reviewers, developers can start LLM reviews of the MR from the pipeline; see {any}`sec_ci_ai_review`.
+Treat their findings like those of any other reviewer, but expect some false positives.
 
-Often, the submitter/assignee will need to update their branch in response to these comments,
-and re-run the pipeline.
+{any}`sec_mr_updating` describes how to respond to the reviews and to pipeline failures.
 
 If the **submitter/assignee** feels the MR is not getting reviewed in a timely
 manner, they may assign additional reviewers to the MR and request in the MR discussion these same people to review by @-mentioning them.
@@ -92,6 +92,25 @@ You can determine who must approve your MR by clicking on the "View eligible rev
 
 When a sufficient number of reviewers has approved the merge, the pipeline passes, new commits have been {any}`properly rearranged <sec_clean_commit_history>` if needed, and all threads have been resolved,
 the **submitter/assignee** must set the label to {any}`workflow::Ready-For-Merge <sec_workflow_labels>`.
+
+(sec_mr_updating)=
+
+## Updating the MR in response to CI failures and reviews
+
+Most MRs go through several rounds of changes before they are merged.
+In each round, the **submitter/assignee**:
+
+1. Reads the failed pipeline jobs ({ref}`pipelines`) and the unresolved threads.
+2. Fixes the problems on the local branch, and checks the fixes locally with the tests and source checks described in {any}`ch_developingmr`.
+3. Pushes the branch. If the branch history was rewritten, for example to {any}`keep the history clean <sec_clean_commit_history>`, use `git push -f`.
+   To run only the jobs that failed, run `lib/petsc/bin/maint/runjobs.py` before the push, and remove its temporary commit after the pipeline finishes.
+4. Replies in each thread with what was changed, or why no change is necessary, and marks the thread as resolved when the problem is fixed.
+   If a reviewer suggested an exact replacement, the "Apply suggestion" button commits it directly to the branch; get that commit with `git pull --ff-only` before you change the branch locally.
+5. Runs the pipeline again, unless `runjobs.py` already started the failed jobs.
+
+After a push, the "Changes" tab of the MR can compare any two versions of the branch, which lets reviewers see only what changed since their last review.
+
+An LLM harness such as Claude Code can read the failed job logs, the threads, and the LLM review reports, and then make many of these fixes for you; see {any}`ch_llm_gitlab`.
 
 ```{rubric} Footnotes
 ```

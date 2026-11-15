@@ -86,9 +86,16 @@ $ git checkout -b yourname/fix-component-name origin/main
   | `petsc-test` | Select, run, and diagnose tests or update expected output. |
   | `petsc-lint` | Format source and run PETSc or petsc4py source checks. |
   | `petsc-docs` | Audit or build PETSc and petsc4py documentation. |
+  | `petsc-search-docs` | Answer a question from a local documentation build, with citations. |
+  | `codegraph` | Navigate the source with a CodeGraph index, if one exists. |
+  | `clean-commits` | Restructure the branch into a clean commit series and verify each commit. |
+  | `review-branch` | Review the local branch; `make branch-review` runs it. |
+  | `review-mr` | Review an MR as it is on GitLab and print the findings. |
+  | `review-mr-post` | Review an MR and post the findings as inline comments on GitLab. |
 
   For example, a request to configure PETSc can select `petsc-configure` directly; a request to build and test petsc4py can use `petsc-build` and `petsc-test`.
   Shared repository rules stay in `AGENTS.md` and its conditional convention references; each skill contains its task's procedure.
+  {any}`ch_llm_gitlab` describes how to use the last four skills, together with the information GitLab holds about your MR, to fix CI failures and respond to reviews.
 
   The optional `agents/openai.yaml` inside a skill contains OpenAI-specific metadata.
   PETSc uses its `interface` fields for the display name, short description, and suggested invocation prompt in the Codex UI.
@@ -148,6 +155,10 @@ $ git checkout -b yourname/fix-component-name origin/main
 
   Funded-by: My funding source
   Project: My project name
+
+  If an LLM tool helped with the commit, credit it with an Assisted-by trailer, never with Co-authored-by.
+
+  Assisted-by: Claude Opus 5.5 <noreply@anthropic.com>
   ```
 
 - Push the feature branch to the remote repository as desired:
@@ -178,7 +189,11 @@ $ git checkout -b yourname/fix-component-name origin/main
   $ make checkbadSource
   $ make clangformat
   $ make lint
+  $ make checkbadCommitMessage
   ```
+
+  The `checksource` job runs these checks, except `make lint`, at the start of every CI pipeline. It runs `make checkclangformat`, which reformats the files like `make clangformat` and then fails if any file changed. If they fail there, the later stages of the pipeline do not start.
+  The `linux-analyzer` job in `stage-2` runs `make lint`.
 
 - Run LLM reviews of your branch
 
@@ -218,6 +233,10 @@ Use different commits for:
 - fixing a bug,
 - adding a new feature,
 - adding another new feature.
+
+The `clean-commits` skill, described in {any}`ch_llm_gitlab`, has an LLM harness do this restructuring for you and verify that each commit builds and passes the source checks.
+To check each commit of your branch yourself, run `lib/petsc/bin/maint/check-each-commit.sh`. It checks out each commit, configures, and runs the source checks, the build, and a few tests.
+Run it only in a separate clone: before each commit it runs `git clean -f -d -x`, which deletes all untracked and ignored files, including your `PETSC_ARCH` directories.
 
 Rewriting history can be done in [several ways](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History); the easiest is often with the interactive `rebase` command, which allows one to combine ("squash"), rearrange, and edit commits.
 

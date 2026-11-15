@@ -11,6 +11,14 @@ be interested to read about {any}`design`.
 PETSc uses [Git](https://git-scm.com/), [GitLab](https://gitlab.com/petsc/petsc),
 and its testing system, for its source code management.
 All new code in PETSc is accepted via merge requests (MRs).
+The usual sequence is:
+
+1. {any}`Develop the change <ch_developingmr>` on a feature branch, with tests, and check it locally.
+2. {any}`Submit a merge request <ch_submittingmr>` at GitLab.
+3. Run the {ref}`CI pipeline <pipelines>` and fix any failures.
+4. Respond to the reviews, update the branch, and set the MR to `workflow::Ready-For-Merge` when it is approved.
+
+LLM harnesses such as Claude Code can help with each of these steps; see {any}`ch_llm_gitlab`.
 
 By submitting code, the contributor gives irretrievable consent to the
 redistribution and/or modification of the contributed source code as
@@ -102,4 +110,5 @@ $ $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py && make all
 developingmr
 submittingmr
 pipelines
+llms
 ```
