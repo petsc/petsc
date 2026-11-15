@@ -118,6 +118,9 @@ if (type == TYPE_A) {
 } else SETERRQ(comm, PETSC_ERR_SUP, "unsupported");
 ```
 
+Braces are acceptable when that one statement contains a braced block, such as a `for` loop
+with a multi-statement body.
+
 ## Error Handling And PETSc Idioms
 
 - Most PETSc functions return `PetscErrorCode`.
