@@ -482,10 +482,36 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
         // LCOV_EXCL_STOP
       }
     }
-    PetscCall(PetscFEUpdateElementVec_Internal(fe, T[field], 0, basisReal, basisDerReal, e, cgeom, f0, f1, &elemVec[cOffset + fOffset]));
+    PetscCall(PetscFEUpdateElementVec_Internal(fe, T[field], 0, NULL, basisReal, basisDerReal, e, cgeom, f0, f1, &elemVec[cOffset + fOffset]));
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  Return the map from physical face quadrature points to face tabulation points for a face with orientation ornt in its cell.
+  The tabulation point of physical point q is the preimage of q under ornt, given by the permutation of the inverse orientation.
+*/
+static PetscErrorCode PetscFEGetFaceQuadraturePermutation_Private(PetscQuadrature fq, PetscInt ornt, PetscInt *Na, IS *perms[], IS *permIS, const PetscInt *qperm[])
+{
+  DMPolytopeType ct;
+
+  PetscFunctionBegin;
+  *permIS = NULL;
+  *qperm  = NULL;
+  if (!ornt) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscQuadratureGetPermutations(fq, Na, perms));
+  PetscCall(PetscQuadratureGetCellType(fq, &ct));
+  *permIS = (*perms)[DMPolytopeTypeComposeOrientationInv(ct, 0, ornt) + *Na / 2];
+  PetscCall(ISGetIndices(*permIS, qperm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscFERestoreFaceQuadraturePermutation_Private(IS permIS, const PetscInt *qperm[])
+{
+  PetscFunctionBegin;
+  if (permIS != NULL) PetscCall(ISRestoreIndices(permIS, qperm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -505,7 +531,8 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, fOffset, e, NcI;
   PetscBool          auxOnBd = PETSC_FALSE;
   const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qdim, qNc, Nq, q, dE;
+  PetscInt           qdim, qNc, Nq, q, dE, Na = 0;
+  IS                *perms = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
@@ -545,17 +572,20 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   fgeom->dim = dim - 1;
   PetscCheck(fgeom->dim == qdim, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "FEGeom dim %" PetscInt_FMT " != %" PetscInt_FMT " quadrature dim", fgeom->dim, qdim);
   for (e = 0; e < Ne; ++e) {
-    PetscFEGeom    fegeom, cgeom;
-    const PetscInt face = fgeom->face[e][0];
-    const PetscInt ornt = fgeom->face[e][1];
+    PetscFEGeom     fegeom, cgeom;
+    const PetscInt  face = fgeom->face[e][0];
+    const PetscInt  ornt = fgeom->face[e][1];
+    const PetscInt *qperm;
+    IS              permIS;
 
     fegeom.v = x; /* Workspace */
     PetscCall(PetscArrayzero(f0, Nq * NcI));
     PetscCall(PetscArrayzero(f1, Nq * NcI * dE));
+    PetscCall(PetscFEGetFaceQuadraturePermutation_Private(quad, ornt, &Na, &perms, &permIS, &qperm));
     for (q = 0; q < Nq; ++q) {
       PetscReal      w;
       PetscInt       c;
-      const PetscInt qp = ornt < 0 ? (Nq - 1 - q) : q; /* Map physical quadrature index to tabulation index accounting for face orientation */
+      const PetscInt qp = qperm != NULL ? qperm[q] : q;
 
       PetscCall(PetscFEGeomGetPoint(fgeom, e, q, &quadPoints[q * fgeom->dim], &fegeom));
       PetscCall(PetscFEGeomGetCellPoint(fgeom, e, q, &cgeom));
@@ -572,23 +602,24 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
       }
       PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nf, face, qp, Tf, &cgeom, &coefficients[cOffset], PetscSafePointerPlusOffset(coefficients_t, cOffset), u, u_x, u_t));
       if (dsAux) PetscCall(PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, auxOnBd ? 0 : face, qp, TfAux, &cgeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL));
-      for (i = 0; i < n0; ++i) f0_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[qp * NcI]);
-      for (c = 0; c < NcI; ++c) f0[qp * NcI + c] *= w;
-      for (i = 0; i < n1; ++i) f1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[qp * NcI * dE]);
+      for (i = 0; i < n0; ++i) f0_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f0[q * NcI]);
+      for (c = 0; c < NcI; ++c) f0[q * NcI + c] *= w;
+      for (i = 0; i < n1; ++i) f1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q * NcI * dE]);
       for (c = 0; c < NcI; ++c)
-        for (PetscInt d = 0; d < dE; ++d) f1[(qp * NcI + c) * dE + d] *= w;
+        for (PetscInt d = 0; d < dE; ++d) f1[(q * NcI + c) * dE + d] *= w;
       if (debug) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " quad point %" PetscInt_FMT "\n", e, q));
         for (c = 0; c < NcI; ++c) {
-          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[qp * NcI + c])));
+          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[q * NcI + c])));
           if (n1) {
-            for (PetscInt d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(qp * NcI + c) * dim + d])));
+            for (PetscInt d = 0; d < dim; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(q * NcI + c) * dim + d])));
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
           }
         }
       }
     }
-    PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], face, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
+    PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], face, qperm, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
+    PetscCall(PetscFERestoreFaceQuadraturePermutation_Private(permIS, &qperm));
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
@@ -727,7 +758,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
       }
     }
     if (isCohesiveField) {
-      PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
+      PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, NULL, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
     } else {
       PetscCall(PetscFEUpdateElementVec_Hybrid_Internal(fe, Tf[field], 0, s, basisReal, basisDerReal, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
     }
@@ -909,7 +940,8 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscInt            dim, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
   PetscBool           isAffine;
   const PetscReal    *quadPoints, *quadWeights;
-  PetscInt            qNc, Nq, q, Np, dE;
+  PetscInt            qNc, Nq, q, Np, dE, Na = 0;
+  IS                 *perms = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetNumFields(ds, &Nf));
@@ -963,18 +995,21 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights));
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %" PetscInt_FMT " components", qNc);
   for (e = 0; e < Ne; ++e) {
-    PetscFEGeom    fegeom, cgeom;
-    const PetscInt face = fgeom->face[e][0];
-    const PetscInt ornt = fgeom->face[e][1];
-    fegeom.n            = NULL;
-    fegeom.v            = NULL;
-    fegeom.xi           = NULL;
-    fegeom.J            = NULL;
-    fegeom.detJ         = NULL;
-    fegeom.dim          = fgeom->dim;
-    fegeom.dimEmbed     = fgeom->dimEmbed;
-    cgeom.dim           = fgeom->dim;
-    cgeom.dimEmbed      = fgeom->dimEmbed;
+    PetscFEGeom     fegeom, cgeom;
+    const PetscInt  face = fgeom->face[e][0];
+    const PetscInt  ornt = fgeom->face[e][1];
+    const PetscInt *qperm;
+    IS              permIS;
+
+    fegeom.n        = NULL;
+    fegeom.v        = NULL;
+    fegeom.xi       = NULL;
+    fegeom.J        = NULL;
+    fegeom.detJ     = NULL;
+    fegeom.dim      = fgeom->dim;
+    fegeom.dimEmbed = fgeom->dimEmbed;
+    cgeom.dim       = fgeom->dim;
+    cgeom.dimEmbed  = fgeom->dimEmbed;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = fgeom->xi;
@@ -987,9 +1022,10 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
       cgeom.invJ = &fgeom->suppInvJ[0][e * Np * dE * dE];
       cgeom.detJ = &fgeom->suppDetJ[0][e * Np];
     } else fegeom.xi = NULL;
+    PetscCall(PetscFEGetFaceQuadraturePermutation_Private(quad, ornt, &Na, &perms, &permIS, &qperm));
     for (q = 0; q < Nq; ++q) {
       PetscReal      w;
-      const PetscInt qp = ornt < 0 ? (Nq - 1 - q) : q; /* Map physical quadrature index to tabulation index accounting for face orientation */
+      const PetscInt qp = qperm != NULL ? qperm[q] : q;
 
       if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT "\n", q));
       if (isAffine) {
@@ -1032,6 +1068,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
 
       PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, face, qp, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &cgeom, g0, g1, g2, g3, totDim, offsetI, offsetJ, elemMat + eOffset));
     }
+    PetscCall(PetscFERestoreFaceQuadraturePermutation_Private(permIS, &qperm));
     if (debug > 1) {
       PetscInt fc, f, gc, g;
 

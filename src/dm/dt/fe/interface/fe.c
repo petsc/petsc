@@ -2536,7 +2536,7 @@ PetscErrorCode PetscFEEvaluateFaceFields_Internal(PetscDS prob, PetscInt field, 
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, PetscInt r, PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscInt e, PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
+PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, PetscInt r, const PetscInt qperm[], PetscScalar tmpBasis[], PetscScalar tmpBasisDer[], PetscInt e, PetscFEGeom *fegeom, PetscScalar f0[], PetscScalar f1[], PetscScalar elemVec[])
 {
   PetscFEGeom      pgeom;
   const PetscInt   dEt      = T->cdim;
@@ -2549,12 +2549,14 @@ PetscErrorCode PetscFEUpdateElementVec_Internal(PetscFE fe, PetscTabulation T, P
   PetscInt         q, b, c, d;
 
   for (q = 0; q < Nq; ++q) {
+    const PetscInt qt = qperm != NULL ? qperm[q] : q; // Tabulation point of physical point q
+
     for (b = 0; b < Nb; ++b) {
       for (c = 0; c < Nc; ++c) {
         const PetscInt bcidx = b * Nc + c;
 
-        tmpBasis[bcidx] = basis[q * Nb * Nc + bcidx];
-        for (d = 0; d < dEt; ++d) tmpBasisDer[bcidx * dE + d] = basisDer[q * Nb * Nc * dEt + bcidx * dEt + d];
+        tmpBasis[bcidx] = basis[qt * Nb * Nc + bcidx];
+        for (d = 0; d < dEt; ++d) tmpBasisDer[bcidx * dE + d] = basisDer[qt * Nb * Nc * dEt + bcidx * dEt + d];
         for (d = dEt; d < dE; ++d) tmpBasisDer[bcidx * dE + d] = 0.0;
       }
     }

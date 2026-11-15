@@ -11,6 +11,8 @@ struct _p_PetscQuadrature {
   PetscInt         numPoints; /* The number of quadrature points on an element */
   const PetscReal *points;    /* The quadrature point coordinates */
   const PetscReal *weights;   /* The quadrature weights */
+  PetscInt         Na;        /* The number of quadrature arrangements */
+  IS              *perms;     /* The permutations of quadrature points for each arrangement */
 };
 
 #if (!PetscDefined(MISSING_LAPACK_STEQR) || !PetscDefined(MISSING_LAPACK_STEGR))

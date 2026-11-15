@@ -1,0 +1,6 @@
+Face 1 (z = lower): boundary integral is correct
+Face 2 (z = upper): boundary integral is correct
+Face 3 (y = lower): boundary integral is correct
+Face 4 (y = upper): boundary integral is correct
+Face 5 (x = upper): boundary integral is correct
+Face 6 (x = lower): boundary integral is correct

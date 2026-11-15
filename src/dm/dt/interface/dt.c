@@ -110,6 +110,15 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscQuadratureClearPermutations_Private(PetscQuadrature q)
+{
+  PetscFunctionBegin;
+  for (PetscInt a = 0; a < q->Na; ++a) PetscCall(ISDestroy(&q->perms[a]));
+  PetscCall(PetscFree(q->perms));
+  q->Na = 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PetscQuadratureDestroy - Destroys a `PetscQuadrature` object
 
@@ -133,6 +142,7 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
   }
   PetscCall(PetscFree((*q)->points));
   PetscCall(PetscFree((*q)->weights));
+  PetscCall(PetscQuadratureClearPermutations_Private(*q));
   PetscCall(PetscHeaderDestroy(q));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -178,6 +188,7 @@ PetscErrorCode PetscQuadratureSetCellType(PetscQuadrature q, DMPolytopeType ct)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
+  PetscCall(PetscQuadratureClearPermutations_Private(q));
   q->ct = ct;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -560,6 +571,7 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
+  PetscCall(PetscQuadratureClearPermutations_Private(q));
   if (dim >= 0) q->dim = dim;
   if (Nc >= 0) q->Nc = Nc;
   if (npoints >= 0) q->numPoints = npoints;
@@ -3412,16 +3424,21 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
 /*@
   PetscQuadratureComputePermutations - Compute permutations of quadrature points corresponding to domain orientations
 
+  Not Collective
+
   Input Parameter:
 . quad - The `PetscQuadrature`
 
   Output Parameters:
 + Np   - The number of domain orientations
-- perm - An array of `IS` permutations, one for ech orientation,
+- perm - An array of `Np` `IS` permutations, where `perm[o + Np/2]` is the permutation for orientation `o`
 
   Level: developer
 
-.seealso: `PetscQuadratureSetCellType()`, `PetscQuadrature`
+  Note:
+  The user must destroy the permutation `IS` structures and free the array with `PetscFree()`.
+
+.seealso: `PetscQuadratureGetPermutations()`, `PetscQuadratureSetCellType()`, `PetscQuadrature`
 @*/
 PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp PetscInt *Np, IS *perm[])
 {
@@ -3434,6 +3451,7 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp Pet
   PetscCall(PetscQuadratureGetCellType(quad, &ct));
   dim = DMPolytopeTypeGetDim(ct);
   Na  = DMPolytopeTypeGetNumArrangements(ct);
+  PetscCheck(Na > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot compute permutations for quadrature cell type %s. Set the cell type with PetscQuadratureSetCellType()", DMPolytopeTypes[ct]);
   PetscCall(PetscMalloc1(Na, perm));
   if (Np) *Np = Na;
   Na /= 2;
@@ -3455,7 +3473,7 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp Pet
         for (d = 0; d < dim; ++d) diff += PetscAbsReal(txq[d] - xq[qp * dim + d]);
         if (diff < PETSC_SMALL) break;
       }
-      PetscCheck(qp < Nq, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Transformed quad point %" PetscInt_FMT " does not match another quad point", q);
+      PetscCheck(qp < Nq, PETSC_COMM_SELF, PETSC_ERR_SUP, "Quadrature rule is not symmetric. Transformed quad point %" PetscInt_FMT " does not match another quad point", q);
       idx[q] = qp;
     }
     PetscCall(DMDestroy(&refdm));
@@ -3465,6 +3483,37 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp Pet
     PetscCall(ISSetPermutation((*perm)[o + Na]));
   }
   if (!Na) (*perm)[0] = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscQuadratureGetPermutations - Retrieve permutations of quadrature points corresponding to domain orientations
+
+  Not Collective
+
+  Input Parameter:
+. quad - The `PetscQuadrature`
+
+  Output Parameters:
++ Np   - The number of domain orientations
+- perm - An array of `Np` `IS` permutations, where `perm[o + Np/2]` is the permutation for orientation `o`
+
+  Level: developer
+
+  Note:
+  The array and its `IS` permutations are borrowed from `quad`, so do not free or destroy them. They stay valid until `quad` is modified or destroyed.
+
+.seealso: `PetscQuadratureComputePermutations()`, `PetscQuadratureSetCellType()`, `PetscQuadrature`
+@*/
+PetscErrorCode PetscQuadratureGetPermutations(PetscQuadrature quad, PeOp PetscInt *Np, IS *perm[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(quad, PETSCQUADRATURE_CLASSID, 1);
+  if (Np != NULL) PetscAssertPointer(Np, 2);
+  if (perm != NULL) PetscAssertPointer(perm, 3);
+  if (quad->perms == NULL) PetscCall(PetscQuadratureComputePermutations(quad, &quad->Na, &quad->perms));
+  if (Np != NULL) *Np = quad->Na;
+  if (perm != NULL) *perm = quad->perms;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
