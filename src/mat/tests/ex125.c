@@ -47,7 +47,7 @@ int main(int argc, char **args)
   Mat           A, Ae, RHS = NULL, RHS1 = NULL, C, F, X;
   Vec           u, x, b;
   PetscMPIInt   size;
-  PetscInt      m, n, nfact, nsolve, nrhs, ipack = 5;
+  PetscInt      m, n, nfact, nsolve, nrhs;
   PetscReal     norm, tol = 10 * PETSC_SQRT_MACHINE_EPSILON;
   IS            perm = NULL, iperm = NULL;
   MatFactorInfo info;
@@ -59,7 +59,7 @@ int main(int argc, char **args)
 #endif
   PetscViewer fd;                       /* viewer */
   char        file[PETSC_MAX_PATH_LEN]; /* input file name */
-  char        pack[PETSC_MAX_PATH_LEN];
+  char        pack[PETSC_MAX_PATH_LEN] = "";
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -230,23 +230,24 @@ int main(int argc, char **args)
   if (flg) PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm)); // TODO FIXME: MatConvert_Nest_AIJ() does not support chained MatCreate[Hermitian]Transpose()
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type", pack, sizeof(pack), NULL));
+  if (!pack[0]) PetscCall(PetscStrncpy(pack, MATSOLVERPETSC, sizeof(pack)));
+
+  // Get factor matrix F using the solver type from the options database
+  if (chol == PETSC_TRUE) PetscCall(MatGetFactor(A, pack, MAT_FACTOR_CHOLESKY, &F));
+  else PetscCall(MatGetFactor(A, pack, MAT_FACTOR_LU, &F));
+
+  // Set per-solver flags and print solver name
 #if PetscDefined(HAVE_SUPERLU)
-  PetscCall(PetscStrcmp(MATSOLVERSUPERLU, pack, &match));
+  PetscCall(PetscStrcmp(pack, MATSOLVERSUPERLU, &match));
   if (match) {
-    PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " SUPERLU LU:\n"));
-    PetscCall(MatGetFactor(A, MATSOLVERSUPERLU, MAT_FACTOR_LU, &F));
     matsolvexx = PETSC_FALSE; /* Test MatMatSolve(F,RHS,RHS), RHS is a dense matrix, need further work */
-    ipack      = 0;
-    goto skipoptions;
   }
 #endif
 #if PetscDefined(HAVE_SUPERLU_DIST)
-  PetscCall(PetscStrcmp(MATSOLVERSUPERLU_DIST, pack, &match));
+  PetscCall(PetscStrcmp(pack, MATSOLVERSUPERLU_DIST, &match));
   if (match) {
-    PetscCheck(!chol, PETSC_COMM_WORLD, PETSC_ERR_SUP, "SuperLU does not provide Cholesky!");
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " SUPERLU_DIST LU:\n"));
-    PetscCall(MatGetFactor(A, MATSOLVERSUPERLU_DIST, MAT_FACTOR_LU, &F));
     matsolvexx = PETSC_TRUE;
     if (symm) { /* A is symmetric */
       testMatMatSolveTranspose = PETSC_TRUE;
@@ -255,20 +256,13 @@ int main(int argc, char **args)
       testMatMatSolveTranspose = PETSC_FALSE;
       testMatSolveTranspose    = PETSC_FALSE;
     }
-    ipack = 1;
-    goto skipoptions;
   }
 #endif
 #if PetscDefined(HAVE_MUMPS)
-  PetscCall(PetscStrcmp(MATSOLVERMUMPS, pack, &match));
+  PetscCall(PetscStrcmp(pack, MATSOLVERMUMPS, &match));
   if (match) {
-    if (chol) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MUMPS CHOLESKY:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_CHOLESKY, &F));
-    } else {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MUMPS LU:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F));
-    }
+    if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MUMPS CHOLESKY:\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MUMPS LU:\n"));
     matsolvexx = PETSC_TRUE;
     if (test_mumps_opts) {
       /* test mumps options */
@@ -282,56 +276,31 @@ int main(int argc, char **args)
       PetscCall(MatMumpsSetIcntl(F, 24, 1));
       PetscCall(MatMumpsSetCntl(F, 3, cntl));
     }
-    ipack = 2;
-    goto skipoptions;
   }
 #endif
 #if PetscDefined(HAVE_MKL_PARDISO)
-  PetscCall(PetscStrcmp(MATSOLVERMKL_PARDISO, pack, &match));
+  PetscCall(PetscStrcmp(pack, MATSOLVERMKL_PARDISO, &match));
   if (match) {
-    if (chol) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO CHOLESKY:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERMKL_PARDISO, MAT_FACTOR_CHOLESKY, &F));
-    } else {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO LU:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERMKL_PARDISO, MAT_FACTOR_LU, &F));
-    }
-    ipack = 3;
-    goto skipoptions;
+    if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO CHOLESKY:\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, " MKL_PARDISO LU:\n"));
   }
 #endif
 #if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscStrcmp(MATSOLVERCUSPARSE, pack, &match));
+  PetscCall(PetscStrcmp(pack, MATSOLVERCUSPARSE, &match));
   if (match) {
-    if (chol) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE CHOLESKY:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERCUSPARSE, MAT_FACTOR_CHOLESKY, &F));
-    } else {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE LU:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERCUSPARSE, MAT_FACTOR_LU, &F));
-    }
+    if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE CHOLESKY:\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, " CUSPARSE LU:\n"));
     testMatSolveTranspose    = PETSC_FALSE;
     testMatMatSolveTranspose = PETSC_FALSE;
-    ipack                    = 4;
-    goto skipoptions;
   }
 #endif
-  /* PETSc */
-  match = PETSC_TRUE;
-  if (match) {
-    if (chol) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC CHOLESKY:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_CHOLESKY, &F));
-    } else {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC LU:\n"));
-      PetscCall(MatGetFactor(A, MATSOLVERPETSC, MAT_FACTOR_LU, &F));
-    }
+  PetscCall(PetscStrcmp(pack, MATSOLVERPETSC, &match));
+  if (match == PETSC_TRUE) {
+    if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC CHOLESKY:\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC LU:\n"));
     matsolvexx = PETSC_TRUE;
-    ipack      = 5;
-    goto skipoptions;
   }
 
-skipoptions:
   PetscCall(MatFactorInfoInitialize(&info));
   info.fill      = 5.0;
   info.shifttype = (PetscReal)MAT_SHIFT_NONE;
@@ -357,7 +326,8 @@ skipoptions:
     }
 
 #if PetscDefined(HAVE_SUPERLU_DIST)
-    if (ipack == 1) { /* Test MatSuperluDistGetDiagU()
+    PetscCall(PetscStrcmp(pack, MATSOLVERSUPERLU_DIST, &match));
+    if (match == PETSC_TRUE) { /* Test MatSuperluDistGetDiagU()
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
       PetscInt     M;
       PetscScalar *diag;
@@ -382,7 +352,8 @@ skipoptions:
 
 #if PetscDefined(HAVE_MUMPS)
     /* mumps interface allows repeated call of MatCholeskyFactorSymbolic(), while the succession calls do nothing */
-    if (ipack == 2) {
+    PetscCall(PetscStrcmp(pack, MATSOLVERMUMPS, &match));
+    if (match == PETSC_TRUE) {
       if (chol) {
         PetscCall(MatCholeskyFactorSymbolic(F, A, perm, &info));
         PetscCall(MatCholeskyFactorNumeric(F, A, &info));
@@ -417,7 +388,8 @@ skipoptions:
         if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatMatSolve(F,RHS,RHS): Norm of error %g\n", (double)norm));
       }
 
-      if (ipack == 2 && size == 1) {
+      PetscCall(PetscStrcmp(pack, MATSOLVERMUMPS, &match));
+      if (match == PETSC_TRUE && size == 1) {
         Mat spRHS, spRHST, RHST;
 
         PetscCall(MatTranspose(RHS, MAT_INITIAL_MATRIX, &RHST));
@@ -456,7 +428,8 @@ skipoptions:
         if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT "-the MatMatSolveTranspose: Norm of error %g, nsolve %" PetscInt_FMT "\n", nsolve, (double)norm, nsolve));
       }
 
-      if (ipack == 2 && size == 1) {
+      PetscCall(PetscStrcmp(pack, MATSOLVERMUMPS, &match));
+      if (match == PETSC_TRUE && size == 1) {
         Mat spRHS, spRHST, RHST;
 
         PetscCall(MatTranspose(RHS1, MAT_INITIAL_MATRIX, &RHST));
