@@ -111,6 +111,7 @@
 - Add device support for `MATPRODUCT_AtB` with a `MATMPIAIJCUSPARSE`, `MATMPIAIJHIPSPARSE`, or `MATMPIAIJKOKKOS` matrix and a `MATMPIDENSECUDA` or `MATMPIDENSEHIP` matrix, also with `-matproduct_batch_size`; previously a `MATMAIJ` product copied the dense matrices to the host
 - Change `MATPRODUCT_AtB` of a `MATDIAGONAL` matrix and a `MATDENSECUDA` or `MATDENSEHIP` matrix to scale the rows on the device; previously it looped `MatMultTranspose()` over the columns
 - Make `MatKAIJGetS()`, `MatKAIJGetT()`, `MatKAIJRestoreS()`, and `MatKAIJRestoreT()` logically collective, so every process must call them
+- Add `MatCreateKAIJAB()`, `MatKAIJSetB()`, and `MatKAIJGetB()` for a `MATKAIJ` matrix of the form $(A \otimes T) + (B \otimes S)$
 - Deprecate `MatKAIJGetAIJ()` and `MatKAIJSetAIJ()` in favor of `MatKAIJGetA()` and `MatKAIJSetA()`
 
 ```{rubric} MatCoarsen:

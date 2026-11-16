@@ -2333,7 +2333,9 @@ PETSC_DEPRECATED_FUNCTION(3, 12, 0, "MatComputeOperatorTranspose()", ) static in
 }
 
 PETSC_EXTERN PetscErrorCode MatCreateKAIJ(Mat, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateKAIJAB(Mat, Mat, PetscInt, PetscInt, const PetscScalar[], const PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatKAIJGetA(Mat, Mat *);
+PETSC_EXTERN PetscErrorCode MatKAIJGetB(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatKAIJGetS(Mat, PetscInt *, PetscInt *, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatKAIJGetSRead(Mat, PetscInt *, PetscInt *, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatKAIJRestoreS(Mat, PetscScalar **);
@@ -2343,6 +2345,7 @@ PETSC_EXTERN PetscErrorCode MatKAIJGetTRead(Mat, PetscInt *, PetscInt *, const P
 PETSC_EXTERN PetscErrorCode MatKAIJRestoreT(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatKAIJRestoreTRead(Mat, const PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatKAIJSetA(Mat, Mat);
+PETSC_EXTERN PetscErrorCode MatKAIJSetB(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatKAIJSetS(Mat, PetscInt, PetscInt, const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatKAIJSetT(Mat, PetscInt, PetscInt, const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode MatKAIJGetScaledIdentity(Mat, PetscBool *);
