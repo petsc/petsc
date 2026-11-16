@@ -6628,7 +6628,7 @@ cdef class Mat(Object):
         """
         cdef PetscMatCompositeType cval = MAT_COMPOSITE_ADDITIVE
         CHKERR(MatCompositeGetType(self.mat, &cval))
-        return cval
+        return self.CompositeType(<int>cval)
 
     def getCompositeMats(self) -> list[Mat]:
         """Return the matrices held by a `Type.COMPOSITE` matrix.

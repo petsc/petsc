@@ -473,7 +473,7 @@ cdef class TS(Object):
         """
         cdef PetscTSProblemType ptype = TS_NONLINEAR
         CHKERR(TSGetProblemType(self.ts, &ptype))
-        return ptype
+        return self.ProblemType(<int>ptype)
 
     def setEquationType(self, eqtype: EquationType) -> None:
         """Set the type of the equation that `TS` is solving.
@@ -504,7 +504,7 @@ cdef class TS(Object):
         """
         cdef PetscTSEquationType eqtype = TS_EQ_UNSPECIFIED
         CHKERR(TSGetEquationType(self.ts, &eqtype))
-        return eqtype
+        return self.EquationType(<int>eqtype)
 
     def setOptionsPrefix(self, prefix : str | None) -> None:
         """Set the prefix used for all the `TS` options.
@@ -2170,7 +2170,7 @@ cdef class TS(Object):
         """
         cdef PetscTSConvergedReason reason = TS_CONVERGED_ITERATING
         CHKERR(TSGetConvergedReason(self.ts, &reason))
-        return reason
+        return self.ConvergedReason(<int>reason)
 
     # --- monitoring ---
 

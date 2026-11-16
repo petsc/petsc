@@ -1354,7 +1354,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOConvergedReason creason = TAO_CONTINUE_ITERATING
         CHKERR(TaoGetConvergedReason(self.tao, &creason))
-        return creason
+        return self.ConvergedReason(<int>creason)
 
     def setMonitor(self, monitor: TAOMonitorFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set the callback used to monitor solver convergence.
@@ -1605,7 +1605,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOBNCGType cg_type = TAO_BNCG_SSML_BFGS
         CHKERR(TaoBNCGGetType(self.tao, &cg_type))
-        return cg_type
+        return self.BNCGType(<int>cg_type)
 
     def setIterationNumber(self, its: int) -> None:
         """Set the current iteration number.
@@ -1832,7 +1832,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOALMMType almm_type = TAO_ALMM_PHR
         CHKERR(TaoALMMGetType(self.tao, &almm_type))
-        return almm_type
+        return self.ALMMType(<int>almm_type)
 
     def setALMMSubsolver(self, subsolver: TAO) -> None:
         """Set the subsolver inside the ALMM solver.

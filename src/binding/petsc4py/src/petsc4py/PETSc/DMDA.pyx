@@ -1030,7 +1030,7 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAInterpolationType ival = DMDA_INTERPOLATION_Q0
         CHKERR(DMDAGetInterpolationType(self.dm, &ival))
-        return <long>ival
+        return self.InterpolationType(<int>ival)
 
     #
 
@@ -1060,7 +1060,7 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAElementType ival = DMDA_ELEMENT_Q1
         CHKERR(DMDAGetElementType(self.dm, &ival))
-        return <long>ival
+        return self.ElementType(<int>ival)
 
     def getElements(self, elem_type: ElementType | None = None) -> ArrayInt:
         """Return an array containing the indices of all the local elements.

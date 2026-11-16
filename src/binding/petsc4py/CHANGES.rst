@@ -12,6 +12,7 @@ Development
 - Add ``--sync-output`` option to ``test/runtests.py`` to print test output once, from rank 0.
 - Add ``DMPlex.createFromCellSectionParallel()``
 - Derive constant classes such as ``KSP.Type`` and ``KSP.ConvergedReason`` from ``StrEnum`` and ``IntEnum``. Their members still compare equal to strings and integers
+- Return enum members instead of integers from getters such as ``KSP.getConvergedReason()``
 - Use ``Device.Type``, ``DeviceContext.StreamType``, and ``DeviceContext.JoinMode`` members instead of strings in ``Device`` and ``DeviceContext`` methods. Compare return values with members, not names such as ``'CUDA'``
 - Change ``Device.Type.DEFAULT`` to the class method ``Device.Type.DEFAULT()``
 - Add ``TS.ConvergedReason.FORWARD_DIVERGED_LINEAR_SOLVE``, ``TS.ConvergedReason.ADJOINT_DIVERGED_LINEAR_SOLVE``, and ``SNES.ConvergedReason.BREAKOUT_INNER_ITER``

@@ -1417,7 +1417,7 @@ cdef class KSP(Object):
         """
         cdef PetscPCSide side = PC_LEFT
         CHKERR(KSPGetPCSide(self.ksp, &side))
-        return side
+        return PC.Side(<int>side)
 
     def setNormType(self, normtype: NormType) -> None:
         """Set the norm that is used for convergence testing.
@@ -1458,7 +1458,7 @@ cdef class KSP(Object):
         """
         cdef PetscKSPNormType normtype = KSP_NORM_NONE
         CHKERR(KSPGetNormType(self.ksp, &normtype))
-        return normtype
+        return self.NormType(<int>normtype)
 
     def setComputeEigenvalues(self, flag: bool = True) -> None:
         """Set a flag to compute eigenvalues.
@@ -1979,7 +1979,7 @@ cdef class KSP(Object):
         """Use `reason` property."""
         cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING
         CHKERR(KSPGetConvergedReason(self.ksp, &reason))
-        return reason
+        return KSP.ConvergedReason(<int>reason)
 
     def getCGObjectiveValue(self) -> float:
         """Return the CG objective function value.
@@ -2033,7 +2033,7 @@ cdef class KSP(Object):
         """
         cdef PetscKSPCGTRNormType ctype = KSP_CG_TR_NORM_UNPRECONDITIONED
         CHKERR(KSPCGGetTRNormType(self.ksp, &ctype))
-        return ctype
+        return KSP.CGTRNormType(<int>ctype)
 
     def setCGRadius(self, radius: float) -> None:
         """Set the `petsc.KSPCG` trust-region radius.
@@ -2123,7 +2123,7 @@ cdef class KSP(Object):
         """
         cdef PetscKSPHPDDMType cval = KSP_HPDDM_TYPE_GMRES
         CHKERR(KSPHPDDMGetType(self.ksp, &cval))
-        return cval
+        return self.HPDDMType(<int>cval)
 
     def setErrorIfNotConverged(self, flag: bool = True) -> None:
         """Cause `solve` to generate an error if not converged.

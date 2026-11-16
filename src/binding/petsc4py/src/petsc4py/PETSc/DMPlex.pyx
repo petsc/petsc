@@ -907,7 +907,7 @@ cdef class DMPlex(DM):
         cdef PetscInt cp = asInt(p)
         cdef PetscDMPolytopeType ctype = DM_POLYTOPE_UNKNOWN
         CHKERR(DMPlexGetCellType(self.dm, cp, &ctype))
-        return toInt(ctype)
+        return DM.PolytopeType(<int>ctype)
 
     def getCellTypeLabel(self) -> DMLabel:
         """Return the `DMLabel` recording the polytope type of each cell.

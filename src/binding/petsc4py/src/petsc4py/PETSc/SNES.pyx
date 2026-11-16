@@ -772,7 +772,7 @@ cdef class SNES(Object):
         """
         cdef PetscPCSide side = PC_RIGHT
         CHKERR(SNESGetNPCSide(self.snes, &side))
-        return side
+        return PC.Side(<int>side)
 
     # --- user Function/Jacobian routines ---
 
@@ -1324,7 +1324,7 @@ cdef class SNES(Object):
         """
         cdef PetscSNESNormSchedule normsched = SNES_NORM_NONE
         CHKERR(SNESGetNormSchedule(self.snes, &normsched))
-        return normsched
+        return self.NormSchedule(<int>normsched)
 
     def setConvergenceTest(self, converged: SNESConvergedFunction | Literal["skip", "default"],
                            args: tuple[Any, ...] | None = None,
@@ -1790,7 +1790,7 @@ cdef class SNES(Object):
         """
         cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
         CHKERR(SNESGetConvergedReason(self.snes, &reason))
-        return reason
+        return self.ConvergedReason(<int>reason)
 
     def setErrorIfNotConverged(self, flag: bool = True) -> None:
         """Immediately generate an error if the solver has not converged.

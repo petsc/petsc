@@ -314,6 +314,6 @@ cdef class Regressor(Object):
         """
         cdef PetscRegressorLinearType cval = REGRESSOR_LINEAR_OLS
         CHKERR(PetscRegressorLinearGetType(self.regressor, &cval))
-        return cval
+        return self.LinearType(<int>cval)
 
 del RegressorType
