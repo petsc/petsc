@@ -4365,7 +4365,7 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
 . A - the matrix
 
   Options Database Keys:
-+ -mat_no_inode                   - Do not use inodes
++ -mat_no_inode (true|false)      - Do not use inodes
 . -mat_inode_limit limit          - Sets inode limit (max limit=5)
 - -matmult_vecscatter_view viewer - View the vecscatter (i.e., communication pattern) used in `MatMult()` of sparse parallel matrices.
                                     See viewer types in manual of `MatView()`. Of them, ascii_matlab, draw or binary cause the `VecScatter`

@@ -331,11 +331,11 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 . tr - the `DMPlexTransform` object to set options for
 
   Options Database Keys:
-+ -dm_plex_transform_type type               - Set the transform type, e.g. refine_regular
-. -dm_plex_transform_label_match_strata      - Only label points of the same stratum as the producing point
-. -dm_plex_transform_label_replica_inc inc   - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
-. -dm_plex_transform_active name             - Name for active mesh label
-- -dm_plex_transform_active_values v0,v1,... - Values in the active label
++ -dm_plex_transform_type type                       - Set the transform type, e.g. refine_regular
+. -dm_plex_transform_label_match_strata (true|false) - Only label points of the same stratum as the producing point
+. -dm_plex_transform_label_replica_inc inc           - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
+. -dm_plex_transform_active name                     - Name for active mesh label
+- -dm_plex_transform_active_values v0,v1,...         - Values in the active label
 
   Level: intermediate
 
@@ -2764,9 +2764,9 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   Level: intermediate
 
   Options Database Keys:
-+ -dm_plex_transform_label_match_strata    - Only label points of the same stratum as the producing point
-. -dm_plex_transform_label_replica_inc num - Increment for the label value to be multiplied by the replica number
-- -dm_plex_transform_active name           - Name for active mesh label
++ -dm_plex_transform_label_match_strata (true|false) - Only label points of the same stratum as the producing point
+. -dm_plex_transform_label_replica_inc num           - Increment for the label value to be multiplied by the replica number
+- -dm_plex_transform_active name                     - Name for active mesh label
 
 .seealso: [](plex_transform_table), [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformCreate()`, `DMPlexTransformSetDM()`
 @*/

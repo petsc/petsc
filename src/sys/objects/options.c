@@ -2001,7 +2001,7 @@ PetscErrorCode PetscOptionsAllUsed(PetscOptions options, PetscInt *N)
 . options - options database; use `NULL` for default global database
 
   Options Database Key:
-. -options_left - activates `PetscOptionsAllUsed()` within `PetscFinalize()`
+. -options_left (true|false) - activates `PetscOptionsAllUsed()` within `PetscFinalize()`
 
   Level: advanced
 

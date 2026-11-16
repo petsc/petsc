@@ -127,8 +127,8 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
 - v    - the values
 
   Options Database Keys:
-+ -draw_x_shared_colormap - Indicates use of private colormap
-- -draw_contour_grid      - draws grid contour
++ -draw_x_shared_colormap (true|false) - use a shared colormap instead of a private one
+- -draw_contour_grid (true|false)      - draws grid contour
 
   Level: intermediate
 
@@ -213,7 +213,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscR
 - v    - the data
 
   Options Database Key:
-. -draw_x_shared_colormap - Activates private colormap
+. -draw_x_shared_colormap (true|false) - use a shared colormap instead of a private one
 
   Level: advanced
 

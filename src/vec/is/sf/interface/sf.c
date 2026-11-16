@@ -323,12 +323,12 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 . sf - star forest
 
   Options Database Keys:
-+ -sf_type (basic|window|neighbor) - implementation type, see `PetscSFSetType()`
-. -sf_rank_order (true|false)      - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
-. -sf_use_stream_aware_mpi         - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
-                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
-- -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).
-                                     On other devices, the only available backend is `kokkos`.
++ -sf_type (basic|window|neighbor)      - implementation type, see `PetscSFSetType()`
+. -sf_rank_order (true|false)           - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
+. -sf_use_stream_aware_mpi (true|false) - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
+                                          If true, this option only works with `-use_gpu_aware_mpi 1`.
+- -sf_backend (cuda|hip|kokkos)         - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).
+                                          On other devices, the only available backend is `kokkos`.
 
   Level: intermediate
 

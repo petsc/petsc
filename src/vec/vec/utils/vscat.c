@@ -661,8 +661,8 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 . newsf - location to store the new scatter context
 
   Options Database Key:
-. -vecscatter_merge - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
-                      eliminates the chance for overlap of computation and communication
+. -vecscatter_merge (true|false) - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
+                                   eliminates the chance for overlap of computation and communication
 
   Level: intermediate
 

@@ -907,22 +907,22 @@ static PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt si
 . -dm_adaptor (pragmatic|mmg|parmmg) - specify `DMAdapterType` to use
 
   Options Database Keys for Mmg and ParMmg:
-+ -dm_plex_metric_gradation_factor - Maximum ratio by which edge lengths may grow during gradation
-. -dm_plex_metric_num_iterations   - Number of parallel mesh adaptation iterations for ParMmg
-. -dm_plex_metric_no_insert        - Should node insertion/deletion be turned off?
-. -dm_plex_metric_no_swap          - Should facet swapping be turned off?
-. -dm_plex_metric_no_move          - Should node movement be turned off?
-- -dm_plex_metric_verbosity        - Choose a verbosity level from -1 (silent) to 10 (maximum).
++ -dm_plex_metric_gradation_factor       - Maximum ratio by which edge lengths may grow during gradation
+. -dm_plex_metric_num_iterations         - Number of parallel mesh adaptation iterations for ParMmg
+. -dm_plex_metric_no_insert (true|false) - Should node insertion/deletion be turned off?
+. -dm_plex_metric_no_swap (true|false)   - Should facet swapping be turned off?
+. -dm_plex_metric_no_move (true|false)   - Should node movement be turned off?
+- -dm_plex_metric_verbosity              - Choose a verbosity level from -1 (silent) to 10 (maximum).
 
   Options Database Keys for Riemannian metrics:
-+ -dm_plex_metric_isotropic                 - Is the metric isotropic?
-. -dm_plex_metric_uniform                   - Is the metric uniform?
-. -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
-. -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
-. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
-. -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
-. -dm_plex_metric_p                         - L-p normalization order
-- -dm_plex_metric_target_complexity         - Target metric complexity
++ -dm_plex_metric_isotropic (true|false)                 - Is the metric isotropic?
+. -dm_plex_metric_uniform (true|false)                   - Is the metric uniform?
+. -dm_plex_metric_restrict_anisotropy_first (true|false) - Should anisotropy be restricted before normalization?
+. -dm_plex_metric_h_min                                  - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                                  - Maximum tolerated metric magnitude
+. -dm_plex_metric_a_max                                  - Maximum tolerated anisotropy
+. -dm_plex_metric_p                                      - L-p normalization order
+- -dm_plex_metric_target_complexity                      - Target metric complexity
 
   Level: beginner
 
@@ -1153,11 +1153,11 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
 - determinant - Its determinant
 
   Options Database Keys:
-+ -dm_plex_metric_isotropic - Is the metric isotropic?
-. -dm_plex_metric_uniform   - Is the metric uniform?
-. -dm_plex_metric_h_min     - Minimum tolerated metric magnitude
-. -dm_plex_metric_h_max     - Maximum tolerated metric magnitude
-- -dm_plex_metric_a_max     - Maximum tolerated anisotropy
++ -dm_plex_metric_isotropic (true|false) - Is the metric isotropic?
+. -dm_plex_metric_uniform (true|false)   - Is the metric uniform?
+. -dm_plex_metric_h_min                  - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                  - Maximum tolerated metric magnitude
+- -dm_plex_metric_a_max                  - Maximum tolerated anisotropy
 
   Level: beginner
 
@@ -1246,14 +1246,14 @@ static void detMFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 - determinant - computed determinant
 
   Options Database Keys:
-+ -dm_plex_metric_isotropic                 - Is the metric isotropic?
-. -dm_plex_metric_uniform                   - Is the metric uniform?
-. -dm_plex_metric_restrict_anisotropy_first - Should anisotropy be restricted before normalization?
-. -dm_plex_metric_h_min                     - Minimum tolerated metric magnitude
-. -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
-. -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
-. -dm_plex_metric_p                         - L-p normalization order
-- -dm_plex_metric_target_complexity         - Target metric complexity
++ -dm_plex_metric_isotropic (true|false)                 - Is the metric isotropic?
+. -dm_plex_metric_uniform (true|false)                   - Is the metric uniform?
+. -dm_plex_metric_restrict_anisotropy_first (true|false) - Should anisotropy be restricted before normalization?
+. -dm_plex_metric_h_min                                  - Minimum tolerated metric magnitude
+. -dm_plex_metric_h_max                                  - Maximum tolerated metric magnitude
+. -dm_plex_metric_a_max                                  - Maximum tolerated anisotropy
+. -dm_plex_metric_p                                      - L-p normalization order
+- -dm_plex_metric_target_complexity                      - Target metric complexity
 
   Level: beginner
 

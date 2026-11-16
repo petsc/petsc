@@ -22,7 +22,7 @@
 - ctx  - error handler context
 
   Options Database Keys:
-+ -on_error_abort                                 - Activates aborting when an error is encountered
++ -on_error_abort (true|false)                    - Activates aborting when an error is encountered
 . -start_in_debugger [(noxterm)],[(lldb|gdb|...)] - Starts all processes in the debugger and uses `PetscAbortErrorHandler()`. By default on Linux the
                                                     debugger is gdb and on macOS it is lldb. On Linux it opens a new xterm and on macOS it opens a new
                                                     Terminal for the debugger unless `noxterm` is given

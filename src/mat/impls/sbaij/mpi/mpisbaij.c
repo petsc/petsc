@@ -2363,9 +2363,9 @@ M*/
           (possibly different for each block row) or `NULL`.
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the
-                    block calculations (much slower)
-- -mat_block_size - size of the blocks to use
++ -mat_no_unroll (true|false) - uses code that does not unroll the loops in the
+                                block calculations (much slower)
+- -mat_block_size bs          - size of the blocks to use
 
   Level: intermediate
 
@@ -2467,9 +2467,9 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
 . A - the matrix
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the
-                    block calculations (much slower)
-- -mat_block_size - size of the blocks to use
++ -mat_no_unroll (true|false) - uses code that does not unroll the loops in the
+                                block calculations (much slower)
+- -mat_block_size bs          - size of the blocks to use
 
   Level: intermediate
 

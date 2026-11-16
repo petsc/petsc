@@ -2359,7 +2359,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 . -ts_arkimex_fully_implicit (true|false)                                - Solve both parts of the equation implicitly
 . -ts_arkimex_fastslowsplit (true|false)                                 - Enables the `TSARKIMEX` solver for a fast-slow system where the RHS is split component-wise,
                                                                            see `TSRHSSplitSetIS()`
-- -ts_arkimex_initial_guess_extrapolate                                  - Extrapolate the initial guess for the stage solution from stage values of the previous time step
+- -ts_arkimex_initial_guess_extrapolate (true|false)                     - Extrapolate the initial guess for the stage solution from stage values of the previous time step
 
   Level: beginner
 

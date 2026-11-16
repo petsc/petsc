@@ -740,7 +740,7 @@ static PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    Options Database Keys:
 +  -snes_type (vinewtonssls|vinewtonrsls) - A semi-smooth solver or a reduced space active set method
 .  -snes_vi_zero_tolerance                - Tolerance for considering $u_i$ value to be on a bound.
-.  -snes_vi_monitor                       - Prints the number of active constraints (active set points) at each iteration.
+.  -snes_vi_monitor (true|false)          - Prints the number of active constraints (active set points) at each iteration.
 .  -snes_vi_monitor_residual              - View the residual vector at each iteration, using zero for active constraints (i.e. the active set variables).
 -  -snes_vi_monitor_active                - View the active set by outputting a one for vector components in the active set and zero for the inactive.
 

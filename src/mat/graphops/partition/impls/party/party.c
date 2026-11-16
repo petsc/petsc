@@ -278,7 +278,7 @@ static PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning p
 - opt  - boolean flag
 
   Options Database Key:
-. -mat_partitioning_party_match_optimization - Matching optimization on/off
+. -mat_partitioning_party_match_optimization (true|false) - Matching optimization on/off
 
   Level: advanced
 
@@ -312,7 +312,7 @@ static PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitio
 - bp   - boolean flag
 
   Options Database Key:
-. -mat_partitioning_party_bipart - Bipartitioning option on/off
+. -mat_partitioning_party_bipart (true|false) - Bipartitioning option on/off
 
   Level: advanced
 

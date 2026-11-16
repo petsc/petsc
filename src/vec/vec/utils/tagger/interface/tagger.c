@@ -177,9 +177,9 @@ PetscErrorCode VecTaggerSetUp(VecTagger tagger)
 . tagger - vec tagger
 
   Options Database Keys:
-+ -vec_tagger_type       - implementation type, see `VecTaggerSetType()`
-. -vec_tagger_block_size - set the block size, see `VecTaggerSetBlockSize()`
-- -vec_tagger_invert     - invert the index set returned by `VecTaggerComputeIS()`
++ -vec_tagger_type                - implementation type, see `VecTaggerSetType()`
+. -vec_tagger_block_size          - set the block size, see `VecTaggerSetBlockSize()`
+- -vec_tagger_invert (true|false) - invert the index set returned by `VecTaggerComputeIS()`
 
   Level: advanced
 

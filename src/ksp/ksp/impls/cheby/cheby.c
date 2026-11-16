@@ -863,12 +863,12 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
      KSPCHEBYSHEV - The preconditioned Chebyshev iterative method
 
    Options Database Keys:
-+   -ksp_chebyshev_eigenvalues emin,emax - set approximations to the smallest and largest eigenvalues
-                                           of the preconditioned operator. If these are accurate you will get much faster convergence.
-.   -ksp_chebyshev_esteig a,b,c,d        - estimate eigenvalues using a Krylov method, then use this
-                                           transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
-.   -ksp_chebyshev_esteig_steps          - number of eigenvalue estimation steps
--   -ksp_chebyshev_esteig_noisy          - use a noisy random number generator to create right-hand side for eigenvalue estimator
++   -ksp_chebyshev_eigenvalues emin,emax     - set approximations to the smallest and largest eigenvalues
+                                               of the preconditioned operator. If these are accurate you will get much faster convergence.
+.   -ksp_chebyshev_esteig a,b,c,d            - estimate eigenvalues using a Krylov method, then use this
+                                               transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
+.   -ksp_chebyshev_esteig_steps              - number of eigenvalue estimation steps
+-   -ksp_chebyshev_esteig_noisy (true|false) - use a noisy random number generator to create right-hand side for eigenvalue estimator
 
    Level: beginner
 

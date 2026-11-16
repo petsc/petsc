@@ -268,8 +268,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 . A - the matrix
 
   Options Database Keys:
-. -mat_aijsell_eager_shadow - Construct shadow matrix upon matrix assembly; default is to take a "lazy" approach,
-                               performing this step the first time the matrix is applied
+. -mat_aijsell_eager_shadow (true|false) - Construct shadow matrix upon matrix assembly; default is to take a "lazy" approach,
+                                            performing this step the first time the matrix is applied
 
   Level: intermediate
 

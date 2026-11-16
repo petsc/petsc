@@ -922,7 +922,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 . -snes_divergence_tolerance divtol                      - if the residual goes above divtol*rnorm0, exit with divergence
 . -snes_max_it max_it                                    - maximum number of iterations
 . -snes_max_funcs max_funcs                              - maximum number of function evaluations
-. -snes_force_iteration force                            - force `SNESSolve()` to take at least one iteration
+. -snes_force_iteration (true|false)                     - force `SNESSolve()` to take at least one iteration
 . -snes_max_fail max_fail                                - maximum number of line search failures allowed before stopping, default is none
 . -snes_max_linear_solve_fail num                        - number of linear solver failures allowed before `SNESSolve()` is stopped
 . -snes_lag_preconditioner lag                           - how often preconditioner is rebuilt (use -1 to never rebuild)
@@ -948,7 +948,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
                                                            to help users detect the location of errors in the user provided Jacobian.
 
   Options Database Keys for Eisenstat-Walker method:
-+ -snes_ksp_ew                     - use Eisenstat-Walker method for determining linear system convergence
++ -snes_ksp_ew (true|false)        - use Eisenstat-Walker method for determining linear system convergence
 . -snes_ksp_ew_version ver         - version of  Eisenstat-Walker method
 . -snes_ksp_ew_rtol0 rtol0         - Sets rtol0
 . -snes_ksp_ew_rtolmax rtolmax     - Sets rtolmax
@@ -1346,10 +1346,10 @@ PetscErrorCode SNESGetApplicationContext(SNES snes, PetscCtxRt ctx)
                 this option no matrix-element based preconditioners can be used in the linear solve since the matrix won't be explicitly available
 
   Options Database Keys:
-+ -snes_mf_operator - use matrix-free only for the mat operator
-. -snes_mf          - use matrix-free for both the mat and pmat operator
-. -snes_fd_color    - compute the Jacobian via coloring and finite differences.
-- -snes_fd          - compute the Jacobian via finite differences (slow)
++ -snes_mf_operator (true|false) - use matrix-free only for the mat operator
+. -snes_mf (true|false)          - use matrix-free for both the mat and pmat operator
+. -snes_fd_color (true|false)    - compute the Jacobian via coloring and finite differences.
+- -snes_fd (true|false)          - compute the Jacobian via finite differences (slow)
 
   Level: intermediate
 
@@ -1853,10 +1853,10 @@ PetscErrorCode SNESParametersInitialize(SNES snes)
 . outsnes - the new `SNES` context
 
   Options Database Keys:
-+ -snes_mf          - Activates default matrix-free Jacobian-vector products, with no preconditioner by default
-. -snes_mf_operator - Activates default matrix-free Jacobian-vector products, and a user-provided matrix as set by `SNESSetJacobian()`
-. -snes_fd_color    - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
-- -snes_fd          - Uses (slow!) finite differences to compute Jacobian
++ -snes_mf (true|false)          - Activates default matrix-free Jacobian-vector products, with no preconditioner by default
+. -snes_mf_operator (true|false) - Activates default matrix-free Jacobian-vector products, and a user-provided matrix as set by `SNESSetJacobian()`
+. -snes_fd_color (true|false)    - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
+- -snes_fd (true|false)          - Uses (slow!) finite differences to compute Jacobian
 
   Level: beginner
 
@@ -3959,7 +3959,7 @@ PetscErrorCode SNESSetLagPreconditionerPersists(SNES snes, PetscBool flg)
 - force - `PETSC_TRUE` require at least one iteration
 
   Options Database Key:
-. -snes_force_iteration force - Sets forcing an iteration
+. -snes_force_iteration (true|false) - Sets forcing an iteration
 
   Level: intermediate
 
@@ -4376,10 +4376,10 @@ M*/
 - mctx  - the optional monitor context
 
   Options Database Keys:
-+ -snes_monitor               - sets `SNESMonitorDefault()`
-. -snes_monitor draw::draw_lg - sets line graph monitor
-- -snes_monitor_cancel        - cancels all monitors that have been hardwired into a code by calls to `SNESMonitorSet()`, but does not cancel those set via
-                                the options database.
++ -snes_monitor                     - sets `SNESMonitorDefault()`
+. -snes_monitor draw::draw_lg       - sets line graph monitor
+- -snes_monitor_cancel (true|false) - cancels all monitors that have been hardwired into a code by calls to `SNESMonitorSet()`, but does not cancel those set via
+                                      the options database.
 
   Level: intermediate
 
@@ -4419,9 +4419,9 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES snes, PetscInt
 . snes - the `SNES` context
 
   Options Database Key:
-. -snes_monitor_cancel - cancels all monitors that have been hardwired
-                         into a code by calls to `SNESMonitorSet()`, but does not cancel those
-                         set via the options database
+. -snes_monitor_cancel (true|false) - cancels all monitors that have been hardwired
+                                      into a code by calls to `SNESMonitorSet()`, but does not cancel those
+                                      set via the options database
 
   Level: intermediate
 
@@ -4804,9 +4804,9 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
 - vctx - [optional] context for private data for the function
 
   Options Database Keys:
-+ -snes_converged_reason             - sets a default `SNESConvergedReasonView()`
-- -snes_converged_reason_view_cancel - cancels all converged reason viewers that have been hardwired into a code by
-                                       calls to `SNESConvergedReasonViewSet()`, but does not cancel those set via the options database.
++ -snes_converged_reason                          - sets a default `SNESConvergedReasonView()`
+- -snes_converged_reason_view_cancel (true|false) - cancels all converged reason viewers that have been hardwired into a code by
+                                                    calls to `SNESConvergedReasonViewSet()`, but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -5542,7 +5542,7 @@ PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 - flag - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Keys:
-+ -snes_ksp_ew                     - use Eisenstat-Walker method for determining linear system convergence
++ -snes_ksp_ew (true|false)        - use Eisenstat-Walker method for determining linear system convergence
 . -snes_ksp_ew_version ver         - version of  Eisenstat-Walker method
 . -snes_ksp_ew_rtol0 rtol0         - Sets rtol0
 . -snes_ksp_ew_rtolmax rtolmax     - Sets rtolmax

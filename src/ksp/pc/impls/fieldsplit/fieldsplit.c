@@ -2498,7 +2498,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
 - flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
   Options Database Key:
-. -pc_fieldsplit_diag_use_amat - use the Amat to provide the diagonal blocks
+. -pc_fieldsplit_diag_use_amat (true|false) - use the Amat to provide the diagonal blocks
 
   Level: intermediate
 
@@ -3580,7 +3580,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
 
   Options Database Keys:
 +   -pc_fieldsplit_%d_fields a,b,...                                                 - indicates the fields to be used in the `%d`'th split
-.   -pc_fieldsplit_default                                                           - automatically add any fields to additional splits that have not
+.   -pc_fieldsplit_default (true|false)                                              - automatically add any fields to additional splits that have not
                                                                                        been supplied explicitly by `-pc_fieldsplit_%d_fields`
 .   -pc_fieldsplit_block_size bs                                                     - size of block that defines fields (i.e. there are bs fields)
                                                                                        when the matrix is not of `MatType` `MATNEST`

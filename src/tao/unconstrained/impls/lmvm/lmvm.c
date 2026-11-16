@@ -230,7 +230,7 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   to compute the steplength in the $d_k$ direction
 
   Options Database Key:
-.   -tao_lmvm_recycle - enable recycling LMVM updates between `TaoSolve()` calls
+.   -tao_lmvm_recycle (true|false) - enable recycling LMVM updates between `TaoSolve()` calls
 
   Level: beginner
 

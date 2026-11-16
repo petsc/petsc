@@ -556,7 +556,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 . -mat_strumpack_geometric_xyz m,n,p                                                                        - Mesh x,y,z dimensions, for use with `MAT_STRUMPACK_GEOMETRIC` ordering
 . -mat_strumpack_geometric_components dof                                                                   - Number of components per mesh point, for `MAT_STRUMPACK_GEOMETRIC` ordering
 . -mat_strumpack_geometric_width width                                                                      - Width of the separator of the mesh, for geometric nested dissection ordering
-- -mat_strumpack_metis_nodeNDP                                                                              - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
+- -mat_strumpack_metis_nodeNDP (true|false)                                                                 - Use METIS_NodeNDP instead of METIS_NodeND, for a more balanced tree
 
   Level: beginner
 

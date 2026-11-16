@@ -145,18 +145,18 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 . B - the matrix
 
   Options Database Keys:
-+ -mat_lmvm_hist_size         - the number of history vectors to keep
-. -mat_lmvm_psi               - convex ratio between BFGS and DFP components of the update
-. -mat_lmvm_scale_type        - type of scaling applied to J0 (none, scalar, diagonal)
-. -mat_lmvm_mult_algorithm    - the algorithm to use for multiplication (recursive, dense, compact_dense)
-. -mat_lmvm_cache_J0_products - whether products between the base Jacobian J0 and history vectors should be cached or recomputed
-. -mat_lmvm_eps               - (developer) numerical zero tolerance for testing when an update should be skipped
-. -mat_lmvm_debug             - (developer) perform internal debugging checks
-. -mat_lmvm_theta             - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-. -mat_lmvm_rho               - (developer) update limiter for the J0 scaling
-. -mat_lmvm_alpha             - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-. -mat_lmvm_beta              - (developer) exponential factor for the diagonal J0 scaling
-- -mat_lmvm_sigma_hist        - (developer) number of past updates to use in J0 scaling
++ -mat_lmvm_hist_size                                      - the number of history vectors to keep
+. -mat_lmvm_psi                                            - convex ratio between BFGS and DFP components of the update
+. -mat_lmvm_scale_type (none|scalar|diagonal|user|decide)  - type of scaling applied to J0
+. -mat_lmvm_mult_algorithm (recursive|dense|compact_dense) - the algorithm to use for multiplication
+. -mat_lmvm_cache_J0_products (true|false)                 - whether products between the base Jacobian J0 and history vectors should be cached or recomputed
+. -mat_lmvm_eps                                            - (developer) numerical zero tolerance for testing when an update should be skipped
+. -mat_lmvm_debug (true|false)                             - (developer) perform internal debugging checks
+. -mat_lmvm_theta                                          - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho                                            - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha                                          - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta                                           - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist                                     - (developer) number of past updates to use in J0 scaling
 
   Level: intermediate
 

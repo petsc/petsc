@@ -7996,7 +7996,7 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
 - ov  - the additional overlap requested
 
   Options Database Key:
-. -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+. -mat_increase_overlap_scalable (true|false) - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
 
   Level: developer
 
@@ -8051,7 +8051,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat, IS *, PetscInt);
 - ov  - the additional overlap requested
 
   `   Options Database Key:
-. -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
+. -mat_increase_overlap_scalable (true|false) - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
 
   Level: developer
 

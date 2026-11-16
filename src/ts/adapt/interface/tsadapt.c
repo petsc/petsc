@@ -361,7 +361,7 @@ PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
 - flg   - `PETSC_TRUE` to active a monitor, `PETSC_FALSE` to disable
 
   Options Database Key:
-. -ts_adapt_monitor - to turn on monitoring
+. -ts_adapt_monitor (true|false) - to turn on monitoring
 
   Level: intermediate
 
@@ -419,7 +419,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
 - flag  - whether to always accept steps
 
   Options Database Key:
-. -ts_adapt_always_accept - to always accept steps
+. -ts_adapt_always_accept (true|false) - to always accept steps
 
   Level: intermediate
 

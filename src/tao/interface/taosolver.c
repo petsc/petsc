@@ -1703,7 +1703,7 @@ PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao tao, PetscCtx c
 . tao - the `Tao` solver context
 
   Options Database Key:
-. -tao_monitor_cancel - cancels all monitors that have been hardwired
+. -tao_monitor_cancel (true|false) - cancels all monitors that have been hardwired
     into a code by calls to `TaoMonitorSet()`, but does not cancel those
     set via the options database
 

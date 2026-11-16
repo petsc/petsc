@@ -120,8 +120,8 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 . F - the function value
 
   Options Database Keys:
-+ -snes_fd_function_eps - Tolerance for including non-zero entries into the gradient, default is 1.e-6
-- -snes_fd_function     - Computes function from user provided objective function (set with `SNESSetObjective()`) with finite difference
++ -snes_fd_function_eps eps      - Tolerance for including non-zero entries into the gradient, default is 1.e-6
+- -snes_fd_function (true|false) - Computes function from user provided objective function (set with `SNESSetObjective()`) with finite difference
 
   Level: advanced
 

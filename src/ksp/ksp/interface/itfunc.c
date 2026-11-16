@@ -521,9 +521,9 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 - reasonviewdestroy - [optional] routine that frees `ctx` (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Options Database Keys:
-+ -ksp_converged_reason             - sets a default `KSPConvergedReasonView()`
-- -ksp_converged_reason_view_cancel - cancels all converged reason viewers that have been hardwired into a code by
-                                      calls to `KSPConvergedReasonViewSet()`, but does not cancel those set via the options database.
++ -ksp_converged_reason                          - sets a default `KSPConvergedReasonView()`
+- -ksp_converged_reason_view_cancel (true|false) - cancels all converged reason viewers that have been hardwired into a code by
+                                                   calls to `KSPConvergedReasonViewSet()`, but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -2365,12 +2365,12 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 . -ksp_monitor hdf5:filename               - sets `KSPMonitorResidualView()` and saves residual
 . -ksp_monitor draw                        - sets `KSPMonitorResidualView()` and plots residual
 . -ksp_monitor draw::draw_lg               - sets `KSPMonitorResidualDrawLG()` and plots residual
-. -ksp_monitor_pause_final                 - Pauses any graphics when the solve finishes (only works for internal monitors)
+. -ksp_monitor_pause_final (true|false)    - Pauses any graphics when the solve finishes (only works for internal monitors)
 . -ksp_monitor_true_residual               - sets `KSPMonitorTrueResidual()`
 . -ksp_monitor_true_residual draw::draw_lg - sets `KSPMonitorTrueResidualDrawLG()` and plots residual
 . -ksp_monitor_max                         - sets `KSPMonitorTrueResidualMax()`
 . -ksp_monitor_singular_value              - sets `KSPMonitorSingularValue()`
-- -ksp_monitor_cancel                      - cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but
+- -ksp_monitor_cancel (true|false)         - cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but
                                              does not cancel those set via the options database.
 
   Level: beginner
@@ -2420,7 +2420,7 @@ PetscErrorCode KSPMonitorSet(KSP ksp, KSPMonitorFn *monitor, PetscCtx ctx, Petsc
 . ksp - iterative solver obtained from `KSPCreate()`
 
   Options Database Key:
-. -ksp_monitor_cancel - Cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but does not cancel those set via the options database.
+. -ksp_monitor_cancel (true|false) - Cancels all monitors that have been hardwired into a code by calls to `KSPMonitorSet()`, but does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -3032,7 +3032,7 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, KSPComputeInitialGuessFn *func
 - flg - `PETSC_TRUE` to transpose the system explicitly, `PETSC_FALSE` to not transpose explicitly (default)
 
   Options Database Key:
-. -ksp_use_explicittranspose - transpose the system explicitly in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
+. -ksp_use_explicittranspose (true|false) - transpose the system explicitly in `KSPSolveTranspose()` and `KSPMatSolveTranspose()`
 
   Level: advanced
 

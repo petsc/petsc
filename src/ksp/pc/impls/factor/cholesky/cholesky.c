@@ -263,7 +263,7 @@ static PetscErrorCode PCMatApplyTranspose_Cholesky(PC pc, Mat X, Mat Y)
 - flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
   Options Database Key:
-. -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
+. -pc_factor_reuse_ordering (true|false) - Activate `PCFactorSetReuseOrdering()`
 
   Level: intermediate
 

@@ -673,7 +673,7 @@ PetscErrorCode PCFactorSetPivotInBlocks(PC pc, PetscBool pivot)
 - flag - `PETSC_TRUE` to reuse else `PETSC_FALSE`
 
   Options Database Key:
-. -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
+. -pc_factor_reuse_fill (true|false) - Activates `PCFactorSetReuseFill()`
 
   Level: intermediate
 

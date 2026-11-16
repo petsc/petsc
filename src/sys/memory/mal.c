@@ -354,7 +354,7 @@ static PetscBool petscmalloccoalesce = PetscDefined(USE_MALLOC_COALESCED) ? PETS
 . coalesce - `PETSC_TRUE` to use coalesced malloc for multi-memory allocation.
 
   Options Database Key:
-. -malloc_coalesce - turn coalesced `PetscMallocN()` on or off
+. -malloc_coalesce (true|false) - turn coalesced `PetscMallocN()` on or off
 
   Level: developer
 

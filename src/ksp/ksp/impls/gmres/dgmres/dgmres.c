@@ -960,12 +960,12 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
--   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
+-   -ksp_gmres_krylov_monitor (true|false)                                      - plot the Krylov space generated
 
    DGMRES Options Database Keys:
 +   -ksp_dgmres_eigen neig                     - number of smallest eigenvalues to extract at each restart
 .   -ksp_dgmres_max_eigen max_neig             - maximum number of eigenvalues that can be extracted during the iterative process
-.   -ksp_dgmres_force                          - use the deflation at each restart; switch off the adaptive strategy.
+.   -ksp_dgmres_force (true|false)             - use the deflation at each restart; switch off the adaptive strategy.
 -   -ksp_dgmres_view_deflation_vecs viewerspec - View the deflation vectors, where viewerspec is a key that can be
                                                  parsed by `PetscOptionsCreateViewer()`.  If neig > 1, viewerspec should
                                                  end with ":append".  No vectors will be viewed if the adaptive

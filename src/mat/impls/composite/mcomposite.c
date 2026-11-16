@@ -369,9 +369,9 @@ static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems PetscO
 . mat - the matrix
 
   Options Database Keys:
-+ -mat_composite_merge       - merge in `MatAssemblyEnd()`
-. -mat_composite_merge_mvctx - merge Mvctx of component matrices to optimize communication in `MatMult()` for ADDITIVE matrices
-- -mat_composite_merge_type  - set merge direction
++ -mat_composite_merge (true|false)       - merge in `MatAssemblyEnd()`
+. -mat_composite_merge_mvctx (true|false) - merge Mvctx of component matrices to optimize communication in `MatMult()` for ADDITIVE matrices
+- -mat_composite_merge_type               - set merge direction
 
   Level: advanced
 
@@ -734,8 +734,8 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 . mat - the composite matrix
 
   Options Database Keys:
-+ -mat_composite_merge      - merge in `MatAssemblyEnd()`
-- -mat_composite_merge_type - set merge direction
++ -mat_composite_merge (true|false) - merge in `MatAssemblyEnd()`
+- -mat_composite_merge_type         - set merge direction
 
   Level: advanced
 

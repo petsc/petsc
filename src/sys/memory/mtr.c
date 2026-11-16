@@ -76,7 +76,7 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 - file     - file where function is
 
   Options Database Keys:
-+ -malloc_test               - turns this feature on when PETSc was not configured with `--with-debugging=0`
++ -malloc_test (true|false)  - turns this feature on when PETSc was not configured with `--with-debugging=0`
 - -malloc_debug (true|false) - turns this feature on anytime
 
   Level: advanced
@@ -923,7 +923,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
 
   Options Database Keys:
 + -malloc_debug (true|false)    - turns on or off debugging
-. -malloc_test                  - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
+. -malloc_test (true|false)     - turns on all debugging if PETSc was configured with debugging including `-malloc_dump`, otherwise ignored
 . -malloc_view_threshold logmin - log only allocations larger than `logmin`
 - -malloc_dump [filename]       - print a list of all memory that has not been freed, in `PetscFinalize()`
 

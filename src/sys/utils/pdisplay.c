@@ -161,9 +161,9 @@ PetscErrorCode PetscSetDisplay(void)
 . display - the display string
 
   Options Database Keys:
-+ -display display - sets the display to use
-- -x_virtual       - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
-                started up in PetscSetDisplay() with this option
++ -display display        - sets the display to use
+- -x_virtual (true|false) - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                            started up in PetscSetDisplay() with this option
 
   Level: advanced
 

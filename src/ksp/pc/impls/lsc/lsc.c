@@ -202,8 +202,8 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
    PCLSC - Preconditioning for Schur complements, based on Least Squares Commutators {cite}`elmanhowleshadidshuttleworthtuminaro2006` {cite}`silvester2001efficient`
 
    Options Database Key:
-+    -pc_lsc_commute    - Whether to commute the LSC preconditioner in the style of Olshanskii
--    -pc_lsc_scale_diag - Whether to scale $BB^T$ products. Will use the inverse of the diagonal of $Qscale$ or $A$ if the former is not provided
++    -pc_lsc_commute (true|false)    - Whether to commute the LSC preconditioner in the style of Olshanskii
+-    -pc_lsc_scale_diag (true|false) - Whether to scale $BB^T$ products. Will use the inverse of the diagonal of $Qscale$ or $A$ if the former is not provided
 
    Level: intermediate
 

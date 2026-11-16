@@ -859,7 +859,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_transform_extrude_symmetric (true|false)  - Extrude layers symmetrically about the surface
 . -dm_plex_transform_extrude_normal n0,...,nd        - Specify the extrusion direction
 . -dm_plex_transform_extrude_thicknesses t0,...,tl   - Specify thickness of each layer
-. -dm_plex_create_fv_ghost_cells                     - Flag to create finite volume ghost cells on the boundary
+. -dm_plex_create_fv_ghost_cells (true|false)        - Flag to create finite volume ghost cells on the boundary
 . -dm_plex_fv_ghost_cells_label name                 - Label name for ghost cells boundary
 . -dm_distribute (true|false)                        - Flag to redistribute a mesh among processes
 . -dm_distribute_overlap n                           - The size of the overlap halo
@@ -1633,7 +1633,7 @@ PetscErrorCode DMSetMatrixPreallocateSkip(DM dm, PetscBool skip)
 - only - `PETSC_TRUE` if only want preallocation
 
   Options Database Key:
-. -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()`, `DMCreateMassMatrix()`, but do not fill it with zeros
+. -dm_preallocate_only (true|false) - Only preallocate the matrix for `DMCreateMatrix()`, `DMCreateMassMatrix()`, but do not fill it with zeros
 
   Level: developer
 

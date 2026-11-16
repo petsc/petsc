@@ -797,10 +797,10 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   SNESNASM - Nonlinear Additive Schwarz solver {cite}`ck02`, {cite}`bruneknepleysmithtu15`
 
    Options Database Keys:
-+  -snes_nasm_log                                                - enable logging events for the communication and solve stages
++  -snes_nasm_log (true|false)                                   - enable logging events for the communication and solve stages
 .  -snes_nasm_type (restrict|basic)                              - type of subdomain update used
 .  -snes_nasm_damping dmp                                        - the new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)
-.  -snes_nasm_finaljacobian                                      - compute the local and global Jacobians of the final iterate
+.  -snes_nasm_finaljacobian (true|false)                         - compute the local and global Jacobians of the final iterate
 .  -snes_nasm_finaljacobian_type (finalinner|finalouter|initial) - pick state the Jacobian is calculated at
 .  -sub_snes_                                                    - options prefix of the subdomain nonlinear solves
 .  -sub_ksp_                                                     - options prefix of the subdomain Krylov solver

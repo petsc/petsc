@@ -682,7 +682,7 @@ PetscErrorCode PetscLogMPEBegin(void)
   Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Options Database Key:
-. -log_perfstubs - use an external log handler through the perfstubs interface
+. -log_perfstubs (true|false) - use an external log handler through the perfstubs interface
 
   Level: advanced
 
@@ -708,8 +708,8 @@ PetscErrorCode PetscLogPerfstubsBegin(void)
 . flag - `PETSC_TRUE` if actions are to be logged
 
   Options Database Key:
-+ -log_exclude_actions - (deprecated) Does nothing
-- -log_include_actions - Turn on action logging
++ -log_exclude_actions              - (deprecated) Does nothing
+- -log_include_actions (true|false) - Turn on action logging
 
   Level: intermediate
 
@@ -739,8 +739,8 @@ PetscErrorCode PetscLogActions(PetscBool flag)
 . flag - `PETSC_TRUE` if objects are to be logged
 
   Options Database Key:
-+ -log_exclude_objects - (deprecated) Does nothing
-- -log_include_objects - Turns on object logging
++ -log_exclude_objects              - (deprecated) Does nothing
+- -log_include_objects (true|false) - Turns on object logging
 
   Level: intermediate
 

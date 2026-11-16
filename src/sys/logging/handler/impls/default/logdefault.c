@@ -1870,8 +1870,8 @@ static PetscErrorCode PetscLogHandlerView_Default(PetscLogHandler handler, Petsc
   created and started (`PetscLogHandlerStart()`) by `PetscLogDefaultBegin()`.
 
   Options Database Keys:
-+ -log_include_actions - include a growing list of actions (event beginnings and endings, object creations and destructions) in `PetscLogDump()` (`PetscLogActions()`).
-- -log_include_objects - include a growing list of object creations and destructions in `PetscLogDump()` (`PetscLogObjects()`).
++ -log_include_actions (true|false) - include a growing list of actions (event beginnings and endings, object creations and destructions) in `PetscLogDump()` (`PetscLogActions()`).
+- -log_include_objects (true|false) - include a growing list of object creations and destructions in `PetscLogDump()` (`PetscLogObjects()`).
 
   Level: developer
 

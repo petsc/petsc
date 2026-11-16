@@ -227,9 +227,9 @@ static struct {
 - B - the blue channel of length `mapsize`
 
   Options Database Keys:
-+ -draw_cmap name           - select the colormap by name
-. -draw_cmap_reverse        - reverse the colormap
-- -draw_cmap_brighten value - brighten (positive) or darken (negative) the colormap; value must be in `(-1, 1)`
++ -draw_cmap name                 - select the colormap by name
+. -draw_cmap_reverse (true|false) - reverse the colormap
+- -draw_cmap_brighten value       - brighten (positive) or darken (negative) the colormap; value must be in `(-1, 1)`
 
   Level: developer
 

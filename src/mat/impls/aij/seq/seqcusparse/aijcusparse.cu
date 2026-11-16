@@ -3048,7 +3048,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat B)
 +  -mat_type aijcusparse                           - Sets the matrix type to `MATSEQAIJCUSPARSE` during a call to `MatSetFromOptions()`
 .  -mat_cusparse_storage_format (csr|ell|hyb)      - Sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
 .  -mat_cusparse_mult_storage_format (csr|ell|hyb) - Sets the storage format of matrices (for `MatMult()`).
--  -mat_cusparse_use_cpu_solve                     - Performs the `MatSolve()` on the CPU.
+-  -mat_cusparse_use_cpu_solve (true|false)        - Performs the `MatSolve()` on the CPU.
 
   Level: beginner
 

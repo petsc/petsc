@@ -1798,7 +1798,7 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat, ISColoring);
    Level: beginner
 
    Options Database Key:
-.  -snes_fd_color - cause the Jacobian needed by `SNES` to be computed via a use of this object
+.  -snes_fd_color (true|false) - cause the Jacobian needed by `SNES` to be computed via a use of this object
 
    Note:
    This object is created utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`

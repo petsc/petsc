@@ -1284,7 +1284,7 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 
    Options Database Keys:
 +  -pc_gasm_total_subdomains n                     - Sets total number of local subdomains to be distributed among the MPI processes
-.  -pc_gasm_view_subdomains                        - activates the printing of subdomain indices in `PCView()`, -ksp_view or -snes_view
+.  -pc_gasm_view_subdomains (true|false)           - activates the printing of subdomain indices in `PCView()`, -ksp_view or -snes_view
 .  -pc_gasm_print_subdomains                       - activates the printing of subdomain indices in `PCSetUp()`
 .  -pc_gasm_overlap ovl                            - Sets overlap by which to (automatically) extend local subdomains
 -  -pc_gasm_type (basic|restrict|interpolate|none) - Sets `PCGASMType`
@@ -1905,7 +1905,7 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 + pc  - the preconditioner
 - flg - boolean indicating whether to use subdomains defined by the `DM`
 
-  Options Database Key:
+  Options Database Keys:
 + -pc_gasm_use_dm_subdomains (true|false) - configure subdomains
 . -pc_gasm_overlap                        - set overlap
 - -pc_gasm_total_subdomains               - set number of subdomains

@@ -650,8 +650,8 @@ PetscErrorCode TSMonitorHGCtxDestroy(TSMonitorHGCtx *ctx)
 - ctx   - either a viewer or `NULL`
 
   Options Database Keys:
-+ -ts_monitor_draw_solution         - draw the solution at each time-step
-- -ts_monitor_draw_solution_initial - show initial solution as well as current solution
++ -ts_monitor_draw_solution                      - draw the solution at each time-step
+- -ts_monitor_draw_solution_initial (true|false) - show initial solution as well as current solution
 
   Level: intermediate
 
@@ -807,8 +807,8 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 . ctx - the monitor context
 
   Options Database Keys:
-+ -ts_monitor_draw_solution         - draw the solution at each time-step
-- -ts_monitor_draw_solution_initial - show initial solution as well as current solution
++ -ts_monitor_draw_solution                      - draw the solution at each time-step
+- -ts_monitor_draw_solution_initial (true|false) - show initial solution as well as current solution
 
   Level: intermediate
 

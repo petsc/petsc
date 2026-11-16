@@ -461,11 +461,11 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
 . B - the matrix
 
   Options Database Keys:
-+ -mat_lmvm_hist_size         - the number of history vectors to keep
-. -mat_lmvm_mult_algorithm    - the algorithm to use for multiplication (recursive, dense, compact_dense)
-. -mat_lmvm_cache_J0_products - whether products between the base Jacobian J0 and history vectors should be cached or recomputed
-. -mat_lmvm_eps               - (developer) numerical zero tolerance for testing when an update should be skipped
-- -mat_lmvm_debug             - (developer) perform internal debugging checks
++ -mat_lmvm_hist_size                                      - the number of history vectors to keep
+. -mat_lmvm_mult_algorithm (recursive|dense|compact_dense) - the algorithm to use for multiplication
+. -mat_lmvm_cache_J0_products (true|false)                 - whether products between the base Jacobian J0 and history vectors should be cached or recomputed
+. -mat_lmvm_eps                                            - (developer) numerical zero tolerance for testing when an update should be skipped
+- -mat_lmvm_debug (true|false)                             - (developer) perform internal debugging checks
 
   Level: intermediate
 

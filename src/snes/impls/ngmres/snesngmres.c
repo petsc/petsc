@@ -661,7 +661,7 @@ static PetscErrorCode SNESNGMRESGetAdaptiveParameters_NGMRES(SNES snes, PetscInt
    Options Database Keys:
 +  -snes_ngmres_select_type (difference|none|linesearch)             - Choose the select between candidate and combined solution
 .  -snes_ngmres_restart_type (difference|none|periodic)              - Choose the restart conditions
-.  -snes_ngmres_candidate                                            - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
+.  -snes_ngmres_candidate (true|false)                               - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
 .  -snes_ngmres_m m                                                  - Number of stored previous solutions and residuals
 .  -snes_ngmres_restart_it it                                        - Number of iterations the restart conditions hold before restart
 .  -snes_ngmres_gammaA gammaA                                        - Residual tolerance for solution select between the candidate and combination
@@ -672,7 +672,7 @@ static PetscErrorCode SNESNGMRESGetAdaptiveParameters_NGMRES(SNES snes, PetscInt
 .  -snes_ngmres_adaptive (true|false)                                - Grow the window of stored solutions when $\theta$ predicts the residual reduction, see `SNESNGMRESSetAdaptive()`
 .  -snes_ngmres_adaptive_m m                                         - Initial number of stored solutions in the adaptive window
 .  -snes_ngmres_adaptive_tol tol                                     - Tolerance on the prediction of the residual reduction that grows the window
-.  -snes_ngmres_monitor                                              - Prints relevant information about the nonlinear GNMRES iterations
+.  -snes_ngmres_monitor (true|false)                                 - Prints relevant information about the nonlinear GNMRES iterations
 .  -snes_linesearch_type (none|bt|secant|cp|nleqerr|bisection|shell) - Line search type used for the default smoother, see `SNESLineSearchType`
 -  -snes_ngmres_additive_snes_linesearch_type type                   - Line search type used to select between the candidate and combined solution with additive select type, see `SNESLineSearchType`
 

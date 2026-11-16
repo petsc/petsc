@@ -510,9 +510,9 @@ static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
   Logically Collective on all MPI processes except rank 0
 
   Options Database Keys:
-+ -mpi_linear_solver_server                   - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
-. -mpi_linear_solver_server_view              - displays information about all the linear systems solved by the MPI linear solver server at the conclusion of the program
-- -mpi_linear_solver_server_use_shared_memory - use shared memory when communicating matrices and vectors to server processes (default where supported)
++ -mpi_linear_solver_server                                - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
+. -mpi_linear_solver_server_view                           - displays information about all the linear systems solved by the MPI linear solver server at the conclusion of the program
+- -mpi_linear_solver_server_use_shared_memory (true|false) - use shared memory when communicating matrices and vectors to server processes (default where supported)
 
   Level: developer
 

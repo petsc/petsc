@@ -383,8 +383,8 @@ static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItem
    SNESVINEWTONSSLS - Semi-smooth solver for variational inequalities based on Newton's method
 
    Options Database Keys:
-+   -snes_type <vinewtonssls,vinewtonrsls> a semi-smooth solver, a reduced space active set method
--   -snes_vi_monitor - prints the number of active constraints at each iteration.
++   -snes_type (vinewtonssls|vinewtonrsls) - a semi-smooth solver or a reduced space active set method
+-   -snes_vi_monitor (true|false)          - prints the number of active constraints at each iteration.
 
    Level: beginner
 

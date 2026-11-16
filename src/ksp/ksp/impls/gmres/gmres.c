@@ -761,7 +761,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
                                                                                   vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
 .   -ksp_gmres_vector_allocation_size n                                         - number of Krylov search vectors allocated at a time after the preallocated
                                                                                   vectors, see `KSPGMRESSetVectorAllocationSize()`
--   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
+-   -ksp_gmres_krylov_monitor (true|false)                                      - plot the Krylov space generated
 
    Level: beginner
 

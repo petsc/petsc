@@ -608,9 +608,9 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    KSPLSQR - Implements LSQR  {cite}`paige.saunders:lsqr`
 
    Options Database Keys:
-+  -ksp_lsqr_compute_standard_error - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
-.  -ksp_lsqr_exact_mat_norm         - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
--  -ksp_lsqr_monitor                - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b$, and estimate of matrix norm $\|A\|$
++  -ksp_lsqr_compute_standard_error (true|false) - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
+.  -ksp_lsqr_exact_mat_norm (true|false)         - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
+-  -ksp_lsqr_monitor                             - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b$, and estimate of matrix norm $\|A\|$
 
    Level: beginner
 

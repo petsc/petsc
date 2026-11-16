@@ -285,7 +285,7 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
 - flg - `PETSC_TRUE` turns off diagonal scaling inside the algorithm
 
   Options Database Key:
-. -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
+. -pc_eisenstat_no_diagonal_scaling (true|false) - Activates `PCEisenstatSetNoDiagonalScaling()`
 
   Level: intermediate
 
@@ -349,7 +349,7 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
 . flg - `PETSC_TRUE` means there is no diagonal scaling applied
 
   Options Database Key:
-. -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
+. -pc_eisenstat_no_diagonal_scaling (true|false) - Activates `PCEisenstatSetNoDiagonalScaling()`
 
   Level: intermediate
 
@@ -375,8 +375,8 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change)
                    preconditioning that incorporates Eisenstat's trick to reduce the amount of computation needed.
 
    Options Database Keys:
-+  -pc_eisenstat_omega omega         - Sets omega
--  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
++  -pc_eisenstat_omega omega                      - Sets omega
+-  -pc_eisenstat_no_diagonal_scaling (true|false) - Activates `PCEisenstatSetNoDiagonalScaling()`
 
    Level: beginner
 

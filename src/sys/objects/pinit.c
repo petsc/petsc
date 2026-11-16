@@ -1351,16 +1351,16 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 . -start_in_debugger [(noxterm)],[(gdb|lldb|...)]        - Starts program in debugger
 . -on_error_attach_debugger [(noxterm)],[(gdb|lldb|...)] - Starts debugger when error detected
 . -on_error_emacs machinename                            - causes `emacsclient` to jump to error file if an error is detected
-. -on_error_abort                                        - calls `abort()` when error detected (no traceback)
-. -on_error_mpiabort                                     - calls `MPI_abort()` when error detected
-. -error_output_stdout                                   - prints PETSc error messages to `stdout` instead of the default `stderr`
-. -error_output_none                                     - does not print the error messages (but handles errors in the same way as if this was not called)
+. -on_error_abort (true|false)                           - calls `abort()` when error detected (no traceback)
+. -on_error_mpiabort (true|false)                        - calls `MPI_abort()` when error detected
+. -error_output_stdout (true|false)                      - prints PETSc error messages to `stdout` instead of the default `stderr`
+. -error_output_none (true|false)                        - does not print the error messages (but handles errors in the same way as if this was not called)
 . -debugger_ranks rank1,rank2,...                        - Indicates MPI ranks to start in debugger
 . -debugger_pause secs                                   - Pauses debugger, use if it takes a long time for the debugger to start up on your system, `sleeptime` is number of seconds to sleep
 . -stop_for_debugger                                     - Print message on how to attach debugger manually to
                                                            process and wait (`-debugger_pause`) seconds for attachment
 . -malloc_dump                                           - prints a list of all unfreed memory at the end of the run
-. -malloc_test                                           - like `-malloc_dump` `-malloc_debug`, only active for debugging build, ignored in optimized build. Often set in `PETSC_OPTIONS` environmental variable
+. -malloc_test (true|false)                              - like `-malloc_dump` `-malloc_debug`, only active for debugging build, ignored in optimized build. Often set in `PETSC_OPTIONS` environmental variable
 . -malloc_view [filename]                                - show a list of all allocated memory during `PetscFinalize()`
 . -malloc_view_threshold logmin                          - only list memory allocations of size greater than `logmin` with `-malloc_view`
 . -malloc_requested_size (true|false)                    - malloc logging will record the requested size rather than (possibly large) size after alignment
@@ -1370,9 +1370,9 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 - -mpiuni-allow-multiprocess-launch                      - allow `mpiexec` to launch multiple independent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
 
   Options Database Keys for Option Database:
-+ -skip_petscrc           - skip the default option files `~/.petscrc`, `.petscrc`, `petscrc`
-. -options_monitor        - monitor all set options to standard output for the whole program run
-- -options_monitor_cancel - cancel options monitoring hard-wired using `PetscOptionsMonitorSet()`
++ -skip_petscrc (true|false) - skip the default option files `~/.petscrc`, `.petscrc`, `petscrc`
+. -options_monitor           - monitor all set options to standard output for the whole program run
+- -options_monitor_cancel    - cancel options monitoring hard-wired using `PetscOptionsMonitorSet()`
 
    Options -options_monitor_{all,cancel} are
    position-independent and apply to all options set since the PETSc start.
@@ -1383,7 +1383,7 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
   Options Database Keys for Profiling:
    See Users-Manual: ch_profiling for details.
 + -info [filename][:[~]c1,c2,...[:[~]self]]           - Prints verbose information for classes c1, c2, etc. See `PetscInfo()`.
-. -log_sync                                           - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
+. -log_sync (true|false)                              - Enable barrier synchronization for all events. This option is useful to debug imbalance within each event,
                                                          however it slows things down and gives a distorted view of the overall runtime.
 . -log_trace [filename]                               - Print traces of all PETSc calls to the screen (useful to determine where a program
                                                          hangs without running in the debugger).  See `PetscLogTraceBegin()`.
@@ -1396,21 +1396,21 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
 . -log [filename]                                     - Logs profiling information in a dump file, see `PetscLogDump()`.
 . -log_all [filename]                                 - Same as `-log`.
 . -log_mpe [filename]                                 - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
-. -log_perfstubs                                      - Starts a log handler with the perfstubs interface (which is used by TAU)
-. -log_nvtx                                           - Starts an nvtx log handler for use with Nsight
-. -log_roctx                                          - Starts an roctx log handler for use with rocprof on AMD GPUs
-. -viewfromoptions (on|off)                           - Enable or disable `XXXViewFromOptions()` calls, for applications with many small solves turn this off
+. -log_perfstubs (true|false)                         - Starts a log handler with the perfstubs interface (which is used by TAU)
+. -log_nvtx (true|false)                              - Starts an nvtx log handler for use with Nsight
+. -log_roctx (true|false)                             - Starts an roctx log handler for use with rocprof on AMD GPUs
+. -viewfromoptions (true|false)                       - Enable or disable `XXXViewFromOptions()` calls, for applications with many small solves turn this off
 . -get_total_flops (true|false)                       - Returns total flops done by all processors
 . -memory_view (true|false)                           - Print memory usage at end of run
 - -check_pointer_intensity 0,1,2                      - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
   Options Database Keys for SAWs:
-+ -saws_port portnumber        - port number to publish SAWs data, default is 8080
-. -saws_port_auto_select       - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
-                                 this is useful when you are running many jobs that utilize SAWs at the same time
-. -saws_log filename           - save a log of all SAWs communication
-. -saws_https certificate_file - have SAWs use HTTPS instead of HTTP
-- -saws_root directory         - allow SAWs to have access to the given directory to search for requested resources and files
++ -saws_port portnumber               - port number to publish SAWs data, default is 8080
+. -saws_port_auto_select (true|false) - have SAWs select a new unique port number where it publishes the data, the URL is printed to the screen
+                                        this is useful when you are running many jobs that utilize SAWs at the same time
+. -saws_log filename                  - save a log of all SAWs communication
+. -saws_https certificate_file        - have SAWs use HTTPS instead of HTTP
+- -saws_root directory                - allow SAWs to have access to the given directory to search for requested resources and files
 
   Environmental Variables:
 +   `PETSC_TMP`                   - alternative directory to use instead of `/tmp`
@@ -1442,8 +1442,8 @@ PetscErrorCode PetscSetMPIThreadRequiredType(PetscMPIInt required)
   calling `PetscInitialize()`.
 
   Options Database Key for Developers:
-. -checkfunctionlist - automatically checks that function lists associated with objects are correctly cleaned up. Produces messages of the form:
-                       "function name: MatInodeGetInodeSizes_C" if they are not cleaned up. This flag is always set for the test harness (in framework.py)
+. -checkfunctionlist (true|false) - automatically checks that function lists associated with objects are correctly cleaned up. Produces messages of the form:
+                                    "function name: MatInodeGetInodeSizes_C" if they are not cleaned up. This flag is always set for the test harness (in framework.py)
 
 .seealso: `PetscFinalize()`, `PetscInitializeFortran()`, `PetscGetArgs()`, `PetscInitializeNoArguments()`, `PetscLogGpuTime()`,
           `PetscSetMPIThreadRequiredType()`

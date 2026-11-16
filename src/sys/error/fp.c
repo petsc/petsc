@@ -126,7 +126,7 @@ void PetscDefaultFPTrap(int sig)
 .ve
 
    Options Database Key:
-.  -fp_trap (off|on) - turn on or off trapping of floating point exceptions
+.  -fp_trap (true|false) - turn on or off trapping of floating point exceptions
 
    Level: advanced
 

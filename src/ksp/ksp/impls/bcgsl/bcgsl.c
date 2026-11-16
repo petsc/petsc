@@ -375,8 +375,8 @@ PetscErrorCode KSPBCGSLSetUsePseudoinverse(KSP ksp, PetscBool use_pinv)
 - uMROR - set to `PETSC_TRUE` when the polynomial is a convex combination of an MR and an OR step.
 
   Options Database Keys:
-+ -ksp_bcgsl_cxpoly - use enhanced polynomial
-- -ksp_bcgsl_mrpoly - use standard polynomial
++ -ksp_bcgsl_cxpoly (true|false) - use enhanced polynomial
+- -ksp_bcgsl_mrpoly              - use standard polynomial
 
   Level: intermediate
 
@@ -506,7 +506,7 @@ static PetscErrorCode KSPReset_BCGSL(KSP ksp)
    Options Database Keys:
 +  -ksp_bcgsl_ell ell             - Number of Krylov search directions to use, defaults to 2, cf. `KSPBCGSLSetEll()`
 .  -ksp_bcgsl_cxpoly (true|false) - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
-.  -ksp_bcgsl_mrpoly (true|false) - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
+.  -ksp_bcgsl_mrpoly              - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
 .  -ksp_bcgsl_xres res            - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
 -  -ksp_bcgsl_pinv (true|false)   - (de)activate use of pseudoinverse, cf. `KSPBCGSLSetUsePseudoinverse()`
 

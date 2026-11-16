@@ -457,7 +457,7 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
    Level: beginner
 
    Options Database Key:
-.  -mat_coloring_jp_local - perform a local coloring before applying the parallel algorithm
+.  -mat_coloring_jp_local (true|false) - perform a local coloring before applying the parallel algorithm
 
    Notes:
    This method uses a parallel Luby-style coloring with weights to choose an independent set of processor

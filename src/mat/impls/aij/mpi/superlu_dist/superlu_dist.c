@@ -1011,18 +1011,18 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
    Works with `MATAIJ` matrices
 
   Options Database Keys:
-+ -mat_superlu_dist_r <n>                                                            - number of rows in processor partition
-. -mat_superlu_dist_c <n>                                                            - number of columns in processor partition
-. -mat_superlu_dist_3d                                                               - use 3d partition, requires SuperLU_DIST 7.2 or later
-. -mat_superlu_dist_d <n>                                                            - depth in 3d partition (valid only if `-mat_superlu_dist_3d`) is provided
-. -mat_superlu_dist_equil                                                            - equilibrate the matrix
-. -mat_superlu_dist_rowperm <NOROWPERM,LargeDiag_MC64,LargeDiag_AWPM,MY_PERMR>       - row permutation
-. -mat_superlu_dist_colperm <NATURAL,MMD_AT_PLUS_A,MMD_ATA,METIS_AT_PLUS_A,PARMETIS> - column permutation
-. -mat_superlu_dist_replacetinypivot                                                 - replace tiny pivots
-. -mat_superlu_dist_fact <SamePattern>                                               - (choose one of) `SamePattern`, `SamePattern_SameRowPerm`, `DOFACT`
-. -mat_superlu_dist_iterrefine                                                       - use iterative refinement
-. -mat_superlu_dist_printstat                                                        - print factorization information
-. -mat_superlu_dist_gpuoffload                                                       - offload factorization onto the GPUs, requires SuperLU_DIST 8.0.0 or later
++ -mat_superlu_dist_r n                                                              - number of rows in processor partition
+. -mat_superlu_dist_c n                                                              - number of columns in processor partition
+. -mat_superlu_dist_3d (true|false)                                                  - use 3d partition, requires SuperLU_DIST 7.2 or later
+. -mat_superlu_dist_d n                                                              - depth in 3d partition (valid only if `-mat_superlu_dist_3d` is provided)
+. -mat_superlu_dist_equil (true|false)                                               - equilibrate the matrix
+. -mat_superlu_dist_rowperm (NOROWPERM|LargeDiag_MC64|LargeDiag_AWPM|MY_PERMR)       - row permutation
+. -mat_superlu_dist_colperm (NATURAL|MMD_AT_PLUS_A|MMD_ATA|METIS_AT_PLUS_A|PARMETIS) - column permutation
+. -mat_superlu_dist_replacetinypivot (true|false)                                    - replace tiny pivots
+. -mat_superlu_dist_fact (SamePattern|SamePattern_SameRowPerm|DOFACT)                - sparsity pattern for repeated matrix factorization
+. -mat_superlu_dist_iterrefine (true|false)                                          - use iterative refinement
+. -mat_superlu_dist_printstat (true|false)                                           - print factorization information
+. -mat_superlu_dist_gpuoffload (true|false)                                          - offload factorization onto the GPUs, requires SuperLU_DIST 8.0.0 or later
 - -pc_precision single                                                               - use SuperLU_DIST single precision with PETSc double precision
 
   Level: beginner

@@ -17,7 +17,7 @@
 . fd - file pointer.  If fp is `NULL`, `stdout` is assumed.
 
   Options Database Key:
-. -mpidump - Dumps MPI incompleteness during call to PetscFinalize()
+. -mpidump (true|false) - Dumps MPI incompleteness during call to `PetscFinalize()`
 
   Level: developer
 

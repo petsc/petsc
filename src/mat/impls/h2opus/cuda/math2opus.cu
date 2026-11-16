@@ -1660,21 +1660,21 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 . nA - matrix
 
   Options Database Keys:
-+ -mat_h2opus_leafsize <`PetscInt`>      - Leaf size of cluster tree
-. -mat_h2opus_eta <`PetscReal`>          - Admissibility condition tolerance
-. -mat_h2opus_maxrank <`PetscInt`>       - Maximum rank when constructed from matvecs
-. -mat_h2opus_samples <`PetscInt`>       - Maximum number of samples to be taken concurrently when constructing from matvecs
-. -mat_h2opus_rtol <`PetscReal`>         - Relative tolerance for construction from sampling
-. -mat_h2opus_check <`PetscBool`>        - Check error when constructing from sampling during MatAssemblyEnd()
-. -mat_h2opus_hara_verbose <`PetscBool`> - Verbose output from hara construction
-- -mat_h2opus_normsamples <`PetscInt`>   - Maximum number of samples to be when estimating norms
++ -mat_h2opus_leafsize leafsize         - Leaf size of cluster tree
+. -mat_h2opus_eta eta                   - Admissibility condition tolerance
+. -mat_h2opus_maxrank maxrank           - Maximum rank when constructed from matvecs
+. -mat_h2opus_samples bs                - Maximum number of samples to be taken concurrently when constructing from matrix-vector-products
+. -mat_h2opus_rtol rtol                 - Relative tolerance for construction from sampling
+. -mat_h2opus_check (true|false)        - Check error when constructing from sampling during `MatAssemblyEnd()`
+. -mat_h2opus_hara_verbose (true|false) - Verbose output from hara construction
+- -mat_h2opus_normsamples normsamples   - Maximum number of samples to be when estimating norms
 
   Level: intermediate
 
   Note:
   Not available in parallel
 
-.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`
+.seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MATH2OPUS`, `MatCreateH2OpusFromKernel()`, `MatAssemblyEnd()`
 @*/
 PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, PetscReal eta, PetscInt leafsize, PetscInt maxrank, PetscInt bs, PetscReal rtol, Mat *nA)
 {

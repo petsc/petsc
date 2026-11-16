@@ -775,7 +775,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
 
    Options Database Keys:
 +   -ksp_cg_type (hermitian|symmetric)                     - (for complex matrices only) indicates the matrix is Hermitian or symmetric, see `KSPCGSetType()`
-.   -ksp_cg_single_reduction                               - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
+.   -ksp_cg_single_reduction (true|false)                  - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
 .   -ksp_cg_radius radius                                  - trust-region radius, see `KSPCGSetRadius()`
 -   -ksp_cg_tr_norm_type (preconditioned|unpreconditioned) - norm used for the trust-region constraint, see `KSPCGSetTRNormType()`
 

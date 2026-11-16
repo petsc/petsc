@@ -437,7 +437,7 @@ PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer, int *fdes)
 . viewer - `PetscViewer` context, obtained from `PetscViewerCreate()`
 
   Options Database Key:
-. -viewer_binary_skip_info - true indicates do not generate `.info` file
+. -viewer_binary_skip_info (true|false) - true indicates do not generate `.info` file
 
   Level: advanced
 
@@ -471,7 +471,7 @@ PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 - skip   - `PETSC_TRUE` implies the `.info` file will not be generated
 
   Options Database Key:
-. -viewer_binary_skip_info - true indicates do not generate `.info` file
+. -viewer_binary_skip_info (true|false) - true indicates do not generate `.info` file
 
   Level: advanced
 
@@ -850,11 +850,11 @@ static PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 . viewer - PetscViewer for binary input/output to use with the specified file
 
   Options Database Keys:
-+ -viewer_binary_filename name - name of file to use
-. -viewer_binary_skip_info     - true to skip opening an info file
-. -viewer_binary_skip_options  - true to not use options database while creating viewer
-. -viewer_binary_skip_header   - true to skip output object headers to the file
-- -viewer_binary_mpiio         - true to use MPI-IO for input and output to the file (more scalable for large problems)
++ -viewer_binary_filename name             - name of file to use
+. -viewer_binary_skip_info (true|false)    - true to skip opening an info file
+. -viewer_binary_skip_options (true|false) - true to not use options database while creating viewer
+. -viewer_binary_skip_header (true|false)  - true to skip output object headers to the file
+- -viewer_binary_mpiio (true|false)        - true to use MPI-IO for input and output to the file (more scalable for large problems)
 
   Level: beginner
 
@@ -1592,11 +1592,11 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
    Level: intermediate
 
    Options Database Keys:
-+    -viewer_binary_filename name - filename in which to store the binary data, defaults to binaryoutput
-.    -viewer_binary_skip_info     - true means do not create .info file for this viewer
-.    -viewer_binary_skip_options  - true means do not use the options database for this viewer
-.    -viewer_binary_skip_header   - true means do not store the usual header information in the binary file
--    -viewer_binary_mpiio         - true means use the file via MPI-IO, maybe faster for large files and many MPI ranks
++    -viewer_binary_filename name             - filename in which to store the binary data, defaults to binaryoutput
+.    -viewer_binary_skip_info (true|false)    - true means do not create .info file for this viewer
+.    -viewer_binary_skip_options (true|false) - true means do not use the options database for this viewer
+.    -viewer_binary_skip_header (true|false)  - true means do not store the usual header information in the binary file
+-    -viewer_binary_mpiio (true|false)        - true means use the file via MPI-IO, maybe faster for large files and many MPI ranks
 
    Environmental variable:
 -   PETSC_VIEWER_BINARY_FILENAME - filename in which to store the binary data, defaults to binaryoutput

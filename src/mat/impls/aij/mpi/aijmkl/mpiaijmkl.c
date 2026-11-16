@@ -36,7 +36,7 @@
 . A - the matrix
 
   Options Database Key:
-. -mat_aijmkl_no_spmv2 - disables use of the SpMV2 inspector-executor routines
+. -mat_aijmkl_no_spmv2 (true|false) - disables use of the SpMV2 inspector-executor routines
 
   Level: intermediate
 

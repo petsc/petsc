@@ -319,7 +319,7 @@ static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
    Options Database Keys:
 +   -snes_linesearch_type (none|bt|secant|cp|nleqerr|bisection|shell) - Line search type, see `SNESLineSearchType`
 .   -snes_linesearch_order 3                                          - 2, 3. Selects the order of the line search for `bt`, see `SNESLineSearchSetOrder()`
-.   -snes_linesearch_norms true                                       - Turns on/off computation of the norms for `none` linesearch (`SNESLineSearchSetComputeNorms()`)
+.   -snes_linesearch_norms (true|false)                               - Turns on/off computation of the norms for `none` linesearch (`SNESLineSearchSetComputeNorms()`)
 .   -snes_linesearch_alpha alpha                                      - Sets `alpha` used in determining if reduction in function norm is sufficient
 .   -snes_linesearch_maxstep maxstep                                  - Sets the maximum `stepsize` the line search will use (if the $\|y\| > maxstep$ then scale `y` to be $y = y \, maxstep/\|y\|.$
 .   -snes_linesearch_minlambda minlambda                              - Sets the minimum `lambda` the line search will tolerate

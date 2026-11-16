@@ -116,7 +116,7 @@ static PetscInt  inoviewers = 0;
 . flg - `PETSC_TRUE` to turn off viewer creation, `PETSC_FALSE` to turn it on.
 
   Options Database Key:
-. -viewfromoptions (on|off) - Enable or disable `PetscOptionsCreateViewer()` and `XXXViewFromOptions()` calls, for applications with many small solves turn this off
+. -viewfromoptions (true|false) - Enable or disable `PetscOptionsCreateViewer()` and `XXXViewFromOptions()` calls, for applications with many small solves turn this off
 
   Level: developer
 
