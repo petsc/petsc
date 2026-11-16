@@ -60,7 +60,6 @@ typedef struct {
   PetscBool           adaptInterpolation; /* flag to adapt the interpolator based upon the coarseSpace */
   PCMGCoarseSpaceType coarseSpaceType;    /* Type of coarse space: polynomials, harmonics, eigenvectors, ... */
   PetscInt            Nc;                 /* The number of vectors in coarseSpace */
-  PetscInt            eigenvalue;         /* Key for storing the eigenvalue as a scalar in the eigenvector Vec */
   PetscBool           mespMonitor;        /* flag to monitor the multilevel eigensolver */
 
   PetscBool compatibleRelaxation; /* flag to monitor the coarse space quality using an auxiliary solve with compatible relaxation */
