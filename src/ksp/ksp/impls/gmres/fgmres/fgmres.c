@@ -221,7 +221,7 @@ static PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   } else { /* guess is 0 so residual is F (which is in ksp->vec_rhs) */
     PetscCall(VecCopy(ksp->vec_rhs, VEC_VV(0)));
   }
-  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation in the Krylov method */
+  /* This may be true only on a subset of MPI processes; setting it here so it will be detected by the first norm computation in the Krylov method */
   PetscCall(VecFlag(VEC_VV(0), ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   /* now the residual is in VEC_VV(0) - which is what

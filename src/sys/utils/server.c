@@ -1,5 +1,5 @@
 /*
-    Code for allocating Unix shared memory on MPI rank 0 and later accessing it from other MPI processes
+    Code for allocating Unix shared memory on MPI process 0 and later accessing it from other MPI processes
 */
 #include <petsc/private/petscimpl.h>
 

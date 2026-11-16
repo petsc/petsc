@@ -57,7 +57,7 @@ cores is required to saturate the memory channels. For example, a
 dual-socket system equipped with Haswell 12-core Xeon CPUs achieves more
 than 80 percent of achievable peak memory bandwidth with only four
 processes per socket (8 total), cf. {numref}`fig_stream_intel`.
-Consequently, running with more than 8 MPI ranks on such a system will
+Consequently, running with more than 8 MPI processes on such a system will
 not increase performance substantially. For the same reason, PETSc-based
 applications usually do not benefit from hyper-threading.
 
@@ -88,17 +88,17 @@ It appears you have 1 node(s)
 
 On this machine, one should expect a speed-up of typical memory
 bandwidth-bound PETSc applications of at most 4x when running multiple
-MPI ranks on the node. Most of the gains are already obtained when
-running with only 4-6 ranks. Because a smaller number of MPI ranks
+MPI processes on the node. Most of the gains are already obtained when
+running with only 4-6 ranks. Because a smaller number of MPI processes
 usually implies better preconditioners and better performance for
 smaller problems, the best performance for PETSc applications may be
 obtained with fewer ranks than there are physical CPU cores available.
 
 Following the results from the above run of `make streams`, we
 recommend to use additional nodes instead of placing additional MPI
-ranks on the nodes. In particular, weak scaling (i.e. constant load per
+processes on the nodes. In particular, weak scaling (i.e., constant load per
 process, increasing the number of processes) and strong scaling
-(i.e. constant total work, increasing the number of processes) studies
+(i.e., constant total work, increasing the number of processes) studies
 should keep the number of processes per node constant.
 
 ### Non-Uniform Memory Access (NUMA) and Process Placement
@@ -329,13 +329,13 @@ within a NUMA domain, and each core has its own L2 and L1 caches.
 However, processors that are less “flat”, with more complex hierarchies,
 may be more sensitive. In many AMD Opterons or the second-generation
 “Knights Landing” Intel Xeon Phi, for instance, L2 caches are shared
-between two cores. On these processors, placing consecutive MPI ranks on
+between two cores. On these processors, placing MPI processes with consecutive ranks on
 cores that share the same L2 cache may benefit performance if the two
 ranks communicate frequently with each other, because the latency
 between cores sharing an L2 cache may be roughly half that of two cores
 not sharing one. There may be benefit, however, in placing consecutive
 ranks on cores that do not share an L2 cache, because (if there are
-fewer MPI ranks than cores) this increases the total L2 cache capacity
+fewer MPI processes than cores) this increases the total L2 cache capacity
 and bandwidth available to the application. There is a trade-off to be
 considered between placing processes close together (in terms of shared
 resources) to optimize for efficient communication and synchronization
@@ -367,7 +367,7 @@ placement options:
   resources such as caches—or “scatter”-ed, with little resource
   sharing (possibly even spanning sockets).
 - Separate from the specification of domains, MPI implementations often
-  support different *orderings* in which MPI ranks should be bound to
+  support different *orderings* in which MPI processes should be bound to
   these domains. Intel MPI, for instance, supports “compact” ordering
   to place consecutive ranks close in terms of shared resources,
   “scatter” to place them far apart, and “bunch” to map proportionally

@@ -1970,7 +1970,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
   storage by columns.
 
   Although local portions of the matrix are stored in column-major
-  order, the matrix is partitioned across MPI ranks by row.
+  order, the matrix is partitioned across MPI processes by row.
 
   The data input variable is intended primarily for Fortran programmers
   who wish to allocate their own matrix memory space.  Most users should

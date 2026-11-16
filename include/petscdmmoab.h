@@ -55,7 +55,7 @@ M*/
   MoabReadMode - Parallel I/O strategy passed to MOAB when reading a mesh file through `DMMOAB`
 
   Values:
-+ `READ_PART`    - each MPI rank reads only the portion of the file describing its partition (requires a partition-aware file)
++ `READ_PART`    - each MPI process reads only the portion of the file describing its partition (requires a partition-aware file)
 . `READ_DELETE`  - every rank reads the entire file and then deletes the entities it does not own
 - `BCAST_DELETE` - rank 0 reads the file and broadcasts it, then every rank deletes the entities it does not own
 
@@ -74,7 +74,7 @@ static const char *const MoabReadModes[] = {"READ_PART", "READ_DELETE", "BCAST_D
   MoabWriteMode - Parallel I/O strategy passed to MOAB when writing a mesh file through `DMMOAB`
 
   Values:
-+ `WRITE_PART` - write a partitioned file with one section per MPI rank
++ `WRITE_PART` - write a partitioned file with one section per MPI process
 - `FORMAT`     - write a single non-partitioned file in the requested MOAB output format
 
   Level: intermediate

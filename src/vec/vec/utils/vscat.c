@@ -680,7 +680,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   Both `ix` and `iy` cannot be `NULL` at the same time.
 
   Use `VecScatterCreateToAll()` to create a `VecScatter` that copies an MPI vector to sequential vectors on all MPI processes.
-  Use `VecScatterCreateToZero()` to create a `VecScatter` that copies an MPI vector to a sequential vector on MPI rank 0.
+  Use `VecScatterCreateToZero()` to create a `VecScatter` that copies an MPI vector to a sequential vector on MPI process 0.
   These special `VecScatter` have better performance than general ones.
 
   Developer Note:

@@ -968,7 +968,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PeOp PetscObject obj, const char name[])
   `PetscViewer` = `PETSCVIEWEREXODUSII` i.e. ExodusII format assumes that element blocks (mapped to "Cell sets" labels)
   consists of sequentially numbered cells.
 
-  If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices) will be written.
+  If `dm` has been distributed, only the part of the `DM` on MPI process 0 (including "ghost" cells and vertices) will be written.
 
   Only TRI, TET, QUAD, and HEX cells are supported in ExodusII.
 
@@ -1019,7 +1019,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
 }
 
 /*@
-  DMCreateGlobalVector - Creates a global vector from a `DM` object. A global vector is a parallel vector that has no duplicate values shared between MPI ranks,
+  DMCreateGlobalVector - Creates a global vector from a `DM` object. A global vector is a parallel vector that has no duplicate values shared between MPI processes,
   that is it has no ghost locations.
 
   Collective
@@ -1068,7 +1068,7 @@ PetscErrorCode DMCreateGlobalVector(DM dm, Vec *vec)
   Level: beginner
 
   Notes:
-  A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
+  A local vector usually has ghost locations that contain values that are owned by different MPI processes. A global vector has no ghost locations.
 
   PETSc `Vec` always have all zero entries when created with `DMCreateLocalVector()` until routines such as `VecSet()` or `VecSetValues()`
   are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
@@ -3345,7 +3345,7 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
 /*@
   DMLocalToLocalBegin - Begins the process of mapping values from a local vector (that include
   ghost points that contain irrelevant values) to another local vector where the ghost points
-  in the second are set correctly from values on other MPI ranks.
+  in the second are set correctly from values on other MPI processes.
 
   Neighbor-wise Collective
 

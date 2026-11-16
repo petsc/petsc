@@ -54,7 +54,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
   object can be collective.
 
   Developer Notes:
-  Currently this is called only on MPI rank 0 of `PETSC_COMM_WORLD`
+  Currently this is called only on MPI process 0 of `PETSC_COMM_WORLD`
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscObject`, `PetscObjectSetName()`
 @*/

@@ -264,7 +264,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
     norm_d = 0.0;
   }
   cg->norm_d = PetscSqrtReal(norm_d);
-  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
+  /* This may be true only on a subset of MPI processes; setting it here so it will be detected by the first norm computation below */
   PetscCall(VecFlag(R, ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   switch (ksp->normtype) {

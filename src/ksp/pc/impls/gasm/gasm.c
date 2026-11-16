@@ -1754,7 +1754,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
         n[q] = nidx;
         /*
          Based on the counted number of indices in the local domain *with an overlap*,
-         construct a subcommunicator of all the MPI ranks supporting this domain.
+         construct a subcommunicator of all the MPI processes supporting this domain.
          Observe that a domain with an overlap might have nontrivial local support,
          while the domain without an overlap might not.  Hence, the decision to participate
          in the subcommunicator must be based on the domain with an overlap.

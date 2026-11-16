@@ -189,12 +189,12 @@ worry about the details of the preallocation process.
 
 ### Matrix and Vector Layouts and Storage Locations
 
-The layout of PETSc matrices across MPI ranks is defined by two things
+The layout of PETSc matrices across MPI processes is defined by two things
 
 - the layout of the two compatible vectors in the computation of the matrix-vector product y = A * x and
-- the memory where various parts of the matrix are stored across the MPI ranks.
+- the memory where various parts of the matrix are stored across the MPI processes.
 
-PETSc vectors always have a contiguous range of vector entries stored on each MPI rank. The first rank has entries from 0 to `rend1` - 1, the
+PETSc vectors always have a contiguous range of vector entries stored on each MPI process. The first rank has entries from 0 to `rend1` - 1, the
 next rank has entries from `rend1` to `rend2` - 1, etc. Thus the ownership range on each rank is from `rstart` to `rend`, these values can be
 obtained with `VecGetOwnershipRange`(`Vec` x, `PetscInt` * `rstart`, `PetscInt` * `rend`). Each PETSc `Vec` has a `PetscLayout` object that contains this information.
 
@@ -203,7 +203,7 @@ can be obtained with `MatGetOwnershipRange()`, `MatGetOwnershipRangeColumn()`, `
 Note that `MatCreateVecs()` provides two vectors that have compatible layouts for the associated vector.
 
 For most PETSc matrices, excluding `MATELEMENTAL` and `MATSCALAPACK`, the row ownership range obtained with `MatGetOwnershipRange()` also defines
-where the matrix entries are stored; the matrix entries for rows `rstart` to `rend - 1` are stored on the corresponding MPI rank. For other matrices
+where the matrix entries are stored; the matrix entries for rows `rstart` to `rend - 1` are stored on the corresponding MPI process. For other matrices
 the rank where each matrix entry is stored is more complicated; information about the storage locations can be obtained with `MatGetOwnershipIS()`.
 Note that for
 most PETSc matrices the values returned by `MatGetOwnershipIS()` are the same as those returned by `MatGetOwnershipRange()` and

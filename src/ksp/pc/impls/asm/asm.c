@@ -1061,7 +1061,7 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
   PCASMSetTotalSubdomains - Sets the subdomains for all processors for the
   additive Schwarz preconditioner, `PCASM`.
 
-  Collective, all MPI ranks must pass in the same array of `IS`
+  Collective, all MPI processes must pass in the same array of `IS`
 
   Input Parameters:
 + pc       - the preconditioner context

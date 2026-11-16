@@ -1413,7 +1413,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
   and src/mat/tutorials/ex10.c with the second approach.
 
   In case of `PETSCVIEWERBINARY`, a native PETSc binary format is used. Each of the blocks
-  is read onto MPI rank 0 and then shipped to its destination MPI rank, one after another.
+  is read onto MPI process 0 and then shipped to its destination MPI process, one after another.
   Multiple objects, both matrices and vectors, can be stored within the same file.
   Their `PetscObject` name is ignored; they are loaded in the order of their storage.
 

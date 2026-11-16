@@ -1221,7 +1221,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
                  (`PCMG`) that could not be efficiently solved on the entire communication
 
    Options Database Keys:
-+  -pc_telescope_reduction_factor r                      - factor to reduce the communicator size by. e.g. with 64 MPI ranks and r=4, the new sub-communicator will have 64/4 = 16 ranks.
++  -pc_telescope_reduction_factor r                      - factor to reduce the communicator size by. e.g. with 64 MPI processes and r=4, the new sub-communicator will have 64/4 = 16 processes.
 .  -pc_telescope_ignore_dm (true|false)                  - flag to indicate whether an attached `DM` should be ignored in constructing the new `PC`
 .  -pc_telescope_subcomm_type (interlaced|contiguous)    - defines the selection of MPI processes on the sub-communicator. see `PetscSubcomm` for more information.
 .  -pc_telescope_ignore_kspcomputeoperators (true|false) - flag to indicate whether `KSPSetComputeOperators()` should be used on the sub-`KSP`.

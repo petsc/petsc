@@ -136,7 +136,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
   The MPI communicator that owns the `PetscDraw` owns this `PetscDrawLG`, but the calls to set options and add points are ignored on all processes except the
   zeroth MPI process in the communicator.
 
-  All MPI ranks in the communicator must call `PetscDrawLGDraw()` to display the updated graph.
+  All MPI processes in the communicator must call `PetscDrawLGDraw()` to display the updated graph.
 
 .seealso: `PetscDrawLGDestroy()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGAddPoints()`, `PetscDrawLGDraw()`, `PetscDrawLGSave()`,
           `PetscDrawLGView()`, `PetscDrawLGReset()`, `PetscDrawLGSetDimension()`, `PetscDrawLGGetDimension()`, `PetscDrawLGSetLegend()`, `PetscDrawLGGetAxis()`,

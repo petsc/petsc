@@ -222,9 +222,9 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
   PetscCall(PCGetFailedReason(pc, &pcreason));
   level--;
   /*
-     This is tricky since only a subset of MPI ranks may set this; each KSPSolve_*() is responsible for checking
+     This is tricky since only a subset of MPI processes may set this; each KSPSolve_*() is responsible for checking
      this flag and initializing an appropriate vector with VecFlag() so that the first norm computation can
-     produce a result at KSPCheckNorm() thus communicating the known problem to all MPI ranks so they may
+     produce a result at KSPCheckNorm() thus communicating the known problem to all MPI processes so they may
      terminate the Krylov solve. For many KSP implementations this is handled within KSPInitialResidual()
   */
   if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;

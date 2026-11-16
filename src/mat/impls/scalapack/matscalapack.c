@@ -1735,7 +1735,7 @@ PETSC_INTERN PetscErrorCode MatStashScatterEnd_Ref(MatStash *);
 
   Note:
    Note unlike most matrix formats, this format does not store all the matrix entries for a contiguous
-   range of rows on an MPI rank. Use `MatGetOwnershipIS()` to determine what values are stored on
+   range of rows on an MPI process. Use `MatGetOwnershipIS()` to determine what values are stored on
    the given rank.
 
 .seealso: [](ch_matrices), `Mat`, `MATSCALAPACK`, `MATDENSE`, `MATELEMENTAL`, `MatGetOwnershipIS()`, `MatCreateScaLAPACK()`

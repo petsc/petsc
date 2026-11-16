@@ -3723,12 +3723,12 @@ static PetscErrorCode MatMumpsSetBlk_MUMPS(Mat F, PetscInt nblk, const PetscInt 
 
   Two modes to run MUMPS/PETSc with OpenMP
 .vb
-   Set `OMP_NUM_THREADS` and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
+   Set `OMP_NUM_THREADS` and run with fewer MPI processes than cores. For example, if you want to have 16 OpenMP
    threads per rank, then you may use "export `OMP_NUM_THREADS` = 16 && mpiexec -n 4 ./test".
 .ve
 
 .vb
-   `-mat_mumps_use_omp_threads` [m] and run your code with as many MPI ranks as the number of cores. For example,
+   `-mat_mumps_use_omp_threads` [m] and run your code with as many MPI processes as the number of cores. For example,
    if a compute node has 32 cores and you run on two nodes, you may use "mpiexec -n 64 ./test -mat_mumps_use_omp_threads 16"
 .ve
 
@@ -3738,17 +3738,17 @@ static PetscErrorCode MatMumpsSetBlk_MUMPS(Mat F, PetscInt nblk, const PetscInt 
    libraries, to really get performance, you should have multithreaded BLAS libraries such as Intel MKL, AMD ACML, Cray libSci or OpenBLAS
    (PETSc will automatically try to utilized a threaded BLAS if `--with-openmp` is provided).
 
-   If you run your code through a job submission system, there are caveats in MPI rank mapping. We use MPI_Comm_split_type() to obtain MPI
+   If you run your code through a job submission system, there are caveats in MPI process mapping. We use MPI_Comm_split_type() to obtain MPI
    processes on each compute node. Listing the processes in rank ascending order, we split processes on a node into consecutive groups of
    size m and create a communicator called omp_comm for each group. Rank 0 in an omp_comm is called the master rank, and others in the omp_comm
    are called slave ranks (or slaves). Only master ranks are seen to MUMPS and slaves are not. We will free CPUs assigned to slaves (might be set
    by CPU binding policies in job scripts) and make the CPUs available to the master so that OMP threads spawned by MUMPS can run on the CPUs.
-   In a multi-socket compute node, MPI rank mapping is an issue. Still use the above example and suppose your compute node has two sockets,
-   if you interleave MPI ranks on the two sockets, in other words, even ranks are placed on socket 0, and odd ranks are on socket 1, and bind
-   MPI ranks to cores, then with `-mat_mumps_use_omp_threads` 16, a master rank (and threads it spawns) will use half cores in socket 0, and half
-   cores in socket 1, that definitely hurts locality. On the other hand, if you map MPI ranks consecutively on the two sockets, then the
-   problem will not happen. Therefore, when you use `-mat_mumps_use_omp_threads`, you need to keep an eye on your MPI rank mapping and CPU binding.
-   For example, with the Slurm job scheduler, one can use srun `--cpu-bind`=verbose -m block:block to map consecutive MPI ranks to sockets and
+   In a multi-socket compute node, MPI process mapping is an issue. Still use the above example and suppose your compute node has two sockets,
+   if you interleave MPI processes on the two sockets, in other words, even ranks are placed on socket 0, and odd ranks are on socket 1, and bind
+   MPI processes to cores, then with `-mat_mumps_use_omp_threads` 16, a master rank (and threads it spawns) will use half cores in socket 0, and half
+   cores in socket 1, that definitely hurts locality. On the other hand, if you map MPI processes consecutively on the two sockets, then the
+   problem will not happen. Therefore, when you use `-mat_mumps_use_omp_threads`, you need to keep an eye on your MPI process mapping and CPU binding.
+   For example, with the Slurm job scheduler, one can use srun `--cpu-bind`=verbose -m block:block to map MPI processes with consecutive ranks to sockets and
    examine the mapping result.
 
    PETSc does not control thread binding in MUMPS. So to get best performance, one still has to set `OMP_PROC_BIND` and `OMP_PLACES` in job scripts,

@@ -64,7 +64,7 @@ static PetscBool InBoundingBox_Internal(PetscInt dim, const PetscReal *x, const 
   projection of its 3D source points as leaf coordinates. Calling `PetscSFReduceBegin()`/`PetscSFReduceEnd()` on the
   result will sum data from the 3D sources to the 2D targets.
 
-  As a concrete example, consider three MPI ranks with targets (roots)
+  As a concrete example, consider three MPI processes with targets (roots)
 .vb
 Rank 0: (0, 0), (0, 1)
 Rank 1: (0.1, 0), (0.1, 1)

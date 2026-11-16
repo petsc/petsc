@@ -1,7 +1,7 @@
 static char help[] = "Benchmarking various accessing methods of DMDA vectors on host\n\n";
 
 /*
-  On a machine with AMD EPYC-7452 CPUs, we got this data using one MPI rank and a serial-only Kokkos:
+  On a machine with AMD EPYC-7452 CPUs, we got this data using one MPI process and a serial-only Kokkos:
            Time (sec.), on Mar. 1, 2022
   ------------------------------------------
   n     PETSc          C          Kokkos

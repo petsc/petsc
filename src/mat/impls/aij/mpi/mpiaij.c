@@ -2581,7 +2581,7 @@ static PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap_MPIAIJ(Mat A, Petsc
 }
 
 /*@
-  MatMPIAIJGetNumberNonzeros - gets the number of nonzeros in the matrix on this MPI rank
+  MatMPIAIJGetNumberNonzeros - gets the number of nonzeros in the matrix on this MPI process
 
   Not Collective
 
@@ -6459,7 +6459,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /*           Send remote rows to their owner                                  */
   /* Find which rows should be sent to which remote ranks*/
-  PetscInt        nsend = 0; /* Number of MPI ranks to send data to */
+  PetscInt        nsend = 0; /* Number of MPI processes to send data to */
   PetscMPIInt    *sendto;    /* [nsend], storing remote ranks */
   PetscInt       *nentries;  /* [nsend], storing number of entries sent to remote ranks; Assume PetscInt is big enough for this count, and error if not */
   const PetscInt *ranges;

@@ -1117,7 +1117,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   New events returned from `PetscLogEventRegister()` are collective by default.
 
   Collective events are handled specially if the command line option `-log_sync` is used. In that case the logging saves information about
-  two parts of the event; the time for all the MPI ranks to synchronize and then the time for the actual computation/communication
+  two parts of the event; the time for all the MPI processes to synchronize and then the time for the actual computation/communication
   to be performed. This option is useful to debug imbalance within the computations or communications.
 
 .seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
@@ -2195,7 +2195,7 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
   `PetscLogFlops()` to increment this counter to include flops for the
   application code.
 
-  A separate counter `PetscLogGpuFlops()` logs the flops that occur on any GPU associated with this MPI rank
+  A separate counter `PetscLogGpuFlops()` logs the flops that occur on any GPU associated with this MPI process
 
 .seealso: [](ch_profiling), `PetscLogGpuFlops()`, `PetscTime()`, `PetscLogFlops()`
 @*/

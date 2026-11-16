@@ -928,7 +928,7 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
 
   /*           Send remote entries to their owner                                  */
   /* Find which entries should be sent to which remote ranks*/
-  PetscInt        nsend = 0; /* Number of MPI ranks to send data to */
+  PetscInt        nsend = 0; /* Number of MPI processes to send data to */
   PetscMPIInt    *sendto;    /* [nsend], storing remote ranks */
   PetscInt       *nentries;  /* [nsend], storing number of entries sent to remote ranks; Assume PetscInt is big enough for this count, and error if not */
   const PetscInt *ranges;

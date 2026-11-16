@@ -1766,7 +1766,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm, PetscInt n, cons
    Level: beginner
 
    Developer Note:
-   This stores all the mapping information on each MPI rank.
+   This stores all the mapping information on each MPI process.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingSetType()`, `ISLOCALTOGLOBALMAPPINGHASH`
 M*/

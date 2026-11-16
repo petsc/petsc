@@ -578,10 +578,10 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
   sequential vectors `leaves` on all MPI processes.
 
   With `PETSCSF_PATTERN_GATHER`, the routine creates a graph that if one does `PetscSFBcastBegin()` and `PetscSFBcastEnd()` on it, it will copy `root` to a
-  sequential vector `leaves` on MPI rank 0.
+  sequential vector `leaves` on MPI process 0.
 
   With `PETSCSF_PATTERN_ALLTOALL`, map is not used. Suppose NP is the size of `sf`'s communicator. The routine
-  creates a graph where every MPI process has NP leaves and NP roots. On MPI rank i, its leaf j is connected to root i
+  creates a graph where every MPI process has NP leaves and NP roots. On MPI process i, its leaf j is connected to root i
   of rank j. Here 0 <=i,j<NP. It is a kind of `MPI_Alltoall()` with sendcount/recvcount being 1. Note that it does
   not mean one can not send multiple items. One needs to create a new MPI datatype for the multiple data
   items with `MPI_Type_contiguous` and use that as the <unit> argument in the `PetscSF` routines. In this case, roots and leaves are symmetric.

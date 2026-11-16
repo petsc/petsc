@@ -778,7 +778,7 @@ PetscErrorCode PetscEnumFind(const char *const *enumlist, const char *str, Petsc
   error handling by the test harness. This options also causes PETSc to attempt to return an error code of 0 so that the test
   harness can process the output for differences in the usual manner as for successful runs. It should be provided to the test
   harness in the args: argument for specific examples. It will not necessarily produce portable output if different errors
-  (or no errors) occur on a subset of the MPI ranks.
+  (or no errors) occur on a subset of the MPI processes.
 
 .seealso: `PetscCILinenumber()`
 @*/

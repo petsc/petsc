@@ -29,7 +29,7 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
 
   `PetscDrawSPSetDimension()` determines how many point curves are being plotted.
 
-  The MPI communicator that owns the `PetscDraw` owns this `PetscDrawSP`, and each process can add points. All MPI ranks in the communicator must call `PetscDrawSPDraw()` to display the updated graph.
+  The MPI communicator that owns the `PetscDraw` owns this `PetscDrawSP`, and each process can add points. All MPI processes in the communicator must call `PetscDrawSPDraw()` to display the updated graph.
 
 .seealso: `PetscDrawLGCreate()`, `PetscDrawLG`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawSPDestroy()`, `PetscDraw`, `PetscDrawSP`, `PetscDrawSPSetDimension()`, `PetscDrawSPReset()`,
           `PetscDrawSPAddPoint()`, `PetscDrawSPAddPoints()`, `PetscDrawSPDraw()`, `PetscDrawSPSave()`, `PetscDrawSPSetLimits()`, `PetscDrawSPGetAxis()`, `PetscDrawAxis`, `PetscDrawSPGetDraw()`

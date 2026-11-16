@@ -16,7 +16,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 
   Note:
   The MPI communicator that owns the underlying draw object owns the `PetscDrawAxis` object, but calls to set `PetscDrawAxis` options are
-  ignored by all processes except the first MPI rank in the communicator
+  ignored by all processes except the first MPI process in the communicator
 
   Level: advanced
 

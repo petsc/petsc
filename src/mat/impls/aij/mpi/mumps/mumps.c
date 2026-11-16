@@ -309,7 +309,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
 . F - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 
   Output Parameters:
-+ size  - local size of the array. The size of the array is non-zero only on MPI rank 0
++ size  - local size of the array. The size of the array is non-zero only on MPI process 0
 - array - array of rows with null pivot, these rows follow 0-based indexing. The array gets allocated within the function and the user is responsible
           for freeing this array.
 

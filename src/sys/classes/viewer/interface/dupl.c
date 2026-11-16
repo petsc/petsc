@@ -29,7 +29,7 @@
   `PetscViewerFlush()` is run automatically at the beginning of `PetscViewerGetSubViewer()` and with `PetscViewerRestoreSubViewer()`
   for `PETSCVIEWERASCII`
 
-  `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI rank 0,
+  `PETSCVIEWERDRAW` and `PETSCVIEWERBINARY` only support returning a singleton viewer on MPI process 0,
   all other ranks will return a `NULL` viewer
 
   Must be called by all MPI processes that share `viewer`, for processes that are not of interest you can pass

@@ -410,7 +410,7 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
   Note:
   For writable binary `PetscViewer`s, the descriptor will only be valid for the
   first processor in the communicator that shares the `PetscViewer`. For readable
-  files it will only be valid on processes that have the file. If MPI rank 0 does not
+  files it will only be valid on processes that have the file. If MPI process 0 does not
   have the file it generates an error even if another MPI process does have the file.
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`
@@ -957,7 +957,7 @@ PetscErrorCode PetscViewerBinaryRead(PetscViewer viewer, void *data, PetscInt nu
 }
 
 /*@
-  PetscViewerBinaryWrite - writes to a binary file, only from the first MPI rank
+  PetscViewerBinaryWrite - writes to a binary file, only from the first MPI process
 
   Collective; No Fortran Support
 
@@ -1147,7 +1147,7 @@ PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, P
 }
 
 /*@
-  PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI rank, an array of strings
+  PetscViewerBinaryWriteStringArray - writes to a binary file, only from the first MPI process, an array of strings
 
   Collective; No Fortran Support
 
@@ -1596,7 +1596,7 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 .    -viewer_binary_skip_info (true|false)    - true means do not create .info file for this viewer
 .    -viewer_binary_skip_options (true|false) - true means do not use the options database for this viewer
 .    -viewer_binary_skip_header (true|false)  - true means do not store the usual header information in the binary file
--    -viewer_binary_mpiio (true|false)        - true means use the file via MPI-IO, maybe faster for large files and many MPI ranks
+-    -viewer_binary_mpiio (true|false)        - true means use the file via MPI-IO, maybe faster for large files and many MPI processes
 
    Environmental variable:
 -   PETSC_VIEWER_BINARY_FILENAME - filename in which to store the binary data, defaults to binaryoutput

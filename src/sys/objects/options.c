@@ -221,7 +221,7 @@ PetscErrorCode PetscOptionsCreateDefault(void)
   Notes:
   Use `PetscOptionsPop()` to return to the previous default options database
 
-  The collectivity of this routine is complex; only the MPI ranks that call this routine will
+  The collectivity of this routine is complex; only the MPI processes that call this routine will
   have the affect of these options. If some processes that create objects call this routine and others do
   not the code may fail in complicated ways because the same parallel solvers may incorrectly use different options
   on different ranks.
@@ -959,7 +959,7 @@ static PetscBool PetscCIOption(const char *name)
   Level: advanced
 
   Note:
-  Only the MPI rank 0 of the `MPI_Comm` used to create `viewer` displays the option values. Other processes
+  Only MPI process 0 of the `MPI_Comm` used to create `viewer` displays the option values. Other processes
   may have different values but they are not printed.
 
 .seealso: `PetscOptionsAllUsed()`

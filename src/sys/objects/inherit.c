@@ -332,7 +332,7 @@ PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallba
   Level: advanced
 
   Note:
-  Only MPI rank 0 of `PETSC_COMM_WORLD` prints the values
+  Only MPI process 0 of `PETSC_COMM_WORLD` prints the values
 
 .seealso: `PetscObject`
 @*/

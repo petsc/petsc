@@ -287,7 +287,7 @@ PetscErrorCode PetscFFlush(FILE *fd)
 
   Note:
   For error messages this may be called by any MPI process, for regular standard out it is
-  called only by MPI rank 0 of a given communicator
+  called only by MPI process 0 of a given communicator
 
   Example Usage:
   To use, write your own function for example,
@@ -564,7 +564,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 
   Input Parameters:
 + comm - the MPI communicator
-- fd   - the file pointer (valid on MPI rank 0 of the communicator), `PETSC_STDOUT` or value obtained from `PetscFOpen()`
+- fd   - the file pointer (valid on MPI process 0 of the communicator), `PETSC_STDOUT` or value obtained from `PetscFOpen()`
 
   Level: intermediate
 

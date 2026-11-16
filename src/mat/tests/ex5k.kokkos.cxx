@@ -12,19 +12,19 @@ Notes:
 
 Examples:
   On OLCF Summit (with GPU-aware MPI)
-    # 6 MPI ranks:
-    # 6 resource sets (-n 6), 1 MPI rank per RS (-a 1), 7 CPU cores per RS (-c 7), and 1 GPU per RS (-g 1), 6 RSs per node (-r 6)
+    # 6 MPI processes:
+    # 6 resource sets (-n 6), 1 MPI process per RS (-a 1), 7 CPU cores per RS (-c 7), and 1 GPU per RS (-g 1), 6 RSs per node (-r 6)
     jsrun --smpiargs "-gpu" -n 6 -a 1 -c 7 -g 1 -r 6 ./ex5k -f 1138_bus.aij -mat_type aijcusparse
 
-    # 1 MPI rank
+    # 1 MPI process
     jsrun --smpiargs "-gpu" -n 1 -a 1 -c 7 -g 1 -r 1 ./ex5k -f 1138_bus.aij -mat_type aijcusparse
 
   On OLCF Crusher:
-    # 1 MPI rank
+    # 1 MPI process
     # run with 1 node (-N1), 1 mpi rank (-n1), 2 hardware threads per rank (-c2)
     srun -N1 -n1 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex5k -f HV15R.aij -mat_type aijkokkos
 
-    # 8 MPI ranks
+    # 8 MPI processes
     srun -N1 -n8 -c2 --gpus-per-node=8 --gpu-bind=closest ./ex5k -f HV15R.aij -mat_type aijkokkos
 */
 #include <petscmat.h>

@@ -1,5 +1,5 @@
 /*
-    This file creates an MPI parallel KSP from a sequential PC that lives on MPI rank 0.
+    This file creates an MPI parallel KSP from a sequential PC that lives on MPI process 0.
     It is intended to allow using PETSc MPI parallel linear solvers from non-MPI codes.
 
     That program may use OpenMP to compute the right-hand side and matrix for the linear system
@@ -510,7 +510,7 @@ static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
   Logically Collective on all MPI processes except rank 0
 
   Options Database Keys:
-+ -mpi_linear_solver_server                                - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
++ -mpi_linear_solver_server                                - causes the PETSc program to start in MPI linear solver server mode where only the first MPI process runs user code
 . -mpi_linear_solver_server_view                           - displays information about all the linear systems solved by the MPI linear solver server at the conclusion of the program
 - -mpi_linear_solver_server_use_shared_memory (true|false) - use shared memory when communicating matrices and vectors to server processes (default where supported)
 
@@ -524,7 +524,7 @@ static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
   See `PetscShmgetAllocateArray()` for instructions on how to ensure the shared memory is available on your machine.
 
   Developer Notes:
-  When called on MPI rank 0 this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
+  When called on MPI process 0 this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
   written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks
   (that would normally be sharing `PETSC_COMM_WORLD`) to run the solver server.
 
@@ -656,7 +656,7 @@ PetscErrorCode PCMPIServerBegin(void)
   PCMPIServerEnd - ends a server that runs on the rank != 0 MPI processes waiting to process requests for
   parallel KSP solves and management of parallel `KSP` objects.
 
-  Logically Collective on all MPI ranks except 0
+  Logically Collective on all MPI processes except 0
 
   Level: developer
 
@@ -709,7 +709,7 @@ PetscErrorCode PCMPIServerEnd(void)
 }
 
 /*
-    This version is used in the trivial case when the MPI parallel solver server is running on just the original MPI rank 0
+    This version is used in the trivial case when the MPI parallel solver server is running on just the original MPI process 0
     because, for example, the problem is small. This version is more efficient because it does not require copying any data
 */
 static PetscErrorCode PCSetUp_Seq(PC pc)
@@ -909,12 +909,12 @@ static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems PetscOptionsO
      PCMPI - Calls an MPI parallel `KSP` to solve a linear system from user code running on one process
 
    Options Database Keys for the Server:
-+  -mpi_linear_solver_server                                - causes the PETSc program to start in MPI linear solver server mode where only the first MPI rank runs user code
++  -mpi_linear_solver_server                                - causes the PETSc program to start in MPI linear solver server mode where only the first MPI process runs user code
 .  -mpi_linear_solver_server_view                           - displays information about all the linear systems solved by the MPI linear solver server
 -  -mpi_linear_solver_server_use_shared_memory (true|false) - use shared memory to distribute matrix and right hand side, defaults to true
 
    Options Database Keys for a specific `KSP` object
-+  -ANY_KSP_PREFIX_mpi_linear_solver_server_minimum_count_per_rank - sets the minimum size of the linear system per MPI rank that the solver will strive for
++  -ANY_KSP_PREFIX_mpi_linear_solver_server_minimum_count_per_rank - sets the minimum size of the linear system per MPI process that the solver will strive for
 -  -ANY_KSP_PREFIX_mpi_linear_solver_server_always_use_server      - use the server solver code even if the particular system is only solved on the process (for debugging and testing purposes)
 
    Level: developer
@@ -934,7 +934,7 @@ static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems PetscOptionsO
    because they are not the actual solver objects.
 
    When `-log_view` is used with this solver the events within the parallel solve are logging in their own stage. Some of the logging in the other
-   stages will be confusing since the event times are only recorded on the 0th MPI rank, thus the percent of time in the events will be misleading.
+   stages will be confusing since the event times are only recorded on MPI process 0, thus the percent of time in the events will be misleading.
 
    Developer Note:
    This `PCType` is never directly selected by the user, it is set when the option `-mpi_linear_solver_server` is used and the `PC` is at the outer most nesting of

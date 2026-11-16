@@ -57,7 +57,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
 }
 
 /*@
-  PetscFClose - Has MPI rank 0 in the communicator close a
+  PetscFClose - Has MPI process 0 in the communicator close a
   file (usually obtained with `PetscFOpen()`; all others do nothing.
 
   Logically Collective
@@ -87,9 +87,9 @@ PetscErrorCode PetscFClose(MPI_Comm comm, FILE *fd)
 static char PetscPOpenMachine[128] = "";
 
 /*@
-  PetscPClose - Closes (ends) a program on MPI rank 0 run with `PetscPOpen()`
+  PetscPClose - Closes (ends) a program on MPI process 0 run with `PetscPOpen()`
 
-  Collective, but only MPI rank 0 does anything
+  Collective, but only MPI process 0 does anything
 
   Input Parameters:
 + comm - MPI communicator, only rank 0 performs the close
@@ -123,10 +123,10 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 }
 
 /*@
-  PetscPOpen - Runs a program on MPI rank 0 and sends either its input or output to
+  PetscPOpen - Runs a program on MPI process 0 and sends either its input or output to
   a file.
 
-  Logically Collective, but only MPI rank 0 runs the command
+  Logically Collective, but only MPI process 0 runs the command
 
   Input Parameters:
 + comm    - MPI communicator, only processor zero runs the program
@@ -145,7 +145,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
   Does not work under Microsoft Windows
 
   If machine is not provided will use the value set with `PetscPOpenSetMachine()` if that was provided, otherwise
-  will use the machine running MPI rank 0 of the communicator
+  will use the machine running MPI process 0 of the communicator
 
   The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
   will be replaced with relevant values.

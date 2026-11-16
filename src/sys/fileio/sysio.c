@@ -672,7 +672,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
   Level: developer
 
   Notes:
-  MPI rank 0 does a `PetscBinaryWrite()` the values on other MPI processes are not used
+  MPI process 0 does a `PetscBinaryWrite()` the values on other MPI processes are not used
 
   The files  are written using big-endian ordering to the file. On little-endian machines the numbers
   are converted to the big-endian format when they are written to disk.
@@ -682,7 +682,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 
   Because byte-swapping may be done on the values in data it cannot be declared const
 
-  This is NOT like `PetscSynchronizedFPrintf()`! This routine ignores calls on all but MPI rank 0,
+  This is NOT like `PetscSynchronizedFPrintf()`! This routine ignores calls on all but MPI process 0,
   while `PetscSynchronizedFPrintf()` has all MPI processes print their strings in order.
 
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedRead()`,
