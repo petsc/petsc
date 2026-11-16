@@ -1372,6 +1372,211 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobianFn *f, Petsc
 }
 
 /*@
+  TSSetMassMatrix - Set the function to compute the mass matrix $M = \partial F/\partial \dot U$ of a DAE.
+
+  Logically Collective
+
+  Input Parameters:
++ ts   - the `TS` context obtained from `TSCreate()`
+. func - the mass matrix evaluation routine, see `TSMassMatrixFn` for the calling sequence
+- ctx  - application context for the mass matrix evaluation routine (may be `NULL`)
+
+  Level: intermediate
+
+  Notes:
+  This is used by implicit integrators that solve DAEs $F(t, U, \dot U) = 0$ with a possibly singular mass matrix $M$.
+  Only `TSIRK` currently consumes it; other integrators ignore it.
+
+  You do not create the matrix $M$ yourself. The consuming integrator creates it with the correct layout and passes it to
+  `func` (a `TSMassMatrixFn`), which only fills its entries. `TSIRK` creates $M$ by duplicating the Jacobian matrix set with
+  `TSSetIJacobian()`, so $M$ shares the Jacobian's nonzero pattern; fill only the entries the mass matrix needs.
+
+  The callback is stored on the `TS`'s `DM` and copied to coarser `DM`s by `DMTSCopy()`, so it is available at
+  every level of a geometric multigrid hierarchy. `TSIRK` currently assembles the mass matrix only on the fine `DM`.
+
+.seealso: [](ch_ts), `TS`, `TSMassMatrixFn`, `TSGetMassMatrix()`, `TSComputeMassMatrix()`, `TSSetIJacobian()`, `TSIRK`
+@*/
+PetscErrorCode TSSetMassMatrix(TS ts, TSMassMatrixFn *func, PetscCtx ctx)
+{
+  DM dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMTSSetMassMatrix(dm, func, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetMassMatrix - Get the mass matrix evaluation routine and context set with `TSSetMassMatrix()`.
+
+  Not Collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameters:
++ func - the mass matrix evaluation routine (or `NULL`), see `TSMassMatrixFn` for the calling sequence
+- ctx  - the application context (or `NULL`)
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMassMatrixFn`, `TSSetMassMatrix()`
+@*/
+PetscErrorCode TSGetMassMatrix(TS ts, TSMassMatrixFn **func, PetscCtxRt ctx)
+{
+  DM dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMTSGetMassMatrix(dm, func, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSSetMassMatrixContextDestroy - Set the function to destroy the context set with `TSSetMassMatrix()`.
+
+  Logically Collective
+
+  Input Parameters:
++ ts - the `TS` context obtained from `TSCreate()`
+- f  - the context destroy function, see `PetscCtxDestroyFn` for its calling sequence
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSSetMassMatrix()`, `TSMassMatrixFn`
+@*/
+PetscErrorCode TSSetMassMatrixContextDestroy(TS ts, PetscCtxDestroyFn *f)
+{
+  DM dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMTSSetMassMatrixContextDestroy(dm, f));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSSetMassMatrixConstant - Declare whether the mass matrix set with `TSSetMassMatrix()` is constant.
+
+  Logically Collective
+
+  Input Parameters:
++ ts       - the `TS` context obtained from `TSCreate()`
+- constant - `PETSC_TRUE` if the mass matrix depends on neither time nor the solution, so it may be assembled once and reused
+
+  Level: intermediate
+
+  Note:
+  By default the mass matrix is treated as time- and state-dependent and integrators re-evaluate it (via the routine set
+  with `TSSetMassMatrix()`) whenever the operator is rebuilt. Setting this flag lets an integrator assemble the mass
+  matrix a single time and reuse it, avoiding repeated assembly for the common constant-mass case.
+
+.seealso: [](ch_ts), `TS`, `TSSetMassMatrix()`, `TSGetMassMatrixConstant()`, `TSMassMatrixFn`, `TSIRK`
+@*/
+PetscErrorCode TSSetMassMatrixConstant(TS ts, PetscBool constant)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(ts, constant, 2);
+  ts->massmatrixconstant = constant;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetMassMatrixConstant - Return whether the mass matrix has been declared constant with `TSSetMassMatrixConstant()`.
+
+  Not Collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. constant - `PETSC_TRUE` if the mass matrix is constant
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSSetMassMatrixConstant()`, `TSSetMassMatrix()`
+@*/
+PetscErrorCode TSGetMassMatrixConstant(TS ts, PetscBool *constant)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(constant, 2);
+  *constant = ts->massmatrixconstant;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSHasMassMatrix - Determine whether a mass matrix evaluation routine has been set with `TSSetMassMatrix()`.
+
+  Not Collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. has - `PETSC_TRUE` if a mass matrix callback is set
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSSetMassMatrix()`, `TSComputeMassMatrix()`
+@*/
+PetscErrorCode TSHasMassMatrix(TS ts, PetscBool *has)
+{
+  TSMassMatrixFn *func;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(has, 2);
+  PetscCall(TSGetMassMatrix(ts, &func, NULL));
+  *has = func ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSComputeMassMatrix - Evaluate the mass matrix $M = \partial F/\partial \dot U$ using the routine set with `TSSetMassMatrix()`.
+
+  Collective
+
+  Input Parameters:
++ ts - the `TS` context obtained from `TSCreate()`
+. t  - the time at which to evaluate the mass matrix
+- U  - the state vector at which to evaluate the mass matrix
+
+  Output Parameter:
+. M - the mass matrix to fill; the integrator supplies it with the correct layout
+
+  Level: developer
+
+  Note:
+  The mass matrix is assembled on the `DM` returned by `TSGetDM()`, that is the fine `DM` or, within a multigrid
+  traversal, the current level's `DM`. This matches `TSComputeIJacobian()`, which likewise takes no `DM` argument.
+
+.seealso: [](ch_ts), `TS`, `TSMassMatrixFn`, `TSSetMassMatrix()`, `TSHasMassMatrix()`
+@*/
+PetscErrorCode TSComputeMassMatrix(TS ts, PetscReal t, Vec U, Mat M)
+{
+  DM              dm;
+  TSMassMatrixFn *func;
+  void           *ctx;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(M, MAT_CLASSID, 4);
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMTSGetMassMatrix(dm, &func, &ctx));
+  PetscCheck(func, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetMassMatrix() before TSComputeMassMatrix()");
+  PetscCall(PetscLogEventBegin(TS_JacobianEval, U, ts, M, 0));
+  PetscCallBack("TS callback mass matrix", (*func)(ts, t, U, M, ctx));
+  PetscCall(PetscLogEventEnd(TS_JacobianEval, U, ts, M, 0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   TSRHSJacobianSetReuse - restore the RHS Jacobian before calling the user-provided `TSRHSJacobianFn` function again
 
   Logically Collective

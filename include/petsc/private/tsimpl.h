@@ -265,6 +265,8 @@ struct _p_TS {
     PetscReal shift; /* The derivative of the lhs wrt to Xdot */
   } ijacobian;
 
+  PetscBool massmatrixconstant; /* the mass matrix set with TSSetMassMatrix() is constant, so it may be assembled once and reused */
+
   MatStructure axpy_pattern; /* information about the nonzero pattern of the RHS Jacobian in reference to the implicit Jacobian */
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES      snes;
@@ -411,6 +413,8 @@ struct _DMTSOps {
   PetscErrorCode (*ijacobianview)(void *, PetscViewer);
   PetscErrorCode (*ijacobianload)(void **, PetscViewer);
 
+  TSMassMatrixFn *massmatrix;
+
   TSI2FunctionFn *i2function;
   TSI2JacobianFn *i2jacobian;
 
@@ -430,6 +434,8 @@ struct _p_DMTS {
 
   PetscContainer ifunctionctxcontainer;
   PetscContainer ijacobianctxcontainer;
+
+  PetscContainer massmatrixctxcontainer;
 
   PetscContainer i2functionctxcontainer;
   PetscContainer i2jacobianctxcontainer;

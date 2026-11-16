@@ -144,6 +144,8 @@
 ```{rubric} TS:
 ```
 
+- Add `TSSetMassMatrix()`, `TSGetMassMatrix()`, `TSSetMassMatrixContextDestroy()`, `TSComputeMassMatrix()`, `TSHasMassMatrix()`, `TSSetMassMatrixConstant()`, `TSGetMassMatrixConstant()`, `TSMassMatrixFn`, `DMTSSetMassMatrix()`, `DMTSGetMassMatrix()`, and `DMTSSetMassMatrixContextDestroy()` to supply the mass matrix $\partial F/\partial \dot U$ of a DAE
+
 ```{rubric} TAO:
 ```
 
