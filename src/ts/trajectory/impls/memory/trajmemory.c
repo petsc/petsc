@@ -2215,7 +2215,7 @@ static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
 #if PetscDefined(HAVE_CAMS)
   if (tjsch->stype == CAMS_OFFLINE) {
     if (tjsch->stack.solution_only) offline_ca_destroy();
-    else offline_ca_destroy();
+    else offline_cams_destroy();
     PetscCall(PetscFree(tjsch->actx));
   }
 #endif
