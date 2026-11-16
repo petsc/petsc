@@ -463,7 +463,9 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_turn_off_second_balancing", &flg, NULL));
+
+    PetscCall(PetscOptionsDeprecatedNoObject(PetscObjectComm((PetscObject)pc), NULL, "-pc_turn_off_second_balancing", "-pc_nn_turn_off_second_balancing", "3.27", NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_nn_turn_off_second_balancing", &flg, NULL));
     if (!flg) {
       PetscCall(PCNNBalancing(pc, r, vec1_B, z, vec2_B, vec3_B, (Vec)0, vec1_D, vec2_D, work_N));
     } else {
