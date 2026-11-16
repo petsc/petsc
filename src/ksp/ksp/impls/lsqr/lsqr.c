@@ -620,8 +620,8 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    This variant, when applied with no preconditioning is identical to the original published algorithm in exact arithmetic; however, in practice, with no preconditioning
    due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
 
-   With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A^T*A)) since the preconditioner needs to work
-   for the normal equations $^T A$. For example, use `MatCreateNormal()`.
+   With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,$A^T A$) since the preconditioner needs to work
+   for the normal equations $A^T A$. For example, use `MatCreateNormal()`.
 
    Supports only left preconditioning.
 
