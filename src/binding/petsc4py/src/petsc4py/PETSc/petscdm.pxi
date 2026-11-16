@@ -60,6 +60,13 @@ cdef extern from * nogil:
                                                    PetscMat,
                                                    PetscDM,
                                                    void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscDMRefineHook)(PetscDM,
+                                                 PetscDM,
+                                                 void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode (*PetscDMInterpolateHook)(PetscDM,
+                                                      PetscMat,
+                                                      PetscDM,
+                                                      void*) except PETSC_ERR_PYTHON
 
     PetscErrorCode DMCreate(MPI_Comm, PetscDM*)
     PetscErrorCode DMClone(PetscDM, PetscDM*)
@@ -142,6 +149,7 @@ cdef extern from * nogil:
     PetscErrorCode DMConvert(PetscDM, PetscDMType, PetscDM*)
     PetscErrorCode DMRefine(PetscDM, MPI_Comm, PetscDM*)
     PetscErrorCode DMCoarsen(PetscDM, MPI_Comm, PetscDM*)
+    PetscErrorCode DMInterpolate(PetscDM, PetscMat, PetscDM)
     PetscErrorCode DMRefineHierarchy(PetscDM, PetscInt, PetscDM[])
     PetscErrorCode DMCoarsenHierarchy(PetscDM, PetscInt, PetscDM[])
     PetscErrorCode DMGetRefineLevel(PetscDM, PetscInt*)
@@ -210,6 +218,7 @@ cdef extern from * nogil:
     PetscErrorCode DMSNESSetJacobian(PetscDM, PetscSNESJacobianFunction, void*)
 
     PetscErrorCode DMCoarsenHookAdd(PetscDM, PetscDMCoarsenHook, PetscDMRestrictHook, void*)
+    PetscErrorCode DMRefineHookAdd(PetscDM, PetscDMRefineHook, PetscDMInterpolateHook, void*)
 
 # --------------------------------------------------------------------
 
@@ -315,5 +324,37 @@ cdef PetscErrorCode DM_PyRestrictHook(
     for hook in hooks:
         (hookop, args, kargs) = hook
         hookop(Fine, Mrestrict, Rscale, Inject, Coarse, *args, **kargs)
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode DM_PyRefineHook(
+    PetscDM coarse,
+    PetscDM fine,
+    void    *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
+
+    cdef DM Coarse = ref_DM(coarse)
+    cdef DM Fine = ref_DM(fine)
+    cdef object hooks = Coarse.get_attr('__refinehooks__')
+    assert hooks is not None and type(hooks) is list
+    for hook in hooks:
+        (hookop, args, kargs) = hook
+        hookop(Coarse, Fine, *args, **kargs)
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode DM_PyInterpolateHook(
+    PetscDM  coarse,
+    PetscMat minterp,
+    PetscDM  fine,
+    void     *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
+
+    cdef DM  Coarse = ref_DM(coarse)
+    cdef Mat Minterp = ref_Mat(minterp)
+    cdef DM  Fine = ref_DM(fine)
+    cdef object hooks = Fine.get_attr('__interpolatehooks__')
+    assert hooks is not None and type(hooks) is list
+    for hook in hooks:
+        (hookop, args, kargs) = hook
+        hookop(Coarse, Minterp, Fine, *args, **kargs)
     return PETSC_SUCCESS
 # -----------------------------------------------------------------------------

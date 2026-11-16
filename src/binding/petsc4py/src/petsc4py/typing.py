@@ -55,6 +55,8 @@ __all__ = [
     'MatHtoolKernelFunction',
     'DMCoarsenHookFunction',
     'DMRestrictHookFunction',
+    'DMRefineHookFunction',
+    'DMInterpolateHookFunction',
     'KSPRHSFunction',
     'KSPCreateOperatorsFunction',
     'KSPComputeOperatorsFunction',
@@ -336,6 +338,12 @@ DMCoarsenHookFunction = Callable[[DM, DM], None]
 
 DMRestrictHookFunction = Callable[[DM, Mat, Vec, Mat, DM], None]
 """`PETSc.DM` restriction hook callback."""
+
+DMRefineHookFunction = Callable[[DM, DM], None]
+"""`PETSc.DM` refinement hook callback."""
+
+DMInterpolateHookFunction = Callable[[DM, Mat, DM], None]
+"""`PETSc.DM` interpolation hook callback."""
 
 # --- KSP ---
 

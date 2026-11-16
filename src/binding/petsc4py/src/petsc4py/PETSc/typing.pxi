@@ -53,6 +53,8 @@ cdef MatHtoolKernelFunction
 
 cdef DMCoarsenHookFunction
 cdef DMRestrictHookFunction
+cdef DMRefineHookFunction
+cdef DMInterpolateHookFunction
 
 # --- KSP ---
 

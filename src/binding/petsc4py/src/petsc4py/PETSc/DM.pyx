@@ -1697,6 +1697,25 @@ cdef class DM(Object):
         dm.dm = newdm
         return dm
 
+    def interpolateHooks(self, Mat interp, DM fine) -> None:
+        """Run the interpolation hooks registered on a finer `DM`.
+
+        Collective.
+
+        Parameters
+        ----------
+        interp
+            The matrix interpolating from this `DM` to ``fine``.
+        fine
+            The finer `DM`.
+
+        See Also
+        --------
+        addRefineHook, petsc.DMInterpolate
+
+        """
+        CHKERR(DMInterpolate(self.dm, interp.mat, fine.dm))
+
     def coarsen(self, comm: Comm | None = None) -> DM:
         """Return a coarsened `DM` object.
 
@@ -2538,24 +2557,24 @@ cdef class DM(Object):
 
     def addCoarsenHook(
         self,
-        coarsenhook: DMCoarsenHookFunction,
-        restricthook: DMRestrictHookFunction,
+        coarsenhook: DMCoarsenHookFunction | None,
+        restricthook: DMRestrictHookFunction | None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
-        """Add a callback to be executed when restricting to a coarser grid.
+        """Add callbacks to set up and update user-defined data on coarser ``DM`` objects.
 
         Logically collective.
 
         Parameters
         ----------
         coarsenhook
-            The coarsen hook function.
+            The coarsen hook function. Set to `None` to omit this hook.
         restricthook
-            The restrict hook function.
+            The restrict hook function. Set to `None` to omit this hook.
         args
-            Positional arguments for the hooks.
+            Positional arguments for the hook.
         kargs
-            Keyword arguments for the hooks.
+            Keyword arguments for the hook.
 
         See Also
         --------
@@ -2586,6 +2605,65 @@ cdef class DM(Object):
             else:
                 restricthooks.append(restrictcontext)
             self.set_attr('__restricthooks__', restricthooks)
+
+    def addRefineHook(
+        self,
+        refinehook: DMRefineHookFunction | None,
+        interphook: DMInterpolateHookFunction | None,
+        args: tuple[Any, ...] | None = None,
+        kargs: dict[str, Any] | None = None) -> None:
+        """Add callbacks to set up and update user-defined data on finer ``DM`` objects.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        refinehook
+            The refine hook function, called by `refine` with the
+            coarse and the fine `DM`. Set to `None` to omit this hook.
+        interphook
+            The interpolate hook function, called by `interpolateHooks` with
+            the coarse `DM`, the interpolation matrix and the fine `DM`. Set to
+            `None` to omit this hook.
+        args
+            Positional arguments for the hook.
+        kargs
+            Keyword arguments for the hook.
+
+        Notes
+        -----
+        `refine` calls the refine hooks of the coarse `DM`, while
+        `interpolateHooks` calls the interpolate hooks of the fine `DM`.
+
+        See Also
+        --------
+        interpolateHooks, refine, petsc.DMRefineHookAdd
+
+        """
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
+
+        if refinehook is not None:
+            refinecontext = (refinehook, args, kargs)
+
+            refinehooks = self.get_attr('__refinehooks__')
+            if refinehooks is None:
+                refinehooks = [refinecontext]
+                CHKERR(DMRefineHookAdd(self.dm, DM_PyRefineHook, NULL, <void*>NULL))
+            else:
+                refinehooks.append(refinecontext)
+            self.set_attr('__refinehooks__', refinehooks)
+
+        if interphook is not None:
+            interpcontext = (interphook, args, kargs)
+
+            interphooks = self.get_attr('__interpolatehooks__')
+            if interphooks is None:
+                interphooks = [interpcontext]
+                CHKERR(DMRefineHookAdd(self.dm, NULL, DM_PyInterpolateHook, <void*>NULL))
+            else:
+                interphooks.append(interpcontext)
+            self.set_attr('__interpolatehooks__', interphooks)
 
     # --- application context ---
 
