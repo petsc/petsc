@@ -36,7 +36,9 @@ class TestDevice(unittest.TestCase):
         self.addCleanup(default.destroy)
         self.assertEqual(default, standard)
         self.assertNotEqual(default, work)
-        self.assertEqual(default.getStreamType(), 'DEFAULT')
+        self.assertEqual(
+            default.getStreamType(), PETSc.DeviceContext.StreamType.DEFAULT
+        )
         work.waitFor(default)
         default.waitFor(work)
         default.synchronize()

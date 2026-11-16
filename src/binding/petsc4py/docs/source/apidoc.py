@@ -230,11 +230,14 @@ def visit_class(cls, outer=None, done=None):
         '__le__',
         '__ge__',
         '__gt__',
-        '__enum2str',  # FIXME refactor implementation
         '_traceback_',  # FIXME maybe refactor?
     }
     if isinstance(cls, type) and issubclass(cls, enum.Enum):
-        skip.update(set(cls.__dict__) - set(cls.__members__))
+        skip.update(
+            name
+            for name in set(cls.__dict__) - set(cls.__members__)
+            if name.startswith('_') or not is_classmethod(cls.__dict__[name])
+        )
     special = {
         '__len__': '__len__(self) -> int',
         '__bool__': '__bool__(self) -> bool',
