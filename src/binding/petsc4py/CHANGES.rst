@@ -10,6 +10,7 @@ Development
 ===========
 
 - Add ``--sync-output`` option to ``test/runtests.py`` to print test output once, from rank 0.
+- Add ``DMPlex.createFromCellSectionParallel()``
 
 
 Release 3.26.0
