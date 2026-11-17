@@ -839,8 +839,9 @@ where noted, add a newline after the section headings.
     manual page in their `.seealso:` sections. This is the final entry in the
     comment. There should be no blank line after the `.seealso:` items.
 
-15. All PETSc functions that appear in a manual page (except the one in the header at the top) should end with a `()` and be enclosed
-    in single back tick marks. All PETSc enum types and macros etc, should also be enclosed in single back tick marks.
+15. All PETSc functions that appear in a manual page (except the one in the header at the top) should be written as
+    `` `Func()` `` or `` `Func`(args) `` with `Func` inside single back ticks and arguments, if any,
+    in parentheses outside the ticks. All PETSc enum types and macros etc, should also be enclosed in single back tick marks.
     This includes each item listed in the `.seealso:` lines.
 
 16. Every new API entry such as functions and typedefs must have a corresponding manual page. A merge request cannot be accepted
