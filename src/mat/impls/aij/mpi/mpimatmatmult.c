@@ -389,6 +389,8 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterDestroy_Private(MPIAIJ_MPIDense *c
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(&contents->workB));
+  PetscCall(MatDestroy(contents->packed));
+  PetscCall(MatDestroy(contents->packed + 1));
   PetscCall(PetscSFDestroy(&contents->sf[0]));
   PetscCall(PetscSFDestroy(&contents->sf[1]));
   for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
@@ -509,7 +511,7 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterSetUp_Private(VecScatter ctx, Pets
 
   PetscFunctionBegin;
   PetscCall(MatDenseGetLDA(B, &contents->blda));
-  PetscCall(PetscObjectGetId((PetscObject)B, &contents->bid));
+  PetscCall(PetscObjectGetId((PetscObject)B, contents->bid));
   /* Create column block of B and C for memory scalability when BN is too large */
   PetscCall(MatMPIDenseGetBatchSize_Private(nrows, Am, B, C, &Bbn, &numBb));
   ncols = Bbn > 0 ? Bbn : BN;
@@ -562,7 +564,8 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterUpdateLDA_Private(VecScatter ctx, 
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetId((PetscObject)B, &id));
-  if (id == contents->bid) PetscFunctionReturn(PETSC_SUCCESS);
+  /* alternating between two validated inputs can reuse the strided PetscSF without another reduction */
+  if (contents->ondevice == PETSC_TRUE && (id == contents->bid[0] || id == contents->bid[1])) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatDenseGetLDA(B, &blda));
   update = (PetscBool)(blda != contents->blda);
   if (contents->ondevice) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &update, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)C)));
@@ -571,10 +574,13 @@ PETSC_INTERN PetscErrorCode MatMPIDenseScatterUpdateLDA_Private(VecScatter ctx, 
     PetscCall(PetscSFDestroy(&contents->sf[0]));
     PetscCall(PetscSFDestroy(&contents->sf[1]));
     for (PetscInt i = 0; i < contents->nsends; i++) PetscCallMPI(MPI_Type_free(&contents->stype[i]));
+    PetscCall(MatDestroy(contents->packed));
+    PetscCall(MatDestroy(contents->packed + 1));
     contents->blda = blda;
     PetscCall(MatMPIDenseScatterSetUpLDA_Private(ctx, bs, B, contents));
   }
-  contents->bid = id;
+  contents->bid[1] = update == PETSC_TRUE ? 0 : contents->bid[0];
+  contents->bid[0] = id;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -690,7 +696,7 @@ static PetscErrorCode MatMPIDenseScatterHost_Private(VecScatter ctx, PetscInt bs
 static PetscErrorCode MatMPIDenseScatterDeviceBegin_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
 {
   PetscSF      sf;
-  PetscInt     k = 0;
+  PetscInt     k = 0, blda;
   PetscMemType bmtype, wmtype;
 
   PetscFunctionBegin;
@@ -698,6 +704,14 @@ static PetscErrorCode MatMPIDenseScatterDeviceBegin_Private(Mat workB, MPIAIJ_MP
   if (B->cmap->N != contents->ncols[0]) k = 1;
   PetscCheck(contents->sf[k] && contents->ncols[k] == B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter set up for %" PetscInt_FMT " columns", B->cmap->N);
   sf = contents->sf[k];
+  PetscCall(MatDenseGetLDA(B, &blda));
+  /* a validated input can change its stride on a single process; pack only on processes where the strided PetscSF differs */
+  if (blda != contents->blda && B->cmap->N > 1) {
+    PetscCall(MatDestroy(&contents->packed[k]));
+    PetscCall(MatDenseDuplicateLocalWithLDA_Private(B, contents->blda, &contents->packed[k]));
+    B = contents->packed[k];
+  } else PetscCall(MatDenseGetLocalMatrix(B, &B));
+  contents->source = B;
   /* every entry of workB is overwritten, so write-only access is enough */
   PetscCall(MatDenseGetArrayReadAndMemType(B, &contents->barray, &bmtype));
   PetscCall(MatDenseGetArrayWriteAndMemType(workB, &contents->warray, &wmtype));
@@ -706,7 +720,7 @@ static PetscErrorCode MatMPIDenseScatterDeviceBegin_Private(Mat workB, MPIAIJ_MP
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPIDense *contents, Mat B)
+static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPIDense *contents)
 {
   PetscSF sf = contents->sfinuse;
 
@@ -714,7 +728,7 @@ static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPID
   PetscCheck(sf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No scatter in flight");
   PetscCall(PetscSFBcastEnd(sf, sf->vscat.unit, contents->barray, contents->warray, MPI_REPLACE));
   PetscCall(MatDenseRestoreArrayWriteAndMemType(workB, &contents->warray));
-  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &contents->barray));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(contents->source, &contents->barray));
   contents->sfinuse = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -722,26 +736,22 @@ static PetscErrorCode MatMPIDenseScatterDeviceEnd_Private(Mat workB, MPIAIJ_MPID
 /*
    The checks the host and device scatters share; on the device route they are done by the begin half
 */
-static PetscErrorCode MatMPIDenseScatterCheck_Private(PetscInt nrows, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
+static PetscErrorCode MatMPIDenseScatterCheck_Private(PetscInt nrows, Mat workB, Mat C)
 {
-  PetscInt blda;
-
   PetscFunctionBegin;
-  MatCheckProduct(C, 5);
+  MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   PetscCheck(nrows == workB->rmap->n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of rows of workB %" PetscInt_FMT " not equal to columns of off-diagonal block %" PetscInt_FMT, workB->rmap->n, nrows);
-  PetscCall(MatDenseGetLDA(B, &blda));
-  PetscCheck(blda == contents->blda, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot reuse an input matrix with lda %" PetscInt_FMT " != %" PetscInt_FMT, blda, contents->blda);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatMPIDenseScatter_Private(VecScatter ctx, PetscInt nrows, PetscInt bs, Mat workB, MPIAIJ_MPIDense *contents, Mat B, Mat C)
 {
   PetscFunctionBegin;
-  PetscCall(MatMPIDenseScatterCheck_Private(nrows, workB, contents, B, C));
+  PetscCall(MatMPIDenseScatterCheck_Private(nrows, workB, C));
   if (contents->ondevice) {
     PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
-    PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
+    PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents));
   } else PetscCall(MatMPIDenseScatterHost_Private(ctx, bs, workB, contents, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -758,18 +768,18 @@ static PetscErrorCode MatMPIDenseScatterBegin(Mat A, Mat B, Mat workB, Mat C)
 
   PetscFunctionBegin;
   if (contents->ondevice) {
-    PetscCall(MatMPIDenseScatterCheck_Private(aij->B->cmap->n, workB, contents, B, C));
+    PetscCall(MatMPIDenseScatterCheck_Private(aij->B->cmap->n, workB, C));
     PetscCall(MatMPIDenseScatterDeviceBegin_Private(workB, contents, B));
   } else PetscCall(MatMPIDenseScatter_Private(aij->Mvctx, aij->B->cmap->n, 1, workB, contents, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMPIDenseScatterEnd(Mat B, Mat workB, Mat C)
+static PetscErrorCode MatMPIDenseScatterEnd(Mat workB, Mat C)
 {
   MPIAIJ_MPIDense *contents = &((MPIAIJ_MPIDense_AB *)C->product->data)->scatter;
 
   PetscFunctionBegin;
-  if (contents->ondevice) PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents, B));
+  if (contents->ondevice) PetscCall(MatMPIDenseScatterDeviceEnd_Private(workB, contents));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -838,7 +848,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
     /* get off processor parts of B needed to complete C=A*B */
     workB = contents->workB;
     if (!overlap) PetscCall(MatMPIDenseScatterBegin(A, B, workB, C));
-    PetscCall(MatMPIDenseScatterEnd(B, workB, C));
+    PetscCall(MatMPIDenseScatterEnd(workB, C));
 
     /* off-diagonal block of A times nonlocal rows of B */
     if (data->workC) {
@@ -870,7 +880,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
 
       /* get off processor parts of B needed to complete C=A*B */
       PetscCall(MatMPIDenseScatterBegin(A, Bb, workB, C));
-      PetscCall(MatMPIDenseScatterEnd(Bb, workB, C));
+      PetscCall(MatMPIDenseScatterEnd(workB, C));
 
       /* off-diagonal block of A times nonlocal rows of B */
       if (workC) {
