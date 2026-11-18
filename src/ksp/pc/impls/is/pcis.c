@@ -352,19 +352,19 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     PetscCall(KSPSetType(pcis->ksp_N, KSPPREONLY));
     PetscCall(KSPSetFromOptions(pcis->ksp_N));
     {
-      PetscBool damp_fixed = PETSC_FALSE, remove_nullspace_fixed = PETSC_FALSE, set_damping_factor_floating = PETSC_FALSE, not_damp_floating = PETSC_FALSE, not_remove_nullspace_floating = PETSC_FALSE;
-      PetscReal fixed_factor, floating_factor;
+      PetscBool damp_fixed = PETSC_FALSE, remove_nullspace_fixed = PETSC_FALSE, fixed_factor_set = PETSC_FALSE, not_damp_floating = PETSC_FALSE, not_remove_nullspace_floating = PETSC_FALSE;
+      PetscReal fixed_factor, floating_factor = 1.e-12;
 
-      PetscCall(PetscOptionsGetReal(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_damp_fixed", &fixed_factor, &damp_fixed));
-      if (!damp_fixed) fixed_factor = 0.0;
-      PetscCall(PetscOptionsGetBool(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_damp_fixed", &damp_fixed, NULL));
+      PetscCall(PetscOptionsGetReal(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_set_damping_factor_floating", &floating_factor, NULL));
+      PetscCheck(floating_factor > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "-pc_is_set_damping_factor_floating %g must be positive", (double)floating_factor);
+
+      PetscCall(PetscOptionsHasName(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_damp_fixed", &damp_fixed));
+      PetscCall(PetscOptionsGetReal(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_damp_fixed", &fixed_factor, &fixed_factor_set));
+      // -pc_is_damp_fixed without a value uses the floating subdomain shift amount
+      if (!fixed_factor_set) fixed_factor = floating_factor;
+      PetscCheck(fixed_factor > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "-pc_is_damp_fixed %g must be positive", (double)fixed_factor);
 
       PetscCall(PetscOptionsGetBool(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_remove_nullspace_fixed", &remove_nullspace_fixed, NULL));
-
-      PetscCall(PetscOptionsGetReal(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_set_damping_factor_floating", &floating_factor, &set_damping_factor_floating));
-      if (!set_damping_factor_floating) floating_factor = 0.0;
-      PetscCall(PetscOptionsGetBool(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_set_damping_factor_floating", &set_damping_factor_floating, NULL));
-      if (!set_damping_factor_floating) floating_factor = 1.e-12;
 
       PetscCall(PetscOptionsGetBool(((PetscObject)pc_ctx)->options, ((PetscObject)pc_ctx)->prefix, "-pc_is_not_damp_floating", &not_damp_floating, NULL));
 
@@ -384,7 +384,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
       } else { /* fixed subdomain */
         if (damp_fixed) {
           PetscCall(PCFactorSetShiftType(pc_ctx, MAT_SHIFT_NONZERO));
-          PetscCall(PCFactorSetShiftAmount(pc_ctx, floating_factor));
+          PetscCall(PCFactorSetShiftAmount(pc_ctx, fixed_factor));
         }
         if (remove_nullspace_fixed) {
           MatNullSpace nullsp;
