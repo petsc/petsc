@@ -58,6 +58,8 @@ cdef extern from * nogil:
         # diverged
         TS_DIVERGED_NONLINEAR_SOLVE
         TS_DIVERGED_STEP_REJECTED
+        TSFORWARD_DIVERGED_LINEAR_SOLVE
+        TSADJOINT_DIVERGED_LINEAR_SOLVE
 
     ctypedef enum PetscTSExactFinalTimeOption "TSExactFinalTimeOption":
         TS_EXACTFINALTIME_UNSPECIFIED
