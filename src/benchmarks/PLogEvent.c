@@ -39,13 +39,13 @@ int main(int argc, char **argv)
   PetscCall(PetscTime(&y));
   fprintf(stderr, "%-15s : %e sec, with options : ", "PetscLogEvent", (y - x) / 10.0);
 
-  PetscCall(PetscOptionsHasName(NULL, "-log", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log", &flg));
   if (flg) fprintf(stderr, "-log ");
-  PetscCall(PetscOptionsHasName(NULL, "-log_all", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_all", &flg));
   if (flg) fprintf(stderr, "-log_all ");
-  PetscCall(PetscOptionsHasName(NULL, "-log_view", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_view", &flg));
   if (flg) fprintf(stderr, "-log_view ");
-  PetscCall(PetscOptionsHasName(NULL, "-log_mpe", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg));
   if (flg) fprintf(stderr, "-log_mpe ");
 
   fprintf(stderr, "\n");

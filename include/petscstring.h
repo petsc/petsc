@@ -661,11 +661,6 @@ static inline PetscErrorCode PetscMemmove(void *a, const void *b, size_t n)
 
   Level: intermediate
 
-  Compile Options\:
-+  `PETSC_PREFER_DCOPY_FOR_MEMCPY` - cause the BLAS `dcopy()` routine to be used for memory copies on double precision values.
-.  `PETSC_PREFER_COPY_FOR_MEMCPY` - cause C code to be used for memory copies on double precision values.
--  `PETSC_PREFER_FORTRAN_FORMEMCPY` - cause Fortran code to be used for memory copies on double precision values.
-
   Notes:
   Prefer `PetscArraycpy()`
 
@@ -683,28 +678,6 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
   PetscAssert(a, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to copy %zu bytes to a null pointer (Argument #1)", n);
   PetscAssert(b, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to copy %zu bytes from a null pointer (Argument #2)", n);
   PetscAssert(!(((al > bl) && (al - bl) < n) || (bl - al) < n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Memory regions overlap: either use PetscMemmove(), or make sure your copy regions and lengths are correct. Length (bytes) %zu first address %" PRIxPTR " second address %" PRIxPTR, n, al, bl);
-#if PetscDefined(PREFER_DCOPY_FOR_MEMCPY) || PetscDefined(PREFER_COPY_FOR_MEMCPY) || PetscDefined(PREFER_FORTRAN_FORMEMCPY)
-  if (!(al % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
-    const size_t       scalar_len = n / sizeof(PetscScalar);
-    const PetscScalar *x          = (PetscScalar *)b;
-    PetscScalar       *y          = (PetscScalar *)a;
-
-  #if PetscDefined(PREFER_DCOPY_FOR_MEMCPY)
-    {
-      const PetscBLASInt one = 1;
-      PetscBLASInt       blen;
-
-      PetscCall(PetscBLASIntCast(scalar_len, &blen));
-      PetscCallBLAS("BLAScopy", BLAScopy_(&blen, x, &one, y, &one));
-    }
-  #elif PetscDefined(PREFER_FORTRAN_FORMEMCPY)
-    fortrancopy_(&scalar_len, x, y);
-  #else
-    for (size_t i = 0; i < scalar_len; i++) y[i] = x[i];
-  #endif
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-#endif
   memcpy(a, b, n);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -720,10 +693,6 @@ static inline PetscErrorCode PetscMemcpy(void *a, const void *b, size_t n)
 
   Level: intermediate
 
-  Compile Option:
-  `PETSC_PREFER_BZERO` - on certain machines (the IBM RS6000) the bzero() routine happens
-  to be faster than the memset() routine. This flag causes the bzero() routine to be used.
-
   Note:
   Prefer `PetscArrayzero()`
 
@@ -734,24 +703,7 @@ static inline PetscErrorCode PetscMemzero(void *a, size_t n)
   PetscFunctionBegin;
   if (PetscUnlikely(n == 0)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssert(a, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to zero %zu bytes at a null pointer", n);
-#if PetscDefined(PREFER_ZERO_FOR_MEMZERO) || PetscDefined(PREFER_FORTRAN_FOR_MEMZERO)
-  if (!(((PETSC_UINTPTR_T)a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
-    const size_t scalar_len = n / sizeof(PetscScalar);
-    PetscScalar *x          = (PetscScalar *)a;
-
-  #if PetscDefined(PREFER_ZERO_FOR_MEMZERO)
-    for (size_t i = 0; i < scalar_len; ++i) x[i] = 0;
-  #elif PetscDefined(PREFER_FORTRAN_FOR_MEMZERO)
-    fortranzero_(&scalar_len, x);
-  #endif
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-#endif
-#if PetscDefined(PREFER_BZERO)
-  bzero(a, n);
-#else
   memset(a, 0, n);
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
   PetscPrintf(PETSC_COMM_WORLD, HLINE);
   PetscPrintf(PETSC_COMM_WORLD, "Array size = %d, Offset = %d\n", N, OFFSET);
-  PetscPrintf(PETSC_COMM_WORLD, "Total memory required = %.1f MB per process.\n", (3 * N * BytesPerWord) / 1048576.0);
+  PetscPrintf(PETSC_COMM_WORLD, "Total memory required = %.1f MiB per process.\n", (3 * N * BytesPerWord) / 1048576.0);
   PetscPrintf(PETSC_COMM_WORLD, "Each test is run %d times, but only\n", NTIMES);
   PetscPrintf(PETSC_COMM_WORLD, "the *best* time for each is used.\n");
 
