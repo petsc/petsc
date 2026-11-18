@@ -1906,9 +1906,9 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
 - flg - boolean indicating whether to use subdomains defined by the `DM`
 
   Options Database Key:
-+ -pc_gasm_dm_subdomains    - configure subdomains
-. -pc_gasm_overlap          - set overlap
-- -pc_gasm_total_subdomains - set number of subdomains
++ -pc_gasm_use_dm_subdomains (true|false) - configure subdomains
+. -pc_gasm_overlap                        - set overlap
+- -pc_gasm_total_subdomains               - set number of subdomains
 
   Level: intermediate
 

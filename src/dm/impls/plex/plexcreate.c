@@ -6010,7 +6010,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_remesh_bd (true|false)          - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height height    - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement (true|false) - Use special nested projection algorithm for regular refinement
-. -dm_plex_reorder_section (true|false)    - Use specialized blocking if available
+. -dm_reorder_section (true|false)         - Use specialized blocking if available
 . -dm_plex_check_all (true|false)          - Perform all checks below
 . -dm_plex_check_symmetry (true|false)     - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton (true|false)     - Check that each cell has the correct number of vertices

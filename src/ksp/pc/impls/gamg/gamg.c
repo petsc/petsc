@@ -1464,7 +1464,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 - n  - number of HEM matching passed to construct ASM subdomains
 
   Options Database Key:
-. -pc_gamg_asm_hem n - set the number of HEM matching passed
+. -pc_gamg_asm_hem_aggs n - set the number of HEM matching passed
 
   Level: intermediate
 

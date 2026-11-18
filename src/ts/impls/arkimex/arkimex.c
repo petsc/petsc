@@ -2443,7 +2443,7 @@ static PetscErrorCode TSDIRKSetType_DIRK(TS ts, TSDIRKType dirktype)
 - dirktype - type of `TSDIRK` scheme
 
   Options Database Key:
-. -ts_dirkimex_type - set `TSDIRK` scheme type
+. -ts_dirk_type type - set `TSDIRK` scheme type
 
   Level: intermediate
 

@@ -284,7 +284,7 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
   TAOBNCG - Bound-constrained Nonlinear Conjugate Gradient method.
 
   Options Database Keys:
-+ -tao_bncg_recycle                     - enable recycling the latest calculated gradient vector in subsequent `TaoSolve()` calls (currently disabled)
++ -tao_recycle_history (true|false)     - enable recycling the latest calculated gradient vector in subsequent `TaoSolve()` calls
 . -tao_bncg_eta r                       - restart tolerance
 . -tao_bncg_type taocg_type             - cg formula
 . -tao_bncg_as_type (none|bertsekas)    - active set estimation method

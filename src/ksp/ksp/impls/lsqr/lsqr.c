@@ -16,7 +16,7 @@ typedef struct {
   Vec      *vwork_m;    /* work vectors of length m, where the system is size m x n */
   Vec      *vwork_n;    /* work vectors of length n */
   Vec       se;         /* Optional standard error vector */
-  PetscBool se_flg;     /* flag for -ksp_lsqr_set_standard_error */
+  PetscBool se_flg;     /* flag for -ksp_lsqr_compute_standard_error */
   PetscBool exact_norm; /* flag for -ksp_lsqr_exact_mat_norm */
   PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
   PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
@@ -310,7 +310,7 @@ PetscErrorCode KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 
 /*@
   KSPLSQRGetStandardErrorVec - Get vector of standard error estimates.
-  Only available if -ksp_lsqr_set_standard_error was set to true
+  Only available if `-ksp_lsqr_compute_standard_error` was set to true
   or `KSPLSQRSetComputeStandardErrorVec`(ksp, `PETSC_TRUE`) was called.
   Otherwise returns `NULL`.
 
@@ -608,9 +608,9 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    KSPLSQR - Implements LSQR  {cite}`paige.saunders:lsqr`
 
    Options Database Keys:
-+  -ksp_lsqr_set_standard_error - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
-.  -ksp_lsqr_exact_mat_norm     - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
--  -ksp_lsqr_monitor            - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b$, and estimate of matrix norm $\|A\|$
++  -ksp_lsqr_compute_standard_error - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
+.  -ksp_lsqr_exact_mat_norm         - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
+-  -ksp_lsqr_monitor                - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b$, and estimate of matrix norm $\|A\|$
 
    Level: beginner
 

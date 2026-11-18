@@ -2153,15 +2153,17 @@ PetscErrorCode DMPlexDistributeOverlap_Internal(DM dm, PetscInt overlap, MPI_Com
 - dmOverlap - The overlapping distributed `DMPLEX` object
 
   Options Database Keys:
-+ -dm_plex_overlap_labels name1,name2,... - List of overlap label names
-. -dm_plex_overlap_values int1,int2,...   - List of overlap label values
-. -dm_plex_overlap_exclude_label label    - Label used to exclude points from overlap
-- -dm_plex_overlap_exclude_value value    - Label value used to exclude points from overlap
++ -dm_distribute_overlap_labels name1,name2,...         - List of overlap label names
+. -dm_distribute_overlap_values int1,int2,...           - List of overlap label values
+. -dm_distribute_overlap_exclude_labels name1,name2,... - List of labels used to exclude points from overlap
+- -dm_distribute_overlap_exclude_values int1,int2,...   - List of label values used to exclude points from overlap
 
   Level: advanced
 
   Notes:
   If the mesh was not distributed, the return value is `NULL`.
+
+  The options above are read with `dist_` appended to the options prefix of `dm`, for example `-dist_dm_distribute_overlap_labels`.
 
   The user can control the definition of adjacency for the mesh using `DMSetAdjacency()`. They should choose the combination appropriate for the function
   representation on the mesh.

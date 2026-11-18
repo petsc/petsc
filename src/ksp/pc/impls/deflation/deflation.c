@@ -58,7 +58,7 @@ static PetscErrorCode PCDeflationSetLevels_Deflation(PC pc, PetscInt current, Pe
 - max - maximum deflation level
 
   Options Database Key:
-. -pc_deflation_max_lvl max - maximum number of levels for multilevel deflation
+. -pc_deflation_levels max - maximum number of levels for multilevel deflation
 
   Level: intermediate
 
@@ -756,7 +756,7 @@ static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems PetscOp
 
    Options Database Keys:
 +    -pc_deflation_init_only (true|false)  - if true computes only the special guess
-.    -pc_deflation_max_lvl maxlevels       - maximum number of levels for multilevel deflation
+.    -pc_deflation_levels maxlevels        - maximum number of levels for multilevel deflation
 .    -pc_deflation_reduction_factor red    - reduction factor on bottom level coarse problem for PCTELESCOPE (default based on the size of the coarse problem)
 .    -pc_deflation_correction (true|false) - if true apply coarse problem correction
 .    -pc_deflation_correction_factor fact  - sets coarse problem correction factor

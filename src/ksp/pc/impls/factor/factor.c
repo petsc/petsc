@@ -621,7 +621,7 @@ PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
 - dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
   Options Database Key:
-. -pc_factor_pivoting dtcol - perform the pivoting with the given tolerance
+. -pc_factor_column_pivot dtcol - perform the pivoting with the given tolerance
 
   Level: intermediate
 

@@ -488,7 +488,7 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 +  -pc_jacobi_type (diagonal|rowl1|rowmax|rowsum) - approach for forming the preconditioner
 .  -pc_jacobi_abs (true|false)                    - use the absolute value of the diagonal entry
 .  -pc_jacobi_rowl1_scale (true|false)            - scaling of off-diagonal terms
--  -pc_jacobi_fixdiag (true|false)                - fix for zero diagonal terms by placing 1.0 in those locations
+-  -pc_jacobi_fixdiagonal (true|false)            - fix for zero diagonal terms by placing 1.0 in those locations
 
   Level: beginner
 

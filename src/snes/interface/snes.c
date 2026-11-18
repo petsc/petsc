@@ -1855,7 +1855,7 @@ PetscErrorCode SNESParametersInitialize(SNES snes)
   Options Database Keys:
 + -snes_mf          - Activates default matrix-free Jacobian-vector products, with no preconditioner by default
 . -snes_mf_operator - Activates default matrix-free Jacobian-vector products, and a user-provided matrix as set by `SNESSetJacobian()`
-. -snes_fd_coloring - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
+. -snes_fd_color    - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
 - -snes_fd          - Uses (slow!) finite differences to compute Jacobian
 
   Level: beginner
@@ -2428,7 +2428,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, PetscC
 
   When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at a time) and thus represent Newton's method.
 
-  When used with `-snes_fd_coloring` this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
+  When used with `-snes_fd_color` this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
   the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix $A$ so you must provide in $A$ the needed nonzero structure for the correct
   coloring. When using `DMDA` this may mean creating the matrix $A$ with `DMCreateMatrix()` using a wider stencil than strictly needed for $A$ or with a `DMDA_STENCIL_BOX`.
   See the comment in src/snes/tutorials/ex15.c.

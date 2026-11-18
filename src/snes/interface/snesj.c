@@ -18,7 +18,7 @@
 
   Options Database Keys:
 + -snes_fd             - Activates `SNESComputeJacobianDefault()`
-. -snes_fd_coloring    - Activates a faster computation that uses a graph coloring of the matrix
+. -snes_fd_color       - Activates a faster computation that uses a graph coloring of the matrix
 . -snes_test_err etol  - Square root of function error tolerance, default square root of machine
                          epsilon (1.e-8 in double, 3.e-4 in single)
 - -mat_fd_type (wp|ds) - See `MATMFFD_WP` and `MATMFFD_DS`

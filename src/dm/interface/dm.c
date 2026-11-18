@@ -2379,7 +2379,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm, PetscInt n, DM subdms[
 . dmf - the refined `DM`, or `NULL`
 
   Options Database Key:
-. -dm_plex_cell_refiner strategy - chooses the refinement strategy, e.g. regular, tohex
+. -dm_plex_transform_type type - chooses the refinement transform, e.g. refine_regular, refine_tobox
 
   Level: developer
 

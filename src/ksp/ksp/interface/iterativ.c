@@ -531,7 +531,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 - vf    - The viewer context
 
   Options Database Key:
-. -ksp_monitor_true_residual_max - Activates `KSPMonitorTrueResidualMax()`
+. -ksp_monitor_max - Activates `KSPMonitorTrueResidualMax()`
 
   Level: intermediate
 

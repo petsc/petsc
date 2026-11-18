@@ -451,7 +451,7 @@ PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
 - partitioning - the partitioning. For each local node this tells the MPI rank that that node is assigned to.
 
   Options Database Key:
-. -mat_partitioning_view_balance - view the balance information from the last partitioning
+. -mat_partitioning_view_imbalance (true|false) - view the balance information from the last partitioning
 
   Level: beginner
 
