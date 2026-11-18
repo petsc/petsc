@@ -105,7 +105,7 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts)
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)tj, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  if (rank == 0) {
+  if (rank == 0 && !tj->dircreated) {
     char     *dir = tj->dirname;
     PetscBool flg;
 
@@ -120,6 +120,7 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts)
       PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_USER, "Specified path is a file - not a dir: %s", dir);
       PetscCall(PetscMkdir(dir));
     }
+    tj->dircreated = PETSC_TRUE;
   }
   PetscCall(PetscBarrier((PetscObject)tj));
   PetscFunctionReturn(PETSC_SUCCESS);
