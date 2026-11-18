@@ -4094,6 +4094,73 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// NVSHMEM storage supports CUDA placement and requires its own deallocator
+static inline const char *MatDenseArrayBackend_Private(PetscMemType mtype, PetscCopyMode mode)
+{
+  if (PetscMemTypeHost(mtype) == PETSC_TRUE) return "";
+  if (mode == PETSC_USE_POINTER && PetscMemTypeCUDA(mtype) == PETSC_TRUE) return "CUDA";
+  return PetscMemTypeToString(mtype) + (sizeof("PETSC_MEMTYPE_") - 1);
+}
+
+/*@
+  MatDensePlaceArrayWithMemType - Temporarily uses a caller-owned array as the storage of a dense matrix.
+
+  Not Collective
+
+  Input Parameters:
++ mat   - the dense matrix
+. mtype - the memory type of the array
+- array - the array in column-major order with the leading dimension of `mat`
+
+  Level: developer
+
+  Note:
+  The caller owns the array and must keep it valid until calling `MatDenseResetArrayWithMemType()` with the same `mtype`.
+  Matrix operations can modify the contents of the array.
+
+.seealso: [](ch_matrices), `Mat`, `PetscMemType`, `MatDensePlaceArray()`, `MatDenseResetArrayWithMemType()`, `MatDenseReplaceArrayWithMemType()`
+@*/
+PetscErrorCode MatDensePlaceArrayWithMemType(Mat mat, PetscMemType mtype, const PetscScalar array[])
+{
+  char method[64];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  if (array != NULL && PetscMemTypeHost(mtype) == PETSC_TRUE) PetscAssertPointer(array, 3);
+  PetscCall(PetscSNPrintf(method, sizeof(method), "MatDense%sPlaceArray_C", MatDenseArrayBackend_Private(mtype, PETSC_USE_POINTER)));
+  PetscUseMethod(mat, method, (Mat, const PetscScalar *), (mat, array));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+#if PetscDefined(HAVE_CUDA) || PetscDefined(HAVE_HIP)
+  mat->offloadmask = PetscMemTypeHost(mtype) == PETSC_TRUE ? PETSC_OFFLOAD_CPU : PETSC_OFFLOAD_GPU;
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  MatDenseResetArrayWithMemType - Restores the dense matrix storage saved by `MatDensePlaceArrayWithMemType()`.
+
+  Not Collective
+
+  Input Parameters:
++ mat   - the dense matrix
+- mtype - the memory type passed to the matching `MatDensePlaceArrayWithMemType()`
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `PetscMemType`, `MatDensePlaceArrayWithMemType()`, `MatDenseResetArray()`
+@*/
+PetscErrorCode MatDenseResetArrayWithMemType(Mat mat, PetscMemType mtype)
+{
+  char method[64];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscCall(PetscSNPrintf(method, sizeof(method), "MatDense%sResetArray_C", MatDenseArrayBackend_Private(mtype, PETSC_USE_POINTER)));
+  PetscUseMethod(mat, method, (Mat), (mat));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatDenseReplaceArrayWithMemType - Allows one to replace the array in a `MATDENSE`, `MATDENSECUDA`, or `MATDENSEHIP`
   with an array provided by the user and a matching `PetscMemType`. This is useful to avoid copying an array into a matrix.
@@ -4103,7 +4170,7 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
   Input Parameters:
 + mat   - the matrix
 . mtype - the `PetscMemType` of the array
-- array - the array in column major order
+- array - the array in column major order, or `NULL` to clear the array
 
   Level: developer
 
@@ -4114,17 +4181,16 @@ PetscErrorCode MatSeqDenseInvert(Mat A)
   array. The memory passed in CANNOT be freed by the user. It will be freed when the matrix is
   destroyed. The array should respect the matrix leading dimension.
 
-.seealso: `MatDenseReplaceArray()`, `MatDenseCUDAReplaceArray()`, `MatDenseHIPReplaceArray()`
+.seealso: `MatDenseReplaceArray()`, `MatDensePlaceArrayWithMemType()`, `MatDenseCUDAReplaceArray()`, `MatDenseHIPReplaceArray()`
 @*/
 PetscErrorCode MatDenseReplaceArrayWithMemType(Mat mat, PetscMemType mtype, const PetscScalar array[])
 {
-  const char *type = PetscMemTypeToString(mtype) + 14; /* skip "PETSC_MEMTYPE_" */
-  char        buffer[256];
+  char method[64];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscAssertPointer(array, 3);
-  PetscCall(PetscSNPrintf(buffer, sizeof(buffer), "MatDense%sReplaceArray_C", PetscMemTypeHost(mtype) ? "" : type));
-  PetscUseMethod(mat, buffer, (Mat, const PetscScalar[]), (mat, array));
+  if (array != NULL) PetscAssertPointer(array, 3);
+  PetscCall(PetscSNPrintf(method, sizeof(method), "MatDense%sReplaceArray_C", MatDenseArrayBackend_Private(mtype, PETSC_OWN_POINTER)));
+  PetscUseMethod(mat, method, (Mat, const PetscScalar[]), (mat, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

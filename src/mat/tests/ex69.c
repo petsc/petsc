@@ -1,6 +1,6 @@
 static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatDenseCUDAReplaceArray(), and MatDenseCUDAResetArray()\n\
   or MatCreateDenseHIP(), MatDenseHIPPlaceArray(), MatDenseHIPReplaceArray(), and MatDenseHIPResetArray(),\n\
-  as well as MatDiagonalScale() on device.\n";
+  as well as MatDensePlaceArrayWithMemType(), MatDenseResetArrayWithMemType(), and MatDiagonalScale() on device.\n";
 
 #include <petscmat.h>
 #include <petscpkg_version.h>
@@ -62,9 +62,10 @@ int main(int argc, char **argv)
 #else
   PetscInt n = 30;
 #endif
-  PetscInt  k = 6, l = 0, i, Istart, Iend, nloc, bs, test = 1;
-  PetscBool flg, reset, use_shell = PETSC_FALSE;
-  VecType   vtype;
+  PetscInt     k = 6, l = 0, i, Istart, Iend, nloc, bs, test = 1;
+  PetscBool    flg, use_shell = PETSC_FALSE;
+  VecType      vtype;
+  PetscMemType mtype;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -117,18 +118,16 @@ int main(int argc, char **argv)
   switch (test) {
   case 1:
     PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv, &B)); /* pass a pointer to avoid allocation of storage */
-    PetscCall(MatDenseDeviceReplaceArray(B, NULL));                                                         /* replace with a null pointer, the value after BVRestoreMat */
-    PetscCall(MatDenseDevicePlaceArray(B, vv + l * nloc));                                                  /* set the actual pointer */
-    reset = PETSC_TRUE;
+    PetscCall(MatGetCurrentMemType(B, &mtype));
+    PetscCall(MatDenseDeviceReplaceArray(B, NULL));                    /* replace with a null pointer, the value after BVRestoreMat */
+    PetscCall(MatDensePlaceArrayWithMemType(B, mtype, vv + l * nloc)); /* set the actual pointer */
     break;
   case 2:
     PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, NULL, &B));
     PetscCall(MatDenseDevicePlaceArray(B, vv + l * nloc)); /* set the actual pointer */
-    reset = PETSC_TRUE;
     break;
   default:
     PetscCall(MatCreateDenseDevice(PetscObjectComm((PetscObject)v), nloc, PETSC_DECIDE, n, k - l, vv + l * nloc, &B));
-    reset = PETSC_FALSE;
     break;
   }
 
@@ -188,7 +187,8 @@ int main(int argc, char **argv)
   PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
   PetscCheck(vv == aa - l * nloc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong array");
   PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
-  if (reset) PetscCall(MatDenseDeviceResetArray(B));
+  if (test == 1) PetscCall(MatDenseResetArrayWithMemType(B, mtype));
+  else if (test == 2) PetscCall(MatDenseDeviceResetArray(B));
   PetscCall(VecDeviceRestoreArray(v, &vv));
 
   if (test == 1) {

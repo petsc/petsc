@@ -1874,7 +1874,7 @@ PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
   freed when the matrix is destroyed.
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseResetArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`,
-          `MatDenseReplaceArray()`
+          `MatDensePlaceArrayWithMemType()`, `MatDenseReplaceArray()`
 @*/
 PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
 {
@@ -1901,7 +1901,7 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
   Note:
   You can only call this after a call to `MatDensePlaceArray()`
 
-.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
+.seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDensePlaceArray()`, `MatDenseResetArrayWithMemType()`, `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 @*/
 PetscErrorCode MatDenseResetArray(Mat mat)
 {
