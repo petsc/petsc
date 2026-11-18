@@ -263,7 +263,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     if (PetscDefined(USE_DEBUG)) {
       mdebug        = PETSC_TRUE;
       initializenan = PETSC_TRUE;
-      PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_test", &flg1));
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_test", &flg1, NULL));
     } else {
       /* don't warn about unused option */
       PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc_test", &flg1));
