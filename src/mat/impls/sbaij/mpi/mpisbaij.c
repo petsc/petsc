@@ -2469,9 +2469,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B, PetscInt bs, PetscInt d_nz, co
   Options Database Keys:
 + -mat_no_unroll  - uses code that does not unroll the loops in the
                     block calculations (much slower)
-. -mat_block_size - size of the blocks to use
-- -mat_mpi        - use the parallel matrix data structures even on one processor
-                    (defaults to using SeqBAIJ format on one processor)
+- -mat_block_size - size of the blocks to use
 
   Level: intermediate
 

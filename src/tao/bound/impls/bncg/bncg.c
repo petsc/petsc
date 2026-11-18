@@ -285,7 +285,6 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
 
   Options Database Keys:
 + -tao_recycle_history (true|false)     - enable recycling the latest calculated gradient vector in subsequent `TaoSolve()` calls
-. -tao_bncg_eta r                       - restart tolerance
 . -tao_bncg_type taocg_type             - cg formula
 . -tao_bncg_as_type (none|bertsekas)    - active set estimation method
 . -tao_bncg_as_tol r                    - tolerance used in Bertsekas active-set estimation

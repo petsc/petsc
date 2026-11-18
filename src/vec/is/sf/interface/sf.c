@@ -325,9 +325,6 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   Options Database Keys:
 + -sf_type (basic|window|neighbor) - implementation type, see `PetscSFSetType()`
 . -sf_rank_order (true|false)      - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
-. -sf_use_default_stream           - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
-                                     use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
-                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
 . -sf_use_stream_aware_mpi         - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
                                      If true, this option only works with `-use_gpu_aware_mpi 1`.
 - -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).

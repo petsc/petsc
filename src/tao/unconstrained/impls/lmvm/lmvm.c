@@ -229,9 +229,8 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
   the BFGS update formula. A More-Thuente line search is then used
   to compute the steplength in the $d_k$ direction
 
-  Options Database Keys:
-+   -tao_lmvm_recycle  - enable recycling LMVM updates between `TaoSolve()` calls
--   -tao_lmvm_no_scale - (developer) disables diagonal Broyden scaling on the LMVM approximation
+  Options Database Key:
+.   -tao_lmvm_recycle - enable recycling LMVM updates between `TaoSolve()` calls
 
   Level: beginner
 

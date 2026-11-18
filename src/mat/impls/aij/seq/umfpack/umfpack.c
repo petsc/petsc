@@ -384,7 +384,6 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_umfpack(Mat A, MatSolverType
 . -mat_umfpack_dense_row 0.2             - Control[UMFPACK_DENSE_ROW]
 . -mat_umfpack_amd_dense 10              - Control[UMFPACK_AMD_DENSE]
 . -mat_umfpack_block_size bs             - UMFPACK block size for BLAS-Level 3 calls: Control[UMFPACK_BLOCK_SIZE]
-. -mat_umfpack_2by2_tolerance 0.01       - Control[UMFPACK_2BY2_TOLERANCE]
 . -mat_umfpack_fixq 0                    - Control[UMFPACK_FIXQ]
 . -mat_umfpack_aggressive 1              - Control[UMFPACK_AGGRESSIVE]
 . -mat_umfpack_pivot_tolerance delta     - UMFPACK partial pivot tolerance: Control[UMFPACK_PIVOT_TOLERANCE]
