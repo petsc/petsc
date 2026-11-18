@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   for (i = 0; i < 1000; i++) PetscCall(PetscFree(arr[i]));
 
   fprintf(stdout, "%-15s : %e sec, with options : ", "PetscMalloc", (y - x) / 500.0);
-  PetscCall(PetscOptionsHasName(NULL, "-malloc", &flg));
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-malloc", &flg));
   if (flg) fprintf(stdout, "-malloc ");
   fprintf(stdout, "\n");
 
