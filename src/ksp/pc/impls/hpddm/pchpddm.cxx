@@ -1196,6 +1196,7 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
   const PetscScalar *array;
   PetscCount         count;
   PetscInt           n, j = 0;
+  PetscBool          nonzero;
 
   PetscFunctionBegin;
   PetscCall(KSPGetOperators(ctx->ksp, &B, nullptr));
@@ -1206,16 +1207,18 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
   if (ctx->parent->log_separate) PetscCall(PetscLogEventBegin(PC_HPDDM_Solve[j], ctx->ksp, nullptr, nullptr, nullptr));
   count = static_cast<PetscCount>(n) * mu;
   if (PetscDefined(USE_COMPLEX) && trans == 'H') PetscCallCXX(std::for_each(rhs, rhs + count, [](PetscScalar &v) { v = PetscConj(v); }));
+  PetscCall(KSPGetInitialGuessNonzero(ctx->ksp, &nonzero));
   if (mu == 1) {
     if (!ctx->ksp->vec_rhs) {
       PetscCall(MatCreateVecs(B, nullptr, &ctx->ksp->vec_rhs));
       PetscCall(VecDuplicate(ctx->ksp->vec_rhs, &ctx->ksp->vec_sol));
     }
     PetscCall(VecPlaceArray(ctx->ksp->vec_rhs, rhs));
+    if (nonzero == PETSC_TRUE) PetscCall(VecCopy(ctx->ksp->vec_rhs, ctx->ksp->vec_sol));
     if (trans == 'N') PetscCall(KSPSolve(ctx->ksp, nullptr, nullptr));
     else PetscCall(KSPSolveTranspose(ctx->ksp, nullptr, nullptr)); /* TODO: missing KSPSolveHermitianTranspose() */
-    PetscCall(KSPCheckSolve(ctx->ksp, pc, ctx->ksp->vec_sol));
     PetscCall(VecResetArray(ctx->ksp->vec_rhs));
+    PetscCall(KSPCheckSolve(ctx->ksp, pc, ctx->ksp->vec_sol));
     PetscCall(VecGetArrayRead(ctx->ksp->vec_sol, &array));
   } else {
     PetscInt  N;
@@ -1226,10 +1229,11 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
     PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)ctx->ksp), B->defaultvectype, n, PETSC_DECIDE, N, mu, PETSC_DECIDE, host == PETSC_TRUE ? rhs : nullptr, &B));
     PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &X));
     if (host == PETSC_FALSE) PetscCall(MatDensePlaceArray(B, rhs));
+    if (nonzero == PETSC_TRUE) PetscCall(MatCopy(B, X, SAME_NONZERO_PATTERN));
     if (trans == 'N') PetscCall(KSPMatSolve(ctx->ksp, B, X));
     else PetscCall(KSPMatSolveTranspose(ctx->ksp, B, X)); /* TODO: missing KSPMatSolveHermitianTranspose() */
-    PetscCall(KSPCheckMatSolve(ctx->ksp, pc, X));
     if (host == PETSC_FALSE) PetscCall(MatDenseResetArray(B));
+    PetscCall(KSPCheckMatSolve(ctx->ksp, pc, X));
     PetscCall(MatDenseGetArrayRead(X, &array));
   }
   if (PetscDefined(USE_COMPLEX) && trans == 'H') PetscCallCXX(std::transform(array, array + count, rhs, [](const PetscScalar &v) { return PetscConj(v); }));
