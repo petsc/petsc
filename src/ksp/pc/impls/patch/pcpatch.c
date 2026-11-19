@@ -3349,14 +3349,8 @@ static PetscErrorCode PCReset_PATCH(PC pc)
     for (PetscInt i = 0; i < patch->npatch; ++i) PetscCall(VecDestroy(&patch->patch_dof_weights[i]));
     PetscCall(PetscFree(patch->patch_dof_weights));
   }
-  if (patch->mat) {
-    for (PetscInt i = 0; i < patch->npatch; ++i) PetscCall(MatDestroy(&patch->mat[i]));
-    PetscCall(PetscFree(patch->mat));
-  }
-  if (patch->matWithArtificial && !patch->isNonlinear) {
-    for (PetscInt i = 0; i < patch->npatch; ++i) PetscCall(MatDestroy(&patch->matWithArtificial[i]));
-    PetscCall(PetscFree(patch->matWithArtificial));
-  }
+  PetscCall(MatDestroyMatrices(patch->npatch, &patch->mat));
+  if (patch->isNonlinear == PETSC_FALSE) PetscCall(MatDestroyMatrices(patch->npatch, &patch->matWithArtificial));
   PetscCall(VecDestroy(&patch->patchRHSWithArtificial));
   if (patch->dofMappingWithoutToWithArtificial) {
     for (PetscInt i = 0; i < patch->npatch; ++i) PetscCall(ISDestroy(&patch->dofMappingWithoutToWithArtificial[i]));

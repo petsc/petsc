@@ -162,8 +162,7 @@ int main(int argc, char **args)
   PetscCall(VecDestroy(&z));
   PetscCall(VecDestroy(&z2));
   PetscCall(PetscRandomDestroy(&rctx));
-  for (PetscInt i = 0; i < nmat + 2; i++) PetscCall(MatDestroy(&A[i]));
-  PetscCall(PetscFree(A));
+  PetscCall(MatDestroyMatrices(nmat + 2, &A));
 
   PetscCall(PetscFinalize());
   return 0;
