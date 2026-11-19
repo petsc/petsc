@@ -463,7 +463,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   } else {
     PetscCheck(PetscMemTypeHost(type[0]), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "PetscMemType (%s) is not PETSC_MEMTYPE_HOST", PetscMemTypeToString(type[0]));
     PetscCall(MatKAIJGetScaledIdentity(A, &flg));
-    PetscCall(MatKAIJGetAIJ(A, &B));
+    PetscCall(MatKAIJGetA(A, &B));
     PetscCall(MatGetBlockSize(A, &n));
     PetscCall(MatGetLocalSize(B, &i, nullptr));
     j = data->op->getDof();

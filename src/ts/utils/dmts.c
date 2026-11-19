@@ -33,6 +33,14 @@ static PetscErrorCode DMTSUnsetIJacobianContext_DMTS(DMTS tsdm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMTSUnsetMassMatrixContext_DMTS(DMTS tsdm)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscObjectCompose((PetscObject)tsdm, "massmatrix ctx", NULL));
+  tsdm->massmatrixctxcontainer = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMTSUnsetI2FunctionContext_DMTS(DMTS tsdm)
 {
   PetscFunctionBegin;
@@ -62,6 +70,7 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm)
   PetscCall(DMTSUnsetRHSJacobianContext_DMTS(*kdm));
   PetscCall(DMTSUnsetIFunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetIJacobianContext_DMTS(*kdm));
+  PetscCall(DMTSUnsetMassMatrixContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2FunctionContext_DMTS(*kdm));
   PetscCall(DMTSUnsetI2JacobianContext_DMTS(*kdm));
   PetscTryTypeMethod(*kdm, destroy);
@@ -210,6 +219,7 @@ PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm)
   nkdm->ops->rhsjacobian = kdm->ops->rhsjacobian;
   nkdm->ops->ifunction   = kdm->ops->ifunction;
   nkdm->ops->ijacobian   = kdm->ops->ijacobian;
+  nkdm->ops->massmatrix  = kdm->ops->massmatrix;
   nkdm->ops->i2function  = kdm->ops->i2function;
   nkdm->ops->i2jacobian  = kdm->ops->i2jacobian;
   nkdm->ops->solution    = kdm->ops->solution;
@@ -221,12 +231,14 @@ PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm)
   nkdm->rhsjacobianctxcontainer = kdm->rhsjacobianctxcontainer;
   nkdm->ifunctionctxcontainer   = kdm->ifunctionctxcontainer;
   nkdm->ijacobianctxcontainer   = kdm->ijacobianctxcontainer;
+  nkdm->massmatrixctxcontainer  = kdm->massmatrixctxcontainer;
   nkdm->i2functionctxcontainer  = kdm->i2functionctxcontainer;
   nkdm->i2jacobianctxcontainer  = kdm->i2jacobianctxcontainer;
   if (nkdm->rhsfunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "rhs function ctx", (PetscObject)nkdm->rhsfunctionctxcontainer));
   if (nkdm->rhsjacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "rhs jacobian ctx", (PetscObject)nkdm->rhsjacobianctxcontainer));
   if (nkdm->ifunctionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "ifunction ctx", (PetscObject)nkdm->ifunctionctxcontainer));
   if (nkdm->ijacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "ijacobian ctx", (PetscObject)nkdm->ijacobianctxcontainer));
+  if (nkdm->massmatrixctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "massmatrix ctx", (PetscObject)nkdm->massmatrixctxcontainer));
   if (nkdm->i2functionctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "i2function ctx", (PetscObject)nkdm->i2functionctxcontainer));
   if (nkdm->i2jacobianctxcontainer) PetscCall(PetscObjectCompose((PetscObject)nkdm, "i2jacobian ctx", (PetscObject)nkdm->i2jacobianctxcontainer));
 
@@ -1093,6 +1105,100 @@ PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobianFn **func, PetscCtxRt ctx)
   if (func) *func = tsdm->ops->ijacobian;
   if (ctx) {
     if (tsdm->ijacobianctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->ijacobianctxcontainer, ctx));
+    else *(void **)ctx = NULL;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMTSSetMassMatrix - set the `TS` mass matrix evaluation function into a `DMTS`
+
+  Not Collective
+
+  Input Parameters:
++ dm   - `DM` to be used with `TS`
+. func - mass matrix evaluation routine, see `TSMassMatrixFn` for the calling sequence
+- ctx  - application context for the mass matrix evaluation (may be `NULL`)
+
+  Level: developer
+
+  Note:
+  `TSSetMassMatrix()` is normally used, but it calls this function internally because the application context is actually
+  associated with the `DM`. Because the callback lives on the `DM`, it is copied to coarser `DM`s in a multigrid
+  hierarchy, so an integrator can assemble a level-appropriate mass matrix.
+
+.seealso: [](ch_ts), `DMTS`, `TS`, `DM`, `TSMassMatrixFn`, `DMTSGetMassMatrix()`, `TSSetMassMatrix()`
+@*/
+PetscErrorCode DMTSSetMassMatrix(DM dm, TSMassMatrixFn *func, PetscCtx ctx)
+{
+  DMTS tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (func) tsdm->ops->massmatrix = func;
+  if (ctx) {
+    PetscContainer ctxcontainer;
+
+    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)tsdm), &ctxcontainer));
+    PetscCall(PetscContainerSetPointer(ctxcontainer, ctx));
+    PetscCall(PetscObjectCompose((PetscObject)tsdm, "massmatrix ctx", (PetscObject)ctxcontainer));
+    tsdm->massmatrixctxcontainer = ctxcontainer;
+    PetscCall(PetscContainerDestroy(&ctxcontainer));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMTSSetMassMatrixContextDestroy - set the `TS` mass matrix evaluation context destroy function into a `DMTS`
+
+  Not Collective
+
+  Input Parameters:
++ dm - `DM` to be used with `TS`
+- f  - mass matrix evaluation context destroy function, see `PetscCtxDestroyFn` for its calling sequence
+
+  Level: developer
+
+.seealso: [](ch_ts), `DMTS`, `TSSetMassMatrixContextDestroy()`, `DMTSSetMassMatrix()`, `TSSetMassMatrix()`
+@*/
+PetscErrorCode DMTSSetMassMatrixContextDestroy(DM dm, PetscCtxDestroyFn *f)
+{
+  DMTS tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTSWrite(dm, &tsdm));
+  if (tsdm->massmatrixctxcontainer) PetscCall(PetscContainerSetCtxDestroy(tsdm->massmatrixctxcontainer, f));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMTSGetMassMatrix - get the `TS` mass matrix evaluation function from a `DMTS`
+
+  Not Collective
+
+  Input Parameter:
+. dm - `DM` to be used with `TS`
+
+  Output Parameters:
++ func - mass matrix evaluation function, for calling sequence see `TSMassMatrixFn`
+- ctx  - application context for the mass matrix evaluation
+
+  Level: developer
+
+.seealso: [](ch_ts), `DMTS`, `DM`, `TS`, `DMTSSetMassMatrix()`, `TSMassMatrixFn`
+@*/
+PetscErrorCode DMTSGetMassMatrix(DM dm, TSMassMatrixFn **func, PetscCtxRt ctx)
+{
+  DMTS tsdm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(DMGetDMTS(dm, &tsdm));
+  if (func) *func = tsdm->ops->massmatrix;
+  if (ctx) {
+    if (tsdm->massmatrixctxcontainer) PetscCall(PetscContainerGetPointer(tsdm->massmatrixctxcontainer, ctx));
     else *(void **)ctx = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

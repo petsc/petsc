@@ -715,10 +715,46 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSIJacobianFn(TS ts, PetscReal t, Ve
 
 PETSC_EXTERN_TYPEDEF typedef TSIJacobianFn *TSIJacobian PETSC_DEPRECATED_TYPEDEF(3, 26, 0, "TSIJacobianFn*", );
 
+/*S
+  TSMassMatrixFn - A prototype of a `TS` mass matrix evaluation function that would be passed to `TSSetMassMatrix()`
+
+  Calling Sequence:
++ ts  - the `TS` context obtained from `TSCreate()`
+. t   - the time at which the mass matrix is evaluated
+. U   - the state vector at which the mass matrix is evaluated
+. M   - the mass matrix $\partial F/\partial \dot U$ to be filled; it is pre-created by the framework with the correct layout
+- ctx - [optional] application context for the mass matrix evaluation routine
+
+  Level: intermediate
+
+  Notes:
+  The routine fills the provided matrix `M`; it should not create or destroy it. This mirrors `TSIJacobianFn`. The
+  integrator supplies `M` pre-created with the correct layout; for `TSIRK` it is a duplicate of the matrix set with
+  `TSSetIJacobian()`, so `M` has the Jacobian's nonzero pattern.
+  As for `TSIJacobianFn`, the routine is responsible for zeroing any stale entries and for leaving `M` fully
+  assembled; `TSComputeMassMatrix()` does not call `MatZeroEntries()` or `MatAssemblyBegin()`/`MatAssemblyEnd()`.
+
+  `t` and `U` allow a time- or state-dependent mass matrix. For a constant mass matrix they may be ignored; also call
+  `TSSetMassMatrixConstant()` so the mass matrix is assembled only once.
+
+  The routine receives no `DM`; obtain it with `TSGetDM()` if needed, for example to assemble on a multigrid level. The
+  integrator sets the current `DM` before calling, exactly as for `TSIFunctionFn` and `TSIJacobianFn`.
+
+.seealso: [](ch_ts), `TSSetMassMatrix()`, `DMTSSetMassMatrix()`, `TSSetMassMatrixConstant()`, `TSIJacobianFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode TSMassMatrixFn(TS ts, PetscReal t, Vec U, Mat M, PetscCtx ctx);
+
 PETSC_EXTERN PetscErrorCode TSSetIFunction(TS, Vec, TSIFunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode TSGetIFunction(TS, Vec *, TSIFunctionFn **, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode TSSetIJacobian(TS, Mat, Mat, TSIJacobianFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode TSGetIJacobian(TS, Mat *, Mat *, TSIJacobianFn **, PetscCtxRt);
+PETSC_EXTERN PetscErrorCode TSSetMassMatrix(TS, TSMassMatrixFn *, PetscCtx);
+PETSC_EXTERN PetscErrorCode TSGetMassMatrix(TS, TSMassMatrixFn **, PetscCtxRt);
+PETSC_EXTERN PetscErrorCode TSSetMassMatrixContextDestroy(TS, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode TSSetMassMatrixConstant(TS, PetscBool);
+PETSC_EXTERN PetscErrorCode TSGetMassMatrixConstant(TS, PetscBool *);
+PETSC_EXTERN PetscErrorCode TSComputeMassMatrix(TS, PetscReal, Vec, Mat);
+PETSC_EXTERN PetscErrorCode TSHasMassMatrix(TS, PetscBool *);
 
 /*S
   TSI2FunctionFn - A prototype of a `TS` implicit function evaluation function for 2nd order systems that would be passed to `TSSetI2Function()`
@@ -850,6 +886,9 @@ PETSC_EXTERN PetscErrorCode DMTSSetIFunctionContextDestroy(DM, PetscCtxDestroyFn
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobian(DM, TSIJacobianFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMTSGetIJacobian(DM, TSIJacobianFn **, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMTSSetIJacobianContextDestroy(DM, PetscCtxDestroyFn *);
+PETSC_EXTERN PetscErrorCode DMTSSetMassMatrix(DM, TSMassMatrixFn *, PetscCtx);
+PETSC_EXTERN PetscErrorCode DMTSGetMassMatrix(DM, TSMassMatrixFn **, PetscCtxRt);
+PETSC_EXTERN PetscErrorCode DMTSSetMassMatrixContextDestroy(DM, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMTSSetI2Function(DM, TSI2FunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMTSGetI2Function(DM, TSI2FunctionFn **, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMTSSetI2FunctionContextDestroy(DM, PetscCtxDestroyFn *);
