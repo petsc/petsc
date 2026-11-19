@@ -63,7 +63,7 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
   Input Parameters:
 + debugger         - name of debugger, which should be in your path,
                      usually "lldb", "dbx", "gdb", "cuda-gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
-                     supports "xdb", and IBM rs6000 supports "xldb".
+                     supports "xdb".
 
 - usedebugterminal - flag to indicate debugger window, set to either `PETSC_TRUE` (to indicate
                      debugger should be started in a new terminal window) or `PETSC_FALSE` (to start debugger
@@ -149,7 +149,6 @@ PetscErrorCode PetscSetDebuggerFromString(const char string[])
   if (f) useterminal = PETSC_FALSE;
   PetscCall(PetscCheckDebugger_Private("xdb", string, &debugger));
   PetscCall(PetscCheckDebugger_Private("dbx", string, &debugger));
-  PetscCall(PetscCheckDebugger_Private("xldb", string, &debugger));
   PetscCall(PetscCheckDebugger_Private("gdb", string, &debugger));
   PetscCall(PetscCheckDebugger_Private("cuda-gdb", string, &debugger));
   PetscCall(PetscCheckDebugger_Private("idb", string, &debugger));
@@ -257,7 +256,7 @@ PetscErrorCode PetscAttachDebugger(void)
     const char *args[10];
     char        pid[10];
     PetscInt    j, jj;
-    PetscBool   isdbx, isidb, isxldb, isxxgdb, isups, isxdb, isworkshop, isddd, iskdbg, islldb;
+    PetscBool   isdbx, isidb, isxxgdb, isups, isxdb, isworkshop, isddd, iskdbg, islldb;
 
     PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
     /*
@@ -273,7 +272,6 @@ PetscErrorCode PetscAttachDebugger(void)
     PetscCall(PetscStrcmp(PetscDebugger, "ddd", &isddd));
     PetscCall(PetscStrcmp(PetscDebugger, "kdbg", &iskdbg));
     PetscCall(PetscStrcmp(PetscDebugger, "ups", &isups));
-    PetscCall(PetscStrcmp(PetscDebugger, "xldb", &isxldb));
     PetscCall(PetscStrcmp(PetscDebugger, "xdb", &isxdb));
     PetscCall(PetscStrcmp(PetscDebugger, "dbx", &isdbx));
     PetscCall(PetscStrcmp(PetscDebugger, "idb", &isidb));
@@ -301,19 +299,6 @@ PetscErrorCode PetscAttachDebugger(void)
       args[5] = display;
       args[6] = NULL;
       printf("PETSC: Attaching %s to %s %s on %s\n", args[0], args[3], pid, hostname);
-      if (execvp(args[0], (char **)args) < 0) {
-        perror("Unable to start debugger");
-        exit(0);
-      }
-    } else if (isxldb) {
-      args[1] = "-a";
-      args[2] = pid;
-      args[3] = program;
-      args[4] = "-display";
-      args[0] = PetscDebugger;
-      args[5] = display;
-      args[6] = NULL;
-      printf("PETSC: Attaching %s to %s %s on %s\n", args[0], args[1], pid, hostname);
       if (execvp(args[0], (char **)args) < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -437,26 +422,7 @@ PetscErrorCode PetscAttachDebugger(void)
     sleeptime = 10; /* default to sleep waiting for debugger */
     PetscCall(PetscOptionsGetReal(NULL, NULL, "-debugger_pause", &sleeptime, NULL));
     if (sleeptime < 0) sleeptime = -sleeptime;
-  #if PetscDefined(NEED_DEBUGGER_NO_SLEEP)
-    /*
-        HP cannot attach process to sleeping debugger, hence count instead
-    */
-    {
-      PetscReal x = 1.0;
-      int       i = 10000000;
-      while (i--) x++; /* cannot attach to sleeper */
-    }
-  #elif PetscDefined(HAVE_SLEEP_RETURNS_EARLY)
-    /*
-        IBM sleep may return at anytime, hence must see if there is more time to sleep
-    */
-    {
-      int left = sleeptime;
-      while (left > 0) left = PetscSleep(left) - 1;
-    }
-  #else
     PetscCall(PetscSleep(sleeptime));
-  #endif
   }
 #endif
   return PETSC_SUCCESS;
@@ -482,8 +448,8 @@ PetscErrorCode PetscAttachDebugger(void)
   Level: developer
 
   Notes:
-  By default the GNU debugger, gdb, is used except on macOS where lldb is used.  Alternatives are cuda-gdb, lldb, dbx and
-  xxgdb,xldb (on IBM rs6000), xdb (on HP-UX).
+  By default the GNU debugger, gdb, is used except on macOS where lldb is used.  Alternatives are cuda-gdb, lldb, dbx,
+  xxgdb, and xdb (on HP-UX).
 
   Most users need not directly employ this routine and the other error
   handlers, but can instead use the simplified interface SETERR, which has
@@ -552,7 +518,7 @@ PetscErrorCode PetscStopForDebugger(void)
   int         ppid;
   PetscMPIInt rank;
   char        program[PETSC_MAX_PATH_LEN], hostname[256];
-  PetscBool   isdbx, isxldb, isxxgdb, isddd, iskdbg, isups, isxdb, islldb;
+  PetscBool   isdbx, isxxgdb, isddd, iskdbg, isups, isxdb, islldb;
 #endif
 
   PetscFunctionBegin;
@@ -582,13 +548,11 @@ PetscErrorCode PetscStopForDebugger(void)
   PetscCall(PetscStrcmp(PetscDebugger, "ddd", &isddd));
   PetscCall(PetscStrcmp(PetscDebugger, "kdbg", &iskdbg));
   PetscCall(PetscStrcmp(PetscDebugger, "ups", &isups));
-  PetscCall(PetscStrcmp(PetscDebugger, "xldb", &isxldb));
   PetscCall(PetscStrcmp(PetscDebugger, "xdb", &isxdb));
   PetscCall(PetscStrcmp(PetscDebugger, "dbx", &isdbx));
   PetscCall(PetscStrcmp(PetscDebugger, "lldb", &islldb));
 
   if (isxxgdb || isups || isddd || iskdbg) printf("[%d]%s>>%s %s %d\n", rank, hostname, PetscDebugger, program, ppid);
-  else if (isxldb) printf("[%d]%s>>%s -a %d %s\n", rank, hostname, PetscDebugger, ppid, program);
   else if (islldb) printf("[%d]%s>>%s -p %d\n", rank, hostname, PetscDebugger, ppid);
   else if (isdbx) {
   #if PetscDefined(USE_P_FOR_DEBUGGER)
@@ -610,26 +574,6 @@ PetscErrorCode PetscStopForDebugger(void)
   sleeptime = 25;                                                                          /* default to sleep waiting for debugger */
   PetscCallContinue(PetscOptionsGetReal(NULL, NULL, "-debugger_pause", &sleeptime, NULL)); /* ignore error because may already be in error handler */
   if (sleeptime < 0) sleeptime = -sleeptime;
-#if PetscDefined(NEED_DEBUGGER_NO_SLEEP)
-  /*
-      HP cannot attach process to sleeping debugger, hence count instead
-  */
-  {
-    // this *will* get optimized away by any compiler known to man
-    PetscReal x = 1.0;
-    int       i = 10000000;
-    while (i--) x++; /* cannot attach to sleeper */
-  }
-#elif PetscDefined(HAVE_SLEEP_RETURNS_EARLY)
-  /*
-      IBM sleep may return at anytime, hence must see if there is more time to sleep
-  */
-  {
-    int left = sleeptime;
-    while (left > 0) left = sleep(left) - 1;
-  }
-#else
   PetscCall(PetscSleep(sleeptime));
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

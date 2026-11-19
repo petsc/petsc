@@ -10,6 +10,8 @@
 ```{rubric} General:
 ```
 
+- Remove the `xldb` debugger option
+
 ```{rubric} Configure/Build:
 ```
 
