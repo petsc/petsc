@@ -502,7 +502,7 @@ static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
   {72,  209, 204}, /* mediumturquoise */
   {240, 230, 140}, /* khaki */
   {105, 105, 105}, /* dimgray */
-  {54,  205, 50 }, /* yellowgreen */
+  {154, 205, 50 }, /* yellowgreen */
   {135, 206, 235}, /* skyblue */
   {0,   100, 0  }, /* darkgreen */
   {0,   0,   128}, /* navyblue */
