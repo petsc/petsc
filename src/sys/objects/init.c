@@ -620,7 +620,6 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -no_signal_handler: do not trap error signals\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -fp_trap: stop on floating point exceptions\n"));
-    PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, "           note on IBM RS6000 this slows run greatly\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -malloc_dump [filename]: dump list of unfreed memory at conclusion\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error\n"));
     PetscCall((*PetscHelpPrintf)(PETSC_COMM_WORLD, " -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()\n"));

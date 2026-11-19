@@ -151,11 +151,9 @@ class Configure(config.base.Configure):
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
                  '_mkdir','socket','gethostbyname','fpresetsticky',
                  'fpsetsticky','__gcov_dump']
-    libraries = [(['fpe'],'handle_sigfpes')]
     librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
-    self.libraries.libraries.extend(libraries)
     if not hasattr(self,'socket'):
       self.libraries.libraries.extend(librariessock)
     return
