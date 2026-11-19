@@ -748,7 +748,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 
   Level: intermediate
 
-.seealso: [](ch_vectors), `Vec`, [](ch_fortran), `VecDuplicateVecs()`, `VecDestroyVecsf90()`
+.seealso: [](ch_vectors), `Vec`, [](ch_fortran), `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 {
