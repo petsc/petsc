@@ -322,7 +322,7 @@ def command_line_size(argv):
     return len(list2cmdline(argv).encode("utf-16-le", "surrogatepass")) // 2 + 1
 
 
-def response_file_args(directory, args):
+def response_file_args(directory, args, option=None):
     """Pack adjacent inputs in response files without nesting caller-supplied @files."""
     from itertools import groupby
     for i, (supplied, group) in enumerate(groupby(args, key=lambda arg: arg.startswith("@"))):
@@ -330,10 +330,15 @@ def response_file_args(directory, args):
             yield from group
         else:
             path = os.path.join(directory, "%d.rsp" % i)
-            with open(path, "w", encoding="utf-8-sig", newline="\r\n") as rsp:
+            with open(path, "w", encoding="utf-8" if option else "utf-8-sig", newline="\r\n") as rsp:
                 for arg in group:
                     rsp.write(list2cmdline([arg]) + "\n")
-            yield "@" + cygwin_conv_to_full_win32_path(path)
+            native = cygwin_conv_to_full_win32_path(path)
+            if option:
+                yield option
+                yield native
+            else:
+                yield "@" + native
 
 
 class OutputPipe:

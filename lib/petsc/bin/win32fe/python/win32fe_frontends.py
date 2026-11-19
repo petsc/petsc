@@ -2,7 +2,7 @@
 create.cpp and win32fe.cpp)."""
 
 from win32fe_tool import Tool
-from win32fe_compiler import Cl, Icl, Ifl
+from win32fe_compiler import Cl, Nvcc, Icl, Ifl
 from win32fe_archiver import Lib
 
 TOOLS = {
@@ -10,6 +10,7 @@ TOOLS = {
     "icl": Icl,
     "ifort": Ifl,
     "lib": Lib,
+    "nvcc": Nvcc,
 }
 
 

@@ -51,6 +51,8 @@ cl specific help:
 class Compiler(Tool):
     """Base class for compiler front-ends (mirrors compilerfe.h)."""
 
+    response_option = None  # @file
+
     def __init__(self):
         super().__init__()
         self.compileoutflag = "-o"
@@ -132,7 +134,7 @@ class Compiler(Tool):
             return self.report(argv)
         from tempfile import TemporaryDirectory
         with TemporaryDirectory(prefix="wfe") as directory:
-            inputs = wfe.response_file_args(directory, files)
+            inputs = wfe.response_file_args(directory, files, self.response_option)
             return self.report([*self.compilearg, *inputs, *out, *self.linkarg])
 
     @staticmethod
@@ -260,6 +262,51 @@ class Cl(Compiler):
         if temp == "-nologo":
             self.logo = False
         self.compilearg.append(temp)
+
+
+class Nvcc(Cl):
+    """NVIDIA CUDA compiler driver (mirrors the nvcc class in clfe.cpp)."""
+
+    response_option = "--options-file"
+    found_L = Compiler.found_L
+    found_g = Compiler.found_g
+
+    def __init__(self):
+        super().__init__()
+        self.compileoutflag = self.linkoutflag = "-o"
+
+    def parse(self):
+        return Compiler.parse(self)
+
+    def help(self):
+        Compiler.help(self)
+        return self.report([self.compilearg[0], "--help"])
+
+    def display_version(self):
+        Tool.display_version(self)
+        with wfe.OutputPipe(self.verbose) as out:
+            if out.start([self.compilearg[0], "-V"]):
+                out.get_exit_code()
+                out.output_all()
+                return 0
+            return 1
+
+    def found_unknown(self, temp):
+        findopt = "--compiler-options="
+        if not temp.startswith(findopt):
+            self.compilearg.append(temp)
+            return
+        import re
+        hostopts = []
+        for iopt in re.findall(r'''(?:\\ |"[^"]*"|'[^']*'|[^\s])+''', temp[len(findopt):]):
+            if iopt.startswith("-I"):
+                path = iopt[2:].replace("\\ ", " ")
+                s = wfe.get_short_path(path)
+                self.compilearg.append("-I" + (s if s else path))
+            elif not iopt.startswith("-TP"):
+                hostopts.append(iopt)
+        if hostopts:
+            self.compilearg.append(findopt + " ".join(hostopts))
 
 
 class Icl(Cl):

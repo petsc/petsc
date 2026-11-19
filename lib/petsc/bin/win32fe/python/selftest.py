@@ -54,39 +54,59 @@ class TranslationTest(unittest.TestCase):
         self.assertEqual(second, common + ["-Fo" + self.native.join(self.cwd, "two.o"),
                                            self.native.join(self.cwd, "two.c")])
 
+    def test_nvcc_compiler_options(self):
+        Path("include dir").mkdir()
+        Path("one source.cu").touch()
+        argv, = self.commands("nvcc", "-g", "-c", "one source.cu", "-o", "out file.o",
+                              r"--compiler-options=-Iinclude\ dir -TP -Wall -Wextra")
+        self.assertEqual(argv, ["nvcc", "-g", "-c", "-I" + wfe.get_short_path("include dir"),
+                                "--compiler-options=-Wall -Wextra", "-o",
+                                self.native.join(self.cwd, "out file.o"), self.native.join(self.cwd, "one source.cu")])
+
     def test_link(self):
         Path("other").mkdir()
         Path("a.o").write_bytes(b"first")
         Path("other/a.o").write_bytes(b"second")
         Path("a.obj").write_bytes(b"keep this object")
+        for tool in ("cl", "nvcc"):
+            def check_copies(argv):
+                objects = [Path(arg) for arg in argv if arg.endswith(".obj")]
+                self.assertEqual([p.read_bytes() for p in objects], [b"first", b"second"])
 
-        def check_copies(argv):
-            objects = [Path(arg) for arg in argv if arg.endswith(".obj")]
-            self.assertEqual([p.read_bytes() for p in objects], [b"first", b"second"])
-
-        argv, = self.commands("cl", "a.o", "other/a.o", "-Lother", "-lfoo", "-o", "app name.exe", "-g", inspect=check_copies)
-        self.assertIn("libfoo.lib", argv)
-        self.assertIn("-libpath:" + wfe.get_short_path("other"), argv)
-        self.assertIn("-link", argv)
-        self.assertIn("-Fe" + self.native.join(self.cwd, "app name.exe"), argv)
-        self.assertFalse(any(Path(arg).exists() for arg in argv if arg.endswith(".obj")))
-        self.assertEqual(Path("a.obj").read_bytes(), b"keep this object")
+            argv, = self.commands(tool, "a.o", "other/a.o", "-Lother", "-lfoo", "-o", "app name.exe",
+                                  "--compiler-options=-Wall" if tool == "nvcc" else "-g", inspect=check_copies)
+            self.assertIn("libfoo.lib", argv)
+            self.assertIn(("-libpath:" if tool == "cl" else "-L") + wfe.get_short_path("other"), argv)
+            out = self.native.join(self.cwd, "app name.exe")
+            if tool == "cl":
+                self.assertIn("-link", argv)
+                self.assertIn("-Fe" + out, argv)
+            else:
+                self.assertIn("--compiler-options=-Wall", argv)
+                self.assertEqual(argv[argv.index("-o") + 1], out)
+            self.assertFalse(any(Path(arg).exists() for arg in argv if arg.endswith(".obj")))
+            self.assertEqual(Path("a.obj").read_bytes(), b"keep this object")
 
     def test_long_link(self):
         Path("some input.o").touch()
+        for tool in ("cl", "nvcc"):
+            def check_response(argv):
+                if tool == "nvcc":
+                    path = argv[argv.index("--options-file") + 1]
+                else:
+                    path, = [arg[1:] for arg in argv if arg.startswith("@")]
+                objects = Path(path).read_text(encoding="utf-8-sig").splitlines()
+                self.assertEqual(len(objects), 40)
+                self.assertTrue(all(Path(obj.strip('"')).is_file() for obj in objects))
 
-        def check_response(argv):
-            path, = [arg[1:] for arg in argv if arg.startswith("@")]
-            objects = Path(path).read_text(encoding="utf-8-sig").splitlines()
-            self.assertEqual(len(objects), 40)
-            self.assertTrue(all(Path(obj.strip('"')).is_file() for obj in objects))
-
-        with patch.object(wfe, "MAX_COMMAND_LINE", 512):
-            self.commands("cl", *(["some input.o"] * 40), inspect=check_response)
+            with patch.object(wfe, "MAX_COMMAND_LINE", 512):
+                self.commands(tool, *(["some input.o"] * 40), inspect=check_response)
 
     def test_help_with_inputs(self):
         Path("source.c").touch()
-        with redirect_stdout(io.StringIO()):
+        with redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(self.commands("nvcc", "--help", "-c", "source.c"), [["nvcc", "--help"]])
+            self.assertNotIn("cl specific help", out.getvalue())
             self.assertEqual(self.commands("cl", "-c", "source.c", "--help"), [["cl", "-?"]])
 
     def test_tool_selection(self):
