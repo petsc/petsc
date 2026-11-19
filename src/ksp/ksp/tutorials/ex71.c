@@ -588,6 +588,12 @@ int main(int argc, char **args)
    args: -dim 2 -cells 4,4 -pde_type Poisson -da_processors_x 2 -da_processors_y 2 -pc_type nn -is_localN_pc_is_damp_fixed 1e-3 -ksp_error_if_not_converged
 
  test:
+   suffix: nn_floating
+   nsize: 4
+   output_file: output/empty.out
+   args: -dim 2 -cells 4,4 -pde_type Poisson -da_processors_x 2 -da_processors_y 2 -pc_type nn -ksp_error_if_not_converged
+
+ test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
    suffix: bddc_1

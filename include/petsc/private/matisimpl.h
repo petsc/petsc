@@ -10,6 +10,7 @@ typedef struct {
   Vec          x, y;    /* work space for matrix vector product */
   Vec          counter; /* counter vector */
   PetscBool    pure_neumann;
+  PetscBool    zeroed_rows;
   PetscSF      sf, csf; /* SFs for rows and cols */
   PetscInt    *sf_rootdata, *sf_leafdata;
   PetscInt    *csf_rootdata, *csf_leafdata;

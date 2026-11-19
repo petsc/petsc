@@ -2923,8 +2923,10 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A, PetscInt n, const
   Mat_IS *is = (Mat_IS *)A->data;
 
   PetscFunctionBegin;
+  // After a MatZeroRows*() call, a subdomain is floating if no call since the last MatZeroEntries() zeroed its rows. PCIS shifts and regularizes floating local matrices.
+  if (n) is->zeroed_rows = PETSC_TRUE;
+  is->pure_neumann = is->zeroed_rows ? PETSC_FALSE : PETSC_TRUE;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
-  is->pure_neumann = PETSC_FALSE;
 
   if (columns) {
     PetscCall(MatZeroRowsColumns(is->A, n, rows, diag, NULL, NULL));
@@ -3342,6 +3344,8 @@ static PetscErrorCode MatZeroEntries_IS(Mat A)
 
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(a->A));
+  a->zeroed_rows  = PETSC_FALSE;
+  a->pure_neumann = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
