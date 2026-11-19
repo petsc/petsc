@@ -1664,6 +1664,7 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
     PetscCall(PetscLayoutSetLocalSize(a->cmat->rmap, prend - prbegin));
     PetscCall(PetscLayoutSetSize(a->cmat->rmap, rend - rbegin));
     PetscCall(PetscLayoutSetUp(a->cmat->rmap));
+    PetscCall(VecDestroy(&c->cvec));
     c->sub_rbegin = rbegin;
     c->sub_rend   = rend;
   }
@@ -2409,7 +2410,6 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   PetscCall(PetscBLASIntCast(c->A->cmap->n, &cn));
   if (cm && cn && ck) PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &cm, &cn, &ck, &_DOne, av, &alda, recvbuf, &ck, &_DZero, cv, &clda));
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
-  PetscCall(MatDenseRestoreArrayRead(b->A, &bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &cv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
