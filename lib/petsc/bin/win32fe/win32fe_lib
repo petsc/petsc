@@ -1,9 +1,13 @@
-#!/usr/bin/env sh
+#!/usr/bin/python3 -S
+#  Wrapper for Microsoft Windows lib using the Python win32fe in-process
+#  (equivalent to: win32fe lib "$@")
 #
-#  Wrapper for Microsoft Windows lib using win32fe as a full path compiler
-#
-#  Cygwin CMake insists on passing qc so we replace it with the correct value
-#
-p=`dirname $0`
-flags=`echo $* | sed -e s'?qc ? -a ?g'`
-${p}/win32fe lib ${flags}
+#  Cygwin CMake passes qc, so replace each qc argument with -a
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "python"))
+from win32fe_frontends import main
+
+args = ["-a" if a == "qc" else a for a in sys.argv[1:]]
+sys.exit(main([sys.argv[0], "lib"] + args))

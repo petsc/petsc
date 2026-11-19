@@ -1,0 +1,10 @@
+#!/usr/bin/python3 -S
+#  Python port of win32fe (https://bitbucket.org/petsc/win32fe)
+#  Usage: win32fe <tool> --<win32fe options> -<tool options> <files>
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "python"))
+from win32fe_frontends import main
+
+sys.exit(main(sys.argv))

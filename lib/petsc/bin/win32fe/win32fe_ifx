@@ -1,6 +1,10 @@
-#!/usr/bin/env sh
-#
-#  Wrapper for Intel oneAPI ifx compiler on Microsoft Windows using win32fe as a full path compiler
-#
-p=`dirname $0`
-${p}/win32fe ifort --use ifx $*
+#!/usr/bin/python3 -S
+#  Wrapper for Intel oneAPI ifx compiler on Microsoft Windows using the
+#  Python win32fe in-process (equivalent to: win32fe ifort --use ifx "$@")
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), "python"))
+from win32fe_frontends import main
+
+sys.exit(main([sys.argv[0], "ifort", "--use", "ifx"] + sys.argv[1:]))
