@@ -12,6 +12,7 @@ import os
 import sys
 
 BIG_PATH = 32768  # buffer size for the Win32 path APIs (long paths)
+MAX_COMMAND_LINE = 32767  # CreateProcessW limit in UTF-16 code units, including the terminator
 
 # --- Win32 constants -------------------------------------------------------
 STARTF_USESTDHANDLES = 0x00000100
@@ -314,6 +315,24 @@ def list2cmdline(argv):
         out.append("\\" * (2 * backslashes if quote else backslashes))
         parts.append('"' + "".join(out) + '"' if quote else "".join(out))
     return " ".join(parts)
+
+
+def command_line_size(argv):
+    return len(list2cmdline(argv).encode("utf-16-le", "surrogatepass")) // 2 + 1
+
+
+def response_file_args(directory, args):
+    """Pack adjacent inputs in response files without nesting caller-supplied @files."""
+    from itertools import groupby
+    for i, (supplied, group) in enumerate(groupby(args, key=lambda arg: arg.startswith("@"))):
+        if supplied:
+            yield from group
+        else:
+            path = os.path.join(directory, "%d.rsp" % i)
+            with open(path, "w", encoding="utf-8-sig", newline="\r\n") as rsp:
+                for arg in group:
+                    rsp.write(list2cmdline([arg]) + "\n")
+            yield "@" + cygwin_conv_to_full_win32_path(path)
 
 
 class OutputPipe:
