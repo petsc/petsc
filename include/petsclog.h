@@ -698,6 +698,31 @@ static inline int PetscMPIParallelComm(MPI_Comm comm)
 
     #define MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm) (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Allreduce((sendbuf), (recvbuf), (count), (datatype), (op), (comm)))
 
+    #define MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm) (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Reduce((sendbuf), (recvbuf), (count), (datatype), (op), (root), (comm)))
+
+    #if PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES)
+      #define MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request) \
+        (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Iallreduce((sendbuf), (recvbuf), (count), (datatype), (op), (comm), (request)))
+
+      #define MPI_Ireduce(sendbuf, recvbuf, count, datatype, op, root, comm, request) \
+        (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Ireduce((sendbuf), (recvbuf), (count), (datatype), (op), (root), (comm), (request)))
+    #endif
+
+    #if PetscDefined(HAVE_MPI_LARGE_COUNT)
+      #define MPI_Allreduce_c(sendbuf, recvbuf, count, datatype, op, comm) (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Allreduce_c((sendbuf), (recvbuf), (count), (datatype), (op), (comm)))
+
+      #define MPI_Reduce_c(sendbuf, recvbuf, count, datatype, op, root, comm) \
+        (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Reduce_c((sendbuf), (recvbuf), (count), (datatype), (op), (root), (comm)))
+
+      #if PetscDefined(HAVE_MPI_NONBLOCKING_COLLECTIVES)
+        #define MPI_Iallreduce_c(sendbuf, recvbuf, count, datatype, op, comm, request) \
+          (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Iallreduce_c((sendbuf), (recvbuf), (count), (datatype), (op), (comm), (request)))
+
+        #define MPI_Ireduce_c(sendbuf, recvbuf, count, datatype, op, root, comm, request) \
+          (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Ireduce_c((sendbuf), (recvbuf), (count), (datatype), (op), (root), (comm), (request)))
+      #endif
+    #endif
+
     #define MPI_Bcast(buffer, count, datatype, root, comm) (PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, PetscMPIParallelComm(comm)) || MPI_Bcast((buffer), (count), (datatype), (root), (comm)))
 
     #define MPI_Reduce_scatter_block(sendbuf, recvbuf, recvcount, datatype, op, comm) \
