@@ -2056,7 +2056,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   mg->galerkin           = PC_MG_GALERKIN_NONE;
   mg->adaptInterpolation = PETSC_FALSE;
   mg->Nc                 = -1;
-  mg->eigenvalue         = -1;
 
   PetscObjectParameterSetDefault(pc, useAmat, PETSC_TRUE);
 
@@ -2070,7 +2069,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_MG;
   pc->ops->view              = PCView_MG;
 
-  PetscCall(PetscObjectComposedDataRegister(&mg->eigenvalue));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetGalerkin_C", PCMGSetGalerkin_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetReusePreconditioner_C", PCSetReusePreconditioner_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetLevels_C", PCMGGetLevels_MG));
