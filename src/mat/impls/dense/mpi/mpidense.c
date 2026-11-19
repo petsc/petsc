@@ -1620,37 +1620,45 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat A, PetscInt col, Vec *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatDenseSetUpSubLayout_Private(MPI_Comm comm, PetscLayout parent, PetscInt begin, PetscInt end, PetscLayout *sub)
+{
+  PetscInt   *range;
+  PetscLayout layout;
+
+  PetscFunctionBegin;
+  if (parent->range == NULL) PetscCall(PetscLayoutSetUp(parent));
+  PetscCheck(begin == end || (parent->range[0] <= begin && end <= parent->range[parent->size]), parent->comm, PETSC_ERR_ARG_SIZ, "Submatrix interval [%" PetscInt_FMT ",%" PetscInt_FMT ") is outside the parent ownership range [%" PetscInt_FMT ",%" PetscInt_FMT ")", begin, end,
+             parent->range[0], parent->range[parent->size]);
+  PetscCall(PetscMalloc1(parent->size + 1, &range));
+  for (PetscInt i = 0; i <= parent->size; ++i) range[i] = PetscClipInterval(parent->range[i], begin, end) - begin;
+  PetscCall(PetscLayoutCreateFromRanges(comm, range, PETSC_OWN_POINTER, 1, &layout));
+  PetscCall(PetscLayoutDestroy(sub));
+  *sub = layout;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
 {
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
   Mat_MPIDense *c;
   MPI_Comm      comm;
-  PetscInt      prbegin, prend, pcbegin, pcend;
+  PetscInt      prbegin, prend;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCheck(!a->vecinuse, comm, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, comm, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  prbegin = PetscMax(0, PetscMin(A->rmap->rend, rbegin) - A->rmap->rstart);
-  prend   = PetscMin(A->rmap->n, PetscMax(0, rend - A->rmap->rstart));
-  pcbegin = PetscMax(0, PetscMin(A->cmap->rend, cbegin) - A->cmap->rstart);
-  pcend   = PetscMin(A->cmap->n, PetscMax(0, cend - A->cmap->rstart));
+  if (A->rmap->range == NULL) PetscCall(PetscLayoutSetUp(A->rmap));
+  prbegin = PetscClipInterval(rbegin - A->rmap->rstart, 0, A->rmap->n);
+  prend   = PetscClipInterval(rend - A->rmap->rstart, 0, A->rmap->n);
   if (!a->cmat) {
     PetscCall(MatCreate(comm, &a->cmat));
     PetscCall(MatSetType(a->cmat, ((PetscObject)A)->type_name));
     PetscCall(MatSetVecType(a->cmat, A->defaultvectype));
     if (rend - rbegin == A->rmap->N) PetscCall(PetscLayoutReference(A->rmap, &a->cmat->rmap));
-    else {
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->rmap, prend - prbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->rmap, rend - rbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->rmap));
-    }
+    else PetscCall(MatDenseSetUpSubLayout_Private(comm, A->rmap, rbegin, rend, &a->cmat->rmap));
     if (cend - cbegin == A->cmap->N) PetscCall(PetscLayoutReference(A->cmap, &a->cmat->cmap));
-    else {
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->cmap, pcend - pcbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->cmap, cend - cbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->cmap));
-    }
+    else PetscCall(MatDenseSetUpSubLayout_Private(comm, A->cmap, cbegin, cend, &a->cmat->cmap));
     c             = (Mat_MPIDense *)a->cmat->data;
     c->sub_rbegin = rbegin;
     c->sub_rend   = rend;
@@ -1659,23 +1667,15 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
   }
   c = (Mat_MPIDense *)a->cmat->data;
   if (c->sub_rbegin != rbegin || c->sub_rend != rend) {
-    PetscCall(PetscLayoutDestroy(&a->cmat->rmap));
-    PetscCall(PetscLayoutCreate(comm, &a->cmat->rmap));
-    PetscCall(PetscLayoutSetLocalSize(a->cmat->rmap, prend - prbegin));
-    PetscCall(PetscLayoutSetSize(a->cmat->rmap, rend - rbegin));
-    PetscCall(PetscLayoutSetUp(a->cmat->rmap));
+    PetscCall(MatDenseSetUpSubLayout_Private(comm, A->rmap, rbegin, rend, &a->cmat->rmap));
     PetscCall(VecDestroy(&c->cvec));
     c->sub_rbegin = rbegin;
     c->sub_rend   = rend;
   }
   if (c->sub_cbegin != cbegin || c->sub_cend != cend) {
-    // special optimization: check if all columns are owned by rank 0, in which case no communication is necessary
-    if (cend - cbegin != a->cmat->cmap->N || A->cmap->range[1] != A->cmap->N) {
-      PetscCall(PetscLayoutDestroy(&a->cmat->cmap));
-      PetscCall(PetscLayoutCreate(comm, &a->cmat->cmap));
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->cmap, pcend - pcbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->cmap, cend - cbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->cmap));
+    // equal-width slices have the same layout when the first process owns every column
+    if (cend - cbegin != a->cmat->cmap->N || A->cmap->range[0] > 0 || A->cmap->range[1] != A->cmap->N) {
+      PetscCall(MatDenseSetUpSubLayout_Private(comm, A->cmap, cbegin, cend, &a->cmat->cmap));
       PetscCall(VecDestroy(&c->lvec));
       PetscCall(PetscSFDestroy(&c->Mvctx));
     }
