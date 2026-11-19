@@ -2195,9 +2195,8 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
 {
   MPI_Comm                         comm;
   PetscMPIInt                      size;
-  PetscInt                         cm = A->cmap->n, cM, cN = B->cmap->N;
+  PetscInt                         cM, cN = B->cmap->N;
   MatProductCtx_TransMatMultDense *atb;
-  PetscBool                        cisdense = PETSC_FALSE;
   const PetscInt                  *ranges;
 
   PetscFunctionBegin;
@@ -2206,21 +2205,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCheck(A->rmap->rstart == B->rmap->rstart && A->rmap->rend == B->rmap->rend, comm, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart,
              A->rmap->rend, B->rmap->rstart, B->rmap->rend);
-
-  /* create matrix product C */
-  PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
-#endif
-#if PetscDefined(HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSEHIP, ""));
-#endif
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
-    PetscCall(MatSetVecType(C, A->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
-
+  PetscCall(MatDenseSetUpProduct_Private(C, A->cmap, B->cmap, A, NULL));
   /* create data structure for reuse C */
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscNew(&atb));
@@ -2253,13 +2238,7 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscCall(PetscStrcmp(product->alg, "allgatherv", &flg));
   alg = flg ? 0 : 1;
 
-  /* setup matrix product C */
-  PetscCall(MatSetSizes(C, A->rmap->n, B->rmap->n, A->rmap->N, B->rmap->N));
-  PetscCall(MatSetType(C, MATMPIDENSE));
-  /* keep the VecType of A, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if A is a MATMPIDENSE like C, since the VecType of a MATMPIDENSECUDA or MATMPIDENSEHIP A, e.g. VECCUDA, is not valid for C */
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
-  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->rmap, A, MATMPIDENSE));
   PetscCall(PetscObjectGetNewTag((PetscObject)C, &tag));
 
   /* create data structure for reuse C */
@@ -2546,17 +2525,11 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
   PetscCall(PetscStrcmp(product->alg, "petsc", &flg));
   alg = flg ? 0 : 1;
 
-  /* setup C */
-  PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
-  if (!flg) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATMPIDENSE));
-  }
-  /* preserve a supplied dense result and its storage; copy the VecType only from a matching MatType */
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
-  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-  PetscCall(MatSetUp(C));
+  /* the local product workspace uses the VecType of the output Mat */
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)A, (PetscObject)C, &flg));
+  if (flg == PETSC_TRUE) PetscCall(MatSetVecType(C, A->defaultvectype));
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)A, (PetscObject)B, &flg));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, flg == PETSC_TRUE ? NULL : MATMPIDENSE));
 
   /* create data structure for reuse Cdense */
   PetscCall(PetscNew(&ab));

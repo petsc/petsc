@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
   /* and a dense times AIJ product, which is not available for a sequential MATDENSECUDA or MATDENSEHIP */
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &same, MATSEQDENSE, MATMPIDENSE, ""));
-  if (same) {
+  if (same == PETSC_TRUE) {
     PetscCall(MatMatMult(C4, S2, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C5));
     PetscCall(CheckProductVecType(C5, A, "The Mat the dense times AIJ product created"));
     PetscCall(MatDestroy(&C5));
@@ -159,6 +159,23 @@ int main(int argc, char **argv)
   PetscCall(MatTransposeMatMult(A, F, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C6));
   PetscCall(CheckProductVecType(C6, A, "The Mat the transpose dense product with operands of different VecType created"));
   PetscCall(MatDestroy(&C6));
+
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &same));
+  if (same == PETSC_TRUE) {
+    PetscCall(MatProductClear(C4));
+    PetscCall(MatSetVecType(C4, VECSEQ));
+    PetscCall(MatMatTransposeMult(A, A, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C4));
+    PetscCall(MatGetVecType(C4, &pvtype));
+    PetscCall(PetscStrcmp(pvtype, VECSEQ, &same));
+    PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The supplied dense result has VecType %s, expected %s", pvtype, VECSEQ);
+  }
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &same));
+  if (same == PETSC_TRUE) {
+    PetscCall(MatProductClear(C3));
+    PetscCall(MatSetVecType(C3, VECMPI));
+    PetscCall(MatMatMult(A, D, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C3));
+    PetscCall(CheckProductVecType(C3, A, "The supplied MPI dense result"));
+  }
 
   PetscCall(MatDestroy(&F));
   PetscCall(MatDestroy(&E));

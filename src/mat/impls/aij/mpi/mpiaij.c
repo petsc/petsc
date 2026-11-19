@@ -6083,18 +6083,10 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A, Mat B, Mat C)
 
 static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  PetscBool cisdense;
-
   PetscFunctionBegin;
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
-  PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, MATMPIDENSEHIP, ""));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
-    PetscCall(MatSetVecType(C, A->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, NULL));
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -2996,19 +2996,12 @@ static PetscErrorCode MatMatMultSymbolic_MPIBAIJ_MPIDense(Mat A, Mat B, PetscRea
   PetscInt          nz  = baij->B->cmap->n, bs;
   PetscInt          Am = A->rmap->n, BN = B->cmap->N, Bbn, numBb;
   Mat               workB1, workC1;
-  PetscBool         cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &cisdense));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-  }
-  PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
   PetscCall(MatGetBlockSize(A, &bs));
   PetscCall(PetscNew(&data));
   PetscCall(MatMPIDenseScatterSetUp_Private(ctx, nz, bs, Am, B, C, &data->scatter, &Bbn, &numBb));

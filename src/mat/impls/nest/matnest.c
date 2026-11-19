@@ -160,9 +160,8 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   Mat_Nest          *bA;
   Mat                viewB, workC;
   const PetscScalar *barray;
-  PetscInt           M, N, m, n, nr, nc, maxm = 0, ldb;
+  PetscInt           M, N, nr, nc, maxm = 0, ldb;
   Nest_Dense        *contents = NULL;
-  PetscBool          cisdense;
   Mat                A, B;
   PetscReal          fill;
 
@@ -175,17 +174,8 @@ static PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
   bA   = (Mat_Nest *)A->data;
   nr   = bA->nr;
   nc   = bA->nc;
-  PetscCall(MatGetLocalSize(B, NULL, &n));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
   PetscCall(MatGetSize(B, NULL, &N));
-  PetscCall(MatGetLocalSize(A, &m, NULL));
-  PetscCall(MatGetSize(A, &M, NULL));
-  PetscCall(MatSetSizes(C, m, n, M, N));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATMPIDENSE, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
   if (!N) {
     C->ops->productnumeric = MatProductNumeric_Nest_Dense;
     PetscFunctionReturn(PETSC_SUCCESS);

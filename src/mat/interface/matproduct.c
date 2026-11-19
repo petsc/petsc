@@ -361,28 +361,20 @@ static PetscErrorCode MatProductSymbolic_X_Dense(Mat C)
 {
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
-  PetscBool    isdense;
 
   PetscFunctionBegin;
   switch (product->type) {
   case MATPRODUCT_AB:
-    PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
+    PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
     break;
   case MATPRODUCT_AtB:
-    PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
+    PetscCall(MatDenseSetUpProduct_Private(C, A->cmap, B->cmap, B, NULL));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
   }
-  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)C, &isdense, MATSEQDENSE, MATMPIDENSE, ""));
-  if (!isdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-    /* If matrix type of C was not set or not dense, we need to reset the pointer */
-    C->ops->productsymbolic = MatProductSymbolic_X_Dense;
-  }
-  C->ops->productnumeric = MatProductNumeric_X_Dense;
-  PetscCall(MatSetUp(C));
+  C->ops->productsymbolic = MatProductSymbolic_X_Dense;
+  C->ops->productnumeric  = MatProductNumeric_X_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
