@@ -844,6 +844,8 @@ linux-cuda-uni-pkgs:
   variables:
     TEST_ARCH: arch-ci-linux-cuda-uni-pkgs
     TEST_OPTS: -j20 query=requires queryval=cuda
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-11-27-cuda/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: cuda/12.0.1
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-clang-cuda:
