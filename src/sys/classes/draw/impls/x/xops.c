@@ -675,11 +675,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 {
   PetscDraw_X  *Xwin;
   PetscMPIInt   rank;
-  int           x = draw->x, y = draw->y, w = draw->w, h = draw->h;
-  static int    xavailable = 0, yavailable = 0, ybottom = 0, xmax = 0, ymax = 0;
-  PetscBool     set, dvirtual = PETSC_FALSE, doublebuffer = PETSC_TRUE, has_display;
-  PetscInt      xywh[4], osize = 4, nsizes = 2;
-  PetscReal     sizes[2]       = {.3, .3};
+  int           x, y, w, h;
+  static int    xmax = 0, ymax = 0;
+  PetscBool     dvirtual = PETSC_FALSE, doublebuffer = PETSC_TRUE, has_display;
   static size_t DISPLAY_LENGTH = 265;
 
   PetscFunctionBegin;
@@ -700,113 +698,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
     }
   }
 
-  /* allow user to set size of drawable */
-  PetscCall(PetscOptionsGetRealArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_size", sizes, &nsizes, &set));
-  if (set == PETSC_TRUE && nsizes == 1 && sizes[0] > 1.0) sizes[1] = sizes[0];
-  if (set == PETSC_TRUE) {
-    if (sizes[0] > 1.0) w = (int)sizes[0];
-    else if (sizes[0] == 1.0) w = PETSC_DRAW_FULL_SIZE;
-    else if (sizes[0] == .5) w = PETSC_DRAW_HALF_SIZE;
-    else if (PetscEqualReal(sizes[0], .3) == PETSC_TRUE) w = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
-    else if (sizes[0] == .25) w = PETSC_DRAW_QUARTER_SIZE;
-    if (sizes[1] > 1.0) h = (int)sizes[1];
-    else if (sizes[1] == 1.0) h = PETSC_DRAW_FULL_SIZE;
-    else if (sizes[1] == .5) h = PETSC_DRAW_HALF_SIZE;
-    else if (PetscEqualReal(sizes[1], .3) == PETSC_TRUE) h = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
-    else if (sizes[1] == .25) h = PETSC_DRAW_QUARTER_SIZE;
-  }
-  if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = draw->w = 300;
-  if (h == PETSC_DECIDE || h == PETSC_DEFAULT) h = draw->h = 300;
-  switch (w) {
-  case PETSC_DRAW_FULL_SIZE:
-    w = draw->w = (xmax - 10);
-    break;
-  case PETSC_DRAW_HALF_SIZE:
-    w = draw->w = (xmax - 20) / 2;
-    break;
-  case PETSC_DRAW_THIRD_SIZE:
-    w = draw->w = (xmax - 30) / 3;
-    break;
-  case PETSC_DRAW_QUARTER_SIZE:
-    w = draw->w = (xmax - 40) / 4;
-    break;
-  }
-  switch (h) {
-  case PETSC_DRAW_FULL_SIZE:
-    h = draw->h = (ymax - 10);
-    break;
-  case PETSC_DRAW_HALF_SIZE:
-    h = draw->h = (ymax - 20) / 2;
-    break;
-  case PETSC_DRAW_THIRD_SIZE:
-    h = draw->h = (ymax - 30) / 3;
-    break;
-  case PETSC_DRAW_QUARTER_SIZE:
-    h = draw->h = (ymax - 40) / 4;
-    break;
-  }
-
   PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_virtual", &dvirtual, NULL));
-
-  if (dvirtual == PETSC_FALSE) {
-    /* allow user to set location and size of window */
-    xywh[0] = x;
-    xywh[1] = y;
-    xywh[2] = w;
-    xywh[3] = h;
-    PetscCall(PetscOptionsGetIntArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-geometry", xywh, &osize, NULL));
-    PetscCall(PetscCIntCast(xywh[0], &x));
-    PetscCall(PetscCIntCast(xywh[1], &y));
-    PetscCall(PetscCIntCast(xywh[2], &w));
-    PetscCall(PetscCIntCast(xywh[3], &h));
-    if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = 300;
-    if (h == PETSC_DECIDE || h == PETSC_DEFAULT) h = 300;
-    draw->x = x;
-    draw->y = y;
-    draw->w = w;
-    draw->h = h;
-
-    if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
-      /*
-       PETSc tries to place windows starting in the upper left corner
-        and moving across to the right.
-
-       +0,0-------------------------------------------+
-       |  Region used so far  +xavailable,yavailable  |
-       |                      |                       |
-       |                      |                       |
-       +--------------------- +ybottom                |
-       |                                              |
-       |                                              |
-       +----------------------------------------------+xmax,ymax
-
-      */
-      /*  First: can we add it to the right? */
-      if (xavailable + w + 10 <= xmax) {
-        x       = xavailable;
-        y       = yavailable;
-        ybottom = PetscMax(ybottom, y + h + 30);
-      } else {
-        /* No, so add it below on the left */
-        xavailable = x = 0;
-        yavailable = y = ybottom;
-        ybottom        = ybottom + h + 30;
-      }
-    }
-    /* update available region */
-    xavailable = PetscMax(xavailable, x + w + 10);
-    if (xavailable >= xmax) {
-      xavailable = 0;
-      yavailable = yavailable + h + 30;
-      ybottom    = yavailable;
-    }
-    if (yavailable >= ymax) {
-      y          = 0;
-      yavailable = 0;
-      ybottom    = 0;
-    }
-
-  } /* endif (!dvirtual) */
+  PetscCall(PetscDrawSetUpWindowGeometry_Private(draw, xmax, ymax, dvirtual, &x, &y, &w, &h));
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   PetscCheck(rank != 0 || (w > 0 && h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative window width or height");

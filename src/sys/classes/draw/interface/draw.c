@@ -451,3 +451,177 @@ PetscErrorCode PetscDrawSetVisible(PetscDraw draw, PetscBool visible)
   PetscTryTypeMethod(draw, setvisible, visible);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+// RGB values of the PETSC_DRAW_BASIC_COLORS named colors, for implementations that manage their own palette
+const unsigned char PetscDrawBasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
+  {255, 255, 255}, // white
+  {0,   0,   0  }, // black
+  {255, 0,   0  }, // red
+  {0,   255, 0  }, // green
+  {0,   255, 255}, // cyan
+  {0,   0,   255}, // blue
+  {255, 0,   255}, // magenta
+  {127, 255, 212}, // aquamarine
+  {34,  139, 34 }, // forestgreen
+  {255, 165, 0  }, // orange
+  {238, 130, 238}, // violet
+  {165, 42,  42 }, // brown
+  {255, 192, 203}, // pink
+  {255, 127, 80 }, // coral
+  {190, 190, 190}, // gray
+  {255, 255, 0  }, // yellow
+  {255, 215, 0  }, // gold
+  {255, 182, 193}, // lightpink
+  {72,  209, 204}, // mediumturquoise
+  {240, 230, 140}, // khaki
+  {105, 105, 105}, // dimgray
+  {154, 205, 50 }, // yellowgreen
+  {135, 206, 235}, // skyblue
+  {0,   100, 0  }, // darkgreen
+  {0,   0,   128}, // navyblue
+  {244, 164, 96 }, // sandybrown
+  {95,  158, 160}, // cadetblue
+  {176, 224, 230}, // powderblue
+  {255, 20,  147}, // deeppink
+  {216, 191, 216}, // thistle
+  {50,  205, 50 }, // limegreen
+  {255, 240, 245}, // lavenderblush
+  {221, 160, 221}, // plum
+};
+
+/*
+  PetscDrawSetUpWindowGeometry_Private - determine the location and size of a new window from the options database
+
+  Input Parameters:
++ draw     - the `PetscDraw`, its `x`, `y`, `w`, `h` give the requested location and size
+. xmax     - width of the display in pixels
+. ymax     - height of the display in pixels
+- dvirtual - the draw has no window, so `-geometry` and window placement do not apply
+
+  Output Parameters:
++ x - horizontal location of the window
+. y - vertical location of the window
+. w - width of the window
+- h - height of the window
+
+  Note:
+  Windows with `PETSC_DECIDE` location are tiled from the upper left corner of the display.
+  The tiling state is shared by all `PetscDraw` implementations that call this function.
+*/
+PetscErrorCode PetscDrawSetUpWindowGeometry_Private(PetscDraw draw, int xmax, int ymax, PetscBool dvirtual, int *x, int *y, int *w, int *h)
+{
+  static int xavailable = 0, yavailable = 0, ybottom = 0;
+  PetscBool  set;
+  PetscInt   xywh[4], osize = 4, nsizes = 2;
+  PetscReal  sizes[2] = {.3, .3};
+
+  PetscFunctionBegin;
+  *x = draw->x;
+  *y = draw->y;
+  *w = draw->w;
+  *h = draw->h;
+  // allow user to set size of drawable
+  PetscCall(PetscOptionsGetRealArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_size", sizes, &nsizes, &set));
+  if (set == PETSC_TRUE && nsizes == 1 && sizes[0] > 1.0) sizes[1] = sizes[0];
+  if (set == PETSC_TRUE) {
+    if (sizes[0] > 1.0) *w = (int)sizes[0];
+    else if (sizes[0] == 1.0) *w = PETSC_DRAW_FULL_SIZE;
+    else if (sizes[0] == .5) *w = PETSC_DRAW_HALF_SIZE;
+    else if (PetscEqualReal(sizes[0], .3) == PETSC_TRUE) *w = PETSC_DRAW_THIRD_SIZE; // sizes == 0.3 will never be true
+    else if (sizes[0] == .25) *w = PETSC_DRAW_QUARTER_SIZE;
+    if (sizes[1] > 1.0) *h = (int)sizes[1];
+    else if (sizes[1] == 1.0) *h = PETSC_DRAW_FULL_SIZE;
+    else if (sizes[1] == .5) *h = PETSC_DRAW_HALF_SIZE;
+    else if (PetscEqualReal(sizes[1], .3) == PETSC_TRUE) *h = PETSC_DRAW_THIRD_SIZE; // sizes == 0.3 will never be true
+    else if (sizes[1] == .25) *h = PETSC_DRAW_QUARTER_SIZE;
+  }
+  if (*w == PETSC_DECIDE || *w == PETSC_DEFAULT) *w = draw->w = 300;
+  if (*h == PETSC_DECIDE || *h == PETSC_DEFAULT) *h = draw->h = 300;
+  switch (*w) {
+  case PETSC_DRAW_FULL_SIZE:
+    *w = draw->w = (xmax - 10);
+    break;
+  case PETSC_DRAW_HALF_SIZE:
+    *w = draw->w = (xmax - 20) / 2;
+    break;
+  case PETSC_DRAW_THIRD_SIZE:
+    *w = draw->w = (xmax - 30) / 3;
+    break;
+  case PETSC_DRAW_QUARTER_SIZE:
+    *w = draw->w = (xmax - 40) / 4;
+    break;
+  }
+  switch (*h) {
+  case PETSC_DRAW_FULL_SIZE:
+    *h = draw->h = (ymax - 10);
+    break;
+  case PETSC_DRAW_HALF_SIZE:
+    *h = draw->h = (ymax - 20) / 2;
+    break;
+  case PETSC_DRAW_THIRD_SIZE:
+    *h = draw->h = (ymax - 30) / 3;
+    break;
+  case PETSC_DRAW_QUARTER_SIZE:
+    *h = draw->h = (ymax - 40) / 4;
+    break;
+  }
+  if (dvirtual == PETSC_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
+
+  // allow user to set location and size of window
+  xywh[0] = *x;
+  xywh[1] = *y;
+  xywh[2] = *w;
+  xywh[3] = *h;
+  PetscCall(PetscOptionsGetIntArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-geometry", xywh, &osize, NULL));
+  PetscCall(PetscCIntCast(xywh[0], x));
+  PetscCall(PetscCIntCast(xywh[1], y));
+  PetscCall(PetscCIntCast(xywh[2], w));
+  PetscCall(PetscCIntCast(xywh[3], h));
+  if (*w == PETSC_DECIDE || *w == PETSC_DEFAULT) *w = 300;
+  if (*h == PETSC_DECIDE || *h == PETSC_DEFAULT) *h = 300;
+  draw->x = *x;
+  draw->y = *y;
+  draw->w = *w;
+  draw->h = *h;
+
+  if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
+    /*
+     PETSc tries to place windows starting in the upper left corner
+      and moving across to the right.
+
+     +0,0-------------------------------------------+
+     |  Region used so far  +xavailable,yavailable  |
+     |                      |                       |
+     |                      |                       |
+     +--------------------- +ybottom                |
+     |                                              |
+     |                                              |
+     +----------------------------------------------+xmax,ymax
+
+    */
+    // First: can we add it to the right?
+    if (xavailable + *w + 10 <= xmax) {
+      *x      = xavailable;
+      *y      = yavailable;
+      ybottom = PetscMax(ybottom, *y + *h + 30);
+    } else {
+      // No, so add it below on the left
+      xavailable = *x = 0;
+      yavailable = *y = ybottom;
+      ybottom         = ybottom + *h + 30;
+    }
+  }
+  // update available region
+  xavailable = PetscMax(xavailable, *x + *w + 10);
+  if (xavailable >= xmax) {
+    xavailable = 0;
+    yavailable = yavailable + *h + 30;
+    ybottom    = yavailable;
+  }
+  if (yavailable >= ymax) {
+    *y         = 0;
+    yavailable = 0;
+    ybottom    = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

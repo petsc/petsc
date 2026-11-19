@@ -120,6 +120,9 @@ PETSC_INTERN PetscErrorCode PetscStripInitialZero(char *);
 PETSC_INTERN PetscErrorCode PetscStripZeros(char *);
 PETSC_INTERN PetscErrorCode PetscStripZerosPlus(char *);
 
+PETSC_INTERN const unsigned char PetscDrawBasicColors[PETSC_DRAW_BASIC_COLORS][3];
+PETSC_INTERN PetscErrorCode      PetscDrawSetUpWindowGeometry_Private(PetscDraw, int, int, PetscBool, int *, int *, int *, int *);
+
 struct _p_PetscDrawBar {
   PETSCHEADER(int);
   PetscErrorCode (*destroy)(PetscDrawSP);
