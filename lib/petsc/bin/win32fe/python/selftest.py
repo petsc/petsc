@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import win32fe_utils as wfe
+from win32fe_archiver import Lib
 from win32fe_compiler import Cl
 from win32fe_frontends import main
 from win32fe_tool import Tool
@@ -110,6 +111,51 @@ class TranslationTest(unittest.TestCase):
             stream.flush()
             self.assertEqual(stream.buffer.getvalue(), b'"caf\xe9"\r\nlast\xff')
         stream.close()
+
+    def test_archive_update(self):
+        Path("my archive.lib").touch()
+        Path("caller file.rsp").touch()
+        archive = self.native.join(self.cwd, "my archive.lib")
+        user_rsp = "@" + wfe.get_short_path("caller file.rsp")
+        members = [letter * 165 + " member.obj" for letter in "abc"]
+        generated = []
+
+        def check_response_files(argv):
+            cmd, flag, output, before, supplied, after = argv
+            self.assertEqual([cmd, flag, output, supplied], ["lib", "-nologo", "-out:" + archive, user_rsp])
+            for response, expected in ((before, [archive, members[0]]), (after, members[1:])):
+                self.assertTrue(response.startswith("@"))
+                path = Path(response[1:])
+                self.assertEqual(path.read_text(encoding="utf-8-sig").splitlines(), ['"' + f + '"' for f in expected])
+                generated.append(path)
+
+        self.commands("lib", "-a", "my archive.lib", members[0], "@caller file.rsp", *members[1:], inspect=check_response_files)
+        self.assertTrue(all(not p.exists() for p in generated))
+        self.assertTrue(Path("caller file.rsp").exists())
+
+    def test_archive_members(self):
+        Path("my archive.lib").touch()
+        archive = self.native.join(self.cwd, "my archive.lib")
+        argv, = self.commands("lib", "-l", "my archive.lib", "list file")
+        self.assertEqual(argv, ["lib", "-nologo", "-list:list file", archive])
+        argv, = self.commands("lib", "-d", "my archive.lib", "one member.obj")
+        self.assertEqual(argv, ["lib", "-nologo", archive, "-remove:one member.obj"])
+
+        librarian = Lib()
+        librarian.get_args(["win32fe", "lib", "--use", "other-lib", "-x", "my archive.lib"])
+        self.assertEqual(librarian.parse(), 0)
+
+        def run_lib(argv):
+            if argv[2].startswith("-list:"):
+                self.assertEqual([argv[0], argv[1], argv[3]], ["other-lib", "-nologo", archive])
+                Path(argv[2][6:]).write_bytes("cour.obj\r\ncœur.obj\r\n".encode("cp1252"))
+            return 0
+
+        with patch.object(wfe, "kernel32") as k, patch.object(librarian, "report", side_effect=run_lib) as report:
+            k.return_value.GetACP.return_value = 1252
+            self.assertEqual(librarian.execute(), 0)
+            self.assertEqual([args[0] for args, _ in report.call_args_list[1:]],
+                             [["other-lib", "-nologo", "-wx", archive, "-extract:" + name] for name in ("cour.obj", "cœur.obj")])
 
 
 if __name__ == "__main__":

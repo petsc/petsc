@@ -20,10 +20,11 @@ TOOL_HELP = """\
 Usage: win32fe <tool> --<win32fe options> -<tool options> <files>
   <tool> must be the first argument to win32fe
 
-<tool>: {cl,icl,ifort}
+<tool>: {cl,icl,ifort,lib}
   cl:    Microsoft 32-bit C/C++ Optimizing Compiler
   icl:   Intel C/C++ Optimizing Compiler (icl --use icx for icx)
   ifort: Intel Fortran Optimizing Compiler (ifort --use ifx for ifx)
+  lib:   Microsoft Library Manager
 
 <win32fe options>:
   --help:       Output this help message and help for <tool>

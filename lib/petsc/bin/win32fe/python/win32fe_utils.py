@@ -86,6 +86,7 @@ def kernel32():
         _proto(k, "GetLongPathNameW", ctypes.c_uint,
                [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint])
         _proto(k, "GetCurrentProcessId", ctypes.c_uint32, [])
+        _proto(k, "GetACP", ctypes.c_uint, [])
         _proto(k, "GetTempPathW", ctypes.c_uint, [ctypes.c_uint, ctypes.c_wchar_p])
         _proto(k, "GetTempFileNameW", ctypes.c_uint,
                [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint, ctypes.c_wchar_p])
