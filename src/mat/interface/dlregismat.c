@@ -119,6 +119,9 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
 #if PetscDefined(HAVE_HTOOL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Htool(void);
 #endif
+#if PetscDefined(HAVE_CUDSS)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_cuDSS(void);
+#endif
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat, MatFactorType, Mat *);
@@ -433,6 +436,9 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if PetscDefined(HAVE_HTOOL)
   PetscCall(MatSolverTypeRegister_Htool());
+#endif
+#if PetscDefined(HAVE_CUDSS)
+  PetscCall(MatSolverTypeRegister_cuDSS());
 #endif
 #if PetscDefined(HAVE_HPL)
   PetscCall(PetscBenchRegister(PETSCBMHPL, PetscBenchCreate_HPL));

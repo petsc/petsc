@@ -13,6 +13,7 @@
 ```{rubric} Configure/Build:
 ```
 
+- Add `--download-cudss` and `--with-cudss-dir` configure options to support the NVIDIA cuDSS GPU-accelerated sparse direct solver library
 - Add `--download-cutest` and `--download-sifdecode` for the CUTEst optimization testing environment and SIF problem decoder
 - Add Meson package builds, `--download-meson`, and `--download-package-meson-arguments` for additional Meson setup arguments
 - Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
@@ -97,6 +98,7 @@
 ```{rubric} Mat:
 ```
 
+- Add `MATSOLVERCUDSS`, a sparse direct solver type backed by the NVIDIA cuDSS library, supporting LU and Cholesky factorization for sequential matrices on CUDA devices; registered for both `MATSEQAIJ` and `MATSEQAIJCUSPARSE`
 - Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATAIJKOKKOS`; previously all norms copied the matrix values to the host
 - Add `-mat_spd` to set `MAT_SPD` from the options database in `MatSetFromOptions()`
 - Change `MatSetOption()` to error when a symmetry-related option contradicts an already known property

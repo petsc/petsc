@@ -1,0 +1,38 @@
+  Linear solve converged due to CONVERGED_RTOL iterations 1
+KSP Object: 1 MPI process
+  type: gmres
+    restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement
+    happy breakdown tolerance=1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI process
+  type: lu
+    out-of-place factorization
+    tolerance for zero pivot 2.22045e-14
+    matrix ordering: external
+    factor fill ratio given 0., needed 0.
+      Factored matrix:
+        Mat Object: 1 MPI process
+          type: cudss
+          rows=14739, cols=14739
+          package used to perform factorization: cudss
+          total: nonzeros=0, allocated nonzeros=0
+            cuDSS run parameters:
+              Reorder algorithm: default
+              User permutation: no
+              Pivot type: auto
+              Pivot threshold: 1.
+              Pivot epsilon: 0.
+              Use matching: false
+              IR steps: 0
+              Deterministic mode: false
+              Device workspace mempool: true
+  linear system matrix, which is also used to construct the preconditioner:
+  Mat Object: 1 MPI process
+    type: seqaijcusparse
+    rows=14739, cols=14739, bs=3
+    total: nonzeros=1058841, allocated nonzeros=1058841
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines

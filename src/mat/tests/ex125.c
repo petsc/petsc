@@ -294,6 +294,16 @@ int main(int argc, char **args)
     testMatMatSolveTranspose = PETSC_FALSE;
   }
 #endif
+#if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_CUDSS)
+  PetscCall(PetscStrcmp(pack, MATSOLVERCUDSS, &match));
+  if (match == PETSC_TRUE) {
+    if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " cuDSS CHOLESKY:\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, " cuDSS LU:\n"));
+    matsolvexx               = PETSC_TRUE;
+    testMatSolveTranspose    = PETSC_FALSE; // cuDSS does not support MatSolveTranspose()
+    testMatMatSolveTranspose = PETSC_FALSE;
+  }
+#endif
   PetscCall(PetscStrcmp(pack, MATSOLVERPETSC, &match));
   if (match == PETSC_TRUE) {
     if (chol == PETSC_TRUE) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " PETSC CHOLESKY:\n"));
@@ -713,6 +723,17 @@ int main(int argc, char **args)
       suffix: cusparse_2
       requires: cuda
       args: -mat_type aijcusparse -mat_solver_type cusparse -cholesky {{0 1}separate output}
+
+   test:
+      suffix: cudss
+      requires: cuda cudss !complex
+      args: -mat_type aijcusparse -mat_solver_type cudss -cholesky {{0 1}separate output}
+
+   test:
+      suffix: cudss_deterministic
+      requires: cuda cudss !complex
+      args: -mat_type aijcusparse -mat_solver_type cudss -mat_cudss_deterministic
+      output_file: output/ex125_cudss_cholesky-0.out
 
    testset:
       nsize: {{1 2}separate output}
