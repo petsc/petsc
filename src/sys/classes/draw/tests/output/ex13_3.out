@@ -1,0 +1,14 @@
+text size positive: yes
+Image size: 502 x 246
+line probe: yes
+rectangle probe: yes
+triangle probe: yes
+ellipse probe: yes
+arrow probe: yes
+point probe: yes
+last process probe: yes
+background probe: yes
+Resized image: 300 x 200
+clean after resize: yes
+first process probe: yes
+cleared probe: yes

@@ -198,7 +198,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 - type - for example, `PETSC_DRAW_X`
 
   Options Database Key:
-. -draw_type (x|null|win32|tikz|image) - Sets the type; see `PetscDrawType`
+. -draw_type (x|sdl3|null|win32|tikz|image) - Sets the type; see `PetscDrawType`
 
   Level: intermediate
 
@@ -377,7 +377,8 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
   Notes:
   Must be called after `PetscDrawCreate()` but before the `PetscDraw` is used.
 
-  Defaults to a PETSc X Windows graphics.
+  Without `-nox`, defaults to `PETSC_DRAW_WIN32` with Microsoft Windows graphics, else `PETSC_DRAW_X` with X Windows,
+  else `PETSC_DRAW_SDL3` with SDL3, else `PETSC_DRAW_NULL`.
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`,
           `PetscDrawSetSaveMovie()`
@@ -387,7 +388,7 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
   PetscBool   flg, nox;
   char        vtype[256];
   const char *def;
-#if !PetscDefined(USE_WINDOWS_GRAPHICS) && !PetscDefined(HAVE_X)
+#if !PetscDefined(USE_WINDOWS_GRAPHICS) && !PetscDefined(HAVE_X) && !PetscDefined(HAVE_SDL3)
   PetscBool warn;
 #endif
 
@@ -404,9 +405,11 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
     if (nox == PETSC_FALSE) def = PETSC_DRAW_WIN32;
 #elif PetscDefined(HAVE_X)
     if (nox == PETSC_FALSE) def = PETSC_DRAW_X;
+#elif PetscDefined(HAVE_SDL3)
+    if (nox == PETSC_FALSE) def = PETSC_DRAW_SDL3;
 #else
     PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &warn));
-    if (nox == PETSC_FALSE && warn == PETSC_FALSE) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n"));
+    if (nox == PETSC_FALSE && warn == PETSC_FALSE) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows, SDL3 or Microsoft Graphics on this machine\nproceeding without graphics\n"));
 #endif
   }
   PetscObjectOptionsBegin((PetscObject)draw);

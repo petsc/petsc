@@ -60,6 +60,7 @@ static inline int PetscDrawRealToColor(PetscReal value, PetscReal min, PetscReal
 }
 
 PETSC_EXTERN PetscErrorCode PetscDrawOpenX(MPI_Comm, const char[], const char[], int, int, int, int, PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscDrawOpenSDL3(MPI_Comm, const char[], int, int, int, int, PetscDraw *);
 
 PETSC_EXTERN PetscErrorCode PetscDrawOpenImage(MPI_Comm, const char[], int, int, PetscDraw *);
 PETSC_EXTERN PetscErrorCode PetscDrawOpenNull(MPI_Comm, PetscDraw *);
