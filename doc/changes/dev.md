@@ -28,6 +28,7 @@
 - Fix `--with-shared-libraries=1` on Microsoft Windows with Intel ifx, where Fortran code failed to link
 - Require HIP/ROCm 5.2.0 or later
 - Remove the `PETSC_HAVE_CUDA_VERSION_11PLUS` configure macro; all supported CUDA versions are 11.4 or later
+- Replace the prebuilt `win32fe.exe` used with Microsoft and Intel compilers on Microsoft Windows with a Python port that needs Cygwin `python3`; the `win32fe_*` wrapper names and options do not change. See `$PETSC_DIR/lib/petsc/bin/win32fe/python/README.md` for the changes from the C++ version
 
 ```{rubric} Sys:
 ```
