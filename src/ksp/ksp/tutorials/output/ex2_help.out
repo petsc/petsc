@@ -32,7 +32,6 @@ Options for all PETSc programs:
  -no_signal_handler: do not trap error signals
  -mpi_return_on_error: MPI returns error code, rather than abort on internal error
  -fp_trap: stop on floating point exceptions
-           note on IBM RS6000 this slows run greatly
  -malloc_dump [filename]: dump list of unfreed memory at conclusion
  -on_error_malloc_dump [filename]: dump list of unfreed memory on memory error
  -malloc_view [filename]: keeps log of all memory allocations, displays in PetscFinalize()

@@ -10,6 +10,7 @@
 ```{rubric} General:
 ```
 
+- Remove the IRIX, Solaris, SunOS 4, and IBM RS6000 floating point trap implementations and their configure checks
 - Remove the `xldb` debugger option
 
 ```{rubric} Configure/Build:
