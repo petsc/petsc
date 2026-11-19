@@ -2,10 +2,12 @@
 create.cpp and win32fe.cpp)."""
 
 from win32fe_tool import Tool
-from win32fe_compiler import Cl
+from win32fe_compiler import Cl, Icl, Ifl
 
 TOOLS = {
     "cl": Cl,
+    "icl": Icl,
+    "ifort": Ifl,
 }
 
 

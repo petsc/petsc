@@ -88,6 +88,16 @@ class TranslationTest(unittest.TestCase):
         with redirect_stdout(io.StringIO()):
             self.assertEqual(self.commands("cl", "-c", "source.c", "--help"), [["cl", "-?"]])
 
+    def test_tool_selection(self):
+        for frontend, driver in (("icl", "icx"), ("ifort", "ifx")):
+            argv, = self.commands(frontend, "--use", driver, "--win-l", "-lfoo")
+            self.assertEqual(argv, [driver, "-nologo", "foo.lib", "-link"])
+        with redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(main(["win32fe", "--help"]), 0)
+            self.assertIn("Usage: win32fe", out.getvalue())
+            self.assertEqual(main(["win32fe", "--version"]), 0)
+            self.assertIn("version", out.getvalue())
+
     def test_tool_output(self):
         data = b'"caf\xe9"\r\nwarning D4024: unrecognized source file type \'a.o\', object file assumed\r\nlast\xff'
         python = wfe.get_short_path(os.path.realpath(sys.executable))

@@ -260,3 +260,36 @@ class Cl(Compiler):
         if temp == "-nologo":
             self.logo = False
         self.compilearg.append(temp)
+
+
+class Icl(Cl):
+    """Intel C/C++ compiler front-end (mirrors iclfe.cpp)."""
+
+    def help(self):
+        Compiler.help(self)
+        print("i", end="")              # This is awfully cute.
+        return self.cl_help()
+
+    def report(self, argv):
+        toolname = os.fsencode(ntpath.basename(argv[0]))
+        return self.report_filtered(
+            argv,
+            skip=lambda l: (toolname + b": Command line warning:") in l
+            and b".o'; object file assumed" in l)
+
+
+class Ifl(Icl):
+    """Intel Fortran compiler front-end (ifort, and ifx through --use)."""
+
+    def found_l(self, temp):
+        if "-libs:" in temp:
+            self.compilearg.append(temp)
+        else:
+            super().found_l(temp)
+
+    def found_m(self, temp):
+        s = wfe.get_short_path(temp[8:])    # -module:<path>
+        if s:
+            self.compilearg.append("-module:" + s)
+        elif not self.woff:
+            print("Warning: ifl: module Path Not Found: " + temp[8:])
