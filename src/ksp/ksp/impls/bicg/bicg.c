@@ -97,7 +97,7 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
     PetscCall(KSPMonitor(ksp, i + 1, dp));
     PetscCall((*ksp->converged)(ksp, i + 1, dp, &ksp->reason, ksp->cnvP));
     if (ksp->reason) break;
-    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+    if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
       PetscCall(KSP_PCApply(ksp, Rr, Zr)); /* z <- Br  */
       PetscCall(KSP_PCApplyHermitianTranspose(ksp, Rl, Zl));
     }

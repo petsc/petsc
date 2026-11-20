@@ -987,4 +987,9 @@ int main(int argc, char **argv)
      nsize: 4
      args: -snes_test_jacobian -snes_test_jacobian_view
 
+   test:
+     requires: !single
+     suffix: mg_bicg
+     args: -da_refine 3 -pc_type mg -mg_levels_ksp_max_it 3 -snes_monitor -ksp_type fgmres -mg_levels_ksp_type bicg -ksp_monitor -mg_levels_pc_type jacobi -mg_levels_ksp_norm_type {{none preconditioned unpreconditioned}shared output}
+
 TEST*/
