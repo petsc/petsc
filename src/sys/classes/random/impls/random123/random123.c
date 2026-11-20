@@ -141,7 +141,7 @@ static PetscErrorCode PetscRandomGetValues_Random123(PetscRandom r, PetscInt n, 
 {
   PetscFunctionBegin;
 #if PetscDefined(USE_COMPLEX)
-  for (PetscInt i = 0; i < n; i++) PetscCall(PetscRandomGetValue_Random123(r, n, &vals[i]));
+  for (PetscInt i = 0; i < n; i++) PetscCall(PetscRandomGetValue_Random123(r, &vals[i]));
 #else
   PetscCall(PetscRandomGetValuesReal_Random123(r, n, vals));
 #endif
