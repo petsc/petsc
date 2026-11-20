@@ -3000,7 +3000,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIBAIJ_MPIDense(Mat A, Mat B, PetscRea
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
   PetscCall(MatGetBlockSize(A, &bs));
   PetscCall(PetscNew(&data));

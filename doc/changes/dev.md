@@ -103,6 +103,7 @@
 ```{rubric} Mat:
 ```
 
+- Inherit the row and column block sizes from the corresponding operand layouts for `MATPRODUCT_AB`, `MATPRODUCT_AtB`, and `MATPRODUCT_ABt`, including for a caller-supplied result
 - Add `MATSOLVERCUDSS`, a sparse direct solver type backed by the NVIDIA cuDSS library, supporting LU and Cholesky factorization for sequential matrices on CUDA devices; registered for both `MATSEQAIJ` and `MATSEQAIJCUSPARSE`
 - Add device implementations of `MatNorm()` with `NORM_1`, `NORM_FROBENIUS`, and `NORM_INFINITY` for `MATAIJKOKKOS`; previously all norms copied the matrix values to the host
 - Add `-mat_spd` to set `MAT_SPD` from the options database in `MatSetFromOptions()`

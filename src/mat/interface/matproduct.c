@@ -777,6 +777,8 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
 
   Notes:
   `MatProductSetFromOptions()` must have been called on `mat` before calling this function.
+  For `MATPRODUCT_AB`, `MATPRODUCT_AtB`, and `MATPRODUCT_ABt`, the result inherits the block sizes of the
+  operand layouts that supply its rows and columns, including when the caller supplies the result matrix.
   For `MATPRODUCT_AB` and `MATPRODUCT_AtB` with AIJ inputs, setting `MAT_STRUCTURE_ONLY` on `mat` before
   `MatProductSetFromOptions()` requests an assembled graph without numerical values. These products use the
   native CPU symbolic algorithms (`sorted` for sequential AB, `outerproduct` for sequential AtB, and `scalable`
@@ -863,10 +865,10 @@ PetscErrorCode MatProductSymbolic(Mat mat)
     PetscCall(MatSetBlockSizesFromMats(mat, A, B));
     break;
   case MATPRODUCT_AtB:
-    if (A->cmap->bs > 1 || B->cmap->bs > 1) PetscCall(MatSetBlockSizes(mat, A->cmap->bs, B->cmap->bs));
+    if (mat->rmap->bs != A->cmap->bs || mat->cmap->bs != B->cmap->bs) PetscCall(MatSetBlockSizes(mat, A->cmap->bs, B->cmap->bs));
     break;
   case MATPRODUCT_ABt:
-    if (A->rmap->bs > 1 || B->rmap->bs > 1) PetscCall(MatSetBlockSizes(mat, A->rmap->bs, B->rmap->bs));
+    if (mat->rmap->bs != A->rmap->bs || mat->cmap->bs != B->rmap->bs) PetscCall(MatSetBlockSizes(mat, A->rmap->bs, B->rmap->bs));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[product->type]);

@@ -6085,7 +6085,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A, Mat B, PetscReal
 {
   PetscFunctionBegin;
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, NULL));
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIDense_MPIAIJ;

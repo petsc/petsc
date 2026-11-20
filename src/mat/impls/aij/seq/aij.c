@@ -4203,7 +4203,6 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, 
 {
   PetscFunctionBegin;
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, MATSEQDENSE));
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;

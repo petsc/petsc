@@ -2735,7 +2735,7 @@ static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
 static PetscErrorCode MatDenseSetUpProductLayout_Private(PetscLayout from, PetscLayout to)
 {
   PetscFunctionBegin;
-  if (to->range == NULL && from->range != NULL && from->range[0] == 0 && (to->bs == 1 || to->bs == from->bs)) {
+  if (to->range == NULL && from->range != NULL && from->range[0] == 0) {
     PetscLayout layout;
 
     PetscCall(PetscLayoutCreateFromRanges(to->comm, from->range, PETSC_COPY_VALUES, to->bs, &layout));
@@ -2765,6 +2765,7 @@ PetscErrorCode MatDenseSetUpProduct_Private(Mat C, PetscLayout rows, PetscLayout
     PetscCall(PetscObjectObjectTypeCompare((PetscObject)C, (PetscObject)src, &flg));
     if (flg == PETSC_TRUE) PetscCall(MatSetVecType(C, src->defaultvectype));
   }
+  if (C->rmap->bs != rows->bs || C->cmap->bs != cols->bs) PetscCall(MatSetBlockSizes(C, rows->bs, cols->bs));
   PetscCall(MatDenseSetUpProductLayout_Private(rows, C->rmap));
   PetscCall(MatDenseSetUpProductLayout_Private(cols, C->cmap));
   PetscCall(MatSetUp(C));

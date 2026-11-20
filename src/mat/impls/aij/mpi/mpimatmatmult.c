@@ -597,7 +597,6 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
   PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
   /* The cuSPARSE and hipSPARSE symbolic below re-types a host local block of C in place, so capture the type
      of the local block of C now to give the work matrix the type the numeric will add it to */
