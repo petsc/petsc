@@ -194,7 +194,8 @@ typedef struct {
   PetscInt      nsends, nrecvs;
   MPI_Datatype *stype, *rtype;
   PetscInt      blda;
-  PetscObjectId bid;   /* identity of the last dense input checked to have the leading dimension blda */
+  PetscObjectId bid[2]; /* identities of dense inputs validated for the current strided PetscSF */
+  Mat           packed[2], source;
   PetscSF       sf[2]; /* strided scatters for ncols[0] = workB->cmap->n columns and ncols[1] = remainder columns of the batched path, NULL if unused */
   PetscInt      ncols[2];
   PetscBool     ondevice; /* workB has a device type, use sf[] instead of the MPI derived datatypes */

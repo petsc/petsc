@@ -46,11 +46,15 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems PetscOpt
   if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {
     if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
       i = (data->cntl[1] == static_cast<char>(PETSC_DECIDE) ? HPDDM_VARIANT_LEFT : data->cntl[1]);
-      if (ksp->pc_side_set == PC_SIDE_DEFAULT)
-        PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, nullptr));
-      else if (ksp->pc_side_set == PC_RIGHT) i = HPDDM_VARIANT_RIGHT;
+      if (ksp->pc_side_set == PC_SIDE_DEFAULT) {
+        PetscBool set;
+
+        PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[i], &i, &set));
+        /* the variant selects the effective side without making it a user-set override on the next KSPSetFromOptions() call */
+        if (set == PETSC_TRUE) ksp->pc_side = i == HPDDM_VARIANT_LEFT ? PC_LEFT : PC_RIGHT;
+      } else i = ksp->pc_side_set == PC_RIGHT ? HPDDM_VARIANT_RIGHT : HPDDM_VARIANT_LEFT;
+      ksp->normtype = ksp->normtype_set;
       data->cntl[1] = i;
-      if (i > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
     }
     if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
       data->rcntl[0] = (PetscAbsReal(data->rcntl[0] - static_cast<PetscReal>(PETSC_DECIDE)) < PETSC_SMALL ? -1.0 : data->rcntl[0]);
@@ -152,8 +156,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
     if (data->cntl[0] != HPDDM_KRYLOV_METHOD_NONE) {                         /* following options do not matter with PREONLY */
       if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
         data->cntl[1] = HPDDM_VARIANT_LEFT; /* left preconditioning by default */
-        if (ksp->pc_side_set == PC_RIGHT) data->cntl[1] = HPDDM_VARIANT_RIGHT;
-        if (data->cntl[1] > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
+        if (ksp->pc_side == PC_RIGHT) data->cntl[1] = HPDDM_VARIANT_RIGHT;
       }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
         data->rcntl[0]                                          = -1.0; /* no deflation by default */

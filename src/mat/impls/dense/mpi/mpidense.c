@@ -2726,7 +2726,7 @@ PetscErrorCode MatDenseScatterWithSF_Private(PetscSF vsf, Mat X, Mat Y, MPI_Op o
 }
 
 // Copies the local rows of the dense matrix A to a new sequential dense matrix B with leading dimension lda
-static PetscErrorCode MatDenseDuplicateLocalWithLDA_Private(Mat A, PetscInt lda, Mat *B)
+PetscErrorCode MatDenseDuplicateLocalWithLDA_Private(Mat A, PetscInt lda, Mat *B)
 {
   Mat      Al;
   MatType  type;

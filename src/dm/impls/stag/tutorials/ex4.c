@@ -297,10 +297,7 @@ int main(int argc, char **argv)
   /* Destroy PETSc objects and finalize */
   PetscCall(MatDestroy(&A));
   PetscCall(PetscFree(A));
-  if (A_faces) {
-    for (PetscInt level = 0; level < ctx->n_levels; ++level) PetscCall(MatDestroy(&A_faces[level]));
-    PetscCall(PetscFree(A_faces));
-  }
+  PetscCall(MatDestroyMatrices(ctx->n_levels, &A_faces));
   PetscCall(MatDestroy(&P));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));

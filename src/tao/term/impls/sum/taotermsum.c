@@ -45,8 +45,7 @@ PETSC_INTERN PetscErrorCode TaoTermSumVecNestRestoreSubVecsRead(Vec params, Pets
 static PetscErrorCode TaoTermSumHessCacheReset(TaoTermSumHessCache *cache)
 {
   PetscFunctionBegin;
-  for (PetscInt i = 0; i < cache->n_terms; i++) PetscCall(MatDestroy(&cache->hessians[i]));
-  PetscCall(PetscFree(cache->hessians));
+  PetscCall(MatDestroyMatrices(cache->n_terms, &cache->hessians));
   for (PetscInt i = 0; i < cache->n_terms; i++) PetscCall(VecDestroy(&cache->Axs[i]));
   PetscCall(PetscFree(cache->Axs));
   cache->n_terms = 0;
@@ -1173,8 +1172,7 @@ static PetscErrorCode TaoTermSetUp_Sum(TaoTerm term)
   PetscCall(MatSetVecType(new_parameters_factory, VECNEST));
   PetscCall(MatDestroy(&term->parameters_factory));
   term->parameters_factory = new_parameters_factory;
-  for (PetscInt i = 0; i < sum->n_terms; i++) PetscCall(MatDestroy(&mats[i]));
-  PetscCall(PetscFree(mats));
+  PetscCall(MatDestroyMatrices(sum->n_terms, &mats));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

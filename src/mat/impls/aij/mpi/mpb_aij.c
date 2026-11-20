@@ -7,6 +7,7 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
   PetscMPIInt  subCommSize, subCommRank;
   PetscMPIInt *commRankMap, subRank, rank, commRank;
   PetscInt    *garrayCMap, col, i, j, *nnz, newRow, newCol;
+  PetscBool    nooffprocentries;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(subComm, &subCommSize));
@@ -80,8 +81,11 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
       }
     }
   }
+  nooffprocentries            = (*subMat)->nooffprocentries;
+  (*subMat)->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(*subMat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*subMat, MAT_FINAL_ASSEMBLY));
+  (*subMat)->nooffprocentries = nooffprocentries;
 
   /* deallocate temporary data */
   PetscCall(PetscFree(commRankMap));

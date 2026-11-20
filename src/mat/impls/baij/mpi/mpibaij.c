@@ -2014,13 +2014,80 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
 static PetscErrorCode MatPermute_MPIBAIJ(Mat A, IS rowp, IS colp, Mat *B)
 {
   MPI_Comm        comm, pcomm;
-  PetscInt        clocal_size, nrows;
-  const PetscInt *rows;
+  PetscInt        clocal_size, nrows, bs = A->rmap->bs;
+  const PetscInt *rows, *idx[2];
   PetscMPIInt     size;
-  IS              crowp, lcolp;
+  IS              crowp, lcolp, is[] = {rowp, colp};
+  PetscLayout     map[] = {A->rmap, A->cmap};
+  PetscBool       local = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
+  for (PetscInt k = 0; k < 2; ++k) {
+    PetscInt n;
+
+    PetscCall(ISGetLocalSize(is[k], &n));
+    PetscCall(ISGetIndices(is[k], &idx[k]));
+    if (n != map[k]->n) local = PETSC_FALSE;
+    for (PetscInt i = 0; i < n && local == PETSC_TRUE; i += bs) {
+      PetscInt first = idx[k][i];
+
+      if (first < map[k]->rstart || first >= map[k]->rend || first % bs) local = PETSC_FALSE;
+      for (PetscInt j = 1; j < bs; ++j)
+        if (idx[k][i + j] != first + j) local = PETSC_FALSE;
+    }
+  }
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local, 1, MPI_C_BOOL, MPI_LAND, comm));
+  if (local == PETSC_TRUE) {
+    Mat_MPIBAIJ *a     = (Mat_MPIBAIJ *)A->data;
+    Mat_SeqBAIJ *seq[] = {(Mat_SeqBAIJ *)a->A->data, (Mat_SeqBAIJ *)a->B->data};
+    PetscInt    *dest[2], *nnz[2], *cols;
+    PetscInt     maxnz = 0;
+
+    /* reuse the MatMult() PetscSF to map only the off-process block columns */
+    PetscCall(PetscMalloc4(a->nbs, &dest[0], seq[1]->nbs, &dest[1], a->mbs, &nnz[0], a->mbs, &nnz[1]));
+    for (PetscInt i = 0; i < a->nbs; ++i) dest[0][idx[1][i * bs] / bs - a->cstartbs] = a->cstartbs + i;
+    PetscCall(PetscSFBcastBegin(a->Mvctx, MPIU_INT, dest[0], dest[1], MPI_REPLACE));
+    for (PetscInt i = 0; i < a->mbs; ++i) {
+      PetscInt r = idx[0][i * bs] / bs - a->rstartbs;
+
+      for (PetscInt k = 0; k < 2; ++k) {
+        nnz[k][i] = seq[k]->i[r + 1] - seq[k]->i[r];
+        maxnz     = PetscMax(maxnz, nnz[k][i]);
+      }
+    }
+    PetscCall(MatCreate(comm, B));
+    PetscCall(PetscLayoutDestroy(&(*B)->rmap));
+    PetscCall(PetscLayoutDestroy(&(*B)->cmap));
+    PetscCall(PetscLayoutCreateFromRanges(comm, A->rmap->range, PETSC_COPY_VALUES, bs, &(*B)->rmap));
+    PetscCall(PetscLayoutCreateFromRanges(comm, A->cmap->range, PETSC_COPY_VALUES, bs, &(*B)->cmap));
+    PetscCall(MatSetType(*B, MATMPIBAIJ));
+    PetscCall(MatSetOption(*B, MAT_STRUCTURE_ONLY, A->structure_only));
+    PetscCall(MatMPIBAIJSetPreallocation(*B, bs, 0, nnz[0], 0, nnz[1]));
+    PetscCall(MatSetOption(*B, MAT_ROW_ORIENTED, PETSC_FALSE));
+    PetscCall(PetscSFBcastEnd(a->Mvctx, MPIU_INT, dest[0], dest[1], MPI_REPLACE));
+    PetscCall(PetscMalloc1(maxnz, &cols));
+    for (PetscInt i = 0; i < a->mbs; ++i) {
+      PetscInt r = idx[0][i * bs] / bs - a->rstartbs, row = a->rstartbs + i;
+
+      for (PetscInt k = 0; k < 2; ++k) {
+        PetscInt start = seq[k]->i[r], n = nnz[k][i];
+
+        if (n == 0) continue;
+        for (PetscInt j = 0; j < n; ++j) cols[j] = dest[k][seq[k]->j[start + j]];
+        PetscUseTypeMethod(*B, setvaluesblocked, 1, &row, n, cols, A->structure_only == PETSC_TRUE ? NULL : seq[k]->a + (PetscCount)start * a->bs2, INSERT_VALUES);
+      }
+    }
+    (*B)->nooffprocentries = PETSC_TRUE;
+    PetscCall(MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY));
+    PetscCall(MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY));
+    (*B)->nooffprocentries = PETSC_FALSE;
+    PetscCall(PetscFree(cols));
+    PetscCall(PetscFree4(dest[0], dest[1], nnz[0], nnz[1]));
+  }
+  for (PetscInt k = 0; k < 2; ++k) PetscCall(ISRestoreIndices(is[k], &idx[k]));
+  if (local == PETSC_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
+
   /* make a collective version of 'rowp' */
   PetscCall(PetscObjectGetComm((PetscObject)rowp, &pcomm));
   if (pcomm == comm) {

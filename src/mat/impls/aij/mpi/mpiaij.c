@@ -1462,10 +1462,11 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
   Mat             aA, aB, Aperm;
   const PetscInt *rwant, *cwant, *gcols, *ai, *bi, *aj, *bj;
   PetscScalar    *aa, *ba;
-  PetscInt        i, j, m, n, ng, anz, bnz, *dnnz, *onnz, *tdnnz, *tonnz, *rdest, *cdest, *work, *gcdest;
-  PetscSF         rowsf, sf;
+  PetscInt        i, j, m, n, ng, anz, bnz, rmin, rmax, cmin, cmax;
+  PetscInt       *dnnz, *onnz, *tdnnz, *tonnz, *rdest, *cdest, *work, *gcdest;
+  PetscSF         rowsf   = NULL, sf;
   IS              parcolp = NULL;
-  PetscBool       done;
+  PetscBool       done, local;
 
   PetscFunctionBegin;
   PetscCall(MatGetLocalSize(A, &m, &n));
@@ -1473,22 +1474,31 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
   PetscCall(ISGetIndices(colp, &cwant));
   PetscCall(PetscMalloc3(PetscMax(m, n), &work, m, &rdest, n, &cdest));
 
-  /* Invert row permutation to find out where my rows should go */
-  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &rowsf));
-  PetscCall(PetscSFSetGraphLayout(rowsf, A->rmap, A->rmap->n, NULL, PETSC_OWN_POINTER, rwant));
-  PetscCall(PetscSFSetFromOptions(rowsf));
-  for (i = 0; i < m; i++) work[i] = A->rmap->rstart + i;
-  PetscCall(PetscSFReduceBegin(rowsf, MPIU_INT, work, rdest, MPI_REPLACE));
-  PetscCall(PetscSFReduceEnd(rowsf, MPIU_INT, work, rdest, MPI_REPLACE));
+  PetscCall(ISGetMinMax(rowp, &rmin, &rmax));
+  PetscCall(ISGetMinMax(colp, &cmin, &cmax));
+  local = (PetscBool)(rmin >= A->rmap->rstart && rmax < A->rmap->rend && cmin >= A->cmap->rstart && cmax < A->cmap->rend);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &local, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  if (local == PETSC_TRUE) {
+    for (i = 0; i < m; i++) rdest[rwant[i] - A->rmap->rstart] = A->rmap->rstart + i;
+    for (i = 0; i < n; i++) cdest[cwant[i] - A->cmap->rstart] = A->cmap->rstart + i;
+  } else {
+    /* Invert row permutation to find out where my rows should go */
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &rowsf));
+    PetscCall(PetscSFSetGraphLayout(rowsf, A->rmap, A->rmap->n, NULL, PETSC_OWN_POINTER, rwant));
+    PetscCall(PetscSFSetFromOptions(rowsf));
+    for (i = 0; i < m; i++) work[i] = A->rmap->rstart + i;
+    PetscCall(PetscSFReduceBegin(rowsf, MPIU_INT, work, rdest, MPI_REPLACE));
+    PetscCall(PetscSFReduceEnd(rowsf, MPIU_INT, work, rdest, MPI_REPLACE));
 
-  /* Invert column permutation to find out where my columns should go */
-  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &sf));
-  PetscCall(PetscSFSetGraphLayout(sf, A->cmap, A->cmap->n, NULL, PETSC_OWN_POINTER, cwant));
-  PetscCall(PetscSFSetFromOptions(sf));
-  for (i = 0; i < n; i++) work[i] = A->cmap->rstart + i;
-  PetscCall(PetscSFReduceBegin(sf, MPIU_INT, work, cdest, MPI_REPLACE));
-  PetscCall(PetscSFReduceEnd(sf, MPIU_INT, work, cdest, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&sf));
+    /* Invert column permutation to find out where my columns should go */
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)A), &sf));
+    PetscCall(PetscSFSetGraphLayout(sf, A->cmap, A->cmap->n, NULL, PETSC_OWN_POINTER, cwant));
+    PetscCall(PetscSFSetFromOptions(sf));
+    for (i = 0; i < n; i++) work[i] = A->cmap->rstart + i;
+    PetscCall(PetscSFReduceBegin(sf, MPIU_INT, work, cdest, MPI_REPLACE));
+    PetscCall(PetscSFReduceEnd(sf, MPIU_INT, work, cdest, MPI_REPLACE));
+    PetscCall(PetscSFDestroy(&sf));
+  }
 
   PetscCall(ISRestoreIndices(rowp, &rwant));
   PetscCall(ISRestoreIndices(colp, &cwant));
@@ -1510,6 +1520,12 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
   for (i = 0; i < m; i++) {
     PetscInt    row = rdest[i];
     PetscMPIInt rowner;
+
+    if (local == PETSC_TRUE) {
+      tdnnz[row - A->rmap->rstart] = ai[i + 1] - ai[i];
+      tonnz[row - A->rmap->rstart] = bi[i + 1] - bi[i];
+      continue;
+    }
     PetscCall(PetscLayoutFindOwner(A->rmap, row, &rowner));
     for (j = ai[i]; j < ai[i + 1]; j++) {
       PetscInt    col = cdest[aj[j]];
@@ -1526,11 +1542,13 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
       else onnz[i]++;
     }
   }
-  PetscCall(PetscSFBcastBegin(rowsf, MPIU_INT, dnnz, tdnnz, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(rowsf, MPIU_INT, dnnz, tdnnz, MPI_REPLACE));
-  PetscCall(PetscSFBcastBegin(rowsf, MPIU_INT, onnz, tonnz, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(rowsf, MPIU_INT, onnz, tonnz, MPI_REPLACE));
-  PetscCall(PetscSFDestroy(&rowsf));
+  if (local == PETSC_FALSE) {
+    PetscCall(PetscSFBcastBegin(rowsf, MPIU_INT, dnnz, tdnnz, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(rowsf, MPIU_INT, dnnz, tdnnz, MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(rowsf, MPIU_INT, onnz, tonnz, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(rowsf, MPIU_INT, onnz, tonnz, MPI_REPLACE));
+    PetscCall(PetscSFDestroy(&rowsf));
+  }
 
   PetscCall(MatCreateAIJ(PetscObjectComm((PetscObject)A), A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N, 0, tdnnz, 0, tonnz, &Aperm));
   PetscCall(MatSetBlockSizesFromMats(Aperm, A, A));
@@ -1550,8 +1568,10 @@ static PetscErrorCode MatPermute_MPIAIJ(Mat A, IS rowp, IS colp, Mat *B)
       PetscCall(MatSetValues(Aperm, 1, &rdest[i], j - j0, bcols, ba + bi[i] + j0, INSERT_VALUES));
     }
   }
+  Aperm->nooffprocentries = local;
   PetscCall(MatAssemblyBegin(Aperm, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Aperm, MAT_FINAL_ASSEMBLY));
+  Aperm->nooffprocentries = PETSC_FALSE;
   PetscCall(MatRestoreRowIJ(aA, 0, PETSC_FALSE, PETSC_FALSE, &anz, &ai, &aj, &done));
   PetscCall(MatRestoreRowIJ(aB, 0, PETSC_FALSE, PETSC_FALSE, &bnz, &bi, &bj, &done));
   PetscCall(MatSeqAIJRestoreArray(aA, &aa));
