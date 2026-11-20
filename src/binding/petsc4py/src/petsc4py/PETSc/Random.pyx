@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class RandomType(object):
+class RandomType(StrEnum):
     """The random number generator type."""
     RAND      = S_(PETSCRAND)
     RAND48    = S_(PETSCRAND48)

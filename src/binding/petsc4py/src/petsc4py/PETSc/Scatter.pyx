@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class ScatterType(object):
+class ScatterType(StrEnum):
     """Scatter type.
 
     See Also

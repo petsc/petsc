@@ -1,76 +1,63 @@
 # --------------------------------------------------------------------
 
-class staticproperty(property):
-    def __get__(self, *args, **kwargs):
-        return self.fget.__get__(*args, **kwargs)()
+class DeviceType(IntEnum):
+    """The type of device.
+
+    See Also
+    --------
+    Device, Device.create, Device.getDeviceType, Device.type,
+    petsc.PetscDeviceType, petsc.PETSC_DEVICE_DEFAULT
+
+    """
+    HOST = PETSC_DEVICE_HOST
+    CUDA = PETSC_DEVICE_CUDA
+    HIP  = PETSC_DEVICE_HIP
+    SYCL = PETSC_DEVICE_SYCL
+
+    @classmethod
+    def DEFAULT(cls) -> Self:
+        """Return the current default device type.
+
+        Not collective.
+
+        See Also
+        --------
+        Device.setDefaultType, petsc.PETSC_DEVICE_DEFAULT
+
+        """
+        return cls(<int>PETSC_DEVICE_DEFAULT())
 
 
-cdef object make_enum_class(str class_name, str class_docstring, tuple args):
-    cdef dict enum2str = {}
-    cdef dict attrs    = {}
+class StreamType(IntEnum):
+    """The type of stream.
 
-    for name, c_enum in args:
-        enum2str[c_enum] = name
-        attrs[name]      = c_enum
+    See Also
+    --------
+    DeviceContext, DeviceContext.getStreamType
+    DeviceContext.setStreamType, petsc.PetscStreamType
 
-    attrs['__enum2str'] = enum2str
-    attrs['__doc__']    = class_docstring
-    return type(class_name, (object,), attrs)
+    """
+    DEFAULT                  = PETSC_STREAM_DEFAULT
+    NONBLOCKING              = PETSC_STREAM_NONBLOCKING
+    DEFAULT_WITH_BARRIER     = PETSC_STREAM_DEFAULT_WITH_BARRIER
+    NONBLOCKING_WITH_BARRIER = PETSC_STREAM_NONBLOCKING_WITH_BARRIER
 
-DeviceType = make_enum_class(
-  "DeviceType",
-  """The type of device.
 
-  See Also
-  --------
-  Device, Device.create, Device.getDeviceType, Device.type, petsc.PetscDeviceType
+class JoinMode(IntEnum):
+    """The type of join to perform.
 
-  """,
-  (
-    ("HOST"    , PETSC_DEVICE_HOST),
-    ("CUDA"    , PETSC_DEVICE_CUDA),
-    ("HIP"     , PETSC_DEVICE_HIP),
-    ("SYCL"    , PETSC_DEVICE_SYCL),
-    ("DEFAULT" , staticproperty(lambda *_, **__: PETSC_DEVICE_DEFAULT()))
-  )
-)
+    See Also
+    --------
+    DeviceContext, DeviceContext.join, DeviceContext.fork
+    petsc.PetscDeviceContextJoinMode
 
-StreamType = make_enum_class(
-  "StreamType",
-  """The type of stream.
-
-  See Also
-  --------
-  DeviceContext, DeviceContext.getStreamType
-  DeviceContext.setStreamType, petsc.PetscStreamType
-
-  """,
-  (
-    ("DEFAULT"                  , PETSC_STREAM_DEFAULT),
-    ("NONBLOCKING"              , PETSC_STREAM_NONBLOCKING),
-    ("DEFAULT_WITH_BARRIER"     , PETSC_STREAM_DEFAULT_WITH_BARRIER),
-    ("NONBLOCKING_WITH_BARRIER" , PETSC_STREAM_NONBLOCKING_WITH_BARRIER),
-  )
-)
-
-DeviceJoinMode = make_enum_class(
-  "JoinMode",
-  """The type of join to perform.
-
-  See Also
-  --------
-  DeviceContext, DeviceContext.join, DeviceContext.fork
-  petsc.PetscDeviceContextJoinMode
-
-  """,
-  (
-    ("DESTROY" , PETSC_DEVICE_CONTEXT_JOIN_DESTROY),
-    ("SYNC"    , PETSC_DEVICE_CONTEXT_JOIN_SYNC),
-    ("NO_SYNC" , PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC),
-  )
-)
+    """
+    DESTROY = PETSC_DEVICE_CONTEXT_JOIN_DESTROY
+    SYNC    = PETSC_DEVICE_CONTEXT_JOIN_SYNC
+    NO_SYNC = PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC
 
 # --------------------------------------------------------------------
+
 
 cdef class Device:
     """The device object.
@@ -111,7 +98,7 @@ cdef class Device:
 
         """
         cdef PetscInt        cdevice_id   = asInt(device_id)
-        cdef PetscDeviceType cdevice_type = asDeviceType(dtype if dtype is not None else cls.Type.DEFAULT)
+        cdef PetscDeviceType cdevice_type = dtype if dtype is not None else cls.Type.DEFAULT()
         cdef Device          device       = cls()
 
         CHKERR(PetscDeviceCreate(cdevice_type, cdevice_id, &device.device))
@@ -162,7 +149,7 @@ cdef class Device:
             vwr = viewer.vwr
         CHKERR(PetscDeviceView(self.device, vwr))
 
-    def getDeviceType(self) -> str:
+    def getDeviceType(self) -> Device.Type:
         """Return the type of the device.
 
         Not collective.
@@ -175,7 +162,7 @@ cdef class Device:
         cdef PetscDeviceType cdtype = PETSC_DEVICE_HOST
 
         CHKERR(PetscDeviceGetType(self.device, &cdtype))
-        return toDeviceType(cdtype)
+        return Device.Type(<int>cdtype)
 
     def getDeviceId(self) -> int:
         """Return the device id.
@@ -193,7 +180,7 @@ cdef class Device:
         return toInt(cdevice_id)
 
     @staticmethod
-    def setDefaultType(device_type: Type | str) -> None:
+    def setDefaultType(device_type: Device.Type) -> None:
         """Set the device type to be used as the default in subsequent calls to `create`.
 
         Not collective.
@@ -203,13 +190,13 @@ cdef class Device:
         create, petsc.PetscDeviceSetDefaultDeviceType
 
         """
-        cdef PetscDeviceType cdevice_type = asDeviceType(device_type)
+        cdef PetscDeviceType cdevice_type = device_type
 
         CHKERR(PetscDeviceSetDefaultDeviceType(cdevice_type))
 
     property type:
         """The device type."""
-        def __get__(self) -> str:
+        def __get__(self) -> Device.Type:
             return self.getDeviceType()
 
     property device_id:
@@ -232,7 +219,7 @@ cdef class DeviceContext(Object):
     Device, petsc.PetscDeviceContext
 
     """
-    JoinMode   = DeviceJoinMode
+    JoinMode   = JoinMode
     StreamType = StreamType
 
     def __cinit__(self):
@@ -267,7 +254,7 @@ cdef class DeviceContext(Object):
         CHKERR(PetscDeviceContextDestroy(&self.dctx))
         return self
 
-    def getStreamType(self) -> str:
+    def getStreamType(self) -> StreamType:
         """Return the `StreamType`.
 
         Not collective.
@@ -280,9 +267,9 @@ cdef class DeviceContext(Object):
         cdef PetscStreamType cstream_type = PETSC_STREAM_DEFAULT
 
         CHKERR(PetscDeviceContextGetStreamType(self.dctx, &cstream_type))
-        return toStreamType(cstream_type)
+        return self.StreamType(<int>cstream_type)
 
-    def setStreamType(self, stream_type: StreamType | str) -> None:
+    def setStreamType(self, stream_type: StreamType) -> None:
         """Set the `StreamType`.
 
         Not collective.
@@ -297,7 +284,7 @@ cdef class DeviceContext(Object):
         stream_type, getStreamType, petsc.PetscDeviceContextSetStreamType
 
         """
-        cdef PetscStreamType cstream_type = asStreamType(stream_type)
+        cdef PetscStreamType cstream_type = stream_type
 
         CHKERR(PetscDeviceContextSetStreamType(self.dctx, cstream_type))
 
@@ -395,7 +382,7 @@ cdef class DeviceContext(Object):
         cdef PetscDeviceContext cother = PyPetscDeviceContext_Get(other)
         CHKERR(PetscDeviceContextWaitForContext(self.dctx, cother))
 
-    def fork(self, n: int, stream_type: DeviceContext.StreamType | str | None = None) -> list[DeviceContext]:
+    def fork(self, n: int, stream_type: DeviceContext.StreamType | None = None) -> list[DeviceContext]:
         """Create multiple device contexts which are all logically dependent on this one.
 
         Not collective.
@@ -433,7 +420,7 @@ cdef class DeviceContext(Object):
         if stream_type is None:
             CHKERR(PetscDeviceContextFork(self.dctx, cn, &csubctxs))
         else:
-            cstream_type = asStreamType(stream_type)
+            cstream_type = stream_type
             CHKERR(PetscDeviceContextForkWithStreamType(self.dctx, cstream_type, cn, &csubctxs))
         # FIXME: without CXX compiler, csubctxs is NULL
         if csubctxs:
@@ -444,7 +431,7 @@ cdef class DeviceContext(Object):
             CHKERR(PetscFree(csubctxs))
         return subctxs
 
-    def join(self, join_mode: JoinMode | str, py_sub_ctxs: list[DeviceContext]) -> None:
+    def join(self, join_mode: JoinMode, py_sub_ctxs: list[DeviceContext]) -> None:
         """Join a set of device contexts on this one.
 
         Not collective.
@@ -463,7 +450,7 @@ cdef class DeviceContext(Object):
         """
         cdef DeviceContext dctx
         cdef PetscDeviceContext *np_subctx = NULL
-        cdef PetscDeviceContextJoinMode cjoin_mode = asJoinMode(join_mode)
+        cdef PetscDeviceContextJoinMode cjoin_mode = join_mode
         cdef Py_ssize_t nctxs = len(py_sub_ctxs)
 
         for dctx in py_sub_ctxs:
@@ -578,10 +565,10 @@ cdef class DeviceContext(Object):
 
     property stream_type:
         """The stream type."""
-        def __get__(self) -> str:
+        def __get__(self) -> StreamType:
             return self.getStreamType()
 
-        def __set__(self, stype: StreamType | str) -> None:
+        def __set__(self, stype: StreamType) -> None:
             self.setStreamType(stype)
 
     property device:
@@ -603,6 +590,5 @@ cdef class DeviceContext(Object):
 # --------------------------------------------------------------------
 
 del DeviceType
-del DeviceJoinMode
+del JoinMode
 del StreamType
-del staticproperty

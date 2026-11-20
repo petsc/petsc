@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class AOType(object):
+class AOType(StrEnum):
     """The application ordering types."""
     BASIC          = S_(AOBASIC)
     ADVANCED       = S_(AOADVANCED)

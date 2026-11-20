@@ -86,6 +86,8 @@ def visit_constant(constant):
 
 def visit_enum(member):
     name, value = member
+    if isinstance(value, str):
+        return f'{name} = "{value.value}"'
     return f'{name} = {value.value}'
 
 
@@ -147,7 +149,6 @@ def visit_class(cls, outer=None, done=None):
         '__module__',
         '__weakref__',
         '__pyx_vtable__',
-        '__enum2str',  # FIXME refactor implementation
         '_traceback_',  # FIXME maybe refactor?
         '__lt__',
         '__le__',
@@ -155,7 +156,11 @@ def visit_class(cls, outer=None, done=None):
         '__gt__',
     }
     if isinstance(cls, type) and issubclass(cls, enum.Enum):
-        skip.update(set(cls.__dict__) - set(cls.__members__))
+        skip.update(
+            name
+            for name in set(cls.__dict__) - set(cls.__members__)
+            if name.startswith('_') or not is_classmethod(cls.__dict__[name])
+        )
     special = {
         '__len__': '__len__(self) -> int',
         '__bool__': '__bool__(self) -> bool',
@@ -429,8 +434,14 @@ else:
     )
 if sys.version_info >= (3, 11):
     from typing import Self
+    from enum import StrEnum
 else:
     from typing_extensions import Self
+    from enum import Enum
+
+    # StrEnum only Python >= 3.11
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
 from os import PathLike
 
 import numpy

@@ -1,4 +1,6 @@
-class RegressorType(object):
+# --------------------------------------------------------------------
+
+class RegressorType(StrEnum):
     """REGRESSOR solver type.
 
     See Also
@@ -9,7 +11,7 @@ class RegressorType(object):
     LINEAR = S_(PETSCREGRESSORLINEAR)
 
 
-class RegressorLinearType(object):
+class RegressorLinearType(IntEnum):
     """Linear regressor type.
 
     See Also
@@ -312,6 +314,6 @@ cdef class Regressor(Object):
         """
         cdef PetscRegressorLinearType cval = REGRESSOR_LINEAR_OLS
         CHKERR(PetscRegressorLinearGetType(self.regressor, &cval))
-        return cval
+        return self.LinearType(<int>cval)
 
 del RegressorType

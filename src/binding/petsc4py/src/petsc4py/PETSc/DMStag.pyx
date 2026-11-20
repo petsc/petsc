@@ -1,13 +1,13 @@
 # --------------------------------------------------------------------
 
-class DMStagStencilType(object):
+class DMStagStencilType(IntEnum):
     """Stencil types."""
     STAR = DMSTAG_STENCIL_STAR
     BOX  = DMSTAG_STENCIL_BOX
     NONE = DMSTAG_STENCIL_NONE
 
 
-class DMStagStencilLocation(object):
+class DMStagStencilLocation(IntEnum):
     """Stencil location types."""
     NULLLOC          = DMSTAG_NULL_LOCATION
     BACK_DOWN_LEFT   = DMSTAG_BACK_DOWN_LEFT

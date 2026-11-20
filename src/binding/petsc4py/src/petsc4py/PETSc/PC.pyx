@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class PCType(object):
+class PCType(StrEnum):
     """The preconditioner method."""
     NONE               = S_(PCNONE)
     JACOBI             = S_(PCJACOBI)
@@ -57,7 +57,7 @@ class PCType(object):
     MPI                = S_(PCMPI)
 
 
-class PCSide(object):
+class PCSide(IntEnum):
     """The manner in which the preconditioner is applied."""
     # native
     DEFAULT   = PC_SIDE_DEFAULT
@@ -70,7 +70,7 @@ class PCSide(object):
     S = SYMMETRIC
 
 
-class PCASMType(object):
+class PCASMType(IntEnum):
     """The *ASM* subtype."""
     NONE        = PC_ASM_NONE
     RESTRICT    = PC_ASM_RESTRICT
@@ -79,7 +79,7 @@ class PCASMType(object):
     WEIGHTED    = PC_ASM_WEIGHTED
 
 
-class PCGASMType(object):
+class PCGASMType(IntEnum):
     """The *GASM* subtype."""
     NONE        = PC_GASM_NONE
     BASIC       = PC_GASM_BASIC
@@ -87,7 +87,7 @@ class PCGASMType(object):
     INTERPOLATE = PC_GASM_INTERPOLATE
 
 
-class PCMGType(object):
+class PCMGType(IntEnum):
     """The *MG* subtype."""
     MULTIPLICATIVE = PC_MG_MULTIPLICATIVE
     ADDITIVE       = PC_MG_ADDITIVE
@@ -95,20 +95,20 @@ class PCMGType(object):
     KASKADE        = PC_MG_KASKADE
 
 
-class PCMGCycleType(object):
+class PCMGCycleType(IntEnum):
     """The *MG* cycle type."""
     V = PC_MG_CYCLE_V
     W = PC_MG_CYCLE_W
 
 
-class PCGAMGType(object):
+class PCGAMGType(StrEnum):
     """The *GAMG* subtype."""
     AGG       = S_(PCGAMGAGG)
     GEO       = S_(PCGAMGGEO)
     CLASSICAL = S_(PCGAMGCLASSICAL)
 
 
-class PCCompositeType(object):
+class PCCompositeType(IntEnum):
     """The composite type."""
     ADDITIVE                 = PC_COMPOSITE_ADDITIVE
     MULTIPLICATIVE           = PC_COMPOSITE_MULTIPLICATIVE
@@ -118,7 +118,7 @@ class PCCompositeType(object):
     GKB                      = PC_COMPOSITE_GKB
 
 
-class PCFieldSplitSchurPreType(object):
+class PCFieldSplitSchurPreType(IntEnum):
     """The field split Schur subtype."""
     SELF                     = PC_FIELDSPLIT_SCHUR_PRE_SELF
     SELFP                    = PC_FIELDSPLIT_SCHUR_PRE_SELFP
@@ -127,7 +127,7 @@ class PCFieldSplitSchurPreType(object):
     FULL                     = PC_FIELDSPLIT_SCHUR_PRE_FULL
 
 
-class PCFieldSplitSchurFactType(object):
+class PCFieldSplitSchurFactType(IntEnum):
     """The field split Schur factorization type."""
     DIAG                     = PC_FIELDSPLIT_SCHUR_FACT_DIAG
     LOWER                    = PC_FIELDSPLIT_SCHUR_FACT_LOWER
@@ -135,7 +135,7 @@ class PCFieldSplitSchurFactType(object):
     FULL                     = PC_FIELDSPLIT_SCHUR_FACT_FULL
 
 
-class PCPatchConstructType(object):
+class PCPatchConstructType(IntEnum):
     """The patch construction type."""
     STAR                     = PC_PATCH_STAR
     VANKA                    = PC_PATCH_VANKA
@@ -144,7 +144,7 @@ class PCPatchConstructType(object):
     PYTHON                   = PC_PATCH_PYTHON
 
 
-class PCHPDDMCoarseCorrectionType(object):
+class PCHPDDMCoarseCorrectionType(IntEnum):
     """The *HPDDM* coarse correction type."""
     DEFLATED                 = PC_HPDDM_COARSE_CORRECTION_DEFLATED
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
@@ -153,7 +153,7 @@ class PCHPDDMCoarseCorrectionType(object):
     DEFLATED_REVERSED        = PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED
 
 
-class PCDeflationSpaceType(object):
+class PCDeflationSpaceType(IntEnum):
     """The deflation space subtype."""
     HAAR                     = PC_DEFLATION_SPACE_HAAR
     DB2                      = PC_DEFLATION_SPACE_DB2
@@ -166,7 +166,7 @@ class PCDeflationSpaceType(object):
     USER                     = PC_DEFLATION_SPACE_USER
 
 
-class PCFailedReason(object):
+class PCFailedReason(IntEnum):
     """The reason the preconditioner has failed."""
     SETUP_ERROR              = PC_SETUP_ERROR
     NOERROR                  = PC_NOERROR

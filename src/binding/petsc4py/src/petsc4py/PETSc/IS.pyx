@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class ISType(object):
+class ISType(StrEnum):
     """The index set types."""
     GENERAL = S_(ISGENERAL)
     BLOCK   = S_(ISBLOCK)
@@ -1124,7 +1124,7 @@ cdef class IS(Object):
 # --------------------------------------------------------------------
 
 
-class LGMapMapMode(object):
+class LGMapMapMode(IntEnum):
     """Enum describing mapping behavior when global indices are missing.
 
     MASK
@@ -1141,7 +1141,7 @@ class LGMapMapMode(object):
     DROP = PETSC_IS_GTOLM_DROP
 
 
-class LGMapType(object):
+class LGMapType(StrEnum):
     """Local to global map types."""
     BASIC = S_(ISLOCALTOGLOBALMAPPINGBASIC)
     HASH  = S_(ISLOCALTOGLOBALMAPPINGHASH)

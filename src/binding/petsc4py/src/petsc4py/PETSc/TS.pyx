@@ -1,7 +1,6 @@
-
 # -----------------------------------------------------------------------------
 
-class TSType(object):
+class TSType(StrEnum):
     """The time stepping method."""
     # native
     EULER           = S_(TSEULER)
@@ -36,7 +35,7 @@ class TSType(object):
     RUNGE_KUTTA    = RK
 
 
-class TSRKType(object):
+class TSRKType(StrEnum):
     """The *RK* subtype."""
     RK1FE = S_(TSRK1FE)
     RK2A  = S_(TSRK2A)
@@ -52,7 +51,7 @@ class TSRKType(object):
     RK8VR = S_(TSRK8VR)
 
 
-class TSARKIMEXType(object):
+class TSARKIMEXType(StrEnum):
     """The *ARKIMEX* subtype."""
     ARKIMEX1BEE   = S_(TSARKIMEX1BEE)
     ARKIMEXA2     = S_(TSARKIMEXA2)
@@ -69,7 +68,7 @@ class TSARKIMEXType(object):
     ARKIMEX5      = S_(TSARKIMEX5)
 
 
-class TSDIRKType(object):
+class TSDIRKType(StrEnum):
     """The *DIRK* subtype."""
     DIRKS212      = S_(TSDIRKS212)
     DIRKES122SAL  = S_(TSDIRKES122SAL)
@@ -89,13 +88,13 @@ class TSDIRKType(object):
     DIRKES8516SAL = S_(TSDIRKES8516SAL)
 
 
-class TSProblemType(object):
+class TSProblemType(IntEnum):
     """Distinguishes linear and nonlinear problems."""
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
 
 
-class TSEquationType(object):
+class TSEquationType(IntEnum):
     """Distinguishes among types of explicit and implicit equations."""
     UNSPECIFIED               = TS_EQ_UNSPECIFIED
     EXPLICIT                  = TS_EQ_EXPLICIT
@@ -112,7 +111,7 @@ class TSEquationType(object):
     DAE_IMPLICIT_INDEXHI      = TS_EQ_DAE_IMPLICIT_INDEXHI
 
 
-class TSExactFinalTime(object):
+class TSExactFinalTime(IntEnum):
     """The method for ending time stepping."""
     UNSPECIFIED = TS_EXACTFINALTIME_UNSPECIFIED
     STEPOVER    = TS_EXACTFINALTIME_STEPOVER
@@ -120,7 +119,7 @@ class TSExactFinalTime(object):
     MATCHSTEP   = TS_EXACTFINALTIME_MATCHSTEP
 
 
-class TSConvergedReason:
+class TSConvergedReason(IntEnum):
     """The reason the time step is converging."""
     # iterating
     CONVERGED_ITERATING      = TS_CONVERGED_ITERATING
@@ -133,8 +132,10 @@ class TSConvergedReason:
     CONVERGED_PSEUDO_FATOL   = TS_CONVERGED_PSEUDO_FATOL
     CONVERGED_PSEUDO_FRTOL   = TS_CONVERGED_PSEUDO_FRTOL
     # diverged
-    DIVERGED_NONLINEAR_SOLVE = TS_DIVERGED_NONLINEAR_SOLVE
-    DIVERGED_STEP_REJECTED   = TS_DIVERGED_STEP_REJECTED
+    DIVERGED_NONLINEAR_SOLVE      = TS_DIVERGED_NONLINEAR_SOLVE
+    DIVERGED_STEP_REJECTED        = TS_DIVERGED_STEP_REJECTED
+    FORWARD_DIVERGED_LINEAR_SOLVE = TSFORWARD_DIVERGED_LINEAR_SOLVE
+    ADJOINT_DIVERGED_LINEAR_SOLVE = TSADJOINT_DIVERGED_LINEAR_SOLVE
 
 # -----------------------------------------------------------------------------
 
@@ -472,7 +473,7 @@ cdef class TS(Object):
         """
         cdef PetscTSProblemType ptype = TS_NONLINEAR
         CHKERR(TSGetProblemType(self.ts, &ptype))
-        return ptype
+        return self.ProblemType(<int>ptype)
 
     def setEquationType(self, eqtype: EquationType) -> None:
         """Set the type of the equation that `TS` is solving.
@@ -503,7 +504,7 @@ cdef class TS(Object):
         """
         cdef PetscTSEquationType eqtype = TS_EQ_UNSPECIFIED
         CHKERR(TSGetEquationType(self.ts, &eqtype))
-        return eqtype
+        return self.EquationType(<int>eqtype)
 
     def setOptionsPrefix(self, prefix : str | None) -> None:
         """Set the prefix used for all the `TS` options.
@@ -2169,7 +2170,7 @@ cdef class TS(Object):
         """
         cdef PetscTSConvergedReason reason = TS_CONVERGED_ITERATING
         CHKERR(TSGetConvergedReason(self.ts, &reason))
-        return reason
+        return self.ConvergedReason(<int>reason)
 
     # --- monitoring ---
 

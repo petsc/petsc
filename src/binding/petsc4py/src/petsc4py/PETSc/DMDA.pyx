@@ -1,18 +1,18 @@
 # --------------------------------------------------------------------
 
-class DMDAStencilType(object):
+class DMDAStencilType(IntEnum):
     """Stencil types."""
     STAR = DMDA_STENCIL_STAR
     BOX  = DMDA_STENCIL_BOX
 
 
-class DMDAInterpolationType(object):
+class DMDAInterpolationType(IntEnum):
     """Interpolation types."""
     Q0 = DMDA_INTERPOLATION_Q0
     Q1 = DMDA_INTERPOLATION_Q1
 
 
-class DMDAElementType(object):
+class DMDAElementType(IntEnum):
     """Element types."""
     P1 = DMDA_ELEMENT_P1
     Q1 = DMDA_ELEMENT_Q1
@@ -1030,11 +1030,11 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAInterpolationType ival = DMDA_INTERPOLATION_Q0
         CHKERR(DMDAGetInterpolationType(self.dm, &ival))
-        return <long>ival
+        return self.InterpolationType(<int>ival)
 
     #
 
-    def setElementType(self, elem_type: ElementType | str) -> None:
+    def setElementType(self, elem_type: ElementType) -> None:
         """Set the element type to be returned by `getElements`.
 
         Not collective.
@@ -1060,7 +1060,7 @@ cdef class DMDA(DM):
         """
         cdef PetscDMDAElementType ival = DMDA_ELEMENT_Q1
         CHKERR(DMDAGetElementType(self.dm, &ival))
-        return <long>ival
+        return self.ElementType(<int>ival)
 
     def getElements(self, elem_type: ElementType | None = None) -> ArrayInt:
         """Return an array containing the indices of all the local elements.

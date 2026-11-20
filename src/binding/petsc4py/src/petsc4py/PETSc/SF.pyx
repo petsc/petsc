@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class SFType(object):
+class SFType(StrEnum):
     """The star forest types."""
     BASIC      = S_(PETSCSFBASIC)
     NEIGHBOR   = S_(PETSCSFNEIGHBOR)

@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class SNESType(object):
+class SNESType(StrEnum):
     """SNES solver type.
 
     See Also
@@ -32,7 +32,7 @@ class SNESType(object):
     PATCH            = S_(SNESPATCH)
 
 
-class SNESNormSchedule(object):
+class SNESNormSchedule(IntEnum):
     """SNES norm schedule.
 
     See Also
@@ -57,7 +57,7 @@ class SNESNormSchedule(object):
 
 
 # FIXME Missing reference petsc.SNESConvergedReason
-class SNESConvergedReason(object):
+class SNESConvergedReason(IntEnum):
     """SNES solver termination reason.
 
     See Also
@@ -73,6 +73,7 @@ class SNESConvergedReason(object):
     CONVERGED_FNORM_RELATIVE    = SNES_CONVERGED_FNORM_RELATIVE
     CONVERGED_SNORM_RELATIVE    = SNES_CONVERGED_SNORM_RELATIVE
     CONVERGED_ITS               = SNES_CONVERGED_ITS
+    BREAKOUT_INNER_ITER         = SNES_BREAKOUT_INNER_ITER
     CONVERGED_USER              = SNES_CONVERGED_USER
     # diverged
     DIVERGED_FUNCTION_DOMAIN    = SNES_DIVERGED_FUNCTION_DOMAIN
@@ -91,7 +92,7 @@ class SNESConvergedReason(object):
     DIVERGED_USER               = SNES_DIVERGED_USER
 
 
-class SNESNewtonALCorrectionType(object):
+class SNESNewtonALCorrectionType(IntEnum):
     """SNESNEWTONAL correction type.
 
     See Also
@@ -771,7 +772,7 @@ cdef class SNES(Object):
         """
         cdef PetscPCSide side = PC_RIGHT
         CHKERR(SNESGetNPCSide(self.snes, &side))
-        return side
+        return PC.Side(<int>side)
 
     # --- user Function/Jacobian routines ---
 
@@ -1323,7 +1324,7 @@ cdef class SNES(Object):
         """
         cdef PetscSNESNormSchedule normsched = SNES_NORM_NONE
         CHKERR(SNESGetNormSchedule(self.snes, &normsched))
-        return normsched
+        return self.NormSchedule(<int>normsched)
 
     def setConvergenceTest(self, converged: SNESConvergedFunction | Literal["skip", "default"],
                            args: tuple[Any, ...] | None = None,
@@ -1789,7 +1790,7 @@ cdef class SNES(Object):
         """
         cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
         CHKERR(SNESGetConvergedReason(self.snes, &reason))
-        return reason
+        return self.ConvergedReason(<int>reason)
 
     def setErrorIfNotConverged(self, flag: bool = True) -> None:
         """Immediately generate an error if the solver has not converged.
@@ -2768,7 +2769,7 @@ cdef class SNES(Object):
 # --------------------------------------------------------------------
 
 
-class SNESLineSearchType(object):
+class SNESLineSearchType(StrEnum):
     """SNES linesearch type.
 
     See Also

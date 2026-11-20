@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class VecType(object):
+class VecType(StrEnum):
     """The vector type."""
     SEQ        = S_(VECSEQ)
     MPI        = S_(VECMPI)
@@ -21,7 +21,7 @@ class VecType(object):
     KOKKOS     = S_(VECKOKKOS)
 
 
-class VecOption(object):
+class VecOption(IntEnum):
     """Vector assembly option."""
     IGNORE_OFF_PROC_ENTRIES = VEC_IGNORE_OFF_PROC_ENTRIES
     IGNORE_NEGATIVE_INDICES = VEC_IGNORE_NEGATIVE_INDICES

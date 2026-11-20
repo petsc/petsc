@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class MatPartitioningType(object):
+class MatPartitioningType(StrEnum):
     """The partitioning types."""
     PARTITIONINGCURRENT  = S_(MATPARTITIONINGCURRENT)
     PARTITIONINGAVERAGE  = S_(MATPARTITIONINGAVERAGE)

@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class DSType(object):
+class DSType(StrEnum):
     """The Discrete System types."""
     BASIC = S_(PETSCDSBASIC)
 

@@ -165,6 +165,8 @@ def visit_enum(member):
     name, value = member
     typename = type(value).__name__
     doc = f'#: Enum member ``{name}`` of ``{typename}``'
+    if isinstance(value, str):
+        return f'{name} = "{value.value}"  {doc}\n'
     return f'{name} = {value.value}  {doc}\n'
 
 
@@ -228,11 +230,14 @@ def visit_class(cls, outer=None, done=None):
         '__le__',
         '__ge__',
         '__gt__',
-        '__enum2str',  # FIXME refactor implementation
         '_traceback_',  # FIXME maybe refactor?
     }
     if isinstance(cls, type) and issubclass(cls, enum.Enum):
-        skip.update(set(cls.__dict__) - set(cls.__members__))
+        skip.update(
+            name
+            for name in set(cls.__dict__) - set(cls.__members__)
+            if name.startswith('_') or not is_classmethod(cls.__dict__[name])
+        )
     special = {
         '__len__': '__len__(self) -> int',
         '__bool__': '__bool__(self) -> bool',
@@ -470,8 +475,14 @@ from typing import (
 )
 if sys.version_info >= (3, 11):
     from typing import Self
+    from enum import StrEnum
 else:
     from typing_extensions import Self
+    from enum import Enum
+
+    # StrEnum only Python >= 3.11
+    class StrEnum(str, Enum):
+        __str__ = str.__str__
 
 import numpy
 from numpy import dtype, ndarray

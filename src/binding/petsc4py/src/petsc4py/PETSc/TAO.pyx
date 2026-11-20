@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class TAOType:
+class TAOType(StrEnum):
     """TAO solver type.
 
     See Also
@@ -44,7 +44,7 @@ class TAOType:
     SNES     = S_(TAOSNES)
 
 
-class TAOConvergedReason:
+class TAOConvergedReason(IntEnum):
     """TAO solver termination reason.
 
     See Also
@@ -72,7 +72,7 @@ class TAOConvergedReason:
     DIVERGED_USER         = TAO_DIVERGED_USER         # user defined
 
 
-class TAOBNCGType:
+class TAOBNCGType(IntEnum):
     """TAO Bound Constrained Conjugate Gradient (BNCG) Update Type."""
     GD         = TAO_BNCG_GD
     PCGD       = TAO_BNCG_PCGD
@@ -89,7 +89,7 @@ class TAOBNCGType:
     SSML_BRDN  = TAO_BNCG_SSML_BRDN
 
 
-class TAOALMMType:
+class TAOALMMType(IntEnum):
     """TAO Augmented Lagrangian Multiplier method (ALMM) Type."""
     CLASSIC = TAO_ALMM_CLASSIC
     PHR     = TAO_ALMM_PHR
@@ -1354,7 +1354,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOConvergedReason creason = TAO_CONTINUE_ITERATING
         CHKERR(TaoGetConvergedReason(self.tao, &creason))
-        return creason
+        return self.ConvergedReason(<int>creason)
 
     def setMonitor(self, monitor: TAOMonitorFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set the callback used to monitor solver convergence.
@@ -1605,7 +1605,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOBNCGType cg_type = TAO_BNCG_SSML_BFGS
         CHKERR(TaoBNCGGetType(self.tao, &cg_type))
-        return cg_type
+        return self.BNCGType(<int>cg_type)
 
     def setIterationNumber(self, its: int) -> None:
         """Set the current iteration number.
@@ -1832,7 +1832,7 @@ cdef class TAO(Object):
         """
         cdef PetscTAOALMMType almm_type = TAO_ALMM_PHR
         CHKERR(TaoALMMGetType(self.tao, &almm_type))
-        return almm_type
+        return self.ALMMType(<int>almm_type)
 
     def setALMMSubsolver(self, subsolver: TAO) -> None:
         """Set the subsolver inside the ALMM solver.
@@ -2176,7 +2176,7 @@ del TAOALMMType
 # --------------------------------------------------------------------
 
 
-class TAOLineSearchType:
+class TAOLineSearchType(StrEnum):
     """TAO Line Search Types."""
     UNIT        = S_(TAOLINESEARCHUNIT)
     ARMIJO      = S_(TAOLINESEARCHARMIJO)
@@ -2186,7 +2186,7 @@ class TAOLineSearchType:
     GPCG        = S_(TAOLINESEARCHGPCG)
 
 
-class TAOLineSearchConvergedReason:
+class TAOLineSearchConvergedReason(IntEnum):
     """TAO Line Search Termination Reasons."""
     # iterating
     CONTINUE_SEARCH       = TAOLINESEARCH_CONTINUE_ITERATING
@@ -2486,7 +2486,7 @@ del TAOLineSearchConvergedReason
 # --------------------------------------------------------------------
 
 
-class TAOTermType:
+class TAOTermType(StrEnum):
     """TAO Term Types."""
     SHELL         = S_(TAOTERMSHELL)
     CALLBACKS     = S_(TAOTERMCALLBACKS)
