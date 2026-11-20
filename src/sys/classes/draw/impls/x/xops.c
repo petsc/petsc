@@ -213,8 +213,8 @@ static PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw, PetscReal *x, Pet
   PetscFunctionBegin;
   w = XiWin->font->font_w;
   h = XiWin->font->font_h;
-  if (x) *x = w * (draw->coor_xr - draw->coor_xl) / (XiWin->w * (draw->port_xr - draw->port_xl));
-  if (y) *y = h * (draw->coor_yr - draw->coor_yl) / (XiWin->h * (draw->port_yr - draw->port_yl));
+  if (x != NULL) *x = w * (draw->coor_xr - draw->coor_xl) / (XiWin->w * (draw->port_xr - draw->port_xl));
+  if (y != NULL) *y = h * (draw->coor_yr - draw->coor_yl) / (XiWin->h * (draw->port_yr - draw->port_yl));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -233,7 +233,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw, PetscReal x, PetscReal y
 
   PetscCall(PetscTokenCreate(chrs, '\n', &token));
   PetscCall(PetscTokenFind(token, &substr));
-  while (substr) {
+  while (substr != NULL) {
     PetscCall(PetscStrlen(substr, &len));
     XDrawString(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx, yy - descent, substr, (int)len);
     yy += XiWin->font->font_h;
@@ -339,7 +339,7 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw, PetscDraw *popup)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_popup", &flg, NULL));
-  if (!flg || !win->win) {
+  if (flg == PETSC_FALSE || !win->win) {
     *popup = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -508,10 +508,10 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw, PetscDrawButton 
   }
   xx = ((PetscReal)px) / w;
   yy = 1 - ((PetscReal)py) / h;
-  if (x_user) *x_user = draw->coor_xl + (xx - draw->port_xl) * (draw->coor_xr - draw->coor_xl) / (draw->port_xr - draw->port_xl);
-  if (y_user) *y_user = draw->coor_yl + (yy - draw->port_yl) * (draw->coor_yr - draw->coor_yl) / (draw->port_yr - draw->port_yl);
-  if (x_phys) *x_phys = xx;
-  if (y_phys) *y_phys = yy;
+  if (x_user != NULL) *x_user = draw->coor_xl + (xx - draw->port_xl) * (draw->coor_xr - draw->coor_xl) / (draw->port_xr - draw->port_xl);
+  if (y_user != NULL) *y_user = draw->coor_yl + (yy - draw->port_yl) * (draw->coor_yr - draw->coor_yl) / (draw->port_yr - draw->port_yl);
+  if (x_phys != NULL) *x_phys = xx;
+  if (y_phys != NULL) *y_phys = yy;
 
 finally:
   PetscDrawCollectiveEnd(draw);
@@ -529,7 +529,7 @@ static PetscErrorCode PetscDrawSetVisible_X(PetscDraw draw, PetscBool visible)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   if (rank == 0) {
     if (Xwin->win) {
-      if (visible) {
+      if (visible == PETSC_TRUE) {
         XMapWindow(Xwin->disp, Xwin->win);
       } else {
         XUnmapWindow(Xwin->disp, Xwin->win);
@@ -582,7 +582,7 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw, PetscDraw *sdraw)
   PetscCall(PetscObjectChangeTypeName((PetscObject)*sdraw, PETSC_DRAW_X));
   (*sdraw)->ops[0] = DvOps;
 
-  if (draw->popup) PetscCall(PetscDrawGetSingleton(draw->popup, &(*sdraw)->popup));
+  if (draw->popup != NULL) PetscCall(PetscDrawGetSingleton(draw->popup, &(*sdraw)->popup));
   (*sdraw)->pause   = draw->pause;
   (*sdraw)->coor_xl = draw->coor_xl;
   (*sdraw)->coor_xr = draw->coor_xr;
@@ -615,14 +615,14 @@ static PetscErrorCode PetscDrawGetSingleton_X(PetscDraw draw, PetscDraw *sdraw)
 static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw, PetscDraw *sdraw)
 {
   PetscFunctionBegin;
-  if (draw->popup && (*sdraw)->popup) {
+  if (draw->popup != NULL && (*sdraw)->popup != NULL) {
     PetscBool    isdrawx;
     PetscDraw_X *pXwin = (PetscDraw_X *)draw->popup->data;
     PetscDraw_X *sXwin = (PetscDraw_X *)(*sdraw)->popup->data;
     PetscCall(PetscObjectTypeCompare((PetscObject)draw->popup, PETSC_DRAW_X, &isdrawx));
-    if (!isdrawx) goto finally;
+    if (isdrawx == PETSC_FALSE) goto finally;
     PetscCall(PetscObjectTypeCompare((PetscObject)(*sdraw)->popup, PETSC_DRAW_X, &isdrawx));
-    if (!isdrawx) goto finally;
+    if (isdrawx == PETSC_FALSE) goto finally;
     if (sXwin->win == pXwin->win) PetscCall(PetscDrawRestoreSingleton(draw->popup, &(*sdraw)->popup));
   }
 finally:
@@ -636,7 +636,7 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[], int *w
 
   PetscFunctionBegin;
   display = XOpenDisplay(name);
-  if (display) {
+  if (display != NULL) {
     *has_display = PETSC_TRUE;
     *width       = DisplayWidth(display, DefaultScreen(display));
     *height      = DisplayHeight(display, DefaultScreen(display));
@@ -684,7 +684,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   PetscFunctionBegin;
   /* get the display variable */
-  if (!draw->display) {
+  if (draw->display == NULL) {
     PetscCall(PetscMalloc1(DISPLAY_LENGTH, &draw->display));
     PetscCall(PetscGetDisplay(draw->display, DISPLAY_LENGTH));
   }
@@ -693,7 +693,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   if (!xmax) {
     PetscCall(PetscDrawXGetDisplaySize_Private(draw->display, &xmax, &ymax, &has_display));
     /* if some processors fail on this and others succeed then this is a problem ! */
-    if (!has_display) {
+    if (has_display == PETSC_FALSE) {
       PetscCall((*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n"));
       PetscCall(PetscDrawSetType(draw, PETSC_DRAW_NULL));
       PetscFunctionReturn(PETSC_SUCCESS);
@@ -702,17 +702,17 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   /* allow user to set size of drawable */
   PetscCall(PetscOptionsGetRealArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_size", sizes, &nsizes, &set));
-  if (set && nsizes == 1 && sizes[0] > 1.0) sizes[1] = sizes[0];
-  if (set) {
+  if (set == PETSC_TRUE && nsizes == 1 && sizes[0] > 1.0) sizes[1] = sizes[0];
+  if (set == PETSC_TRUE) {
     if (sizes[0] > 1.0) w = (int)sizes[0];
     else if (sizes[0] == 1.0) w = PETSC_DRAW_FULL_SIZE;
     else if (sizes[0] == .5) w = PETSC_DRAW_HALF_SIZE;
-    else if (PetscEqualReal(sizes[0], .3)) w = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
+    else if (PetscEqualReal(sizes[0], .3) == PETSC_TRUE) w = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
     else if (sizes[0] == .25) w = PETSC_DRAW_QUARTER_SIZE;
     if (sizes[1] > 1.0) h = (int)sizes[1];
     else if (sizes[1] == 1.0) h = PETSC_DRAW_FULL_SIZE;
     else if (sizes[1] == .5) h = PETSC_DRAW_HALF_SIZE;
-    else if (PetscEqualReal(sizes[1], .3)) h = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
+    else if (PetscEqualReal(sizes[1], .3) == PETSC_TRUE) h = PETSC_DRAW_THIRD_SIZE; /* sizes == 0.3 will never be true */
     else if (sizes[1] == .25) h = PETSC_DRAW_QUARTER_SIZE;
   }
   if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = draw->w = 300;
@@ -748,7 +748,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
 
   PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_virtual", &dvirtual, NULL));
 
-  if (!dvirtual) {
+  if (dvirtual == PETSC_FALSE) {
     /* allow user to set location and size of window */
     xywh[0] = x;
     xywh[1] = y;
@@ -816,7 +816,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   draw->data   = (void *)Xwin;
 
   PetscCall(PetscDrawXiInit(Xwin, draw->display));
-  if (!dvirtual) {
+  if (dvirtual == PETSC_FALSE) {
     Xwin->x = x;
     Xwin->y = y;
     Xwin->w = w;
@@ -840,6 +840,6 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   draw->h = Xwin->h;
 
   PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_double_buffer", &doublebuffer, NULL));
-  if (doublebuffer) PetscCall(PetscDrawSetDoubleBuffer(draw));
+  if (doublebuffer == PETSC_TRUE) PetscCall(PetscDrawSetDoubleBuffer(draw));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

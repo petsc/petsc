@@ -35,7 +35,7 @@ PetscErrorCode PetscDrawInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscDrawPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
+  if (PetscDrawPackageInitialized == PETSC_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDrawPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Draw", &PETSC_DRAW_CLASSID));
@@ -60,9 +60,9 @@ PetscErrorCode PetscDrawInitializePackage(void)
   }
   /* Process summary exclusions */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-log_exclude", logList, sizeof(logList), &opt));
-  if (opt) {
+  if (opt == PETSC_TRUE) {
     PetscCall(PetscStrInList("draw", logList, ',', &pkg));
-    if (pkg) {
+    if (pkg == PETSC_TRUE) {
       PetscCall(PetscLogEventExcludeClass(PETSC_DRAW_CLASSID));
       PetscCall(PetscLogEventExcludeClass(PETSC_DRAWAXIS_CLASSID));
       PetscCall(PetscLogEventExcludeClass(PETSC_DRAWLG_CLASSID));
@@ -120,10 +120,10 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (w) PetscAssertPointer(w, 2);
-  if (h) PetscAssertPointer(h, 3);
-  if (w) *w = draw->w;
-  if (h) *h = draw->h;
+  if (w != NULL) PetscAssertPointer(w, 2);
+  if (h != NULL) PetscAssertPointer(h, 3);
+  if (w != NULL) *w = draw->w;
+  if (h != NULL) *h = draw->h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -225,10 +225,10 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (title) PetscAssertPointer(title, 2);
-  if (!title || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
+  if (title != NULL) PetscAssertPointer(title, 2);
+  if (title == NULL || !title[0]) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (draw->title) {
+  if (draw->title != NULL) {
     size_t len1, len2, new_len;
     PetscCall(PetscStrlen(draw->title, &len1));
     PetscCall(PetscStrlen(title, &len2));
@@ -245,9 +245,9 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
 static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 {
   PetscFunctionBegin;
-  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(PETSC_SUCCESS);
+  if (draw->ops->save == NULL && draw->ops->getimage == NULL) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDrawSaveMovie(draw));
-  if (draw->savefinalfilename) {
+  if (draw->savefinalfilename != NULL) {
     draw->savesinglefile = PETSC_TRUE;
     PetscCall(PetscDrawSetSave(draw, draw->savefinalfilename));
     PetscCall(PetscDrawSave(draw));
@@ -271,7 +271,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
 {
   PetscFunctionBegin;
-  if (!*draw) PetscFunctionReturn(PETSC_SUCCESS);
+  if (*draw == NULL) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*draw, PETSC_DRAW_CLASSID, 1);
   if (--((PetscObject)*draw)->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -318,10 +318,10 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscAssertPointer(popup, 2);
 
-  if (draw->popup) *popup = draw->popup;
-  else if (draw->ops->getpopup) {
+  if (draw->popup != NULL) *popup = draw->popup;
+  else if (draw->ops->getpopup != NULL) {
     PetscUseTypeMethod(draw, getpopup, popup);
-    if (*popup) {
+    if (*popup != NULL) {
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*popup, "popup_"));
       (*popup)->pause = 0.0;
       PetscCall(PetscDrawSetFromOptions(*popup));

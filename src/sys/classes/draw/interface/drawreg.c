@@ -46,7 +46,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indraw, PETSC_DRAW_CLASSID, 1);
-  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer));
+  if (viewer == NULL) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)indraw), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(indraw, 1, viewer, 2);
 
@@ -55,7 +55,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 #if PetscDefined(HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (isdraw) {
+  if (isdraw == PETSC_TRUE) {
     PetscDraw draw;
     char      str[36];
     PetscReal x, y, bottom, h;
@@ -68,12 +68,12 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
     bottom = y - h;
     PetscCall(PetscDrawPushCurrentPoint(draw, x, bottom));
 #if PetscDefined(HAVE_SAWS)
-  } else if (issaws) {
+  } else if (issaws == PETSC_TRUE) {
     PetscMPIInt rank;
 
     PetscCall(PetscObjectName((PetscObject)indraw));
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    if (!((PetscObject)indraw)->amsmem && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer));
+    if (((PetscObject)indraw)->amsmem == PETSC_FALSE && rank == 0) PetscCall(PetscObjectViewSAWs((PetscObject)indraw, viewer));
 #endif
   } else PetscTryTypeMethod(indraw, view, viewer);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -168,7 +168,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
   draw->popup   = NULL;
 
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-draw_pause", &dpause, &flag));
-  if (flag) draw->pause = dpause;
+  if (flag == PETSC_TRUE) draw->pause = dpause;
 
   draw->savefilename   = NULL;
   draw->saveimageext   = NULL;
@@ -221,7 +221,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   PetscAssertPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, type, &match));
-  if (match) PetscFunctionReturn(PETSC_SUCCESS);
+  if (match == PETSC_TRUE) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*  User requests no graphics */
   PetscCall(PetscOptionsHasName(((PetscObject)draw)->options, NULL, "-nox", &flg));
@@ -232,23 +232,23 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
    testing.
    */
 #if !PetscDefined(HAVE_X)
-  if (!flg) {
+  if (flg == PETSC_FALSE) {
     PetscCall(PetscStrcmp(type, PETSC_DRAW_X, &match));
-    if (match) {
+    if (match == PETSC_TRUE) {
       PetscBool dontwarn = PETSC_TRUE;
       flg                = PETSC_TRUE;
       PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &dontwarn));
-      if (!dontwarn) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows on this machine\nproceeding without graphics\n"));
+      if (dontwarn == PETSC_FALSE) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows on this machine\nproceeding without graphics\n"));
     }
   }
 #endif
-  if (flg) {
+  if (flg == PETSC_TRUE) {
     PetscCall(PetscStrcmp(type, "tikz", &flg));
-    if (!flg) type = PETSC_DRAW_NULL;
+    if (flg == PETSC_FALSE) type = PETSC_DRAW_NULL;
   }
 
   PetscCall(PetscStrcmp(type, PETSC_DRAW_NULL, &match));
-  if (match) {
+  if (match == PETSC_TRUE) {
     PetscCall(PetscOptionsHasName(NULL, NULL, "-draw_double_buffer", NULL));
     PetscCall(PetscOptionsHasName(NULL, NULL, "-draw_virtual", NULL));
     PetscCall(PetscOptionsHasName(NULL, NULL, "-draw_fast", NULL));
@@ -257,7 +257,7 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
   }
 
   PetscCall(PetscFunctionListFind(PetscDrawList, type, &r));
-  PetscCheck(r, PetscObjectComm((PetscObject)draw), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
+  PetscCheck(r != NULL, PetscObjectComm((PetscObject)draw), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDraw type given: %s", type);
   PetscTryTypeMethod(draw, destroy);
   PetscCall(PetscMemzero(draw->ops, sizeof(struct _PetscDrawOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)draw, type));
@@ -396,24 +396,24 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
 
   PetscCall(PetscDrawRegisterAll());
 
-  if (((PetscObject)draw)->type_name) def = ((PetscObject)draw)->type_name;
+  if (((PetscObject)draw)->type_name != NULL) def = ((PetscObject)draw)->type_name;
   else {
     PetscCall(PetscOptionsHasName(((PetscObject)draw)->options, NULL, "-nox", &nox));
     def = PETSC_DRAW_NULL;
 #if PetscDefined(USE_WINDOWS_GRAPHICS)
-    if (!nox) def = PETSC_DRAW_WIN32;
+    if (nox == PETSC_FALSE) def = PETSC_DRAW_WIN32;
 #elif PetscDefined(HAVE_X)
-    if (!nox) def = PETSC_DRAW_X;
+    if (nox == PETSC_FALSE) def = PETSC_DRAW_X;
 #else
     PetscCall(PetscOptionsHasName(NULL, NULL, "-nox_warning", &warn));
-    if (!nox && !warn) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n"));
+    if (nox == PETSC_FALSE && warn == PETSC_FALSE) PetscCall((*PetscErrorPrintf)("PETSc installed without X Windows or Microsoft Graphics on this machine\nproceeding without graphics\n"));
 #endif
   }
   PetscObjectOptionsBegin((PetscObject)draw);
   PetscCall(PetscOptionsFList("-draw_type", "Type of graphical output", "PetscDrawSetType", PetscDrawList, def, vtype, sizeof(vtype), &flg));
-  if (flg) {
+  if (flg == PETSC_TRUE) {
     PetscCall(PetscDrawSetType(draw, vtype));
-  } else if (!((PetscObject)draw)->type_name) {
+  } else if (((PetscObject)draw)->type_name == NULL) {
     PetscCall(PetscDrawSetType(draw, def));
   }
   PetscCall(PetscOptionsName("-nox", "Run without graphics", "None", &nox));
@@ -421,16 +421,16 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
     char      filename[PETSC_MAX_PATH_LEN];
     char      movieext[32];
     PetscBool image, movie;
-    PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s%s", draw->savefilename ? draw->savefilename : "", draw->saveimageext ? draw->saveimageext : ""));
-    PetscCall(PetscSNPrintf(movieext, sizeof(movieext), "%s", draw->savemovieext ? draw->savemovieext : ""));
+    PetscCall(PetscSNPrintf(filename, sizeof(filename), "%s%s", draw->savefilename != NULL ? draw->savefilename : "", draw->saveimageext != NULL ? draw->saveimageext : ""));
+    PetscCall(PetscSNPrintf(movieext, sizeof(movieext), "%s", draw->savemovieext != NULL ? draw->savemovieext : ""));
     PetscCall(PetscOptionsString("-draw_save", "Save graphics to image file", "PetscDrawSetSave", filename, filename, sizeof(filename), &image));
     PetscCall(PetscOptionsString("-draw_save_movie", "Make a movie from saved images", "PetscDrawSetSaveMovie", movieext, movieext, sizeof(movieext), &movie));
     PetscCall(PetscOptionsInt("-draw_save_movie_fps", "Set frames per second in saved movie", PETSC_FUNCTION_NAME, draw->savemoviefps, &draw->savemoviefps, NULL));
     PetscCall(PetscOptionsBool("-draw_save_single_file", "Each new image replaces previous image in file", PETSC_FUNCTION_NAME, draw->savesinglefile, &draw->savesinglefile, NULL));
-    if (image) PetscCall(PetscDrawSetSave(draw, filename));
-    if (movie) PetscCall(PetscDrawSetSaveMovie(draw, movieext));
+    if (image == PETSC_TRUE) PetscCall(PetscDrawSetSave(draw, filename));
+    if (movie == PETSC_TRUE) PetscCall(PetscDrawSetSaveMovie(draw, movieext));
     PetscCall(PetscOptionsString("-draw_save_final_image", "Save final graphics to image file", "PetscDrawSetSaveFinalImage", filename, filename, sizeof(filename), &image));
-    if (image) PetscCall(PetscDrawSetSaveFinalImage(draw, filename));
+    if (image == PETSC_TRUE) PetscCall(PetscDrawSetSaveFinalImage(draw, filename));
     PetscCall(PetscOptionsBool("-draw_save_on_clear", "Save graphics to file on each clear", PETSC_FUNCTION_NAME, draw->saveonclear, &draw->saveonclear, NULL));
     PetscCall(PetscOptionsBool("-draw_save_on_flush", "Save graphics to file on each flush", PETSC_FUNCTION_NAME, draw->saveonflush, &draw->saveonflush, NULL));
   }
