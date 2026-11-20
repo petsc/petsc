@@ -179,7 +179,7 @@ static PetscErrorCode SNESSetFromOptions_NASM(SNES snes, PetscOptionItems PetscO
   PetscCall(PetscOptionsBool("-snes_nasm_finaljacobian", "Compute the global jacobian of the final iterate (for ASPIN)", "", nasm->finaljacobian, &nasm->finaljacobian, NULL));
   PetscCall(PetscOptionsEList("-snes_nasm_finaljacobian_type", "The type of the final jacobian computed.", "", SNESNASMFJTypes, 3, SNESNASMFJTypes[0], &nasm->fjtype, NULL));
   PetscCall(PetscOptionsBool("-snes_nasm_log", "Log times for subSNES solves and restriction", "", monflg, &monflg, &flg));
-  if (flg) {
+  if (flg && monflg) {
     PetscCall(PetscLogEventRegister("SNESNASMSubSolve", ((PetscObject)snes)->classid, &nasm->eventsubsolve));
     PetscCall(PetscLogEventRegister("SNESNASMRestrict", ((PetscObject)snes)->classid, &nasm->eventrestrictinterp));
   }

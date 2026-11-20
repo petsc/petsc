@@ -242,7 +242,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems PetscOp
     PetscCall(PetscOptionsInt("-snes_fas_cycles", "Number of cycles", "SNESFASSetCycles", fas->n_cycles, &m, &flg));
     if (flg) PetscCall(SNESFASSetCycles(snes, m));
     PetscCall(PetscOptionsBool("-snes_fas_continuation", "Corrected grid-sequence continuation", "SNESFASSetContinuation", fas->continuation, &continuationflg, &flg));
-    if (flg) PetscCall(SNESFASSetContinuation(snes, continuationflg));
+    if (flg && continuationflg) PetscCall(SNESFASSetContinuation(snes, PETSC_TRUE));
 
     PetscCall(PetscOptionsBool("-snes_fas_galerkin", "Form coarse problems with Galerkin", "SNESFASSetGalerkin", fas->galerkin, &galerkinflg, &flg));
     if (flg) PetscCall(SNESFASSetGalerkin(snes, galerkinflg));
