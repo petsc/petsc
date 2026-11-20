@@ -482,7 +482,7 @@ static PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
 .     -snes_qn_type (lbfgs|broyden|badbroyden)                          - QN type
 .     -snes_qn_scale_type (diagonal|none|scalar|jacobian)               - Scaling performed on inner Jacobian
 .     -snes_linesearch_type (none|bt|secant|cp|nleqerr|bisection|shell) - Line search type, see `SNESLineSearchType`
--     -snes_qn_monitor                                                  - Monitors the quasi-Newton Jacobian.
+-     -snes_qn_monitor (true|false)                                     - Monitors the quasi-Newton Jacobian.
 
       Level: beginner
 

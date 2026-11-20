@@ -109,7 +109,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII_SubViewer(PetscViewer viewer)
   Level: intermediate
 
   Note:
-  For the standard `PETSCVIEWERASCII` the value is valid only on MPI rank 0 of the viewer
+  For the standard `PETSCVIEWERASCII` the value is valid only on MPI process 0 of the viewer
 
 .seealso: [](sec_viewers), `PETSCVIEWERASCII`, `PetscViewerASCIIOpen()`, `PetscViewerDestroy()`, `PetscViewerSetType()`,
           `PetscViewerCreate()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerFlush()`
@@ -338,7 +338,7 @@ PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
   PetscViewerASCIIPushTab - Adds one more tab to the amount that `PetscViewerASCIIPrintf()`
   lines are tabbed.
 
-  Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
+  Not Collective, but only first MPI process in the viewer has any effect; No Fortran Support
 
   Input Parameter:
 . viewer - obtained with `PetscViewerASCIIOpen()`
@@ -365,7 +365,7 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
   PetscViewerASCIIPopTab - Removes one tab from the amount that `PetscViewerASCIIPrintf()` lines are tabbed that was provided by
   `PetscViewerASCIIPushTab()`
 
-  Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
+  Not Collective, but only first MPI process in the viewer has any effect; No Fortran Support
 
   Input Parameter:
 . viewer - obtained with `PetscViewerASCIIOpen()`
@@ -394,7 +394,7 @@ PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
 /*@
   PetscViewerASCIIUseTabs - Turns on or off the use of tabs with the `PETSCVIEWERASCII` `PetscViewer`
 
-  Not Collective, but only first MPI rank in the viewer has any effect; No Fortran Support
+  Not Collective, but only first MPI process in the viewer has any effect; No Fortran Support
 
   Input Parameters:
 + viewer - obtained with `PetscViewerASCIIOpen()`
@@ -678,7 +678,7 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
   PetscViewerASCIIPrintf - Prints to a file, only from the first
   processor in the `PetscViewer` of type `PETSCVIEWERASCII`
 
-  Not Collective, but only the first MPI rank in the viewer has any effect
+  Not Collective, but only the first MPI process in the viewer has any effect
 
   Input Parameters:
 + viewer - obtained with `PetscViewerASCIIOpen()`
@@ -1194,7 +1194,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
 /*@
   PetscViewerASCIIRead - Reads from a `PETSCVIEWERASCII` file
 
-  Only MPI rank 0 in the `PetscViewer` may call this
+  Only MPI process 0 in the `PetscViewer` may call this
 
   Input Parameters:
 + viewer - the `PETSCVIEWERASCII` viewer

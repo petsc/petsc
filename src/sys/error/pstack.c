@@ -61,7 +61,7 @@ void PetscStackSAWsTakeAccess(void)
   Level: developer
 
   Note:
-  Only MPI rank 0 publishes; other MPI processes immediately return success. In non-debug builds the stack contents are not published but the call still succeeds.
+  Only MPI process 0 publishes; other MPI processes immediately return success. In non-debug builds the stack contents are not published but the call still succeeds.
 
 .seealso: `PetscStackView()`, `PetscStackSAWsViewOff()`, `PetscObjectSAWsViewOff()`
 @*/

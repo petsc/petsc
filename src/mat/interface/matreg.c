@@ -118,7 +118,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* suppose with one MPI process, one created an MPIAIJ (mpiaij) matrix with MatCreateMPIAIJWithArrays(), and later tried
-     to change its type via '-mat_type aijcusparse'. Even there is only one MPI rank, we need to adapt matype to
+     to change its type via '-mat_type aijcusparse'. Even there is only one MPI process, we need to adapt matype to
      'mpiaijcusparse' so that it will be treated as a subclass of MPIAIJ and proper MatCovert() will be called.
   */
   if (((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(((PetscObject)mat)->type_name, "mpi", &matMPI)); /* mat claims itself is an 'mpi' matrix */

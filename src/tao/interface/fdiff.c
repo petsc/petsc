@@ -30,8 +30,8 @@ static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, PetscCtx ctx)
 . G - Gradient Vector
 
   Options Database Key:
-+ -tao_fd_gradient    - activates TaoDefaultComputeGradient()
-- -tao_fd_delta delta - change in X used to calculate finite differences
++ -tao_fd_gradient (true|false) - activates TaoDefaultComputeGradient()
+- -tao_fd_delta delta           - change in X used to calculate finite differences
 
   Level: advanced
 
@@ -96,7 +96,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy)
 - B - newly computed Hessian matrix to use with preconditioner (generally the same as H)
 
   Options Database Key:
-. -tao_fd_hessian - activates TaoDefaultComputeHessian()
+. -tao_fd_hessian (true|false) - activates TaoDefaultComputeHessian()
 
   Level: advanced
 

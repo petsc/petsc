@@ -2165,13 +2165,13 @@ static PetscErrorCode DMSwarmMigrate_Basic(DM dm, PetscBool remove_sent_points)
 }
 
 /*@
-  DMSwarmMigrate - Relocates points defined in the `DMSWARM` to other MPI-ranks
+  DMSwarmMigrate - Relocates points defined in the `DMSWARM` to other MPI processes
 
   Collective
 
   Input Parameters:
 + dm                 - the `DMSWARM`
-- remove_sent_points - flag indicating if sent points should be removed from the current MPI-rank
+- remove_sent_points - flag indicating if sent points should be removed from the current MPI process
 
   Level: advanced
 

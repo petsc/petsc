@@ -139,7 +139,7 @@ PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
   PETSC_ERR_NOT_CONVERGED  = 91,  /* solver did not converge */
   PETSC_ERR_MISSING_FACTOR = 92,  /* MatGetFactor() failed */
   PETSC_ERR_OPT_OVERWRITE  = 93,  /* attempted to over write options which should not be changed */
-  PETSC_ERR_WRONG_MPI_SIZE = 94,  /* example/application run with number of MPI ranks it does not support */
+  PETSC_ERR_WRONG_MPI_SIZE = 94,  /* example/application run with number of MPI processes it does not support */
   PETSC_ERR_USER_INPUT     = 95,  /* missing or incorrect user input */
   PETSC_ERR_GPU_RESOURCE   = 96,  /* unable to load a GPU resource, for example cuBLAS */
   PETSC_ERR_GPU            = 97,  /* An error from a GPU call, this may be due to lack of resources on the GPU or a true error in the call */
@@ -1313,7 +1313,7 @@ S*/
 typedef struct _n_PetscShmComm *PetscShmComm;
 
 /*S
-  PetscOmpCtrl - Opaque control object that PETSc uses to coordinate work between the MPI ranks of a node and OpenMP worker threads when running in the "OpenMP-on-the-rank-subset" mode
+  PetscOmpCtrl - Opaque control object that PETSc uses to coordinate work between the MPI processes of a node and OpenMP worker threads when running in the "OpenMP-on-the-rank-subset" mode
 
   Level: developer
 
@@ -1633,7 +1633,7 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscCtxDestroyFn(PetscCtxRt ctx);
 
 /*S
-   PCMPIServerAddresses - Small bookkeeping record used by the `PCMPI` server to track shared-memory address mappings that have been distributed across the participating MPI ranks
+   PCMPIServerAddresses - Small bookkeeping record used by the `PCMPI` server to track shared-memory address mappings that have been distributed across the participating MPI processes
 
    Level: developer
 

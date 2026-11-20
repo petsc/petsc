@@ -1007,7 +1007,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox *[]
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
 
    Values:
-+  `VECTAGGER_CDF_GATHER`    - gather the data to MPI rank 0, perform the computation and broadcast the result
++  `VECTAGGER_CDF_GATHER`    - gather the data to MPI process 0, perform the computation and broadcast the result
 -  `VECTAGGER_CDF_ITERATIVE` - compute the results on all ranks iteratively using `MPI_Allreduce()`
 
   Level: advanced

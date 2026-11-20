@@ -117,7 +117,7 @@ static inline PetscErrorCode PetscOmpCtrlDestroyBarrier(PetscOmpCtrl ctrl)
 
   Input Parameters:
 + petsc_comm - a communicator some PETSc object (for example, a matrix) lives in
-- nthreads   - number of threads per MPI rank to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
+- nthreads   - number of threads per MPI process to spawn in a library using OpenMP. If nthreads = -1, let PETSc decide a suitable value
 
   Output Parameter:
 . pctrl - a PETSc OpenMP controller
@@ -304,15 +304,15 @@ PetscErrorCode PetscOmpCtrlGetOmpComms(PetscOmpCtrl ctrl, MPI_Comm *omp_comm, MP
 }
 
 /*@
-  PetscOmpCtrlBarrier - Do barrier on MPI ranks in omp_comm contained by the PETSc OMP controller (to let slave ranks free their CPU)
+  PetscOmpCtrlBarrier - Do barrier on MPI processes in omp_comm contained by the PETSc OMP controller (to let slave ranks free their CPU)
 
   Input Parameter:
 . ctrl - a PETSc OMP controller
 
   Notes:
-  This is a pthread barrier on MPI ranks. Using `MPI_Barrier()` instead is conceptually correct. But MPI standard does not
+  This is a pthread barrier on MPI processes. Using `MPI_Barrier()` instead is conceptually correct. But MPI standard does not
   require processes blocked by `MPI_Barrier()` free their CPUs to let other processes progress. In practice, to minilize latency,
-  MPI ranks stuck in `MPI_Barrier()` keep polling and do not free CPUs. In contrast, pthread_barrier has this requirement.
+  MPI processes stuck in `MPI_Barrier()` keep polling and do not free CPUs. In contrast, `pthread_barrier` has this requirement.
 
   A code using `PetscOmpCtrlBarrier()` would be like this,
 .vb

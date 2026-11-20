@@ -39,7 +39,7 @@ PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
 . ksp - the `KSP` context
 
   Options Database Key:
-. -ksp_lgmres_constant - set the size to be constant
+. -ksp_lgmres_constant (true|false) - set the size to be constant
 
   Level: intermediate
 
@@ -614,9 +614,9 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially
                                                                                   (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
+.   -ksp_gmres_krylov_monitor (true|false)                                      - plot the Krylov space generated
 .   -ksp_lgmres_augment k                                                       - number of error approximations to augment the Krylov space with
--   -ksp_lgmres_constant                                                        - use a constant approximate space size
+-   -ksp_lgmres_constant (true|false)                                           - use a constant approximate space size
                                                                                   (only affects restart cycles < num. error approx.(k), i.e. the first k restarts)
 
   Level: beginner

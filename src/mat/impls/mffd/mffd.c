@@ -658,16 +658,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 . J - the matrix-free matrix
 
   Options Database Keys:
-+ -mat_mffd_type             - wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
-. -mat_mffd_err              - square root of estimated relative error in function evaluation
-. -mat_mffd_period           - how often h is recomputed, defaults to 1, every time
-. -mat_mffd_check_positivity - possibly decrease `h` until U + h*a has only positive values
-. -mat_mffd_umin umin        - Sets umin (for default PETSc routine that computes h only)
-. -mat_mffd_complex          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
-                               (requires real valued functions but that PETSc be configured for complex numbers)
-. -snes_mf                   - use the finite difference based matrix-free matrix with `SNESSolve()` with no preconditioner by default
-- -snes_mf_operator          - use the finite difference based matrix-free matrix with `SNESSolve()` but construct a preconditioner
-                               using the matrix passed as `pmat` to `SNESSetJacobian()`.
++ -mat_mffd_type (wp|ds)                  - see `MATMFFD_WP` or `MATMFFD_DS`
+. -mat_mffd_err error_rel                 - square root of estimated relative error in function evaluation
+. -mat_mffd_period period                 - how often h is recomputed, defaults to 1, every time
+. -mat_mffd_check_positivity (true|false) - possibly decrease `h` until U + h*a has only positive values
+. -mat_mffd_umin umin                     - Sets umin (for default PETSc routine that computes h only)
+. -mat_mffd_complex (true|false)          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
+                                            (requires real valued functions but that PETSc be configured for complex numbers)
+. -snes_mf (true|false)                   - use the finite difference based matrix-free matrix with `SNESSolve()` with no preconditioner by default
+- -snes_mf_operator (true|false)          - use the finite difference based matrix-free matrix with `SNESSolve()` but construct a preconditioner
+                                            using the matrix passed as `pmat` to `SNESSetJacobian()`.
 
   Level: advanced
 

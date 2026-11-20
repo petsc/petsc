@@ -17,7 +17,7 @@
   Level: intermediate
 
   Note:
-  Unlike `ISEqualUnsorted()`, this routine sorts the contents of the index sets (only within each MPI rank) before
+  Unlike `ISEqualUnsorted()`, this routine sorts the contents of the index sets (only within each MPI process) before
   the comparison is made, so the order of the indices on a processor is immaterial.
 
   Each processor has to have the same indices in the two sets, for example,
@@ -108,7 +108,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
   Unlike `ISEqual()`, this routine does NOT sort the contents of the index sets before
   the comparison is made, i.e., the order of indices is important.
 
-  Each MPI rank must have the same indices.
+  Each MPI process must have the same indices.
 
 .seealso: [](sec_scatter), `IS`, `ISEqual()`
 @*/

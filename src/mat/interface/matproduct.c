@@ -541,9 +541,9 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 . mat - the matrix whose values are computed via a matrix-matrix product operation
 
   Options Database Keys:
-+ -mat_product_clear                 - Clear intermediate data structures after `MatProductNumeric()` has been called
-. -mat_product_algorithm algorithm   - Sets the algorithm, see `MatProductAlgorithm` for possible values
-- -mat_product_algorithm_backend_cpu - Use the CPU to perform the computation even if the matrix is a GPU matrix
++ -mat_product_clear (true|false)                 - Clear intermediate data structures after `MatProductNumeric()` has been called
+. -mat_product_algorithm algorithm                - Sets the algorithm, see `MatProductAlgorithm` for possible values
+- -mat_product_algorithm_backend_cpu (true|false) - Use the CPU to perform the computation even if the matrix is a GPU matrix
 
   Level: intermediate
 
@@ -1006,7 +1006,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 . mat - the matrix whose values are to be computed via a matrix-matrix product operation
 
   Options Database Key:
-. -mat_product_clear - Clear intermediate data structures after `MatProductNumeric()` has been called
+. -mat_product_clear (true|false) - Clear intermediate data structures after `MatProductNumeric()` has been called
 
   Level: intermediate
 

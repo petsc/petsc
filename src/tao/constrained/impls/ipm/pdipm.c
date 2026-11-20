@@ -1413,11 +1413,11 @@ static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems PetscOpt
   TAOPDIPM - Barrier-based primal-dual interior point algorithm for generally constrained optimization.
 
   Options Database Keys:
-+   -tao_pdipm_push_init_lambdai - parameter to push initial dual variables away from bounds (> 0)
-.   -tao_pdipm_push_init_slack   - parameter to push initial slack variables away from bounds (> 0)
-.   -tao_pdipm_mu_update_factor  - update scalar for barrier parameter (mu) update (> 0)
-.   -tao_pdipm_symmetric_kkt     - Solve non-reduced symmetric KKT system
--   -tao_pdipm_kkt_shift_pd      - Add shifts to make KKT matrix positive definite
++   -tao_pdipm_push_init_lambdai          - parameter to push initial dual variables away from bounds (> 0)
+.   -tao_pdipm_push_init_slack            - parameter to push initial slack variables away from bounds (> 0)
+.   -tao_pdipm_mu_update_factor           - update scalar for barrier parameter (mu) update (> 0)
+.   -tao_pdipm_symmetric_kkt (true|false) - Solve non-reduced symmetric KKT system
+-   -tao_pdipm_kkt_shift_pd (true|false)  - Add shifts to make KKT matrix positive definite
 
   Level: beginner
 

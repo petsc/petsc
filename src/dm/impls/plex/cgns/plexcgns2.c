@@ -972,7 +972,7 @@ static PetscErrorCode PetscLayoutFindOwnerIndex_CGNSSectionLayouts(PetscLayout m
   Collective
 
   Input Parameters:
-+ layout           - `PetscLayout` defining the global index space and the MPI rank that brokers each index
++ layout           - `PetscLayout` defining the global index space and the MPI process that brokers each index
 . numRootIndices   - size of `rootIndices`
 . rootIndices      - array of global indices of which this process requests ownership
 . rootLocalIndices - root local index permutation (`NULL` if no permutation)

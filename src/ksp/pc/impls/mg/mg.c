@@ -2043,13 +2043,13 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
 +  -pc_mg_levels nlevels                              - number of levels including finest
 .  -pc_mg_cycle_type (v|w)                            - provide the cycle desired
 .  -pc_mg_type (additive|multiplicative|full|kaskade) - multiplicative is the default
-.  -pc_mg_log                                         - log information about time spent on each level of the solver
-.  -pc_mg_distinct_smoothup                           - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
+.  -pc_mg_log (true|false)                            - log information about time spent on each level of the solver
+.  -pc_mg_distinct_smoothup (true|false)              - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
 .  -pc_mg_galerkin (both|pmat|mat|none)               - use the Galerkin process to compute coarser operators, i.e., $A_{coarse} = R A_{fine} R^T$
 .  -pc_mg_multiplicative_cycles ncycles               - number of cycles to use as the preconditioner (defaults to 1)
-.  -pc_mg_dump_matlab                                 - dumps the matrices for each level and the restriction/interpolation matrices
+.  -pc_mg_dump_matlab (true|false)                    - dumps the matrices for each level and the restriction/interpolation matrices
                                                         to a `PETSCVIEWERSOCKET` for reading from MATLAB.
--  -pc_mg_dump_binary                                 - dumps the matrices for each level and the restriction/interpolation matrices
+-  -pc_mg_dump_binary (true|false)                    - dumps the matrices for each level and the restriction/interpolation matrices
                                                         to the binary output file called binaryoutput
 
    Level: intermediate

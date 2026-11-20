@@ -126,15 +126,20 @@ static PetscErrorCode PCDestroy_NN(PC pc)
    PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
    Options Database Keys:
-+    -pc_nn_turn_off_first_balancing  - do not balance the residual before solving the local Neumann problems
-                                        (this skips the first coarse grid solve in the preconditioner)
-.    -pc_nn_turn_off_second_balancing - do not balance the solution solving the local Neumann problems
-                                        (this skips the second coarse grid solve in the preconditioner)
-.    -pc_is_damp_fixed <fact> -
-.    -pc_is_remove_nullspace_fixed -
-.    -pc_is_set_damping_factor_floating <fact> -
-.    -pc_is_not_damp_floating -
--    -pc_is_not_remove_nullspace_floating -
++    -pc_nn_turn_off_first_balancing (true|false)      - do not balance the residual before solving the local Neumann problems
+                                                         (this skips the first coarse grid solve in the preconditioner)
+.    -pc_nn_turn_off_second_balancing (true|false)     - do not balance the solution solving the local Neumann problems
+                                                         (this skips the second coarse grid solve in the preconditioner)
+.    -pc_is_damp_fixed [fact]                          - use shift amount `fact` for zero pivots when factoring the local Neumann matrix
+                                                         of a subdomain that touches the Dirichlet boundary (default: the floating subdomain amount)
+.    -pc_is_remove_nullspace_fixed (true|false)        - attach the constant null space to the local Neumann matrix
+                                                         of a subdomain that touches the Dirichlet boundary
+.    -pc_is_set_damping_factor_floating fact           - use shift amount `fact` for zero pivots when factoring the local Neumann matrix
+                                                         of a floating subdomain (default 1.e-12)
+.    -pc_is_not_damp_floating (true|false)             - do not shift the diagonal when factoring the local Neumann matrix
+                                                         of a floating subdomain
+-    -pc_is_not_remove_nullspace_floating (true|false) - do not attach the constant null space to the local Neumann matrix
+                                                         of a floating subdomain
 
    Options Database prefixes for the subsolvers this preconditioner uses:
 +  -nn_coarse_pc_ - for the coarse grid preconditioner
@@ -145,6 +150,9 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Notes:
    The matrix used with this preconditioner must be of type `MATIS`
+
+   A floating subdomain is one that does not touch the Dirichlet boundary, so its local Neumann matrix is singular.
+   The `-pc_is_` options apply to the Neumann subproblem and so require the `-is_localN_` prefix, for example `-is_localN_pc_is_damp_fixed`.
 
    Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
    degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
@@ -463,7 +471,9 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   */
   {
     PetscBool flg = PETSC_FALSE;
-    PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_turn_off_second_balancing", &flg, NULL));
+
+    PetscCall(PetscOptionsDeprecatedNoObject(PetscObjectComm((PetscObject)pc), NULL, "-pc_turn_off_second_balancing", "-pc_nn_turn_off_second_balancing", "3.27", NULL));
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_nn_turn_off_second_balancing", &flg, NULL));
     if (!flg) {
       PetscCall(PCNNBalancing(pc, r, vec1_B, z, vec2_B, vec3_B, (Vec)0, vec1_D, vec2_D, work_N));
     } else {

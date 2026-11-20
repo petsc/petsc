@@ -1469,7 +1469,7 @@ Finally, we use the `PetscSF` to communicate `rootdata` to `leafdata`:
   PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE);
 ```
 
-Now `leafdata` on MPI rank 0 contains (1, 3, 2) and on MPI rank 1 contains (1, 2, 3).
+Now `leafdata` on MPI process 0 contains (1, 3, 2) and on MPI process 1 contains (1, 2, 3).
 
 It is also possible to move `leafdata` to `rootdata` using
 
@@ -1479,7 +1479,7 @@ It is also possible to move `leafdata` to `rootdata` using
 ```
 
 In this case, since the reduction operation performed (the final argument of `PetscSFReduceBegin()`), is `MPIU_SUM` the final result in each entry of `rootdata` is the sum
-of the previous value at that location plus all the values it that entries leafs. So `rootdata` on MPI rank 0 contains (3, 6) while on MPI rank
+of the previous value at that location plus all the values it that entries leafs. So `rootdata` on MPI process 0 contains (3, 6) while on MPI process
 1 it contains (9).
 
 As shown in the example above, `PetscSFBcastBegin()` and `PetscSFBcastEnd()` (as well as other `PetscSF` functions) also take an `MPI_Op` reduction argument, though that is almost always `MPI_REPLACE`.
@@ -1504,12 +1504,12 @@ In the example above we treated the `leafdata` as sitting in a contiguous array 
   PetscSFSetGraph(sf, nroots, nleaves, leaves, PETSC_OWN_POINTER, roots, PETSC_OWN_POINTER);
 ```
 
-means that the three entries of `leafdata` affected by `PetscSF` communication on MPI rank 0 are the array locations (1, 2, 4); meaning also that `leafdata` must be of length at least 5.
-On MPI rank 1, the arriving values from the three roots listed in `roots` are placed backwards in `leafdata`. Note that providing the `leaves` permutation array on MPI rank 1 is
+means that the three entries of `leafdata` affected by `PetscSF` communication on MPI process 0 are the array locations (1, 2, 4); meaning also that `leafdata` must be of length at least 5.
+On MPI process 1, the arriving values from the three roots listed in `roots` are placed backwards in `leafdata`. Note that providing the `leaves` permutation array on MPI process 1 is
 equivalent to listing the three values in `roots` in the opposite order.
 
-If we reran the initial communication with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` using the modified `sf` the resulting values in `leavedata` would be on MPI rank 0 (x, 1, 3, x, 2) and on
-MPI rank 1 (3, 2, 1) where x indicates the previous value in `leafdata` that was unchanged.
+If we reran the initial communication with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` using the modified `sf` the resulting values in `leavedata` would be on MPI process 0 (x, 1, 3, x, 2) and on
+MPI process 1 (3, 2, 1) where x indicates the previous value in `leafdata` that was unchanged.
 
 
 

@@ -4,7 +4,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherNumberOfMessages_Private(M
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
 
 /*@
-  PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication
+  PetscGatherNumberOfMessages -  Computes the number of messages an MPI process expects to receive during a neighbor communication
 
   Collective, No Fortran Support
 
@@ -50,7 +50,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
+  /* Post an allreduce to determine the number of messages the current MPI process will receive */
   PetscCallMPI(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
@@ -59,7 +59,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
 }
 
 /*@
-  PetscGatherMessageLengths - Computes information about messages that an MPI rank will receive,
+  PetscGatherMessageLengths - Computes information about messages that an MPI process will receive,
   including (from-id,length) pairs for each message.
 
   Collective, No Fortran Support
@@ -156,7 +156,7 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
     }
   } else iflags_local = (PetscMPIInt *)iflags;
 
-  /* Post an allreduce to determine the number of messages the current MPI rank will receive */
+  /* Post an allreduce to determine the number of messages the current MPI process will receive */
   PetscCallMPI(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
@@ -206,7 +206,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 }
 
 /*@
-  PetscGatherMessageLengths2 - Computes info about messages that a MPI rank will receive,
+  PetscGatherMessageLengths2 - Computes info about messages that an MPI process will receive,
   including (from-id,length) pairs for each message. Same functionality as `PetscGatherMessageLengths()`
   except it takes TWO ilenths and output TWO olengths.
 

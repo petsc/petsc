@@ -1334,8 +1334,8 @@ PETSC_DEPRECATED_FUNCTION(3, 13, 0, "PetscSignalSegvCheckPointerOrMpi()", ) stat
 .   format - the usual `printf()` format string
 
    Options Database Keys:
-+  -error_output_stdout - cause error messages to be printed to stdout instead of the (default) stderr
--  -error_output_none   - to turn off all printing of error messages (does not change the way the error is handled.)
++  -error_output_stdout (true|false) - cause error messages to be printed to stdout instead of the (default) stderr
+-  -error_output_none (true|false)   - to turn off all printing of error messages (does not change the way the error is handled.)
 
    Level: developer
 

@@ -6010,7 +6010,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_remesh_bd (true|false)          - Allow changes to the boundary on remeshing
 . -dm_plex_max_projection_height height    - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement (true|false) - Use special nested projection algorithm for regular refinement
-. -dm_plex_reorder_section (true|false)    - Use specialized blocking if available
+. -dm_reorder_section (true|false)         - Use specialized blocking if available
 . -dm_plex_check_all (true|false)          - Perform all checks below
 . -dm_plex_check_symmetry (true|false)     - Check that the adjacency information in the mesh is symmetric
 . -dm_plex_check_skeleton (true|false)     - Check that each cell has the correct number of vertices
@@ -7453,7 +7453,7 @@ static PetscErrorCode DMPlexCreateShapefileFromFile(MPI_Comm comm, const char fi
 . dm - The `DM`
 
   Options Database Key:
-. -dm_plex_create_from_hdf5_xdmf - use the `PETSC_VIEWER_HDF5_XDMF` format for reading HDF5
+. -dm_plex_create_from_hdf5_xdmf (true|false) - use the `PETSC_VIEWER_HDF5_XDMF` format for reading HDF5
 
   Use `-dm_plex_create_ prefix` to pass options to the internal `PetscViewer`, e.g. `-dm_plex_create_viewer_hdf5_collective`
 

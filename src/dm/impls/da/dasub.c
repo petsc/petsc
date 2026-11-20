@@ -90,7 +90,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
 - gp  - global grid point number in this direction
 
   Output Parameters:
-+ newvec  - the new vector that can hold the values (size zero on all processes except MPI rank 0)
++ newvec  - the new vector that can hold the values (size zero on all processes except MPI process 0)
 - scatter - the `VecScatter` that will map from the original vector to the ray
 
   Level: advanced

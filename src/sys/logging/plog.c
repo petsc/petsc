@@ -682,7 +682,7 @@ PetscErrorCode PetscLogMPEBegin(void)
   Collective on `PETSC_COMM_WORLD`, No Fortran Support
 
   Options Database Key:
-. -log_perfstubs - use an external log handler through the perfstubs interface
+. -log_perfstubs (true|false) - use an external log handler through the perfstubs interface
 
   Level: advanced
 
@@ -708,8 +708,8 @@ PetscErrorCode PetscLogPerfstubsBegin(void)
 . flag - `PETSC_TRUE` if actions are to be logged
 
   Options Database Key:
-+ -log_exclude_actions - (deprecated) Does nothing
-- -log_include_actions - Turn on action logging
++ -log_exclude_actions              - (deprecated) Does nothing
+- -log_include_actions (true|false) - Turn on action logging
 
   Level: intermediate
 
@@ -739,8 +739,8 @@ PetscErrorCode PetscLogActions(PetscBool flag)
 . flag - `PETSC_TRUE` if objects are to be logged
 
   Options Database Key:
-+ -log_exclude_objects - (deprecated) Does nothing
-- -log_include_objects - Turns on object logging
++ -log_exclude_objects              - (deprecated) Does nothing
+- -log_include_objects (true|false) - Turns on object logging
 
   Level: intermediate
 
@@ -1117,7 +1117,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   New events returned from `PetscLogEventRegister()` are collective by default.
 
   Collective events are handled specially if the command line option `-log_sync` is used. In that case the logging saves information about
-  two parts of the event; the time for all the MPI ranks to synchronize and then the time for the actual computation/communication
+  two parts of the event; the time for all the MPI processes to synchronize and then the time for the actual computation/communication
   to be performed. This option is useful to debug imbalance within the computations or communications.
 
 .seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
@@ -2195,7 +2195,7 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
   `PetscLogFlops()` to increment this counter to include flops for the
   application code.
 
-  A separate counter `PetscLogGpuFlops()` logs the flops that occur on any GPU associated with this MPI rank
+  A separate counter `PetscLogGpuFlops()` logs the flops that occur on any GPU associated with this MPI process
 
 .seealso: [](ch_profiling), `PetscLogGpuFlops()`, `PetscTime()`, `PetscLogFlops()`
 @*/

@@ -36,7 +36,7 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 - scale - `PETSC_TRUE` or the default of `PETSC_FALSE`
 
   Options Database Key:
-. -ksp_richardson_self_scale - Use self-scaling
+. -ksp_richardson_self_scale (true|false) - Use self-scaling
 
   Level: intermediate
 

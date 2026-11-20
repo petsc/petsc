@@ -238,8 +238,8 @@ static PetscErrorCode TaoTermCreateHessianMatrices_L1(TaoTerm term, Mat *H, Mat 
 + term    - a `TaoTerm` of type `TAOTERML1`
 - epsilon - a real number $\geq 0$
 
-  Options Database Keys:
-. -tao_term_l1_epsilon <real> - $\epsilon$
+  Options Database Key:
+. -tao_term_l1_epsilon epsilon - $\epsilon$
 
   Level: advanced
 
@@ -351,8 +351,8 @@ static PetscErrorCode TaoTermIsComputeHessianFDPossible_L1(TaoTerm term, PetscBo
 
   Level: intermediate
 
-  Options Database Keys:
-. -tao_term_l1_epsilon <real> - (default 0.0) a smoothing parameter (see `TaoTermL1SetEpsilon()`)
+  Options Database Key:
+. -tao_term_l1_epsilon epsilon - (default 0.0) a smoothing parameter (see `TaoTermL1SetEpsilon()`)
 
   Notes:
   This term is `TAOTERM_PARAMETERS_OPTIONAL`.  If the parameters argument is `NULL` for

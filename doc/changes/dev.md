@@ -125,6 +125,8 @@
 
 - Add `PCHPDDMSetScaling()` to supply a diagonal scaling `Vec` for the deflation space set with `PCHPDDMSetDeflationMat()`. If the fine level is a `PCASM`, its default `PCASMType` is set to `PC_ASM_WEIGHTED`, in which case the scaling is forwarded accordingly
 - Change interface to `PCPatchSetDiscretisationInfo()` to address subspace DoFs using `IS`s instead of with offsets and block sizes
+- Deprecate `-pc_turn_off_second_balancing` in favor of `-pc_nn_turn_off_second_balancing` for `PCNN`
+- Change the `PCNN` options `-pc_is_damp_fixed` and `-pc_is_set_damping_factor_floating` to take a positive shift amount as their value
 
 ```{rubric} KSP:
 ```

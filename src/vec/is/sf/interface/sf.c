@@ -323,15 +323,12 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 . sf - star forest
 
   Options Database Keys:
-+ -sf_type (basic|window|neighbor) - implementation type, see `PetscSFSetType()`
-. -sf_rank_order (true|false)      - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
-. -sf_use_default_stream           - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
-                                     use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
-                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
-. -sf_use_stream_aware_mpi         - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
-                                     If true, this option only works with `-use_gpu_aware_mpi 1`.
-- -sf_backend (cuda|hip|kokkos)    - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).
-                                     On other devices, the only available backend is `kokkos`.
++ -sf_type (basic|window|neighbor)      - implementation type, see `PetscSFSetType()`
+. -sf_rank_order (true|false)           - sort composite points for gathers and scatters in MPI rank order, gathers are non-deterministic otherwise
+. -sf_use_stream_aware_mpi (true|false) - Assume the underlying MPI is aware of GPU streams and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
+                                          If true, this option only works with `-use_gpu_aware_mpi 1`.
+- -sf_backend (cuda|hip|kokkos)         - Select the device backend `PetscSF` uses. On CUDA (HIP) devices, one can choose `cuda` (`hip`) or `kokkos` with the default being `cuda` (`hip`).
+                                          On other devices, the only available backend is `kokkos`.
 
   Level: intermediate
 
@@ -581,10 +578,10 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
   sequential vectors `leaves` on all MPI processes.
 
   With `PETSCSF_PATTERN_GATHER`, the routine creates a graph that if one does `PetscSFBcastBegin()` and `PetscSFBcastEnd()` on it, it will copy `root` to a
-  sequential vector `leaves` on MPI rank 0.
+  sequential vector `leaves` on MPI process 0.
 
   With `PETSCSF_PATTERN_ALLTOALL`, map is not used. Suppose NP is the size of `sf`'s communicator. The routine
-  creates a graph where every MPI process has NP leaves and NP roots. On MPI rank i, its leaf j is connected to root i
+  creates a graph where every MPI process has NP leaves and NP roots. On MPI process i, its leaf j is connected to root i
   of rank j. Here 0 <=i,j<NP. It is a kind of `MPI_Alltoall()` with sendcount/recvcount being 1. Note that it does
   not mean one can not send multiple items. One needs to create a new MPI datatype for the multiple data
   items with `MPI_Type_contiguous` and use that as the <unit> argument in the `PetscSF` routines. In this case, roots and leaves are symmetric.

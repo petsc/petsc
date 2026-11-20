@@ -671,8 +671,8 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
 .   -snes_trdc_deltaM deltaM                               - trust region parameter, max size of trust region, $deltaM \, norm2(x)$ (default: 0.5)
 .   -snes_trdc_delta0 delta0                               - trust region parameter, initial size of trust region, $delta0 \, norm2(x)$ (default: 0.1)
 .   -snes_trdc_auto_scale_max auto_scale_max               - used with auto_scale_multiphase, caps the maximum auto-scaling factor
-.   -snes_trdc_use_cauchy use_cauchy                       - True uses dogleg Cauchy (Steepest Descent direction) step & direction in the trust region algorithm
--   -snes_trdc_auto_scale_multiphase auto_scale_multiphase - True turns on auto-scaling for multivariable block matrix for Cauchy and trust region
+.   -snes_trdc_use_cauchy (true|false)                     - True uses dogleg Cauchy (Steepest Descent direction) step & direction in the trust region algorithm
+-   -snes_trdc_auto_scale_multiphase (true|false)          - True turns on auto-scaling for multivariable block matrix for Cauchy and trust region
 
    Level: advanced
 

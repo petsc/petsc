@@ -880,7 +880,7 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeterEnd(void);
   To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
   not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
-  The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
+  The values are also added to the total flop count for the MPI process that is set with `PetscLogFlops()`; hence the number of flops
   just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`

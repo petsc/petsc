@@ -59,7 +59,7 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
 #endif
 
 /*@
-  PetscProcessPlacementView - display the MPI rank placement by core
+  PetscProcessPlacementView - display the MPI process placement by core
 
   Input Parameter:
 . viewer - `PETSCVIEWERASCII` to display the results on

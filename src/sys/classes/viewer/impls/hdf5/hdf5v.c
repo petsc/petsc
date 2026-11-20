@@ -58,7 +58,7 @@ static PetscErrorCode PetscViewerHDF5CheckNamedObject_Internal(PetscViewer viewe
 - flg    - if `PETSC_TRUE` the vector will always have at least a dimension of 2 even if that first dimension is of size 1
 
   Options Database Key:
-. -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+. -viewer_hdf5_base_dimension2 (true|false) - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
 
   Level: intermediate
 
@@ -115,7 +115,7 @@ PetscErrorCode PetscViewerHDF5GetBaseDimension2(PetscViewer viewer, PetscBool *f
 - flg    - if `PETSC_TRUE` the data will be written to disk with single precision
 
   Options Database Key:
-. -viewer_hdf5_sp_output - turns on (true) or off (false) output in single precision
+. -viewer_hdf5_sp_output (true|false) - turns on (true) or off (false) output in single precision
 
   Level: intermediate
 
@@ -169,7 +169,7 @@ PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer viewer, PetscBool *flg)
 - flg    - `PETSC_TRUE` for collective mode; `PETSC_FALSE` for independent mode (default)
 
   Options Database Key:
-. -viewer_hdf5_collective - turns on (true) or off (false) collective transfers
+. -viewer_hdf5_collective (true|false) - turns on (true) or off (false) collective transfers
 
   Level: intermediate
 
@@ -231,7 +231,7 @@ PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer viewer, PetscBool *flg)
 - flg    - if `PETSC_TRUE` we will assume that timestepping is on
 
   Options Database Key:
-. -viewer_hdf5_default_timestepping - turns on (true) or off (false) default timestepping
+. -viewer_hdf5_default_timestepping (true|false) - turns on (true) or off (false) default timestepping
 
   Level: intermediate
 
@@ -281,7 +281,7 @@ PetscErrorCode PetscViewerHDF5GetDefaultTimestepping(PetscViewer viewer, PetscBo
 - flg    - if `PETSC_TRUE` we will turn on compression
 
   Options Database Key:
-. -viewer_hdf5_compress - turns on (true) or off (false) compression
+. -viewer_hdf5_compress (true|false) - turns on (true) or off (false) compression
 
   Level: intermediate
 
@@ -332,8 +332,8 @@ PetscErrorCode PetscViewerHDF5GetCompress(PetscViewer viewer, PetscBool *flg)
 . hdf5v - `PetscViewer` for HDF5 input/output to use with the specified file
 
   Options Database Keys:
-+ -viewer_hdf5_base_dimension2 - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
-- -viewer_hdf5_sp_output       - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
++ -viewer_hdf5_base_dimension2 (true|false) - turns on (true) or off (false) using a dimension of 2 in the HDF5 file even if the bs/dof of the vector is 1
+- -viewer_hdf5_sp_output (true|false)       - forces (if true) the viewer to write data in single precision independent on the precision of PetscReal
 
   Level: beginner
 

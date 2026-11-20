@@ -535,8 +535,8 @@ PetscErrorCode MatHtoolSetClusteringType(Mat A, MatHtoolClusteringType clusterin
 . -mat_htool_eta eta                                                                        - admissibility condition tolerance
 . -mat_htool_min_target_depth depth                                                         - minimal cluster tree depth associated with the rows
 . -mat_htool_min_source_depth depth                                                         - minimal cluster tree depth associated with the columns
-. -mat_htool_block_tree_consistency (false|true)                                            - block tree consistency
-. -mat_htool_recompression (false|true)                                                     - use recompression
+. -mat_htool_block_tree_consistency (true|false)                                            - block tree consistency
+. -mat_htool_recompression (true|false)                                                     - use recompression
 . -mat_htool_compressor (sympartialACA|fullACA|SVD)                                         - type of compression
 - -mat_htool_clustering (PCARegular|PCAGeometric|BoundingBox1Regular|BoundingBox1Geometric) - type of clustering
 

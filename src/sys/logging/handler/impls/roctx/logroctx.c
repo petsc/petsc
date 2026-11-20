@@ -83,8 +83,8 @@ static PetscErrorCode PetscLogHandlerEventEnd_ROCTX(PetscLogHandler handler, Pet
   PETSCLOGHANDLERROCTX - PETSCLOGHANDLERROCTX = "roctx" -  A `PetscLogHandler` that creates an ROCTX range (which appears in rocprof profiling) for each PETSc event.
 
   Options Database Keys:
-+ -log_roctx   - start an roctx log handler manually
-- -log_roctx 0 - stop the roctx log handler from starting automatically in `PetscInitialize()` in a program run within a rocprof profiling session
++ -log_roctx (true|false) - start an roctx log handler manually
+- -log_roctx false        - stop the roctx log handler from starting automatically in `PetscInitialize()` in a program run within a rocprof profiling session
 
   Level: developer
 

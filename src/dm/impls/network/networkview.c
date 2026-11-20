@@ -173,7 +173,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 #endif
   }
 
-  // Broadcast the filename to all other MPI ranks
+  // Broadcast the filename to all other MPI processes
   PetscCallMPI(MPI_Bcast(filename, PETSC_MAX_PATH_LEN, MPI_BYTE, 0, comm));
 
   PetscCall(PetscViewerASCIIOpen(comm, filename, &csvViewer));

@@ -604,7 +604,7 @@ M*/
    #include <petscsys.h>
    PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[], ...);
 
-   Not Collective, only applies on MPI rank 0; No Fortran Support
+   Not Collective, only applies on MPI process 0; No Fortran Support
 
    Input Parameters:
 +  comm - the MPI communicator over which the help message is printed
@@ -1767,8 +1767,8 @@ static inline unsigned int PetscStrHash(const char *str)
 
 /*MC
   MPIU_Allreduce - A replacement for `MPI_Allreduce()` that (1) performs single-count `MPIU_INT` operations in `PetscInt64` to detect
-                   integer overflows and (2) tries to determine if the call from all the MPI ranks occur in the
-                   same place in the PETSc code. This helps to detect bugs where different MPI ranks follow different code paths
+                   integer overflows and (2) tries to determine if the call from all the MPI processes occur in the
+                   same place in the PETSc code. This helps to detect bugs where different MPI processes follow different code paths
                    resulting in inconsistent and incorrect calls to `MPI_Allreduce()`.
 
   Synopsis:

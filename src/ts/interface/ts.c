@@ -31,7 +31,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 
   Options Database Keys:
 + -ts_type type                                                      - see `TSType`
-. -ts_save_trajectory                                                - checkpoint the solution at each time-step
+. -ts_save_trajectory (true|false)                                   - checkpoint the solution at each time-step
 . -ts_max_time time                                                  - maximum time to compute to
 . -ts_time_span t0,...,tf                                            - sets the time span, solutions are computed and stored for each indicated time, init_time and max_time are set
 . -ts_eval_times t0,...,tn                                           - time points where solutions are computed and stored for each indicated time
@@ -47,11 +47,11 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_rtol rtol                                                      - relative tolerance for local truncation error
 . -ts_atol atol                                                      - Absolute tolerance for local truncation error
 . -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view               - test the Jacobian at each iteration against finite difference with RHS function
-. -ts_rhs_jacobian_test_mult_transpose                               - test the Jacobian at each iteration against finite difference with RHS function
+. -ts_rhs_jacobian_test_mult_transpose (true|false)                  - test the Jacobian at each iteration against finite difference with RHS function
 . -ts_adjoint_solve (true|false)                                     - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
-. -ts_fd_color                                                       - Use finite differences with coloring to compute IJacobian
+. -ts_fd_color (true|false)                                          - Use finite differences with coloring to compute IJacobian
 . -ts_monitor                                                        - print information at each timestep
-. -ts_monitor_cancel                                                 - Cancel all monitors
+. -ts_monitor_cancel (true|false)                                    - Cancel all monitors
 . -ts_monitor_wall_clock_time                                        - Monitor wall-clock time, `KSP` iterations, and `SNES` iterations per step
 . -ts_monitor_lg_solution                                            - Monitor solution graphically
 . -ts_monitor_lg_error                                               - Monitor error graphically
@@ -66,7 +66,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_monitor_draw_error                                             - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 . -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
 . -ts_monitor_solution_interval interval                             - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
-. -ts_monitor_solution_skip_initial                                  - skip writing of initial condition
+. -ts_monitor_solution_skip_initial (true|false)                     - skip writing of initial condition
 . -ts_monitor_solution_vtk filename.vts,filename.vtu                 - Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts (filename-%%03" PetscInt_FMT ".vtu)
 . -ts_monitor_solution_vtk_interval interval                         - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
 - -ts_monitor_envelope                                               - determine maximum and minimum value of each component of the solution over the solution time
@@ -476,7 +476,7 @@ PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
 . ts - the `TS` context obtained from `TSCreate()`
 
   Options Database Keys:
-+ -ts_save_trajectory                                         - saves the trajectory to a file
++ -ts_save_trajectory (true|false)                            - saves the trajectory to a file
 - -ts_trajectory_type (basic|singlefile|memory|visualization) - set trajectory type
 
   Level: intermediate
@@ -5356,7 +5356,7 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
 - err - `PETSC_TRUE` to error if no step succeeds, `PETSC_FALSE` to return without failure
 
   Options Database Key:
-. -ts_error_if_step_fails - Error if no step succeeds
+. -ts_error_if_step_fails (true|false) - Error if no step succeeds
 
   Level: intermediate
 

@@ -358,7 +358,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   Options Database Keys:
 +   -snes_ncg_type (fr|prp|dy|hs|cd)                                            - Choice of conjugate-gradient update parameter, default is `prp`.
 .   -snes_linesearch_type (none|bt|secant|cp|nleqerr|bisection|shell|ncglinear) - Line search type, see `SNESLineSearchType`
--   -snes_ncg_monitor                                                           - Print the beta values nonlinear Conjugate-Gradient used in the  iteration, .
+-   -snes_ncg_monitor (true|false)                                              - Print the beta values nonlinear Conjugate-Gradient used in the  iteration, .
 
    Notes:
    This solves the nonlinear system of equations $F(x) = 0$ using the nonlinear generalization of the conjugate

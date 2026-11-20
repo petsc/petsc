@@ -142,7 +142,7 @@ static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
   Level: intermediate
 
   Options Database Keys:
-.  -petscpartitioner_shell_random - Use a random partition
+.  -petscpartitioner_shell_random (true|false) - Use a random partition
 
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/

@@ -18,7 +18,7 @@
 - dummy - the application context (ignored)
 
   Options Database Key:
-. -snes_mf - use the matrix created with `MatSNESMFCreate()` to setup the Jacobian for each new solution in the Newton process
+. -snes_mf (true|false) - use the matrix created with `MatSNESMFCreate()` to setup the Jacobian for each new solution in the Newton process
 
   Level: developer
 

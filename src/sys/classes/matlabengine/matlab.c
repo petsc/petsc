@@ -24,9 +24,9 @@ PetscClassId MATLABENGINE_CLASSID = -1;
 . mengine - the resulting object
 
   Options Database Keys:
-+ -matlab_engine_graphics - allow the MATLAB engine to display graphics
-. -matlab_engine_host     - hostname, machine to run the MATLAB engine on
-- -info                   - print out all requests to MATLAB and all if its responses (for debugging)
++ -matlab_engine_graphics (true|false) - allow the MATLAB engine to display graphics
+. -matlab_engine_host hostname         - machine to run the MATLAB engine on
+- -info                                - print out all requests to MATLAB and all if its responses (for debugging)
 
   Level: advanced
 
@@ -298,7 +298,7 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 .  comm - the MPI communicator to share the engine
 
    Options Database Key:
-.  -matlab_engine_host - hostname on which to run MATLAB, one must be able to ssh to this host
+.  -matlab_engine_host hostname - hostname on which to run MATLAB, one must be able to ssh to this host
 
    Level: developer
 

@@ -513,8 +513,8 @@ static PetscErrorCode PetscRegressorPredict_Linear(PetscRegressor regressor, Mat
      PETSCREGRESSORLINEAR - Linear regression model (ordinary least squares or regularized variants)
 
    Options Database:
-+  -regressor_linear_fit_intercept - Calculate the intercept for the linear model
--  -regressor_linear_use_ksp       - Use `KSP` instead of `Tao` for linear model fitting (non-regularized variants only)
++  -regressor_linear_fit_intercept (true|false) - Calculate the intercept for the linear model
+-  -regressor_linear_use_ksp (true|false)       - Use `KSP` instead of `Tao` for linear model fitting (non-regularized variants only)
 
    Level: beginner
 

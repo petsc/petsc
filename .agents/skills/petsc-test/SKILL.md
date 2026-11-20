@@ -148,10 +148,10 @@ For behavior that depends on MPI communication, run the selected tests with the 
 for the supplied architecture and the relevant rank count. Check that the selection actually
 runs the intended tests and inspect failures on every rank. A `-k` pattern that matches nothing
 prints `Ran 0 tests` and exits 0, so confirm that each rank prints `Ran N tests` with N > 0, then
-`OK`. CI jobs run tests serially or with a configured MPI rank count, often four. Check the job's
+`OK`. CI jobs run tests serially or with a configured MPI process count, often four. Check the job's
 actual command and `PETSC4PY_NP` in the generated configuration rather than assuming that every
 job uses four ranks.
 
-Write tests to work with the relevant serial and MPI rank counts where the operation supports
+Write tests to work with the relevant serial and MPI process counts where the operation supports
 them. If a test requires a particular rank count, skip it explicitly at unsupported counts and
 report any resulting gap in coverage of the changed behavior.

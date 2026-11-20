@@ -209,7 +209,7 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
          of `TAOLMVM`
 
   Options Database Key:
-.     -tao_lmm_recycle - enable recycling of LMVM information between subsequent `TaoSolve()` calls
+.     -tao_blmvm_recycle (true|false) - enable recycling of LMVM information between subsequent `TaoSolve()` calls
 
   Level: beginner
 

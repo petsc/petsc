@@ -801,8 +801,8 @@ static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems PetscOptio
    grid spaces.
 
    Options Database Keys:
-+  -pc_exotic_type (face|wirebasket) - use a coarse grid point for each face, or edge and vertex
--  -pc_exotic_direct_solver          - use a direct solver to construct interpolation instead of an iterative solver
++  -pc_exotic_type (face|wirebasket)     - use a coarse grid point for each face, or edge and vertex
+-  -pc_exotic_direct_solver (true|false) - use a direct solver to construct interpolation instead of an iterative solver
 
    Level: advanced
 

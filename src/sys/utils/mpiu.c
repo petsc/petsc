@@ -63,7 +63,7 @@ PetscMPIInt Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
       PetscSequentialPhaseEnd(comm, 1);
 .ve
 
-  You should use `PetscSynchronizedPrintf()` to ensure output between MPI ranks is properly order and not these routines.
+  You should use `PetscSynchronizedPrintf()` to ensure output between MPI processes is properly order and not these routines.
 
 .seealso: `PetscSequentialPhaseEnd()`, `PetscSynchronizedPrintf()`
 @*/

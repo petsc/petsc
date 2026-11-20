@@ -1543,16 +1543,16 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 . dm - The `DM` object representing the mesh
 
   Options Database Keys:
-+ -dm_plex_gmsh_hybrid               - Force triangular prisms to use tensor order
-. -dm_plex_gmsh_periodic             - Read Gmsh periodic section and construct a periodic Plex
-. -dm_plex_gmsh_highorder            - Generate high-order coordinates
-. -dm_plex_gmsh_project              - Project high-order coordinates to a different space, use the prefix dm_plex_gmsh_project_ to define the space
-. -dm_plex_gmsh_use_generic          - Generate generic labels, i.e. Cell Sets, Face Sets, etc.
-. -dm_plex_gmsh_use_regions          - Generate labels with region names
-. -dm_plex_gmsh_mark_vertices        - Add vertices to generated labels
-. -dm_plex_gmsh_mark_vertices_strict - Add vertices included in a region to generated labels
-. -dm_plex_gmsh_multiple_tags        - Allow multiple tags for default labels
-- -dm_plex_gmsh_spacedim d           - Embedding space dimension, if different from topological dimension
++ -dm_plex_gmsh_hybrid (true|false)               - Force triangular prisms to use tensor order
+. -dm_plex_gmsh_periodic (true|false)             - Read Gmsh periodic section and construct a periodic Plex
+. -dm_plex_gmsh_highorder (true|false)            - Generate high-order coordinates
+. -dm_plex_gmsh_project (true|false)              - Project high-order coordinates to a different space, use the prefix dm_plex_gmsh_project_ to define the space
+. -dm_plex_gmsh_use_generic (true|false)          - Generate generic labels, i.e. Cell Sets, Face Sets, etc.
+. -dm_plex_gmsh_use_regions (true|false)          - Generate labels with region names
+. -dm_plex_gmsh_mark_vertices (true|false)        - Add vertices to generated labels
+. -dm_plex_gmsh_mark_vertices_strict (true|false) - Add vertices included in a region to generated labels
+. -dm_plex_gmsh_multiple_tags (true|false)        - Allow multiple tags for default labels
+- -dm_plex_gmsh_spacedim d                        - Embedding space dimension, if different from topological dimension
 
   Level: beginner
 

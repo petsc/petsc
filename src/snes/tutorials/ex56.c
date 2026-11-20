@@ -574,7 +574,7 @@ int main(int argc, char **args)
       requires: kokkos_kernels
       args: -dm_mat_type aijkokkos -dm_vec_type kokkos
   # Don't run AIJMKL caes with complex scalars because of convergence issues.
-  # Note that we need to test both single and multiple MPI rank cases, because these use different sparse MKL routines to implement the PtAP operation.
+  # Note that we need to test both single and multiple MPI process cases, because these use different sparse MKL routines to implement the PtAP operation.
   test:
     suffix: seqaijmkl
     nsize: 1

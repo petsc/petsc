@@ -56,7 +56,7 @@ PetscErrorCode PetscErrorPrintfInitialize(void)
 . format - the usual `printf()` format string
 
   Options Database Key:
-. -error_output_none - install this function; the error is still handled in the same way, only the message is suppressed
+. -error_output_none (true|false) - install this function; the error is still handled in the same way, only the message is suppressed
 
   Level: developer
 
@@ -77,7 +77,7 @@ PetscErrorCode PetscErrorPrintfNone(const char format[], ...)
 . format - the usual `printf()` format string
 
   Options Database Key:
-. -error_output_stdout - write the error messages to `stdout` instead of the default `stderr`
+. -error_output_stdout (true|false) - write the error messages to `stdout` instead of the default `stderr`
 
   Level: developer
 
@@ -146,8 +146,8 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
 - ctx  - error handler context
 
   Options Database Keys:
-+ -error_output_stdout - output the error messages to `stdout` instead of the default `stderr`
-- -error_output_none   - do not output the error messages
++ -error_output_stdout (true|false) - output the error messages to `stdout` instead of the default `stderr`
+- -error_output_none (true|false)   - do not output the error messages
 
   Notes:
   Users do not directly call this routine

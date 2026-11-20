@@ -256,7 +256,7 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 - continuation - whether to use continuation
 
   Options Database Key:
-. -snes_fas_continuation - sets continuation to true
+. -snes_fas_continuation (true|false) - use grid-sequence continuation
 
   Level: advanced
 
@@ -1117,7 +1117,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 - swp  - whether to downsweep or not
 
   Options Database Key:
-. -snes_fas_full_downsweep - Sets whether to smooth on the initial downsweep
+. -snes_fas_full_downsweep (true|false) - Sets whether to smooth on the initial downsweep
 
   Level: advanced
 
@@ -1145,7 +1145,7 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp)
 - total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
 
   Options Database Key:
-. -snes_fas_full_total - Use total restriction and interpolation on the initial down and up sweeps for the full `SNESFAS` cycle
+. -snes_fas_full_total (true|false) - Use total restriction and interpolation on the initial down and up sweeps for the full `SNESFAS` cycle
 
   Level: advanced
 

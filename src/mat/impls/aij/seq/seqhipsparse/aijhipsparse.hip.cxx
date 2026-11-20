@@ -3024,7 +3024,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat B)
 + -mat_type aijhipsparse                           - sets the matrix type to `MATSEQAIJHIPSPARSE`
 . -mat_hipsparse_storage_format (csr|ell|hyb)      - sets the storage format of matrices (for `MatMult()` and factors in `MatSolve()`).
 . -mat_hipsparse_mult_storage_format (csr|ell|hyb) - sets the storage format of matrices (for `MatMult()`)
-- -mat_hipsparse_use_cpu_solve                     - do `MatSolve()` on the CPU
+- -mat_hipsparse_use_cpu_solve (true|false)        - do `MatSolve()` on the CPU
 
   Level: beginner
 

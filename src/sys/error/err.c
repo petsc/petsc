@@ -106,7 +106,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 
   Options Database Keys:
 + -on_error_attach_debugger [noxterm,][(gdb|lldb)] - starts up the debugger if an error occurs
-- -on_error_abort                                  - aborts the program if an error occurs
+- -on_error_abort (true|false)                     - aborts the program if an error occurs
 
   Level: intermediate
 
@@ -338,8 +338,8 @@ static void PetscCxxErrorThrow()
 - mess - formatted message string - aka printf
 
   Options Database Keys:
-+ -error_output_stdout - output the error messages to `stdout` instead of the default `stderr`
-- -error_output_none   - do not output the error messages
++ -error_output_stdout (true|false) - output the error messages to `stdout` instead of the default `stderr`
+- -error_output_none (true|false)   - do not output the error messages
 
   Level: intermediate
 

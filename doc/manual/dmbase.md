@@ -43,7 +43,7 @@ DMLocalToGlobal(dm,l,g,ADD_VALUES);
 DMCreateMatrix(dm,Mat *m);
 ```
 
-The matrices produced may support `MatSetValuesLocal()` allowing one to work with the local numbering on each MPI rank. For `DMDA` one can also
+The matrices produced may support `MatSetValuesLocal()` allowing one to work with the local numbering on each MPI process. For `DMDA` one can also
 use `MatSetValuesStencil()` and for `DMSTAG` with `DMStagMatSetValuesStencil()`.
 
 A given `DM` can be refined for certain `DMType`s with `DMRefine()` or coarsened with `DMCoarsen()`.

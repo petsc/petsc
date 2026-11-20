@@ -1274,7 +1274,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewer
 - vf      - The viewer context, obtained via `DMAdaptorMonitorErrorDrawLGCreate()`
 
   Options Database Key:
-. -adaptor_error draw::draw_lg - Activates `DMAdaptorMonitorErrorDrawLG()`
+. -adaptor_monitor_error draw::draw_lg - Activates `DMAdaptorMonitorErrorDrawLG()`
 
   Level: intermediate
 
@@ -1628,10 +1628,11 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 - ax  - The adapted solution
 
   Options Database Keys:
-+ -snes_adapt (initial|sequential|multigrid) - adaption strategy, see `DMAdaptationStrategy`
-. -adapt_gradient_view                       - View the Clement interpolant of the solution gradient
-. -adapt_hessian_view                        - View the Clement interpolant of the solution Hessian
-- -adapt_metric_view                         - View the metric tensor for adaptive mesh refinement
++ -snes_adapt_initial n  - adapt the initial mesh `n` times in `SNESSolve()` with `DM_ADAPTATION_INITIAL`
+. -snes_adapt_sequence n - adapt the mesh `n` times in `SNESSolve()` with `DM_ADAPTATION_SEQUENTIAL`
+. -adapt_gradient_view   - View the Clement interpolant of the solution gradient
+. -adapt_hessian_view    - View the Clement interpolant of the solution Hessian
+- -adapt_metric_view     - View the metric tensor for adaptive mesh refinement
 
   Level: intermediate
 

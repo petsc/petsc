@@ -26,7 +26,7 @@
   the reason each function is not documented.
 
   Because collective MPI routines, such as MPI_Allreduce(), MPI_Scatter(),
-  are used in PETSc code that runs on only a single MPI rank, the
+  are used in PETSc code that runs on only a single MPI process, the
   wrappers provided in MPIUNI do work for those routines.
 
   PETSc usage of MPIUNI is primarily from C. However a minimal Fortran
@@ -74,11 +74,11 @@
     Hence it might not work with external packages or user code that
     might have MPI calls in it.
 
-    - MPIUNI is not a standards compliant implementation even for one MPI rank.
+    - MPIUNI is not a standards compliant implementation even for one MPI process.
     For example, if the user code has send/recv to self, then it will
     abort. [Similar issues exist with a number of other MPI functionality]
     However MPICH & Open MPI are the correct implementations of MPI
-    standard for one MPI rank.
+    standard for one MPI process.
 
     - When user code uses multiple MPI based packages that have their
     own *internal* stubs equivalent to MPIUNI - in sequential mode,

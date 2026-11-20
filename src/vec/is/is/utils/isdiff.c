@@ -24,7 +24,7 @@
 
   If `is2` is `NULL`, the result is the same as for an empty `IS`, i.e., a duplicate of `is1`.
 
-  The difference is computed separately on each MPI rank
+  The difference is computed separately on each MPI process
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
@@ -112,7 +112,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 
   Both index sets need to be sorted on input.
 
-  The sum is computed separately on each MPI rank
+  The sum is computed separately on each MPI process
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 @*/
@@ -260,7 +260,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
 
   `is1` and `is2` do not need to be sorted.
 
-  The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI process
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISIntersect()`
 @*/
@@ -363,7 +363,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 
   `is1` and `is2` do not need to be sorted.
 
-  The operations are performed separately on each MPI rank
+  The operations are performed separately on each MPI process
 
 .seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISConcatenate()`
 @*/

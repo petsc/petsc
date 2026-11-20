@@ -520,8 +520,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
   The resulting `sf` used with `PetscSFBcastBegin()` and `PetscSFBcastEnd()` merely copies the array entries of `rootdata` to
   `leafdata`; moving them between MPI processes if needed. For example,
-  if rmap is [0, 3, 5) and lmap is [0, 2, 6) and `rootdata` is (1, 2, 3) on MPI rank 0 and (4, 5) on MPI rank 1 then the
-  `leafdata` would become (1, 2) on MPI rank 0 and (3, 4, 5, x) on MPI rank 1.
+  if rmap is [0, 3, 5) and lmap is [0, 2, 6) and `rootdata` is (1, 2, 3) on MPI process 0 and (4, 5) on MPI process 1 then the
+  `leafdata` would become (1, 2) on MPI process 0 and (3, 4, 5, x) on MPI process 1.
 
 .seealso: [](sec_petscsf), `PetscSF`, `PetscLayout`, `PetscSFCreate()`, `PetscSFSetGraph()`, `PetscLayoutCreate()`, `PetscSFSetGraphLayout()`
 @*/
@@ -652,7 +652,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   Collective
 
   Input Parameters:
-+ layout           - `PetscLayout` defining the global index space and the MPI rank that brokers each index
++ layout           - `PetscLayout` defining the global index space and the MPI process that brokers each index
 . numRootIndices   - size of `rootIndices`
 . rootIndices      - array of global indices of which this process requests ownership
 . rootLocalIndices - root local index permutation (`NULL` if no permutation)

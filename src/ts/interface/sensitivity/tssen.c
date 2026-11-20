@@ -1474,7 +1474,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
 - PetscOptionsObject - the options context
 
   Options Database Keys:
-+ -ts_adjoint_solve (yes|no)     - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
++ -ts_adjoint_solve (true|false) - After solving the ODE/DAE solve the adjoint problem (requires `-ts_save_trajectory`)
 . -ts_adjoint_monitor            - print information at each adjoint time step
 - -ts_adjoint_monitor_draw_sensi - monitor the sensitivity of the first cost function wrt initial conditions (lambda[0]) graphically
 

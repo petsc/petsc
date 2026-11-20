@@ -252,9 +252,9 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems PetscOptionsO
    PCKSP - Defines a preconditioner as any `KSP` solver. This allows, for example, embedding a Krylov method inside a preconditioner.
 
    Options Database Key:
-.  -pc_use_amat - use the matrix that defines the linear system, Amat as the matrix for the
-                  inner solver, otherwise by default it uses the matrix used to construct
-                  the preconditioner, Pmat (see `PCSetOperators()`)
+.  -pc_use_amat (true|false) - use the matrix that defines the linear system, Amat as the matrix for the
+                               inner solver, otherwise by default it uses the matrix used to construct
+                               the preconditioner, Pmat (see `PCSetOperators()`)
 
    Level: intermediate
 

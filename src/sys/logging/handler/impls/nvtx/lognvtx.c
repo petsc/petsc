@@ -25,13 +25,11 @@ static PetscErrorCode PetscLogHandlerEventEnd_NVTX(PetscLogHandler handler, Pets
 }
 
 /*MC
-  PETSCLOGHANDLERNVTX - PETSCLOGHANDLERNVTX = "nvtx" -  A
-  `PetscLogHandler` that creates an NVTX range (which appears in Nvidia Nsight
-  profiling) for each PETSc event.
+  PETSCLOGHANDLERNVTX - PETSCLOGHANDLERNVTX = "nvtx" -  A `PetscLogHandler` that creates an NVTX range (which appears in NVIDIA Nsight profiling) for each PETSc event.
 
-  Options Database Keys:
-+ -log_nvtx   - start an nvtx log handler manually
-- -log_nvtx 0 - stop the nvtx log handler from starting automatically in `PetscInitialize()` in a program run within an nsys profiling session (see Note)
+  Options Database Key:
+. -log_nvtx (true|false) - start an `nvtx` log handler manually or prevent the `nvtx` log handler from starting automatically in `PetscInitialize()`
+                           in a program run within an `nsys` profiling session (see Note)
 
   Level: developer
 

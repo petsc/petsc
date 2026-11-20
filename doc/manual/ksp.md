@@ -1168,7 +1168,7 @@ constructor (or the `-mat_type` from the command line). For instance,
   >   are used for the coarser mesh). A larger value will cause the coarser problems to be run on fewer MPI processes, resulting
   >   in less communication and possibly a faster time to solution. See `PCGAMGSetProcEqLim()`.
   >
-  > - `-pc_gamg_rank_reduction_factors rn,rn-1,...,r1` Set a schedule for MPI rank reduction on coarse grids. `See PCGAMGSetRankReductionFactors()`
+  > - `-pc_gamg_rank_reduction_factors rn,rn-1,...,r1` Set a schedule for MPI process reduction on coarse grids. `See PCGAMGSetRankReductionFactors()`
   >   This overrides the lessening of processes that would arise from `-pc_gamg_process_eq_limit`.
   >
   > - `-pc_gamg_repartition (true|false)` Run a partitioner on each coarser mesh generated rather than using the default partition arising from the

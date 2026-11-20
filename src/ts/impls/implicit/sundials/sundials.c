@@ -868,8 +868,8 @@ PetscErrorCode TSSundialsSetUseDense(TS ts, PetscBool use_dense)
 .    -ts_sundials_rtol rtol                             - Relative tolerance for convergence
 .    -ts_sundials_linear_tolerance ltol                 - convergence tolerance for linear solver
 .    -ts_sundials_maxl maxl                             - Max dimension of the Krylov subspace
-.    -ts_sundials_monitor_steps                         - Monitor SUNDIALS internal steps
--    -ts_sundials_use_dense                             - Use a dense linear solver within CVODE (serial only)
+.    -ts_sundials_monitor_steps (true|false)            - Monitor SUNDIALS internal steps
+-    -ts_sundials_use_dense (true|false)                - Use a dense linear solver within CVODE (serial only)
 
     Level: beginner
 

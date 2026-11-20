@@ -1747,10 +1747,10 @@ static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF,
 + -dmnetwork_view viewer_specification             - Calls `DMView()` at the conclusion of `DMSetUp()`.
 . -dmnetwork_view_distributed viewer_specification - Calls `DMView()` at the conclusion of `DMNetworkDistribute()`
 . -dmnetwork_view_tmpdir dir                       - Sets the temporary directory to use when viewing with the `draw` option
-. -dmnetwork_view_all_ranks                        - Displays all of the subnetworks for each MPI process
+. -dmnetwork_view_all_ranks (true|false)           - Displays all of the subnetworks for each MPI process
 . -dmnetwork_view_rank_range                       - Displays the subnetworks for the MPI ranks in a comma-separated list
-. -dmnetwork_view_no_vertices                      - Disables displaying the vertices in the network visualization
-- -dmnetwork_view_no_numbering                     - Disables displaying the numbering of edges and vertices in the network visualization
+. -dmnetwork_view_no_vertices (true|false)         - Disables displaying the vertices in the network visualization
+- -dmnetwork_view_no_numbering (true|false)        - Disables displaying the numbering of edges and vertices in the network visualization
 
   Level: intermediate
 

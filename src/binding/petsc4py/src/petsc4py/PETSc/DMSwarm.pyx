@@ -545,7 +545,7 @@ cdef class DMSwarm(DM):
         return toInt(size)
 
     def migrate(self, remove_sent_points: bool = False) -> None:
-        """Relocate points defined in the `DMSwarm` to other MPI ranks.
+        """Relocate points defined in the `DMSwarm` to other MPI processes.
 
         Collective.
 
@@ -553,7 +553,7 @@ cdef class DMSwarm(DM):
         ----------
         remove_sent_points
             Flag indicating if sent points should be removed from the current
-            MPI rank.
+            MPI process.
 
         See Also
         --------

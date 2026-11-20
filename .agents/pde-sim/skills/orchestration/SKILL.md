@@ -134,7 +134,7 @@ Skip pde-modeling, numerical-analysis, MMS, and the case-index/MMS reuse gate �
 none apply. Instead:
 1. **Brief** → distill the request into a short task brief in the study dir: the
    required behavior, the input options it must accept (e.g. `-N 10`), the
-   required MPI rank count if stated ("run with 3 processes" ⇒ `mpi_ranks: 3`),
+   required MPI process count if stated ("run with 3 processes" ⇒ `mpi_ranks: 3`),
    and the exact program output expected (e.g. the gathered vector via `VecView`
    on rank 0).
 2. **Generate & verify** → dispatch code-generation in direct-task mode: it

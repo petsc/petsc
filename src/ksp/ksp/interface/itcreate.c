@@ -338,7 +338,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 - flg - `PETSC_TRUE` or `PETSC_FALSE`
 
   Options Database Key:
-. -ksp_lag_norm - lag the calculated residual norm
+. -ksp_lag_norm (true|false) - lag the calculated residual norm
 
   Level: advanced
 

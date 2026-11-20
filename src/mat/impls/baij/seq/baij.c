@@ -3765,8 +3765,8 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat mat, PetscViewer viewer)
 . A - the matrix
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
-- -mat_block_size - size of the blocks to use
++ -mat_no_unroll (true|false) - uses code that does not unroll the loops in the block calculations (much slower)
+- -mat_block_size             - size of the blocks to use
 
   Level: intermediate
 
@@ -3819,8 +3819,8 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt
         (possibly different for each block row) or `NULL`
 
   Options Database Keys:
-+ -mat_no_unroll  - uses code that does not unroll the loops in the block calculations (much slower)
-- -mat_block_size - size of the blocks to use
++ -mat_no_unroll (true|false) - uses code that does not unroll the loops in the block calculations (much slower)
+- -mat_block_size             - size of the blocks to use
 
   Level: intermediate
 

@@ -1648,10 +1648,10 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 . success - whether the graph partitioning was successful or not, optional. Unsuccessful simply means no change to the partitioning
 
   Options Database Keys:
-+ -dm_plex_rebalance_shared_points_parmetis             - Use ParMETIS instead of METIS for the partitioner
-. -dm_plex_rebalance_shared_points_use_initial_guess    - Use current partition to bootstrap ParMETIS partition
-. -dm_plex_rebalance_shared_points_use_mat_partitioning - Use the MatPartitioning object to perform the partition, the prefix for those operations is -dm_plex_rebalance_shared_points_
-- -dm_plex_rebalance_shared_points_monitor              - Monitor the shared points rebalance process
++ -dm_plex_rebalance_shared_points_parmetis                          - Use ParMETIS instead of METIS for the partitioner
+. -dm_plex_rebalance_shared_points_use_initial_guess (true|false)    - Use current partition to bootstrap ParMETIS partition
+. -dm_plex_rebalance_shared_points_use_mat_partitioning (true|false) - Use the MatPartitioning object to perform the partition, the prefix for those operations is -dm_plex_rebalance_shared_points_
+- -dm_plex_rebalance_shared_points_monitor                           - Monitor the shared points rebalance process
 
   Level: intermediate
 

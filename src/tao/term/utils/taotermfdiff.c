@@ -41,8 +41,8 @@ static PetscErrorCode SNESFunction_TaoTerm(SNES snes, Vec X, Vec G, void *ctx)
 . g - the computed finite difference approximation to the gradient
 
   Options Database Keys:
-+ -tao_term_fd_delta <delta>       - change in `x` used to calculate finite differences
-- -tao_term_gradient_use_fd <bool> - Use `TaoTermComputeGradientFD()` in `TaoTermComputeGradient()`
++ -tao_term_fd_delta delta               - change in `x` used to calculate finite differences
+- -tao_term_gradient_use_fd (true|false) - Use `TaoTermComputeGradientFD()` in `TaoTermComputeGradient()`
 
   Level: advanced
 
@@ -116,8 +116,8 @@ PetscErrorCode TaoTermComputeGradientFD(TaoTerm term, Vec x, Vec params, Vec g)
 - Hpre - (optional) Hessian preconditioning matrix
 
   Options Database Keys:
-+ -tao_term_fd_delta <delta>      - change in X used to calculate finite differences
-- -tao_term_hessian_use_fd <bool> - Use `TaoTermComputeHessianFD()` in `TaoTermComputeHessian()`
++ -tao_term_fd_delta delta              - change in X used to calculate finite differences
+- -tao_term_hessian_use_fd (true|false) - Use `TaoTermComputeHessianFD()` in `TaoTermComputeHessian()`
 
   Level: advanced
 

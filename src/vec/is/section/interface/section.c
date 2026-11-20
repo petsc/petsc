@@ -209,7 +209,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 . s - the `PetscSection`
 
   Options Database Key:
-. -petscsection_point_major - `PETSC_TRUE` for point-major order
+. -petscsection_point_major (true|false) - `PETSC_TRUE` for point-major order
 
   Level: intermediate
 

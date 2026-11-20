@@ -839,7 +839,7 @@ static PetscErrorCode TaoView_NLS(Tao tao, PetscViewer viewer)
 . -tao_nls_alpha2      - alpha2 reduction
 . -tao_nls_alpha3      - alpha3 reduction
 . -tao_nls_alpha4      - alpha4 reduction
-. -tao_nls_alpha       - alpha5 reduction
+. -tao_nls_alpha5      - alpha5 reduction
 . -tao_nls_mu1         - mu1 interpolation update
 . -tao_nls_mu2         - mu2 interpolation update
 . -tao_nls_gamma1      - gamma1 interpolation update

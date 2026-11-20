@@ -2,7 +2,7 @@
 
 /*@
   PetscOptionsGetenv - Gets an environmental variable, broadcasts to all
-  processors in communicator from MPI rank zero
+  processors in communicator from MPI process zero
 
   Collective
 
@@ -97,7 +97,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
 }
 
 /*@
-  PetscSetDisplay - Determine and set PETSc's X11 display string from the `-display` option, the `DISPLAY` environment variable, or the hostname of MPI rank 0 when running across multiple nodes
+  PetscSetDisplay - Determine and set PETSc's X11 display string from the `-display` option, the `DISPLAY` environment variable, or the hostname of MPI process 0 when running across multiple nodes
 
   Collective; No Fortran Support
 
@@ -161,9 +161,9 @@ PetscErrorCode PetscSetDisplay(void)
 . display - the display string
 
   Options Database Keys:
-+ -display display - sets the display to use
-- -x_virtual       - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
-                started up in PetscSetDisplay() with this option
++ -display display        - sets the display to use
+- -x_virtual (true|false) - forces use of a X virtual display Xvfb that will not display anything but -draw_save will still work. Xvfb is automatically
+                            started up in PetscSetDisplay() with this option
 
   Level: advanced
 

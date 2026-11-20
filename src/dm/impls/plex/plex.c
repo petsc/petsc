@@ -9694,7 +9694,7 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 
   Notes:
   The point numbering `IS` is parallel, with local portion indexed by local points (see `DMGetLocalSection()`). The global
-  points are taken as stratified, with each MPI rank owning a contiguous subset of each stratum. In the IS, owned points
+  points are taken as stratified, with each MPI process owning a contiguous subset of each stratum. In the IS, owned points
   will have their non-negative value while points owned by different ranks will be involuted -(idx+1). As an example,
   consider a parallel mesh in which the first two elements and first two vertices are owned by rank 0.
 

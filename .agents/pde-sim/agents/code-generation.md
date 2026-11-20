@@ -61,7 +61,7 @@ Load each by reading the file directly (loaded by path, not auto-discovered):
   class, discretization, coefficient functions to implement, solver stack, MMS,
   and verification plan. (Simulation lane.)
 - **Task brief** (programming lane): in place of a Numerical Plan, a short brief
-  of behavior, required options, required MPI ranks, and expected output — see
+  of behavior, required options, required MPI processes, and expected output — see
   Direct-task mode below.
 - **Vis Spec** (`.agents/pde-sim/contracts/vis-spec.schema.json`, optional): implement
   only the items marked `execution: "in_situ"` (solution output, in-situ
@@ -85,7 +85,7 @@ Load each by reading the file directly (loaded by path, not auto-discovered):
 ## Direct-task mode (programming lane)
 When the orchestrator dispatches a **programming** task (task_kind = programming)
 instead of a Numerical Plan, you get a short task brief: the required behavior,
-the input options to accept (e.g. `-N 10`), the required MPI rank count (e.g. run
+the input options to accept (e.g. `-N 10`), the required MPI process count (e.g. run
 with 3 processes), and the exact program output expected. There is no governing
 equation, discretization, or manufactured solution. Implement the program to the
 brief, then verify by a **clean run at the required rank count producing the

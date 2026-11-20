@@ -46,12 +46,12 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
 . mcptr - the new `MatColoring` context
 
   Options Database Keys:
-+ -mat_coloring_type      - the type of coloring algorithm used. See `MatColoringType`.
-. -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
-. -mat_coloring_distance  - compute a distance 1,2,... coloring.
-. -mat_coloring_view      - print information about the coloring and the produced index sets
-. -mat_coloring_test      - debugging option that prints all coloring incompatibilities
-- -mat_is_coloring_test   - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
++ -mat_coloring_type                 - the type of coloring algorithm used. See `MatColoringType`.
+. -mat_coloring_maxcolors            - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
+. -mat_coloring_distance             - compute a distance 1,2,... coloring.
+. -mat_coloring_view                 - print information about the coloring and the produced index sets
+. -mat_coloring_test (true|false)    - debugging option that prints all coloring incompatibilities
+- -mat_is_coloring_test (true|false) - debugging option that throws an error if MatColoringApply() generates an incorrect iscoloring
 
   Level: beginner
 
@@ -170,12 +170,12 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 . mc - `MatColoring` context
 
   Options Database Keys:
-+ -mat_coloring_type      - the type of coloring algorithm used. See `MatColoringType`.
-. -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
-. -mat_coloring_distance  - compute a distance 1,2,... coloring.
-. -mat_coloring_view      - print information about the coloring and the produced index sets
-. -snes_fd_color          - instruct SNES to using coloring and then `MatFDColoring` to compute the Jacobians
-- -snes_fd_color_use_mat  - instruct `SNES` to color the matrix directly instead of the `DM` from which the matrix comes (the default)
++ -mat_coloring_type                  - the type of coloring algorithm used. See `MatColoringType`.
+. -mat_coloring_maxcolors             - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
+. -mat_coloring_distance              - compute a distance 1,2,... coloring.
+. -mat_coloring_view                  - print information about the coloring and the produced index sets
+. -snes_fd_color (true|false)         - instruct SNES to using coloring and then `MatFDColoring` to compute the Jacobians
+- -snes_fd_color_use_mat (true|false) - instruct `SNES` to color the matrix directly instead of the `DM` from which the matrix comes (the default)
 
   Level: beginner
 

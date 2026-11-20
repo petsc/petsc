@@ -228,16 +228,16 @@ PetscErrorCode TaoTermSetUp(TaoTerm term)
 . term - a `TaoTerm`
 
   Options Database Keys:
-+ -tao_term_type <type>                              - l1, halfl2squared; see `TaoTermType` for a complete list
-. -tao_term_solution_vec_type <type>                 - the type of vector to use for the solution, see `VecType` for a complete list of vector types
-. -tao_term_parameters_vec_type <type>               - the type of vector to use for the parameters, see `VecType` for a complete list of vector types
-. -tao_term_parameters_mode <optional,none,required> - `TAOTERM_PARAMETERS_OPTIONAL`, `TAOTERM_PARAMETERS_NONE`, `TAOTERM_PARAMETERS_REQUIRED`
-. -tao_term_hessian_pre_is_hessian <bool>            - Whether `TaoTermCreateHessianMatricesDefault()` should make a separate preconditioning matrix
-. -tao_term_hessian_mat_type <type>                  - `MatType` for Hessian matrix created by `TaoTermCreateHessianMatricesDefault()`
-. -tao_term_hessian_pre_mat_type <type>              - `MatType` for approximate Hessian matrix used to construct the preconditioner created by `TaoTermCreateHessianMatricesDefault()`
-. -tao_term_fd_delta <real>                          - Increment for finite difference derivative approximations in `TaoTermComputeGradientFD()`
-. -tao_term_gradient_use_fd <bool>                   - Use finite differences in `TaoTermComputeGradient()`, overriding other user-provided or built-in routines
-- -tao_term_hessian_use_fd <bool>                    - Use finite differences in `TaoTermComputeHessian()`, overriding other user-provided or built-in routines
++ -tao_term_type type                                - l1, halfl2squared; see `TaoTermType` for a complete list
+. -tao_term_solution_vec_type type                   - the type of vector to use for the solution, see `VecType` for a complete list of vector types
+. -tao_term_parameters_vec_type type                 - the type of vector to use for the parameters, see `VecType` for a complete list of vector types
+. -tao_term_parameters_mode (optional|none|required) - `TAOTERM_PARAMETERS_OPTIONAL`, `TAOTERM_PARAMETERS_NONE`, `TAOTERM_PARAMETERS_REQUIRED`
+. -tao_term_hessian_pre_is_hessian (true|false)      - Whether `TaoTermCreateHessianMatricesDefault()` should use the Hessian as the preconditioning matrix
+. -tao_term_hessian_mat_type type                    - `MatType` for Hessian matrix created by `TaoTermCreateHessianMatricesDefault()`
+. -tao_term_hessian_pre_mat_type type                - `MatType` for approximate Hessian matrix used to construct the preconditioner created by `TaoTermCreateHessianMatricesDefault()`
+. -tao_term_fd_delta delta                           - Increment for finite difference derivative approximations in `TaoTermComputeGradientFD()`
+. -tao_term_gradient_use_fd (true|false)             - Use finite differences in `TaoTermComputeGradient()`, overriding other user-provided or built-in routines
+- -tao_term_hessian_use_fd (true|false)              - Use finite differences in `TaoTermComputeHessian()`, overriding other user-provided or built-in routines
 
   Level: beginner
 
@@ -340,8 +340,8 @@ PetscErrorCode TaoTermSetFromOptions(TaoTerm term)
 + term - a `TaoTerm`
 - type - a `TaoTermType`
 
-  Options Database Keys:
-. -tao_term_type <type> - l1, halfl2squared, `TaoTermType` for complete list
+  Options Database Key:
+. -tao_term_type type - l1, halfl2squared, `TaoTermType` for complete list
 
   Level: beginner
 
@@ -1379,8 +1379,8 @@ PetscErrorCode TaoTermSetParametersTemplate(TaoTerm term, Vec params_template)
 + term          - a `TaoTerm`
 - solution_type - the `VecType` for the solution space
 
-  Options Database Keys:
-. -tao_term_solution_vec_type <type> - `VecType` for complete list of vector types
+  Options Database Key:
+. -tao_term_solution_vec_type type - `VecType` for complete list of vector types
 
   Level: advanced
 
@@ -1410,8 +1410,8 @@ PetscErrorCode TaoTermSetSolutionVecType(TaoTerm term, VecType solution_type)
 + term            - a `TaoTerm`
 - parameters_type - the `VecType` for the parameters space
 
-  Options Database Keys:
-. -tao_term_parameters_vec_type <type> - `VecType` for complete list of vector types
+  Options Database Key:
+. -tao_term_parameters_vec_type type - `VecType` for complete list of vector types
 
   Level: advanced
 
@@ -1687,9 +1687,9 @@ PetscErrorCode TaoTermCreateHessianMatricesDefault(TaoTerm term, Mat *H, Mat *Hp
 - Hpre_mattype - the `MatType` to create for `Hpre`
 
   Options Database Keys:
-+ -tao_term_hessian_pre_is_hessian <bool> - Whether `TaoTermCreateHessianMatrices()` should make a separate matrix for constructing the preconditioner
-. -tao_term_hessian_mat_type <type>       - `MatType` for Hessian matrix created by `TaoTermCreateHessianMatrices()`
-- -tao_term_hessian_pre_mat_type <type>   - `MatType` for matrix from which a preconditioner can be created by `TaoTermCreateHessianMatrices()`
++ -tao_term_hessian_pre_is_hessian (true|false) - Whether `TaoTermCreateHessianMatrices()` should use the Hessian to construct the preconditioner
+. -tao_term_hessian_mat_type type               - `MatType` for Hessian matrix created by `TaoTermCreateHessianMatrices()`
+- -tao_term_hessian_pre_mat_type type           - `MatType` for matrix from which a preconditioner can be created by `TaoTermCreateHessianMatrices()`
 
   Level: developer
 
@@ -1821,8 +1821,8 @@ PetscErrorCode TaoTermDuplicate(TaoTerm term, TaoTermDuplicateOption opt, TaoTer
 + term            - a `TaoTerm`
 - parameters_mode - `TAOTERM_PARAMETERS_OPTIONAL`, `TAOTERM_PARAMETERS_NONE`, `TAOTERM_PARAMETERS_REQUIRED`
 
-  Options Database Keys:
-. -tao_term_parameters_mode <optional,none,required> - `TAOTERM_PARAMETERS_OPTIONAL`, `TAOTERM_PARAMETERS_NONE`, `TAOTERM_PARAMETERS_REQUIRED`
+  Options Database Key:
+. -tao_term_parameters_mode (optional|none|required) - `TAOTERM_PARAMETERS_OPTIONAL`, `TAOTERM_PARAMETERS_NONE`, `TAOTERM_PARAMETERS_REQUIRED`
 
   Level: advanced
 
@@ -1879,7 +1879,7 @@ PetscErrorCode TaoTermGetParametersMode(TaoTerm term, TaoTermParametersMode *par
 . delta - the finite difference increment
 
   Options Database Key:
-. -tao_term_fd_delta <delta> - the above increment
+. -tao_term_fd_delta delta - the above increment
 
   Level: advanced
 
@@ -1909,7 +1909,7 @@ PetscErrorCode TaoTermGetFDDelta(TaoTerm term, PetscReal *delta)
 - delta - the finite difference increment
 
   Options Database Key:
-. -tao_term_fd_delta <delta> - the above increment
+. -tao_term_fd_delta delta - the above increment
 
   Level: advanced
 
@@ -1942,8 +1942,8 @@ PetscErrorCode TaoTermSetFDDelta(TaoTerm term, PetscReal delta)
 + term   - a `TaoTerm`
 - use_fd - `PETSC_TRUE` to use finite differences, `PETSC_FALSE` to use the user-provided or built-in gradient method
 
-  Options Database Keys:
-. -tao_term_gradient_use_fd <bool> - use finite differences for gradient computation
+  Options Database Key:
+. -tao_term_gradient_use_fd (true|false) - use finite differences for gradient computation
 
   Level: advanced
 
@@ -2007,8 +2007,8 @@ PetscErrorCode TaoTermComputeGradientGetUseFD(TaoTerm term, PetscBool *use_fd)
 + term   - a `TaoTerm`
 - use_fd - `PETSC_TRUE` to use finite differences, `PETSC_FALSE` to use the user-provided or built-in Hessian method
 
-  Options Database Keys:
-. -tao_term_hessian_use_fd <bool> - use finite differences for Hessian computation
+  Options Database Key:
+. -tao_term_hessian_use_fd (true|false) - use finite differences for Hessian computation
 
   Level: advanced
 

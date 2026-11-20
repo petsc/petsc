@@ -859,7 +859,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_transform_extrude_symmetric (true|false)  - Extrude layers symmetrically about the surface
 . -dm_plex_transform_extrude_normal n0,...,nd        - Specify the extrusion direction
 . -dm_plex_transform_extrude_thicknesses t0,...,tl   - Specify thickness of each layer
-. -dm_plex_create_fv_ghost_cells                     - Flag to create finite volume ghost cells on the boundary
+. -dm_plex_create_fv_ghost_cells (true|false)        - Flag to create finite volume ghost cells on the boundary
 . -dm_plex_fv_ghost_cells_label name                 - Label name for ghost cells boundary
 . -dm_distribute (true|false)                        - Flag to redistribute a mesh among processes
 . -dm_distribute_overlap n                           - The size of the overlap halo
@@ -968,7 +968,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PeOp PetscObject obj, const char name[])
   `PetscViewer` = `PETSCVIEWEREXODUSII` i.e. ExodusII format assumes that element blocks (mapped to "Cell sets" labels)
   consists of sequentially numbered cells.
 
-  If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices) will be written.
+  If `dm` has been distributed, only the part of the `DM` on MPI process 0 (including "ghost" cells and vertices) will be written.
 
   Only TRI, TET, QUAD, and HEX cells are supported in ExodusII.
 
@@ -1019,7 +1019,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
 }
 
 /*@
-  DMCreateGlobalVector - Creates a global vector from a `DM` object. A global vector is a parallel vector that has no duplicate values shared between MPI ranks,
+  DMCreateGlobalVector - Creates a global vector from a `DM` object. A global vector is a parallel vector that has no duplicate values shared between MPI processes,
   that is it has no ghost locations.
 
   Collective
@@ -1068,7 +1068,7 @@ PetscErrorCode DMCreateGlobalVector(DM dm, Vec *vec)
   Level: beginner
 
   Notes:
-  A local vector usually has ghost locations that contain values that are owned by different MPI ranks. A global vector has no ghost locations.
+  A local vector usually has ghost locations that contain values that are owned by different MPI processes. A global vector has no ghost locations.
 
   PETSc `Vec` always have all zero entries when created with `DMCreateLocalVector()` until routines such as `VecSet()` or `VecSetValues()`
   are used to change the values. There is no reason to call `VecZeroEntries()` after creation.
@@ -1633,7 +1633,7 @@ PetscErrorCode DMSetMatrixPreallocateSkip(DM dm, PetscBool skip)
 - only - `PETSC_TRUE` if only want preallocation
 
   Options Database Key:
-. -dm_preallocate_only - Only preallocate the matrix for `DMCreateMatrix()`, `DMCreateMassMatrix()`, but do not fill it with zeros
+. -dm_preallocate_only (true|false) - Only preallocate the matrix for `DMCreateMatrix()`, `DMCreateMassMatrix()`, but do not fill it with zeros
 
   Level: developer
 
@@ -2379,7 +2379,7 @@ PetscErrorCode DMCreateDomainDecompositionScatters(DM dm, PetscInt n, DM subdms[
 . dmf - the refined `DM`, or `NULL`
 
   Options Database Key:
-. -dm_plex_cell_refiner strategy - chooses the refinement strategy, e.g. regular, tohex
+. -dm_plex_transform_type type - chooses the refinement transform, e.g. refine_regular, refine_tobox
 
   Level: developer
 
@@ -3345,7 +3345,7 @@ PetscErrorCode DMLocalToGlobalEnd(DM dm, Vec l, InsertMode mode, Vec g)
 /*@
   DMLocalToLocalBegin - Begins the process of mapping values from a local vector (that include
   ghost points that contain irrelevant values) to another local vector where the ghost points
-  in the second are set correctly from values on other MPI ranks.
+  in the second are set correctly from values on other MPI processes.
 
   Neighbor-wise Collective
 

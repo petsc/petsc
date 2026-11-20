@@ -531,7 +531,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 - vf    - The viewer context
 
   Options Database Key:
-. -ksp_monitor_true_residual_max - Activates `KSPMonitorTrueResidualMax()`
+. -ksp_monitor_max - Activates `KSPMonitorTrueResidualMax()`
 
   Level: intermediate
 
@@ -1444,14 +1444,14 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
            negative if the iteration has diverged, and `KSP_CONVERGED_ITERATING` otherwise
 
   Options Database Keys:
-+ -ksp_max_it                                  - maximum number of linear iterations
-. -ksp_min_it                                  - minimum number of linear iterations, defaults to 0
-. -ksp_rtol rtol                               - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
-. -ksp_atol abstol                             - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared
-. -ksp_divtol tol                              - if residual norm increases by this factor than divergence is declared
-. -ksp_converged_use_initial_residual_norm     - see `KSPConvergedDefaultSetUIRNorm()`
-. -ksp_converged_use_min_initial_residual_norm - see `KSPConvergedDefaultSetUMIRNorm()`
-- -ksp_converged_maxits                        - see `KSPConvergedDefaultSetConvergedMaxits()`
++ -ksp_max_it                                               - maximum number of linear iterations
+. -ksp_min_it                                               - minimum number of linear iterations, defaults to 0
+. -ksp_rtol rtol                                            - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
+. -ksp_atol abstol                                          - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared
+. -ksp_divtol tol                                           - if residual norm increases by this factor than divergence is declared
+. -ksp_converged_use_initial_residual_norm (true|false)     - see `KSPConvergedDefaultSetUIRNorm()`
+. -ksp_converged_use_min_initial_residual_norm (true|false) - see `KSPConvergedDefaultSetUMIRNorm()`
+- -ksp_converged_maxits (true|false)                        - see `KSPConvergedDefaultSetConvergedMaxits()`
 
   Level: advanced
 

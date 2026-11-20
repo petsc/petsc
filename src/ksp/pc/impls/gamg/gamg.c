@@ -1464,7 +1464,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 - n  - number of HEM matching passed to construct ASM subdomains
 
   Options Database Key:
-. -pc_gamg_asm_hem n - set the number of HEM matching passed
+. -pc_gamg_asm_hem_aggs n - set the number of HEM matching passed
 
   Level: intermediate
 
@@ -1903,7 +1903,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptions
 
   Options Database Keys for Multigrid:
 + -pc_mg_cycle_type (v|w)                            - see `PCMGSetCycleType()`
-. -pc_mg_distinct_smoothup                           - configure the up and down (pre and post) smoothers separately, see `PCMGSetDistinctSmoothUp()`
+. -pc_mg_distinct_smoothup (true|false)              - configure the up and down (pre and post) smoothers separately, see `PCMGSetDistinctSmoothUp()`
 . -pc_mg_type (additive|multiplicative|full|kaskade) - see `PCMGType`
 - -pc_mg_levels levels                               - number of levels of multigrid to use; `PCGAMG` has a heuristic to determine the number of levels so
                                                        this is not usually used with `PCGAMG`

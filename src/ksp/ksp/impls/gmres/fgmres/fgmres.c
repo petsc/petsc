@@ -221,7 +221,7 @@ static PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   } else { /* guess is 0 so residual is F (which is in ksp->vec_rhs) */
     PetscCall(VecCopy(ksp->vec_rhs, VEC_VV(0)));
   }
-  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation in the Krylov method */
+  /* This may be true only on a subset of MPI processes; setting it here so it will be detected by the first norm computation in the Krylov method */
   PetscCall(VecFlag(VEC_VV(0), ksp->reason == KSP_DIVERGED_PC_FAILED));
 
   /* now the residual is in VEC_VV(0) - which is what
@@ -487,7 +487,7 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *restart_size)
 +   -ksp_gmres_restart restart                                                  - the number of Krylov directions to orthogonalize against
 .   -ksp_gmres_haptol tol                                                       - sets the tolerance for "happy breakdown" (exact convergence)
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
-.   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
+.   -ksp_gmres_krylov_monitor (true|false)                                      - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange                                                - do not change the preconditioner between iterations
 -   -ksp_fgmres_modifypcksp                                                     - modify the preconditioner using `KSPFlexibleModifyPCKSP()`
 
