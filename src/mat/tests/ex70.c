@@ -880,6 +880,13 @@ int main(int argc, char **args)
       suffix: 2_cuda_complex
 
   test:
+    suffix: dense_transpose_backend_cuda
+    requires: cuda
+    nsize: 3
+    output_file: output/empty.out
+    args: -M 11 -N 9 -K 4 -A_mat_type mpidensecuda -xgpu -bgpu -testnest 0 -testreusemodified -mattransmatmult_mpidense_mpidense_via backend -matmattransmult_mpidense_mpidense_via backend
+
+  test:
     output_file: output/empty.out
     suffix: 2_par
     nsize: 2

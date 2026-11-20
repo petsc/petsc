@@ -13,10 +13,11 @@ typedef struct { /* used by MatTransposeMatMultXXX_MPIDense_MPIDense() */
   PetscScalar *sendbuf;
   Mat          atb;
   PetscMPIInt *recvcounts;
-  PetscMPIInt  tag;
+  PetscBool    usebackend;
 } MatProductCtx_TransMatMultDense;
 
 typedef struct { /* used by MatMatTransposeMultxxx_MPIDense_MPIDense() */
+  Mat          Bfull;
   PetscScalar *buf[2];
   PetscMPIInt  tag;
   PetscMPIInt *recvcounts;
