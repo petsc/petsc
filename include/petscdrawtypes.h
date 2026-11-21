@@ -18,6 +18,7 @@ typedef const char *PetscDrawType;
 #define PETSC_DRAW_WIN32 "win32"
 #define PETSC_DRAW_TIKZ  "tikz"
 #define PETSC_DRAW_IMAGE "image"
+#define PETSC_DRAW_SDL3  "sdl3"
 
 /*S
    PetscDraw - Abstract PETSc object for graphics, often represents a window on the screen

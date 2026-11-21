@@ -22,6 +22,7 @@
 - Add `--download-ninja` and `--with-ninja-exec` for the Ninja backend used by Meson package builds
 - Add `--with-meson-exec` to select an existing Meson executable
 - Add `--with-cmake-debug-find` to control whether `--debug-find` is passed to the CMake configure of downloaded packages; it is on by default and needs CMake 3.17 or newer
+- Add `--with-sdl3` for the SDL3 and SDL3_ttf libraries used by `PETSC_DRAW_SDL3`; configure looks for them by default
 - Change OpenMP target offload for CUDA/HIP to require `--with-openmp-target-offload` instead of being enabled automatically
 - Build petsc4py, mpi4py, and slepc4py with `-O0` to shorten build time; the binding code is no longer optimized
 - Fix `--with-shared-libraries=1` on Microsoft Windows with Intel ifx, where Fortran code failed to link
@@ -31,6 +32,7 @@
 ```{rubric} Sys:
 ```
 
+- Add `PETSC_DRAW_SDL3`, a `PetscDraw` graphics device implemented with the SDL3 and SDL3_ttf libraries, and `PetscDrawOpenSDL3()`; `PetscDrawSetFromOptions()` selects it by default when neither Microsoft Windows graphics nor X Windows is available
 - Add `PETSC_TLS` to declare a variable thread-local when configured with `--with-threadsafety=1`
 - Maintain a separate `PetscStack` for each thread when configured with `--with-debugging=1 --with-threadsafety=1`
 - Add topology-aware GPU binding using `hwloc`; Requires `hwloc` version 2.0 or later

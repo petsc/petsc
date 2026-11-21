@@ -679,8 +679,8 @@ Predefined viewers, `PETSC_VIEWER_DRAW_WORLD` and
 `PETSC_VIEWER_DRAW_SELF`, may be used at any time. Their initial use
 will cause the appropriate window to be created.
 
-Implementations using OpenGL, TikZ, and other formats may be selected
-with `PetscDrawSetType()`. PETSc can also produce movies; see
+Implementations using SDL3, TikZ, and other formats may be selected
+with `PetscDrawSetType()`, for example with `-draw_type sdl3`. PETSc can also produce movies; see
 `PetscDrawSetSaveMovie()`, and note that command-line options can also
 be convenient; see the `PetscDrawSetFromOptions()` man page.
 

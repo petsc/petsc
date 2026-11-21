@@ -42,8 +42,8 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw, PetscReal
   PetscImage img = (PetscImage)draw->data;
 
   PetscFunctionBegin;
-  if (i) *i = XTRANS(draw, img, x);
-  if (j) *j = YTRANS(draw, img, y);
+  if (i != NULL) *i = XTRANS(draw, img, x);
+  if (j != NULL) *j = YTRANS(draw, img, y);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -52,8 +52,8 @@ static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw, int i, in
   PetscImage img = (PetscImage)draw->data;
 
   PetscFunctionBegin;
-  if (x) *x = ITRANS(draw, img, i);
-  if (y) *y = JTRANS(draw, img, j);
+  if (x != NULL) *x = ITRANS(draw, img, i);
+  if (y != NULL) *y = JTRANS(draw, img, j);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -225,8 +225,8 @@ static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw, PetscReal *w,
   {
     int tw = PetscImageFontWidth;
     int th = PetscImageFontHeight;
-    if (w) *w = tw * (draw->coor_xr - draw->coor_xl) / (img->w * (draw->port_xr - draw->port_xl));
-    if (h) *h = th * (draw->coor_yr - draw->coor_yl) / (img->h * (draw->port_yr - draw->port_yl));
+    if (w != NULL) *w = tw * (draw->coor_xr - draw->coor_xl) / (img->w * (draw->port_xr - draw->port_xl));
+    if (h != NULL) *h = th * (draw->coor_yr - draw->coor_yl) / (img->h * (draw->port_yr - draw->port_yl));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -244,7 +244,7 @@ static PetscErrorCode PetscDrawString_Image(PetscDraw draw, PetscReal x, PetscRe
     int yy = YTRANS(draw, img, y);
     PetscCall(PetscTokenCreate(text, '\n', &token));
     PetscCall(PetscTokenFind(token, &subtext));
-    while (subtext) {
+    while (subtext != NULL) {
       PetscImageDrawText(img, xx, yy, c, subtext);
       yy += PetscImageFontHeight;
       PetscCall(PetscTokenFind(token, &subtext));
@@ -316,7 +316,7 @@ static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw, PetscDraw *popup)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_popup", &flg, NULL));
-  if (!flg) {
+  if (flg == PETSC_FALSE) {
     *popup = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -376,8 +376,8 @@ static PetscErrorCode PetscDrawView_Image(PetscDraw draw, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
-    const char *filename = draw->savefilename ? draw->savefilename : draw->title;
+  if (isascii == PETSC_TRUE) {
+    const char *filename = draw->savefilename != NULL ? draw->savefilename : draw->title;
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Image file name %s\n", filename));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -460,14 +460,14 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw, unsigned char pale
   PetscMPIInt    rank, size;
 
   PetscFunctionBegin;
-  if (w) *w = (unsigned int)img->w;
-  if (h) *h = (unsigned int)img->h;
-  if (pixels) *pixels = NULL;
+  if (w != NULL) *w = (unsigned int)img->w;
+  if (h != NULL) *h = (unsigned int)img->h;
+  if (pixels != NULL) *pixels = NULL;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   if (rank == 0) {
     PetscCall(PetscMemcpy(palette, img->palette, sizeof(img->palette)));
     PetscCall(PetscMalloc1((size_t)(img->w * img->h), &buffer));
-    if (pixels) *pixels = buffer;
+    if (pixels != NULL) *pixels = buffer;
   }
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));
   if (size == 1) {
@@ -479,42 +479,6 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw, unsigned char pale
 }
 
 static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_Image, PetscDrawFlush_Image, PetscDrawLine_Image, PetscDrawLineSetWidth_Image, PetscDrawLineGetWidth_Image, PetscDrawPoint_Image, PetscDrawPointSetSize_Image, PetscDrawString_Image, PetscDrawStringVertical_Image, PetscDrawStringSetSize_Image, PetscDrawStringGetSize_Image, PetscDrawSetViewport_Image, PetscDrawClear_Image, PetscDrawRectangle_Image, PetscDrawTriangle_Image, PetscDrawEllipse_Image, PetscDrawGetMouseButton_Image, PetscDrawPause_Image, PetscDrawBeginPage_Image, PetscDrawEndPage_Image, PetscDrawGetPopup_Image, PetscDrawSetTitle_Image, PetscDrawCheckResizedWindow_Image, PetscDrawResizeWindow_Image, PetscDrawDestroy_Image, PetscDrawView_Image, PetscDrawGetSingleton_Image, PetscDrawRestoreSingleton_Image, PetscDrawSave_Image, PetscDrawGetImage_Image, PetscDrawSetCoordinates_Image, PetscDrawArrow_Image, PetscDrawCoordinateToPixel_Image, PetscDrawPixelToCoordinate_Image, PetscDrawPointPixel_Image, PetscDrawStringBoxed_Image, NULL};
-
-static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
-  {255, 255, 255}, /* white */
-  {0,   0,   0  }, /* black */
-  {255, 0,   0  }, /* red */
-  {0,   255, 0  }, /* green */
-  {0,   255, 255}, /* cyan */
-  {0,   0,   255}, /* blue */
-  {255, 0,   255}, /* magenta */
-  {127, 255, 212}, /* aquamarine */
-  {34,  139, 34 }, /* forestgreen */
-  {255, 165, 0  }, /* orange */
-  {238, 130, 238}, /* violet */
-  {165, 42,  42 }, /* brown */
-  {255, 192, 203}, /* pink */
-  {255, 127, 80 }, /* coral */
-  {190, 190, 190}, /* gray */
-  {255, 255, 0  }, /* yellow */
-  {255, 215, 0  }, /* gold */
-  {255, 182, 193}, /* lightpink */
-  {72,  209, 204}, /* mediumturquoise */
-  {240, 230, 140}, /* khaki */
-  {105, 105, 105}, /* dimgray */
-  {54,  205, 50 }, /* yellowgreen */
-  {135, 206, 235}, /* skyblue */
-  {0,   100, 0  }, /* darkgreen */
-  {0,   0,   128}, /* navyblue */
-  {244, 164, 96 }, /* sandybrown */
-  {95,  158, 160}, /* cadetblue */
-  {176, 224, 230}, /* powderblue */
-  {255, 20,  147}, /* deeppink */
-  {216, 191, 216}, /* thistle */
-  {50,  205, 50 }, /* limegreen */
-  {255, 240, 245}, /* lavenderblush */
-  {221, 160, 221}, /* plum */
-};
 
 /*MC
    PETSC_DRAW_IMAGE - PETSc graphics device that uses a raster buffer
@@ -551,7 +515,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   size[1] = h;
   if (size[1] < 1) size[1] = size[0];
   PetscCall(PetscOptionsGetIntArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-draw_size", size, &nsize, &set));
-  if (set && nsize == 1) size[1] = size[0];
+  if (set == PETSC_TRUE && nsize == 1) size[1] = size[0];
   if (size[0] < 1) size[0] = 300;
   if (size[1] < 1) size[1] = size[0];
   PetscCall(PetscCIntCast(size[0], &w));
@@ -575,9 +539,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
     unsigned char B[256 - PETSC_DRAW_BASIC_COLORS];
     PetscCall(PetscDrawUtilitySetCmap(NULL, ncolors, R, G, B));
     for (k = 0; k < PETSC_DRAW_BASIC_COLORS; k++) {
-      img->palette[k][0] = BasicColors[k][0];
-      img->palette[k][1] = BasicColors[k][1];
-      img->palette[k][2] = BasicColors[k][2];
+      img->palette[k][0] = PetscDrawBasicColors[k][0];
+      img->palette[k][1] = PetscDrawBasicColors[k][1];
+      img->palette[k][2] = PetscDrawBasicColors[k][2];
     }
     for (i = 0; i < ncolors; i++, k++) {
       img->palette[k][0] = R[i];
@@ -586,7 +550,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
     }
   }
 
-  if (!draw->savefilename) PetscCall(PetscDrawSetSave(draw, draw->title));
+  if (draw->savefilename == NULL) PetscCall(PetscDrawSetSave(draw, draw->title));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

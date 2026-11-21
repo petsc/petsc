@@ -30,6 +30,7 @@ configure_options = [
   '--download-libceed',
   '--download-libxsmm',
   '--download-chaco=1',
+  '--with-sdl3=1',
   '--with-strict-petscerrorcode',
   '--with-coverage',
   ]

@@ -5,6 +5,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw);
 #if PetscDefined(HAVE_X)
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
 #endif
+#if PetscDefined(HAVE_SDL3)
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_SDL3(PetscDraw);
+#endif
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 #if PetscDefined(USE_WINDOWS_GRAPHICS)
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
@@ -33,6 +36,9 @@ PetscErrorCode PetscDrawRegisterAll(void)
   PetscCall(PetscDrawRegister(PETSC_DRAW_X, PetscDrawCreate_X));
 #elif PetscDefined(USE_WINDOWS_GRAPHICS)
   PetscCall(PetscDrawRegister(PETSC_DRAW_WIN32, PetscDrawCreate_Win32));
+#endif
+#if PetscDefined(HAVE_SDL3)
+  PetscCall(PetscDrawRegister(PETSC_DRAW_SDL3, PetscDrawCreate_SDL3));
 #endif
   PetscCall(PetscDrawRegister(PETSC_DRAW_NULL, PetscDrawCreate_Null));
   PetscFunctionReturn(PETSC_SUCCESS);
