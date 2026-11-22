@@ -219,19 +219,21 @@ static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y)
 
 static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
 {
-  PC_SVD *jac = (PC_SVD *)pc->data;
-  Mat     W;
+  PC_SVD  *jac = (PC_SVD *)pc->data;
+  PetscInt N;
 
   PetscFunctionBegin;
+  PetscCall(MatGetSize(X, NULL, &N));
+  PetscCall(PCMatWorkSetUp(pc, 1, N));
   if (PetscDefined(USE_COMPLEX)) {
     PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
     PetscCall(MatConjugate(Y));
   }
-  PetscCall(MatTransposeMatMult(jac->U, PetscDefined(USE_COMPLEX) ? Y : X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &W));
-  PetscCall(MatDiagonalScale(W, jac->diag, NULL));
-  PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
+  PetscCall(MatTransposeMatMult(jac->U, PetscDefined(USE_COMPLEX) ? Y : X, pc->matwork[0] != NULL ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DETERMINE, pc->matwork));
+  PetscCall(MatProductClear(pc->matwork[0]));
+  PetscCall(MatDiagonalScale(pc->matwork[0], jac->diag, NULL));
+  PetscCall(MatTransposeMatMult(jac->Vt, pc->matwork[0], MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(MatConjugate(Y));
-  PetscCall(MatDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

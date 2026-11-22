@@ -506,6 +506,11 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
       output_file: output/ex26_matcycles_lda.out
 
     test:
+      suffix: matsolve_lda_svd
+      args: -ksp_type preonly -pc_type svd -mx 5 -my 5 -nrhs 7 -lda_shift 3 -ksp_matsolve_batch_size {{4 7}shared output} -mat_product_clear false -check_references
+      output_file: output/ex26_matcycles_lda.out
+
+    test:
       suffix: matsolve_lda_bjacobi
       nsize: 4
       args: -ksp_type preonly -pc_type bjacobi -pc_bjacobi_blocks 2 -sub_ksp_type preonly -sub_pc_type jacobi -mx 5 -my 5 -nrhs 7 -lda_shift 3 -ksp_matsolve_batch_size {{4 7}shared output}
