@@ -39,10 +39,10 @@ static PetscErrorCode TestMatEquality(Mat x, Mat y)
 static PetscErrorCode TestPCMatVersusMat(PC pc, Mat A, PetscRandom rand, MatOperation op)
 {
   Vec          b, x, x2;
-  Mat          B, X, X2;
+  PetscInt     n;
   MatOperation op2;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PCMatSetApplyOperation(pc, op));
   PetscCall(PCView(pc, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(PCMatGetApplyOperation(pc, &op2));
@@ -52,10 +52,6 @@ static PetscErrorCode TestPCMatVersusMat(PC pc, Mat A, PetscRandom rand, MatOper
   PetscCall(VecDuplicate(x, &x2));
   PetscCall(VecSetRandom(b, rand));
 
-  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
-  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &X2));
-  PetscCall(MatSetRandom(B, rand));
-
   PetscCall(MatMult(A, b, x));
   PetscCall(PCApply(pc, b, x2));
   PetscCall(TestVecEquality(x, x2));
@@ -64,13 +60,20 @@ static PetscErrorCode TestPCMatVersusMat(PC pc, Mat A, PetscRandom rand, MatOper
   PetscCall(PCApplyTranspose(pc, b, x2));
   PetscCall(TestVecEquality(x, x2));
 
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_CURRENT, &X));
-  PetscCall(PCMatApply(pc, B, X2));
-  PetscCall(TestMatEquality(X, X2));
+  PetscCall(MatGetSize(A, &n, NULL));
+  for (PetscInt i = 0; i < 3; ++i) {
+    Mat B, X, X2;
 
-  PetscCall(MatDestroy(&X2));
-  PetscCall(MatDestroy(&X));
-  PetscCall(MatDestroy(&B));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n, i < 2 ? n : 2, NULL, &B));
+    PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &X2));
+    PetscCall(MatSetRandom(B, rand));
+    PetscCall(PCMatApply(pc, B, X2));
+    PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_CURRENT, &X));
+    PetscCall(TestMatEquality(X, X2));
+    PetscCall(MatDestroy(&X2));
+    PetscCall(MatDestroy(&X));
+    PetscCall(MatDestroy(&B));
+  }
   PetscCall(VecDestroy(&x2));
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&b));

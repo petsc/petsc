@@ -93,6 +93,38 @@ static PetscErrorCode PCLogEventsDeactivatePop(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  PCMatWorkCreate - Creates a dense work matrix in an empty slot using a vector's row layout and backend.
+
+  Collective on `v`
+
+  Input Parameters:
++ v - vector that supplies the communicator, local and global row counts, and `VecType`
+. n - local column count, or `PETSC_DECIDE`
+- N - global column count
+
+  Input/Output Parameter:
+. work - matrix slot. If `*work` is `NULL`, the caller receives an owned matrix. An existing matrix is reused as supplied.
+
+  Level: developer
+
+.seealso: `PCMatWorkSetUp()`, `MatCreateDenseFromVecType()`
+*/
+PetscErrorCode PCMatWorkCreate(Vec v, PetscInt n, PetscInt N, Mat *work)
+{
+  VecType  type;
+  PetscInt m, M;
+
+  PetscFunctionBegin;
+  if (*work == NULL) {
+    PetscCall(VecGetType(v, &type));
+    PetscCall(VecGetLocalSize(v, &m));
+    PetscCall(VecGetSize(v, &M));
+    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)v), type, m, n, M, N, PETSC_DECIDE, NULL, work));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PCReset - Resets a `PC` context to the state it was in before `PCSetUp()` was called, and removes any allocated `Vec` and `Mat` from its data structure
 
@@ -115,6 +147,7 @@ PetscErrorCode PCReset(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryTypeMethod(pc, reset);
+  PetscCall(PCMatWorkReset(pc));
   PetscCall(MatDestroy(&pc->pmat));
   PetscCall(MatDestroy(&pc->mat));
 
