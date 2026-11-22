@@ -1209,28 +1209,50 @@ static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y)
   Mat                sX, sY;
   const PetscScalar *x;
   PetscScalar       *y;
-  PetscInt           m, N, lda, ldb;
+  PetscInt           m, N, lda[2];
+  PetscMemType       type[2];
 
   PetscFunctionBegin;
-  /* apply preconditioner on each matrix block */
   PetscCall(MatGetLocalSize(X, &m, NULL));
   PetscCall(MatGetSize(X, NULL, &N));
-  PetscCall(MatDenseGetLDA(X, &lda));
-  PetscCall(MatDenseGetLDA(Y, &ldb));
-  PetscCall(MatDenseGetArrayRead(X, &x));
-  PetscCall(MatDenseGetArrayWrite(Y, &y));
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->ksp[0]), m, PETSC_DECIDE, PETSC_DECIDE, N, (PetscScalar *)x, &sX));
-  PetscCall(MatCreateDense(PetscObjectComm((PetscObject)jac->ksp[0]), m, PETSC_DECIDE, PETSC_DECIDE, N, y, &sY));
-  PetscCall(MatDenseSetLDA(sX, lda));
-  PetscCall(MatDenseSetLDA(sY, ldb));
+  PetscCall(MatDenseGetLDA(X, &lda[0]));
+  PetscCall(MatDenseGetLDA(Y, &lda[1]));
+  PetscCall(MatDenseGetArrayReadAndMemType(X, &x, &type[0]));
+  PetscCall(MatDenseGetArrayWriteAndMemType(Y, &y, &type[1]));
+  PetscCall(PCMatWorkSetUp(pc, 2, N));
+  for (PetscInt i = 0; i < 2; ++i) {
+    const PetscScalar *array = i != 0 ? y : x;
+    Mat               *work  = &pc->matwork[i];
+    PetscBool          host;
+
+    if (*work != NULL) {
+      // the storage type of a work matrix is fixed, so rebuild it when the memory type of the block changes
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)*work, &host, MATSEQDENSE, MATMPIDENSE, ""));
+      if (host != PetscMemTypeHost(type[i])) PetscCall(MatDestroy(work));
+    }
+    if (*work == NULL) {
+      PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)jac->ksp[0]), type[i], m, PETSC_DECIDE, PETSC_DECIDE, N, lda[i], (PetscScalar *)array, work));
+      PetscCall(MatDenseReplaceArrayWithMemType(*work, type[i], NULL));
+    } else if (PetscMemTypeDevice(type[i]) == PETSC_TRUE) {
+      PetscInt oldlda;
+
+      PetscCall(MatDenseGetLDA(*work, &oldlda));
+      // a host-side subsolve may have allocated a host copy with the previous stride
+      if (oldlda != lda[i]) PetscCall(MatDenseReplaceArray(*work, NULL));
+    }
+    PetscCall(MatDensePlaceArrayWithMemType(*work, type[i], array));
+    PetscCall(MatDenseSetLDA(*work, lda[i]));
+  }
+  sX = pc->matwork[0];
+  sY = pc->matwork[1];
   PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[0], X, Y, 0));
   PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
   PetscCall(KSPCheckMatSolve(jac->ksp[0], pc, sY));
   PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], X, Y, 0));
-  PetscCall(MatDestroy(&sY));
-  PetscCall(MatDestroy(&sX));
-  PetscCall(MatDenseRestoreArrayWrite(Y, &y));
-  PetscCall(MatDenseRestoreArrayRead(X, &x));
+  PetscCall(MatDenseResetArrayWithMemType(sY, type[1]));
+  PetscCall(MatDenseResetArrayWithMemType(sX, type[0]));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(Y, &y));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(X, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

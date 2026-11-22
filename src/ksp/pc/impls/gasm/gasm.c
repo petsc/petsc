@@ -709,48 +709,81 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBool transpose)
+/*
+  PCMatWorkGet_GASM - Gets the dense right-hand side and solution matrices on the subdomain communicator.
+
+  Collective on `pc`
+
+  Input Parameters:
++ pc - `PCGASM` after PCSetUp(), with one local subdomain per process
+- N  - global number of right-hand sides
+
+  Output Parameters:
++ Z - subdomain right-hand side matrix, or `NULL` if not needed
+- W - subdomain solution matrix
+
+  Level: developer
+
+  Note:
+  The `PC` owns both matrices. Take a reference to retain either matrix across a change in `N` or a workspace reset.
+
+.seealso: `PCMatWorkGet_ASM()`, `PCMatWorkSetUp()`
+*/
+PetscErrorCode PCMatWorkGet_GASM(PC pc, PetscInt N, Mat *Z, Mat *W)
 {
-  PC_GASM   *osm = (PC_GASM *)pc->data;
-  Mat        X, Y, O = NULL, Z, W;
-  VecType    vtype;
-  VecScatter restriction, prolongation;
-  PetscInt   m, M, N;
+  PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
   PetscCheck(osm->n == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
+  PetscCall(PCMatWorkSetUp(pc, osm->pctoouter != NULL ? 3 : 2, N));
+  PetscCall(PCMatWorkCreate(osm->x[0], PETSC_DECIDE, N, &pc->matwork[0]));
+  if (pc->matwork[1] == NULL) PetscCall(MatDuplicate(pc->matwork[0], MAT_DO_NOT_COPY_VALUES, &pc->matwork[1]));
+  if (Z != NULL) *Z = pc->matwork[0];
+  *W = pc->matwork[1];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApply_GASM_Private(PC pc, Mat Xin, Mat Yout, PetscBool transpose)
+{
+  PC_GASM   *osm = (PC_GASM *)pc->data;
+  Mat        X, Y, Z, W;
+  PetscBool  nonzero;
+  VecScatter restriction, prolongation;
+  PetscInt   N;
+
+  PetscFunctionBegin;
   PetscCall(MatGetSize(Xin, NULL, &N));
+  PetscCall(PCMatWorkGet_GASM(pc, N, &Z, &W));
   if (osm->pctoouter != NULL) {
-    PetscCall(VecGetLocalSize(osm->pcx, &m));
-    PetscCall(VecGetSize(osm->pcx, &M));
-    PetscCall(MatGetVecType(Xin, &vtype));
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &O));
-    PetscCall(MatDenseScatter_Private(osm->pctoouter, Xin, O, INSERT_VALUES, SCATTER_REVERSE));
-    X = Y = O;
+    if (pc->matwork[2] == NULL) {
+      VecType  vtype;
+      PetscInt m, M;
+
+      PetscCall(MatGetVecType(osm->permutationP, &vtype));
+      PetscCall(VecGetLocalSize(osm->pcx, &m));
+      PetscCall(VecGetSize(osm->pcx, &M));
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->pcx), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &pc->matwork[2]));
+    }
+    X = Y = pc->matwork[2];
+    PetscCall(MatDenseScatter_Private(osm->pctoouter, Xin, X, INSERT_VALUES, SCATTER_REVERSE));
   } else {
     X = Xin;
     Y = Yout;
   }
   restriction  = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_RESTRICT)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_INTERPOLATE))) ? osm->girestriction : osm->gorestriction;
   prolongation = ((transpose == PETSC_FALSE && !(osm->type & PC_GASM_INTERPOLATE)) || (transpose == PETSC_TRUE && !(osm->type & PC_GASM_RESTRICT))) ? osm->girestriction : osm->gorestriction;
-  PetscCall(VecGetLocalSize(osm->x[0], &m));
-  PetscCall(VecGetSize(osm->x[0], &M));
-  PetscCall(VecGetType(osm->x[0], &vtype));
-  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &Z));
+  PetscCall(KSPGetInitialGuessNonzero(osm->ksp[0], &nonzero));
   if (restriction == osm->girestriction) PetscCall(MatZeroEntries(Z));
   PetscCall(MatDenseScatter_Private(restriction, X, Z, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)osm->ois[0]), vtype, m, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &W));
+  if (nonzero == PETSC_TRUE) PetscCall(MatZeroEntries(W));
   PetscCall(PetscLogEventBegin(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   if (!transpose) PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
   else PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
   PetscCall(PetscLogEventEnd(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
-  PetscCall(MatDestroy(&Z));
   PetscCall(MatZeroEntries(Y));
   PetscCall(MatDenseScatter_Private(prolongation, W, Y, ADD_VALUES, SCATTER_REVERSE));
   if (osm->pctoouter != NULL) PetscCall(MatDenseScatter_Private(osm->pctoouter, Y, Yout, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(MatDestroy(&W));
-  PetscCall(MatDestroy(&O));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

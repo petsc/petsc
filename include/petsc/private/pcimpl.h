@@ -74,6 +74,8 @@ PETSC_EXTERN PetscLogEvent PC_ApplyTransposeOnBlocks;
 PETSC_EXTERN PetscLogStage PCMPIStage;
 
 PETSC_INTERN PetscErrorCode PCMatWorkCreate(Vec, PetscInt, PetscInt, Mat *);
+PETSC_INTERN PetscErrorCode PCMatWorkGet_ASM(PC, PetscInt, Mat *, Mat *);
+PETSC_INTERN PetscErrorCode PCMatWorkGet_GASM(PC, PetscInt, Mat *, Mat *);
 
 // SLEPc builds PCHPDDM in a separate library and needs the three following workspace operations inline
 
