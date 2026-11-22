@@ -752,6 +752,23 @@ static PetscErrorCode PCPreSolve_HPDDM(PC pc, KSP ksp, Vec, Vec)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCReset_HPDDMShell(PC pc)
+{
+  Mat  A;
+  Mat *shared;
+
+  PetscFunctionBegin;
+  if (pc->matwork != nullptr && pc->matwork[1] != nullptr) {
+    PetscCall(MatProductGetMats(pc->matwork[1], &A, nullptr, nullptr));
+    if (A != nullptr) {
+      PetscCall(PetscObjectContainerQuery((PetscObject)A, "_HPDDM_MatProduct", static_cast<void *>(&shared)));
+      if (shared == pc->matwork + 1) PetscCall(PetscObjectCompose((PetscObject)A, "_HPDDM_MatProduct", nullptr));
+    }
+  }
+  PetscCall(PCMatWorkReset(pc));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCSetUp_HPDDMShell(PC pc)
 {
   PC_HPDDM_Level *ctx;
@@ -773,7 +790,9 @@ static PetscErrorCode PCSetUp_HPDDMShell(PC pc)
     PetscCall(VecDuplicateVecs(x, 2, &ctx->v[1]));
     PetscCall(VecDestroy(&x));
   }
-  for (PetscInt i = 0; i < 3; ++i) PetscCall(MatDestroy(ctx->V + i));
+  PetscCall(PCReset_HPDDMShell(pc));
+  /* indices 0-2 are for the deflation matrices, 3-4 for the coarse solves, and 5 when using PC[G]ASM with a larger overlap than PCHPDDM */
+  PetscCall(PCMatWorkSetUp(pc, 6, PETSC_DECIDE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -808,11 +827,11 @@ static inline PetscErrorCode PCHPDDMDeflate_Private(PC pc, Type X, Type Y)
   PetscCall(MatDenseGetLDA(Y, ld + 1));
   PetscCheck(ld[0] == ld[1], PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Leading dimension of input Mat different than the one of output Mat");
   /* going from PETSc to HPDDM numbering */
-  PetscCall(MatDenseScatter_Private(ctx->scatter, X, ctx->V[0], INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(ctx->P->deflation<false, trans>(ctx->V[0], ctx->D)); /* Y = Q X */
+  PetscCall(MatDenseScatter_Private(ctx->scatter, X, pc->matwork[0], INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(ctx->P->deflation<false, trans>(pc->matwork[0], ctx->D)); /* Y = Q X */
   /* going from HPDDM to PETSc numbering */
   PetscCall(MatZeroEntries(Y));
-  PetscCall(MatDenseScatter_Private(ctx->scatter, ctx->V[0], Y, ADD_VALUES, SCATTER_REVERSE));
+  PetscCall(MatDenseScatter_Private(ctx->scatter, pc->matwork[0], Y, ADD_VALUES, SCATTER_REVERSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -862,7 +881,7 @@ static PetscErrorCode PCApply_HPDDMShell(PC pc, Vec x, Vec y)
 }
 
 template <bool transpose>
-static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscMemType *type, PetscBool *reset)
+static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat *V, Mat Y, PetscMemType *type, PetscBool *reset)
 {
   Mat            A, *ptr;
   PetscScalar   *array;
@@ -873,55 +892,87 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscM
   PetscCall(KSPGetOperators(ctx->ksp, &A, nullptr));
   PetscCall(MatGetSize(Y, nullptr, &N));
   PetscCall(PetscObjectQuery((PetscObject)A, "_HPDDM_MatProduct", (PetscObject *)&container));
-  *reset = static_cast<PetscBool>(container != NULL);
+  *reset = static_cast<PetscBool>(container != nullptr);
   if (container) { /* MatProduct container already attached */
     PetscCall(PetscContainerGetPointer(container, static_cast<void *>(&ptr)));
-    if (ptr[1] != ctx->V[2]) /* Mat has changed or may have been set first in KSPHPDDM */
+    if (ptr[1] != V[2]) /* Mat has changed or may have been set first in KSPHPDDM */
       for (m = 0; m < 2; ++m) {
-        PetscCall(MatDestroy(ctx->V + m + 1));
-        ctx->V[m + 1] = ptr[m];
-        PetscCall(PetscObjectReference((PetscObject)ctx->V[m + 1]));
+        PetscCall(MatDestroy(V + m + 1));
+        V[m + 1] = ptr[m];
+        PetscCall(PetscObjectReference((PetscObject)V[m + 1]));
       }
   }
-  if (ctx->V[1]) PetscCall(MatGetSize(ctx->V[1], nullptr, &prev));
-  if (ctx->V[0]) PetscCall(MatGetSize(ctx->V[0], nullptr, &M));
+  if (V[1] != nullptr) PetscCall(MatGetSize(V[1], nullptr, &prev));
+  if (V[0] != nullptr) PetscCall(MatGetSize(V[0], nullptr, &M));
   if (N != prev || N != M) {
-    PetscCall(MatDestroy(ctx->V));
+    PetscCall(MatDestroy(V));
+    PetscCall(MatDestroy(V + 5));
     PetscCall(VecGetLocalSize(ctx->v[0][0], &m));
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)Y), A->defaultvectype, m, PETSC_DECIDE, PETSC_DECIDE, N, PETSC_DECIDE, nullptr, ctx->V));
+#if PetscDefined(HAVE_HPDDM)
+    /* only PETSc builds can borrow workspace through the private PCASM and PCGASM accessors */
+    {
+      PetscBool flg[2] = {PETSC_FALSE, PETSC_FALSE};
+
+      PetscCall(PetscObjectTypeCompare((PetscObject)ctx->pc, PCASM, flg));
+      if (flg[0] == PETSC_FALSE) PetscCall(PetscObjectTypeCompare((PetscObject)ctx->pc, PCGASM, flg + 1));
+      if (flg[0] == PETSC_TRUE || flg[1] == PETSC_TRUE) {
+        Mat     W;
+        VecType vtype;
+
+        PetscCall(PCSetUp(ctx->pc));
+        if (flg[0] == PETSC_TRUE) PetscCall(PCMatWorkGet_ASM(ctx->pc, N, nullptr, &W));
+        else PetscCall(PCMatWorkGet_GASM(ctx->pc, N, nullptr, &W));
+        PetscCall(MatGetLocalSize(W, &M, nullptr));
+        PetscCall(VecGetRootType_Private(ctx->v[1][0], &vtype));
+        PetscCall(PetscStrcmp(W->defaultvectype, vtype, flg));
+        if (m <= M && flg[0] == PETSC_TRUE) {
+          PetscCall(MatDenseGetLocalMatrix(W, &W));
+          PetscCall(PetscObjectReference((PetscObject)W));
+          if (m == M) V[0] = W;
+          else {
+            V[5] = W;
+            PetscCall(MatDenseGetArrayWriteAndMemType(W, &array, type));
+            PetscCall(MatCreateDenseWithMemType(PETSC_COMM_SELF, *type, m, N, m, N, m, array, V));
+            PetscCall(MatDenseRestoreArrayWriteAndMemType(W, &array));
+          }
+        }
+      }
+    }
+#endif
+    if (V[0] == nullptr) PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, A->defaultvectype, m, N, m, N, PETSC_DECIDE, nullptr, V));
     if (N != prev) {
-      PetscCall(MatDestroy(ctx->V + 1));
-      PetscCall(MatDestroy(ctx->V + 2));
+      PetscCall(MatDestroy(V + 1));
+      PetscCall(MatDestroy(V + 2));
       PetscCall(MatGetLocalSize(Y, &m, nullptr));
       PetscCall(MatGetSize(Y, &M, nullptr));
-      PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, type));
-      PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)Y), *type, m, PETSC_DECIDE, M, N, PETSC_DECIDE, array, ctx->V + 1));
-      PetscCall(MatDenseRestoreArrayWriteAndMemType(ctx->V[0], &array));
-      PetscCall(MatDuplicate(ctx->V[1], MAT_DO_NOT_COPY_VALUES, ctx->V + 2));
-      PetscCall(MatProductCreateWithMat(A, !transpose ? Y : ctx->V[2], nullptr, ctx->V[1]));
-      PetscCall(MatProductSetType(ctx->V[1], !transpose ? MATPRODUCT_AB : MATPRODUCT_AtB));
-      PetscCall(MatProductSetFromOptions(ctx->V[1]));
-      PetscCall(MatProductSymbolic(ctx->V[1]));
-      if (!container)
-        PetscCall(PetscObjectContainerCompose((PetscObject)A, "_HPDDM_MatProduct", static_cast<void *>(ctx->V + 1), nullptr)); /* no MatProduct container attached, create one to be queried in KSPHPDDM or at the next call to PCMatApply() */
-      else PetscCall(PetscContainerSetPointer(container, static_cast<void *>(ctx->V + 1)));                                    /* need to compose B and D from MatProductCreateWithMat(A, B, NULL, D), which are stored in the contiguous array ctx->V */
+      PetscCall(MatDenseGetArrayWriteAndMemType(V[0], &array, type));
+      PetscCall(MatCreateDenseWithMemType(PetscObjectComm((PetscObject)Y), *type, m, PETSC_DECIDE, M, N, PETSC_DECIDE, array, V + 1));
+      PetscCall(MatDenseRestoreArrayWriteAndMemType(V[0], &array));
+      PetscCall(MatDuplicate(V[1], MAT_DO_NOT_COPY_VALUES, V + 2));
+      PetscCall(MatProductCreateWithMat(A, !transpose ? Y : V[2], nullptr, V[1]));
+      PetscCall(MatProductSetType(V[1], !transpose ? MATPRODUCT_AB : MATPRODUCT_AtB));
+      PetscCall(MatProductSetFromOptions(V[1]));
+      PetscCall(MatProductSymbolic(V[1]));
+      if (container == nullptr)
+        PetscCall(PetscObjectContainerCompose((PetscObject)A, "_HPDDM_MatProduct", static_cast<void *>(V + 1), nullptr)); /* no MatProduct container attached, create one to be queried in KSPHPDDM or at the next call to PCMatApply() */
+      else PetscCall(PetscContainerSetPointer(container, static_cast<void *>(V + 1)));                                    /* need to compose B and D from MatProductCreateWithMat(A, B, NULL, D), which are stored in the contiguous array V */
     }
     PetscCallCXX(ctx->P->start(N));
   }
   if (N == prev || container) { /* when MatProduct container is attached, always need to MatProductReplaceMats() since KSPHPDDM may have replaced the Mat as well */
     MatProductType ptype;
 
-    PetscCall(MatProductReplaceMats(nullptr, !transpose ? Y : ctx->V[2], nullptr, ctx->V[1]));
-    PetscCall(MatProductGetType(ctx->V[1], &ptype));
-    if (ptype != (!transpose ? MATPRODUCT_AB : MATPRODUCT_AtB)) { /* MatProduct previously setup for the other type, e.g., by PCMatApply() before PCMatApplyTranspose() */
-      PetscCall(MatProductSetType(ctx->V[1], !transpose ? MATPRODUCT_AB : MATPRODUCT_AtB));
-      PetscCall(MatProductSetFromOptions(ctx->V[1]));
-      PetscCall(MatProductSymbolic(ctx->V[1]));
+    PetscCall(MatProductReplaceMats(nullptr, transpose == PETSC_FALSE ? Y : V[2], nullptr, V[1]));
+    PetscCall(MatProductGetType(V[1], &ptype));
+    if (ptype != (transpose == PETSC_FALSE ? MATPRODUCT_AB : MATPRODUCT_AtB)) { /* MatProduct previously setup for the other type, e.g., by PCMatApply() before PCMatApplyTranspose() */
+      PetscCall(MatProductSetType(V[1], transpose == PETSC_FALSE ? MATPRODUCT_AB : MATPRODUCT_AtB));
+      PetscCall(MatProductSetFromOptions(V[1]));
+      PetscCall(MatProductSymbolic(V[1]));
     }
-    if (container != NULL) {
-      PetscCall(MatDenseGetArrayWriteAndMemType(ctx->V[0], &array, type));
-      PetscCall(MatDensePlaceArrayWithMemType(ctx->V[1], *type, array));
-      PetscCall(MatDenseRestoreArrayWriteAndMemType(ctx->V[0], &array));
+    if (container != nullptr) {
+      PetscCall(MatDenseGetArrayWriteAndMemType(V[0], &array, type));
+      PetscCall(MatDensePlaceArrayWithMemType(V[1], *type, array));
+      PetscCall(MatDenseRestoreArrayWriteAndMemType(V[0], &array));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -944,6 +995,7 @@ static PetscErrorCode PCHPDDMMatApply_Private(PC_HPDDM_Level *ctx, Mat Y, PetscM
 static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
 {
   PC_HPDDM_Level *ctx;
+  Mat            *V = pc->matwork;
   PetscMemType    type;
   PetscBool       reset = PETSC_FALSE;
 
@@ -953,34 +1005,34 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
   if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_NONE) PetscCall(PCMatApply(ctx->pc, X, Y));
   else if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED) {
     PetscCall(PCMatApply(ctx->pc, X, Y));
-    PetscCall(PCHPDDMMatApply_Private<false>(ctx, Y, &type, &reset));
-    PetscCall(MatProductNumeric(ctx->V[1]));
-    PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-    PetscCall(MatAXPY(ctx->V[2], -1.0, X, SAME_NONZERO_PATTERN));
-    PetscCall(PCHPDDMDeflate_Private(pc, ctx->V[2], ctx->V[2]));
-    PetscCall(MatAXPY(Y, -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+    PetscCall(PCHPDDMMatApply_Private<false>(ctx, V, Y, &type, &reset));
+    PetscCall(MatProductNumeric(V[1]));
+    PetscCall(MatCopy(V[1], V[2], SAME_NONZERO_PATTERN));
+    PetscCall(MatAXPY(V[2], -1.0, X, SAME_NONZERO_PATTERN));
+    PetscCall(PCHPDDMDeflate_Private(pc, V[2], V[2]));
+    PetscCall(MatAXPY(Y, -1.0, V[2], SAME_NONZERO_PATTERN));
   } else {
-    PetscCall(PCHPDDMMatApply_Private<false>(ctx, Y, &type, &reset));
+    PetscCall(PCHPDDMMatApply_Private<false>(ctx, V, Y, &type, &reset));
     PetscCall(PCHPDDMDeflate_Private(pc, X, Y));
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-      PetscCall(MatProductNumeric(ctx->V[1]));
-      PetscCall(MatAXPY(ctx->V[1], -1.0, X, SAME_NONZERO_PATTERN));
-      PetscCall(PCMatApply(ctx->pc, ctx->V[1], ctx->V[2]));
-      PetscCall(MatAXPY(Y, -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+      PetscCall(MatProductNumeric(V[1]));
+      PetscCall(MatAXPY(V[1], -1.0, X, SAME_NONZERO_PATTERN));
+      PetscCall(PCMatApply(ctx->pc, V[1], V[2]));
+      PetscCall(MatAXPY(Y, -1.0, V[2], SAME_NONZERO_PATTERN));
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-        PetscCall(MatProductReplaceMats(nullptr, ctx->V[2], nullptr, ctx->V[1]));
-        PetscCall(MatProductNumeric(ctx->V[1]));
-        PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-        PetscCall(PCHPDDMDeflate_Private(pc, ctx->V[2], ctx->V[2]));
-        PetscCall(MatAXPY(Y, 1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+        PetscCall(MatProductReplaceMats(nullptr, V[2], nullptr, V[1]));
+        PetscCall(MatProductNumeric(V[1]));
+        PetscCall(MatCopy(V[1], V[2], SAME_NONZERO_PATTERN));
+        PetscCall(PCHPDDMDeflate_Private(pc, V[2], V[2]));
+        PetscCall(MatAXPY(Y, 1.0, V[2], SAME_NONZERO_PATTERN));
       }
     } else {
       PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
-      PetscCall(PCMatApply(ctx->pc, X, ctx->V[1]));
-      PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
+      PetscCall(PCMatApply(ctx->pc, X, V[2]));
+      PetscCall(MatAXPY(Y, 1.0, V[2], SAME_NONZERO_PATTERN));
     }
   }
-  if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(ctx->V[1], type));
+  if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(V[1], type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1035,6 +1087,7 @@ static PetscErrorCode PCApplyTranspose_HPDDMShell(PC pc, Vec x, Vec y)
 static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
 {
   PC_HPDDM_Level *ctx;
+  Mat            *V = pc->matwork;
   PetscMemType    type;
   PetscBool       reset = PETSC_FALSE;
 
@@ -1043,36 +1096,36 @@ static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
   PetscCheck(ctx->P, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with no HPDDM object");
   if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_NONE) PetscCall(PCMatApplyTranspose(ctx->pc, X, Y));
   else {
-    PetscCall(PCHPDDMMatApply_Private<true>(ctx, Y, &type, &reset));
+    PetscCall(PCHPDDMMatApply_Private<true>(ctx, V, Y, &type, &reset));
     PetscCall(PCHPDDMDeflate_Private<'T'>(pc, X, Y));
     if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED) {
-      PetscCall(PCMatApplyTranspose(ctx->pc, X, ctx->V[2]));
-      PetscCall(MatAXPY(Y, 1.0, ctx->V[2], SAME_NONZERO_PATTERN));
-      PetscCall(MatProductNumeric(ctx->V[1]));
-      /* ctx->V[0] and ctx->V[1] memory regions overlap, so need to copy to ctx->V[2] and switch array */
-      PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-      if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(ctx->V[1], type));
-      PetscCall(PCHPDDMDeflate_Private<'T'>(pc, ctx->V[2], ctx->V[2]));
-      PetscCall(MatAXPY(Y, -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+      PetscCall(PCMatApplyTranspose(ctx->pc, X, V[2]));
+      PetscCall(MatAXPY(Y, 1.0, V[2], SAME_NONZERO_PATTERN));
+      PetscCall(MatProductNumeric(V[1]));
+      /* V[0] and V[1] memory regions overlap, so need to copy to V[2] and switch array */
+      PetscCall(MatCopy(V[1], V[2], SAME_NONZERO_PATTERN));
+      if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(V[1], type));
+      PetscCall(PCHPDDMDeflate_Private<'T'>(pc, V[2], V[2]));
+      PetscCall(MatAXPY(Y, -1.0, V[2], SAME_NONZERO_PATTERN));
     } else {
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED || ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED) {
-        PetscCall(MatCopy(Y, ctx->V[2], SAME_NONZERO_PATTERN));
-        PetscCall(MatProductNumeric(ctx->V[1]));
-        PetscCall(MatAXPY(ctx->V[1], -1.0, X, SAME_NONZERO_PATTERN));
-        PetscCall(PCMatApplyTranspose(ctx->pc, ctx->V[1], ctx->V[2]));
-        PetscCall(MatAXPY(Y, -1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+        PetscCall(MatCopy(Y, V[2], SAME_NONZERO_PATTERN));
+        PetscCall(MatProductNumeric(V[1]));
+        PetscCall(MatAXPY(V[1], -1.0, X, SAME_NONZERO_PATTERN));
+        PetscCall(PCMatApplyTranspose(ctx->pc, V[1], V[2]));
+        PetscCall(MatAXPY(Y, -1.0, V[2], SAME_NONZERO_PATTERN));
         if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
-          PetscCall(MatProductNumeric(ctx->V[1]));
-          PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-          PetscCall(PCHPDDMDeflate_Private<'T'>(pc, ctx->V[2], ctx->V[2]));
-          PetscCall(MatAXPY(Y, 1.0, ctx->V[2], SAME_NONZERO_PATTERN));
+          PetscCall(MatProductNumeric(V[1]));
+          PetscCall(MatCopy(V[1], V[2], SAME_NONZERO_PATTERN));
+          PetscCall(PCHPDDMDeflate_Private<'T'>(pc, V[2], V[2]));
+          PetscCall(MatAXPY(Y, 1.0, V[2], SAME_NONZERO_PATTERN));
         }
       } else {
         PetscCheck(ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "PCSHELL from PCHPDDM called with an unknown PCHPDDMCoarseCorrectionType %d", ctx->parent->correction);
-        PetscCall(PCMatApplyTranspose(ctx->pc, X, ctx->V[1]));
-        PetscCall(MatAXPY(Y, 1.0, ctx->V[1], SAME_NONZERO_PATTERN));
+        PetscCall(PCMatApplyTranspose(ctx->pc, X, V[2]));
+        PetscCall(MatAXPY(Y, 1.0, V[2], SAME_NONZERO_PATTERN));
       }
-      if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(ctx->V[1], type));
+      if (reset == PETSC_TRUE) PetscCall(MatDenseResetArrayWithMemType(V[1], type));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1088,9 +1141,7 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
   PetscCall(VecDestroyVecs(1, &ctx->v[0]));
   PetscCall(VecDestroyVecs(2, &ctx->v[1]));
   PetscCall(PetscObjectCompose((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", nullptr));
-  PetscCall(MatDestroy(ctx->V));
-  PetscCall(MatDestroy(ctx->V + 1));
-  PetscCall(MatDestroy(ctx->V + 2));
+  PetscCall(PCReset_HPDDMShell(pc));
   PetscCall(VecDestroy(&ctx->D));
   PetscCall(PetscSFDestroy(&ctx->scatter));
   PetscCall(PCDestroy(&ctx->pc));
@@ -1098,7 +1149,7 @@ static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
 }
 
 template <class Type, bool T = false, std::enable_if_t<std::is_same<Type, Vec>::value> * = nullptr>
-static inline PetscErrorCode PCApply_Schur_Private(std::tuple<KSP, VecScatter, Vec[2]> *p, PC factor, Type x, Type y)
+static inline PetscErrorCode PCApply_Schur_Private(PC, std::tuple<KSP, VecScatter, Vec[2]> *p, PC factor, Type x, Type y)
 {
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(std::get<1>(*p), x, std::get<2>(*p)[0], INSERT_VALUES, SCATTER_REVERSE));
@@ -1111,18 +1162,18 @@ static inline PetscErrorCode PCApply_Schur_Private(std::tuple<KSP, VecScatter, V
 }
 
 template <class Type, bool = false, std::enable_if_t<std::is_same<Type, Mat>::value> * = nullptr>
-static inline PetscErrorCode PCApply_Schur_Private(std::tuple<KSP, VecScatter, Vec[2]> *p, PC factor, Type X, Type Y)
+static inline PetscErrorCode PCApply_Schur_Private(PC pc, std::tuple<KSP, VecScatter, Vec[2]> *p, PC factor, Type X, Type Y)
 {
-  Mat B[2];
+  Mat *B;
 
   PetscFunctionBegin;
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, factor->mat->rmap->n, X->cmap->n, nullptr, B));
-  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, factor->mat->rmap->n, X->cmap->n, nullptr, B + 1));
+  PetscCall(PCMatWorkSetUp(pc, 2, X->cmap->N));
+  B = pc->matwork;
+  if (B[0] == nullptr) PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, factor->mat->rmap->n, X->cmap->N, nullptr, B));
+  if (B[1] == nullptr) PetscCall(MatDuplicate(B[0], MAT_DO_NOT_COPY_VALUES, B + 1));
   PetscCall(MatDenseScatter_Private(std::get<1>(*p), X, B[0], INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(PCMatApply(factor, B[0], B[1]));
-  PetscCall(MatDestroy(B));
   PetscCall(MatDenseScatter_Private(std::get<1>(*p), B[1], Y, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(MatDestroy(B + 1));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1152,7 +1203,7 @@ static PetscErrorCode PCApply_Schur(PC pc, Type x, Type y)
     PetscCall(MatMkl_PardisoSetCntl(A, 70, 1));
 #endif
   }
-  PetscCall(PCApply_Schur_Private<Type, T>(p, factor, x, y));
+  PetscCall(PCApply_Schur_Private<Type, T>(pc, p, factor, x, y));
   if (flg) PetscCall(MatMumpsSetIcntl(A, 26, -1));
   else {
 #if PetscDefined(HAVE_MKL_PARDISO)
@@ -1179,7 +1230,7 @@ template <char trans>
 static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScalar *rhs, const unsigned short &mu)
 {
   PC                 pc;
-  Mat                B, X;
+  Mat                B, X = nullptr;
   const PetscScalar *array;
   PetscCount         count;
   PetscInt           n, j = 0;
@@ -1208,29 +1259,35 @@ static PetscErrorCode PCHPDDMSolve_Private(const PC_HPDDM_Level *ctx, PetscScala
     PetscCall(KSPCheckSolve(ctx->ksp, pc, ctx->ksp->vec_sol));
     PetscCall(VecGetArrayRead(ctx->ksp->vec_sol, &array));
   } else {
-    PetscInt  N;
-    PetscBool host;
+    Mat *work = pc->matwork + 3;
 
-    PetscCall(MatGetSize(B, &N, nullptr));
-    PetscCall(PetscStrcmpAny(B->defaultvectype, &host, VECSTANDARD, VECSEQ, VECMPI, ""));
-    PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)ctx->ksp), B->defaultvectype, n, PETSC_DECIDE, N, mu, PETSC_DECIDE, host == PETSC_TRUE ? rhs : nullptr, &B));
-    PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, &X));
-    if (host == PETSC_FALSE) PetscCall(MatDensePlaceArray(B, rhs));
+    PetscCheck(pc->nmatwork >= 5, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCSetUp_HPDDMShell() allocated only %" PetscInt_FMT " working matrices, instead of at least 5", pc->nmatwork);
+    if (work[0] != nullptr && work[0]->cmap->N != mu) {
+      PetscCall(MatDestroy(work));
+      PetscCall(MatDestroy(work + 1));
+    }
+    if (work[0] == nullptr) {
+      PetscBool host;
+
+      PetscCall(PetscStrcmpAny(B->defaultvectype, &host, VECSTANDARD, VECSEQ, VECMPI, ""));
+      PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)ctx->ksp), B->defaultvectype, n, PETSC_DECIDE, B->rmap->N, mu, PETSC_DECIDE, host == PETSC_TRUE ? rhs : nullptr, work));
+      if (host == PETSC_TRUE) PetscCall(MatDenseReplaceArray(work[0], nullptr));
+    }
+    B = work[0];
+    if (work[1] == nullptr) PetscCall(MatDuplicate(B, MAT_DO_NOT_COPY_VALUES, work + 1));
+    X = work[1];
+    PetscCall(MatDensePlaceArray(B, rhs));
     if (nonzero == PETSC_TRUE) PetscCall(MatCopy(B, X, SAME_NONZERO_PATTERN));
     if (trans == 'N') PetscCall(KSPMatSolve(ctx->ksp, B, X));
     else PetscCall(KSPMatSolveTranspose(ctx->ksp, B, X)); /* TODO: missing KSPMatSolveHermitianTranspose() */
-    if (host == PETSC_FALSE) PetscCall(MatDenseResetArray(B));
+    PetscCall(MatDenseResetArray(B));
     PetscCall(KSPCheckMatSolve(ctx->ksp, pc, X));
     PetscCall(MatDenseGetArrayRead(X, &array));
   }
   if (PetscDefined(USE_COMPLEX) && trans == 'H') PetscCallCXX(std::transform(array, array + count, rhs, [](const PetscScalar &v) { return PetscConj(v); }));
   else PetscCall(PetscArraycpy(rhs, array, count));
   if (mu == 1) PetscCall(VecRestoreArrayRead(ctx->ksp->vec_sol, &array));
-  else {
-    PetscCall(MatDenseRestoreArrayRead(X, &array));
-    PetscCall(MatDestroy(&X));
-    PetscCall(MatDestroy(&B));
-  }
+  else PetscCall(MatDenseRestoreArrayRead(X, &array));
   if (ctx->parent->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_Solve[j], ctx->ksp, nullptr, nullptr, nullptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2964,6 +3021,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(KSPGetPC(data->levels[n]->ksp, &spc));
           PetscCall(PCSetType(spc, PCSHELL));
           PetscCall(PCShellSetContext(spc, data->levels[n]));
+          spc->ops->reset = PCReset_HPDDMShell;
           PetscCall(PCShellSetSetUp(spc, PCSetUp_HPDDMShell));
           PetscCall(PCShellSetApply(spc, PCApply_HPDDMShell));
           PetscCall(PCShellSetMatApply(spc, PCMatApply_HPDDMShell));
@@ -3058,9 +3116,6 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(data->levels[n], PETSC_TRUE));
         PetscCall(VecDestroyVecs(1, &data->levels[n]->v[0]));
         PetscCall(VecDestroyVecs(2, &data->levels[n]->v[1]));
-        PetscCall(MatDestroy(data->levels[n]->V));
-        PetscCall(MatDestroy(data->levels[n]->V + 1));
-        PetscCall(MatDestroy(data->levels[n]->V + 2));
         PetscCall(VecDestroy(&data->levels[n]->D));
         PetscCall(PetscSFDestroy(&data->levels[n]->scatter));
       }
