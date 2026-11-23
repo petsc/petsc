@@ -1764,9 +1764,9 @@ static PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, Petsc
         z[1 + k * cm] += v[1] * x1 + v[4] * x2 + v[7] * x3;
         z[2 + k * cm] += v[2] * x1 + v[5] * x2 + v[8] * x3;
         if (*idx != i) {
-          c[3 * (*idx) + 0 + k * cm] += v[0] * b[3 * i + k * bm] + v[3] * b[3 * i + 1 + k * bm] + v[6] * b[3 * i + 2 + k * bm];
-          c[3 * (*idx) + 1 + k * cm] += v[1] * b[3 * i + k * bm] + v[4] * b[3 * i + 1 + k * bm] + v[7] * b[3 * i + 2 + k * bm];
-          c[3 * (*idx) + 2 + k * cm] += v[2] * b[3 * i + k * bm] + v[5] * b[3 * i + 1 + k * bm] + v[8] * b[3 * i + 2 + k * bm];
+          c[3 * (*idx) + 0 + k * cm] += v[0] * b[3 * i + k * bm] + v[1] * b[3 * i + 1 + k * bm] + v[2] * b[3 * i + 2 + k * bm];
+          c[3 * (*idx) + 1 + k * cm] += v[3] * b[3 * i + k * bm] + v[4] * b[3 * i + 1 + k * bm] + v[5] * b[3 * i + 2 + k * bm];
+          c[3 * (*idx) + 2 + k * cm] += v[6] * b[3 * i + k * bm] + v[7] * b[3 * i + 1 + k * bm] + v[8] * b[3 * i + 2 + k * bm];
         }
         v += 9;
         ++idx;
@@ -1808,10 +1808,10 @@ static PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, Petsc
         z[2 + k * cm] += v[2] * x1 + v[6] * x2 + v[10] * x3 + v[14] * x4;
         z[3 + k * cm] += v[3] * x1 + v[7] * x2 + v[11] * x3 + v[15] * x4;
         if (*idx != i) {
-          c[4 * (*idx) + 0 + k * cm] += v[0] * b[4 * i + k * bm] + v[4] * b[4 * i + 1 + k * bm] + v[8] * b[4 * i + 2 + k * bm] + v[12] * b[4 * i + 3 + k * bm];
-          c[4 * (*idx) + 1 + k * cm] += v[1] * b[4 * i + k * bm] + v[5] * b[4 * i + 1 + k * bm] + v[9] * b[4 * i + 2 + k * bm] + v[13] * b[4 * i + 3 + k * bm];
-          c[4 * (*idx) + 2 + k * cm] += v[2] * b[4 * i + k * bm] + v[6] * b[4 * i + 1 + k * bm] + v[10] * b[4 * i + 2 + k * bm] + v[14] * b[4 * i + 3 + k * bm];
-          c[4 * (*idx) + 3 + k * cm] += v[3] * b[4 * i + k * bm] + v[7] * b[4 * i + 1 + k * bm] + v[11] * b[4 * i + 2 + k * bm] + v[15] * b[4 * i + 3 + k * bm];
+          c[4 * (*idx) + 0 + k * cm] += v[0] * b[4 * i + k * bm] + v[1] * b[4 * i + 1 + k * bm] + v[2] * b[4 * i + 2 + k * bm] + v[3] * b[4 * i + 3 + k * bm];
+          c[4 * (*idx) + 1 + k * cm] += v[4] * b[4 * i + k * bm] + v[5] * b[4 * i + 1 + k * bm] + v[6] * b[4 * i + 2 + k * bm] + v[7] * b[4 * i + 3 + k * bm];
+          c[4 * (*idx) + 2 + k * cm] += v[8] * b[4 * i + k * bm] + v[9] * b[4 * i + 1 + k * bm] + v[10] * b[4 * i + 2 + k * bm] + v[11] * b[4 * i + 3 + k * bm];
+          c[4 * (*idx) + 3 + k * cm] += v[12] * b[4 * i + k * bm] + v[13] * b[4 * i + 1 + k * bm] + v[14] * b[4 * i + 2 + k * bm] + v[15] * b[4 * i + 3 + k * bm];
         }
         v += 16;
         ++idx;
@@ -1848,18 +1848,18 @@ static PetscErrorCode MatMatMult_SeqSBAIJ_5_Private(Mat A, PetscScalar *b, Petsc
         x2 = xb[1 + k * bm];
         x3 = xb[2 + k * bm];
         x4 = xb[3 + k * bm];
-        x5 = xb[4 + k * cm];
+        x5 = xb[4 + k * bm];
         z[0 + k * cm] += v[0] * x1 + v[5] * x2 + v[10] * x3 + v[15] * x4 + v[20] * x5;
         z[1 + k * cm] += v[1] * x1 + v[6] * x2 + v[11] * x3 + v[16] * x4 + v[21] * x5;
         z[2 + k * cm] += v[2] * x1 + v[7] * x2 + v[12] * x3 + v[17] * x4 + v[22] * x5;
         z[3 + k * cm] += v[3] * x1 + v[8] * x2 + v[13] * x3 + v[18] * x4 + v[23] * x5;
         z[4 + k * cm] += v[4] * x1 + v[9] * x2 + v[14] * x3 + v[19] * x4 + v[24] * x5;
         if (*idx != i) {
-          c[5 * (*idx) + 0 + k * cm] += v[0] * b[5 * i + k * bm] + v[5] * b[5 * i + 1 + k * bm] + v[10] * b[5 * i + 2 + k * bm] + v[15] * b[5 * i + 3 + k * bm] + v[20] * b[5 * i + 4 + k * bm];
-          c[5 * (*idx) + 1 + k * cm] += v[1] * b[5 * i + k * bm] + v[6] * b[5 * i + 1 + k * bm] + v[11] * b[5 * i + 2 + k * bm] + v[16] * b[5 * i + 3 + k * bm] + v[21] * b[5 * i + 4 + k * bm];
-          c[5 * (*idx) + 2 + k * cm] += v[2] * b[5 * i + k * bm] + v[7] * b[5 * i + 1 + k * bm] + v[12] * b[5 * i + 2 + k * bm] + v[17] * b[5 * i + 3 + k * bm] + v[22] * b[5 * i + 4 + k * bm];
-          c[5 * (*idx) + 3 + k * cm] += v[3] * b[5 * i + k * bm] + v[8] * b[5 * i + 1 + k * bm] + v[13] * b[5 * i + 2 + k * bm] + v[18] * b[5 * i + 3 + k * bm] + v[23] * b[5 * i + 4 + k * bm];
-          c[5 * (*idx) + 4 + k * cm] += v[4] * b[5 * i + k * bm] + v[9] * b[5 * i + 1 + k * bm] + v[14] * b[5 * i + 2 + k * bm] + v[19] * b[5 * i + 3 + k * bm] + v[24] * b[5 * i + 4 + k * bm];
+          c[5 * (*idx) + 0 + k * cm] += v[0] * b[5 * i + k * bm] + v[1] * b[5 * i + 1 + k * bm] + v[2] * b[5 * i + 2 + k * bm] + v[3] * b[5 * i + 3 + k * bm] + v[4] * b[5 * i + 4 + k * bm];
+          c[5 * (*idx) + 1 + k * cm] += v[5] * b[5 * i + k * bm] + v[6] * b[5 * i + 1 + k * bm] + v[7] * b[5 * i + 2 + k * bm] + v[8] * b[5 * i + 3 + k * bm] + v[9] * b[5 * i + 4 + k * bm];
+          c[5 * (*idx) + 2 + k * cm] += v[10] * b[5 * i + k * bm] + v[11] * b[5 * i + 1 + k * bm] + v[12] * b[5 * i + 2 + k * bm] + v[13] * b[5 * i + 3 + k * bm] + v[14] * b[5 * i + 4 + k * bm];
+          c[5 * (*idx) + 3 + k * cm] += v[15] * b[5 * i + k * bm] + v[16] * b[5 * i + 1 + k * bm] + v[17] * b[5 * i + 2 + k * bm] + v[18] * b[5 * i + 3 + k * bm] + v[19] * b[5 * i + 4 + k * bm];
+          c[5 * (*idx) + 4 + k * cm] += v[20] * b[5 * i + k * bm] + v[21] * b[5 * i + 1 + k * bm] + v[22] * b[5 * i + 2 + k * bm] + v[23] * b[5 * i + 3 + k * bm] + v[24] * b[5 * i + 4 + k * bm];
         }
         v += 25;
         ++idx;

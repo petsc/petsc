@@ -18,6 +18,7 @@ configure_options = [
   '--with-precision=double',
   '--download-mpich',
   '--download-fblaslapack',
+  '--download-random123',
   '--with-strict-petscerrorcode',
   '--with-coverage',
 ]

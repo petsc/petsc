@@ -269,6 +269,33 @@ class BaseTestDA:
         for item in levels:
             self.assertTrue(isinstance(item, PETSc.DM))
 
+    def testRefineHook(self):
+        calls = []
+
+        def refinehook(coarse, fine, a, c=0):
+            calls.append((coarse, fine, a, c))
+
+        self.da.addRefineHook(refinehook, None, args=('a',), kargs={'c': 1})
+        fine = self.da.refine()
+        self.assertEqual(calls, [(self.da, fine, 'a', 1)])
+        calls.clear()
+        fine.destroy()
+
+    def testInterpolateHook(self):
+        calls = []
+
+        def interphook(coarse, interp, fine, a, c=0):
+            calls.append((coarse, interp, fine, a, c))
+
+        fine = self.da.refine()
+        fine.addRefineHook(None, interphook, args=('a',), kargs={'c': 1})
+        interp, _ = self.da.createInterpolation(fine)
+        self.da.interpolateHooks(interp, fine)
+        self.assertEqual(calls, [(self.da, interp, fine, 'a', 1)])
+        calls.clear()
+        interp.destroy()
+        fine.destroy()
+
     def testCreateInterpolation(self):
         da = self.da
         if da.dim == 1:

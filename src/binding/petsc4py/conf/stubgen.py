@@ -468,6 +468,8 @@ from petsc4py.typing import (
     CSRSpec,
     DMCoarsenHookFunction,
     DMRestrictHookFunction,
+    DMRefineHookFunction,
+    DMInterpolateHookFunction,
     DimsSpec,
     KSPConvergenceTestFunction,
     KSPMonitorFunction,

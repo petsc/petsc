@@ -2618,8 +2618,11 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin, MatDuplicateOption cpvalu
     } else a->garray = NULL;
 
     PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)matin), matin->rmap->bs, &mat->bstash));
-    PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-    PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
+    if (oldmat->lvec) PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
+    if (oldmat->Mvctx) {
+      a->Mvctx = oldmat->Mvctx;
+      PetscCall(PetscObjectReference((PetscObject)oldmat->Mvctx));
+    }
 
     PetscCall(VecDuplicate(oldmat->slvec0, &a->slvec0));
     PetscCall(VecDuplicate(oldmat->slvec1, &a->slvec1));

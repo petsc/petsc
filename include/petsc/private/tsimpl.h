@@ -121,6 +121,7 @@ struct _p_TSTrajectory {
   char      **names;                  /* the name of each variable; each process has only the local names */
   PetscBool   keepfiles;              /* keep the files generated during the run after the run is complete */
   char       *dirname, *filetemplate; /* directory name and file name template for disk checkpoints */
+  PetscBool   dircreated;             /* dirname was created by this trajectory, so a later setup may reuse it */
   char       *dirfiletemplate;        /* complete directory and file name template for disk checkpoints */
   PetscErrorCode (*transform)(void *, Vec, Vec *);
   PetscCtxDestroyFn *transformdestroy;
@@ -581,6 +582,7 @@ PETSC_INTERN PetscErrorCode TSGetRHSMats_Private(TS, Mat *, Mat *);
 PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt, TSHistory, PetscBool);
 
 PETSC_INTERN PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory, TS, PetscReal, Vec, Vec);
+PETSC_INTERN PetscErrorCode TSTrajectoryResetHistory_Private(TSTrajectory);
 PETSC_INTERN PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory, TS);
 
 PETSC_EXTERN PetscLogEvent TSTrajectory_Set;

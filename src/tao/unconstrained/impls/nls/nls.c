@@ -436,6 +436,7 @@ static PetscErrorCode TaoSolve_NLS(Tao tao)
     PetscCall(VecCopy(tao->gradient, nlsP->Gold));
 
     PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason));
+    PetscCall(TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full));
     PetscCall(TaoAddLineSearchCounts(tao));
 
     while (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER && stepType != NLS_GRADIENT) { /* Linesearch failed */

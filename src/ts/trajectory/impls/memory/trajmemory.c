@@ -86,7 +86,8 @@ typedef struct _CAMSCTX {
 #endif
 
 typedef struct _Stack {
-  PetscInt      stacksize;
+  PetscInt      stacksize; /* number of usable entries for the current solve */
+  PetscInt      capacity;  /* allocated length of container, never shrinks so elements are reused across solves */
   PetscInt      top;
   StackElement *container;
   PetscInt      nallocated;
@@ -113,6 +114,7 @@ typedef struct _TJScheduler {
   CAMSCTX *actx;
 #endif
   PetscBool   recompute;
+  PetscBool   used; /* the scheduler holds checkpoints and schedule state from a forward solve */
   PetscBool   skip_trajectory;
   PetscBool   save_stack;
   PetscInt    max_units_ram;  /* maximum checkpointing units in RAM */
@@ -230,16 +232,19 @@ static PetscErrorCode ElementDestroy(Stack *stack, StackElement e)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Sets the usable size and grows the container if needed, keeping existing elements for reuse */
 static PetscErrorCode StackResize(Stack *stack, PetscInt newsize)
 {
   StackElement *newcontainer;
-  PetscInt      i;
 
   PetscFunctionBegin;
-  PetscCall(PetscCalloc1(newsize * sizeof(StackElement), &newcontainer));
-  for (i = 0; i < stack->stacksize; i++) newcontainer[i] = stack->container[i];
-  PetscCall(PetscFree(stack->container));
-  stack->container = newcontainer;
+  if (newsize > stack->capacity) {
+    PetscCall(PetscCalloc1(newsize, &newcontainer));
+    PetscCall(PetscArraycpy(newcontainer, stack->container, stack->capacity));
+    PetscCall(PetscFree(stack->container));
+    stack->container = newcontainer;
+    stack->capacity  = newsize;
+  }
   stack->stacksize = newsize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -273,8 +278,7 @@ static PetscErrorCode StackInit(Stack *stack, PetscInt size, PetscInt ny)
   PetscFunctionBegin;
   stack->top  = -1;
   stack->numY = ny;
-
-  if (!stack->container) PetscCall(PetscCalloc1(size, &stack->container));
+  PetscCall(StackResize(stack, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -287,6 +291,7 @@ static PetscErrorCode StackDestroy(Stack *stack)
   PetscCheck(stack->top + 1 <= n, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Stack size does not match element counter %" PetscInt_FMT, n);
   for (PetscInt i = 0; i < n; i++) PetscCall(ElementDestroy(stack, stack->container[i]));
   PetscCall(PetscFree(stack->container));
+  stack->capacity = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1687,6 +1692,12 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj, TS ts, PetscInt st
   }
   /* for consistency */
   if (!tjsch->recompute && stepnum == 0) ts->ptime_prev = ts->ptime - ts->time_step;
+  /* A new forward solve discards the checkpoints and schedule of a previous one, as an adjoint solve does when it reaches step 0 */
+  if (!tjsch->recompute && stepnum == 0 && tjsch->used) {
+    PetscCall(TSTrajectoryReset(tj));
+    PetscCall(TSTrajectorySetUp(tj, ts));
+  }
+  if (!tjsch->recompute) tjsch->used = PETSC_TRUE;
   switch (tjsch->stype) {
   case NONE:
     if (tj->adjoint_solve_mode) {
@@ -2054,6 +2065,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 
   /* Determine the scheduler type */
   if (tjsch->stride > 1) { /* two level mode */
+    PetscCheck(fixedtimestep, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "Two-level checkpointing (-ts_trajectory_stride) requires a fixed time step, use -ts_adapt_type none");
     PetscCheck(!tjsch->save_stack || tjsch->max_cps_disk <= 1 || tjsch->max_cps_disk > tjsch->max_cps_ram, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_INCOMP, "The specified disk capacity is not enough to store a full stack of RAM checkpoints. You might want to change the disk capacity or use single level checkpointing instead.");
     if (tjsch->max_cps_disk <= 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride - 1) tjsch->stype = TWO_LEVEL_REVOLVE;    /* use revolve_offline for each stride */
     if (tjsch->max_cps_disk > 1 && tjsch->max_cps_ram > 1 && tjsch->max_cps_ram <= tjsch->stride - 1) tjsch->stype = TWO_LEVEL_TWO_REVOLVE; /* use revolve_offline for each stride */
@@ -2187,6 +2199,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
 
   stack->stacksize = PetscMax(stack->stacksize, 1);
   tjsch->recompute = PETSC_FALSE;
+  tjsch->used      = PETSC_FALSE;
   PetscCall(StackInit(stack, stack->stacksize, numY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2214,7 +2227,7 @@ static PetscErrorCode TSTrajectoryReset_Memory(TSTrajectory tj)
 #if PetscDefined(HAVE_CAMS)
   if (tjsch->stype == CAMS_OFFLINE) {
     if (tjsch->stack.solution_only) offline_ca_destroy();
-    else offline_ca_destroy();
+    else offline_cams_destroy();
     PetscCall(PetscFree(tjsch->actx));
   }
 #endif
