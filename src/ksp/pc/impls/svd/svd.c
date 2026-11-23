@@ -209,17 +209,9 @@ static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   PetscCall(PCSVDGetVec(pc, PC_RIGHT, READ, x, &xred));
   PetscCall(PCSVDGetVec(pc, PC_LEFT, WRITE, y, &yred));
-#if !PetscDefined(USE_COMPLEX)
-  PetscCall(MatMultTranspose(jac->U, xred, work));
-#else
   PetscCall(MatMultHermitianTranspose(jac->U, xred, work));
-#endif
   PetscCall(VecPointwiseMult(work, work, jac->diag));
-#if !PetscDefined(USE_COMPLEX)
-  PetscCall(MatMultTranspose(jac->Vt, work, yred));
-#else
   PetscCall(MatMultHermitianTranspose(jac->Vt, work, yred));
-#endif
   PetscCall(PCSVDRestoreVec(pc, PC_RIGHT, READ, x, &xred));
   PetscCall(PCSVDRestoreVec(pc, PC_LEFT, WRITE, y, &yred));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -231,9 +223,14 @@ static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
   Mat     W;
 
   PetscFunctionBegin;
-  PetscCall(MatTransposeMatMult(jac->U, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &W));
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
+    PetscCall(MatConjugate(Y));
+  }
+  PetscCall(MatTransposeMatMult(jac->U, PetscDefined(USE_COMPLEX) ? Y : X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &W));
   PetscCall(MatDiagonalScale(W, jac->diag, NULL));
   PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
+  PetscCall(MatConjugate(Y));
   PetscCall(MatDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -350,7 +347,7 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD     *jac;
-  PetscMPIInt size = 0;
+  PetscMPIInt size;
 
   PetscFunctionBegin;
   /*
@@ -364,14 +361,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   /*
       Set the pointers for the functions that are provided above.
       Now when the user-level routines (such as PCApply(), PCDestroy(), etc.)
-      are called, they will automatically call these functions.  Note we
+      are called, they will automatically call these functions. Note we
       choose not to provide a couple of these functions since they are
       not needed.
   */
 
-#if PetscDefined(HAVE_COMPLEX)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-#endif
   if (size == 1) pc->ops->matapply = PCMatApply_SVD;
   pc->ops->apply          = PCApply_SVD;
   pc->ops->applytranspose = PCApplyTranspose_SVD;
