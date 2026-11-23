@@ -716,7 +716,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PetscCall(ISDestroy(&osm->lis));
   PetscCall(VecDestroy(&osm->lx));
   PetscCall(VecDestroy(&osm->ly));
-  if (osm->lmats != NULL) PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->lmats));
+  PetscCall(MatDestroySubMatrices(osm->n_local_true, &osm->lmats));
   PetscCall(PetscFree(osm->sub_mat_type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
