@@ -1464,12 +1464,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat B, Mat A,
 
   PetscCall(PetscFree3(rtmp, il, c2r));
 
-  B->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  B->ops->solves         = MatSolves_SeqSBAIJ_1;
-  B->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  B->ops->matsolve       = MatMatSolve_SeqSBAIJ_1_NaturalOrdering;
-  B->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
-  B->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->solve             = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->solves            = MatSolves_SeqSBAIJ_1;
+  B->ops->solvetranspose    = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->matsolve          = MatMatSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->matsolvetranspose = MatMatSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->forwardsolve      = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+  B->ops->backwardsolve     = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
 
   B->assembled    = PETSC_TRUE;
   B->preallocated = PETSC_TRUE;
