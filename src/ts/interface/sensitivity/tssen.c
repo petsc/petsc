@@ -349,7 +349,7 @@ PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, Pet
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSSetCostIntegrand()`
+.seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSSetCostIntegrand()`, `TSGetQuadratureTS()`
 @*/
 PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
 {
@@ -1993,7 +1993,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSCreateQuadratureTS()`
+.seealso: [](ch_ts), `TSCreateQuadratureTS()`, `TSGetCostIntegral()`
 @*/
 PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
 {
