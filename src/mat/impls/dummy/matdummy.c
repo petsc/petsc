@@ -1,17 +1,7 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 
-PetscErrorCode MatDestroySubMatrix_Dummy(Mat C)
-{
-  Mat_SubSppt *submatj = (Mat_SubSppt *)C->data;
-
-  PetscFunctionBegin;
-  PetscCall(submatj->destroy(C));
-  PetscCall(MatDestroySubMatrix_Private(submatj));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
+PetscErrorCode MatDestroySubMatrices_SeqXAIJ(PetscInt n, Mat *mat[])
 {
   PetscFunctionBegin;
   /* Destroy dummy submatrices (*mat)[n]...(*mat)[n+nstages-1] used for reuse struct Mat_SubSppt */
@@ -21,21 +11,19 @@ PetscErrorCode MatDestroySubMatrices_Dummy(PetscInt n, Mat *mat[])
     if (isdummy) {
       Mat_SubSppt *smat = (Mat_SubSppt *)(*mat)[n]->data; /* singleis and nstages are saved in (*mat)[n]->data */
 
-      if (smat && !smat->singleis) {
-        PetscInt i, nstages = smat->nstages;
-        for (i = 0; i < nstages; i++) PetscCall(MatDestroy(&(*mat)[n + i]));
-      }
+      if (smat && !smat->singleis) n += smat->nstages;
     }
   }
 
-  /* memory is allocated even if n = 0 */
-  PetscCall(PetscFree(*mat));
+  PetscCall(MatDestroyMatrices(n, mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_Dummy(Mat A)
 {
   PetscFunctionBegin;
+  PetscCall(MatDestroySubMatrix_Private((Mat_SubSppt *)A->data));
+  A->data = NULL;
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -54,7 +42,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Dummy(Mat A)
   /* matrix ops */
   PetscCall(PetscMemzero(A->ops, sizeof(struct _MatOps)));
   A->ops->destroy            = MatDestroy_Dummy;
-  A->ops->destroysubmatrices = MatDestroySubMatrices_Dummy;
+  A->ops->destroysubmatrices = MatDestroySubMatrices_SeqXAIJ;
 
   /* special MATPREALLOCATOR functions */
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATDUMMY));

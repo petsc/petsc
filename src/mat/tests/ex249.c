@@ -59,10 +59,11 @@ int main(int argc, char **args)
   /* Create submats again */
   PetscCall(MatCreateSubMatrices(A, n, irow, icol, MAT_REUSE_MATRIX, &submats));
 
-  /* Compare submats and submats2 */
+  // merge each duplicate into its submatrix to test destruction after storage changes
   for (PetscInt i = 0; i < n; i++) {
     PetscCall(MatEqual(submats[i], submats2[i], &same));
     PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "submatrix %" PetscInt_FMT " is not same", i);
+    PetscCall(MatHeaderMerge(submats[i], &submats2[i]));
   }
 
   PetscCall(MatDestroy(&A));
@@ -71,7 +72,7 @@ int main(int argc, char **args)
     PetscCall(ISDestroy(&icol[i]));
   }
   PetscCall(MatDestroySubMatrices(n, &submats));
-  PetscCall(MatDestroyMatrices(n, &submats2));
+  PetscCall(PetscFree(submats2));
   PetscCall(PetscFree2(irow, icol));
   PetscCall(PetscFinalize());
   return 0;

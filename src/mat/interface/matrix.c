@@ -1539,9 +1539,7 @@ static PetscErrorCode MatDestroy_Redundant(Mat_Redundant **redundant)
   Level: beginner
 
   Developer Note:
-  Some special arrays of matrices are not destroyed in this routine but instead by the routines called by
-  `MatDestroySubMatrices()`. Thus one must be sure that any changes here must also be made in those routines.
-  `MatHeaderMerge()` and `MatHeaderReplace()` also manipulate the data in the `Mat` object and likely need changes
+  `MatHeaderMerge()` and `MatHeaderReplace()` manipulate the data in the `Mat` object and likely need changes
   if changes are needed here.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`

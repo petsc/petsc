@@ -1595,6 +1595,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
   PetscCall(MatZeroRows_SeqBAIJ(l->B, len, lrows, 0.0, NULL, NULL));
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->B));
   PetscCall(MatHasCongruentLayouts(A, &cong));
   if ((diag != 0.0) && cong) {
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, diag, NULL, NULL));
@@ -1709,6 +1710,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
     PetscCall(VecRestoreArray(b, &bb));
     PetscCall(VecRestoreArrayRead(l->lvec, &xx));
   }
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->B));
   PetscCall(VecRestoreArray(lmask, &mask));
   PetscCall(VecDestroy(&lmask));
   PetscCall(PetscFree(lrows));
@@ -1884,12 +1886,13 @@ static PetscErrorCode MatCreateSubMatrix_MPIBAIJ(Mat mat, IS isrow, IS iscol, Ma
 PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, PetscInt csize, MatReuse call, Mat *newmat, PetscBool sym)
 {
   PetscMPIInt  rank, size;
-  PetscInt     i, m, n, rstart, row, rend, nz, *cwork, j, bs;
-  PetscInt    *ii, *jj, nlocal, *dlens, *olens, dlen, olen, jend, mglobal;
+  PetscInt     i, m, n, rstart, row, rend, nz, j, bs, nlocal, dlen, olen, jend, mglobal;
+  PetscInt    *cwork, *ii, *jj, *dlens, *olens;
   Mat          M, Mreuse;
   MatScalar   *vwork, *aa;
   MPI_Comm     comm;
   IS           isrow_new, iscol_new;
+  PetscBool    nooffprocentries, roworiented;
   Mat_SeqBAIJ *aij;
 
   PetscFunctionBegin;
@@ -1983,6 +1986,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
     M->was_assembled = PETSC_TRUE;
     M->assembled     = PETSC_FALSE;
   }
+  roworiented = ((Mat_MPIBAIJ *)M->data)->roworiented;
   PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, PETSC_FALSE));
   PetscCall(MatGetOwnershipRange(M, &rstart, &rend));
   aij = (Mat_SeqBAIJ *)Mreuse->data;
@@ -1999,9 +2003,13 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
     PetscUseTypeMethod(M, setvaluesblocked, 1, &row, nz, cwork, vwork, INSERT_VALUES);
   }
 
+  PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, roworiented));
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
-  *newmat = M;
+  M->nooffprocentries = nooffprocentries;
+  *newmat             = M;
 
   /* save submatrix used in processor for next request */
   if (call == MAT_INITIAL_MATRIX) {

@@ -1641,9 +1641,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     smatis1->cmap_loc = cmap_loc;
 #endif
 
-    smatis1->destroy     = submat->ops->destroy;
-    submat->ops->destroy = MatDestroySubMatrix_SeqAIJ;
-    submat->factortype   = C->factortype;
+    submat->factortype = C->factortype;
 
     /* compute rmax */
     rmax = 0;
@@ -2634,9 +2632,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       subc            = (Mat_SeqAIJ *)submats[i]->data;
       subc->submatis1 = smat_i;
 
-      smat_i->destroy          = submats[i]->ops->destroy;
-      submats[i]->ops->destroy = MatDestroySubMatrix_SeqAIJ;
-      submats[i]->factortype   = C->factortype;
+      submats[i]->factortype = C->factortype;
 
       smat_i->id          = i;
       smat_i->nrqs        = nrqs;
@@ -2672,9 +2668,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       PetscCall(PetscNew(&smat_i));
       submats[0]->data = (void *)smat_i;
 
-      smat_i->destroy          = submats[0]->ops->destroy;
-      submats[0]->ops->destroy = MatDestroySubMatrix_Dummy;
-      submats[0]->factortype   = C->factortype;
+      submats[0]->factortype = C->factortype;
 
       smat_i->id          = 0;
       smat_i->nrqs        = nrqs;

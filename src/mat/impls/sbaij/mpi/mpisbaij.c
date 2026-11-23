@@ -1853,6 +1853,7 @@ static PetscErrorCode MatZeroRowsColumns_MPISBAIJ(Mat A, PetscInt N, const Petsc
     PetscCall(VecScatterEnd(l->Mvctx, lvec_contrib, b, ADD_VALUES, SCATTER_REVERSE));
     PetscCall(VecDestroy(&lvec_contrib));
   }
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->B));
   PetscCall(VecRestoreArray(lmask, &mask));
   PetscCall(VecDestroy(&lmask));
   PetscCall(PetscFree(lrows));

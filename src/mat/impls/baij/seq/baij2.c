@@ -178,54 +178,6 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ(Mat A, IS isrow, IS iscol, MatReuse sc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat C)
-{
-  Mat_SeqBAIJ *c       = (Mat_SeqBAIJ *)C->data;
-  Mat_SubSppt *submatj = c->submatis1;
-
-  PetscFunctionBegin;
-  PetscCall((*submatj->destroy)(C));
-  PetscCall(MatDestroySubMatrix_Private(submatj));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Note this has code duplication with MatDestroySubMatrices_SeqAIJ() */
-PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt n, Mat *mat[])
-{
-  PetscInt     i;
-  Mat          C;
-  Mat_SeqBAIJ *c;
-  Mat_SubSppt *submatj;
-
-  PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
-    C       = (*mat)[i];
-    c       = (Mat_SeqBAIJ *)C->data;
-    submatj = c->submatis1;
-    if (submatj) {
-      if (--((PetscObject)C)->refct <= 0) {
-        PetscCall(PetscFree(C->factorprefix));
-        PetscCall((*submatj->destroy)(C));
-        PetscCall(MatDestroySubMatrix_Private(submatj));
-        PetscCall(PetscFree(C->defaultvectype));
-        PetscCall(PetscFree(C->defaultrandtype));
-        PetscCall(PetscFree(C->solvertype));
-        PetscCall(PetscLayoutDestroy(&C->rmap));
-        PetscCall(PetscLayoutDestroy(&C->cmap));
-        PetscCall(PetscHeaderDestroy(&C));
-      }
-    } else {
-      PetscCall(MatDestroy(&C));
-    }
-  }
-
-  /* Destroy Dummy submatrices created for reuse */
-  PetscCall(MatDestroySubMatrices_Dummy(n, mat));
-
-  PetscCall(PetscFree(*mat));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatCreateSubMatrices_SeqBAIJ(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *B[])
 {
   PetscInt i;
