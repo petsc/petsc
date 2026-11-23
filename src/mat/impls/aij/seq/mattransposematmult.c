@@ -24,7 +24,6 @@ static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
   MatProductCtx_MatTransMatMult *atb;
-  PetscBool                      cisdense;
   PetscInt                       dofm;
 
   PetscFunctionBegin;
@@ -32,20 +31,9 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
   PetscCheck(!C->product->data, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Extra product struct not empty");
   PetscCheck(C->product->type == MATPRODUCT_ABt || C->product->type == MATPRODUCT_AtB, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[C->product->type]);
 
-  /* create output dense matrix C */
-  if (C->product->type == MATPRODUCT_AtB) {
-    PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->N, A->cmap->n, B->cmap->N));
-    dofm = B->cmap->n;
-  } else {
-    PetscCall(MatSetSizes(C, A->rmap->n, B->rmap->N, A->rmap->n, B->rmap->N));
-    dofm = B->rmap->n;
-  }
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
+  if (C->product->type == MATPRODUCT_AtB) PetscCall(MatDenseSetUpProduct_Private(C, A->cmap, B->cmap, B, NULL));
+  else PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->rmap, B, NULL));
+  dofm = C->cmap->n;
 
   /* create additional data structure for the product */
   PetscCall(PetscNew(&atb));

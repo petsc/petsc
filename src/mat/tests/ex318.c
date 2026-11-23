@@ -36,6 +36,39 @@ static PetscErrorCode CreateDenseDefaultVecType(Mat A, PetscInt M, PetscInt N, M
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode CheckProductBlockSizes(VecType vtype)
+{
+  const MatProductType products[] = {MATPRODUCT_AB, MATPRODUCT_AtB, MATPRODUCT_ABt};
+  Mat                  A, B, C;
+  PetscInt             rbs, cbs;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, vtype, 12, 12, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DECIDE, NULL, &A));
+  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
+  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &C));
+  for (PetscInt pass = 0; pass < 2; ++pass) {
+    PetscCall(MatSetBlockSizes(A, pass > 0 ? 2 : 1, pass > 0 ? 3 : 1));
+    PetscCall(MatSetBlockSizes(B, pass > 0 ? 4 : 1, pass > 0 ? 6 : 1));
+    for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(products); ++i) {
+      PetscInt rows = pass > 0 ? (products[i] == MATPRODUCT_AtB ? 3 : 2) : 1;
+      PetscInt cols = pass > 0 ? (products[i] == MATPRODUCT_ABt ? 4 : 6) : 1;
+
+      PetscCall(MatSetBlockSizes(C, 6, 3));
+      PetscCall(MatProductCreateWithMat(A, B, NULL, C));
+      PetscCall(MatProductSetType(C, products[i]));
+      PetscCall(MatProductSetFromOptions(C));
+      PetscCall(MatProductSymbolic(C));
+      PetscCall(MatGetBlockSizes(C, &rbs, &cbs));
+      PetscCheck(rbs == rows && cbs == cols, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s result has block sizes (%" PetscInt_FMT ", %" PetscInt_FMT "), expected (%" PetscInt_FMT ", %" PetscInt_FMT ")", MatProductTypes[products[i]], rbs, cbs, rows, cols);
+      PetscCall(MatProductClear(C));
+    }
+  }
+  PetscCall(MatDestroy(&C));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   Mat                A, C, P, S, S2, C2, C3, C4, C5, C6, D, E, F;
@@ -51,6 +84,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-vec_type", vtype, sizeof(vtype), NULL));
+  PetscCall(CheckProductBlockSizes(vtype));
   /* A VECKOKKOS type gives a MATDENSECUDA/MATDENSEHIP with VECKOKKOS vectors when the Kokkos backend runs on that device */
   PetscCall(MatCreateDenseFromVecType(PETSC_COMM_WORLD, vtype, PETSC_DECIDE, PETSC_DECIDE, M, N, PETSC_DECIDE, NULL, &A));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
@@ -141,7 +175,7 @@ int main(int argc, char **argv)
 
   /* and a dense times AIJ product, which is not available for a sequential MATDENSECUDA or MATDENSEHIP */
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &same, MATSEQDENSE, MATMPIDENSE, ""));
-  if (same) {
+  if (same == PETSC_TRUE) {
     PetscCall(MatMatMult(C4, S2, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C5));
     PetscCall(CheckProductVecType(C5, A, "The Mat the dense times AIJ product created"));
     PetscCall(MatDestroy(&C5));
@@ -159,6 +193,23 @@ int main(int argc, char **argv)
   PetscCall(MatTransposeMatMult(A, F, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C6));
   PetscCall(CheckProductVecType(C6, A, "The Mat the transpose dense product with operands of different VecType created"));
   PetscCall(MatDestroy(&C6));
+
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &same));
+  if (same == PETSC_TRUE) {
+    PetscCall(MatProductClear(C4));
+    PetscCall(MatSetVecType(C4, VECSEQ));
+    PetscCall(MatMatTransposeMult(A, A, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C4));
+    PetscCall(MatGetVecType(C4, &pvtype));
+    PetscCall(PetscStrcmp(pvtype, VECSEQ, &same));
+    PetscCheck(same, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The supplied dense result has VecType %s, expected %s", pvtype, VECSEQ);
+  }
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &same));
+  if (same == PETSC_TRUE) {
+    PetscCall(MatProductClear(C3));
+    PetscCall(MatSetVecType(C3, VECMPI));
+    PetscCall(MatMatMult(A, D, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C3));
+    PetscCall(CheckProductVecType(C3, A, "The supplied MPI dense result"));
+  }
 
   PetscCall(MatDestroy(&F));
   PetscCall(MatDestroy(&E));

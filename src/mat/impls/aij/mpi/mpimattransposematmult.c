@@ -36,20 +36,12 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
   VecScatter           ctx = aij->Mvctx;
   PetscInt             nz = aij->B->cmap->n, BN = B->cmap->N, Bbn, numBb, ncols;
   Mat                  bloc, cloc;
-  PetscBool            cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(C->product->data == NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Extra product struct not empty");
 
-  /* create output dense matrix C = A^T*B */
-  PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, BN));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &cisdense));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->cmap, B->cmap, B, NULL));
   bloc = ((Mat_MPIDense *)B->data)->A;
   cloc = ((Mat_MPIDense *)C->data)->A;
 

@@ -593,19 +593,11 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   PetscInt            Am = A->rmap->n, BN = B->cmap->N, Bbn, numBb;
   Mat                 workB1, workC1;
   const char         *ctype;
-  PetscBool           cisdense;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &cisdense));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)B)->type_name));
-    PetscCall(MatSetVecType(C, B->defaultvectype));
-  }
-  PetscCall(MatSetSizes(C, Am, B->cmap->n, A->rmap->N, BN));
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
   /* The cuSPARSE and hipSPARSE symbolic below re-types a host local block of C in place, so capture the type
      of the local block of C now to give the work matrix the type the numeric will add it to */
   ctype = ((PetscObject)((Mat_MPIDense *)C->data)->A)->type_name;

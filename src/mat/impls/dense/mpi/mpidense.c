@@ -1620,37 +1620,45 @@ PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat A, PetscInt col, Vec *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatDenseSetUpSubLayout_Private(MPI_Comm comm, PetscLayout parent, PetscInt begin, PetscInt end, PetscLayout *sub)
+{
+  PetscInt   *range;
+  PetscLayout layout;
+
+  PetscFunctionBegin;
+  if (parent->range == NULL) PetscCall(PetscLayoutSetUp(parent));
+  PetscCheck(begin == end || (parent->range[0] <= begin && end <= parent->range[parent->size]), parent->comm, PETSC_ERR_ARG_SIZ, "Submatrix interval [%" PetscInt_FMT ",%" PetscInt_FMT ") is outside the parent ownership range [%" PetscInt_FMT ",%" PetscInt_FMT ")", begin, end,
+             parent->range[0], parent->range[parent->size]);
+  PetscCall(PetscMalloc1(parent->size + 1, &range));
+  for (PetscInt i = 0; i <= parent->size; ++i) range[i] = PetscClipInterval(parent->range[i], begin, end) - begin;
+  PetscCall(PetscLayoutCreateFromRanges(comm, range, PETSC_OWN_POINTER, 1, &layout));
+  PetscCall(PetscLayoutDestroy(sub));
+  *sub = layout;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, PetscInt rend, PetscInt cbegin, PetscInt cend, Mat *v)
 {
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
   Mat_MPIDense *c;
   MPI_Comm      comm;
-  PetscInt      prbegin, prend, pcbegin, pcend;
+  PetscInt      prbegin, prend;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCheck(!a->vecinuse, comm, PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
   PetscCheck(!a->matinuse, comm, PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
-  prbegin = PetscMax(0, PetscMin(A->rmap->rend, rbegin) - A->rmap->rstart);
-  prend   = PetscMin(A->rmap->n, PetscMax(0, rend - A->rmap->rstart));
-  pcbegin = PetscMax(0, PetscMin(A->cmap->rend, cbegin) - A->cmap->rstart);
-  pcend   = PetscMin(A->cmap->n, PetscMax(0, cend - A->cmap->rstart));
+  if (A->rmap->range == NULL) PetscCall(PetscLayoutSetUp(A->rmap));
+  prbegin = PetscClipInterval(rbegin - A->rmap->rstart, 0, A->rmap->n);
+  prend   = PetscClipInterval(rend - A->rmap->rstart, 0, A->rmap->n);
   if (!a->cmat) {
     PetscCall(MatCreate(comm, &a->cmat));
     PetscCall(MatSetType(a->cmat, ((PetscObject)A)->type_name));
     PetscCall(MatSetVecType(a->cmat, A->defaultvectype));
     if (rend - rbegin == A->rmap->N) PetscCall(PetscLayoutReference(A->rmap, &a->cmat->rmap));
-    else {
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->rmap, prend - prbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->rmap, rend - rbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->rmap));
-    }
+    else PetscCall(MatDenseSetUpSubLayout_Private(comm, A->rmap, rbegin, rend, &a->cmat->rmap));
     if (cend - cbegin == A->cmap->N) PetscCall(PetscLayoutReference(A->cmap, &a->cmat->cmap));
-    else {
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->cmap, pcend - pcbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->cmap, cend - cbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->cmap));
-    }
+    else PetscCall(MatDenseSetUpSubLayout_Private(comm, A->cmap, cbegin, cend, &a->cmat->cmap));
     c             = (Mat_MPIDense *)a->cmat->data;
     c->sub_rbegin = rbegin;
     c->sub_rend   = rend;
@@ -1659,22 +1667,15 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
   }
   c = (Mat_MPIDense *)a->cmat->data;
   if (c->sub_rbegin != rbegin || c->sub_rend != rend) {
-    PetscCall(PetscLayoutDestroy(&a->cmat->rmap));
-    PetscCall(PetscLayoutCreate(comm, &a->cmat->rmap));
-    PetscCall(PetscLayoutSetLocalSize(a->cmat->rmap, prend - prbegin));
-    PetscCall(PetscLayoutSetSize(a->cmat->rmap, rend - rbegin));
-    PetscCall(PetscLayoutSetUp(a->cmat->rmap));
+    PetscCall(MatDenseSetUpSubLayout_Private(comm, A->rmap, rbegin, rend, &a->cmat->rmap));
+    PetscCall(VecDestroy(&c->cvec));
     c->sub_rbegin = rbegin;
     c->sub_rend   = rend;
   }
   if (c->sub_cbegin != cbegin || c->sub_cend != cend) {
-    // special optimization: check if all columns are owned by rank 0, in which case no communication is necessary
-    if (cend - cbegin != a->cmat->cmap->N || A->cmap->range[1] != A->cmap->N) {
-      PetscCall(PetscLayoutDestroy(&a->cmat->cmap));
-      PetscCall(PetscLayoutCreate(comm, &a->cmat->cmap));
-      PetscCall(PetscLayoutSetLocalSize(a->cmat->cmap, pcend - pcbegin));
-      PetscCall(PetscLayoutSetSize(a->cmat->cmap, cend - cbegin));
-      PetscCall(PetscLayoutSetUp(a->cmat->cmap));
+    // equal-width slices have the same layout when the first process owns every column
+    if (cend - cbegin != a->cmat->cmap->N || A->cmap->range[0] > 0 || A->cmap->range[1] != A->cmap->N) {
+      PetscCall(MatDenseSetUpSubLayout_Private(comm, A->cmap, cbegin, cend, &a->cmat->cmap));
       PetscCall(VecDestroy(&c->lvec));
       PetscCall(PetscSFDestroy(&c->Mvctx));
     }
@@ -2075,6 +2076,7 @@ static PetscErrorCode MatProductCtxDestroy_MatMatTransMult_MPIDense_MPIDense(Pet
   MatProductCtx_MatTransMultDense *abt = *(MatProductCtx_MatTransMultDense **)data;
 
   PetscFunctionBegin;
+  PetscCall(MatDestroy(&abt->Bfull));
   PetscCall(PetscFree2(abt->buf[0], abt->buf[1]));
   PetscCall(PetscFree2(abt->recvcounts, abt->recvdispls));
   PetscCall(PetscFree(abt));
@@ -2086,7 +2088,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   Mat_MPIDense                    *a = (Mat_MPIDense *)A->data, *b = (Mat_MPIDense *)B->data, *c = (Mat_MPIDense *)C->data;
   MatProductCtx_TransMatMultDense *atb;
   MPI_Comm                         comm;
-  PetscMPIInt                      size, *recvcounts;
+  PetscMPIInt                      size;
   PetscScalar                     *carray, *sendbuf;
   const PetscScalar               *atbarray;
   PetscInt                         i, cN = C->cmap->N, proc, k, j, lda;
@@ -2096,15 +2098,20 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   if (!C->rmap->N || !C->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
-  atb        = (MatProductCtx_TransMatMultDense *)C->product->data;
-  recvcounts = atb->recvcounts;
-  sendbuf    = atb->sendbuf;
+  atb = (MatProductCtx_TransMatMultDense *)C->product->data;
 
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   /* compute atbarray = aseq^T * bseq */
   PetscCall(MatTransposeMatMult(a->A, b->A, atb->atb ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX, PETSC_DETERMINE, &atb->atb));
+
+  if (atb->usebackend == PETSC_TRUE) {
+    if (a->Mvctx == NULL) PetscCall(MatSetUpMultiply_MPIDense(A));
+    PetscCall(MatZeroEntries(c->A));
+    PetscCall(MatDenseScatter_Private(a->Mvctx, atb->atb, c->A, ADD_VALUES, SCATTER_REVERSE));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
 
   PetscCall(MatGetOwnershipRanges(C, &ranges));
 
@@ -2164,6 +2171,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
+  sendbuf = atb->sendbuf;
   /* arrange atbarray into sendbuf */
   PetscCall(MatDenseGetArrayRead(atb->atb, &atbarray));
   PetscCall(MatDenseGetLDA(atb->atb, &lda));
@@ -2182,10 +2190,10 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
 
     /* the local product is no longer needed after packing sendbuf; reuse its storage for the contiguous reduction */
     PetscCall(MatDenseGetArrayWrite(atb->atb, &recvbuf));
-    PetscCallMPI(MPI_Reduce_scatter(sendbuf, recvbuf, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
+    PetscCallMPI(MPI_Reduce_scatter(sendbuf, recvbuf, atb->recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
     for (j = 0; j < cN; j++) PetscCall(PetscArraycpy(carray + (size_t)j * lda, recvbuf + (size_t)j * C->rmap->n, C->rmap->n));
     PetscCall(MatDenseRestoreArrayWrite(atb->atb, &recvbuf));
-  } else PetscCallMPI(MPI_Reduce_scatter(sendbuf, carray, recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
+  } else PetscCallMPI(MPI_Reduce_scatter(sendbuf, carray, atb->recvcounts, MPIU_SCALAR, MPIU_SUM, comm));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &carray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2193,11 +2201,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
 static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
   MPI_Comm                         comm;
-  PetscMPIInt                      size;
-  PetscInt                         cm = A->cmap->n, cM, cN = B->cmap->N;
   MatProductCtx_TransMatMultDense *atb;
-  PetscBool                        cisdense = PETSC_FALSE;
-  const PetscInt                  *ranges;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -2205,28 +2209,21 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCheck(A->rmap->rstart == B->rmap->rstart && A->rmap->rend == B->rmap->rend, comm, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart,
              A->rmap->rend, B->rmap->rstart, B->rmap->rend);
-
-  /* create matrix product C */
-  PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
-#endif
-#if PetscDefined(HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSEHIP, ""));
-#endif
-  if (!cisdense) {
-    PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
-    PetscCall(MatSetVecType(C, A->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
-
+  PetscCall(MatDenseSetUpProduct_Private(C, A->cmap, B->cmap, A, NULL));
   /* create data structure for reuse C */
-  PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscNew(&atb));
-  cM = C->rmap->N;
-  PetscCall(PetscMalloc2(cM * cN, &atb->sendbuf, size, &atb->recvcounts));
-  PetscCall(MatGetOwnershipRanges(C, &ranges));
-  for (PetscMPIInt i = 0; i < size; i++) PetscCall(PetscMPIIntCast((ranges[i + 1] - ranges[i]) * cN, &atb->recvcounts[i]));
+  PetscCall(PetscStrcmp(C->product->alg, MATPRODUCTALGORITHMBACKEND, &atb->usebackend));
+  if (atb->usebackend == PETSC_FALSE) {
+    const PetscInt *ranges;
+    PetscMPIInt     size;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCall(MatGetOwnershipRanges(C, &ranges));
+    if (ranges[1] != C->rmap->N) {
+      PetscCall(PetscMalloc2((size_t)C->rmap->N * C->cmap->N, &atb->sendbuf, size, &atb->recvcounts));
+      for (PetscMPIInt p = 0; p < size; ++p) PetscCall(PetscMPIIntCast((PetscCount)(ranges[p + 1] - ranges[p]) * C->cmap->N, &atb->recvcounts[p]));
+    }
+  }
   C->product->data    = atb;
   C->product->destroy = MatProductCtxDestroy_MatTransMatMult_MPIDense_MPIDense;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2241,7 +2238,8 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscInt                         alg;
   MatProductCtx_MatTransMultDense *abt;
   Mat_Product                     *product = C->product;
-  PetscBool                        flg;
+  PetscMemType                     amtype, bmtype, cmtype;
+  PetscBool                        cyclic, backend;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -2249,16 +2247,19 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   /* check local size of A and B */
   PetscCheck(A->cmap->n == B->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local column dimensions are incompatible, A (%" PetscInt_FMT ") != B (%" PetscInt_FMT ")", A->cmap->n, B->cmap->n);
 
-  PetscCall(PetscStrcmp(product->alg, "allgatherv", &flg));
-  alg = flg ? 0 : 1;
+  PetscCall(PetscStrcmp(product->alg, "cyclic", &cyclic));
+  if (cyclic == PETSC_FALSE) {
+    PetscCall(PetscStrcmp(product->alg, MATPRODUCTALGORITHMBACKEND, &backend));
+    alg = 0;
+  } else {
+    backend = PETSC_FALSE;
+    alg     = 1;
+  }
 
-  /* setup matrix product C */
-  PetscCall(MatSetSizes(C, A->rmap->n, B->rmap->n, A->rmap->N, B->rmap->N));
-  PetscCall(MatSetType(C, MATMPIDENSE));
-  /* keep the VecType of A, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only if A is a MATMPIDENSE like C, since the VecType of a MATMPIDENSECUDA or MATMPIDENSEHIP A, e.g. VECCUDA, is not valid for C */
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSE, &flg));
-  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-  PetscCall(MatSetUp(C));
+  PetscCall(MatGetCurrentMemType(A, &amtype));
+  PetscCall(MatGetCurrentMemType(B, &bmtype));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->rmap, A, backend == PETSC_TRUE && PetscMemTypeDevice(amtype) == PETSC_TRUE && amtype == bmtype ? NULL : MATMPIDENSE));
+  PetscCall(MatGetCurrentMemType(C, &cmtype));
   PetscCall(PetscObjectGetNewTag((PetscObject)C, &tag));
 
   /* create data structure for reuse C */
@@ -2274,6 +2275,10 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
     PetscCall(PetscMalloc2(bufsiz, &abt->buf[0], bufsiz, &abt->buf[1]));
     break;
   default: /* alg: "allgatherv" */
+    if (backend == PETSC_TRUE && PetscMemTypeDevice(cmtype) == PETSC_TRUE && amtype == cmtype && bmtype == cmtype) {
+      PetscCall(MatCreateDenseWithMemType(PETSC_COMM_SELF, cmtype, B->rmap->N, B->cmap->N, B->rmap->N, B->cmap->N, PETSC_DECIDE, NULL, &abt->Bfull));
+      break;
+    }
     PetscCall(PetscMalloc2(B->rmap->n * B->cmap->N, &abt->buf[0], B->rmap->N * B->cmap->N, &abt->buf[1]));
     PetscCall(PetscMalloc2(size, &abt->recvcounts, size + 1, &abt->recvdispls));
     for (i = 0; i <= size; i++) PetscCall(PetscMPIIntCast(B->rmap->range[i] * A->cmap->N, &abt->recvdispls[i]));
@@ -2384,6 +2389,12 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   MatCheckProduct(C, 3);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
   abt = (MatProductCtx_MatTransMultDense *)C->product->data;
+  if (abt->Bfull != NULL) {
+    if (c->Mvctx == NULL) PetscCall(MatSetUpMultiply_MPIDense(C));
+    PetscCall(MatDenseScatter_Private(c->Mvctx, B, abt->Bfull, INSERT_VALUES, SCATTER_FORWARD));
+    PetscCall((*c->A->ops->mattransposemultnumeric)(a->A, abt->Bfull, c->A));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(MatDenseGetArrayRead(a->A, &av));
@@ -2409,7 +2420,6 @@ static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense_Allgatherv(Ma
   PetscCall(PetscBLASIntCast(c->A->cmap->n, &cn));
   if (cm && cn && ck) PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &cm, &cn, &ck, &_DOne, av, &alda, recvbuf, &ck, &_DZero, cv, &clda));
   PetscCall(MatDenseRestoreArrayRead(a->A, &av));
-  PetscCall(MatDenseRestoreArrayRead(b->A, &bv));
   PetscCall(MatDenseRestoreArrayWrite(c->A, &cv));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2546,17 +2556,11 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B, PetscRe
   PetscCall(PetscStrcmp(product->alg, "petsc", &flg));
   alg = flg ? 0 : 1;
 
-  /* setup C */
-  PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, MATMPIDENSE, &flg));
-  if (!flg) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATMPIDENSE));
-  }
-  /* preserve a supplied dense result and its storage; copy the VecType only from a matching MatType */
-  PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
-  if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-  PetscCall(MatSetUp(C));
+  /* the local product workspace uses the VecType of the output Mat */
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)A, (PetscObject)C, &flg));
+  if (flg == PETSC_TRUE) PetscCall(MatSetVecType(C, A->defaultvectype));
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)A, (PetscObject)B, &flg));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, flg == PETSC_TRUE ? NULL : MATMPIDENSE));
 
   /* create data structure for reuse Cdense */
   PetscCall(PetscNew(&ab));
@@ -2626,10 +2630,17 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AtB(Mat C)
 {
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
+  const char  *algTypes[] = {MATPRODUCTALGORITHMDEFAULT, MATPRODUCTALGORITHMBACKEND};
+  PetscInt     alg;
+  PetscBool    set;
 
   PetscFunctionBegin;
   PetscCheck(A->rmap->rstart == B->rmap->rstart && A->rmap->rend == B->rmap->rend, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, (%" PetscInt_FMT ", %" PetscInt_FMT ") != (%" PetscInt_FMT ",%" PetscInt_FMT ")",
              A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
+  PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_AtB", "Mat");
+  PetscCall(PetscOptionsEList(product->api_user == PETSC_TRUE ? "-mattransmatmult_mpidense_mpidense_via" : "-mat_product_algorithm", "Algorithmic approach", "MatTransposeMatMult", algTypes, PETSC_STATIC_ARRAY_LENGTH(algTypes), algTypes[0], &alg, &set));
+  PetscOptionsEnd();
+  if (set == PETSC_TRUE) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
   C->ops->transposematmultsymbolic = MatTransposeMatMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_AtB;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2637,9 +2648,9 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AtB(Mat C)
 
 static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
 {
-  Mat_Product *product     = C->product;
-  const char  *algTypes[2] = {"allgatherv", "cyclic"};
-  PetscInt     alg, nalg = 2;
+  Mat_Product *product    = C->product;
+  const char  *algTypes[] = {"allgatherv", "cyclic", MATPRODUCTALGORITHMBACKEND};
+  PetscInt     alg, nalg = PETSC_STATIC_ARRAY_LENGTH(algTypes);
   PetscBool    flg = PETSC_FALSE;
 
   PetscFunctionBegin;

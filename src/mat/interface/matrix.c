@@ -10853,9 +10853,10 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 . C - the product matrix
 
   Options Database Key:
-. -matmattransmult_mpidense_mpidense_via {allgatherv,cyclic} - Choose between algorithms for `MATMPIDENSE` matrices: the
-              first redundantly copies the transposed `B` matrix on each process and requires O(log P) communication complexity;
-              the second never stores more than one portion of the `B` matrix at a time but requires O(P) communication complexity.
+. -matmattransmult_mpidense_mpidense_via (allgatherv|cyclic|backend) - Choose the algorithm for `MATMPIDENSE`. The default
+              `allgatherv` replicates the transpose of `B` in O(log P) communication steps. The `cyclic` algorithm stores
+              one portion of `B` at a time and takes O(P) steps. With matching CUDA or HIP matrices, `backend` gathers
+              `B` through `PetscSF` and computes the local product on the device.
 
   Level: intermediate
 
@@ -10898,6 +10899,9 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 
   Output Parameter:
 . C - the product matrix
+
+  Options Database Key:
+. -mattransmatmult_mpidense_mpidense_via (default|backend) - For `MATMPIDENSE`, use `backend` to reduce local products through `PetscSF` in their native memory.
 
   Level: intermediate
 

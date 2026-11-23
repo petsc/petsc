@@ -2732,33 +2732,63 @@ static PetscErrorCode MatImaginaryPart_SeqDense(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
+static PetscErrorCode MatDenseSetUpProductLayout_Private(PetscLayout from, PetscLayout to)
 {
-  PetscInt  m = A->rmap->n, n = B->cmap->n;
-  PetscBool cisdense = PETSC_FALSE;
+  PetscFunctionBegin;
+  if (to->range == NULL && from->range != NULL && from->range[0] == 0) {
+    PetscLayout layout;
+
+    PetscCall(PetscLayoutCreateFromRanges(to->comm, from->range, PETSC_COPY_VALUES, to->bs, &layout));
+    // preserve existing references and the local-to-global mapping
+    layout->mapping = to->mapping;
+    layout->refcnt  = to->refcnt;
+    *to             = *layout;
+    PetscCall(PetscFree(layout));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* Set the sizes and block sizes of C from rows and cols, and reuse their layouts when available.
+   If C already has the requested MATSEQDENSE or MATMPIDENSE base type, preserve its storage and VecType.
+   Otherwise, use type (or the MatType of src if type is NULL) and inherit the VecType of src when the MatTypes match. */
+PetscErrorCode MatDenseSetUpProduct_Private(Mat C, PetscLayout rows, PetscLayout cols, Mat src, MatType type)
+{
+  PetscBool flg;
 
   PetscFunctionBegin;
-  PetscCall(MatSetSizes(C, m, n, m, n));
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-#endif
-#if PetscDefined(HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSEHIP, ""));
-#endif
-  if (!cisdense) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
-    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
-    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
-    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-    else {
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
-      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
-    }
+  PetscCall(MatSetSizes(C, rows->n, cols->n, rows->N, cols->N));
+  if (type == NULL) PetscCall(MatGetType(src, &type));
+  PetscCall(PetscStrbeginswith(type, MATSEQDENSE, &flg));
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)C, flg == PETSC_TRUE ? MATSEQDENSE : MATMPIDENSE, &flg));
+  if (flg == PETSC_FALSE) {
+    PetscCall(MatSetType(C, type));
+    PetscCall(PetscObjectObjectTypeCompare((PetscObject)C, (PetscObject)src, &flg));
+    if (flg == PETSC_TRUE) PetscCall(MatSetVecType(C, src->defaultvectype));
   }
+  if (C->rmap->bs != rows->bs || C->cmap->bs != cols->bs) PetscCall(MatSetBlockSizes(C, rows->bs, cols->bs));
+  PetscCall(MatDenseSetUpProductLayout_Private(rows, C->rmap));
+  PetscCall(MatDenseSetUpProductLayout_Private(cols, C->cmap));
   PetscCall(MatSetUp(C));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* For a new sequential dense result, inherit the common MatType of A and B when they match.
+   For mixed MatTypes, request MATSEQDENSE and inherit the VecType of a MATSEQDENSE operand, if present. */
+static PetscErrorCode MatSeqDenseSetUpProduct_Private(PetscLayout rows, PetscLayout cols, Mat A, Mat B, Mat C)
+{
+  PetscBool same, ahost;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectObjectTypeCompare((PetscObject)A, (PetscObject)B, &same));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQDENSE, &ahost));
+  PetscCall(MatDenseSetUpProduct_Private(C, rows, cols, same == PETSC_TRUE || ahost == PETSC_TRUE ? A : B, same == PETSC_TRUE ? NULL : MATSEQDENSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatSeqDenseSetUpProduct_Private(A->rmap, B->cmap, A, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2791,31 +2821,8 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
 
 PetscErrorCode MatMatTransposeMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  PetscInt  m = A->rmap->n, n = B->rmap->n;
-  PetscBool cisdense = PETSC_FALSE;
-
   PetscFunctionBegin;
-  PetscCall(MatSetSizes(C, m, n, m, n));
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-#endif
-#if PetscDefined(HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSEHIP, ""));
-#endif
-  if (!cisdense) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
-    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
-    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
-    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-    else {
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
-      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
-    }
-  }
-  PetscCall(MatSetUp(C));
+  PetscCall(MatSeqDenseSetUpProduct_Private(A->rmap, B->rmap, A, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2848,31 +2855,8 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqDense_SeqDense(Mat A, Mat B, Mat C)
 
 PetscErrorCode MatTransposeMatMultSymbolic_SeqDense_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  PetscInt  m = A->cmap->n, n = B->cmap->n;
-  PetscBool cisdense = PETSC_FALSE;
-
   PetscFunctionBegin;
-  PetscCall(MatSetSizes(C, m, n, m, n));
-#if PetscDefined(HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
-#endif
-#if PetscDefined(HAVE_HIP)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSEHIP, ""));
-#endif
-  if (!cisdense) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)A)->type_name, &flg));
-    PetscCall(MatSetType(C, flg ? ((PetscObject)A)->type_name : MATDENSE));
-    /* keep the VecType of A, or else of B since A may be sparse, e.g. VECKOKKOS from MatCreateDenseFromVecType(), but only from one with the same MatType as C, since e.g. the VECCUDA of a MATSEQDENSECUDA is not valid for a MATSEQDENSE C */
-    PetscCall(PetscObjectTypeCompare((PetscObject)A, ((PetscObject)C)->type_name, &flg));
-    if (flg) PetscCall(MatSetVecType(C, A->defaultvectype));
-    else {
-      PetscCall(PetscObjectTypeCompare((PetscObject)B, ((PetscObject)C)->type_name, &flg));
-      if (flg) PetscCall(MatSetVecType(C, B->defaultvectype));
-    }
-  }
-  PetscCall(MatSetUp(C));
+  PetscCall(MatSeqDenseSetUpProduct_Private(A->cmap, B->cmap, A, B, C));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

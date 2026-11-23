@@ -4201,19 +4201,9 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A, Mat B, Mat C)
 
 PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, Mat C)
 {
-  PetscInt  m = A->rmap->n, n = B->cmap->n;
-  PetscBool cisdense;
-
   PetscFunctionBegin;
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
-  PetscCall(MatSetSizes(C, m, n, m, n));
-  PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, MATSEQDENSEHIP, ""));
-  if (!cisdense) {
-    PetscCall(MatSetType(C, MATDENSE));
-    PetscCall(MatSetVecType(C, A->defaultvectype));
-  }
-  PetscCall(MatSetUp(C));
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, A, MATSEQDENSE));
 
   C->ops->matmultnumeric = MatMatMultNumeric_SeqDense_SeqAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
