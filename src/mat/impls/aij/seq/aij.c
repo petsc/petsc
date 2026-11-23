@@ -1227,8 +1227,11 @@ static PetscErrorCode MatResetHash_SeqAIJ(Mat A)
 
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 {
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
+
   PetscFunctionBegin;
   PetscCall(MatReset_SeqAIJ(A));
+  PetscCall(MatDestroySubMatrix_Private(a->submatis1));
   PetscCall(PetscFree(A->data));
 
   /* MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted may allocate this.
@@ -2643,6 +2646,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
   PetscInt i;
 
   PetscFunctionBegin;
+  if (!submatj) PetscFunctionReturn(PETSC_SUCCESS);
   if (!submatj->id) { /* delete data that are linked only to submats[id=0] */
     PetscCall(PetscFree4(submatj->sbuf1, submatj->ptr, submatj->tmp, submatj->ctr));
 
@@ -2679,54 +2683,6 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
   PetscCall(PetscFree(submatj->row2proc));
 
   PetscCall(PetscFree(submatj));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PetscErrorCode MatDestroySubMatrix_SeqAIJ(Mat C)
-{
-  Mat_SeqAIJ  *c       = (Mat_SeqAIJ *)C->data;
-  Mat_SubSppt *submatj = c->submatis1;
-
-  PetscFunctionBegin;
-  PetscCall((*submatj->destroy)(C));
-  PetscCall(MatDestroySubMatrix_Private(submatj));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/* Note this has code duplication with MatDestroySubMatrices_SeqBAIJ() */
-static PetscErrorCode MatDestroySubMatrices_SeqAIJ(PetscInt n, Mat *mat[])
-{
-  PetscInt     i;
-  Mat          C;
-  Mat_SeqAIJ  *c;
-  Mat_SubSppt *submatj;
-
-  PetscFunctionBegin;
-  for (i = 0; i < n; i++) {
-    C       = (*mat)[i];
-    c       = (Mat_SeqAIJ *)C->data;
-    submatj = c->submatis1;
-    if (submatj) {
-      if (--((PetscObject)C)->refct <= 0) {
-        PetscCall(PetscFree(C->factorprefix));
-        PetscCall((*submatj->destroy)(C));
-        PetscCall(MatDestroySubMatrix_Private(submatj));
-        PetscCall(PetscFree(C->defaultvectype));
-        PetscCall(PetscFree(C->defaultrandtype));
-        PetscCall(PetscFree(C->solvertype));
-        PetscCall(PetscLayoutDestroy(&C->rmap));
-        PetscCall(PetscLayoutDestroy(&C->cmap));
-        PetscCall(PetscHeaderDestroy(&C));
-      }
-    } else {
-      PetscCall(MatDestroy(&C));
-    }
-  }
-
-  /* Destroy Dummy submatrices created for reuse */
-  PetscCall(MatDestroySubMatrices_Dummy(n, mat));
-
-  PetscCall(PetscFree(*mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3550,7 +3506,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        MatFDColoringSetUp_SeqXAIJ,
                                        MatFindOffBlockDiagonalEntries_SeqAIJ,
                                        /*129*/ MatCreateMPIMatConcatenateSeqMat_SeqAIJ,
-                                       MatDestroySubMatrices_SeqAIJ,
+                                       MatDestroySubMatrices_SeqXAIJ,
                                        NULL,
                                        NULL,
                                        MatCreateGraph_Simple_AIJ,

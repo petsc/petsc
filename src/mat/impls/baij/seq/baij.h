@@ -255,9 +255,6 @@ PETSC_INTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat, PetscInt, PetscInt *, PetscIn
 PETSC_INTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat, PetscInt, PetscInt *, PetscInt *[], PetscScalar *[]);
 PETSC_INTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
 
-PETSC_INTERN PetscErrorCode MatDestroySubMatrix_SeqBAIJ(Mat);
-PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt, Mat *[]);
-
 PETSC_INTERN PetscErrorCode MatEliminateZeros_SeqBAIJ(Mat, PetscBool);
 
 /*

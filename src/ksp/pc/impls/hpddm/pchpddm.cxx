@@ -1273,7 +1273,7 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
   PetscCheck(A, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SubMatrices not found in Mat");
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSCHURCOMPLEMENT, &flg)); /* MATSCHURCOMPLEMENT has neither a MatDuplicate() nor a MatCopy() implementation */
   if (scall == MAT_INITIAL_MATRIX) {
-    PetscCall(PetscCalloc1(2, submat)); /* allocate an extra Mat to avoid errors in MatDestroySubMatrices_Dummy() */
+    PetscCall(PetscCalloc1(2, submat)); /* allocate an extra Mat to avoid errors in MatDestroySubMatrices_SeqXAIJ() */
     if (!flg) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, *submat));
   } else if (!flg) PetscCall(MatCopy(A, (*submat)[0], SAME_NONZERO_PATTERN));
   if (flg) {

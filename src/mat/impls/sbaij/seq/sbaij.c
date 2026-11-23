@@ -201,6 +201,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->free_jshort) PetscCall(PetscFree(a->jshort));
   PetscCall(PetscFree(a->inew));
   PetscCall(MatDestroy(&a->parent));
+  PetscCall(MatDestroySubMatrix_Private(a->submatis1));
   PetscCall(PetscFree(A->data));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
@@ -1470,7 +1471,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        /*129*/ MatCreateMPIMatConcatenateSeqMat_SeqSBAIJ,
-                                       NULL,
+                                       MatDestroySubMatrices_SeqXAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
