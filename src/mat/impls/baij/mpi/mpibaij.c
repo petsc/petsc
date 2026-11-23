@@ -1892,6 +1892,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   MatScalar   *vwork, *aa;
   MPI_Comm     comm;
   IS           isrow_new, iscol_new;
+  PetscBool    roworiented;
   Mat_SeqBAIJ *aij;
 
   PetscFunctionBegin;
@@ -1985,6 +1986,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
     M->was_assembled = PETSC_TRUE;
     M->assembled     = PETSC_FALSE;
   }
+  roworiented = ((Mat_MPIBAIJ *)M->data)->roworiented;
   PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, PETSC_FALSE));
   PetscCall(MatGetOwnershipRange(M, &rstart, &rend));
   aij = (Mat_SeqBAIJ *)Mreuse->data;
@@ -2001,6 +2003,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
     PetscUseTypeMethod(M, setvaluesblocked, 1, &row, nz, cwork, vwork, INSERT_VALUES);
   }
 
+  PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, roworiented));
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
   *newmat = M;
