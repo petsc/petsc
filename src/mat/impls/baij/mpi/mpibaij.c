@@ -1595,6 +1595,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   */
   /* must zero l->B before l->A because the (diag) case below may put values into l->B*/
   PetscCall(MatZeroRows_SeqBAIJ(l->B, len, lrows, 0.0, NULL, NULL));
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->B));
   PetscCall(MatHasCongruentLayouts(A, &cong));
   if ((diag != 0.0) && cong) {
     PetscCall(MatZeroRows_SeqBAIJ(l->A, len, lrows, diag, NULL, NULL));
@@ -1709,6 +1710,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
     PetscCall(VecRestoreArray(b, &bb));
     PetscCall(VecRestoreArrayRead(l->lvec, &xx));
   }
+  PetscCall(PetscObjectStateIncrease((PetscObject)l->B));
   PetscCall(VecRestoreArray(lmask, &mask));
   PetscCall(VecDestroy(&lmask));
   PetscCall(PetscFree(lrows));
