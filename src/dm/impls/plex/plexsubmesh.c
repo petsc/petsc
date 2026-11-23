@@ -2864,7 +2864,6 @@ divide:
 
     PetscCallMPI(MPI_Op_create(DMPlexLabelCohesiveValueReduce_Private, PETSC_TRUE, &reduceop));
     PetscCall(DMPlexReconcileLabel(dm, reduceop, newValue, label));
-    PetscCallMPI(MPI_Op_free(&reduceop));
     // New points may have connected points
     PetscCall(DMLabelGetDefaultValue(label, &defVal));
     PetscCall(DMLabelGetStratumIS(label, newValue, &newpointIS));
@@ -2927,6 +2926,8 @@ divide:
       PetscCall(ISRestoreIndices(newpointIS, &newpoints));
       PetscCall(ISDestroy(&newpointIS));
     }
+    PetscCall(DMPlexReconcileLabel(dm, reduceop, PETSC_DETERMINE, label));
+    PetscCallMPI(MPI_Op_free(&reduceop));
   }
   if (debug) PetscCall(ViewCohesiveLabel_Static(comm, label));
   PetscFunctionReturn(PETSC_SUCCESS);
