@@ -5941,13 +5941,15 @@ PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
   `MatDiagonalScale()` computes $A = LAR$, where
   L = a diagonal matrix (stored as a vector), R = a diagonal matrix (stored as a vector)
   The L scales the rows of the matrix, the R scales the columns of the matrix.
-  For `MATSEQSBAIJ`, if `l` and `r` are different `Vec` objects, `mat` changes to type `MATSEQBAIJ` because the result is not necessarily symmetric.
+  For `MATSEQSBAIJ`, if `l` and `r` are different `Vec` objects, `mat` changes to type `MATSEQBAIJ` because the result is not necessarily symmetric,
+  unless `l` and `r` have identical entries and `mat` is known to remain symmetric.
 
 .seealso: [](ch_matrices), `Mat`, `MatScale()`, `MatShift()`, `MatDiagonalSet()`
 @*/
 PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
 {
-  PetscBool flg = PETSC_FALSE;
+  PetscBool  flg = PETSC_FALSE, update;
+  PetscBool3 symmetric, hermitian, spd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -5965,24 +5967,24 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
   MatCheckPreallocated(mat, 1);
   if (!l && !r) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscLogEventBegin(MAT_Scale, mat, 0, 0, 0));
-  PetscUseTypeMethod(mat, diagonalscale, l, r);
-  PetscCall(PetscLogEventEnd(MAT_Scale, mat, 0, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
-  if (l != r && (PetscBool3ToBool(mat->symmetric) || PetscBool3ToBool(mat->hermitian))) {
-    if (!PetscDefined(USE_COMPLEX) || PetscBool3ToBool(mat->symmetric)) {
-      if (l && r) PetscCall(VecEqual(l, r, &flg));
-      if (!flg) {
+  symmetric = mat->symmetric;
+  hermitian = mat->hermitian;
+  spd       = mat->spd;
+  update    = (PetscBool)(l != r && (PetscBool3ToBool(symmetric) == PETSC_TRUE || PetscBool3ToBool(hermitian) == PETSC_TRUE));
+  if (update == PETSC_TRUE) {
+    if (!PetscDefined(USE_COMPLEX) || PetscBool3ToBool(symmetric) == PETSC_TRUE) {
+      if (l != NULL && r != NULL) PetscCall(VecEqual(l, r, &flg));
+      if (flg == PETSC_FALSE) {
         PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &flg));
-        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For MATMPISBAIJ, left and right scaling vectors must be the same");
-        mat->symmetric = mat->spd = PETSC_BOOL3_FALSE;
-        if (!PetscDefined(USE_COMPLEX)) mat->hermitian = PETSC_BOOL3_FALSE;
-        else mat->hermitian = PETSC_BOOL3_UNKNOWN;
+        PetscCheck(flg == PETSC_FALSE, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For MATMPISBAIJ, left and right scaling vectors must be the same");
+        symmetric = spd = PETSC_BOOL3_FALSE;
+        if (!PetscDefined(USE_COMPLEX)) hermitian = PETSC_BOOL3_FALSE;
+        else hermitian = PETSC_BOOL3_UNKNOWN;
       }
     }
-    if (PetscDefined(USE_COMPLEX) && PetscBool3ToBool(mat->hermitian)) {
+    if (PetscDefined(USE_COMPLEX) && PetscBool3ToBool(hermitian) == PETSC_TRUE) {
       flg = PETSC_FALSE;
-      if (l && r) {
+      if (l != NULL && r != NULL) {
         Vec conjugate;
 
         PetscCall(VecDuplicate(l, &conjugate));
@@ -5991,14 +5993,23 @@ PetscErrorCode MatDiagonalScale(Mat mat, Vec l, Vec r)
         PetscCall(VecEqual(conjugate, r, &flg));
         PetscCall(VecDestroy(&conjugate));
       }
-      if (!flg) {
+      if (flg == PETSC_FALSE) {
         PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPISBAIJ, &flg));
-        PetscCheck(!flg, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For Hermitian MATMPISBAIJ, left and right scaling vectors must be conjugate one of the other");
-        mat->hermitian = PETSC_BOOL3_FALSE;
-        mat->symmetric = mat->spd = PETSC_BOOL3_UNKNOWN;
+        PetscCheck(flg == PETSC_FALSE, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_OUTOFRANGE, "For Hermitian MATMPISBAIJ, left and right scaling vectors must be conjugate one of the other");
+        hermitian = PETSC_BOOL3_FALSE;
+        symmetric = spd = PETSC_BOOL3_UNKNOWN;
       }
     }
   }
+  PetscCall(PetscLogEventBegin(MAT_Scale, mat, 0, 0, 0));
+  PetscUseTypeMethod(mat, diagonalscale, PetscBool3ToBool(symmetric) == PETSC_TRUE && flg == PETSC_TRUE ? r : l, r);
+  PetscCall(PetscLogEventEnd(MAT_Scale, mat, 0, 0, 0));
+  if (update == PETSC_TRUE) {
+    mat->symmetric = symmetric;
+    mat->hermitian = hermitian;
+    mat->spd       = spd;
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
