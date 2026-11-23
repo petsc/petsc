@@ -13,6 +13,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype, M
   Mat_MPIAIJ *mpimat = (Mat_MPIAIJ *)A->data;
   PetscInt   *d_nnz, *o_nnz;
   PetscInt    m, n, lm, ln, bs = A->rmap->bs;
+  PetscBool   nooffprocentries;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -30,18 +31,22 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype, M
     PetscCall(MatMPISBAIJSetPreallocation(M, bs, 0, d_nnz, 0, o_nnz));
     PetscCall(PetscFree(d_nnz));
     PetscCall(PetscFree(o_nnz));
+    nooffprocentries    = A->nooffprocentries;
+    A->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    A->nooffprocentries = nooffprocentries;
     if (symmetric != PETSC_BOOL3_UNKNOWN) PetscCall(MatSetOption(A, MAT_SYMMETRIC, PetscBool3ToBool(symmetric)));
     if (hermitian != PETSC_BOOL3_UNKNOWN) PetscCall(MatSetOption(A, MAT_HERMITIAN, PetscBool3ToBool(hermitian)));
     if (spd != PETSC_BOOL3_UNKNOWN) PetscCall(MatSetOption(A, MAT_SPD, PetscBool3ToBool(spd)));
   } else M = *newmat;
-
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
   /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
   /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
   PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &M));
-
+  M->nooffprocentries = nooffprocentries;
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
   else *newmat = M;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -54,13 +59,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
   Mat_MPIBAIJ       *mpimat = (Mat_MPIBAIJ *)A->data;
   Mat_SeqBAIJ       *Aa = (Mat_SeqBAIJ *)mpimat->A->data, *Ba = (Mat_SeqBAIJ *)mpimat->B->data;
   PetscInt          *d_nnz, *o_nnz;
-  PetscInt           nz;
-  PetscInt           m, n, lm, ln;
-  PetscInt           rstart, rend;
+  PetscInt           nz, m, n, lm, ln, rstart, rend, bs = A->rmap->bs;
   const PetscScalar *vwork;
-  const PetscInt    *cwork;
-  PetscInt           bs = A->rmap->bs;
-  const PetscInt    *adiag;
+  const PetscInt    *cwork, *adiag;
+  PetscBool          nooffprocentries;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -90,8 +92,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
     PetscCall(MatSetValues(M, 1, &i, nz, cwork, vwork, INSERT_VALUES));
     PetscCall(MatRestoreRow(A, i, &nz, &cwork, &vwork));
   }
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
+  M->nooffprocentries = nooffprocentries;
 
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
   else *newmat = M;

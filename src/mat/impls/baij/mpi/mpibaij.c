@@ -1886,13 +1886,13 @@ static PetscErrorCode MatCreateSubMatrix_MPIBAIJ(Mat mat, IS isrow, IS iscol, Ma
 PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, PetscInt csize, MatReuse call, Mat *newmat, PetscBool sym)
 {
   PetscMPIInt  rank, size;
-  PetscInt     i, m, n, rstart, row, rend, nz, *cwork, j, bs;
-  PetscInt    *ii, *jj, nlocal, *dlens, *olens, dlen, olen, jend, mglobal;
+  PetscInt     i, m, n, rstart, row, rend, nz, j, bs, nlocal, dlen, olen, jend, mglobal;
+  PetscInt    *cwork, *ii, *jj, *dlens, *olens;
   Mat          M, Mreuse;
   MatScalar   *vwork, *aa;
   MPI_Comm     comm;
   IS           isrow_new, iscol_new;
-  PetscBool    roworiented;
+  PetscBool    nooffprocentries, roworiented;
   Mat_SeqBAIJ *aij;
 
   PetscFunctionBegin;
@@ -2004,9 +2004,12 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   }
 
   PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, roworiented));
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
-  *newmat = M;
+  M->nooffprocentries = nooffprocentries;
+  *newmat             = M;
 
   /* save submatrix used in processor for next request */
   if (call == MAT_INITIAL_MATRIX) {
