@@ -851,12 +851,9 @@ static PetscErrorCode PCReset_GASM(PC pc)
       PetscMPIInt size;
 
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-      if (size > 1) {
-        /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
-        PetscCall(MatDestroyMatrices(osm->n, &osm->pmat));
-      } else {
-        PetscCall(MatDestroySubMatrices(osm->n, &osm->pmat));
-      }
+      /* osm->pmat is created by MatCreateSubMatricesMPI(), cannot use MatDestroySubMatrices() */
+      if (size > 1) PetscCall(MatDestroyMatrices(osm->n, &osm->pmat));
+      else PetscCall(MatDestroySubMatrices(osm->n, &osm->pmat));
     }
   }
   if (osm->x) {
