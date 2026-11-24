@@ -3671,7 +3671,7 @@ PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatTransposeMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
+static PetscErrorCode MatTransposeMatMult_SeqBAIJ_1_Private(Mat A, const PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn, PetscBool conjugate)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const MatScalar   *v;
@@ -3699,9 +3699,10 @@ static PetscErrorCode MatTransposeMatMult_SeqBAIJ_1_Private(Mat A, PetscScalar *
     PetscPrefetchBlock(idx + n, n, 0, PETSC_PREFETCH_HINT_NTA);       /* Indices for the next row (assumes same size as this one) */
     PetscPrefetchBlock(v + 1 * n, 1 * n, 0, PETSC_PREFETCH_HINT_NTA); /* Entries for the next row */
     for (j = 0, bi = b + 1 * brow; j < n; j++) {
-      PetscScalar *zcol = c + 1 * (*idx++);
+      PetscScalar      *zcol  = c + (*idx++);
+      const PetscScalar value = conjugate == PETSC_TRUE ? PetscConj(*v) : *v;
 
-      for (k = 0; k < cn; k++) zcol[0 + k * cm] += v[0] * bi[k * bm];
+      for (k = 0; k < cn; k++) zcol[0 + k * cm] += value * bi[k * bm];
       ++v;
     }
   }
@@ -3916,7 +3917,7 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscCall(MatDenseGetArrayWrite(C, &c));
   switch (bs) {
   case 1:
-    PetscCall(MatTransposeMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn));
+    PetscCall(MatTransposeMatMult_SeqBAIJ_1_Private(A, b, bm, c, cm, cn, PETSC_FALSE));
     break;
   case 2:
     PetscCall(MatTransposeMatMult_SeqBAIJ_2_Private(A, b, bm, c, cm, cn));
@@ -3958,5 +3959,22 @@ PetscErrorCode MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
   }
   PetscCall(MatDenseRestoreArrayWrite(C, &c));
   PetscCall(PetscLogFlops((2.0 * a->nz * bs2 - bs * a->nonzerorowcnt) * cn));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatHermitianTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat A, Mat B, Mat C)
+{
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *)A->data;
+  Mat_SeqDense *b = (Mat_SeqDense *)B->data, *c = (Mat_SeqDense *)C->data;
+  PetscScalar  *out;
+
+  PetscFunctionBegin;
+  PetscCheck(A->rmap->bs == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Hermitian transpose product requires block size 1, got %" PetscInt_FMT, A->rmap->bs);
+  if (C->rmap->n == 0 || B->cmap->n == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatZeroEntries(C));
+  PetscCall(MatDenseGetArrayWrite(C, &out));
+  PetscCall(MatTransposeMatMult_SeqBAIJ_1_Private(A, b->v, b->lda, out, c->lda, B->cmap->n, PETSC_TRUE));
+  PetscCall(MatDenseRestoreArrayWrite(C, &out));
+  PetscCall(PetscLogFlops((2.0 * a->nz - a->nonzerorowcnt) * B->cmap->n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

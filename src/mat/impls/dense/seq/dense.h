@@ -45,6 +45,7 @@ PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqBAIJ_SeqDense(Mat, Mat, PetscR
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqBAIJ_SeqDense(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_SeqBAIJ_SeqDense(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat, Mat, Mat);
+PETSC_INTERN PetscErrorCode MatHermitianTransposeMatMultNumeric_SeqBAIJ_SeqDense(Mat, Mat, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultSymbolic_SeqSBAIJ_SeqDense(Mat, Mat, PetscReal, Mat);
 PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat, Mat, Mat);
 

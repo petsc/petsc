@@ -201,7 +201,7 @@ int main(int argc, char **args)
   PetscBool    xgpu = PETSC_FALSE, bgpu = PETSC_FALSE, testshellops = PETSC_FALSE, testproj = PETSC_TRUE, testrart = PETSC_TRUE, testmatmatt = PETSC_TRUE, testmattmat = PETSC_TRUE, formt = PETSC_FALSE, testreusemodified = PETSC_FALSE;
   PetscScalar *dataX = NULL, *dataB = NULL, *dataR = NULL, *dataBt = NULL;
   PetscScalar *aX, *aB, *aBt;
-  PetscReal    err;
+  PetscReal    err, xnorm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -503,8 +503,9 @@ int main(int argc, char **args)
     PetscCall(MatDenseRestoreColumnVec(T, k, &Tv));
     PetscCall(MatDenseRestoreColumnVecWrite(T2, k, &T2v));
   }
+  PetscCall(MatNorm(X, NORM_FROBENIUS, &xnorm));
   PetscCall(MatNorm(T, NORM_FROBENIUS, &err));
-  if (err > PETSC_SMALL) {
+  if (err > 10 * PETSC_MACHINE_EPSILON * PetscMax(xnorm, 1.0)) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error with MatDenseGetColumnVec\n"));
     PetscCall(MatView(T, NULL));
   }

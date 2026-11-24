@@ -1,6 +1,7 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/dense/seq/dense.h>
 #include <petscblaslapack.h>
 #include <petscsf.h>
 
@@ -45,6 +46,7 @@ static PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatStoreValues_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatRetrieveValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpisbaij_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatGetMultPetscSF_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocationCSR_C", NULL));
@@ -2213,6 +2215,118 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
 .seealso: [](ch_matrices), `Mat`, `MATSBAIJ`, `MATBAIJ`, `MatCreateBAIJ()`, `MATSEQSBAIJ`, `MatType`
 M*/
 
+typedef struct {
+  MPIAIJ_MPIDense scatter;
+  PetscSF         sf[2];
+} MPISBAIJ_MPIDense;
+
+static PetscErrorCode MatMPISBAIJ_MPIDenseDestroy(PetscCtxRt ctx)
+{
+  MPISBAIJ_MPIDense *data = *(MPISBAIJ_MPIDense **)ctx;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFDestroy(&data->sf[0]));
+  PetscCall(PetscSFDestroy(&data->sf[1]));
+  PetscCall(MatDestroy(&data->scatter.source));
+  PetscCall(MatMPIDenseScatterDestroy_Private(&data->scatter));
+  PetscCall(PetscFree(data));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatMultNumeric_MPISBAIJ_MPIDense(Mat A, Mat B, Mat C)
+{
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ *)A->data;
+  MPISBAIJ_MPIDense *data;
+  Mat                Cl;
+  PetscInt           bs, m = A->rmap->n, n = a->B->cmap->n, N = B->cmap->N, Bbn, ldc;
+  PetscBool          hermitian = (PetscBool)(PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE);
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 3);
+  PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  if (N == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  data = (MPISBAIJ_MPIDense *)C->product->data;
+  PetscCall(MatGetBlockSize(A, &bs));
+  PetscCall(MatMPIDenseScatterUpdateLDA_Private(a->Mvctx, bs, B, C, &data->scatter));
+  Bbn = data->scatter.workB->cmap->n;
+  PetscCall(MatDenseGetLocalMatrix(B, &B));
+  PetscCall(MatDenseGetLocalMatrix(C, &Cl));
+  PetscCall(MatDenseGetLDA(Cl, &ldc));
+  if (data->scatter.source == NULL && (n > 0 || (m > 0 && Bbn > 1 && ldc != m))) PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, Bbn, NULL, &data->scatter.source));
+  PetscCall(MatMatMultNumeric_SeqSBAIJ_SeqDense(a->A, B, Cl));
+  for (PetscInt j = 0; j < N; j += Bbn) {
+    const PetscInt cols = PetscMin(Bbn, N - j);
+    Mat            Bb = B, Cb = Cl, workB = data->scatter.workB, workC = n > 0 || (cols > 1 && ldc != m) ? data->scatter.source : NULL;
+    Mat            root;
+
+    if (cols != N) {
+      PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, j, j + cols, &Bb));
+      PetscCall(MatDenseGetSubMatrix(Cl, PETSC_DECIDE, PETSC_DECIDE, j, j + cols, &Cb));
+    }
+    if (cols < Bbn) {
+      PetscCall(MatDenseGetSubMatrix(data->scatter.workB, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workB));
+      if (workC != NULL) PetscCall(MatDenseGetSubMatrix(data->scatter.source, PETSC_DECIDE, PETSC_DECIDE, 0, cols, &workC));
+    }
+    PetscCall(MatMPIDenseScatter_Private(a->Mvctx, n, bs, workB, &data->scatter, Bb, C));
+    if (n > 0) {
+      PetscCall(MatMatMultNumeric_SeqBAIJ_SeqDense(a->B, workB, workC));
+      if (hermitian == PETSC_TRUE) PetscCall(MatHermitianTransposeMatMultNumeric_SeqBAIJ_SeqDense(a->B, Bb, workB));
+      else PetscCall(MatTransposeMatMultNumeric_SeqBAIJ_SeqDense(a->B, Bb, workB));
+    } else if (workC != NULL) PetscCall(MatZeroEntries(workC));
+    root = workC ? workC : Cb;
+    PetscCall(MatDenseScatterWithSF_Private(data->sf[cols < Bbn], workB, root, MPIU_SUM, SCATTER_REVERSE, PETSC_FALSE));
+    if (workC != NULL) PetscCall(MatAXPY(Cb, 1.0, workC, SAME_NONZERO_PATTERN));
+    if (cols < Bbn) {
+      if (workC != NULL) PetscCall(MatDenseRestoreSubMatrix(data->scatter.source, &workC));
+      PetscCall(MatDenseRestoreSubMatrix(data->scatter.workB, &workB));
+    }
+    if (cols != N) {
+      PetscCall(MatDenseRestoreSubMatrix(B, &Bb));
+      PetscCall(MatDenseRestoreSubMatrix(Cl, &Cb));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatMatMultSymbolic_MPISBAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
+{
+  Mat_MPISBAIJ      *a = (Mat_MPISBAIJ *)A->data;
+  MPISBAIJ_MPIDense *data;
+  PetscInt           bs, n = a->B->cmap->n, N = B->cmap->N;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 4);
+  PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
+  PetscCall(MatDenseSetUpProduct_Private(C, A->rmap, B->cmap, B, NULL));
+  PetscCall(PetscNew(&data));
+  if (N > 0) {
+    PetscInt Bbn;
+
+    PetscCall(MatGetBlockSize(A, &bs));
+    PetscCall(MatMPIDenseScatterSetUp_Private(a->Mvctx, n, bs, PETSC_DETERMINE, B, C, &data->scatter, NULL, NULL));
+    Bbn = data->scatter.workB->cmap->n;
+    PetscCall(PetscSFCreateStridedSF(a->Mvctx, Bbn, A->rmap->n, n, &data->sf[0]));
+    if (N % Bbn > 0) PetscCall(PetscSFCreateStridedSF(a->Mvctx, N % Bbn, A->rmap->n, n, &data->sf[1]));
+  }
+  C->product->data       = data;
+  C->product->destroy    = MatMPISBAIJ_MPIDenseDestroy;
+  C->ops->matmultnumeric = MatMatMultNumeric_MPISBAIJ_MPIDense;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_MPISBAIJ_MPIDense(Mat C)
+{
+  Mat_Product *product = C->product;
+
+  PetscFunctionBegin;
+  MatCheckProduct(C, 1);
+  if (product->type == MATPRODUCT_AB || ((PetscDefined(USE_REAL) || product->A->symmetric == PETSC_BOOL3_TRUE) && product->type == MATPRODUCT_AtB)) {
+    C->ops->matmultsymbolic = MatMatMultSymbolic_MPISBAIJ_MPIDense;
+    C->ops->productsymbolic = MatProductSymbolic_AB;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatGetMultPetscSF_MPISBAIJ(Mat A, PetscSF *sf)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ *)A->data;
@@ -2294,6 +2408,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_mpiaij_C", MatConvert_MPISBAIJ_Basic));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpisbaij_mpibaij_C", MatConvert_MPISBAIJ_Basic));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpisbaij_mpidense_C", MatProductSetFromOptions_MPISBAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatGetMultPetscSF_C", MatGetMultPetscSF_MPISBAIJ));
 
   B->symmetric                   = PETSC_BOOL3_TRUE;
