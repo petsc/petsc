@@ -3746,6 +3746,8 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
 
   Use `SNESGetSolution()` to extract the fine grid solution after grid sequencing.
 
+  If `DMRefine()` does not refine the `DM`, then grid sequencing stops and the solution stays on the current grid.
+
 .seealso: [](ch_snes), `SNES`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetGridSequence()`,
           `SNESSetDM()`, `SNESSolve()`
 @*/
@@ -5040,7 +5042,11 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
       Mat interp;
 
       PetscCall(DMRefine(snes->dm, PetscObjectComm((PetscObject)snes), &fine));
-      PetscCheck(fine, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
+      if (!fine) {
+        PetscCall(PetscInfo(snes, "DMRefine() did not refine the DM, grid sequencing stops after %" PetscInt_FMT " refinements\n", grid));
+        for (PetscInt level = grid; level < snes->gridsequence; level++) PetscCall(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes))));
+        break;
+      }
       PetscCall(DMGetCoordinatesLocalSetUp(fine));
       PetscCall(DMCreateInterpolation(snes->dm, fine, &interp, NULL));
       PetscCall(DMCreateGlobalVector(fine, &xnew));

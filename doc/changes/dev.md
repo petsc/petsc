@@ -145,6 +145,7 @@
 ```{rubric} SNES:
 ```
 
+- Stop grid sequencing in `SNESSolve()` when `DMRefine()` does not refine the `DM`, instead of raising an error
 - Change interface to `SNESPatchSetDiscretisationInfo()` to address subspace DoFs using `IS`s instead of with offsets and block sizes
 - Add `SNESNGMRESSetAdaptive()`, `SNESNGMRESGetAdaptive()`, `SNESNGMRESSetAdaptiveParameters()`, and `SNESNGMRESGetAdaptiveParameters()`, as well as the options `-snes_ngmres_adaptive`, `-snes_ngmres_adaptive_m`, and `-snes_ngmres_adaptive_tol`, to grow the window of stored solutions of `SNESNGMRES` when the least-squares problem predicts the residual reduction
 
