@@ -1588,9 +1588,10 @@ static PetscErrorCode MatAXPY_MPISBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure
     PetscCall(PetscObjectStateIncrease((PetscObject)yy->B));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
-    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, PETSC_TRUE));
+    const PetscBool getrow_utriangular = ((Mat_SeqSBAIJ *)xx->A->data)->getrow_utriangular;
+
     PetscCall(MatAXPY_Basic(Y, a, X, str));
-    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, PETSC_FALSE));
+    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, getrow_utriangular));
   } else {
     Mat       B;
     PetscInt *nnz_d, *nnz_o, bs = Y->rmap->bs;
@@ -2118,10 +2119,10 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
 {
   PetscInt        m, rstart, cend;
   PetscInt        i, j, d, nz, bd, nz_max = 0, *d_nnz = NULL, *o_nnz = NULL;
-  const PetscInt *JJ          = NULL;
-  PetscScalar    *values      = NULL;
-  PetscBool       roworiented = ((Mat_MPISBAIJ *)B->data)->roworiented;
-  PetscBool       nooffprocentries;
+  const PetscInt *JJ               = NULL;
+  PetscScalar    *values           = NULL;
+  PetscBool       roworiented      = ((Mat_MPISBAIJ *)B->data)->roworiented, ignore_ltriangular;
+  const PetscBool nooffprocentries = B->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCheck(bs >= 1, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "Invalid block size specified, must be positive but it is %" PetscInt_FMT, bs);
@@ -2158,6 +2159,7 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
     nz_max   = PetscMax(nz_max, nz);
   }
   PetscCall(MatMPISBAIJSetPreallocation(B, bs, 0, d_nnz, 0, o_nnz));
+  ignore_ltriangular = ((Mat_SeqSBAIJ *)((Mat_MPISBAIJ *)B->data)->A->data)->ignore_ltriangular;
   PetscCall(MatSetOption(B, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
   PetscCall(PetscFree2(d_nnz, o_nnz));
 
@@ -2178,8 +2180,8 @@ static PetscErrorCode MatMPISBAIJSetPreallocationCSR_MPISBAIJ(Mat B, PetscInt bs
     }
   }
 
+  PetscCall(MatSetOption(B, MAT_IGNORE_LOWER_TRIANGULAR, ignore_ltriangular));
   if (!V) PetscCall(PetscFree(values));
-  nooffprocentries    = B->nooffprocentries;
   B->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
@@ -3071,9 +3073,10 @@ PetscErrorCode MatMPISBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt
 
 PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm, Mat inmat, PetscInt n, MatReuse scall, Mat *outmat)
 {
-  PetscInt     m, N, i, rstart, nnz, Ii, bs, cbs;
-  PetscInt    *indx;
-  PetscScalar *values;
+  PetscInt        m, N, i, rstart, nnz, Ii, bs, cbs;
+  PetscInt       *indx;
+  PetscScalar    *values;
+  const PetscBool getrow_utriangular = ((Mat_SeqSBAIJ *)inmat->data)->getrow_utriangular;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(inmat, &m, &N));
@@ -3108,7 +3111,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm, Mat inma
       PetscCall(MatPreallocateSet(i + rstart, nnz, bindx, dnz, onz));
       PetscCall(MatRestoreRow_SeqSBAIJ(inmat, i * bs, &nnz, &indx, NULL));
     }
-    PetscCall(MatSetOption(inmat, MAT_GETROW_UPPERTRIANGULAR, PETSC_FALSE));
+    PetscCall(MatSetOption(inmat, MAT_GETROW_UPPERTRIANGULAR, getrow_utriangular));
     PetscCall(PetscFree(bindx));
 
     PetscCall(MatCreate(comm, outmat));
@@ -3131,7 +3134,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPISBAIJ(MPI_Comm comm, Mat inma
     PetscCall(MatSetValues(*outmat, 1, &Ii, nnz, indx, values, INSERT_VALUES));
     PetscCall(MatRestoreRow_SeqSBAIJ(inmat, i, &nnz, &indx, &values));
   }
-  PetscCall(MatSetOption(inmat, MAT_GETROW_UPPERTRIANGULAR, PETSC_FALSE));
+  PetscCall(MatSetOption(inmat, MAT_GETROW_UPPERTRIANGULAR, getrow_utriangular));
   PetscCall(MatAssemblyBegin(*outmat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*outmat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -2821,6 +2821,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   Mat_MPIAIJ  *b;
   Mat          B;
+  PetscBool    nooffprocentries;
 
   PetscFunctionBegin;
   PetscCheck(A->assembled, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Matrix must be assembled");
@@ -2861,10 +2862,11 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
       bB->j[k]    = garray[bj] * bs + br;
     }
   }
-  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  nooffprocentries    = B->nooffprocentries;
+  B->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+  B->nooffprocentries = nooffprocentries;
 
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(A, &B));

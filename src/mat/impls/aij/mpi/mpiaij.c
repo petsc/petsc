@@ -3541,7 +3541,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat, IS isrow, IS iscol
   PetscInt        count, Bn = B->cmap->N, cstart = mat->cmap->rstart, cend = mat->cmap->rend;
   IS              iscol_sub, iscmap;
   const PetscInt *is_idx, *cmap;
-  PetscBool       allcolumns = PETSC_FALSE;
+  PetscBool       allcolumns = PETSC_FALSE, nooffprocentries;
   MPI_Comm        comm;
 
   PetscFunctionBegin;
@@ -3715,8 +3715,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat, IS isrow, IS iscol
   PetscCall(MatSeqAIJRestoreArrayRead(Msub, (const PetscScalar **)&aa));
   PetscCall(ISRestoreIndices(iscmap, &cmap));
 
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
+  M->nooffprocentries = nooffprocentries;
 
   PetscCall(PetscFree(colsub));
 
@@ -3756,7 +3759,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
   MatScalar  *aa, *vwork;
   MPI_Comm    comm;
   Mat_SeqAIJ *aij;
-  PetscBool   colflag, allcolumns = PETSC_FALSE;
+  PetscBool   colflag, allcolumns = PETSC_FALSE, nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
@@ -3863,9 +3866,12 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
   }
   PetscCall(MatSeqAIJRestoreArrayRead(Mreuse, (const PetscScalar **)&aa));
 
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));
-  *newmat = M;
+  M->nooffprocentries = nooffprocentries;
+  *newmat             = M;
 
   /* save submatrix used in processor for next request */
   if (call == MAT_INITIAL_MATRIX) {

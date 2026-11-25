@@ -694,6 +694,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   PetscInt             offset, ii, pocol;
   const PetscInt      *mappingindices;
   IS                   map;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -820,8 +821,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce(Mat A, Mat P, PetscInt do
   }
   PetscCall(PetscFree2(c_othj, c_otha));
 
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
 
   ptap->reuse = MAT_REUSE_MATRIX;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -845,6 +848,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   PetscInt             offset, ii, pocol;
   const PetscInt      *mappingindices;
   IS                   map;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -954,8 +958,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIXAIJ_allatonce_merged(Mat A, Mat P, Pets
   }
   PetscCall(PetscFree2(c_othj, c_otha));
 
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
 
   ptap->reuse = MAT_REUSE_MATRIX;
   PetscFunctionReturn(PETSC_SUCCESS);

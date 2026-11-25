@@ -14,15 +14,13 @@ PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
 
 PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 {
-  PetscInt    i, start, end, oldValA = 0, oldValB = 0;
-  PetscScalar alpha = a;
-  PetscBool   prevoption;
-  PetscBool   isSeqAIJDerived, isMPIAIJDerived; // all classes sharing SEQAIJHEADER or MPIAIJHEADER
-  Mat         A = NULL, B = NULL;
+  PetscInt        i, start, end, oldValA = 0, oldValB = 0;
+  PetscScalar     alpha = a;
+  PetscBool       isSeqAIJDerived, isMPIAIJDerived; // all classes sharing SEQAIJHEADER or MPIAIJHEADER
+  Mat             A = NULL, B = NULL;
+  const PetscBool nooffprocentries = Y->nooffprocentries;
 
   PetscFunctionBegin;
-  PetscCall(MatGetOption(Y, MAT_NO_OFF_PROC_ENTRIES, &prevoption));
-  PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isSeqAIJDerived, MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ, ""));
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isMPIAIJDerived, MATMPIAIJ, MATMPIBAIJ, MATMPISBAIJ, ""));
 
@@ -46,9 +44,10 @@ PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
   for (i = start; i < end; i++) {
     if (i < Y->cmap->N) PetscCall(MatSetValues(Y, 1, &i, 1, &i, &alpha, ADD_VALUES));
   }
+  Y->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, prevoption));
+  Y->nooffprocentries = nooffprocentries;
   if (A) ((Mat_SeqAIJ *)A->data)->nonew = oldValA;
   if (B) ((Mat_SeqAIJ *)B->data)->nonew = oldValB;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -829,7 +828,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
 {
   PetscErrorCode (*f)(Mat, const PetscScalar[], InsertMode) = NULL;
-  PetscBool oldFlg;
+  PetscBool nooffprocentries                                = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -840,12 +839,12 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
   PetscCall(PetscLogEventBegin(MAT_SetVCOO, A, 0, 0, 0));
   if (f) {
     if (!A->structure_only) PetscCall((*f)(A, coo_v, imode)); // all known COO implementations do not use MatStash. They do their own off-proc communication
-    PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &oldFlg));
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));                // set A->nooffprocentries to avoid costly MatStash scatter in MatAssembly
-  } else if (!A->structure_only) PetscCall(MatSetValuesCOO_Basic(A, coo_v, imode)); // fall back to MatSetValues, which might use MatStash
+    nooffprocentries    = A->nooffprocentries;
+    A->nooffprocentries = PETSC_TRUE;
+  } else if (!A->structure_only) PetscCall(MatSetValuesCOO_Basic(A, coo_v, imode)); // MatSetValues() may use MatStash
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  if (f) PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, oldFlg));
+  if (f) A->nooffprocentries = nooffprocentries;
   PetscCall(PetscLogEventEnd(MAT_SetVCOO, A, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

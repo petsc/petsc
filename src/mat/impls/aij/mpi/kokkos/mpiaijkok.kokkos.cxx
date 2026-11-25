@@ -1306,6 +1306,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   Mat                         Cd, Co;
   MPI_Comm                    comm;
   Mat_MPIAIJ                 *mpiaij;
+  const PetscBool             nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
@@ -1386,12 +1387,10 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   mpiaij->garray = mm->garray;
 
   C->preallocated     = PETSC_TRUE;
-  C->nooffprocentries = PETSC_TRUE; /* See MatAssemblyBegin_MPIAIJ. In effect, making MatAssemblyBegin a nop */
-
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
   /* set block sizes */
