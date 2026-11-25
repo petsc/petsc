@@ -1008,8 +1008,6 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
 
   PetscCall(PetscFree2(baij->rowvalues, baij->rowindices));
 
-  baij->rowvalues = NULL;
-
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
     mat->nonzerostate = baij->A->nonzerostate + baij->B->nonzerostate;

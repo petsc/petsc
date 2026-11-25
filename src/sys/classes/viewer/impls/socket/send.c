@@ -383,7 +383,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   vmatlab->flowcontrol   = 256; /* same default as in PetscViewerCreate_Binary() */
   v->data                = (void *)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;
-  v->ops->flush          = NULL;
   v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
 
   /* lie and say this is a binary viewer; then all the XXXView_Binary() methods will work correctly on it */

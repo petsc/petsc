@@ -5146,8 +5146,7 @@ PetscErrorCode DMClearFields(DM dm)
     PetscCall(DMLabelDestroy(&dm->fields[f].label));
   }
   PetscCall(PetscFree(dm->fields));
-  dm->fields = NULL;
-  dm->Nf     = 0;
+  dm->Nf = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5742,8 +5741,7 @@ PetscErrorCode DMClearDS(DM dm)
     PetscCall(ISDestroy(&dm->probs[s].fields));
   }
   PetscCall(PetscFree(dm->probs));
-  dm->probs = NULL;
-  dm->Nds   = 0;
+  dm->Nds = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8043,7 +8041,6 @@ PetscErrorCode DMUniversalLabelDestroy(DMUniversalLabel *universal)
   PetscCall(PetscFree5((*universal)->names, (*universal)->indices, (*universal)->offsets, (*universal)->bits, (*universal)->masks));
   PetscCall(PetscFree((*universal)->values));
   PetscCall(PetscFree(*universal));
-  *universal = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

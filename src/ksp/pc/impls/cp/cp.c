@@ -28,10 +28,7 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 
   if (!cp->work) PetscCall(MatCreateVecs(pc->pmat, &cp->work, NULL));
   if (!cp->d) PetscCall(PetscMalloc1(cp->n, &cp->d));
-  if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
-    PetscCall(PetscFree3(cp->a, cp->i, cp->j));
-    cp->a = NULL;
-  }
+  if (cp->a && pc->flag != SAME_NONZERO_PATTERN) PetscCall(PetscFree3(cp->a, cp->i, cp->j));
 
   /* convert to column format */
   if (!cp->a) PetscCall(PetscMalloc3(aij->nz, &cp->a, cp->n + 1, &cp->i, aij->nz, &cp->j));
@@ -161,12 +158,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   PetscCall(PetscNew(&cp));
   pc->data = (void *)cp;
 
-  pc->ops->apply           = PCApply_CP;
-  pc->ops->applytranspose  = PCApply_CP;
-  pc->ops->setup           = PCSetUp_CP;
-  pc->ops->reset           = PCReset_CP;
-  pc->ops->destroy         = PCDestroy_CP;
-  pc->ops->view            = NULL;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply          = PCApply_CP;
+  pc->ops->applytranspose = PCApply_CP;
+  pc->ops->setup          = PCSetUp_CP;
+  pc->ops->reset          = PCReset_CP;
+  pc->ops->destroy        = PCDestroy_CP;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

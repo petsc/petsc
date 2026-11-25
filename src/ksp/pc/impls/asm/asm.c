@@ -717,11 +717,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PetscCall(VecDestroy(&osm->lx));
   PetscCall(VecDestroy(&osm->ly));
   if (osm->lmats != NULL) PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->lmats));
-
   PetscCall(PetscFree(osm->sub_mat_type));
-
-  osm->is       = NULL;
-  osm->is_local = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -815,8 +811,6 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
     }
 
     osm->n_local_true = n;
-    osm->is           = NULL;
-    osm->is_local     = NULL;
     if (is) {
       PetscCall(PetscMalloc1(n, &osm->is));
       for (PetscInt i = 0; i < n; i++) osm->is[i] = is[i];
@@ -865,8 +859,6 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
     PetscCall(PCASMDestroySubdomains(osm->n_local_true, &osm->is, &osm->is_local));
 
     osm->n_local_true = n;
-    osm->is           = NULL;
-    osm->is_local     = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1554,7 +1546,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_ASM;
   pc->ops->setuponblocks     = PCSetUpOnBlocks_ASM;
   pc->ops->view              = PCView_ASM;
-  pc->ops->applyrichardson   = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetLocalSubdomains_C", PCASMSetLocalSubdomains_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetTotalSubdomains_C", PCASMSetTotalSubdomains_ASM));

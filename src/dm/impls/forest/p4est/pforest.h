@@ -246,7 +246,6 @@ static PetscErrorCode DMFTopologyDestroy_pforest(DMFTopology_pforest **topo)
   PetscCallP4est(p4est_connectivity_destroy, (*topo)->conn);
   PetscCall(PetscFree((*topo)->tree_face_to_uniq));
   PetscCall(PetscFree(*topo));
-  *topo = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5166,7 +5165,6 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->createinjection           = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
-  dm->ops->createcellcoordinatedm    = NULL;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
   dm->ops->createlocalvector         = DMCreateLocalVector_pforest;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;

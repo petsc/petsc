@@ -260,7 +260,6 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
 
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
-  gmres->sol_temp       = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

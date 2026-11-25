@@ -142,7 +142,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer v)
   PetscCall(PetscNew(&vmath));
   v->data         = (void *)vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
-  v->ops->flush   = 0;
   PetscCall(PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &((PetscObject)v)->type_name));
 
   vmath->linkname     = NULL;

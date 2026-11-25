@@ -265,7 +265,6 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscTryTypeMethod(coarser, destroy);
-  coarser->ops->destroy = NULL;
   PetscCall(PetscMemzero(coarser->ops, sizeof(struct _MatCoarsenOps)));
 
   PetscCall(PetscFunctionListFind(MatCoarsenList, type, &r));

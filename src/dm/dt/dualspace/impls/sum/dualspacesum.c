@@ -710,14 +710,8 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Sum(PetscDualSpace sp, const P
           }
         }
       }
-      if (!any_perms) {
-        PetscCall(PetscFree(symperms));
-        symperms = NULL;
-      }
-      if (!any_flips) {
-        PetscCall(PetscFree(symflips));
-        symflips = NULL;
-      }
+      if (!any_perms) PetscCall(PetscFree(symperms));
+      if (!any_flips) PetscCall(PetscFree(symflips));
     }
     sum->symperms = symperms;
     sum->symflips = symflips;

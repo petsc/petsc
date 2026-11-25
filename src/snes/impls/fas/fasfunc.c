@@ -91,7 +91,6 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
   PetscUseTypeMethod(snes, reset);
   /* destroy any coarser levels if necessary */
   PetscCall(SNESDestroy(&fas->next));
-  fas->next     = NULL;
   fas->previous = NULL;
   prevsnes      = snes;
   /* setup the finest level */

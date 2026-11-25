@@ -128,8 +128,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 
   PetscFunctionBegin;
   v->ops->destroy          = PetscViewerDestroy_String;
-  v->ops->view             = NULL;
-  v->ops->flush            = NULL;
   v->ops->getsubviewer     = PetscViewerGetSubViewer_String;
   v->ops->restoresubviewer = PetscViewerRestoreSubViewer_String;
   PetscCall(PetscNew(&vstr));

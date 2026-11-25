@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test reference counting */
-  device = NULL;
   PetscCall(PetscArrayzero(devices, n));
   PetscCall(PetscDeviceCreate(PETSC_DEVICE_DEFAULT(), PETSC_DECIDE, &device));
   PetscCall(AssertDeviceExists(device));
@@ -47,7 +46,6 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceDoesNotExist(device));
 
   /* test the default devices exist */
-  device = NULL;
   PetscCall(PetscArrayzero(devices, n));
   {
     PetscDeviceContext dctx;

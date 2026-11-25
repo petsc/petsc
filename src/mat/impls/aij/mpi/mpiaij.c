@@ -817,8 +817,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
 
   PetscCall(PetscFree2(aij->rowvalues, aij->rowindices));
 
-  aij->rowvalues = NULL;
-
   PetscCall(VecDestroy(&aij->diag));
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */

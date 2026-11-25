@@ -57,24 +57,15 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
   if (maxCell) {
     if (!dm->maxCell) PetscCall(PetscMalloc1(dim, &dm->maxCell));
     for (d = 0; d < dim; ++d) dm->maxCell[d] = maxCell[d];
-  } else { /* remove maxCell information to disable automatic computation of localized vertices */
-    PetscCall(PetscFree(dm->maxCell));
-    dm->maxCell = NULL;
-  }
+  } else PetscCall(PetscFree(dm->maxCell)); /* remove maxCell information to disable automatic computation of localized vertices */
   if (Lstart) {
     if (!dm->Lstart) PetscCall(PetscMalloc1(dim, &dm->Lstart));
     for (d = 0; d < dim; ++d) dm->Lstart[d] = Lstart[d];
-  } else { /* remove L information to disable automatic computation of localized vertices */
-    PetscCall(PetscFree(dm->Lstart));
-    dm->Lstart = NULL;
-  }
+  } else PetscCall(PetscFree(dm->Lstart)); /* remove L information to disable automatic computation of localized vertices */
   if (L) {
     if (!dm->L) PetscCall(PetscMalloc1(dim, &dm->L));
     for (d = 0; d < dim; ++d) dm->L[d] = L[d];
-  } else { /* remove L information to disable automatic computation of localized vertices */
-    PetscCall(PetscFree(dm->L));
-    dm->L = NULL;
-  }
+  } else PetscCall(PetscFree(dm->L)); /* remove L information to disable automatic computation of localized vertices */
   PetscCheck((dm->maxCell && dm->L) || (!dm->maxCell && !dm->L), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cannot set only one of maxCell/L");
   PetscFunctionReturn(PETSC_SUCCESS);
 }

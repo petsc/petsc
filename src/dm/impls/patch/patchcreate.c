@@ -12,26 +12,12 @@ extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const Petsc
 static PetscErrorCode DMInitialize_Patch(DM dm)
 {
   PetscFunctionBegin;
-  dm->ops->view                    = DMView_Patch;
-  dm->ops->setup                   = DMSetUp_Patch;
-  dm->ops->createglobalvector      = DMCreateGlobalVector_Patch;
-  dm->ops->createlocalvector       = DMCreateLocalVector_Patch;
-  dm->ops->getlocaltoglobalmapping = NULL;
-  dm->ops->createfieldis           = NULL;
-  dm->ops->getcoloring             = NULL;
-  dm->ops->creatematrix            = NULL;
-  dm->ops->createinterpolation     = NULL;
-  dm->ops->createinjection         = NULL;
-  dm->ops->refine                  = NULL;
-  dm->ops->coarsen                 = NULL;
-  dm->ops->refinehierarchy         = NULL;
-  dm->ops->coarsenhierarchy        = NULL;
-  dm->ops->globaltolocalbegin      = NULL;
-  dm->ops->globaltolocalend        = NULL;
-  dm->ops->localtoglobalbegin      = NULL;
-  dm->ops->localtoglobalend        = NULL;
-  dm->ops->destroy                 = DMDestroy_Patch;
-  dm->ops->createsubdm             = DMCreateSubDM_Patch;
+  dm->ops->view               = DMView_Patch;
+  dm->ops->setup              = DMSetUp_Patch;
+  dm->ops->createglobalvector = DMCreateGlobalVector_Patch;
+  dm->ops->createlocalvector  = DMCreateLocalVector_Patch;
+  dm->ops->destroy            = DMDestroy_Patch;
+  dm->ops->createsubdm        = DMCreateSubDM_Patch;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

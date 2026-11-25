@@ -241,7 +241,6 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
   PetscCall(PetscFunctionListFind(KSPGuessList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)guess), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested KSPGuess type %s", type);
   PetscTryTypeMethod(guess, destroy);
-  guess->ops->destroy = NULL;
 
   PetscCall(PetscMemzero(guess->ops, sizeof(struct _KSPGuessOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)guess, type));

@@ -156,7 +156,6 @@ static PetscErrorCode PCSetUp_HMG(PC pc)
   if (!hmg->subcoarsening) PetscCall(PCGetCoarseOperators(hmg->innerpc, &num_levels, &operators));
 
   PetscCall(PCDestroy(&hmg->innerpc));
-  hmg->innerpc = NULL;
   PetscCall(PCMGSetLevels_MG(pc, num_levels, NULL));
   /* Set coarse matrices and interpolations to PCMG */
   for (PetscInt level = num_levels - 1; level > 0; level--) {

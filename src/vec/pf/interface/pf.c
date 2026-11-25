@@ -91,13 +91,9 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
   PetscCall(PFInitializePackage());
 
   PetscCall(PetscHeaderCreate(newpf, PF_CLASSID, "PF", "Mathematical functions", "Vec", comm, PFDestroy, PFView));
-  newpf->data          = NULL;
-  newpf->ops->destroy  = NULL;
-  newpf->ops->apply    = NULL;
-  newpf->ops->applyvec = NULL;
-  newpf->ops->view     = NULL;
-  newpf->dimin         = dimin;
-  newpf->dimout        = dimout;
+  newpf->data   = NULL;
+  newpf->dimin  = dimin;
+  newpf->dimout = dimout;
 
   *pf = newpf;
   PetscFunctionReturn(PETSC_SUCCESS);

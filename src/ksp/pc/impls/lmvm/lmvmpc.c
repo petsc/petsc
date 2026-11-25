@@ -313,17 +313,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_LMVM(PC pc)
   PetscCall(PetscNew(&ctx));
   pc->data = (void *)ctx;
 
-  pc->ops->reset               = PCReset_LMVM;
-  pc->ops->setup               = PCSetUp_LMVM;
-  pc->ops->destroy             = PCDestroy_LMVM;
-  pc->ops->view                = PCView_LMVM;
-  pc->ops->apply               = PCApply_LMVM;
-  pc->ops->setfromoptions      = PCSetFromOptions_LMVM;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
-  pc->ops->applytranspose      = NULL;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->presolve            = PCPreSolve_LMVM;
-  pc->ops->postsolve           = NULL;
+  pc->ops->reset          = PCReset_LMVM;
+  pc->ops->setup          = PCSetUp_LMVM;
+  pc->ops->destroy        = PCDestroy_LMVM;
+  pc->ops->view           = PCView_LMVM;
+  pc->ops->apply          = PCApply_LMVM;
+  pc->ops->setfromoptions = PCSetFromOptions_LMVM;
+  pc->ops->presolve       = PCPreSolve_LMVM;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

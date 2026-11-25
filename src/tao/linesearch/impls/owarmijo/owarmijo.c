@@ -307,7 +307,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
   ls->data                = (void *)armP;
   ls->initstep            = 0.1;
   ls->ops->monitor        = NULL;
-  ls->ops->setup          = NULL;
   ls->ops->reset          = NULL;
   ls->ops->apply          = TaoLineSearchApply_OWArmijo;
   ls->ops->view           = TaoLineSearchView_OWArmijo;

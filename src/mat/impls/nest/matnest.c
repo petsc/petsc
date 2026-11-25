@@ -2361,7 +2361,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->createsubmatrix           = MatCreateSubMatrix_Nest;
   A->ops->destroy                   = MatDestroy_Nest;
   A->ops->view                      = MatView_Nest;
-  A->ops->getvecs                   = NULL; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
   A->ops->getlocalsubmatrix         = MatGetLocalSubMatrix_Nest;
   A->ops->restorelocalsubmatrix     = MatRestoreLocalSubMatrix_Nest;
   A->ops->getdiagonal               = MatGetDiagonal_Nest;
@@ -2382,6 +2381,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Nest(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatNestGetSize_C", MatNestGetSize_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatNestGetISs_C", MatNestGetISs_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatNestGetLocalISs_C", MatNestGetLocalISs_Nest));
+  /* Use VECNEST by calling MatNestSetVecType(A, VECNEST) */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatNestSetVecType_C", MatNestSetVecType_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatNestSetSubMats_C", MatNestSetSubMats_Nest));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_nest_mpiaij_C", MatConvert_Nest_AIJ));

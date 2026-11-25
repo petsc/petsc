@@ -645,15 +645,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscNew(&jac));
 
-  pc->ops->apply           = PCApply_Composite_Additive;
-  pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;
-  pc->ops->setup           = PCSetUp_Composite;
-  pc->ops->setuponblocks   = PCSetUpOnBlocks_Composite;
-  pc->ops->reset           = PCReset_Composite;
-  pc->ops->destroy         = PCDestroy_Composite;
-  pc->ops->setfromoptions  = PCSetFromOptions_Composite;
-  pc->ops->view            = PCView_Composite;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply          = PCApply_Composite_Additive;
+  pc->ops->applytranspose = PCApplyTranspose_Composite_Additive;
+  pc->ops->setup          = PCSetUp_Composite;
+  pc->ops->setuponblocks  = PCSetUpOnBlocks_Composite;
+  pc->ops->reset          = PCReset_Composite;
+  pc->ops->destroy        = PCDestroy_Composite;
+  pc->ops->setfromoptions = PCSetFromOptions_Composite;
+  pc->ops->view           = PCView_Composite;
 
   pc->data       = (void *)jac;
   jac->type      = PC_COMPOSITE_ADDITIVE;

@@ -210,12 +210,9 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Bisection(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_Bisection;
-  linesearch->ops->destroy        = NULL;
-  linesearch->ops->setfromoptions = NULL;
-  linesearch->ops->reset          = NULL;
-  linesearch->ops->view           = NULL;
-  linesearch->ops->setup          = NULL;
+  linesearch->ops->apply = SNESLineSearchApply_Bisection;
+  linesearch->ops->reset = NULL;
+  linesearch->ops->setup = NULL;
 
   /* set default option values */
   linesearch->max_it = 50;

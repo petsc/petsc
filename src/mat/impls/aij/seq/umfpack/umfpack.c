@@ -423,7 +423,6 @@ static PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A, MatFactorType ftype, Ma
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->ops->view             = MatView_UMFPACK;
-  B->ops->matsolve         = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_umfpack));
 

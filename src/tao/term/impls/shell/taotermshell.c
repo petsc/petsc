@@ -514,10 +514,9 @@ PETSC_INTERN PetscErrorCode TaoTermCreate_Shell(TaoTerm term)
   PetscCall(PetscNew(&shell));
   term->data = (void *)shell;
 
-  shell->iscomputehessianfdpossible     = PETSC_BOOL3_UNKNOWN;
-  term->ops->iscomputehessianfdpossible = NULL;
-  term->ops->destroy                    = TaoTermDestroy_Shell;
-  term->ops->view                       = TaoTermView_Shell;
+  shell->iscomputehessianfdpossible = PETSC_BOOL3_UNKNOWN;
+  term->ops->destroy                = TaoTermDestroy_Shell;
+  term->ops->view                   = TaoTermView_Shell;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)term, "TaoTermShellSetContextDestroy_C", TaoTermShellSetContextDestroy_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)term, "TaoTermShellSetContext_C", TaoTermShellSetContext_Shell));

@@ -152,15 +152,14 @@ PETSC_EXTERN PetscErrorCode PCCreate_QR(PC pc)
   pc->data = (void *)dir;
   PetscCall(PCFactorInitialize(pc, MAT_FACTOR_QR));
 
-  dir->col                 = NULL;
-  pc->ops->reset           = PCReset_QR;
-  pc->ops->destroy         = PCDestroy_QR;
-  pc->ops->apply           = PCApply_QR;
-  pc->ops->matapply        = PCMatApply_QR;
-  pc->ops->applytranspose  = PCApplyTranspose_QR;
-  pc->ops->setup           = PCSetUp_QR;
-  pc->ops->setfromoptions  = PCSetFromOptions_Factor;
-  pc->ops->view            = PCView_Factor;
-  pc->ops->applyrichardson = NULL;
+  dir->col                = NULL;
+  pc->ops->reset          = PCReset_QR;
+  pc->ops->destroy        = PCDestroy_QR;
+  pc->ops->apply          = PCApply_QR;
+  pc->ops->matapply       = PCMatApply_QR;
+  pc->ops->applytranspose = PCApplyTranspose_QR;
+  pc->ops->setup          = PCSetUp_QR;
+  pc->ops->setfromoptions = PCSetFromOptions_Factor;
+  pc->ops->view           = PCView_Factor;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

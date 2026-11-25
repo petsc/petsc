@@ -378,14 +378,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_PBJacobi;
-  pc->ops->applytranspose      = PCApplyTranspose_PBJacobi;
-  pc->ops->setup               = PCSetUp_PBJacobi;
-  pc->ops->destroy             = PCDestroy_PBJacobi;
-  pc->ops->setfromoptions      = NULL;
-  pc->ops->view                = PCView_PBJacobi;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
+  pc->ops->apply          = PCApply_PBJacobi;
+  pc->ops->applytranspose = PCApplyTranspose_PBJacobi;
+  pc->ops->setup          = PCSetUp_PBJacobi;
+  pc->ops->destroy        = PCDestroy_PBJacobi;
+  pc->ops->view           = PCView_PBJacobi;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

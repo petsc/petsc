@@ -81,27 +81,21 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part, IS *part
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
-  part->ops->apply   = MatPartitioningApply_Current;
-  part->ops->view    = NULL;
-  part->ops->destroy = NULL;
+  part->ops->apply = MatPartitioningApply_Current;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
 {
   PetscFunctionBegin;
-  part->ops->apply   = MatPartitioningApply_Average;
-  part->ops->view    = NULL;
-  part->ops->destroy = NULL;
+  part->ops->apply = MatPartitioningApply_Average;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
-  part->ops->apply   = MatPartitioningApply_Square;
-  part->ops->view    = NULL;
-  part->ops->destroy = NULL;
+  part->ops->apply = MatPartitioningApply_Square;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -798,7 +792,6 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscTryTypeMethod(part, destroy);
-  part->ops->destroy = NULL;
 
   part->data = NULL;
   PetscCall(PetscMemzero(part->ops, sizeof(struct _MatPartitioningOps)));

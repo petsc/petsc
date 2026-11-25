@@ -16,7 +16,6 @@ static PetscErrorCode DMSNESDestroy_DMLocal(DMSNES sdm)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
-  sdm->data = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

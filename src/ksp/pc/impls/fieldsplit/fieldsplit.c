@@ -3702,11 +3702,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
 
   pc->data = (void *)jac;
 
-  pc->ops->setup           = PCSetUp_FieldSplit;
-  pc->ops->reset           = PCReset_FieldSplit;
-  pc->ops->destroy         = PCDestroy_FieldSplit;
-  pc->ops->setfromoptions  = PCSetFromOptions_FieldSplit;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->setup          = PCSetUp_FieldSplit;
+  pc->ops->reset          = PCReset_FieldSplit;
+  pc->ops->destroy        = PCDestroy_FieldSplit;
+  pc->ops->setfromoptions = PCSetFromOptions_FieldSplit;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSchurGetSubKSP_C", PCFieldSplitSchurGetSubKSP_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetFields_C", PCFieldSplitSetFields_FieldSplit));

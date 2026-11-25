@@ -71,10 +71,7 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {
   PetscFunctionBegin;
-  mc->data                = NULL;
-  mc->ops->apply          = MatColoringApply_Natural;
-  mc->ops->view           = NULL;
-  mc->ops->destroy        = NULL;
-  mc->ops->setfromoptions = NULL;
+  mc->data       = NULL;
+  mc->ops->apply = MatColoringApply_Natural;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

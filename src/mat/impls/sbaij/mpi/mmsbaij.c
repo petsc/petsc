@@ -260,8 +260,6 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 #endif
   PetscCall(PetscFree(baij->garray));
 
-  baij->garray = NULL;
-
   PetscCall(PetscFree(rvals));
   PetscCall(MatDestroy(&B));
 

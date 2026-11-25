@@ -838,7 +838,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Exotic(PC pc)
   pc->data = NULL;
 
   PetscCall(PetscFree(((PetscObject)pc)->type_name));
-  ((PetscObject)pc)->type_name = NULL;
 
   PetscCall(PCSetType(pc, PCMG));
   PetscCall(PCMGSetLevels(pc, 2, NULL));

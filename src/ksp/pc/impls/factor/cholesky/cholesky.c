@@ -332,6 +332,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->setup               = PCSetUp_Cholesky;
   pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
   pc->ops->view                = PCView_Factor;
-  pc->ops->applyrichardson     = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1374,7 +1374,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Telescope(PC pc)
   pc->data                         = (void *)sred;
 
   pc->ops->apply           = PCApply_Telescope;
-  pc->ops->applytranspose  = NULL;
   pc->ops->applyrichardson = PCApplyRichardson_Telescope;
   pc->ops->setup           = PCSetUp_Telescope;
   pc->ops->destroy         = PCDestroy_Telescope;

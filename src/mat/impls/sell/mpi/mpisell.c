@@ -267,7 +267,6 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
   PetscCall(MatAssemblyBegin(sell->B, mode));
   PetscCall(MatAssemblyEnd(sell->B, mode));
   PetscCall(PetscFree2(sell->rowvalues, sell->rowindices));
-  sell->rowvalues = NULL;
   PetscCall(VecDestroy(&sell->diag));
 
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */

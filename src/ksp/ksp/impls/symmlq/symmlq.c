@@ -207,11 +207,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
        Sets the functions that are associated with this data structure
        (in C++ this is the same as defining virtual functions)
   */
-  ksp->ops->setup          = KSPSetUp_SYMMLQ;
-  ksp->ops->solve          = KSPSolve_SYMMLQ;
-  ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->setfromoptions = NULL;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->setup         = KSPSetUp_SYMMLQ;
+  ksp->ops->solve         = KSPSolve_SYMMLQ;
+  ksp->ops->destroy       = KSPDestroyDefault;
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

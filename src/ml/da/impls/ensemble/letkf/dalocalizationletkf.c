@@ -261,7 +261,6 @@ PETSC_INTERN PetscErrorCode PetscDALETKFDestroyObsCoords(PetscInt dim, Vec **obs
   if (!*obs_vecs) PetscFunctionReturn(PETSC_SUCCESS);
   for (PetscInt d = 0; d < dim; ++d) PetscCall(VecDestroy(&(*obs_vecs)[d]));
   PetscCall(PetscFree(*obs_vecs));
-  *obs_vecs = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

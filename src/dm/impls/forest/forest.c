@@ -1724,10 +1724,7 @@ PetscErrorCode DMAdaptLabel_Forest(DM dm, PETSC_UNUSED Vec metric, DMLabel label
   PetscCall(DMForestSetAdaptivityLabel(*adaptedDM, label));
   PetscCall(DMSetUp(*adaptedDM));
   PetscCall(DMForestGetAdaptivitySuccess(*adaptedDM, &success));
-  if (!success) {
-    PetscCall(DMDestroy(adaptedDM));
-    *adaptedDM = NULL;
-  }
+  if (!success) PetscCall(DMDestroy(adaptedDM));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

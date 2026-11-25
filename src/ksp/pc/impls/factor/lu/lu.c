@@ -284,7 +284,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
   pc->ops->view              = PCView_Factor;
-  pc->ops->applyrichardson   = NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorReorderForNonzeroDiagonal_C", PCFactorReorderForNonzeroDiagonal_LU));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

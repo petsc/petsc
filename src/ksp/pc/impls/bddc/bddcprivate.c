@@ -8713,7 +8713,6 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     if (nvecs) { /* need to match VecDestroy nnsp_vec called in the other code path */
       PetscCall(VecDestroy(&nnsp_vec[0]));
     }
-    *mat_n = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

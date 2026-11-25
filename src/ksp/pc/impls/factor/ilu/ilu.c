@@ -311,7 +311,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->view                = PCView_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ILU;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ILU;
-  pc->ops->applyrichardson     = NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorSetDropTolerance_C", PCFactorSetDropTolerance_ILU));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorReorderForNonzeroDiagonal_C", PCFactorReorderForNonzeroDiagonal_ILU));
   PetscFunctionReturn(PETSC_SUCCESS);

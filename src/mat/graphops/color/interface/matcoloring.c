@@ -154,7 +154,6 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
   mc->ops->apply          = NULL;
   mc->ops->view           = NULL;
   mc->ops->setfromoptions = NULL;
-  mc->ops->destroy        = NULL;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)mc, type));
   PetscCall((*r)(mc));

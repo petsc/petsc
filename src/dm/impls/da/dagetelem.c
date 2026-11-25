@@ -314,7 +314,6 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
     dd->elementtype = etype;
     dd->ne          = 0;
     dd->nen         = 0;
-    dd->e           = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

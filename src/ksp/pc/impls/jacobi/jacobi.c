@@ -543,7 +543,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
   pc->ops->destroy             = PCDestroy_Jacobi;
   pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
   pc->ops->view                = PCView_Jacobi;
-  pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
 

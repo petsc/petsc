@@ -59,6 +59,5 @@ PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace *space)
     PetscCall(PetscFree(*space));
     *space = a;
   }
-  *space = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

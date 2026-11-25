@@ -290,13 +290,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_SPAI(PC pc)
   PetscCall(PetscNew(&ispai));
   pc->data = ispai;
 
-  pc->ops->destroy         = PCDestroy_SPAI;
-  pc->ops->apply           = PCApply_SPAI;
-  pc->ops->matapply        = PCMatApply_SPAI;
-  pc->ops->applyrichardson = 0;
-  pc->ops->setup           = PCSetUp_SPAI;
-  pc->ops->view            = PCView_SPAI;
-  pc->ops->setfromoptions  = PCSetFromOptions_SPAI;
+  pc->ops->destroy        = PCDestroy_SPAI;
+  pc->ops->apply          = PCApply_SPAI;
+  pc->ops->matapply       = PCMatApply_SPAI;
+  pc->ops->setup          = PCSetUp_SPAI;
+  pc->ops->view           = PCView_SPAI;
+  pc->ops->setfromoptions = PCSetFromOptions_SPAI;
 
   ispai->epsilon    = .4;
   ispai->nbsteps    = 5;

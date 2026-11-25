@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
   PetscCall(AssertDeviceContextDoesNotExist(dctx));
 
   /* test global context returns a valid context */
-  dctx = NULL;
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(AssertDeviceContextExists(dctx));
   /* test locally setting to null doesn't clobber the global */

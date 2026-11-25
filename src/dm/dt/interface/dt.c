@@ -3093,7 +3093,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
   PetscCall(PetscFree(*AA));
-  *AA = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3178,11 +3177,9 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
   PetscCall(PetscFree(*AA));
-  *AA = NULL;
   if (AAT) {
     PetscCall(PetscFree((*AAT)[0]));
     PetscCall(PetscFree(*AAT));
-    *AAT = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3247,7 +3244,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, Pets
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
   PetscCall(PetscFree(*AA));
-  *AA = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3312,7 +3308,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n, PetscReal
   PetscFunctionBegin;
   PetscCall(PetscFree((*AA)[0]));
   PetscCall(PetscFree(*AA));
-  *AA = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

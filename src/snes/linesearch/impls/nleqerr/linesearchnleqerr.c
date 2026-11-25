@@ -305,12 +305,11 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
   SNESLineSearch_NLEQERR *nleqerr;
 
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_NLEQERR;
-  linesearch->ops->destroy        = SNESLineSearchDestroy_NLEQERR;
-  linesearch->ops->setfromoptions = NULL;
-  linesearch->ops->reset          = SNESLineSearchReset_NLEQERR;
-  linesearch->ops->view           = SNESLineSearchView_NLEQERR;
-  linesearch->ops->setup          = NULL;
+  linesearch->ops->apply   = SNESLineSearchApply_NLEQERR;
+  linesearch->ops->destroy = SNESLineSearchDestroy_NLEQERR;
+  linesearch->ops->reset   = SNESLineSearchReset_NLEQERR;
+  linesearch->ops->view    = SNESLineSearchView_NLEQERR;
+  linesearch->ops->setup   = NULL;
 
   PetscCall(PetscNew(&nleqerr));
 

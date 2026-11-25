@@ -70,30 +70,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     PetscCall(PetscOptionsRealArray("-detJ", "Input Jacobian determinant for each cell", "ex8.c", options->detJ, &n, &flg));
     PetscCheck(!flg || n == numCells, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of detJ %" PetscInt_FMT " should be %" PetscInt_FMT, n, numCells);
     n = numCells * dim;
-    if (!feFlg) {
-      PetscCall(PetscFree4(options->v0, options->J, options->invJ, options->detJ));
-      options->v0 = options->J = options->invJ = options->detJ = NULL;
-    }
+    if (!feFlg) PetscCall(PetscFree4(options->v0, options->J, options->invJ, options->detJ));
     PetscCall(PetscOptionsRealArray("-centroid", "Input centroid for each cell", "ex8.c", options->centroid, &n, &flg));
     PetscCheck(!flg || n == numCells * dim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of centroid %" PetscInt_FMT " should be %" PetscInt_FMT, n, numCells * dim);
-    if (!flg) {
-      PetscCall(PetscFree(options->centroid));
-      options->centroid = NULL;
-    }
+    if (!flg) PetscCall(PetscFree(options->centroid));
     n = numCells * dim;
     PetscCall(PetscOptionsRealArray("-normal", "Input normal for each cell", "ex8.c", options->normal, &n, &flg));
     PetscCheck(!flg || n == numCells * dim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of normal %" PetscInt_FMT " should be %" PetscInt_FMT, n, numCells * dim);
-    if (!flg) {
-      PetscCall(PetscFree(options->normal));
-      options->normal = NULL;
-    }
+    if (!flg) PetscCall(PetscFree(options->normal));
     n = numCells;
     PetscCall(PetscOptionsRealArray("-vol", "Input volume for each cell", "ex8.c", options->vol, &n, &flg));
     PetscCheck(!flg || n == numCells, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid size of vol %" PetscInt_FMT " should be %" PetscInt_FMT, n, numCells);
-    if (!flg) {
-      PetscCall(PetscFree(options->vol));
-      options->vol = NULL;
-    }
+    if (!flg) PetscCall(PetscFree(options->vol));
   } else if (options->runType == RUN_DISPLAY) {
     PetscCall(ReadMesh(PETSC_COMM_WORLD, options, &options->dm));
   }
