@@ -59,6 +59,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
   PetscCheck(r, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PC type %s", type);
   /* Destroy the previous private PC context */
   PetscTryTypeMethod(pc, destroy);
+  PetscCall(PCMatWorkReset(pc));
   /* Reinitialize default parameters */
   PetscCall(PCParametersInitialize(pc));
 

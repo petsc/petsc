@@ -569,25 +569,57 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  PCMatWorkGet_ASM - Gets the dense right-hand side and solution matrices for the local subdomain solve.
+
+  Collective on `pc`
+
+  Input Parameters:
++ pc - `PCASM` after `PCSetUp()`, with one local subdomain per process
+- N  - global number of right-hand sides
+
+  Output Parameters:
++ Z - subdomain right-hand side matrix, or `NULL` if not needed
+- W - subdomain solution matrix
+
+  Level: developer
+
+  Note:
+  The `PC` owns both matrices. Take a reference to retain either matrix across a change in `N` or a workspace reset.
+
+.seealso: `PCMatWorkGet_GASM()`, `PCMatWorkSetUp()`
+*/
+PetscErrorCode PCMatWorkGet_ASM(PC pc, PetscInt N, Mat *Z, Mat *W)
+{
+  PC_ASM *osm = (PC_ASM *)pc->data;
+
+  PetscFunctionBegin;
+  PetscCheck(osm->n_local == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
+  PetscCall(PCMatWorkSetUp(pc, 2, N));
+  PetscCall(PCMatWorkCreate(osm->x[0], N, N, &pc->matwork[0]));
+  if (pc->matwork[1] == NULL) PetscCall(MatDuplicate(pc->matwork[0], MAT_DO_NOT_COPY_VALUES, &pc->matwork[1]));
+  if (Z != NULL) *Z = pc->matwork[0];
+  *W = pc->matwork[1];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
 {
   PC_ASM    *osm = (PC_ASM *)pc->data;
   Mat        Z, W;
-  VecType    vtype;
+  PetscBool  nonzero;
   VecScatter restriction, prolongation;
-  PetscInt   m, N;
+  PetscInt   N;
 
   PetscFunctionBegin;
-  PetscCheck(osm->n_local == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
   PetscCheck(osm->type != PC_ASM_WEIGHTED || osm->scaling, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Call PCASMWeightedSetScaling() after PCSetUp() before applying PC_ASM_WEIGHTED");
   PetscCall(PCASMGetVecScatters_Private(pc, transpose, &restriction, &prolongation));
-  PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
-  PetscCall(VecGetType(osm->x[0], &vtype));
-  PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, vtype, m, N, m, N, PETSC_DECIDE, NULL, &Z));
+  PetscCall(PCMatWorkGet_ASM(pc, N, &Z, &W));
+  PetscCall(KSPGetInitialGuessNonzero(osm->ksp[0], &nonzero));
   if (restriction != osm->restriction) PetscCall(MatZeroEntries(Z));
   PetscCall(MatDenseScatter_Private(restriction, X, Z, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(MatCreateDenseFromVecType(PETSC_COMM_SELF, vtype, m, N, m, N, PETSC_DECIDE, NULL, &W));
+  if (nonzero == PETSC_TRUE) PetscCall(MatZeroEntries(W));
   if (transpose == PETSC_TRUE && osm->type == PC_ASM_WEIGHTED) PetscCall(MatDiagonalScale(Z, osm->scaling[0], NULL));
   PetscCall(PetscLogEventBegin(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   if (transpose == PETSC_TRUE) PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
@@ -595,10 +627,8 @@ static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool tran
   PetscCall(PetscLogEventEnd(transpose == PETSC_TRUE ? PC_ApplyTransposeOnBlocks : PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(KSPCheckMatSolve(osm->ksp[0], pc, W));
   if (transpose == PETSC_FALSE && osm->type == PC_ASM_WEIGHTED) PetscCall(MatDiagonalScale(W, osm->scaling[0], NULL));
-  PetscCall(MatDestroy(&Z));
   PetscCall(MatZeroEntries(Y));
   PetscCall(MatDenseScatter_Private(prolongation, W, Y, ADD_VALUES, SCATTER_REVERSE));
-  PetscCall(MatDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -716,7 +746,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   PetscCall(ISDestroy(&osm->lis));
   PetscCall(VecDestroy(&osm->lx));
   PetscCall(VecDestroy(&osm->ly));
-  if (osm->lmats != NULL) PetscCall(MatDestroyMatrices(osm->n_local_true, &osm->lmats));
+  PetscCall(MatDestroySubMatrices(osm->n_local_true, &osm->lmats));
   PetscCall(PetscFree(osm->sub_mat_type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

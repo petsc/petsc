@@ -56,20 +56,20 @@ PetscErrorCode PCMGFCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
     /* restrict the RHS through all levels to coarsest. */
     for (PetscInt i = l - 1; i > 0; i--) {
       if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
-      if (matapp) PetscCall(MatMatRestrict(mglevels[i]->restrct, mglevels[i]->B, &mglevels[i - 1]->B));
+      if (matapp == PETSC_TRUE) PetscCall(MatMatRestrict(mglevels[i]->restrct, PCMGMatB(pc, i), &PCMGMatB(pc, i - 1)));
       else PetscCall(MatRestrict(mglevels[i]->restrct, mglevels[i]->b, mglevels[i - 1]->b));
       if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
     }
 
     /* work our way up through the levels */
-    if (matapp) {
-      if (!mglevels[0]->X) PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
-      else PetscCall(MatZeroEntries(mglevels[0]->X));
+    if (matapp == PETSC_TRUE) {
+      if (PCMGMatX(pc, 0) == NULL) PetscCall(MatDuplicate(PCMGMatB(pc, 0), MAT_DO_NOT_COPY_VALUES, &PCMGMatX(pc, 0)));
+      else PetscCall(MatZeroEntries(PCMGMatX(pc, 0)));
     } else PetscCall(VecZeroEntries(mglevels[0]->x));
     for (PetscInt i = 0; i < l - 1; i++) {
       PetscCall(PCMGMCycle_Private(pc, &mglevels[i], transpose, matapp, NULL));
       if (mglevels[i + 1]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i + 1]->eventinterprestrict, 0, 0, 0, 0));
-      if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels[i + 1], mglevels[i + 1]->interpolate, mglevels[i]->X, PETSC_FALSE));
+      if (matapp == PETSC_TRUE) PetscCall(PCMGMatInterpolate_Private(pc, i + 1, mglevels[i + 1]->interpolate, PETSC_FALSE));
       else PetscCall(MatInterpolate(mglevels[i + 1]->interpolate, mglevels[i]->x, mglevels[i + 1]->x));
       if (mglevels[i + 1]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i + 1]->eventinterprestrict, 0, 0, 0, 0));
     }
@@ -94,39 +94,35 @@ PetscErrorCode PCMGKCycle_Private(PC pc, PC_MG_Levels **mglevels, PetscBool tran
   /* restrict the RHS through all levels to coarsest. */
   for (PetscInt i = l - 1; i > 0; i--) {
     if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
-    if (matapp) PetscCall(MatMatRestrict(mglevels[i]->restrct, mglevels[i]->B, &mglevels[i - 1]->B));
+    if (matapp == PETSC_TRUE) PetscCall(MatMatRestrict(mglevels[i]->restrct, PCMGMatB(pc, i), &PCMGMatB(pc, i - 1)));
     else PetscCall(MatRestrict(mglevels[i]->restrct, mglevels[i]->b, mglevels[i - 1]->b));
     if (mglevels[i]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i]->eventinterprestrict, 0, 0, 0, 0));
   }
 
   /* work our way up through the levels */
-  if (matapp) {
-    if (!mglevels[0]->X) PetscCall(MatDuplicate(mglevels[0]->B, MAT_DO_NOT_COPY_VALUES, &mglevels[0]->X));
-    else {
-      PetscCall(MatZeroEntries(mglevels[0]->X));
-    }
-  } else {
-    PetscCall(VecZeroEntries(mglevels[0]->x));
-  }
+  if (matapp == PETSC_TRUE) {
+    if (PCMGMatX(pc, 0) == NULL) PetscCall(MatDuplicate(PCMGMatB(pc, 0), MAT_DO_NOT_COPY_VALUES, &PCMGMatX(pc, 0)));
+    else PetscCall(MatZeroEntries(PCMGMatX(pc, 0)));
+  } else PetscCall(VecZeroEntries(mglevels[0]->x));
   for (PetscInt i = 0; i < l - 1; i++) {
     if (mglevels[i]->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels[i]->eventsmoothsolve, 0, 0, 0, 0));
-    if (matapp) {
-      PetscCall(KSPMatSolve(mglevels[i]->smoothd, mglevels[i]->B, mglevels[i]->X));
-      PetscCall(KSPCheckMatSolve(mglevels[i]->smoothd, pc, mglevels[i]->X));
+    if (matapp == PETSC_TRUE) {
+      PetscCall(KSPMatSolve(mglevels[i]->smoothd, PCMGMatB(pc, i), PCMGMatX(pc, i)));
+      PetscCall(KSPCheckMatSolve(mglevels[i]->smoothd, pc, PCMGMatX(pc, i)));
     } else {
       PetscCall(KSPSolve(mglevels[i]->smoothd, mglevels[i]->b, mglevels[i]->x));
       PetscCall(KSPCheckSolve(mglevels[i]->smoothd, pc, mglevels[i]->x));
     }
     if (mglevels[i]->eventsmoothsolve) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsolve, 0, 0, 0, 0));
     if (mglevels[i + 1]->eventinterprestrict) PetscCall(PetscLogEventBegin(mglevels[i + 1]->eventinterprestrict, 0, 0, 0, 0));
-    if (matapp) PetscCall(PCMGMatInterpolate_Private(mglevels[i + 1], mglevels[i + 1]->interpolate, mglevels[i]->X, PETSC_FALSE));
+    if (matapp == PETSC_TRUE) PetscCall(PCMGMatInterpolate_Private(pc, i + 1, mglevels[i + 1]->interpolate, PETSC_FALSE));
     else PetscCall(MatInterpolate(mglevels[i + 1]->interpolate, mglevels[i]->x, mglevels[i + 1]->x));
     if (mglevels[i + 1]->eventinterprestrict) PetscCall(PetscLogEventEnd(mglevels[i + 1]->eventinterprestrict, 0, 0, 0, 0));
   }
   if (mglevels[l - 1]->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels[l - 1]->eventsmoothsolve, 0, 0, 0, 0));
-  if (matapp) {
-    PetscCall(KSPMatSolve(mglevels[l - 1]->smoothd, mglevels[l - 1]->B, mglevels[l - 1]->X));
-    PetscCall(KSPCheckMatSolve(mglevels[l - 1]->smoothd, pc, mglevels[l - 1]->X));
+  if (matapp == PETSC_TRUE) {
+    PetscCall(KSPMatSolve(mglevels[l - 1]->smoothd, PCMGMatB(pc, l - 1), PCMGMatX(pc, l - 1)));
+    PetscCall(KSPCheckMatSolve(mglevels[l - 1]->smoothd, pc, PCMGMatX(pc, l - 1)));
   } else {
     PetscCall(KSPSolve(mglevels[l - 1]->smoothd, mglevels[l - 1]->b, mglevels[l - 1]->x));
     PetscCall(KSPCheckSolve(mglevels[l - 1]->smoothd, pc, mglevels[l - 1]->x));

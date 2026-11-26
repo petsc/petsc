@@ -6,10 +6,11 @@ static const char help[] = "Tests PCHPDDM with a user-supplied deflation space a
   - The overlapping subdomain of process p holds the global rows 2p, ..., 2p + 5, see SubdomainRow().
   - The scaling D_p is given by Scaling() and the single deflation vector U_p by Mode().
     With -empty_rank0, process 0 supplies no deflation vector.
-  - ModifySubmatrices() shifts the local matrices of the fine-level PCASM, as optimized transmission
+  - ModifySubmatrices() shifts the local matrices of the fine-level Schwarz preconditioner, as optimized transmission
     conditions would, so that the local solvers A_p differ from the restrictions of A.
 
   After each setup, PCApply() and PCMatApply() must match the reference operator
+    T = Q + B                     with -pc_hpddm_coarse_correction additive,
     T = Q + B (I - A Q)           with -pc_hpddm_coarse_correction deflated,
     T = B + Q (I - A B)           with -pc_hpddm_coarse_correction deflated_reversed,
     T = Q + (I - Q A) B (I - A Q) with -pc_hpddm_coarse_correction balanced,
@@ -26,9 +27,9 @@ static const char help[] = "Tests PCHPDDM with a user-supplied deflation space a
 
 // fine-level corrections that the reference operator can reproduce
 typedef enum {
-  FINE_ASM_WEIGHTED, // default with a user-supplied scaling: B = sum_p R_p^T D_p A_p^{-1} R_p
-  FINE_ASM_BASIC,    // -pc_hpddm_levels_1_pc_asm_type basic: B = sum_p R_p^T A_p^{-1} R_p
-  FINE_JACOBI        // -pc_hpddm_levels_1_pc_type jacobi:    B = diag(A)^{-1}
+  FINE_ASM_WEIGHTED,  // default with a user-supplied scaling: B = sum_p R_p^T D_p A_p^{-1} R_p
+  FINE_SCHWARZ_BASIC, // PCASM or PCGASM of type basic: B = sum_p R_p^T A_p^{-1} R_p
+  FINE_JACOBI         // -pc_hpddm_levels_1_pc_type jacobi:    B = diag(A)^{-1}
 } FineLevelType;
 
 static PetscScalar TestScalar(PetscReal real, PetscReal imag)
@@ -127,8 +128,8 @@ static PetscErrorCode CreateDeflation(PetscBool empty_rank0, IS *is, Mat *U, Vec
 }
 
 /*
-  Fine-level correction B, see FineLevelType. For PCASM, each process adds its term R_p^T [D_p] A_p^{-1} R_p column by
-  column, with A_p the shifted restriction of A to its subdomain, factored with LU like the PCASM local solver.
+  Fine-level correction B, see FineLevelType. For ASM and GASM, each process adds its term R_p^T [D_p] A_p^{-1} R_p column by
+  column, with A_p the shifted restriction of A to its subdomain, factored with LU like the subdomain solver.
 */
 static PetscErrorCode CreateFineReference(Mat A, FineLevelType fine, Mat *B)
 {
@@ -235,9 +236,16 @@ static PetscErrorCode CreateReference(Mat A, PetscBool empty_rank0, FineLevelTyp
   Mat B, Q, first, second, IA;
 
   PetscFunctionBeginUser;
-  PetscCheck(correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED || correction == PC_HPDDM_COARSE_CORRECTION_BALANCED, PETSC_COMM_WORLD, PETSC_ERR_SUP, "No reference for PCHPDDMCoarseCorrectionType %s, use %s, %s, or %s", PCHPDDMCoarseCorrectionTypes[correction], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_DEFLATED], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED], PCHPDDMCoarseCorrectionTypes[PC_HPDDM_COARSE_CORRECTION_BALANCED]);
   PetscCall(CreateFineReference(A, fine, &B));
   PetscCall(CreateCoarseReference(A, empty_rank0, &Q));
+  if (correction == PC_HPDDM_COARSE_CORRECTION_ADDITIVE) {
+    PetscCall(MatConvert(B, MATDENSE, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatAXPY(Q, 1.0, B, SAME_NONZERO_PATTERN));
+    PetscCall(MatDestroy(&B));
+    *T = Q;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCheck(correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED || correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED || correction == PC_HPDDM_COARSE_CORRECTION_BALANCED, PETSC_COMM_WORLD, PETSC_ERR_SUP, "No reference for PCHPDDMCoarseCorrectionType %s", PCHPDDMCoarseCorrectionTypes[correction]);
   if (correction == PC_HPDDM_COARSE_CORRECTION_DEFLATED_REVERSED) {
     first  = B;
     second = Q;
@@ -274,18 +282,21 @@ static PetscErrorCode CreateReference(Mat A, PetscBool empty_rank0, FineLevelTyp
 */
 static PetscErrorCode GetFineLevelType(const char prefix[], FineLevelType *fine)
 {
-  char      type[256] = PCASM;
-  PCASMType asm_type  = PC_ASM_WEIGHTED; // default selected by PCHPDDM with a user-supplied scaling
-  PetscBool asm_pc, jacobi;
+  char       type[256] = PCASM;
+  PCASMType  asm_type  = PC_ASM_WEIGHTED; // default selected by PCHPDDM with a user-supplied scaling
+  PCGASMType gasm_type = PC_GASM_RESTRICT;
+  PetscBool  asm_pc, gasm_pc, jacobi;
 
   PetscFunctionBeginUser;
   PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_type", type, sizeof(type), NULL));
   PetscCall(PetscOptionsGetEnum(NULL, prefix, "-pc_asm_type", PCASMTypes, (PetscEnum *)&asm_type, NULL));
+  PetscCall(PetscOptionsGetEnum(NULL, prefix, "-pc_gasm_type", PCGASMTypes, (PetscEnum *)&gasm_type, NULL));
   PetscCall(PetscStrcmp(type, PCASM, &asm_pc));
+  PetscCall(PetscStrcmp(type, PCGASM, &gasm_pc));
   PetscCall(PetscStrcmp(type, PCJACOBI, &jacobi));
-  PetscCheck(jacobi == PETSC_TRUE || (asm_pc == PETSC_TRUE && (asm_type == PC_ASM_WEIGHTED || asm_type == PC_ASM_BASIC)), PETSC_COMM_WORLD, PETSC_ERR_SUP, "No reference for this fine-level PC, use PCJACOBI or PCASM of type PC_ASM_WEIGHTED or PC_ASM_BASIC");
+  PetscCheck(jacobi == PETSC_TRUE || (gasm_pc == PETSC_TRUE && gasm_type == PC_GASM_BASIC) || (asm_pc == PETSC_TRUE && (asm_type == PC_ASM_WEIGHTED || asm_type == PC_ASM_BASIC)), PETSC_COMM_WORLD, PETSC_ERR_SUP, "No reference for this fine-level PC, use PCJACOBI, basic PCGASM, or weighted or basic PCASM");
   if (jacobi == PETSC_TRUE) *fine = FINE_JACOBI;
-  else *fine = asm_type == PC_ASM_WEIGHTED ? FINE_ASM_WEIGHTED : FINE_ASM_BASIC;
+  else *fine = asm_pc == PETSC_TRUE && asm_type == PC_ASM_WEIGHTED ? FINE_ASM_WEIGHTED : FINE_SCHWARZ_BASIC;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -302,7 +313,7 @@ static PetscErrorCode CheckVector(Vec actual, Vec expected)
 }
 
 /*
-  Compares the PC with the reference operator T: PCApply() on every unit vector, and PCMatApply() on a block of three
+  Compares the PC with the reference operator T: PCApply() on every unit vector, and PCMatApply() on blocks of two and three
   vectors. Also compares PCApplyTranspose() and PCMatApplyTranspose() with T^T, including with complex scalars.
 */
 static PetscErrorCode CheckApplications(PC pc, Mat T)
@@ -328,16 +339,16 @@ static PetscErrorCode CheckApplications(PC pc, Mat T)
     PetscCall(MatMultTranspose(T, x, expected));
     PetscCall(CheckVector(y, expected));
   }
-  {
+  for (PetscInt nrhs = 2; nrhs <= 3; ++nrhs) {
     Mat X, Y;
 
-    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, N, 3, NULL, &X));
+    PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, N, nrhs, NULL, &X));
     PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &Y));
     PetscCall(MatSetRandom(X, NULL));
     for (PetscInt transpose = 0; transpose < 2; ++transpose) {
       if (transpose) PetscCall(PCMatApplyTranspose(pc, X, Y));
       else PetscCall(PCMatApply(pc, X, Y));
-      for (PetscInt j = 0; j < 3; ++j) {
+      for (PetscInt j = 0; j < nrhs; ++j) {
         Vec xc, yc;
 
         PetscCall(MatDenseGetColumnVecRead(X, j, &xc));
@@ -472,6 +483,9 @@ int main(int argc, char **argv)
       suffix: weighted_reversed
       args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction deflated_reversed
     test:
+      suffix: additive
+      args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction additive
+    test:
       suffix: balanced
       args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_coarse_correction balanced
     test:
@@ -480,6 +494,9 @@ int main(int argc, char **argv)
       # that the second setup keeps the selected PCASMType instead of reverting to PC_ASM_WEIGHTED
       suffix: basic
       args: -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_pc_asm_type basic -pc_hpddm_levels_1_pc_asm_local_type {{additive multiplicative}}
+    test:
+      suffix: gasm
+      args: -pc_hpddm_levels_1_pc_type gasm -pc_hpddm_levels_1_pc_gasm_type basic -pc_hpddm_levels_1_pc_gasm_overlap 2 -pc_hpddm_levels_1_sub_pc_type lu
     test:
       # non-PCASM fine level: the scaling only applies to the coarse space
       suffix: jacobi

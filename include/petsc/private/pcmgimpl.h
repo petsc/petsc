@@ -12,16 +12,12 @@
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
 */
 typedef struct {
-  PetscInt cycles; /* Type of cycle to run: 1 V 2 W */
-  PetscInt level;  /* level = 0 coarsest level */
-  PetscInt levels; /* number of active levels used */
-  Vec      b;      /* Right hand side */
-  Vec      x;      /* Solution */
-  Vec      r;      /* Residual */
-  Mat      B;
-  Mat      X;
-  Mat      R;
-  Mat      W;           /* coarse correction interpolated to this level when it cannot be computed into X directly, see PCMGMatInterpolate_Private() */
+  PetscInt cycles;      /* Type of cycle to run: 1 V 2 W */
+  PetscInt level;       /* level = 0 coarsest level */
+  PetscInt levels;      /* number of active levels used */
+  Vec      b;           /* Right hand side */
+  Vec      x;           /* Solution */
+  Vec      r;           /* Residual */
   Mat      coarseSpace; /* A vector space which should be accurately captured by the next coarser mesh,
                                                   and thus accurately interpolated. The columns of this dense matrix
                                                   correspond to the same function discretized in
@@ -78,6 +74,12 @@ typedef struct {
   PetscReal max_eigen_DinvA[PETSC_MG_MAXLEVELS];
 } PC_MG;
 
+// Four consecutive work matrices per level hold the RHS, solution, residual, and interpolated correction.
+#define PCMGMatB(pc, l) ((pc)->matwork[4 * (l)])
+#define PCMGMatX(pc, l) ((pc)->matwork[4 * (l) + 1])
+#define PCMGMatR(pc, l) ((pc)->matwork[4 * (l) + 2])
+#define PCMGMatW(pc, l) ((pc)->matwork[4 * (l) + 3])
+
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
 PETSC_INTERN PetscErrorCode PCReset_MG(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
@@ -98,7 +100,6 @@ PETSC_INTERN PetscErrorCode PCMGACycle_Private(PC, PC_MG_Levels **, PetscBool, P
 PETSC_INTERN PetscErrorCode PCMGFCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool);
 PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool, PCRichardsonConvergedReason *);
-PETSC_INTERN PetscErrorCode PCMGMatInterpolate_Private(PC_MG_Levels *, Mat, Mat, PetscBool);
-PETSC_INTERN PetscErrorCode PCMGResetBlocks_Private(PC);
+PETSC_INTERN PetscErrorCode PCMGMatInterpolate_Private(PC, PetscInt, Mat, PetscBool);
 
 PETSC_INTERN PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *);

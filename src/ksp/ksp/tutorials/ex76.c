@@ -453,7 +453,7 @@ int main(int argc, char **args)
         suffix: harmonic_overlap_1_share_mumps
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_pc_factor_mat_solver_type mumps -pc_hpddm_coarse_mat_mumps_icntl_15 1
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_shell_ksp_matsolve_batch_size 4 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_pc_factor_mat_solver_type mumps -pc_hpddm_coarse_mat_mumps_icntl_15 1
       test:
         requires: mumps
         suffix: harmonic_overlap_1_share_mumps_not_set_explicitly
@@ -577,6 +577,9 @@ int main(int argc, char **args)
         suffix: fgmres_geneo_20_p_2_geneo_rhs
         args: -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type baij -pc_hpddm_levels_2_eps_nev 5 -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_max_it 10 -pc_hpddm_levels_2_ksp_type hpddm -pc_hpddm_levels_2_ksp_hpddm_type gmres -mat_type aij -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
       test:
+        suffix: fgmres_geneo_20_p_2_geneo_rhs_nonzero
+        args: -pc_hpddm_levels_2_p 2 -pc_hpddm_levels_2_mat_type baij -pc_hpddm_levels_2_eps_nev 5 -pc_hpddm_levels_2_sub_pc_type cholesky -pc_hpddm_levels_2_ksp_max_it 10 -pc_hpddm_levels_2_ksp_type hpddm -pc_hpddm_levels_2_ksp_hpddm_type gmres -pc_hpddm_levels_2_ksp_initial_guess_nonzero -mat_type aij -rhs 7 -ksp_matsolve_batch_size 4 -ksp_error_if_not_converged
+      test:
         requires: cuda
         suffix: fgmres_geneo_20_rhs_cuda
         args: -mat_type aijcusparse -pc_hpddm_coarse_correction {{deflated balanced}shared output}
@@ -629,6 +632,12 @@ int main(int argc, char **args)
       test:
         suffix: reuse_symbolic_nonzero
         args: -rhs 5 -ksp_initial_guess_nonzero -ksp_pc_side right -ksp_matsolve_batch_size 3 -pc_hpddm_coarse_correction {{deflated balanced}shared output} -transpose {{true false}shared output}
+      test:
+        suffix: reuse_symbolic_asm_overlap
+        args: -pc_hpddm_define_subdomains false -rhs 5 -ksp_initial_guess_nonzero -ksp_pc_side right -ksp_matsolve_batch_size 3 -pc_hpddm_coarse_correction deflated -transpose -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 3
+      test:
+        suffix: reuse_symbolic_gasm_overlap
+        args: -pc_hpddm_define_subdomains false -rhs 5 -ksp_initial_guess_nonzero -ksp_pc_side right -ksp_matsolve_batch_size 3 -pc_hpddm_coarse_correction deflated -transpose -pc_hpddm_levels_1_pc_type gasm -pc_hpddm_levels_1_pc_gasm_overlap 3
       test:
         requires: cuda
         suffix: reuse_symbolic_cuda
