@@ -331,13 +331,11 @@ PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
-  ksp->ops->setup          = KSPSetUp_IBCGS;
-  ksp->ops->solve          = KSPSolve_IBCGS;
-  ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = NULL;
-  ksp->ops->view           = NULL;
+  ksp->ops->setup         = KSPSetUp_IBCGS;
+  ksp->ops->solve         = KSPSolve_IBCGS;
+  ksp->ops->destroy       = KSPDestroyDefault;
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
   PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "This is not supported for complex numbers");
   PetscFunctionReturn(PETSC_SUCCESS);
 }

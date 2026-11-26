@@ -218,7 +218,6 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
             PetscCall(MatDestroy(&D));
             PetscCall(MatDestroy(&MtM));
             PetscCall(PetscFree(matshellctx));
-            D = NULL;
             break;
           }
           PetscCall(MatSetValue(D, i, i, dot, INSERT_VALUES));

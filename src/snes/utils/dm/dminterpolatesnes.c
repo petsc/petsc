@@ -983,6 +983,5 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
   PetscCall(PetscFree((*ctx)->points));
   PetscCall(PetscFree((*ctx)->cells));
   PetscCall(PetscFree(*ctx));
-  *ctx = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

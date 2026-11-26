@@ -290,7 +290,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   ctx->infoc       = 1;
   ls->data         = (void *)ctx;
   ls->initstep     = 1.0;
-  ls->ops->setup   = NULL;
   ls->ops->reset   = NULL;
   ls->ops->apply   = TaoLineSearchApply_MT;
   ls->ops->destroy = TaoLineSearchDestroy_MT;

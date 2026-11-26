@@ -561,7 +561,6 @@ static PetscErrorCode SystemParametersDestroy(SystemParameters *parameters)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFree(*parameters));
-  *parameters = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

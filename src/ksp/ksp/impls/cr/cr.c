@@ -158,12 +158,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
 
-  ksp->ops->setup          = KSPSetUp_CR;
-  ksp->ops->solve          = KSPSolve_CR;
-  ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->setfromoptions = NULL;
-  ksp->ops->view           = NULL;
+  ksp->ops->setup         = KSPSetUp_CR;
+  ksp->ops->solve         = KSPSolve_CR;
+  ksp->ops->destroy       = KSPDestroyDefault;
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

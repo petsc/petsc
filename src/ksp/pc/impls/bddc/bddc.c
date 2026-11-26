@@ -3137,18 +3137,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->adaptive_threshold[1]     = 0.0;
 
   /* function pointers */
-  pc->ops->apply               = PCApply_BDDC;
-  pc->ops->applytranspose      = PCApplyTranspose_BDDC;
-  pc->ops->setup               = PCSetUp_BDDC;
-  pc->ops->destroy             = PCDestroy_BDDC;
-  pc->ops->setfromoptions      = PCSetFromOptions_BDDC;
-  pc->ops->view                = PCView_BDDC;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
-  pc->ops->presolve            = PCPreSolve_BDDC;
-  pc->ops->postsolve           = PCPostSolve_BDDC;
-  pc->ops->reset               = PCReset_BDDC;
+  pc->ops->apply          = PCApply_BDDC;
+  pc->ops->applytranspose = PCApplyTranspose_BDDC;
+  pc->ops->setup          = PCSetUp_BDDC;
+  pc->ops->destroy        = PCDestroy_BDDC;
+  pc->ops->setfromoptions = PCSetFromOptions_BDDC;
+  pc->ops->view           = PCView_BDDC;
+  pc->ops->presolve       = PCPreSolve_BDDC;
+  pc->ops->postsolve      = PCPostSolve_BDDC;
+  pc->ops->reset          = PCReset_BDDC;
 
   /* composing function */
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBDDCSetDiscreteGradient_C", PCBDDCSetDiscreteGradient_BDDC));

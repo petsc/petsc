@@ -265,13 +265,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
   PetscCall(PetscNew(&lsc));
   pc->data = (void *)lsc;
 
-  pc->ops->apply           = PCApply_LSC;
-  pc->ops->applytranspose  = NULL;
-  pc->ops->setup           = PCSetUp_LSC;
-  pc->ops->reset           = PCReset_LSC;
-  pc->ops->destroy         = PCDestroy_LSC;
-  pc->ops->setfromoptions  = PCSetFromOptions_LSC;
-  pc->ops->view            = PCView_LSC;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply          = PCApply_LSC;
+  pc->ops->setup          = PCSetUp_LSC;
+  pc->ops->reset          = PCReset_LSC;
+  pc->ops->destroy        = PCDestroy_LSC;
+  pc->ops->setfromoptions = PCSetFromOptions_LSC;
+  pc->ops->view           = PCView_LSC;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

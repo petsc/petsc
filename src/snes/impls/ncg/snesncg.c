@@ -77,12 +77,9 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_NCGLinear;
-  linesearch->ops->destroy        = NULL;
-  linesearch->ops->setfromoptions = NULL;
-  linesearch->ops->reset          = NULL;
-  linesearch->ops->view           = NULL;
-  linesearch->ops->setup          = NULL;
+  linesearch->ops->apply = SNESLineSearchApply_NCGLinear;
+  linesearch->ops->reset = NULL;
+  linesearch->ops->setup = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

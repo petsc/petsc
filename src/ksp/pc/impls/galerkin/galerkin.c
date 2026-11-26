@@ -319,13 +319,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscNew(&jac));
 
-  pc->ops->apply           = PCApply_Galerkin;
-  pc->ops->setup           = PCSetUp_Galerkin;
-  pc->ops->reset           = PCReset_Galerkin;
-  pc->ops->destroy         = PCDestroy_Galerkin;
-  pc->ops->view            = PCView_Galerkin;
-  pc->ops->setfromoptions  = PCSetFromOptions_Galerkin;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply          = PCApply_Galerkin;
+  pc->ops->setup          = PCSetUp_Galerkin;
+  pc->ops->reset          = PCReset_Galerkin;
+  pc->ops->destroy        = PCDestroy_Galerkin;
+  pc->ops->view           = PCView_Galerkin;
+  pc->ops->setfromoptions = PCSetFromOptions_Galerkin;
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &jac->ksp));
   PetscCall(KSPSetNestLevel(jac->ksp, pc->kspnestlevel));

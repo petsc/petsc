@@ -189,14 +189,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_NN;
-  pc->ops->applytranspose      = NULL;
-  pc->ops->setup               = PCSetUp_NN;
-  pc->ops->destroy             = PCDestroy_NN;
-  pc->ops->view                = NULL;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
+  pc->ops->apply   = PCApply_NN;
+  pc->ops->setup   = PCSetUp_NN;
+  pc->ops->destroy = PCDestroy_NN;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

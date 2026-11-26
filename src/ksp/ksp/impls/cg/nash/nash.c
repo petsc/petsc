@@ -652,7 +652,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)
   ksp->ops->setfromoptions = KSPCGSetFromOptions_NASH;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  ksp->ops->view           = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetTRNormType_C", KSPCGSetTRNormType_NASH));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGGetTRNormType_C", KSPCGGetTRNormType_NASH));

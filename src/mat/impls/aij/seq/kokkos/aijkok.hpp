@@ -93,7 +93,6 @@ struct Mat_SeqAIJKokkosTriFactors {
     PetscCallVoid(MatDestroy(&U));
     PetscCallVoid(MatDestroy(&Lt));
     PetscCallVoid(MatDestroy(&Ut));
-    L = U = Lt = Ut   = nullptr;
     transpose_updated = sptrsv_symbolic_completed = PETSC_FALSE;
     PetscFunctionReturnVoid();
   }

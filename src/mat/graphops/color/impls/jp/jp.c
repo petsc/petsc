@@ -481,7 +481,6 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
   jp->local               = PETSC_TRUE;
   mc->data                = jp;
   mc->ops->apply          = MatColoringApply_JP;
-  mc->ops->view           = NULL;
   mc->ops->destroy        = MatColoringDestroy_JP;
   mc->ops->setfromoptions = MatColoringSetFromOptions_JP;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -507,15 +507,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   PetscCall(PetscNew(&jac));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
 
-  pc->ops->apply             = NULL;
-  pc->ops->matapply          = NULL;
-  pc->ops->applytranspose    = NULL;
-  pc->ops->matapplytranspose = NULL;
-  pc->ops->setup             = PCSetUp_BJacobi;
-  pc->ops->destroy           = PCDestroy_BJacobi;
-  pc->ops->setfromoptions    = PCSetFromOptions_BJacobi;
-  pc->ops->view              = PCView_BJacobi;
-  pc->ops->applyrichardson   = NULL;
+  pc->ops->setup          = PCSetUp_BJacobi;
+  pc->ops->destroy        = PCDestroy_BJacobi;
+  pc->ops->setfromoptions = PCSetFromOptions_BJacobi;
+  pc->ops->view           = PCView_BJacobi;
 
   pc->data         = (void *)jac;
   jac->n           = -1;
@@ -1039,8 +1034,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
       pc->ops->reset               = PCReset_BJacobi_Multiblock;
       pc->ops->destroy             = PCDestroy_BJacobi_Multiblock;
       pc->ops->apply               = PCApply_BJacobi_Multiblock;
-      pc->ops->matapply            = NULL;
-      pc->ops->matapplytranspose   = NULL;
       pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Multiblock;
       pc->ops->applysymmetricright = PCApplySymmetricRight_BJacobi_Multiblock;
       pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Multiblock;

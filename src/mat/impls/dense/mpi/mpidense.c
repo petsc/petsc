@@ -1406,9 +1406,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat A, MatType newtype, M
   PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, &C));
   PetscCall(MatConvert_SeqAIJ_SeqDense(C, MATSEQDENSE, MAT_INITIAL_MATRIX, &B));
   PetscCall(MatDestroy(&C));
-  if (reuse == MAT_REUSE_MATRIX) {
-    C = *newmat;
-  } else C = NULL;
+  if (reuse == MAT_REUSE_MATRIX) C = *newmat;
   PetscCall(MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A), B, A->cmap->n, !C ? MAT_INITIAL_MATRIX : MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&B));
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));

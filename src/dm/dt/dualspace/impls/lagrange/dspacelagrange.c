@@ -61,7 +61,6 @@ static PetscErrorCode Petsc1DNodeFamilyDestroy(Petsc1DNodeFamily *nf)
   for (i = 0; i < nc; i++) PetscCall(PetscFree((*nf)->nodesets[i]));
   PetscCall(PetscFree((*nf)->nodesets));
   PetscCall(PetscFree(*nf));
-  *nf = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -359,7 +358,6 @@ static PetscErrorCode PetscLagNodeIndicesDestroy(PetscLagNodeIndices *ni)
   PetscCall(PetscFree((*ni)->nodeVec));
   PetscCall(PetscFree((*ni)->perm));
   PetscCall(PetscFree(*ni));
-  *ni = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2730,17 +2728,11 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
         /* if there were no sign flips, keep NULL */
         for (i = 0; i < spintdim; i++)
           if (flips[i] != 1.) break;
-        if (i == spintdim) {
-          PetscCall(PetscFree(flips));
-          flips = NULL;
-        }
+        if (i == spintdim) PetscCall(PetscFree(flips));
         /* if the permutation is identity, keep NULL */
         for (i = 0; i < spintdim; i++)
           if (perm[i] != i) break;
-        if (i == spintdim) {
-          PetscCall(PetscFree(perm));
-          perm = NULL;
-        }
+        if (i == spintdim) PetscCall(PetscFree(perm));
         symperms[0][ornt] = perm;
         symflips[0][ornt] = flips;
       }
@@ -2762,16 +2754,10 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
     PetscCall(PetscDualSpaceGetBoundarySymmetries_Internal(sp, symperms, symflips));
     for (p = 0; p < pEnd; p++)
       if (symperms[p]) break;
-    if (p == pEnd) {
-      PetscCall(PetscFree(symperms));
-      symperms = NULL;
-    }
+    if (p == pEnd) PetscCall(PetscFree(symperms));
     for (p = 0; p < pEnd; p++)
       if (symflips[p]) break;
-    if (p == pEnd) {
-      PetscCall(PetscFree(symflips));
-      symflips = NULL;
-    }
+    if (p == pEnd) PetscCall(PetscFree(symflips));
     lag->symperms    = symperms;
     lag->symflips    = symflips;
     lag->symComputed = PETSC_TRUE;

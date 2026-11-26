@@ -743,12 +743,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
 
-  ksp->ops->setup          = KSPSetUp_PIPECG2;
-  ksp->ops->solve          = KSPSolve_PIPECG2;
-  ksp->ops->destroy        = KSPDestroyDefault;
-  ksp->ops->view           = NULL;
-  ksp->ops->setfromoptions = NULL;
-  ksp->ops->buildsolution  = KSPBuildSolutionDefault;
-  ksp->ops->buildresidual  = KSPBuildResidualDefault;
+  ksp->ops->setup         = KSPSetUp_PIPECG2;
+  ksp->ops->solve         = KSPSolve_PIPECG2;
+  ksp->ops->destroy       = KSPDestroyDefault;
+  ksp->ops->buildsolution = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual = KSPBuildResidualDefault;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

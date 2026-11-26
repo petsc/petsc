@@ -204,7 +204,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = KSPSetFromOptions_TSIRM;
-  ksp->ops->view           = NULL;
 
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCKSP));

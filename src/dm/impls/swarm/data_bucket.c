@@ -794,10 +794,7 @@ PetscErrorCode DMSwarmDataBucketCreatePackedArray(DMSwarmDataBucket db, size_t *
 PetscErrorCode DMSwarmDataBucketDestroyPackedArray(DMSwarmDataBucket db, void **buf)
 {
   PetscFunctionBegin;
-  if (buf) {
-    PetscCall(PetscFree(*buf));
-    *buf = NULL;
-  }
+  if (buf) PetscCall(PetscFree(*buf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

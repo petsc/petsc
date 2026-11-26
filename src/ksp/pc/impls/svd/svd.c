@@ -373,13 +373,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
 #endif
   if (size == 1) pc->ops->matapply = PCMatApply_SVD;
-  pc->ops->apply           = PCApply_SVD;
-  pc->ops->applytranspose  = PCApplyTranspose_SVD;
-  pc->ops->setup           = PCSetUp_SVD;
-  pc->ops->reset           = PCReset_SVD;
-  pc->ops->destroy         = PCDestroy_SVD;
-  pc->ops->setfromoptions  = PCSetFromOptions_SVD;
-  pc->ops->view            = PCView_SVD;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply          = PCApply_SVD;
+  pc->ops->applytranspose = PCApplyTranspose_SVD;
+  pc->ops->setup          = PCSetUp_SVD;
+  pc->ops->reset          = PCReset_SVD;
+  pc->ops->destroy        = PCDestroy_SVD;
+  pc->ops->setfromoptions = PCSetFromOptions_SVD;
+  pc->ops->view           = PCView_SVD;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

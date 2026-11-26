@@ -151,13 +151,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   tfs->xo  = NULL;
   tfs->nd  = 0;
 
-  pc->ops->apply               = NULL;
-  pc->ops->applytranspose      = NULL;
-  pc->ops->setup               = PCSetUp_TFS;
-  pc->ops->destroy             = PCDestroy_TFS;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
-  pc->data                     = (void *)tfs;
+  pc->ops->setup   = PCSetUp_TFS;
+  pc->ops->destroy = PCDestroy_TFS;
+  pc->data         = (void *)tfs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

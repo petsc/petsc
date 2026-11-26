@@ -179,14 +179,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_ROWSCALINGVIENNACL(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_ROWSCALINGVIENNACL;
-  pc->ops->applytranspose      = 0;
-  pc->ops->setup               = PCSetUp_ROWSCALINGVIENNACL;
-  pc->ops->destroy             = PCDestroy_ROWSCALINGVIENNACL;
-  pc->ops->setfromoptions      = PCSetFromOptions_ROWSCALINGVIENNACL;
-  pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->apply          = PCApply_ROWSCALINGVIENNACL;
+  pc->ops->setup          = PCSetUp_ROWSCALINGVIENNACL;
+  pc->ops->destroy        = PCDestroy_ROWSCALINGVIENNACL;
+  pc->ops->setfromoptions = PCSetFromOptions_ROWSCALINGVIENNACL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

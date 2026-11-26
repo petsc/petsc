@@ -116,8 +116,6 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
   stash->nprocessed = 0;
 
   PetscCall(PetscFree2(stash->array, stash->idx));
-  stash->array = NULL;
-  stash->idx   = NULL;
   PetscCall(PetscFree(stash->send_waits));
   PetscCall(PetscFree(stash->recv_waits));
   PetscCall(PetscFree2(stash->svalues, stash->sindices));

@@ -1100,7 +1100,6 @@ PetscErrorCode PetscTabulationDestroy(PetscTabulation *T)
   for (PetscInt k = 0; k <= (*T)->K; ++k) PetscCall(PetscFree((*T)->T[k]));
   PetscCall(PetscFree((*T)->T));
   PetscCall(PetscFree(*T));
-  *T = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

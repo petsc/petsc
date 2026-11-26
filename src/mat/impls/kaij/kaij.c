@@ -528,7 +528,7 @@ PetscErrorCode MatKAIJSetS(Mat A, PetscInt p, PetscInt q, const PetscScalar S[])
   if (S) {
     PetscCall(PetscMalloc1(p * q, &a->S));
     PetscCall(PetscArraycpy(a->S, S, p * q));
-  } else a->S = NULL;
+  }
 
   a->p = p;
   a->q = q;
@@ -636,7 +636,7 @@ PetscErrorCode MatKAIJSetT(Mat A, PetscInt p, PetscInt q, const PetscScalar T[])
   if (T && (!isTI)) {
     PetscCall(PetscMalloc1(p * q, &a->T));
     PetscCall(PetscArraycpy(a->T, T, p * q));
-  } else a->T = NULL;
+  }
 
   a->p = p;
   a->q = q;

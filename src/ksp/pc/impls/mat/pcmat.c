@@ -260,16 +260,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Mat(PC pc)
   PetscCall(PetscNew(&data));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMatSetApplyOperation_C", PCMatSetApplyOperation_Mat));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMatGetApplyOperation_C", PCMatGetApplyOperation_Mat));
-  pc->data                     = data;
-  pc->ops->apply               = PCApply_Mat;
-  pc->ops->matapply            = PCMatApply_Mat;
-  pc->ops->applytranspose      = PCApplyTranspose_Mat;
-  pc->ops->setup               = PCSetUp_Mat;
-  pc->ops->destroy             = PCDestroy_Mat;
-  pc->ops->setfromoptions      = NULL;
-  pc->ops->view                = PCView_Mat;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->applysymmetricleft  = NULL;
-  pc->ops->applysymmetricright = NULL;
+  pc->data                = data;
+  pc->ops->apply          = PCApply_Mat;
+  pc->ops->matapply       = PCMatApply_Mat;
+  pc->ops->applytranspose = PCApplyTranspose_Mat;
+  pc->ops->setup          = PCSetUp_Mat;
+  pc->ops->destroy        = PCDestroy_Mat;
+  pc->ops->view           = PCView_Mat;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

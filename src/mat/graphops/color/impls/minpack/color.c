@@ -115,12 +115,9 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
 {
   PetscFunctionBegin;
-  mc->dist                = 2;
-  mc->data                = NULL;
-  mc->ops->apply          = MatColoringApply_SL;
-  mc->ops->view           = NULL;
-  mc->ops->destroy        = NULL;
-  mc->ops->setfromoptions = NULL;
+  mc->dist       = 2;
+  mc->data       = NULL;
+  mc->ops->apply = MatColoringApply_SL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -218,12 +215,9 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
 {
   PetscFunctionBegin;
-  mc->dist                = 2;
-  mc->data                = NULL;
-  mc->ops->apply          = MatColoringApply_LF;
-  mc->ops->view           = NULL;
-  mc->ops->destroy        = NULL;
-  mc->ops->setfromoptions = NULL;
+  mc->dist       = 2;
+  mc->data       = NULL;
+  mc->ops->apply = MatColoringApply_LF;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -319,11 +313,8 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)
 {
   PetscFunctionBegin;
-  mc->dist                = 2;
-  mc->data                = NULL;
-  mc->ops->apply          = MatColoringApply_ID;
-  mc->ops->view           = NULL;
-  mc->ops->destroy        = NULL;
-  mc->ops->setfromoptions = NULL;
+  mc->dist       = 2;
+  mc->data       = NULL;
+  mc->ops->apply = MatColoringApply_ID;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

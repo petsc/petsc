@@ -297,10 +297,7 @@ static PetscErrorCode testStable(TS ts, Vec X, PetscInt stepi, PetscReal time, P
   /* view */
   PetscCall(VecCopy(X2, X));
   PetscCall(VecDestroy(&X2));
-  if (islast) {
-    PetscCall(VecDestroy(&rectx->X_0));
-    rectx->X_0 = NULL;
-  }
+  if (islast) PetscCall(VecDestroy(&rectx->X_0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1405,36 +1405,23 @@ static PetscErrorCode DMClone_Moab(DM dm, DM *newdm)
 static PetscErrorCode DMInitialize_Moab(DM dm)
 {
   PetscFunctionBegin;
-  dm->ops->view                     = DMView_Moab;
-  dm->ops->load                     = NULL /* DMLoad_Moab */;
-  dm->ops->setfromoptions           = DMSetFromOptions_Moab;
-  dm->ops->clone                    = DMClone_Moab;
-  dm->ops->setup                    = DMSetUp_Moab;
-  dm->ops->createlocalsection       = NULL;
-  dm->ops->createsectionpermutation = NULL;
-  dm->ops->createdefaultconstraints = NULL;
-  dm->ops->createglobalvector       = DMCreateGlobalVector_Moab;
-  dm->ops->createlocalvector        = DMCreateLocalVector_Moab;
-  dm->ops->getlocaltoglobalmapping  = NULL;
-  dm->ops->createfieldis            = NULL;
-  dm->ops->createcoordinatedm       = NULL /* DMCreateCoordinateDM_Moab */;
-  dm->ops->createcellcoordinatedm   = NULL;
-  dm->ops->getcoloring              = NULL;
-  dm->ops->creatematrix             = DMCreateMatrix_Moab;
-  dm->ops->createinterpolation      = DMCreateInterpolation_Moab;
-  dm->ops->createinjection          = NULL /* DMCreateInjection_Moab */;
-  dm->ops->refine                   = DMRefine_Moab;
-  dm->ops->coarsen                  = DMCoarsen_Moab;
-  dm->ops->refinehierarchy          = DMRefineHierarchy_Moab;
-  dm->ops->coarsenhierarchy         = DMCoarsenHierarchy_Moab;
-  dm->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Moab;
-  dm->ops->globaltolocalend         = DMGlobalToLocalEnd_Moab;
-  dm->ops->localtoglobalbegin       = DMLocalToGlobalBegin_Moab;
-  dm->ops->localtoglobalend         = DMLocalToGlobalEnd_Moab;
-  dm->ops->destroy                  = DMDestroy_Moab;
-  dm->ops->createsubdm              = NULL /* DMCreateSubDM_Moab */;
-  dm->ops->getdimpoints             = NULL /* DMGetDimPoints_Moab */;
-  dm->ops->locatepoints             = NULL /* DMLocatePoints_Moab */;
+  dm->ops->view                = DMView_Moab;
+  dm->ops->setfromoptions      = DMSetFromOptions_Moab;
+  dm->ops->clone               = DMClone_Moab;
+  dm->ops->setup               = DMSetUp_Moab;
+  dm->ops->createglobalvector  = DMCreateGlobalVector_Moab;
+  dm->ops->createlocalvector   = DMCreateLocalVector_Moab;
+  dm->ops->creatematrix        = DMCreateMatrix_Moab;
+  dm->ops->createinterpolation = DMCreateInterpolation_Moab;
+  dm->ops->refine              = DMRefine_Moab;
+  dm->ops->coarsen             = DMCoarsen_Moab;
+  dm->ops->refinehierarchy     = DMRefineHierarchy_Moab;
+  dm->ops->coarsenhierarchy    = DMCoarsenHierarchy_Moab;
+  dm->ops->globaltolocalbegin  = DMGlobalToLocalBegin_Moab;
+  dm->ops->globaltolocalend    = DMGlobalToLocalEnd_Moab;
+  dm->ops->localtoglobalbegin  = DMLocalToGlobalBegin_Moab;
+  dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Moab;
+  dm->ops->destroy             = DMDestroy_Moab;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

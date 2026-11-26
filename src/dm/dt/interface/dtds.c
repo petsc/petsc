@@ -660,7 +660,6 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
     if ((*ds)->quadPerm[c])
       for (PetscInt o = 0; o < Na; ++o) PetscCall(ISDestroy(&(*ds)->quadPerm[c][o]));
     PetscCall(PetscFree((*ds)->quadPerm[c]));
-    (*ds)->quadPerm[c] = NULL;
   }
   PetscCall(PetscHeaderDestroy(ds));
   PetscFunctionReturn(PETSC_SUCCESS);

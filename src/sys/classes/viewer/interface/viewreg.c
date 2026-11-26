@@ -582,8 +582,7 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 
   /* cleanup any old type that may be there */
   PetscTryTypeMethod(viewer, destroy);
-  viewer->ops->destroy = NULL;
-  viewer->data         = NULL;
+  viewer->data = NULL;
 
   PetscCall(PetscMemzero(viewer->ops, sizeof(struct _PetscViewerOps)));
 

@@ -3368,7 +3368,6 @@ static PetscErrorCode PCReset_PATCH(PC pc)
   PetscCall(PetscFree(patch->precomputedTensorLocations));
   PetscCall(PetscFree(patch->precomputedIntFacetTensorLocations));
 
-  patch->cellDofMap = NULL;
   patch->nsubspaces = 0;
   PetscCall(ISDestroy(&patch->iterationSet));
 
@@ -3639,15 +3638,13 @@ PETSC_EXTERN PetscErrorCode PCCreate_Patch(PC pc)
   patch->dofMappingWithoutToWithArtificial = NULL;
   patch->dofMappingWithoutToWithAll        = NULL;
 
-  pc->data                 = (void *)patch;
-  pc->ops->apply           = PCApply_PATCH;
-  pc->ops->applytranspose  = NULL; /* PCApplyTranspose_PATCH; */
-  pc->ops->setup           = PCSetUp_PATCH;
-  pc->ops->reset           = PCReset_PATCH;
-  pc->ops->destroy         = PCDestroy_PATCH;
-  pc->ops->setfromoptions  = PCSetFromOptions_PATCH;
-  pc->ops->setuponblocks   = PCSetUpOnBlocks_PATCH;
-  pc->ops->view            = PCView_PATCH;
-  pc->ops->applyrichardson = NULL;
+  pc->data                = (void *)patch;
+  pc->ops->apply          = PCApply_PATCH;
+  pc->ops->setup          = PCSetUp_PATCH;
+  pc->ops->reset          = PCReset_PATCH;
+  pc->ops->destroy        = PCDestroy_PATCH;
+  pc->ops->setfromoptions = PCSetFromOptions_PATCH;
+  pc->ops->setuponblocks  = PCSetUpOnBlocks_PATCH;
+  pc->ops->view           = PCView_PATCH;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

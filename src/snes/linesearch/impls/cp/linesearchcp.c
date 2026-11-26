@@ -224,13 +224,10 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
 {
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_CP;
-  linesearch->ops->destroy        = NULL;
-  linesearch->ops->setfromoptions = NULL;
-  linesearch->ops->reset          = NULL;
-  linesearch->ops->view           = NULL;
-  linesearch->ops->setup          = NULL;
-  linesearch->order               = SNES_LINESEARCH_ORDER_LINEAR;
+  linesearch->ops->apply = SNESLineSearchApply_CP;
+  linesearch->ops->reset = NULL;
+  linesearch->ops->setup = NULL;
+  linesearch->order      = SNES_LINESEARCH_ORDER_LINEAR;
 
   linesearch->max_it = 1;
   PetscFunctionReturn(PETSC_SUCCESS);

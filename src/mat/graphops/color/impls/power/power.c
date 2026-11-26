@@ -47,9 +47,6 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Power(MatColoring mc)
 {
   PetscFunctionBegin;
-  mc->ops->apply          = MatColoringApply_Power;
-  mc->ops->view           = NULL;
-  mc->ops->destroy        = NULL;
-  mc->ops->setfromoptions = NULL;
+  mc->ops->apply = MatColoringApply_Power;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

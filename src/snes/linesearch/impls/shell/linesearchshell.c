@@ -131,12 +131,10 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_Shell(SNESLineSearch linesearch
   SNESLineSearch_Shell *shell;
 
   PetscFunctionBegin;
-  linesearch->ops->apply          = SNESLineSearchApply_Shell;
-  linesearch->ops->destroy        = SNESLineSearchDestroy_Shell;
-  linesearch->ops->setfromoptions = NULL;
-  linesearch->ops->reset          = NULL;
-  linesearch->ops->view           = NULL;
-  linesearch->ops->setup          = NULL;
+  linesearch->ops->apply   = SNESLineSearchApply_Shell;
+  linesearch->ops->destroy = SNESLineSearchDestroy_Shell;
+  linesearch->ops->reset   = NULL;
+  linesearch->ops->setup   = NULL;
 
   PetscCall(PetscNew(&shell));
 

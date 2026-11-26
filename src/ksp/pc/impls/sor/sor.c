@@ -435,7 +435,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
   pc->ops->applytranspose  = PCApplyTranspose_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;
   pc->ops->setfromoptions  = PCSetFromOptions_SOR;
-  pc->ops->setup           = NULL;
   pc->ops->view            = PCView_SOR;
   pc->ops->destroy         = PCDestroy_SOR;
   pc->data                 = (void *)jac;

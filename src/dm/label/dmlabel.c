@@ -2284,7 +2284,6 @@ PetscErrorCode DMLabelPropagateEnd(DMLabel label, PetscSF pointSF)
   PetscFunctionBegin;
   PetscCheck(!label->readonly, PetscObjectComm((PetscObject)label), PETSC_ERR_ARG_WRONG, "Read-only labels cannot be altered");
   PetscCall(PetscFree(label->propArray));
-  label->propArray = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2551,7 +2550,6 @@ static PetscErrorCode DMLabelInitialize_Concrete(DMLabel label)
 {
   PetscFunctionBegin;
   label->ops->view         = DMLabelView_Concrete;
-  label->ops->setup        = NULL;
   label->ops->duplicate    = DMLabelDuplicate_Concrete;
   label->ops->getstratumis = DMLabelGetStratumIS_Concrete;
   PetscFunctionReturn(PETSC_SUCCESS);

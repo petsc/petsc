@@ -525,7 +525,6 @@ PETSC_INTERN PetscErrorCode SymBroydenRescaleDestroy(SymBroydenRescale *ldb)
   PetscFunctionBegin;
   PetscCall(SymBroydenRescaleReset(NULL, *ldb, MAT_LMVM_RESET_ALL));
   PetscCall(PetscFree(*ldb));
-  *ldb = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

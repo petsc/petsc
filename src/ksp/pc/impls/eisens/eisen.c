@@ -400,16 +400,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscNew(&eis));
 
-  pc->ops->apply           = PCApply_Eisenstat;
-  pc->ops->applytranspose  = PCApplyTranspose_Eisenstat;
-  pc->ops->presolve        = PCPreSolve_Eisenstat;
-  pc->ops->postsolve       = PCPostSolve_Eisenstat;
-  pc->ops->applyrichardson = NULL;
-  pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
-  pc->ops->destroy         = PCDestroy_Eisenstat;
-  pc->ops->reset           = PCReset_Eisenstat;
-  pc->ops->view            = PCView_Eisenstat;
-  pc->ops->setup           = PCSetUp_Eisenstat;
+  pc->ops->apply          = PCApply_Eisenstat;
+  pc->ops->applytranspose = PCApplyTranspose_Eisenstat;
+  pc->ops->presolve       = PCPreSolve_Eisenstat;
+  pc->ops->postsolve      = PCPostSolve_Eisenstat;
+  pc->ops->setfromoptions = PCSetFromOptions_Eisenstat;
+  pc->ops->destroy        = PCDestroy_Eisenstat;
+  pc->ops->reset          = PCReset_Eisenstat;
+  pc->ops->view           = PCView_Eisenstat;
+  pc->ops->setup          = PCSetUp_Eisenstat;
 
   pc->data     = eis;
   eis->omega   = 1.0;

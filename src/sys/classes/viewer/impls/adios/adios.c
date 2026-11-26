@@ -106,7 +106,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ADIOS(PetscViewer v)
   v->data                = (void *)adios;
   v->ops->destroy        = PetscViewerDestroy_ADIOS;
   v->ops->setfromoptions = PetscViewerSetFromOptions_ADIOS;
-  v->ops->flush          = NULL;
   adios->btype           = FILE_MODE_UNDEFINED;
   adios->filename        = NULL;
   adios->timestep        = -1;

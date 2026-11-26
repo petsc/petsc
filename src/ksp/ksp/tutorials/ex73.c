@@ -574,7 +574,6 @@ PetscErrorCode DMDestroyShellDMDA(DM *_dm)
     PetscCall(PetscObjectQuery((PetscObject)da, "scatter", (PetscObject *)&scatter));
     PetscCall(VecScatterDestroy(&scatter));
 
-    vec = NULL;
     PetscCall(PetscObjectQuery((PetscObject)da, "xtmp", (PetscObject *)&vec));
     PetscCall(VecDestroy(&vec));
 

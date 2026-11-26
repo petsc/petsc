@@ -956,7 +956,6 @@ PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N)
   PetscCheck(!pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "PCGASMSetTotalSubdomains() should be called before calling PCSetUp().");
 
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->iis, &osm->ois));
-  osm->ois = osm->iis = NULL;
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
@@ -976,10 +975,9 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
   PetscCheck(!pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "PCGASMSetSubdomains() should be called before calling PCSetUp().");
 
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->iis, &osm->ois));
-  osm->iis = osm->ois = NULL;
-  osm->n              = n;
-  osm->N              = PETSC_DETERMINE;
-  osm->nmax           = PETSC_DETERMINE;
+  osm->n    = n;
+  osm->N    = PETSC_DETERMINE;
+  osm->nmax = PETSC_DETERMINE;
   if (ois) {
     PetscCall(PetscMalloc1(n, &osm->ois));
     for (PetscInt i = 0; i < n; i++) {
@@ -1000,10 +998,7 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
       PetscCall(PetscObjectReference((PetscObject)iis[i]));
       osm->iis[i] = iis[i];
     }
-    if (!ois) {
-      osm->ois = NULL;
-      /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
-    }
+    /* if user does not provide outer indices, we will create the corresponding outer indices using  osm->overlap =1 in PCSetUp_GASM */
   }
   if (PetscDefined(USE_DEBUG)) {
     PetscInt        j, rstart, rend, *covered, lsize;
@@ -1354,7 +1349,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_GASM;
   pc->ops->setuponblocks     = PCSetUpOnBlocks_GASM;
   pc->ops->view              = PCView_GASM;
-  pc->ops->applyrichardson   = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetSubdomains_C", PCGASMSetSubdomains_GASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGASMSetOverlap_C", PCGASMSetOverlap_GASM));

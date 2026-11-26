@@ -402,13 +402,9 @@ PetscErrorCode DMFieldShellSetCreateDefaultQuadrature(DMField field, PetscErrorC
 static PetscErrorCode DMFieldInitialize_Shell(DMField field)
 {
   PetscFunctionBegin;
-  field->ops->destroy                 = DMFieldDestroy_Shell;
-  field->ops->evaluate                = NULL;
-  field->ops->evaluateFE              = DMFieldShellEvaluateFEDefault;
-  field->ops->evaluateFV              = DMFieldShellEvaluateFVDefault;
-  field->ops->getDegree               = NULL;
-  field->ops->createDefaultQuadrature = NULL;
-  field->ops->view                    = NULL;
+  field->ops->destroy    = DMFieldDestroy_Shell;
+  field->ops->evaluateFE = DMFieldShellEvaluateFEDefault;
+  field->ops->evaluateFV = DMFieldShellEvaluateFVDefault;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

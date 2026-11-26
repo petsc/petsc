@@ -1013,7 +1013,6 @@ PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchTy
   PetscCheck(r, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Line Search type %s", type);
   /* Destroy the previous private line search context */
   PetscTryTypeMethod(linesearch, destroy);
-  linesearch->ops->destroy = NULL;
   /* Reinitialize function pointers in SNESLineSearchOps structure */
   linesearch->ops->apply          = NULL;
   linesearch->ops->view           = NULL;

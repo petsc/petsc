@@ -1532,7 +1532,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
   v->ops->destroy          = PetscViewerDestroy_Binary;
   v->ops->view             = PetscViewerView_Binary;
   v->ops->setup            = PetscViewerSetUp_Binary;
-  v->ops->flush            = NULL; /* Should we support Flush() ? */
   v->ops->getsubviewer     = PetscViewerGetSubViewer_Binary;
   v->ops->restoresubviewer = PetscViewerRestoreSubViewer_Binary;
   v->ops->read             = PetscViewerBinaryRead;

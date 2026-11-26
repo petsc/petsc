@@ -181,14 +181,9 @@ PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_SAVIENNACL;
-  pc->ops->applytranspose      = 0;
-  pc->ops->setup               = PCSetUp_SAVIENNACL;
-  pc->ops->destroy             = PCDestroy_SAVIENNACL;
-  pc->ops->setfromoptions      = PCSetFromOptions_SAVIENNACL;
-  pc->ops->view                = 0;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->applysymmetricright = 0;
+  pc->ops->apply          = PCApply_SAVIENNACL;
+  pc->ops->setup          = PCSetUp_SAVIENNACL;
+  pc->ops->destroy        = PCDestroy_SAVIENNACL;
+  pc->ops->setfromoptions = PCSetFromOptions_SAVIENNACL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

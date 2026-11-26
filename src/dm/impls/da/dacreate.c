@@ -416,13 +416,11 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->createinjection           = DMCreateInjection_DA;
   da->ops->hascreateinjection        = DMHasCreateInjection_DA;
   da->ops->destroy                   = DMDestroy_DA;
-  da->ops->view                      = NULL;
   da->ops->setfromoptions            = DMSetFromOptions_DA;
   da->ops->setup                     = DMSetUp_DA;
   da->ops->clone                     = DMClone_DA;
   da->ops->load                      = DMLoad_DA;
   da->ops->createcoordinatedm        = DMCreateCoordinateDM_DA;
-  da->ops->createcellcoordinatedm    = NULL;
   da->ops->createsubdm               = DMCreateSubDM_DA;
   da->ops->createfielddecomposition  = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition = DMCreateDomainDecomposition_DA;

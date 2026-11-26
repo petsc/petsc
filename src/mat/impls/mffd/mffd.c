@@ -600,11 +600,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      a later call with MatMFFDSetType() or if that is not called
      then it will default in the first use of MatMult_MFFD()
   */
-  mfctx->ops->compute        = NULL;
-  mfctx->ops->destroy        = NULL;
-  mfctx->ops->view           = NULL;
-  mfctx->ops->setfromoptions = NULL;
-  mfctx->hctx                = NULL;
+  mfctx->hctx = NULL;
 
   mfctx->func    = NULL;
   mfctx->funcctx = NULL;

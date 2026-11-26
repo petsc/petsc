@@ -1021,7 +1021,6 @@ static PetscErrorCode PCReset_BJKOKKOS(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJKOKKOSGetKSP_C", NULL)); // not published now (causes configure errors)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJKOKKOSSetKSP_C", NULL));
   PetscCall(PetscFree(jac->dm_Nf));
-  jac->dm_Nf = NULL;
   if (jac->rowOffsets) delete jac->rowOffsets;
   if (jac->colIndices) delete jac->colIndices;
   if (jac->batch_b) delete jac->batch_b;
@@ -1202,7 +1201,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJKOKKOS(PC pc)
 
   PetscCall(PetscMemzero(pc->ops, sizeof(struct _PCOps)));
   pc->ops->apply          = PCApply_BJKOKKOS;
-  pc->ops->applytranspose = NULL;
   pc->ops->setup          = PCSetUp_BJKOKKOS;
   pc->ops->reset          = PCReset_BJKOKKOS;
   pc->ops->destroy        = PCDestroy_BJKOKKOS;

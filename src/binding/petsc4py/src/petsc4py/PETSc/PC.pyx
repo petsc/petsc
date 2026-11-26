@@ -263,7 +263,6 @@ cdef class PC(Object):
 
         """
         CHKERR(PCDestroy(&self.pc))
-        self.pc = NULL
         return self
 
     def create(self, comm: Comm | None = None) -> Self:

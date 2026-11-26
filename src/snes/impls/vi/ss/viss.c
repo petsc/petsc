@@ -408,7 +408,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONSSLS(SNES snes)
   snes->ops->solve          = SNESSolve_VINEWTONSSLS;
   snes->ops->destroy        = SNESDestroy_VI;
   snes->ops->setfromoptions = SNESSetFromOptions_VINEWTONSSLS;
-  snes->ops->view           = NULL;
 
   snes->usesksp = PETSC_TRUE;
   snes->usesnpc = PETSC_FALSE;

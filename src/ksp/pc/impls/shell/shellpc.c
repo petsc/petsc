@@ -997,13 +997,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   pc->ops->apply               = PCApply_Shell;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Shell;
   pc->ops->applysymmetricright = PCApplySymmetricRight_Shell;
-  pc->ops->matapply            = NULL;
-  pc->ops->applytranspose      = NULL;
-  pc->ops->applyrichardson     = NULL;
-  pc->ops->matapplyrichardson  = NULL;
-  pc->ops->setup               = NULL;
-  pc->ops->presolve            = NULL;
-  pc->ops->postsolve           = NULL;
 
   shell->apply               = NULL;
   shell->applytranspose      = NULL;
