@@ -1066,7 +1066,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A, MatType newtype, M
   const PetscScalar *aarray;
   IS                 ir, ic;
   PetscInt           lda;
-  PetscBool          flg;
+  PetscBool          flg, nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
@@ -1097,22 +1097,27 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A, MatType newtype, M
 
     /* redistribute matrix */
     PetscCallBLAS("SCALAPACKgemr2d", SCALAPACKgemr2d_(&b->M, &b->N, aarray, &one, &one, adesc, b->loc, &one, &one, b->desc, &b->grid->ictxcol));
-    Bmpi->nooffprocentries = PETSC_TRUE;
   } else { /* if the input Mat has a ScaLAPACK-incompatible layout, redistribute via MatSetValues() */
+    const PetscBool roworiented = b->roworiented;
+
     PetscCheck(lda == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Leading dimension (%" PetscInt_FMT ") different than local number of rows (%" PetscInt_FMT ")", lda, A->rmap->n);
-    b->roworiented = PETSC_FALSE;
     PetscCall(MatGetOwnershipIS(A, &ir, &ic));
     PetscCall(ISGetIndices(ir, &rows));
     PetscCall(ISGetIndices(ic, &cols));
+    b->roworiented = PETSC_FALSE;
     PetscCall(MatSetValues(Bmpi, A->rmap->n, rows, A->cmap->N, cols, aarray, INSERT_VALUES));
+    b->roworiented = roworiented;
     PetscCall(ISRestoreIndices(ir, &rows));
     PetscCall(ISRestoreIndices(ic, &cols));
     PetscCall(ISDestroy(&ic));
     PetscCall(ISDestroy(&ir));
   }
   PetscCall(MatDenseRestoreArrayRead(A, &aarray));
+  nooffprocentries = Bmpi->nooffprocentries;
+  if (flg) Bmpi->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(Bmpi, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Bmpi, MAT_FINAL_ASSEMBLY));
+  Bmpi->nooffprocentries = nooffprocentries;
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &Bmpi));
   else *B = Bmpi;
   PetscFunctionReturn(PETSC_SUCCESS);

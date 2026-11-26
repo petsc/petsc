@@ -62,7 +62,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
   PetscInt           nz, m, n, lm, ln, rstart, rend, bs = A->rmap->bs;
   const PetscScalar *vwork;
   const PetscInt    *cwork, *adiag;
-  PetscBool          nooffprocentries;
+  PetscBool          ignore_ltriangular, nooffprocentries;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -86,12 +86,14 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype, 
   } else M = *newmat;
 
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
+  ignore_ltriangular = ((Mat_SeqSBAIJ *)((Mat_MPISBAIJ *)M->data)->A->data)->ignore_ltriangular;
   PetscCall(MatSetOption(M, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
   for (PetscInt i = rstart; i < rend; i++) {
     PetscCall(MatGetRow(A, i, &nz, &cwork, &vwork));
     PetscCall(MatSetValues(M, 1, &i, nz, cwork, vwork, INSERT_VALUES));
     PetscCall(MatRestoreRow(A, i, &nz, &cwork, &vwork));
   }
+  PetscCall(MatSetOption(M, MAT_IGNORE_LOWER_TRIANGULAR, ignore_ltriangular));
   nooffprocentries    = M->nooffprocentries;
   M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));

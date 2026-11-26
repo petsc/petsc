@@ -236,7 +236,7 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
     const PetscInt    *row;
     PetscScalar       *val;
     const PetscScalar *vals;
-    PetscBool          option;
+    const PetscBool    nooffprocentries = Y->nooffprocentries;
 
     PetscCall(MatGetSize(X, &m, &n));
     PetscCall(MatGetOwnershipRange(X, &start, &end));
@@ -264,11 +264,10 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
       PetscCall(PetscFree(val));
     }
     PetscCall(MatRestoreRowUpperTriangular(X));
-    PetscCall(MatGetOption(Y, MAT_NO_OFF_PROC_ENTRIES, &option));
-    PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+    Y->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(Y, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Y, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatSetOption(Y, MAT_NO_OFF_PROC_ENTRIES, option));
+    Y->nooffprocentries = nooffprocentries;
   } else {
     Mat B;
 
@@ -285,7 +284,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   const PetscInt    *row;
   PetscScalar       *val;
   const PetscScalar *vals;
-  PetscBool          option;
+  const PetscBool    nooffprocentries = B->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(X, &m, &n));
@@ -336,11 +335,10 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
   }
   PetscCall(MatRestoreRowUpperTriangular(Y));
   PetscCall(MatRestoreRowUpperTriangular(X));
-  PetscCall(MatGetOption(B, MAT_NO_OFF_PROC_ENTRIES, &option));
-  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  B->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(B, MAT_NO_OFF_PROC_ENTRIES, option));
+  B->nooffprocentries = nooffprocentries;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -583,7 +581,7 @@ PetscErrorCode MatFilter(Mat A, PetscReal tol, PetscBool compress, PetscBool kee
     maxRows = 0;
     for (r = 0; r < size; ++r) maxRows = PetscMax(maxRows, ranges[r + 1] - ranges[r]);
     PetscCall(PetscCalloc2(colMax, &newCols, colMax, &newVals));
-    PetscCall(MatGetOption(A, MAT_NO_OFF_PROC_ENTRIES, &flg)); /* cache user-defined value */
+    flg = A->nooffprocentries;
     PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
     /* short-circuit code in MatAssemblyBegin() and MatAssemblyEnd()             */
     /* that are potentially called many times depending on the distribution of A */

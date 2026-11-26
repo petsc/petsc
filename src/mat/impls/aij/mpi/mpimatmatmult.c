@@ -106,6 +106,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   const PetscScalar   *dummy1, *dummy2, *dummy3, *dummy4;
   MPI_Comm             comm;
   PetscMPIInt          size;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
@@ -184,8 +185,10 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, Mat C)
   PetscCall(MatSeqAIJRestoreArrayWrite(c->A, &cda));
   PetscCall(MatSeqAIJRestoreArrayWrite(c->B, &coa));
 
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -204,6 +207,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   PetscBT              lnkbt;
   PetscReal            afill;
   MatType              mtype;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -308,9 +312,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat A, Mat P, PetscR
   MatPreallocateEnd(dnz, onz);
 
   PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(C, apj, api));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
@@ -910,6 +915,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
   PetscInt             cdnz, conz, k0, k1, nextp;
   MPI_Comm             comm;
   PetscMPIInt          size;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
@@ -1030,8 +1036,10 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A, Mat P, Mat C)
       k++;
     }
   }
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1050,6 +1058,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   PetscInt             am = A->rmap->n, pn = P->cmap->n, pm = P->rmap->n, lsize = pn + 20;
   PetscReal            afill;
   MatType              mtype;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -1170,9 +1179,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Ma
   if (!C->structure_only) PetscCall(PetscCalloc1(apnz_max, &ptap->apa));
 
   PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(C, apj, api));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ;
@@ -1294,6 +1304,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   Mat                  adpd, aopoth;
   MatType              mtype;
   const char          *prefix;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
@@ -1443,9 +1454,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ_seqMPI(Mat A, Mat P, PetscReal f
   MatPreallocateEnd(dnz, onz);
 
   PetscCall(MatSetValues_MPIAIJ_CopyFromCSRFormat_Symbolic(C, apj, api));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
   C->ops->matmultnumeric = MatMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable;
@@ -1818,7 +1830,6 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat A
   }
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1844,6 +1855,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   PetscInt            *ai, *aj, *coi, *coj, *poJ, *pdJ;
   Mat                  A_loc;
   Mat_SeqAIJ          *a_loc;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   MatCheckProduct(C, 3);
@@ -1980,8 +1992,10 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
     }
     PetscCall(MatSetValues(C, 1, &row, bnz, bj_i, ba_i, INSERT_VALUES));
   }
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
 
   PetscCall(PetscFree(ba));
   PetscCall(PetscFree(abuf_r[0]));
@@ -2015,6 +2029,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   Mat_SeqAIJ          *a_loc;
   PetscHMapI           ta;
   MatType              mtype;
+  const PetscBool      nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
@@ -2288,15 +2303,16 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
   PetscCall(MatSetBlockSize(C, 1));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
   for (i = 0; i < pn; i++) {
     row  = i + rstart;
     nnz  = bi[i + 1] - bi[i];
     Jptr = bj + bi[i];
     PetscCall(MatSetValues(C, 1, &row, nnz, Jptr, NULL, INSERT_VALUES));
   }
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   merge->bi        = bi;
   merge->bj        = bj;

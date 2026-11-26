@@ -11,7 +11,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, Ma
   Mat_MPIAIJ *mpimat = (Mat_MPIAIJ *)A->data;
   PetscInt   *d_nnz, *o_nnz;
   PetscInt    m, n, lm, ln, bs = A->rmap->bs;
-  PetscBool   flg = PETSC_FALSE;
+  PetscBool   nooffprocentries;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
@@ -28,25 +28,24 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatMPIBAIJSetPreallocation(M, bs, 0, d_nnz, 0, o_nnz));
     PetscCall(PetscFree(d_nnz));
     PetscCall(PetscFree(o_nnz));
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+    nooffprocentries    = A->nooffprocentries;
+    A->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+    A->nooffprocentries       = nooffprocentries;
     A->symmetric              = sym;
     A->hermitian              = hermitian;
     A->structurally_symmetric = structurally_symmetric;
     A->spd                    = spd;
-  } else {
-    M = *newmat;
-    PetscCall(MatGetOption(M, MAT_NO_OFF_PROC_ENTRIES, &flg));
-  }
+  } else M = *newmat;
 
   /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
   /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
   /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
-  PetscCall(MatSetOption(M, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  nooffprocentries    = M->nooffprocentries;
+  M->nooffprocentries = PETSC_TRUE;
   PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &M));
-  PetscCall(MatSetOption(M, MAT_NO_OFF_PROC_ENTRIES, flg));
+  M->nooffprocentries = nooffprocentries;
 
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
   else *newmat = M;

@@ -220,11 +220,14 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   } else {
+    const PetscBool ignore_ltriangular = ((Mat_SeqSBAIJ *)B->data)->ignore_ltriangular;
+
     PetscCall(MatSetOption(B, MAT_IGNORE_LOWER_TRIANGULAR, PETSC_TRUE));
     /* reuse may not be equal to MAT_REUSE_MATRIX, but the basic converter will reallocate or replace newmat if this value is not used */
     /* if reuse is equal to MAT_INITIAL_MATRIX, it has been appropriately preallocated before                                          */
     /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
     PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &B));
+    PetscCall(MatSetOption(B, MAT_IGNORE_LOWER_TRIANGULAR, ignore_ltriangular));
   }
   PetscCall(PetscFree(rowlengths));
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));

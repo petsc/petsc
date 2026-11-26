@@ -1140,9 +1140,10 @@ static PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure
     PetscCallBLAS("BLASaxpy", BLASaxpy_(&bnz, &alpha, x->a, &one, y->a, &one));
     PetscCall(PetscObjectStateIncrease((PetscObject)Y));
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
-    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, PETSC_TRUE));
+    const PetscBool getrow_utriangular = x->getrow_utriangular;
+
     PetscCall(MatAXPY_Basic(Y, a, X, str));
-    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, PETSC_FALSE));
+    PetscCall(MatSetOption(X, MAT_GETROW_UPPERTRIANGULAR, getrow_utriangular));
   } else {
     Mat       B;
     PetscInt *nnz;

@@ -11423,6 +11423,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
   const PetscScalar *vals;
   PetscInt          *dnnz;
   PetscInt           m, rstart, rend, bs, i, j;
+  const PetscBool    nooffprocentries = C->nooffprocentries;
 
   PetscFunctionBegin;
   PetscCall(MatInvertBlockDiagonal(A, &vals));
@@ -11437,10 +11438,10 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
   PetscCall(MatGetOwnershipRange(C, &rstart, &rend));
   PetscCall(MatSetOption(C, MAT_ROW_ORIENTED, PETSC_FALSE));
   for (i = rstart / bs; i < rend / bs; i++) PetscCall(MatSetValuesBlocked(C, 1, &i, 1, &i, &vals[(i - rstart / bs) * bs * bs], INSERT_VALUES));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  C->nooffprocentries = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+  C->nooffprocentries = nooffprocentries;
   PetscCall(MatSetOption(C, MAT_ROW_ORIENTED, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

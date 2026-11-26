@@ -1589,15 +1589,21 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A, MatType newtype, MatReuse reuse,
     PetscCall(MatConvert_SeqSELL_SeqAIJ(a->A, MATSEQAIJ, MAT_REUSE_MATRIX, &b->A));
     PetscCall(MatConvert_SeqSELL_SeqAIJ(a->B, MATSEQAIJ, MAT_REUSE_MATRIX, &b->B));
   } else {
+    const PetscBool nooffprocentries_A = A->nooffprocentries, nooffprocentries_B = B->nooffprocentries;
+
     PetscCall(MatDestroy(&b->A));
     PetscCall(MatDestroy(&b->B));
     PetscCall(MatDisAssemble_MPISELL(A));
     PetscCall(MatConvert_SeqSELL_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A));
     PetscCall(MatConvert_SeqSELL_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B));
+    B->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+    B->nooffprocentries = nooffprocentries_B;
+    A->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+    A->nooffprocentries = nooffprocentries_A;
   }
 
   if (reuse == MAT_INPLACE_MATRIX) {

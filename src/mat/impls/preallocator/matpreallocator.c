@@ -5,7 +5,6 @@ typedef struct {
   PetscHSetIJ ht;
   PetscInt   *dnz, *onz;
   PetscInt   *dnzu, *onzu;
-  PetscBool   nooffproc;
   PetscBool   used;
 } Mat_Preallocator;
 
@@ -93,17 +92,14 @@ static PetscErrorCode MatAssemblyBegin_Preallocator(Mat A, MatAssemblyType type)
 
 static PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
 {
-  PetscScalar      *val;
-  PetscInt         *row, *col;
-  PetscInt          i, j, rstart, ncols, flg;
-  PetscMPIInt       n;
-  Mat_Preallocator *p = (Mat_Preallocator *)A->data;
+  PetscScalar *val;
+  PetscInt    *row, *col;
+  PetscInt     i, j, rstart, ncols, flg;
+  PetscMPIInt  n;
 
   PetscFunctionBegin;
-  p->nooffproc = PETSC_TRUE;
   while (1) {
     PetscCall(MatStashScatterGetMesg_Private(&A->stash, &n, &row, &col, &val, &flg));
-    if (flg) p->nooffproc = PETSC_FALSE;
     if (!flg) break;
 
     for (i = 0; i < n;) {
@@ -119,7 +115,6 @@ static PetscErrorCode MatAssemblyEnd_Preallocator(Mat A, MatAssemblyType type)
     }
   }
   PetscCall(MatStashScatterEnd_Private(&A->stash));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &p->nooffproc, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -137,11 +132,11 @@ static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool
   PetscCall(MatSetUp(A));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
   if (fill) {
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, p->nooffproc));
-    PetscHashIter  hi;
-    PetscHashIJKey key;
-    PetscScalar   *zeros = NULL;
-    PetscInt       n, maxrow = 1, *cols, rStart, rEnd, *rowstarts;
+    PetscHashIter   hi;
+    PetscHashIJKey  key;
+    PetscScalar    *zeros = NULL;
+    PetscInt        n, maxrow = 1, *cols, rStart, rEnd, *rowstarts;
+    const PetscBool nooffprocentries = A->nooffprocentries;
 
     PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
     // Ownership range is in terms of scalar entries, but we deal with blocks
@@ -176,9 +171,10 @@ static PetscErrorCode MatPreallocatorPreallocate_Preallocator(Mat mat, PetscBool
     PetscCall(PetscFree(zeros));
     PetscCall(PetscFree2(cols, rowstarts));
 
+    A->nooffprocentries = PETSC_TRUE;
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatSetOption(A, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+    A->nooffprocentries = nooffprocentries;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
